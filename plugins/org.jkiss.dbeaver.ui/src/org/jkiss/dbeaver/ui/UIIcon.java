@@ -250,6 +250,8 @@ public class UIIcon {
     public static final DBIcon BUTTON_GO_TO_ERROR = new DBIcon("buttons/target_error.png"); //$NON-NLS-1$
 
     public static final DBIcon FILE = new DBIcon("file/file.png"); //$NON-NLS-1$
+    public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.png"); //$NON-NLS-1$
+    public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.png"); //$NON-NLS-1$
 
     static  {
         DBIcon.loadIcons(UIIcon.class);

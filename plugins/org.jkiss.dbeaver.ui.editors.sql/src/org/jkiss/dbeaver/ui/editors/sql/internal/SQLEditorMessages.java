@@ -23,6 +23,7 @@ public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
 
     public static String dialog_view_sql_button_copy;
+    public static String dialog_view_sql_button_refresh;
     public static String dialog_view_sql_button_persist;
 
     public static String dialog_sql_param_title;
@@ -265,6 +266,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
+    public static String pref_page_sql_editor_checkbox_select_statistics_tab;
+    public static String pref_page_sql_editor_checkbox_select_statistics_tab_tip;
     public static String pref_page_sql_editor_checkbox_close_included_script_after_execution;
     public static String pref_page_sql_editor_checkbox_close_included_script_after_execution_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;

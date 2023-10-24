@@ -230,7 +230,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         }
         if (isStandalone) {
             automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-            useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            if (!RuntimeUtils.isLinux()) {
+                useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            }
         }
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {

@@ -64,6 +64,11 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     }
 
     @Override
+    public String getNodeType() {
+        return allowsChildren() ? "Folder" : "File";
+    }
+
+    @Override
     public String getNodeDescription() {
         return null;
     }

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.processor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -37,7 +37,7 @@ public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor
         if (!consumer.getSettings().isOutputClipboard()) {
             final String folder = consumer.getOutputFolder();
             final String filename = consumer.getOutputFileName();
-            String finalPath = DBUtils.resolvePathFromString(
+            String finalPath = DBFUtils.resolvePathFromString(
                 monitor,
                 consumer.getProject(),
                 folder)
