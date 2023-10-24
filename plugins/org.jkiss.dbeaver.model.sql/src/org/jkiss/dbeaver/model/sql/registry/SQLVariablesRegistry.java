@@ -42,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class SQLVariablesRegistry {
     private static final Log log = Log.getLog(SQLVariablesRegistry.class);
@@ -78,10 +79,14 @@ public class SQLVariablesRegistry {
 
     private void loadVariables() {
         Path configLocation = getConfigLocation();
-
+        if (Files.notExists(configLocation)) {
+            return;
+        }
         Path[] configFiles;
-        try {
-            configFiles = Files.list(configLocation).filter(f -> f.getFileName().toString().startsWith(CONFIG_FILE_PREFIX)).toArray(Path[]::new);
+        try (Stream<Path> stream = Files.list(configLocation)) {
+            configFiles = stream
+                .filter(f -> f.getFileName().toString().startsWith(CONFIG_FILE_PREFIX))
+                .toArray(Path[]::new);
         } catch (IOException e) {
             log.debug(e);
             return;
