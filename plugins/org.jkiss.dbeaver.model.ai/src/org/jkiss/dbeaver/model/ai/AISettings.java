@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.model.ai;
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -39,7 +41,7 @@ public class AISettings {
     private static final Log log = Log.getLog(AISettings.class);
 
     private static final Gson gson = new Gson();
-    private static final String AI_CONFIGURATION_JSON = "ai-configuration.json";
+    public static final String AI_CONFIGURATION_JSON = "ai-configuration.json";
 
     private boolean aiDisabled;
     private String activeEngine;
@@ -59,6 +61,7 @@ public class AISettings {
         this.aiDisabled = aiDisabled;
     }
 
+    @Property
     public String getActiveEngine() {
         return activeEngine;
     }
@@ -111,28 +114,38 @@ public class AISettings {
 
     @NotNull
     public static AISettings getSettings() {
+        AISettings settings = null;
+        final SMSession session = DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession();
+        if (session instanceof SMSessionPersistent) {
+            settings = ((SMSessionPersistent) session).getAttribute(AISettings.class.getName());
+        }
+        if (settings == null) {
+            WorkspaceConfigEventManager.addConfigChangedListener(AI_CONFIGURATION_JSON, o -> {
+                loadConfigurationFile();
+            });
+            settings = loadConfigurationFile();
+        }
+        if (settings.getActiveEngine() == null) {
+            settings.setActiveEngine(AIConstants.OPENAI_ENGINE);
+        }
+        if (DBWorkbench.getPlatform().getPreferenceStore().getString(AICompletionConstants.AI_DISABLED) != null) {
+            settings.setAiDisabled(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED));
+        }
+        return settings;
+    }
+
+    private static AISettings loadConfigurationFile() {
         try {
-            AISettings settings = null;
+            AISettings settings;
+            String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(AI_CONFIGURATION_JSON);
+            if (CommonUtils.isEmpty(content)) {
+                settings = new AISettings();
+            } else {
+                settings = gson.fromJson(new StringReader(content), AISettings.class);
+            }
             final SMSession session = DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession();
             if (session instanceof SMSessionPersistent) {
-                settings = ((SMSessionPersistent) session).getAttribute(AISettings.class.getName());
-            }
-            if (settings == null) {
-                String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(AI_CONFIGURATION_JSON);
-                if (CommonUtils.isEmpty(content)) {
-                    settings = new AISettings();
-                } else {
-                    settings = gson.fromJson(new StringReader(content), AISettings.class);
-                }
-                if (session instanceof SMSessionPersistent) {
-                    ((SMSessionPersistent) session).setAttribute(AISettings.class.getName(), settings);
-                }
-            }
-            if (settings.getActiveEngine() == null) {
-                settings.setActiveEngine(AIConstants.OPENAI_ENGINE);
-            }
-            if (DBWorkbench.getPlatform().getPreferenceStore().getString(AICompletionConstants.AI_DISABLED) != null) {
-                settings.setAiDisabled(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED));
+                ((SMSessionPersistent) session).setAttribute(AISettings.class.getName(), settings);
             }
             return settings;
         } catch (Exception e) {
@@ -144,7 +157,7 @@ public class AISettings {
     public void saveSettings() {
         try {
             String content = gson.toJson(this, AISettings.class);
-            DBWorkbench.getPlatform().getProductConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
             DBWorkbench.getPlatform().getPreferenceStore().setValue(AICompletionConstants.AI_DISABLED, aiDisabled);
         } catch (Exception e) {
             log.error(e);

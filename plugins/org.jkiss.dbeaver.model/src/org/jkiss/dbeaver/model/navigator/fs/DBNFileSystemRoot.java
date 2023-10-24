@@ -37,7 +37,6 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     private static final Log log = Log.getLog(DBNFileSystemRoot.class);
 
     private DBFVirtualFileSystemRoot root;
-    private DBNPath[] children;
     private Path path;
 
     public DBNFileSystemRoot(DBNFileSystem parentNode, DBFVirtualFileSystemRoot root) {
@@ -57,14 +56,13 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
 
     @Override
     protected void dispose(boolean reflect) {
-        children = null;
         this.root = null;
         super.dispose(reflect);
     }
 
     @Override
     public String getNodeType() {
-        return "FileSystemRoot";
+        return "Folder";
     }
 
     @Override
@@ -94,7 +92,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
             try {
                 path = root.getRootPath(new VoidProgressMonitor());
             } catch (DBException e) {
-                log.error(e);
+                log.error("Error resolving file system root", e);
                 return Path.of(".nonexistentfolder");
             }
         }

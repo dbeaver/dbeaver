@@ -788,7 +788,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 parameter.add(param.getArgumentMode().getKeyword());
             }
             if (showParamNames) {
-                parameter.add(param.getName());
+                String paramName = param.getName();
+                if (forDDL && paramName.startsWith("$")) {
+                    // Old PG versions. Skip this specific case, because it is not name, but param order number
+                } else {
+                    parameter.add(paramName);
+                }
             }
             final PostgreDataType dataType = param.getParameterType();
             final PostgreSchema typeContainer = dataType.getParentObject();

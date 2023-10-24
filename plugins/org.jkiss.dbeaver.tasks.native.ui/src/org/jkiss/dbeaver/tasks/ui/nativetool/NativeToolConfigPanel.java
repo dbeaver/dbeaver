@@ -165,11 +165,12 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
             }
         }
 
-        if (selectorPanel != null && selectedObject != null) {
+        DBPDataSourceContainer container = ieWizard.getSettings().getDataSourceContainer();
+        if (selectorPanel != null && (selectedObject != null || container != null)) {
             try {
                 DBNDatabaseNode[] catalogNode = new DBNDatabaseNode[1];
                 ieWizard.getRunnableContext().run(true, true, monitor ->
-                    catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedObject, false));
+                    catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedObject != null ? selectedObject : container, false));
                 if (catalogNode[0] != null) {
                     List<DBNNode> selCatalogs = Collections.singletonList(catalogNode[0]);
                     //selectorPanel.checkNodes(selCatalogs, true);

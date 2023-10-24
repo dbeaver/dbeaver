@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: WMI native interface
 Bundle-SymbolicName: org.jkiss.wmi
-Bundle-Version: 2.0.209.qualifier
-Bundle-Release-Date: 20231009
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 2.0.210.qualifier
+Bundle-Release-Date: 20231023
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.wmi.service

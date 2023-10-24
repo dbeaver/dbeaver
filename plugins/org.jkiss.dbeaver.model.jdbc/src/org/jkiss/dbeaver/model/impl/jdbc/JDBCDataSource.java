@@ -89,7 +89,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     private int databaseMinorVersion = 0;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
-    private List<Path> tempFiles;
+    protected List<Path> tempFiles;
 
 
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
@@ -831,12 +831,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return certPath.toAbsolutePath().toString();
     }
 
+    protected String saveTrustStoreToFile(byte[] trustStoreData) throws IOException {
+        Path trustStorePath = Files.createTempFile(
+            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
+            getContainer().getDriver().getId() + "-" + getContainer().getId(),
+            ".jks");
+        Files.write(trustStorePath, trustStoreData);
+        trackTempFile(trustStorePath);
+        return trustStorePath.toAbsolutePath().toString();
+    }
+
     public void trackTempFile(Path file) {
         if (this.tempFiles == null) {
             this.tempFiles = new ArrayList<>();
         }
         this.tempFiles.add(file);
     }
-
-
 }

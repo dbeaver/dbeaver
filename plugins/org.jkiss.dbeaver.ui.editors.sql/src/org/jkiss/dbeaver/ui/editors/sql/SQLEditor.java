@@ -36,11 +36,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -137,13 +133,14 @@ import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2112,7 +2109,7 @@ public class SQLEditor extends SQLEditorBase implements
         this.globalScriptContext = new SQLScriptContext(
             parentContext,
             this,
-            EditorUtils.getLocalFileFromInput(getEditorInput()),
+            EditorUtils.getPathFromInput(getEditorInput()),
             new OutputLogWriter(),
             new SQLEditorParametersProvider(getSite()));
 
@@ -2769,8 +2766,13 @@ public class SQLEditor extends SQLEditorBase implements
 
     @NotNull
     private SQLScriptContext createScriptContext() {
-        File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
-        return new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter(), new SQLEditorParametersProvider(getSite()));
+        java.nio.file.Path localFile = EditorUtils.getPathFromInput(getEditorInput());
+        return new SQLScriptContext(
+            globalScriptContext,
+            SQLEditor.this,
+            localFile,
+            new OutputLogWriter(),
+            new SQLEditorParametersProvider(getSite()));
     }
 
     private void setStatus(String status, DBPMessageType messageType)
@@ -2783,10 +2785,15 @@ public class SQLEditor extends SQLEditorBase implements
 
     private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose, boolean keepFirstTab) {
         List<CTabItem> tabsToClose = new ArrayList<>();
+        QueryProcessor processor = null;
         for (CTabItem item : resultTabs.getItems()) {
-            if (item.getData() instanceof QueryResultsContainer && item.getShowClose() && !isPinned(item)) {
-                QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
-                if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
+            if (item.getData() instanceof QueryResultsContainer) {
+                processor = ((QueryResultsContainer) item.getData()).queryProcessor;
+            } else if (item.getData() instanceof QueryProcessor) {
+                processor = (QueryProcessor) item.getData();
+            }
+            if (item.getData() instanceof QueryProcessingComponent && item.getShowClose() && !isPinned(item)) {
+                if (queryProcessor != null && queryProcessor != processor) {
                     continue;
                 }
                 if (queryProcessor != null && queryProcessor.resultContainers.size() < 2 && keepFirstTab) {
@@ -3279,7 +3286,7 @@ public class SQLEditor extends SQLEditorBase implements
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
             URI locationURI = root.getLocationURI();
-            if (locationURI.getScheme().equals("file")) {
+            if (IOUtils.isLocalURI(locationURI)) {
                 return new File(locationURI).toString();
             }
         }
@@ -4797,7 +4804,9 @@ public class SQLEditor extends SQLEditorBase implements
                             // see #16605
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
-                            if (query.getType() != SQLQueryType.SELECT) {
+                            if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
+                                query.getType() != SQLQueryType.SELECT
+                            ) {
                                 setResultTabSelection(results.getResultsTab());
                             }
                             continue;

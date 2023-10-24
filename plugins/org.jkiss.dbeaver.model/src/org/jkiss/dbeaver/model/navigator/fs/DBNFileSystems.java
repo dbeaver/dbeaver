@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
@@ -33,6 +34,8 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +44,7 @@ import java.util.List;
  */
 public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOListener {
 
+    private static final Log log = Log.getLog(DBNFileSystems.class);
 
     private DBNFileSystem[] children;
 
@@ -58,13 +62,19 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public String getNodeType() {
-        return "FileSystemRoot";
+        return "dbvfs";
     }
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
-        return "File Systems";
+        return "Remote file systems";
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return "dbvfs";
     }
 
     @Override
@@ -133,34 +143,49 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
         return result.toArray(new DBNFileSystem[0]);
     }
 
-    public DBNPathBase findNodeByPath(DBRProgressMonitor monitor, String path) throws DBException {
-        getChildren(monitor);
+    public DBNPathBase findNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
+        return findNodeByPath(monitor, path, false);
+    }
 
-        DBNFileSystemRoot fsNode = null;
-        DBNPathBase curPath = null;
-        for (String name : path.split("/")) {
+    public DBNPathBase findNodeByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String path,
+        boolean shortPath
+    ) throws DBException {
+        DBNNode curPath = null;
+        URI uri;
+        try {
+            uri = new URI(path);
+        } catch (URISyntaxException e) {
+            throw new DBException("Bad path: " + path, e);
+        }
+        String plainPath = uri.getSchemeSpecificPart();
+        for (String name : plainPath.split("/")) {
             if (name.isEmpty() || (curPath == null && name.endsWith(":"))) {
                 continue;
             }
-            if (fsNode == null) {
-                fsNode = getRootFolder(monitor, name);
-                if (fsNode == null) {
-                    return null;
-                }
-            } else {
+            {
                 if (curPath == null) {
+                    this.getChildren(monitor);
+                    if (!shortPath) {
+                        curPath = this.getFileSystem(uri.getScheme(), name);
+                    } else {
+                        curPath = this.getRootFolder(monitor, name);
+                    }
+                } else if (curPath instanceof DBNFileSystem fsNode) {
                     fsNode.getChildren(monitor);
-                    curPath = fsNode.getChild(name);
+                    curPath = fsNode.getRoot(name);
                 } else {
-                    curPath.getChildren(monitor);
-                    curPath = curPath.getChild(name);
+                    DBNPathBase pathNode = (DBNPathBase) curPath;
+                    pathNode.getChildren(monitor);
+                    curPath = pathNode.getChild(name);
                 }
                 if (curPath == null) {
                     return null;
                 }
             }
         }
-        return curPath == null ? fsNode : curPath;
+        return curPath instanceof DBNPathBase ? (DBNPathBase) curPath : null;
     }
 
     @Override
@@ -181,7 +206,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.dbvfs.getPrefix() + ((DBNProject)getParentNode()).getRawNodeItemPath() + "/" + getNodeName();
+        return NodePathType.ext.getPrefix() + ((DBNProject) getParentNode()).getProject().getId() + "/" + getName();
     }
 
     @Override
@@ -205,12 +230,14 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
                 if (rootNode != null) {
                     String[] pathSegments = resource.getFullPath().segments();
                     DBNPathBase parentNode = rootNode;
-                    for (int i = 1; i < pathSegments.length - 1; i++) {
+                    for (int i = 2; i < pathSegments.length - 1; i++) {
                         String itemName = pathSegments[i];
-                        parentNode = parentNode.getChild(itemName);
-                        if (parentNode == null) {
+                        DBNPathBase childNode = parentNode.getChild(itemName);
+                        if (childNode == null) {
+                            log.debug("Cannot find child node '" + itemName + "' in '" + parentNode.getNodeItemPath() + "'");
                             return;
                         }
+                        parentNode = childNode;
                     }
 
                     switch (action) {
