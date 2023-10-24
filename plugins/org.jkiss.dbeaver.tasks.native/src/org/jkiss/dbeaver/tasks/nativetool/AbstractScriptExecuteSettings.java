@@ -36,10 +36,10 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
-        super.loadSettings(runnableContext, preferenceStore);
         if (CommonUtils.isEmpty(inputFile)) {
             inputFile = preferenceStore.getString("inputFile");
         }
+        super.loadSettings(runnableContext, preferenceStore);
     }
 
     @Override
