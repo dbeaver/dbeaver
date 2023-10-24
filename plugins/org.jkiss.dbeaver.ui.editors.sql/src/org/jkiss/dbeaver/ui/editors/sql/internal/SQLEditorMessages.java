@@ -23,6 +23,7 @@ public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
 
     public static String dialog_view_sql_button_copy;
+    public static String dialog_view_sql_button_refresh;
     public static String dialog_view_sql_button_persist;
 
     public static String dialog_sql_param_title;
