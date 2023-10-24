@@ -99,8 +99,9 @@ public class TextWithOpen extends Composite {
             });
         }
         {
-            if (!DBWorkbench.isDistributed() || !isMultiFileSystem()) {
-                // Local FS not available in TE when multi FS is applicable
+            {
+                // Local FS works only on local machine. Will not work for TE remote tasks.
+                // Do we need to do anything about it in UI?
                 final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
                 toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
                 toolItem.setToolTipText(UIMessages.text_with_open_dialog_browse);
