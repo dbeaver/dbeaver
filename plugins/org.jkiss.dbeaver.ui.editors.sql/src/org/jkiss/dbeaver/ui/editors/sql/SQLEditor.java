@@ -3029,7 +3029,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         super.dispose();
 
-        if (sqlFile != null && !PlatformUI.getWorkbench().isClosing()) {
+        if (sqlFile != null && !PlatformUI.getWorkbench().isClosing() && !DBWorkbench.isDistributed()) {
             deleteFileIfEmpty(sqlFile);
         }
 
