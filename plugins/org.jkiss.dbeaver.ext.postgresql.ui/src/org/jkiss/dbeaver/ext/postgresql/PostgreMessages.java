@@ -183,6 +183,7 @@ public class PostgreMessages extends NLS {
     public static String edit_command_grant_privilege_action_grant_privilege;
     public static String edit_command_grant_privilege_action_revoke_privilege;
     public static String edit_constraint_page_add_constraint;
+    public static String role_privileges_editor_default_privileges_label;
 
     public static String dialog_create_push_button_grant_all;
     public static String dialog_create_push_button_revoke_all;

@@ -536,19 +536,19 @@ public class PostgreRole implements
                             PostgrePrivilegeGrant.Kind pKind = null;
                             if (supportsOnlySchemasPermissions) {
                                 pKind = PostgrePrivilegeGrant.Kind.SCHEMA;
-                                privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl);
+                                privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl, false);
                             } else if (objectType != null && objectName != null) {
                                 pKind = PostgrePrivilegeGrant.Kind.TABLE;
                                 if (objectType.equals("C")) {
-                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl);
+                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl, false);
                                     pKind = PostgrePrivilegeGrant.Kind.SCHEMA;
-                                } else if (objectType.equals("S")) {
+                                } else if (PostgreClass.RelKind.S.getCode().equals(objectType)) {
                                     PostgreSequence sequence = schema.getSequence(monitor, objectName);
-                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, sequence, acl);
+                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, sequence, acl, false);
                                     pKind = PostgrePrivilegeGrant.Kind.SEQUENCE;
                                 } else {
                                     PostgreMaterializedView materializedView = schema.getMaterializedView(monitor, objectName);
-                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, materializedView, acl);
+                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, materializedView, acl, false);
                                 }
                             }
                             for (PostgrePrivilege p : CommonUtils.safeCollection(privileges)) {
@@ -569,6 +569,50 @@ public class PostgreRole implements
                             }
                         }
                     }
+                }
+            }
+            if (getDataSource().getServerType().supportsDefaultPrivileges()) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT DISTINCT g.* FROM (\n" +
+                        "SELECT *,\n" +
+                        "(aclexplode(defaclacl)).grantee as grantee\n" +
+                        "FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g\n" +
+                        "where g.grantee = ?")) {
+                    dbStat.setLong(1, getObjectId());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.nextRow()) {
+                            long schemaId = JDBCUtils.safeGetLong(dbResult, "defaclnamespace");
+                            PostgreSchema schema = getDatabase().getSchema(monitor, schemaId);
+                            if (schema == null) {
+                                continue;
+                            }
+                            Object acl = JDBCUtils.safeGetObject(dbResult, "defaclacl");
+                            if (acl == null) {
+                                continue;
+                            }
+                            String objectType = JDBCUtils.safeGetString(dbResult, "defaclobjtype");
+                            if (CommonUtils.isEmpty(objectType)) {
+                                log.debug("Can't read default permissions object type for " + schema.getName());
+                                continue;
+                            }
+                            List<PostgrePrivilege> privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl, true);
+                            List<PostgrePrivilege> resultPrivileges = new ArrayList<>();
+                            for (PostgrePrivilege privilege : privileges) {
+                                if (privilege instanceof PostgreDefaultPrivilege) {
+                                    PostgreDefaultPrivilege defaultPrivilege = (PostgreDefaultPrivilege) privilege;
+                                    if (!defaultPrivilege.getGrantee().equals(getName())) {
+                                        continue;
+                                    }
+                                    defaultPrivilege.setUnderKind(objectType);
+                                    resultPrivileges.add(defaultPrivilege);
+                                }
+                            }
+                            permissions.addAll(resultPrivileges);
+                            schema.addDefaultPrivileges(resultPrivileges);
+                        }
+                    }
+                } catch (Throwable e) {
+                    log.error("Error reading default privileges", e);
                 }
             }
             Collections.sort(permissions);
