@@ -14,23 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.utils.rest;
+package org.jkiss.dbeaver.model.ai.completion;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.jkiss.code.NotNull;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface RequestMapping {
-    /**
-     * Mapping for the annotated method.
-     */
-    String value() default "";
+import java.util.ArrayList;
+import java.util.List;
 
-    /**
-     * Timeout (in seconds) for this mapping.
-     */
-    int timeout() default 0;
+/**
+ * Completion session
+ */
+public class DAICompletionSession {
+    private final List<DAICompletionRequest> requests;
+
+    public DAICompletionSession() {
+        this.requests = new ArrayList<>();
+    }
+
+    public void add(@NotNull DAICompletionRequest request) {
+        requests.add(request);
+    }
+
+    public void clear() {
+        requests.clear();
+    }
+
+    @NotNull
+    public List<DAICompletionRequest> getRequests() {
+        return requests;
+    }
 }

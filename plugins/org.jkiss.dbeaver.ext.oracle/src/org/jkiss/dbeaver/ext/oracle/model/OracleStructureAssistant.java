@@ -216,6 +216,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                 } else if (objectType == OracleObjectType.TABLE) {
                     oracleObjectTypes.add(OracleObjectType.VIEW);
                     searchViewsByDefinition = params.isSearchInDefinitions();
+                } else if (objectType == OracleObjectType.PACKAGE) {
+                    oracleObjectTypes.add(OracleObjectType.PACKAGE_BODY);
                 }
             } else if (DBSProcedure.class.isAssignableFrom(objectType.getTypeClass())) {
                 oracleObjectTypes.add(OracleObjectType.FUNCTION);
@@ -308,7 +310,11 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                     final String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
                     final String objectName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME);
                     final String objectTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
-                    final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
+                    OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
+                    if (objectType == OracleObjectType.PACKAGE_BODY) {
+                        // We do not store bodies as separate objects
+                        objectType = OracleObjectType.PACKAGE;
+                    }
                     if (objectType != null && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
                         OracleSchema objectSchema = this.dataSource.getSchema(session.getProgressMonitor(), schemaName);
                         if (objectSchema == null) {
