@@ -1140,6 +1140,18 @@ public class UIUtils {
 
     @NotNull
     public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable DBPImage icon, @Nullable String toolTip, @Nullable SelectionListener selectionListener) {
+        return createDialogButton(parent, label, toolTip, icon, GridData.HORIZONTAL_ALIGN_FILL, selectionListener);
+    }
+
+    @NotNull
+    public static Button createDialogButton(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String toolTip,
+        @Nullable DBPImage icon,
+        int style,
+        @Nullable SelectionListener selectionListener
+    ) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText(label);
         button.setFont(JFaceResources.getDialogFont());
@@ -1151,7 +1163,7 @@ public class UIUtils {
         }
 
         // Dialog settings
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData gd = new GridData(style);
         GC gc = new GC(button);
         int widthHint;
         try {

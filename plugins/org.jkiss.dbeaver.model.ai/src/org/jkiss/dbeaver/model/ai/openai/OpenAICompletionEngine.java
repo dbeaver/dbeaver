@@ -29,19 +29,18 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.completion.AbstractAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionSession;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.ai.metadata.MetadataProcessor;
 import org.jkiss.dbeaver.model.ai.openai.service.AdaptedOpenAiService;
 import org.jkiss.dbeaver.model.ai.openai.service.GPTCompletionAdapter;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -148,16 +147,19 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
      * Request completion from GPT API uses parameters from {@link AIConstants} for model settings\
      * Adds current schema metadata to starting query
      *
-     * @param request          request text
-     * @param monitor          execution monitor
+     * @param monitor execution monitor
+     * @param request request text
+     * @param session completion session
      * @return resulting string
      */
+    @Nullable
     protected String requestCompletion(
-        @NotNull DAICompletionRequest request,
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull IAIFormatter formatter
+        @NotNull DAICompletionRequest request,
+        @NotNull IAIFormatter formatter,
+        @Nullable DAICompletionSession session
     ) throws DBException {
+        final DBCExecutionContext executionContext = request.getContext().getExecutionContext();
         DBSObjectContainer mainObject = getScopeObject(request, executionContext);
 
         String modifiedRequest = MetadataProcessor.INSTANCE.addDBMetadataToRequest(monitor,
@@ -165,6 +167,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             executionContext,
             mainObject,
             formatter,
+            session,
             getMaxTokens()
         );
         GPTCompletionAdapter service = getServiceInstance(executionContext);
@@ -182,13 +185,6 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
     protected int getMaxTokens() {
         return GPTModel.getByName(getModelName()).getMaxTokens();
-    }
-
-    @NotNull
-    protected DAICompletionResponse createCompletionResponse(DBSLogicalDataSource dataSource, DBCExecutionContext executionContext, String result) {
-        DAICompletionResponse response = new DAICompletionResponse();
-        response.setResultCompletion(result);
-        return response;
     }
 
     /**
