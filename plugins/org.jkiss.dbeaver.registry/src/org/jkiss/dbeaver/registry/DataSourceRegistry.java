@@ -699,11 +699,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     @Nullable
     @Override
     public DBACredentialsProvider getAuthCredentialsProvider() {
-        if (authCredentialsProvider != null) {
-            return authCredentialsProvider;
-        } else {
-            return DBUtils.getAdapter(DBACredentialsProvider.class, getProject());
-        }
+        return authCredentialsProvider;
     }
 
     @Override
