@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionSession;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -35,9 +36,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.StringJoiner;
 
 public class MetadataProcessor {
     public static final MetadataProcessor INSTANCE = new MetadataProcessor();
@@ -49,7 +50,6 @@ public class MetadataProcessor {
 
     public String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request,
         @NotNull DBSObject object,
         @Nullable DBCExecutionContext context,
         @NotNull IAIFormatter formatter,
@@ -85,7 +85,6 @@ public class MetadataProcessor {
                 }
                 String childText = generateObjectDescription(
                     monitor,
-                    request,
                     child,
                     context,
                     formatter,
@@ -112,9 +111,10 @@ public class MetadataProcessor {
         DBCExecutionContext executionContext,
         DBSObjectContainer mainObject,
         IAIFormatter formatter,
+        @Nullable DAICompletionSession session,
         int maxTokens
     ) throws DBException {
-        if (mainObject == null || mainObject.getDataSource() == null || CommonUtils.isEmptyTrimmed(request.getPromptText())) {
+        if (mainObject == null || mainObject.getDataSource() == null) {
             throw new DBException("Invalid completion request");
         }
 
@@ -131,10 +131,9 @@ public class MetadataProcessor {
         }
         int maxRequestLength = maxTokens - additionalMetadata.length() - tail.length() - 20 - MAX_RESPONSE_TOKENS;
 
-        if (request.getScope() != DAICompletionScope.CUSTOM) {
+        if (request.getContext().getScope() != DAICompletionScope.CUSTOM) {
             additionalMetadata.append(MetadataProcessor.INSTANCE.generateObjectDescription(
                 monitor,
-                request,
                 mainObject,
                 executionContext,
                 formatter,
@@ -142,10 +141,9 @@ public class MetadataProcessor {
                 false
             ));
         } else {
-            for (DBSEntity entity : request.getCustomEntities()) {
+            for (DBSEntity entity : request.getContext().getCustomEntities()) {
                 additionalMetadata.append(generateObjectDescription(
                     monitor,
-                    request,
                     entity,
                     executionContext,
                     formatter,
@@ -154,12 +152,46 @@ public class MetadataProcessor {
                 ));
             }
         }
-        String promptText = request.getPromptText().trim();
-        promptText = formatter.postProcessPrompt(monitor, mainObject, executionContext, promptText);
-        additionalMetadata.append(tail).append("#\n###").append(promptText).append("\nSELECT");
+
+        final String prompt = generatePrompt(request, session, maxRequestLength);
+
+        additionalMetadata
+            .append(tail).append("#\n###")
+            .append(formatter.postProcessPrompt(monitor, mainObject, executionContext, prompt))
+            .append("\nSELECT");
+
         return additionalMetadata.toString();
     }
 
+    @NotNull
+    private static String generatePrompt(DAICompletionRequest request, @Nullable DAICompletionSession session, int maxRequestLength) {
+        final StringJoiner sb = new StringJoiner("\n");
+
+        if (session != null && !session.getRequests().isEmpty()) {
+            final List<DAICompletionRequest> requests = session.getRequests();
+            int capacity = maxRequestLength - request.getPromptText().length();
+            int index = requests.size() - 1;
+
+            for (; index > 0; index--) {
+                final String prompt = requests.get(index).getPromptText();
+                final int length = prompt.length();
+
+                if (capacity > length) {
+                    capacity -= length;
+                } else {
+                    break;
+                }
+            }
+
+            for (int i = index; i < requests.size(); i++) {
+                sb.add(requests.get(i).getPromptText());
+            }
+        }
+
+        sb.add(request.getPromptText());
+
+        return sb.toString();
+    }
 
     protected boolean addPromptAttributes(
         DBRProgressMonitor monitor,

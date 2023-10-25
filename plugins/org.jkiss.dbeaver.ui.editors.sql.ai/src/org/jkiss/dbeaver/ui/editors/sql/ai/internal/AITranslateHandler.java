@@ -31,11 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.ai.format.DefaultRequestFormatter;
+import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -133,10 +129,6 @@ public class AITranslateHandler extends AbstractHandler {
             settings
         );
         if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
-            DAICompletionRequest completionRequest = new DAICompletionRequest();
-            completionRequest.setPromptText(aiCompletionPopup.getInputText());
-            completionRequest.setScope(aiCompletionPopup.getScope());
-            completionRequest.setCustomEntities(aiCompletionPopup.getCustomEntities());
             try {
                 engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
             } catch (DBException e) {
@@ -147,7 +139,18 @@ public class AITranslateHandler extends AbstractHandler {
                 DBWorkbench.getPlatformUI().showError("Bad AI engine configuration", "You must specify OpenAI API token in preferences");
                 return null;
             }
-            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, completionRequest);
+
+            final DAICompletionRequest request = new DAICompletionRequest.Builder()
+                .setPromptText(aiCompletionPopup.getInputText())
+                .setContext(new DAICompletionContext.Builder()
+                    .setScope(aiCompletionPopup.getScope())
+                    .setCustomEntities(aiCompletionPopup.getCustomEntities())
+                    .setDataSource(lDataSource)
+                    .setExecutionContext(executionContext)
+                    .build())
+                .build();
+
+            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, request);
         }
         return null;
     }
@@ -170,9 +173,10 @@ public class AITranslateHandler extends AbstractHandler {
                 try {
                     completionResult.addAll(
                         engine.performQueryCompletion(
-                            monitor, lDataSource, executionContext, request,
-                            AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER),
-                            true, 100));
+                            monitor,
+                            request,
+                            AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER)
+                        ));
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -234,9 +238,9 @@ public class AITranslateHandler extends AbstractHandler {
         AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", lDataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "engine", engine.getEngineName(),
-            "scope", request.getScope().name()
-
+            "scope", request.getContext().getScope().name()
         ));
+
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
             editor.processSQL(false, false);
         }
