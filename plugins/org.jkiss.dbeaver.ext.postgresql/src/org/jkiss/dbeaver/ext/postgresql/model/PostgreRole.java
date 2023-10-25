@@ -573,7 +573,7 @@ public class PostgreRole implements
             }
             if (getDataSource().getServerType().supportsDefaultPrivileges()) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT DISTINCT g.oid, g.* FROM (\n" +
+                    "SELECT DISTINCT g.* FROM (\n" +
                         "SELECT *,\n" +
                         "(aclexplode(defaclacl)).grantee as grantee\n" +
                         "FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g\n" +
