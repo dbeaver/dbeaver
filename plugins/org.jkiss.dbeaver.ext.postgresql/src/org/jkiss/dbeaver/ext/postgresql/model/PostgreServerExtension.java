@@ -165,6 +165,11 @@ public interface PostgreServerExtension {
      */
     boolean supportsCommentsOnRole();
 
+    /**
+     * Determines whether the database supports syntax like {@code ALTER DEFAULT PRIVILEGES FOR roleName...} or not
+     */
+    boolean supportsDefaultPrivileges();
+
     // Data types
 
     /** True if supports serials - serial types are auto-incrementing integer data types */

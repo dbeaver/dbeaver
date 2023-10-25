@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -40,34 +39,48 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @Override
     public List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable DBSLogicalDataSource dataSource,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DAICompletionRequest completionRequest,
-        @NotNull IAIFormatter formatter,
-        boolean returnOnlyCompletion,
-        int maxResults
+        @NotNull DAICompletionRequest request,
+        @NotNull IAIFormatter formatter
     ) throws DBException {
-        String result = requestCompletion(completionRequest, monitor, executionContext, formatter);
-        DAICompletionResponse response = createCompletionResponse(dataSource, executionContext, result);
+        String result = requestCompletion(monitor, request, formatter, null);
+        DAICompletionResponse response = createCompletionResponse(request.getContext(), result);
         return Collections.singletonList(response);
+    }
+
+    @NotNull
+    @Override
+    public List<DAICompletionResponse> performQueryCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionRequest request,
+        @NotNull DAICompletionSession session,
+        @NotNull IAIFormatter formatter
+    ) throws DBException {
+        final String result = requestCompletion(monitor, request, formatter, session);
+        final DAICompletionResponse response = new DAICompletionResponse();
+        response.setResultCompletion(result);
+
+        // Add request to the session history
+        session.add(request);
+
+        return List.of(response);
     }
 
     public abstract Map<String, SERVICE> getServiceMap();
 
     protected abstract int getMaxTokens();
 
+    @Nullable
     abstract protected String requestCompletion(
-        @NotNull DAICompletionRequest request,
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull IAIFormatter formatter
+        @NotNull DAICompletionRequest request,
+        @NotNull IAIFormatter formatter,
+        @Nullable DAICompletionSession session
     ) throws DBException;
 
     @NotNull
     protected DAICompletionResponse createCompletionResponse(
-        DBSLogicalDataSource dataSource,
-        DBCExecutionContext executionContext,
-        String result
+        @NotNull DAICompletionContext context,
+        @NotNull String result
     ) {
         DAICompletionResponse response = new DAICompletionResponse();
         response.setResultCompletion(result);
@@ -87,7 +100,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull DAICompletionRequest request,
         @NotNull DBCExecutionContext executionContext
     ) {
-        DAICompletionScope scope = request.getScope();
+        DAICompletionScope scope = request.getContext().getScope();
         DBSObjectContainer mainObject = null;
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
         if (contextDefaults != null) {
@@ -129,7 +142,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @Nullable String completionText,
         @NotNull IAIFormatter formatter
     ) {
-        if (completionText == null || CommonUtils.isEmpty(completionText)) {
+        if (CommonUtils.isEmpty(completionText)) {
             return null;
         }
         completionText = "SELECT " + completionText.trim() + ";";
