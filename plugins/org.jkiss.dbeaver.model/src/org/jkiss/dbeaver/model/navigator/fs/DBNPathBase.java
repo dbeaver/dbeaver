@@ -91,7 +91,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public String getNodeType() {
-        return "Path";
+        return NodePathType.dbvfs.name() + ".path";
     }
 
     @Override
