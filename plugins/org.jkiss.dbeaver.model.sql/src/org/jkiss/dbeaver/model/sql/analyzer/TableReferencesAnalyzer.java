@@ -38,7 +38,7 @@ public interface TableReferencesAnalyzer {
      * The method returns map of table by alias base on query expression
      */
     @NotNull
-    Map<String, String> getTableAlicesFromQuery(@NotNull String query);
+    Map<String, String> getTableAliacesFromQuery(@NotNull String query);
 
     /**
      * Checks if token is the name part token

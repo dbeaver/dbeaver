@@ -52,8 +52,8 @@ public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareB
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
 sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
 
-directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
-selectStatement: withClause? queryExpression;
+directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
+selectStatement: queryExpression;
 
 // data type literals
 sign: PlusSign|MinusSign;
@@ -74,7 +74,7 @@ characterSetSpecification: characterSetName;
 characterSetName: (schemaName Period)? Identifier;
 schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
-qualifiedName: (schemaName Period)? identifier;
+qualifiedName: (schemaName Period)? identifier?;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|squareBracketIdentifier|nonReserved);
@@ -337,15 +337,17 @@ sqlDataStatement: (selectStatementSingleRow|sqlDataChangeStatement);
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
-deleteStatement: DELETE FROM tableName (WHERE searchCondition)?;
+deleteStatement: DELETE FROM tableName whereClause?;
 insertStatement: INSERT INTO tableName insertColumnsAndSource;
 insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
 insertColumnList: columnNameList;
-updateStatement: UPDATE tableName SET setClauseList (WHERE searchCondition)?;
+updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
-setClause: objectColumn EqualsOperator updateSource;
-objectColumn: columnName;
-updateSource: (valueExpression|nullSpecification|DEFAULT);
+setClause: (setTarget | setTargetList) EqualsOperator updateSource;
+setTarget: columnReference;
+setTargetList: LeftParen columnReference (Comma columnReference)* RightParen;
+updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen);
+updateValue: valueExpression|nullSpecification|DEFAULT;
 
 // transactions
 sqlTransactionStatement: (setTransactionStatement|setConstraintsModeStatement|commitStatement|rollbackStatement);

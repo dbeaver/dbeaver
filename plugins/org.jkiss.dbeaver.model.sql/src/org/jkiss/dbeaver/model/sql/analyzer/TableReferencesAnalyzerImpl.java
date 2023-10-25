@@ -38,15 +38,16 @@ import java.util.stream.Collectors;
  */
 public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
 
-    private Map<String, String> tableReferences;
-    private SQLCompletionRequest request;
-    private Log log = Log.getLog(TableReferencesAnalyzerImpl.class);
+    private static final Log log = Log.getLog(TableReferencesAnalyzerImpl.class);
 
-    public TableReferencesAnalyzerImpl(SQLCompletionRequest request) {
+    private Map<String, String> tableReferences;
+    private final SQLCompletionRequest request;
+
+    public TableReferencesAnalyzerImpl(@NotNull SQLCompletionRequest request) {
         this.request = request;
     }
 
-    private void prepareTableReferences(String query) {
+    private void prepareTableReferences(@NotNull String query) {
         try {
             STMSource querySource = STMSource.fromReader(new StringReader(query));
             LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
@@ -70,7 +71,7 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
             }
             prepareTableReferences(activeQuery.getText());
         }
-        if (CommonUtils.isNotEmpty(tableAlias) && tableReferences != null && tableReferences.size() > 0) {
+        if (CommonUtils.isNotEmpty(tableAlias) && tableReferences.size() > 0) {
             result = tableReferences.entrySet().stream()
                 .filter(r -> allowPartialMatch
                     ? r.getValue() != null && CommonUtils.startsWithIgnoreCase(r.getValue(), tableAlias)
@@ -82,8 +83,9 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
         return result;
     }
 
+    @NotNull
     @Override
-    public Map<String, String> getTableAlicesFromQuery(String query) {
+    public Map<String, String> getTableAliacesFromQuery(@NotNull String query) {
         try {
             prepareTableReferences(query);
         } catch (Exception e) {
@@ -95,8 +97,8 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
     /**
      * The method designed to get table and aliases from source query
      */
-    @Nullable
-    public Map<String, String> getTableAndAliasFromSources(STMTreeRuleNode query) {
+    @NotNull
+    public Map<String, String> getTableAndAliasFromSources(@NotNull STMTreeRuleNode query) {
         Map<String, String> result = new TreeMap<>();
         List<STMTreeNode> tableExpandedReferences = STMUtils.expandSubtree(
             query,
