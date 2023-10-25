@@ -341,12 +341,14 @@ deleteStatement: DELETE FROM tableName whereClause?;
 insertStatement: INSERT INTO tableName insertColumnsAndSource;
 insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
 insertColumnList: columnNameList;
+
+// UPDATE
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
-setClause: (setTarget | setTargetList) EqualsOperator updateSource;
+setClause: (setTarget | setTargetList) (EqualsOperator updateSource)?;
 setTarget: columnReference;
-setTargetList: LeftParen columnReference (Comma columnReference)* RightParen;
-updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen);
+setTargetList: LeftParen columnReference? (Comma columnReference)* RightParen?;
+updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
 updateValue: valueExpression|nullSpecification|DEFAULT;
 
 // transactions
