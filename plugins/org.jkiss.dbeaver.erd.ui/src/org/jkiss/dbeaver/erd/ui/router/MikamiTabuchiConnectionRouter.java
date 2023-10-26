@@ -29,10 +29,10 @@
     import java.util.*;
 
 
-    public class MikamiTabuchiConnectionRouter extends AbstractRouter {
+    public class MikamiTabuchiConnectionRouter extends AbstractRouter implements ERDConnectionRouter {
         private boolean isDirty = false;
 
-        private final IFigure container;
+        private IFigure container;
 
         private final Map<Connection, Object> constraintMap = new HashMap<>();
         private final Map<IFigure, Rectangle> figuresToBounds = new HashMap<>();
@@ -55,10 +55,6 @@
 
             MikamiTabuchiConnectionRouter.this.figuresToBounds.put(source, newBounds);
         };
-
-        public MikamiTabuchiConnectionRouter(IFigure container) {
-            this.container = container;
-        }
 
         public Object getConstraint(Connection connection) {
             return this.constraintMap.get(connection);
@@ -282,5 +278,10 @@
             if (!this.staleConnections.isEmpty()) {
                 this.staleConnections.iterator().next().revalidate();
             }
+        }
+
+        @Override
+        public void setContainer(IFigure figure) {
+            this.container = figure;
         }
     }

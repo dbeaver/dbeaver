@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class OrthogonalShortPathRouting extends AbstractRouter {
+public class OrthogonalShortPathRouting extends AbstractRouter implements ERDConnectionRouter {
 
     private double indentation = 30.0;
     private static final int RIGHT = 180;
@@ -50,7 +50,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
     private Map<Connection, Path> connectionToPaths;
     private boolean isDirty;
     private ShortestPathRouter algorithm = new ShortestPathRouter();
-    private final IFigure container;
+    private IFigure container;
     private final Set<Connection> staleConnections = new HashSet<>();
     private final LayoutListener listener = new LayoutTracker();
 
@@ -64,19 +64,6 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
         figuresToBounds.put(source, newBounds);
     };
     private boolean ignoreInvalidate;
-
-    /**
-     * Creates a new shortest path router with the given container. The container
-     * contains all the figure's which will be treated as obstacles for the
-     * connections to avoid. Any time a child of the container moves, one or more
-     * connections will be revalidated to process the new obstacle locations. The
-     * connections being routed must not be contained within the container.
-     */
-    public OrthogonalShortPathRouting(IFigure container) {
-        isDirty = false;
-        algorithm = new ShortestPathRouter();
-        this.container = container;
-    }
 
     void addChild(IFigure child) {
         if (connectionToPaths == null) {
@@ -446,6 +433,11 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
      */
     public void setIndentation(double indentation) {
         this.indentation = indentation;
+    }
+
+    @Override
+    public void setContainer(IFigure figure) {
+        this.container = figure;
     }
 
 }

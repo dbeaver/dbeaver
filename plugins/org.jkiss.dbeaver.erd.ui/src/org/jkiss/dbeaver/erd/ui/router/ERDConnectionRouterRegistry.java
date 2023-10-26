@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ERDConnectionRouterRegistry {
@@ -81,13 +82,25 @@ public class ERDConnectionRouterRegistry {
         return connectionRouters.values().stream().collect(Collectors.toList());
     }
 
-    /*
-     * Get connection router
+    /**
+     * Get connector router by identifier, as compatibility next attempt retrieve by
+     * name
+     *
+     * @param id - identifier or name
+     * @return - descriptor
      */
     @Nullable
     public ERDConnectionRouterDescriptor getConnectionRouter(String id) {
         if (!connectionRouters.containsKey(id)) {
-            log.error("ERD Connection router is not defined for key:" + id);
+            // attempt to get by name
+            Optional<ERDConnectionRouterDescriptor> optRouter = connectionRouters.values().stream()
+                .filter(c -> c.getName().equals(id))
+                .findAny();
+            if (optRouter.isPresent()) {
+                return optRouter.get();
+            } else {
+                log.error("ERD Connection router is not defined for key:" + id);
+            }
             return null;
         }
         return connectionRouters.get(id);

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -139,7 +140,11 @@ public class DiagramPart extends PropertyAwarePart {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        cLayer.setConnectionRouter(connectionRouterDescriptor.getRouter());
+        AbstractRouter router = connectionRouterDescriptor.getRouter();
+        if (router instanceof ERDConnectionRouter) {
+            ((ERDConnectionRouter) router).setContainer(figure);
+        }
+        cLayer.setConnectionRouter(router);
         return figure;
     }
 
