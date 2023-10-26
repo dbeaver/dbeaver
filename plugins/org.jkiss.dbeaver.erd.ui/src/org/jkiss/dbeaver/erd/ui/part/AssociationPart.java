@@ -43,6 +43,8 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -146,9 +148,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 entityPart = getTarget();
             }
             final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+            ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+                .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
             if (entityPart instanceof GraphicalEditPart
-                && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-                    || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
+                && (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
                 // Self link
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
                 final Dimension figureSize = entityFigure.getMinimumSize();

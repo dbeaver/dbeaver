@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -35,7 +37,10 @@ public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
         DBPPreferenceStore store = new BundlePreferenceStore(ERDUIActivator.getDefault().getBundle());
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, true);
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, false);
-        PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_ROUTING_TYPE, ERDUIConstants.ROUTING_SHORTEST_PATH);
+        ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getDefaultRouter();
+        if (defaultRouter != null) {
+            PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_ROUTING_TYPE, defaultRouter.getId());
+        }
         ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getDefaultNotation();
         if (defaultNotation != null) {
             PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_NOTATION_TYPE, defaultNotation.getId());

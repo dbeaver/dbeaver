@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -94,12 +96,16 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         // routing
         routingType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_routing_combo,
             SWT.DROP_DOWN | SWT.READ_ONLY);
-        routingType.add(ERDUIConstants.ROUTING_SHORTEST_PATH);
-        routingType.add(ERDUIConstants.ROUTING_MIKAMI);
-        if (!CommonUtils.isEmpty(store.getString(ERDUIConstants.PREF_ROUTING_TYPE))) {
-            routingType.setText(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        List<ERDConnectionRouterDescriptor> connectionRouters = ERDConnectionRouterRegistry.getInstance().getDescriptors();
+        for (ERDConnectionRouterDescriptor descriptor : connectionRouters) {
+            routingType.add(descriptor.getName());
+        }
+        ERDConnectionRouterDescriptor connectionRouter = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouter != null) {
+            routingType.select(connectionRouters.indexOf(connectionRouter));
         } else {
-            routingType.setText(ERDUIConstants.ROUTING_SHORTEST_PATH);
+            routingType.select(connectionRouters.indexOf(ERDConnectionRouterRegistry.getInstance().getDefaultRouter()));
         }
         // notation
         notationType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_notation_combo,

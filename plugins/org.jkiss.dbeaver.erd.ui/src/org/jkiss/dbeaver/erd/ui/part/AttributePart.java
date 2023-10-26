@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -81,7 +83,9 @@ public class AttributePart extends NodePart {
     @Override
     protected void addSourceConnection(ConnectionEditPart connection, int index) {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
         if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
@@ -92,7 +96,9 @@ public class AttributePart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
         List<ERDAssociation> list = new ArrayList<>();
@@ -107,7 +113,9 @@ public class AttributePart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
         List<ERDAssociation> list = new ArrayList<>();
@@ -122,7 +130,9 @@ public class AttributePart extends NodePart {
     @Override
     protected void addTargetConnection(ConnectionEditPart connection, int index) {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
         if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {

@@ -42,8 +42,8 @@ import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.MikamiTabuchiConnectionRouter;
-import org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -136,14 +136,10 @@ public class DiagramPart extends PropertyAwarePart {
             cLayer.setAntialias(SWT.ON);
         }
 
-        ConnectionRouter router;
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-            router = new MikamiTabuchiConnectionRouter(figure);
-        } else {
-            router = new OrthogonalShortPathRouting(figure);
-        }
-        cLayer.setConnectionRouter(router);
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        cLayer.setConnectionRouter(connectionRouterDescriptor.getRouter());
         return figure;
     }
 

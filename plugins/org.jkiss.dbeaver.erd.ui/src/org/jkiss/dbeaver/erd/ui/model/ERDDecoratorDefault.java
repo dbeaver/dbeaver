@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.erd.ui.editor.tools.HandToolEntry;
 import org.jkiss.dbeaver.erd.ui.editor.tools.SelectionToolEntry;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -78,7 +80,9 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @Override
     public Insets getDefaultEntityInsets() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
+        ERDConnectionRouterDescriptor connectionRouter = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouter.isDefault()) {
             return new Insets(40, 40, 30, 30);
         } else {
             return new Insets(50, 50, 50, 50);

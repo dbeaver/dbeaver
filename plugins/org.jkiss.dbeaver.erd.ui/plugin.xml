@@ -21,6 +21,7 @@
 
     <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="ERD Export Formats" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
     <extension-point id="org.jkiss.dbeaver.erd.ui.notation.style" name="ER Diagram Notation Style Specification" schema="schema/org.jkiss.dbeaver.erd.ui.notation.style.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.erd.ui.routing" name="ER Diagram Connection Routing Specification" schema="schema/org.jkiss.dbeaver.erd.ui.routing.exsd"/>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
@@ -615,6 +616,23 @@
              name="Crows Foot"
              notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
        </erdNotation>
+    </extension>
+    <extension
+          point="org.jkiss.dbeaver.erd.ui.routing">
+       <erdConnectionRouter
+             connection="org.eclipse.draw2d.PolylineConnection"
+             id="org.jkiss.dbeaver.erd.router.mikammi"
+             name="Mikami-Tabuchi (Experimental)"
+             router="org.jkiss.dbeaver.erd.ui.router.MikamiTabuchiConnectionRouter">
+       </erdConnectionRouter>
+       <erdConnectionRouter
+             connection="org.eclipse.draw2d.PolylineConnection"
+             description="Router based on shortest pathes"
+             id="org.jkiss.dbeaver.erd.router.shortest.path"
+             isDefault="true"
+             name="Shortest paths"
+             router="org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting">
+       </erdConnectionRouter>
     </extension>
 
 </plugin>

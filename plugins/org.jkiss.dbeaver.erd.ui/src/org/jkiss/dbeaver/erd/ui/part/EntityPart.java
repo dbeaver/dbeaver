@@ -40,6 +40,8 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -305,15 +307,17 @@ public class EntityPart extends NodePart {
 
     private boolean supportsAttributeAssociations() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        return store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-               && !ERDAttributeVisibility.isHideAttributeAssociations(store);
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        return !connectionRouterDescriptor.isDefault() && !ERDAttributeVisibility.isHideAttributeAssociations(store);
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-            || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelTargetConnections();
         }
         List<ERDAssociation> list = new ArrayList<>();

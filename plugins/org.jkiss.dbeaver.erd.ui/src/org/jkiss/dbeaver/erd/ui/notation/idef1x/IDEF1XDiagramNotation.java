@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.CircleDecoration;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.RhombusDecoration;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
@@ -60,10 +62,12 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
         conn.setLineWidth(1);
         if (!identifying || constraintType.isLogical()) {
             final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-                conn.setLineStyle(SWT.LINE_DOT);
-            } else {
+            ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+                .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+            if (connectionRouterDescriptor.isDefault()) {
                 conn.setLineStyle(SWT.LINE_CUSTOM);
+            } else {
+                conn.setLineStyle(SWT.LINE_DOT);
             }
             conn.setLineDash(constraintType.isLogical() ? new float[] { 4 } : new float[] { 5 });
         }
