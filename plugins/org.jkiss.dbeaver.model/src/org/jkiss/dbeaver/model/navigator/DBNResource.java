@@ -43,8 +43,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -137,22 +135,10 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         if (resource == null || handler == null) {
             return null;
         }
-        return URLDecoder.decode(resource.getName(), StandardCharsets.UTF_8);
+        return resource.getName();
     }
 
-/*
     @Override
-    protected String getSortName() {
-        if (resource == null || handler == null) {
-            return null;
-        }
-        return resource.getFullPath().removeFileExtension().lastSegment();
-    }
-*/
-
-
-    @Override
-//    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
         if (getOwnerProject().isVirtual()) {
             // Do not read descriptions for virtual (remote) projects
