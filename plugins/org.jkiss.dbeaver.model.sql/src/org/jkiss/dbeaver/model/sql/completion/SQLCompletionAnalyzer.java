@@ -1302,7 +1302,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 String query = request.getActiveQuery().getText();
-                Map<String, String> table2Alices = tableRefsAnalyzer.getTableAliacesFromQuery(query);
+                Map<String, String> table2Alices = tableRefsAnalyzer.getTableAliasesFromQuery(query);
                 alias = table2Alices.get(tableName);
                 if (alias == null) {
                     alias = tableName;

@@ -85,7 +85,7 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
 
     @NotNull
     @Override
-    public Map<String, String> getTableAliacesFromQuery(@NotNull String query) {
+    public Map<String, String> getTableAliasesFromQuery(@NotNull String query) {
         try {
             prepareTableReferences(query);
         } catch (Exception e) {
