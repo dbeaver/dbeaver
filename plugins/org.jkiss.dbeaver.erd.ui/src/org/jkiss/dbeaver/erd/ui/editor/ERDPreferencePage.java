@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -216,7 +215,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
         contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
-        routingType.setText(store.getDefaultString(ERDUIConstants.PREF_ROUTING_TYPE));
+        ERDConnectionRouterRegistry connectionRegistry = ERDConnectionRouterRegistry.getInstance();
+        routingType.select(connectionRegistry.getDescriptors().indexOf(connectionRegistry.getDefaultRouter()));
         ERDNotationRegistry registry = ERDNotationRegistry.getInstance();
         notationType.select(registry.getERDNotations().indexOf(registry.getDefaultNotation()));
         changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
@@ -249,7 +249,11 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
-        store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, routingType.getText());
+        ERDConnectionRouterRegistry connectionRegistry = ERDConnectionRouterRegistry.getInstance();
+        ERDConnectionRouterDescriptor connectionRouter = connectionRegistry.getConnectionRouter(routingType.getText());
+        if(connectionRouter!=null) {
+            store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, connectionRouter.getId());
+        }
         ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getERDNotationByName(notationType.getText());
         if (erdNotation != null) {
             store.setValue(ERDUIConstants.PREF_NOTATION_TYPE, erdNotation.getId());

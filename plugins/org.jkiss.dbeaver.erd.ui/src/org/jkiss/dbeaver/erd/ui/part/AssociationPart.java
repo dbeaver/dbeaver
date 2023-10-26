@@ -105,10 +105,11 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn = new PolylineConnection();
-
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
+            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        PolylineConnection conn = connectionRouterDescriptor.getRouterConnection();
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
-
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
             ERDAssociation association = getAssociation();
