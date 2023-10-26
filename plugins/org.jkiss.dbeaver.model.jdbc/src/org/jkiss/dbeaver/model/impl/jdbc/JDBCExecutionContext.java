@@ -213,6 +213,21 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @NotNull
     @Override
     public JDBCSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle) {
+        boolean isActiveConnected = true;
+        try {
+            checkContextAlive(monitor);
+        } catch (DBException e) {
+            log.error("Connection is not active", e);
+            isActiveConnected = false;
+        }
+        if(!isActiveConnected){
+            try {
+                invalidateContext(monitor, false);
+            } catch (DBException e) {
+                log.error("Try recover connection failed", e);
+                throw new RuntimeException(e);
+            }
+        }
         return dataSource.createConnection(monitor, this, purpose, taskTitle);
     }
 

@@ -184,6 +184,36 @@ public class DBExecUtils {
             if (recoverEnabled) {
                 tryCount += dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
             }
+
+            DBRProgressMonitor monitor;
+            if (param instanceof DBRProgressMonitor) {
+                monitor = (DBRProgressMonitor) param;
+            } else if (param instanceof DBCSession) {
+                monitor = ((DBCSession) param).getProgressMonitor();
+            } else {
+                monitor = new VoidProgressMonitor();
+            }
+
+            boolean isConnActive = true;
+            for (DBSInstance availableInstance : dataSource.getAvailableInstances()) {
+                for (DBCExecutionContext allContext : availableInstance.getAllContexts()) {
+                    try {
+                        allContext.checkContextAlive(monitor);
+                    } catch (DBException e) {
+                        isConnActive = false;
+                        break;
+                    }
+                }
+            }
+            if(!isConnActive){
+                InvalidateJob.invalidateDataSource(
+                        monitor,
+                        dataSource,
+                        false,
+                        true,
+                        () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+            }
+
             Throwable lastError = null;
             for (int i = 0; i < tryCount; i++) {
                 try {
@@ -200,14 +230,6 @@ public class DBExecUtils {
                     if (errorType != DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED && errorType != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
                         // Some other error
                         break;
-                    }
-                    DBRProgressMonitor monitor;
-                    if (param instanceof DBRProgressMonitor) {
-                        monitor = (DBRProgressMonitor) param;
-                    } else if (param instanceof DBCSession) {
-                        monitor = ((DBCSession) param).getProgressMonitor();
-                    } else {
-                        monitor = new VoidProgressMonitor();
                     }
                     if (!monitor.isCanceled()) {
 
