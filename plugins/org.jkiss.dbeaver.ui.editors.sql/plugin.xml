@@ -1000,6 +1000,8 @@
                 </menu>
                 <menu label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
                     <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
+                    <separator name="mode_toggles" visible="true"/>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" style="toggle"/>
                     <separator name="layout_toggles" visible="true"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
@@ -1087,6 +1089,8 @@
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
                 <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
+                <separator name="mode_toggles" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" style="toggle"/>
                 <separator name="layout_toggles" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
