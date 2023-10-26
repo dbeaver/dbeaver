@@ -1047,7 +1047,6 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
-                <dynamic class="org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution" id="org.jkiss.dbeaver.ui.editors.sql.toggle.multipleResultsPerTab.cmcontributor" />
                 <separator name="additions_plan" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>
