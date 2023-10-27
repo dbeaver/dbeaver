@@ -53,7 +53,7 @@ public class SSHUIMessages extends NLS {
 	public static String model_ssh_configurator_group_jump_server_checkbox_label;
 	public static String model_ssh_configurator_variables_hint_label;
 	public static String model_ssh_configurator_ssh_documentation_link;
-
+	public static String model_ssh_configurator_group_jump_server_host_not_specified_label;
 
     public static String model_ssh_dialog_credentials;
     public static String model_ssh_dialog_credentials_username;
