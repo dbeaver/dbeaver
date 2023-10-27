@@ -89,8 +89,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     private VariablesHintLabel variablesHintLabel;
 
     @Override
-    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
-    {
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
         final GridData gridData = new GridData(GridData.FILL_BOTH);
         //gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
@@ -133,9 +132,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         jumpServerCredentialsPanel.passwordText.setEnabled(
-                    		credentialsPanel.savePasswordCheckbox.getSelection() &&
-                    		jumpServerEnabledCheck.getSelection()
-                		);
+                            credentialsPanel.savePasswordCheckbox.getSelection() &&
+                                jumpServerEnabledCheck.getSelection()
+                        );
                     }
                 });
             }
@@ -254,29 +253,29 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
         showJumpServerErrorToolTipIfNeeded(true);
         if (jumpServerExpandableGroup.isExpanded()) {
-	        jumpServerExpandableGroup.setExpansionTogglerEnabled(
-	    		CommonUtils.isEmpty(jumpServerCredentialsPanel.hostNameText.getToolTipText())
-	        );
+            jumpServerExpandableGroup.setExpansionTogglerEnabled(
+                CommonUtils.isEmpty(jumpServerCredentialsPanel.hostNameText.getToolTipText())
+            );
         }
         jumpServerCredentialsPanel.hostNameText.redraw();
     }
 
     private void showJumpServerErrorToolTipIfNeeded(boolean show) {
         if (show && jumpServerEnabledCheck.getSelection() && credentialsPanel.getParent().isEnabled() &&
-    		jumpServerCredentialsPanel.hostNameText.getToolTipText() != null && jumpServerExpandableGroup.isExpanded()
-		) {
-        	UIUtils.asyncExec(() -> {
-	            jumpServerErrorToolTip.setMessage(jumpServerCredentialsPanel.hostNameText.getToolTipText());
-	            jumpServerErrorToolTip.setLocation(jumpServerCredentialsPanel.hostNameText.getShell().toDisplay(
-	                jumpServerCredentialsPanel.hostNameText.getShell().getDisplay().map(
-	                    jumpServerCredentialsPanel.hostNameText,
-	                    jumpServerCredentialsPanel.hostNameText.getShell(),
-	                    0,
-	                    jumpServerCredentialsPanel.hostNameText.getSize().y
-	                )
-	            ));
-	            jumpServerErrorToolTip.setVisible(true);
-        	});
+            jumpServerCredentialsPanel.hostNameText.getToolTipText() != null && jumpServerExpandableGroup.isExpanded()
+        ) {
+            UIUtils.asyncExec(() -> {
+                jumpServerErrorToolTip.setMessage(jumpServerCredentialsPanel.hostNameText.getToolTipText());
+                jumpServerErrorToolTip.setLocation(jumpServerCredentialsPanel.hostNameText.getShell().toDisplay(
+                    jumpServerCredentialsPanel.hostNameText.getShell().getDisplay().map(
+                        jumpServerCredentialsPanel.hostNameText,
+                        jumpServerCredentialsPanel.hostNameText.getShell(),
+                        0,
+                        jumpServerCredentialsPanel.hostNameText.getSize().y
+                    )
+                ));
+                jumpServerErrorToolTip.setVisible(true);
+            });
         } else {
             jumpServerErrorToolTip.setVisible(false);
         }
@@ -423,17 +422,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void loadSettings(@NotNull DBWHandlerConfiguration configuration)
-    {
+    public void loadSettings(@NotNull DBWHandlerConfiguration configuration) {
         credentialsPanel.loadSettings(configuration, "");
 
         final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
         jumpServerCredentialsPanel.loadSettings(configuration, jumpServerSettingsPrefix);
         jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED));
         if (jumpServerEnabledCheck.getSelection() && credentialsPanel.getParent().isEnabled() &&
-    		jumpServerCredentialsPanel.hostNameText.getText().isEmpty()
-		) {
-        	jumpServerExpandableGroup.setExpanded(true, true);
+            jumpServerCredentialsPanel.hostNameText.getText().isEmpty()
+        ) {
+            jumpServerExpandableGroup.setExpanded(true, true);
         }
         if (credentialsPanel.savePasswordCheckbox != null) {
             jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection());
