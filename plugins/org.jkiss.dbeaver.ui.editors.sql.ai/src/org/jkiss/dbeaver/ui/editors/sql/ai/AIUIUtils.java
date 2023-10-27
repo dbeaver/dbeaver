@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 
 public class AIUIUtils {
     private AIUIUtils() {
@@ -34,13 +35,10 @@ public class AIUIUtils {
         }
 
         if (UIUtils.confirmAction(UIUtils.getActiveWorkbenchShell(),
-            "Transfer information to OpenAI",
-            NLS.bind("""
-                In order to perform AI smart completion DBeaver needs to transfer
-                your database metadata information (table and column names) to OpenAI API.
-                Do you confirm it for connection ''{0}''?
-                """, container.getName()),
-            DBIcon.AI)) {
+            AIUIMessages.confirm_meta_transfer_usage_title,
+            NLS.bind(AIUIMessages.confirm_meta_transfer_usage_message, container.getName()),
+            DBIcon.AI
+        )) {
             settings.setMetaTransferConfirmed(true);
             settings.saveSettings();
             return true;
