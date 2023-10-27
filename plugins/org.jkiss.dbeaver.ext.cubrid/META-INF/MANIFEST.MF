@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Cubrid Support
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.cubrid;singleton:=true
+Bundle-Version: 1.0.189.qualifier
+Bundle-Release-Date: 20230123
+Require-Bundle: org.eclipse.core.runtime,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
+ com.google.guava;resolution:=optional,
+ org.jkiss.dbeaver.ext.generic,
+ org.eclipse.ui.views,
+ org.eclipse.jface,
+ org.eclipse.jface.text,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.core,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.ui.editors
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: JKISS
+Export-Package: org.jkiss.dbeaver.ext.cubrid,
+ org.jkiss.dbeaver.ext.cubrid.edit,
+ org.jkiss.dbeaver.ext.cubrid.model,
+ org.jkiss.dbeaver.ext.cubrid.model.meta
+Import-Package: org.slf4j
+Automatic-Module-Name: org.jkiss.dbeaver.ext.cubrid
