@@ -62,7 +62,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public String getNodeType() {
-        return "dbvfs";
+        return NodePathType.dbvfs.name();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     @NotNull
     @Override
     public String getName() {
-        return "dbvfs";
+        return NodePathType.dbvfs.name();
     }
 
     @Override

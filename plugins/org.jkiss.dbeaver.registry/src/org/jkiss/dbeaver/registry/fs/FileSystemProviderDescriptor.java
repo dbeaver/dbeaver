@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.registry.fs;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PlatformLanguageDescriptor
@@ -35,6 +37,8 @@ public class FileSystemProviderDescriptor extends AbstractDescriptor implements 
     private final String description;
     private final DBPImage icon;
     private final ObjectType implClass;
+    private final String requiredAuth;
+
     private DBFFileSystemProvider instance;
 
     public FileSystemProviderDescriptor(IConfigurationElement config) {
@@ -43,6 +47,7 @@ public class FileSystemProviderDescriptor extends AbstractDescriptor implements 
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.requiredAuth = CommonUtils.nullIfEmpty(config.getAttribute("requiredAuth"));
         this.icon = iconToImage(config.getAttribute("icon"));
         this.implClass = new ObjectType(config.getAttribute("class"));
     }
@@ -85,4 +90,8 @@ public class FileSystemProviderDescriptor extends AbstractDescriptor implements 
         return getLabel();
     }
 
+    @Nullable
+    public String getRequiredAuth() {
+        return requiredAuth;
+    }
 }
