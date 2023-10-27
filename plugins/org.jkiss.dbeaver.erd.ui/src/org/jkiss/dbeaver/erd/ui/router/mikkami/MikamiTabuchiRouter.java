@@ -50,10 +50,8 @@ public class MikamiTabuchiRouter {
 
     private int spacing = 15;
     private final Set<Rectangle> obstacles = new HashSet<>();
-
     private PrecisionPoint start;
     private PrecisionPoint finish;
-
     private OrthogonalPath activePath;
     private final List<OrthogonalPath> userPaths = new ArrayList<>();
     private final Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();
