@@ -28,7 +28,6 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.*;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
 import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -91,18 +91,8 @@ public class AITranslateHandler extends AbstractHandler {
         DAICompletionSettings settings = new DAICompletionSettings(dataSourceContainer);
 
         // Show info transfer warning
-        if (!settings.isMetaTransferConfirmed()) {
-            if (UIUtils.confirmAction(editor.getSite().getShell(), "Transfer information to OpenAI",
-                "In order to perform AI smart completion DBeaver needs to transfer\n" +
-                    "your database metadata information (table and column names) to OpenAI API.\n" +
-                    "Do you confirm it for connection '" + dataSourceContainer.getName() + "'?",
-                DBIcon.AI))
-            {
-                settings.setMetaTransferConfirmed(true);
-                settings.saveSettings();
-            } else {
-                return null;
-            }
+        if (!AIUIUtils.confirmMetaTransfer(settings, dataSourceContainer)) {
+            return null;
         }
 
         QMTranslationHistoryManager historyManager = GeneralUtils.adapt(AISuggestionPopup.class, QMTranslationHistoryManager.class);
