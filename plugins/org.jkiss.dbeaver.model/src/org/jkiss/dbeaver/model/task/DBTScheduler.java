@@ -52,6 +52,7 @@ public interface DBTScheduler {
     String FEATURE_FREQUENCY_HOURLY_RECURRENCE_GREATER_THAN_23 = FEATURE_FREQUENCY_HOURLY + ".recurrence.greaterThan23";
     String FEATURE_FREQUENCY_MINUTELY_RECURRENCE_GREATER_THAN_59 = FEATURE_FREQUENCY_MINUTELY + ".recurrence.greaterThan59";
     String FEATURE_FREQUENCY_DAILY_RECURRENCE_GREATER_THAN_31 = FEATURE_FREQUENCY_DAILY + ".recurrence.greaterThan31";
+    String FEATURE_OPEN_EXTERNAL_SETTINGS = "openExternalSettings";
 
     @NotNull
     String getSchedulerName();

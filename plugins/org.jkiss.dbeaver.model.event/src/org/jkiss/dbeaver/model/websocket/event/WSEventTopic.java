@@ -24,7 +24,7 @@ public enum WSEventTopic {
     DB_OUTPUT_LOG("cb_database_output_log"),
     SESSION("cb_session"),
     DATASOURCE("cb_datasource"),
-    DATASOURCE_FOLDER("сb_datasource_folder"),
+    DATASOURCE_FOLDER("cb_datasource_folder"),
     TEMP_FOLDER("cb_delete_temp_folder"),
     USER_SECRET("cb_user_secret"),
     RM_SCRIPTS("cb_scripts"),

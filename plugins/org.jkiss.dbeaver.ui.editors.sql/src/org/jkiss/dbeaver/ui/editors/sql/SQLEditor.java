@@ -164,9 +164,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     private static final int QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION = 100;
 
-    private static final int SQL_EDITOR_CONTROL_INDEX = 1;
-    private static final int EXTRA_CONTROL_INDEX = 0;
-
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
     private static final Pattern EMBEDDED_BINDING_PREFIX_PATTERN = Pattern.compile("--\\s*CONNECTION:\\s*(.+)", Pattern.CASE_INSENSITIVE);
@@ -232,13 +229,11 @@ public class SQLEditor extends SQLEditorBase implements
     private Composite leftToolPanel;
     private ToolBarManager topBarMan;
     private ToolBarManager bottomBarMan;
-
-    private SQLPresentationDescriptor extraPresentationDescriptor;
-    private SQLEditorPresentation extraPresentation;
-    private final Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> extraPresentationPanels = new HashMap<>();
-    private SQLEditorPresentationPanel extraPresentationCurrentPanel;
     private VerticalFolder presentationSwitchFolder;
+    private VerticalButton switchPresentationSQLButton;
+    private VerticalButton[] switchPresentationExtraButtons;
 
+    private final ExtraPresentationManager extraPresentationManager = new ExtraPresentationManager();
     private final List<SQLEditorListener> listeners = new ArrayList<>();
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
@@ -289,21 +284,14 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultTabs != null) {
             resultTabs.setFont(font);
         }
-        if (this.switchPresentationSQLButton != null) {
-            this.switchPresentationSQLButton.setFont(font);
-        }
-        if (this.switchPresentationExtraButton != null) {
-            this.switchPresentationExtraButton.setFont(font);
+        if (presentationSwitchFolder != null) {
+            for (VerticalButton button : presentationSwitchFolder.getItems()) {
+                button.setFont(font);
+            }
         }
     };
-    private VerticalButton switchPresentationSQLButton;
-    private VerticalButton switchPresentationExtraButton;
 
-    public SQLEditor()
-    {
-        super();
-
-        this.extraPresentationDescriptor = SQLPresentationRegistry.getInstance().getPresentation(this);
+    public SQLEditor() {
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
@@ -858,7 +846,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (QMUtils.isTransactionActive(executionContext)) {
             return true;
         }
-        if (extraPresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentation).isDirty()) {
+        if (extraPresentationManager.activePresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentationManager.activePresentation).isDirty()) {
             return true;
         }
         return super.isDirty();
@@ -961,17 +949,13 @@ public class SQLEditor extends SQLEditorBase implements
         sqlExtraPanelSash.setLayoutData(gd);
 
         // Create editor presentations sash
-        Composite pPlaceholder = null;
         StackLayout presentationStackLayout = null;
-        if (extraPresentationDescriptor != null) {
+        if (!extraPresentationManager.presentations.isEmpty()) {
             presentationStack = new Composite(sqlExtraPanelSash, SWT.NONE);
             presentationStack.setLayoutData(new GridData(GridData.FILL_BOTH));
             presentationStackLayout = new StackLayout();
             presentationStack.setLayout(presentationStackLayout);
             editorContainer = presentationStack;
-
-            pPlaceholder = new Composite(presentationStack, SWT.NONE);
-            pPlaceholder.setLayout(new FillLayout());
         } else {
             editorContainer = sqlExtraPanelSash;
         }
@@ -1003,21 +987,8 @@ public class SQLEditor extends SQLEditorBase implements
         // Create right vertical toolbar
         createPresentationSwitchBar(sqlEditorPanel);
 
-        if (pPlaceholder != null) {
-            switch (extraPresentationDescriptor.getActivationType()) {
-                case HIDDEN:
-                    presentationStackLayout.topControl = presentationStack.getChildren()[SQL_EDITOR_CONTROL_INDEX];
-                    break;
-                case MAXIMIZED:
-                case VISIBLE:
-                    extraPresentation.createPresentation(pPlaceholder, this);
-                    if (extraPresentationDescriptor.getActivationType() == SQLEditorPresentation.ActivationType.MAXIMIZED) {
-                        if (presentationStack.getChildren()[EXTRA_CONTROL_INDEX] != null) {
-                            presentationStackLayout.topControl = pPlaceholder;
-                        }
-                    }
-                    break;
-            }
+        if (presentationStackLayout != null) {
+            presentationStackLayout.topControl = presentationStack.getChildren()[0];
         }
 
         getSite().setSelectionProvider(new DynamicSelectionProvider());
@@ -1108,45 +1079,43 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void createPresentationSwitchBar(Composite sqlEditorPanel) {
-        if (extraPresentationDescriptor == null) {
+        final Set<SQLPresentationDescriptor> presentations = extraPresentationManager.presentations.keySet();
+
+        if (presentations.isEmpty()) {
             return;
         }
 
         presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
         presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-        switchPresentationSQLButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-        switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_description);
-        switchPresentationSQLButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
-
-        switchPresentationExtraButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-        switchPresentationExtraButton.setData(extraPresentationDescriptor);
-        switchPresentationExtraButton.setText(extraPresentationDescriptor.getLabel());
-        switchPresentationExtraButton.setImage(DBeaverIcons.getImage(extraPresentationDescriptor.getIcon()));
-        String toolTip = ActionUtils.findCommandDescription(extraPresentationDescriptor.getToggleCommandId(), getSite(), false);
-        if (CommonUtils.isEmpty(toolTip)) {
-            toolTip = extraPresentationDescriptor.getDescription();
-        }
-        if (!CommonUtils.isEmpty(toolTip)) {
-            switchPresentationExtraButton.setToolTipText(toolTip);
-        }
-
-        switchPresentationSQLButton.setChecked(true);
-
-        // We use single switch handler. It must be provided by presentation itself
-        // Presentation switch may require some additional action so we can't just switch visible controls
         SelectionListener switchListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (((VerticalButton)e.item).isChecked() || presentationSwitchFolder.getSelection() == e.item) {
+                final VerticalButton button = (VerticalButton) e.item;
+                if (button.isChecked() || presentationSwitchFolder.getSelection() == e.item) {
                     return;
                 }
-                String toggleCommandId = extraPresentationDescriptor.getToggleCommandId();
-                ActionUtils.runCommand(toggleCommandId, getSite());
+                showExtraPresentation((SQLPresentationDescriptor) button.getData());
             }
         };
+
+        switchPresentationSQLButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
+        switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_description);
+        switchPresentationSQLButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
+        switchPresentationSQLButton.setChecked(true);
         switchPresentationSQLButton.addSelectionListener(switchListener);
-        switchPresentationExtraButton.addSelectionListener(switchListener);
+
+        final List<VerticalButton> buttons = new ArrayList<>(presentations.size());
+        for (SQLPresentationDescriptor presentation : presentations) {
+            final VerticalButton button = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
+            button.setData(presentation);
+            button.setText(presentation.getLabel());
+            button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
+            button.addSelectionListener(switchListener);
+            button.setToolTipText(presentation.getDescription());
+            buttons.add(button);
+        }
+        switchPresentationExtraButtons = buttons.toArray(VerticalButton[]::new);
 
         // Stretch
         UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
@@ -1208,18 +1177,18 @@ public class SQLEditor extends SQLEditorBase implements
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (extraPresentationCurrentPanel != null) {
-                    extraPresentationCurrentPanel.deactivatePanel();
+                if (extraPresentationManager.activePresentationPanel != null) {
+                    extraPresentationManager.activePresentationPanel.deactivatePanel();
+                    extraPresentationManager.activePresentationPanel = null;
                 }
-                extraPresentationCurrentPanel = null;
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsContainer) {
                     setActiveResultsContainer((QueryResultsContainer) data);
                 } else if (data instanceof SingleTabQueryProcessor) {  
                     setActiveResultsContainer(((SingleTabQueryProcessor) data).getFirstResults());
                 } else if (data instanceof SQLEditorPresentationPanel) {
-                    extraPresentationCurrentPanel = ((SQLEditorPresentationPanel) data);
-                    extraPresentationCurrentPanel.activatePanel();
+                    extraPresentationManager.activePresentationPanel = ((SQLEditorPresentationPanel) data);
+                    extraPresentationManager.activePresentationPanel.activatePanel();
                 } else if (data instanceof ExplainPlanViewer) {
                     SQLQuery planQuery = ((ExplainPlanViewer) data).getQuery();
                     if (planQuery != null) {
@@ -1795,7 +1764,7 @@ public class SQLEditor extends SQLEditorBase implements
                     && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)
                 ) {
                     action.run();
-                    return extraPresentationCurrentPanel;
+                    return extraPresentationManager.activePresentationPanel;
                 }
             }
         }
@@ -1806,7 +1775,7 @@ public class SQLEditor extends SQLEditorBase implements
                     && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)
                 ) {
                     action.run();
-                    return extraPresentationCurrentPanel;
+                    return extraPresentationManager.activePresentationPanel;
                 }
             }
         }
@@ -1817,81 +1786,69 @@ public class SQLEditor extends SQLEditorBase implements
         return resultsSash.getMaximizedControl() != null;
     }
 
-    public SQLEditorPresentation getExtraPresentation() {
-        return extraPresentation;
+    @Nullable
+    public SQLPresentationDescriptor getExtraPresentationDescriptor() {
+        return extraPresentationManager.activePresentationDescriptor;
     }
 
-    public SQLEditorPresentation.ActivationType getExtraPresentationState() {
-        if (extraPresentation == null || presentationStack == null) {
-            return SQLEditorPresentation.ActivationType.HIDDEN;
-        }
-        Control maximizedControl = ((StackLayout)presentationStack.getLayout()).topControl;
-        if (maximizedControl == getExtraPresentationControl()) {
-            return SQLEditorPresentation.ActivationType.MAXIMIZED;
-        } else if (maximizedControl == getEditorControlWrapper()) {
-            return SQLEditorPresentation.ActivationType.HIDDEN;
-        } else {
-            return SQLEditorPresentation.ActivationType.VISIBLE;
+    public void showExtraPresentation(@NotNull String presentationId) {
+        final SQLPresentationDescriptor presentation = SQLPresentationRegistry.getInstance().getPresentation(presentationId);
+
+        if (presentation != null) {
+            showExtraPresentation(presentation);
         }
     }
 
-    public void showExtraPresentation(boolean show, boolean maximize) {
-        if (extraPresentationDescriptor == null || presentationStack == null) {
+    public void showExtraPresentation(@Nullable SQLPresentationDescriptor presentation) {
+        if (extraPresentationManager.activePresentationDescriptor == presentation || presentationStack == null) {
             return;
         }
+
         resultsSash.setRedraw(false);
+
         try {
             StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
-            if (!show) {
-                //boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
-                stackLayout.topControl = presentationStack.getChildren()[SQL_EDITOR_CONTROL_INDEX];
-                //if (epHasFocus) {
-                    getEditorControlWrapper().setFocus();
-                //}
-                // Set selection provider back to the editor
+
+            try {
+                extraPresentationManager.setActivePresentation(presentation);
+            } catch (DBException e) {
+                log.error("Error creating presentation", e);
+            }
+
+            if (extraPresentationManager.activePresentation == null) {
+                stackLayout.topControl = presentationStack.getChildren()[0];
+                getEditorControlWrapper().setFocus();
                 getSite().setSelectionProvider(new DynamicSelectionProvider());
             } else {
-                if (extraPresentation == null) {
-                    // Lazy activation
-                    try {
-                        extraPresentation = extraPresentationDescriptor.createPresentation();
-                        extraPresentation.createPresentation((Composite) getExtraPresentationControl(), this);
-                    } catch (DBException e) {
-                        log.error("Error creating presentation", e);
-                    }
-                }
-                getSite().setSelectionProvider(extraPresentation.getSelectionProvider());
-                if (maximize) {
-                    stackLayout.topControl = getExtraPresentationControl();
-                    getExtraPresentationControl().setFocus();
-                } else {
-                    stackLayout.topControl = null;
-                }
+                stackLayout.topControl = extraPresentationManager.getActivePresentationControl();
+                extraPresentationManager.getActivePresentationControl().setFocus();
+                getSite().setSelectionProvider(extraPresentationManager.activePresentation.getSelectionProvider());
             }
 
             // Show presentation panels
             boolean sideBarChanged = false;
-            if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.HIDDEN) {
+
+            {
                 // Remove all presentation panel toggles
-                //for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
-                    for (Control vb : presentationSwitchFolder.getChildren()) {
-                        if (vb.getData() instanceof SQLPresentationPanelDescriptor) { // || vb instanceof Label
-                            vb.dispose();
-                            sideBarChanged = true;
-                        }
+                for (Control vb : presentationSwitchFolder.getChildren()) {
+                    if (vb.getData() instanceof SQLPresentationPanelDescriptor) { // || vb instanceof Label
+                        vb.dispose();
+                        sideBarChanged = true;
                     }
-                //}
+                }
                 // Close all panels
                 for (CTabItem tabItem : resultTabs.getItems()) {
                     if (tabItem.getData() instanceof SQLEditorPresentationPanel) {
                         tabItem.dispose();
                     }
                 }
-                extraPresentationCurrentPanel = null;
-            } else {
+                extraPresentationManager.activePresentationPanel = null;
+            }
+
+            if (extraPresentationManager.activePresentation != null) {
                 // Check and add presentation panel toggles
-                UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
-                for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
+                final List<SQLPresentationPanelDescriptor> panels = extraPresentationManager.activePresentationDescriptor.getPanels();
+                for (SQLPresentationPanelDescriptor panelDescriptor : panels) {
                     removeToggleLayoutButton();
                     sideBarChanged = true;
                     PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
@@ -1907,9 +1864,13 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
 
-            boolean isExtra = getExtraPresentationState() == SQLEditorPresentation.ActivationType.MAXIMIZED;
-            switchPresentationSQLButton.setChecked(!isExtra);
-            switchPresentationExtraButton.setChecked(isExtra);
+            switchPresentationSQLButton.setChecked(presentation == null);
+
+            for (VerticalButton button : switchPresentationExtraButtons) {
+                button.setChecked(presentation != null && button.getData() == presentation);
+            }
+
+            presentationSwitchFolder.layout(true);
             presentationSwitchFolder.redraw();
 
             if (sideBarChanged) {
@@ -1935,10 +1896,6 @@ public class SQLEditor extends SQLEditorBase implements
                 vButton.dispose();
             }
         }
-    }
-
-    private Control getExtraPresentationControl() {
-        return presentationStack == null ? null : presentationStack.getChildren()[EXTRA_CONTROL_INDEX];
     }
 
     public void toggleResultPanel(boolean switchFocus, boolean createQueryProcessor) {
@@ -2040,7 +1997,7 @@ public class SQLEditor extends SQLEditorBase implements
                 resultsSash.setMaximizedControl(null);
             }
             setChecked(!isChecked());
-            SQLEditorPresentationPanel panelInstance = extraPresentationPanels.get(panel);
+            SQLEditorPresentationPanel panelInstance = extraPresentationManager.panels.get(panel);
             if (panelInstance != null && !isChecked()) {
                 // Hide panel
                 for (CTabItem tabItem : resultTabs.getItems()) {
@@ -2054,12 +2011,12 @@ public class SQLEditor extends SQLEditorBase implements
                 Control panelControl;
                 try {
                     panelInstance = panel.createPanel();
-                    panelControl = panelInstance.createPanel(resultTabs, SQLEditor.this, extraPresentation);
+                    panelControl = panelInstance.createPanel(resultTabs, SQLEditor.this, extraPresentationManager.activePresentation);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Panel opening error", "Can't create panel " + panel.getLabel(), e);
                     return;
                 }
-                extraPresentationPanels.put(panel, panelInstance);
+                extraPresentationManager.panels.put(panel, panelInstance);
                 tabItem = new CTabItem(resultTabs, SWT.CLOSE);
                 tabItem.setControl(panelControl);
                 tabItem.setText(panel.getLabel());
@@ -2071,11 +2028,11 @@ public class SQLEditor extends SQLEditorBase implements
                 tabItem.addDisposeListener(e -> {
                     PresentationPanelToggleAction.this.setChecked(false);
                     panelControl.dispose();
-                    extraPresentationPanels.remove(panel);
-                    extraPresentationCurrentPanel = null;
+                    extraPresentationManager.panels.remove(panel);
+                    extraPresentationManager.activePresentationPanel = null;
                     resultTabDisposeListener.widgetDisposed(e);
                 });
-                extraPresentationCurrentPanel = panelInstance;
+                extraPresentationManager.activePresentationPanel = panelInstance;
                 setResultTabSelection(tabItem);
             } else {
                 for (CTabItem tabItem : resultTabs.getItems()) {
@@ -2997,10 +2954,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void dispose() {
-        if (extraPresentation != null) {
-            extraPresentation.dispose();
-            extraPresentation = null;
-        }
+        extraPresentationManager.dispose();
+
         // Release ds container
         releaseContainer();
         closeAllJobs();
@@ -3029,7 +2984,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         super.dispose();
 
-        if (sqlFile != null && !PlatformUI.getWorkbench().isClosing()) {
+        if (sqlFile != null && !PlatformUI.getWorkbench().isClosing() && !DBWorkbench.isDistributed()) {
             deleteFileIfEmpty(sqlFile);
         }
 
@@ -3151,8 +3106,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (extraPresentation instanceof ISaveablePart) {
-            ((ISaveablePart) extraPresentation).doSave(monitor);
+        if (extraPresentationManager.activePresentation instanceof ISaveablePart) {
+            ((ISaveablePart) extraPresentationManager.activePresentation).doSave(monitor);
         }
         super.doSave(monitor);
 
@@ -3232,7 +3187,7 @@ public class SQLEditor extends SQLEditorBase implements
             return ISaveablePart2.YES;
         }
 
-        if (super.isDirty() || (extraPresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentation).isDirty())) {
+        if (super.isDirty() || (extraPresentationManager.activePresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentationManager.activePresentation).isDirty())) {
             return ISaveablePart2.DEFAULT;
         }
         return ISaveablePart2.YES;
@@ -4918,9 +4873,9 @@ public class SQLEditor extends SQLEditorBase implements
         private boolean lastFocusInEditor = true;
         @Override
         public ISelectionProvider getProvider() {
-            if (extraPresentation != null && getExtraPresentationState() == SQLEditorPresentation.ActivationType.VISIBLE) {
-                if (getExtraPresentationControl().isFocusControl()) {
-                    ISelectionProvider selectionProvider = extraPresentation.getSelectionProvider();
+            if (extraPresentationManager.activePresentation != null) {
+                if (extraPresentationManager.getActivePresentationControl().isFocusControl()) {
+                    ISelectionProvider selectionProvider = extraPresentationManager.activePresentation.getSelectionProvider();
                     if (selectionProvider != null) {
                         return selectionProvider;
                     }
@@ -5007,6 +4962,84 @@ public class SQLEditor extends SQLEditorBase implements
                 viewItem.setImage(image);
             }
 */
+        }
+    }
+
+    private class ExtraPresentationManager {
+        private final Map<SQLPresentationDescriptor, SQLEditorPresentation> presentations = new LinkedHashMap<>();
+        private final Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> panels = new HashMap<>();
+        private final Map<SQLPresentationDescriptor, Integer> presentationStackIndices = new HashMap<>();
+
+        private SQLPresentationDescriptor activePresentationDescriptor;
+        private SQLEditorPresentation activePresentation;
+        private SQLEditorPresentationPanel activePresentationPanel;
+
+        public ExtraPresentationManager() {
+            for (SQLPresentationDescriptor presentation : SQLPresentationRegistry.getInstance().getPresentations()) {
+                presentations.put(presentation, null);
+
+                for (SQLPresentationPanelDescriptor panel : presentation.getPanels()) {
+                    panels.put(panel, null);
+                }
+            }
+        }
+
+        public void setActivePresentation(@Nullable SQLPresentationDescriptor descriptor) throws DBException {
+            if (presentationStack == null || activePresentationDescriptor == descriptor) {
+                return;
+            }
+
+            if (activePresentation != null && !activePresentation.hidePresentation(SQLEditor.this)) {
+                return;
+            }
+
+            if (descriptor != null) {
+                activePresentationDescriptor = descriptor;
+                activePresentation = presentations.get(descriptor);
+
+                if (activePresentation == null) {
+                    presentationStackIndices.put(descriptor, presentationStack.getChildren().length);
+
+                    final Composite placeholder = new Composite(presentationStack, SWT.NONE);
+                    placeholder.setLayout(new FillLayout());
+
+                    activePresentation = descriptor.createPresentation();
+                    activePresentation.createPresentation(placeholder, SQLEditor.this);
+                    activePresentation.showPresentation(SQLEditor.this, true);
+
+                    presentations.put(descriptor, activePresentation);
+                } else {
+                    activePresentation.showPresentation(SQLEditor.this, false);
+                }
+            } else {
+                activePresentationDescriptor = null;
+                activePresentation = null;
+                activePresentationPanel = null;
+            }
+        }
+
+        @Nullable
+        private Control getActivePresentationControl() {
+            if (presentationStack == null || activePresentationDescriptor == null) {
+                return null;
+            }
+            final int index = presentationStackIndices.get(activePresentationDescriptor);
+            return presentationStack.getChildren()[index];
+        }
+
+        public void dispose() {
+            activePresentationDescriptor = null;
+            activePresentation = null;
+            activePresentationPanel = null;
+
+            for (SQLEditorPresentation presentation : presentations.values()) {
+                if (presentation != null) {
+                    presentation.dispose();
+                }
+            }
+
+            presentations.clear();
+            panels.clear();
         }
     }
 

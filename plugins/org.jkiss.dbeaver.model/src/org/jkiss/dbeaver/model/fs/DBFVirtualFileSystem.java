@@ -44,6 +44,9 @@ public interface DBFVirtualFileSystem {
     String getId();
 
     @NotNull
+    String getProviderId();
+
+    @NotNull
     DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
 
     @NotNull

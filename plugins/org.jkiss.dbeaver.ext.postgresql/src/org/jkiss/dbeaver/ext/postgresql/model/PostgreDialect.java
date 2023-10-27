@@ -240,7 +240,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         //"USER_DEFINED_TYPE_CATALOG",
         //"USER_DEFINED_TYPE_CODE",
         //"USER_DEFINED_TYPE_NAME",
-        //"USER_DEFINED_TYPE_SCHEMA",
+        //"USER_DEFINED_TYPE_SCHEMA",        
         //"VALUE",
         //"VALUE_OF",
         "VERSIONING",
@@ -257,6 +257,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "XMLVALIDATE",
         "SQLERRM",
         "WHILE"
+    };
+    
+    public static String[] POSTGRE_EXTRA_TYPES = new String[]{
+        "UUID",
     };
 
     public static String[] POSTGRE_ONE_CHAR_KEYWORDS = new String[]{
@@ -676,7 +680,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     public void addExtraFunctions(String... functions) {
         super.addFunctions(Arrays.asList(functions));
     }
-
+    
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
 
@@ -923,6 +927,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
         super.loadDataTypesFromDatabase(dataSource);
         addDataTypes(PostgreConstants.DATA_TYPE_ALIASES.keySet());
+        addDataTypes(Arrays.asList(POSTGRE_EXTRA_TYPES));
     }
 
     @NotNull

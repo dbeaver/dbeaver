@@ -120,7 +120,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             }
 
             DBPProject project = getWizard().getProject();
-            boolean showLocalFS = !DBWorkbench.isDistributed();
+            boolean showLocalFS = true;//!DBWorkbench.isDistributed();
             boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
 
             UIUtils.setControlContextMenu(filesTable, manager -> {
@@ -454,7 +454,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             filesTable.select(selectionIndex);
             if (firstTime) {
                 if (pipe.getProducer() instanceof StreamTransferProducer stp && stp.getInputFile() == null) {
-                    UIUtils.asyncExec(() -> chooseSourceFile(pipe, DBWorkbench.isDistributed()));
+                    UIUtils.asyncExec(() -> chooseSourceFile(pipe, DBWorkbench.isDistributed() && getWizard().getCurrentTask() != null));
                 }
             }
         }

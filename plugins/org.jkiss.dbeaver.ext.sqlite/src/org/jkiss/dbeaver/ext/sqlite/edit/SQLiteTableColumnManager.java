@@ -52,7 +52,7 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
         GenericTableColumn column, Map<String, Object> options
     ) {
         return new ColumnModifier[]{
-            DataTypeModifier, sqliteDefaultModifier
+            DataTypeModifier, sqliteDefaultModifier, NotNullModifier
         };
     }
 

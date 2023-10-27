@@ -58,6 +58,8 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.resources"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(PrefPageSQLResources.class);
+    
+    private final boolean isStandaloneApp;
 
     private Combo deleteEmptyCombo;
     private Button autoFoldersCheck;
@@ -75,9 +77,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private Button sqlTemplateEnabledCheckbox;
     private SQLEditorBase sqlTemplateViewer;
 
-    public PrefPageSQLResources()
-    {
+    public PrefPageSQLResources() {
         super();
+        isStandaloneApp = !DBWorkbench.isDistributed();
     }
 
     @NotNull
@@ -90,12 +92,14 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
 
-            deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (SQLPreferenceConstants.EmptyScriptCloseBehavior escb : SQLPreferenceConstants.EmptyScriptCloseBehavior.values()) {
-                deleteEmptyCombo.add(escb.getTitle());
+            if (this.isStandaloneApp) {
+                deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
+                for (SQLPreferenceConstants.EmptyScriptCloseBehavior escb : SQLPreferenceConstants.EmptyScriptCloseBehavior.values()) {
+                    deleteEmptyCombo.add(escb.getTitle());
+                }
+                deleteEmptyCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                deleteEmptyCombo.select(0);
             }
-            deleteEmptyCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            deleteEmptyCombo.select(0);
             autoFoldersCheck = UIUtils.createCheckbox(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_put_new_scripts,
@@ -258,8 +262,10 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private void setSettings(@NotNull DBPPreferenceStore store) {
         setScriptBindingTypes(SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE)));
         enableCommentType();
-        UIUtils.setComboSelection(deleteEmptyCombo, SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
-            store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
+        if (this.isStandaloneApp) {
+            UIUtils.setComboSelection(deleteEmptyCombo, SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
+                    store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
+        }
         setSQLTemplateText(SQLEditorUtils.getNewScriptTemplate(store), false);
         UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());
     }
@@ -284,7 +290,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         setScriptBindingTypes(SQLScriptBindingType.NAME);
         enableCommentType();
 
-        deleteEmptyCombo.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY));
+        if (this.isStandaloneApp) {
+            deleteEmptyCombo.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY));
+        }
         autoFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
         connectionFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
         scriptTitlePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
@@ -329,8 +337,10 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             log.error(e);
         }
 
-        store.setValue(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY,
-            SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
+        if (this.isStandaloneApp) {
+            store.setValue(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY,
+                SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
+        }
         store.setValue(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
