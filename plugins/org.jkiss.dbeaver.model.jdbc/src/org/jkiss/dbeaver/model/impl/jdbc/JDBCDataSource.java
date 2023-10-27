@@ -140,7 +140,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
                     final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
 
-                    if (substitutedProperties != null && connectProps != null) {
+                    if (substitutedProperties != null) {
                         connectProps.putAll(substitutedProperties);
                     }
 
@@ -208,14 +208,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
 
             JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
-                monitor,
                 driver,
                 driverInstance,
                 url,
-                connectionInfo,
                 connectProps,
-                authResult,
-                connectionConfigurer
+                authResult
             );
 
             boolean openTaskFinished;
@@ -228,6 +225,19 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 }
             } finally {
                 authModel.endAuthentication(container, connectionInfo, connectProps);
+
+                if (connectionConfigurer != null) {
+                    try {
+                        connectionConfigurer.afterConnection(
+                            monitor,
+                            connectionInfo,
+                            connectProps,
+                            connectTask.getConnection(),
+                            connectTask.getError());
+                    } catch (Exception e) {
+                        log.debug(e);
+                    }
+                }
             }
 
             if (connectTask.getError() != null) {
@@ -300,6 +310,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
+    @NotNull
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
@@ -468,9 +479,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
             readDatabaseServerVersion(metaData);
 
-            if (this.sqlDialect instanceof JDBCSQLDialect) {
+            if (this.sqlDialect instanceof JDBCSQLDialect sqlDialect) {
                 try {
-                    ((JDBCSQLDialect) this.sqlDialect).initDriverSettings(session, this, metaData);
+                    sqlDialect.initDriverSettings(session, this, metaData);
                 } catch (Throwable e) {
                     log.error("Error initializing dialect driver settings", e);
                 }
@@ -671,21 +682,21 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @NotNull
     protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
-        switch (dataKind) {
-            case BOOLEAN: return "BOOLEAN";
-            case NUMERIC: return "NUMERIC";
-            case STRING: return "VARCHAR";
-            case DATETIME: return "TIMESTAMP";
-            case BINARY: return "BLOB";
-            case CONTENT: return "BLOB";
-            case STRUCT: return "VARCHAR";
-            case ARRAY: return "VARCHAR";
-            case OBJECT: return "VARCHAR";
-            case REFERENCE: return "VARCHAR";
-            case ROWID: return "ROWID";
-            case ANY: return "VARCHAR";
-            default: return "VARCHAR";
-        }
+        return switch (dataKind) {
+            case BOOLEAN -> "BOOLEAN";
+            case NUMERIC -> "NUMERIC";
+            case STRING -> "VARCHAR";
+            case DATETIME -> "TIMESTAMP";
+            case BINARY -> "BLOB";
+            case CONTENT -> "BLOB";
+            case STRUCT -> "VARCHAR";
+            case ARRAY -> "VARCHAR";
+            case OBJECT -> "VARCHAR";
+            case REFERENCE -> "VARCHAR";
+            case ROWID -> "ROWID";
+            case ANY -> "VARCHAR";
+            default -> "VARCHAR";
+        };
     }
 
     /////////////////////////////////////////////////
@@ -765,7 +776,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @Nullable
     @Override
-    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
+    public ErrorPosition[] getErrorPosition(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext context,
+        @NotNull String query,
+        @NotNull Throwable error
+    ) {
         return null;
     }
 

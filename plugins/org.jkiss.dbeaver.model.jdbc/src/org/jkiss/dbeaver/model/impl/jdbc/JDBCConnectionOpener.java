@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAAuthSubjectCredentials;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -35,45 +33,35 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 class JDBCConnectionOpener implements DBRRunnableWithProgress, PrivilegedExceptionAction<Connection> {
-    private static final Log log = Log.getLog(JDBCConnectionOpener.class);
+    //private static final Log log = Log.getLog(JDBCConnectionOpener.class);
 
     private final DBPDriver driver;
     private final Driver driverInstance;
     private final String url;
     private final Properties connectProps;
     private final Object authResult;
-    private final JDBCConnectionConfigurer connectionConfigurer;
-    private final DBRProgressMonitor monitor;
-    private final DBPConnectionConfiguration connectionInfo;
-
     private Connection connection;
-    private Exception error;
+    private Throwable error;
 
     public JDBCConnectionOpener(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
         @Nullable Driver driverInstance,
         @NotNull String url,
-        @NotNull DBPConnectionConfiguration connectionInfo,
         @NotNull Properties connectProps,
-        @Nullable Object authResult,
-        @Nullable JDBCConnectionConfigurer connectionConfigurer
+        @Nullable Object authResult
     ) {
         this.driver = driver;
         this.driverInstance = driverInstance;
         this.url = url;
         this.connectProps = connectProps;
         this.authResult = authResult;
-        this.connectionConfigurer = connectionConfigurer;
-        this.monitor = monitor;
-        this.connectionInfo = connectionInfo;
     }
 
     public Connection getConnection() {
         return connection;
     }
 
-    public Exception getError() {
+    public Throwable getError() {
         return error;
     }
 
@@ -95,16 +83,8 @@ class JDBCConnectionOpener implements DBRRunnableWithProgress, PrivilegedExcepti
                 jdbcConnection = this.run();
             }
             connection = jdbcConnection;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             error = e;
-        } finally {
-            if (connectionConfigurer != null) {
-                try {
-                    connectionConfigurer.afterConnection(monitor, connectionInfo, connectProps, connection, error);
-                } catch (Exception e) {
-                    log.debug(e);
-                }
-            }
         }
     }
 
