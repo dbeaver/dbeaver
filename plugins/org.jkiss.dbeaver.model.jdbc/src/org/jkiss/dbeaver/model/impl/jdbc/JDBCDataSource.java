@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
-import org.jkiss.dbeaver.model.access.DBAAuthSubjectCredentials;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -37,7 +36,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -52,12 +50,10 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import javax.security.auth.Subject;
 import java.io.IOException;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.PrivilegedExceptionAction;
 import java.sql.*;
 import java.util.*;
 
@@ -174,8 +170,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
             boolean isInvalidURL = false;
 
             monitor.subTask("Connecting " + purpose);
-            Connection[] connection = new Connection[1];
-            Exception[] error = new Exception[1];
             int openTimeout = container.getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
 
             // Init authentication first (it may affect driver properties or driver configuration or even driver libraries)
@@ -201,26 +195,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
 
-            // It MUST be a JDBC driver
-            Driver driverInstance = null;
-            if (driver.isInstantiable() && !CommonUtils.isEmpty(driver.getDriverClassName())) {
-                try {
-                    driverInstance = getDriverInstance(monitor);
-                } catch (DBException e) {
-                    e.printStackTrace();
-                    throw new DBCConnectException("Can't create driver instance", e, this);
-                }
-            } else {
-                if (!CommonUtils.isEmpty(driver.getDriverClassName())) {
-                    try {
-                        driver.loadDriver(monitor);
-                        Class.forName(driver.getDriverClassName(), true, driver.getClassLoader());
-                    } catch (Exception e) {
-                        throw new DBCException("Driver class '" + driver.getDriverClassName() + "' not found", e);
-                    }
-                }
-            }
-
+            Driver driverInstance = createDriverInstance(monitor, driver);
             if (driverInstance != null) {
                 try {
                     if (!driverInstance.acceptsURL(url)) {
@@ -231,46 +206,17 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
                 }
             }
-            final Driver driverInstanceFinal = driverInstance;
-            final String urlFinal = url;
-            final Properties connectPropsFinal = connectProps;
 
-            DBRRunnableWithProgress connectTask = monitor1 -> {
-                try {
-                    // Use PrivilegedAction in case we have explicit subject
-                    // Otherwise just open connection directly
-                    PrivilegedExceptionAction<Connection> pa = () -> {
-                        if (driverInstanceFinal == null) {
-                            return DriverManager.getConnection(urlFinal, connectPropsFinal);
-                        } else {
-                            return driverInstanceFinal.connect(urlFinal, connectPropsFinal);
-                        }
-                    };
-                    Connection jdbcConnection = null;
-                    boolean connected = false;
-                    if (authResult instanceof DBAAuthSubjectCredentials) {
-                        Subject authSubject = ((DBAAuthSubjectCredentials) authResult).getAuthSubject();
-                        if (authSubject != null) {
-                            jdbcConnection = Subject.doAs(authSubject, pa);
-                            connected = true;
-                        }
-                    }
-                    if (!connected) {
-                        jdbcConnection = pa.run();
-                    }
-                    connection[0] = jdbcConnection;
-                } catch (Exception e) {
-                    error[0] = e;
-                } finally {
-                    if (connectionConfigurer != null) {
-                        try {
-                            connectionConfigurer.afterConnection(monitor, connectionInfo, connectPropsFinal, connection[0], error[0]);
-                        } catch (Exception e) {
-                            log.debug(e);
-                        }
-                    }
-                }
-            };
+            JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
+                monitor,
+                driver,
+                driverInstance,
+                url,
+                connectionInfo,
+                connectProps,
+                authResult,
+                connectionConfigurer
+            );
 
             boolean openTaskFinished;
             try {
@@ -284,13 +230,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 authModel.endAuthentication(container, connectionInfo, connectProps);
             }
 
-            if (error[0] != null) {
-                throw error[0];
+            if (connectTask.getError() != null) {
+                throw connectTask.getError();
             }
             if (!openTaskFinished) {
                 throw new DBCException("Connection has timed out");
             }
-            if (connection[0] == null) {
+            if (connectTask.getConnection() == null) {
                 if (isInvalidURL) {
                     throw new DBCException("Invalid JDBC URL: " + url);
                 } else {
@@ -300,10 +246,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
             // Set read-only flag
             if (container.isConnectionReadOnly() && !isConnectionReadOnlyBroken()) {
-                connection[0].setReadOnly(true);
+                connectTask.getConnection().setReadOnly(true);
             }
 
-            return connection[0];
+            return connectTask.getConnection();
         }
         catch (SQLException ex) {
             throw new DBCConnectException(ex.getMessage(), ex, this);
@@ -314,6 +260,30 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    @Nullable
+    private Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBCException {
+        // It MUST be a JDBC driver
+        Driver driverInstance = null;
+        String driverClassName = driver.getDriverClassName();
+        if (driver.isInstantiable() && !CommonUtils.isEmpty(driverClassName)) {
+            try {
+                driverInstance = getDriverInstance(monitor);
+            } catch (DBException e) {
+                throw new DBCConnectException("Can't create driver instance", e, this);
+            }
+        } else {
+            if (!CommonUtils.isEmpty(driverClassName)) {
+                try {
+                    driver.loadDriver(monitor);
+                    Class.forName(driverClassName, true, driver.getClassLoader());
+                } catch (Exception e) {
+                    throw new DBCException("Driver class '" + driverClassName + "' not found", e);
+                }
+            }
+        }
+        return driverInstance;
     }
 
     protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
@@ -847,4 +817,5 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
         this.tempFiles.add(file);
     }
+
 }
