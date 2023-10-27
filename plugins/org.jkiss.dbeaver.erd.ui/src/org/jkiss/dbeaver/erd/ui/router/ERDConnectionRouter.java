@@ -18,8 +18,16 @@ package org.jkiss.dbeaver.erd.ui.router;
 
 import org.eclipse.draw2d.IFigure;
 
+/**
+ * Generic interface designed to set container for particular router
+ */
 public interface ERDConnectionRouter {
 
+    /**
+     * Set container
+     *
+     * @param figure - container
+     */
     void setContainer(IFigure figure);
 
 }

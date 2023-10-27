@@ -26,7 +26,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.ui.router.mikkami.OrthogonalPath.Direction;
 import org.jkiss.utils.Pair;
 
 import java.util.*;

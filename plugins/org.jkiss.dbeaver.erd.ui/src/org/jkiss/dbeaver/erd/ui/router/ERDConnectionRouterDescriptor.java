@@ -33,7 +33,6 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     private boolean isDefault = false;
     private boolean isEnableAttributeAssociation;
     private AbstractRouter router;
-    private PolylineConnection connection;
     private ObjectType lazyRouter;
     private ObjectType lazyConnection;
 
@@ -89,6 +88,7 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
      * Create contributed connection type
      */
     public PolylineConnection createRouterConnectionInstance() {
+        PolylineConnection connection = null;
         try {
             connection = lazyConnection.createInstance(PolylineConnection.class);
         } catch (DBException e) {

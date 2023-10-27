@@ -251,7 +251,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
         ERDConnectionRouterRegistry connectionRegistry = ERDConnectionRouterRegistry.getInstance();
         ERDConnectionRouterDescriptor connectionRouter = connectionRegistry.getConnectionRouter(routingType.getText());
-        if(connectionRouter!=null) {
+        if (connectionRouter != null) {
             store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, connectionRouter.getId());
         }
         ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getERDNotationByName(notationType.getText());
