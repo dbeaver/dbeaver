@@ -109,4 +109,5 @@ public class CubridConstants {
 
     public static final String BASE_CONSTRAINT_NAME = "new_key";
 
+    public static final String OWNER_QUERY = "select name from db_user";
 }

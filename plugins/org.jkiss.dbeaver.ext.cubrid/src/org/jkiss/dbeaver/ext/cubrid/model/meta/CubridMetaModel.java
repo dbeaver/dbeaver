@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -897,6 +898,21 @@ public class CubridMetaModel {
 
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull CubridTrigger trigger) throws DBException {
         return "-- Source code not available";
+    }
+    
+    // User
+    public CubridUser createCubridUserImpl(CubridStructContainer container, String name, String comment)
+    {
+        return new CubridUser(container,name, comment);
+    }
+
+    public JDBCStatement prepareCubridUserLoadStatement(@NotNull JDBCSession session, @NotNull CubridStructContainer container) 
+    		throws SQLException 
+    {
+    	String sql= "select * from db_user";
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+
+        return dbStat;
     }
 
     // Comments

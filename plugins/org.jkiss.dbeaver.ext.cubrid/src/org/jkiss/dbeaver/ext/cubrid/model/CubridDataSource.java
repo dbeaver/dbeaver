@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -79,6 +80,8 @@ public class CubridDataSource extends JDBCDataSource implements DBPTermProvider,
     private boolean supportsStructCache;
     private DBCQueryPlanner queryPlanner;
     private Format nativeFormatTimestamp, nativeFormatTime, nativeFormatDate;
+    private ArrayList<CubridUser> owners;
+
 
     public CubridDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull CubridMetaModel metaModel, @NotNull SQLDialect dialect)
         throws DBException {
@@ -210,6 +213,10 @@ public class CubridDataSource extends JDBCDataSource implements DBPTermProvider,
         }
     }
 
+    public Collection<CubridUser> getOwners() {
+    	return owners;
+    }
+    
     public String getAllObjectsPattern() {
         return allObjectsPattern;
     }
@@ -486,6 +493,11 @@ public class CubridDataSource extends JDBCDataSource implements DBPTermProvider,
     public Collection<? extends CubridTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getTableTriggers(monitor);
     }
+    
+    @Override
+    public Collection<? extends CubridUser> getCubridUsers(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getCubridUsers(monitor);
+    }
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -555,6 +567,20 @@ public class CubridDataSource extends JDBCDataSource implements DBPTermProvider,
             }
             throw new DBException("Error reading metadata", ex, this);
         }
+        
+        owners = new ArrayList<CubridUser>();
+	    try (JDBCSession session = DBUtils.openMetaSession(monitor, structureContainer, allObjectsPattern)) {
+		    String sql = CubridConstants.OWNER_QUERY;
+			JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+			ResultSet rs = dbStat.executeQuery();
+			while(rs.next()) {
+				CubridUser owner = new CubridUser(rs.getString("name"));
+	        	owners.add(owner);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     public List<String> getCatalogsNames(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData, CubridMetaObject catalogObject, @Nullable DBSObjectFilter catalogFilters) throws DBException {
