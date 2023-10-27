@@ -30,6 +30,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodySubscribers;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -157,13 +158,17 @@ public class RestClient {
                     info -> BodySubscribers.ofString(StandardCharsets.UTF_8);
                 String requestString = gson.toJson(values);
 
-                HttpRequest httpRequest = HttpRequest.newBuilder()
+                final HttpRequest.Builder builder = HttpRequest.newBuilder()
                     .uri(URI.create(url.toString()))
                     .header("Content-Type", "application/json")
-                    .POST(BodyPublishers.ofString(requestString))
-                    .build();
+                    .POST(BodyPublishers.ofString(requestString));
+
+                if (mapping.timeout() > 0) {
+                    builder.timeout(Duration.ofSeconds(mapping.timeout()));
+                }
+
                 final HttpResponse<String> response = client.send(
-                    httpRequest,
+                    builder.build(),
                     readerBodyHandler
                 );
 
