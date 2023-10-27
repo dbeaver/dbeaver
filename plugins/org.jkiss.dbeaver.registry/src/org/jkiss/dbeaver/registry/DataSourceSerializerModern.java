@@ -840,23 +840,25 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     private void deserializeModifyPermissions(Map<String, Object> conObject, DBPDataSourcePermissionOwner permissionOwner) {
-        Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
-        if (!CommonUtils.isEmpty(securityCfg)) {
-            List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
-            if (!CommonUtils.isEmpty(permissionRestrictions)) {
-                List<DBPDataSourcePermission> permissions = new ArrayList<>();
-                for (String perm : permissionRestrictions) {
-                    try {
-                        DBPDataSourcePermission permission = DBPDataSourcePermission.getById(perm);
-                        if (permission != null) {
-                            permissions.add(permission);
+        if (conObject != null) {
+            Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
+            if (!CommonUtils.isEmpty(securityCfg)) {
+                List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
+                if (!CommonUtils.isEmpty(permissionRestrictions)) {
+                    List<DBPDataSourcePermission> permissions = new ArrayList<>();
+                    for (String perm : permissionRestrictions) {
+                        try {
+                            DBPDataSourcePermission permission = DBPDataSourcePermission.getById(perm);
+                            if (permission != null) {
+                                permissions.add(permission);
+                            }
+                        } catch (IllegalArgumentException e) {
+                            log.debug(e);
                         }
-                    } catch (IllegalArgumentException e) {
-                        log.debug(e);
                     }
-                }
-                if (!permissions.isEmpty()) {
-                    permissionOwner.setModifyPermissions(permissions);
+                    if (!permissions.isEmpty()) {
+                        permissionOwner.setModifyPermissions(permissions);
+                    }
                 }
             }
         }
