@@ -25,7 +25,7 @@
             class="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             id="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             namespace="org.jkiss.dbeaver.task"
-            properties="scheduled,editable"
+            properties="scheduled,editable,canOpenSchedulerSettings"
             type="org.jkiss.dbeaver.model.task.DBTTask"/>
     </extension>
 
