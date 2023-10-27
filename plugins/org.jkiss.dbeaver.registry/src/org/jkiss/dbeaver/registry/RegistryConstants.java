@@ -234,5 +234,9 @@ public class RegistryConstants {
     public static final String ATTR_DEPRECATED = "deprecated";
     public static final String ATTR_IS_DEFAULT = "isDefault"; // $NON-NLS-N$
     public static final String ATTR_NOTATION = "notation"; // $NON-NLS-N$
+    
+    public static final String ATTR_SUPPORT_ATTRIBUTES_ASSOCIATION = "supportAttributesAssociation"; //$NON-NLS-1$
+    public static final String ATTR_ROUTER = "router"; //$NON-NLS-1$
+    public static final String ATTR_CONNECTION = "connection"; //$NON-NLS-1$
 
 }

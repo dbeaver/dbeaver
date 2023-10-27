@@ -620,18 +620,19 @@
     <extension
           point="org.jkiss.dbeaver.erd.ui.routing">
        <erdConnectionRouter
-             connection="org.eclipse.draw2d.PolylineConnection"
              id="org.jkiss.dbeaver.erd.router.mikammi"
              name="Mikami-Tabuchi (Experimental)"
-             router="org.jkiss.dbeaver.erd.ui.router.MikamiTabuchiConnectionRouter">
+             connection="org.eclipse.draw2d.PolylineConnection"
+             router="org.jkiss.dbeaver.erd.ui.router.mikkami.MikamiTabuchiConnectionRouter"
+             supportAttributesAssociation="true">
        </erdConnectionRouter>
        <erdConnectionRouter
-             connection="org.eclipse.draw2d.PolylineConnection"
-             description="Router based on shortest pathes"
              id="org.jkiss.dbeaver.erd.router.shortest.path"
-             isDefault="true"
              name="Shortest paths"
-             router="org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting">
+             description="Router based on shortest pathes"
+             router="org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting"
+             connection="org.eclipse.draw2d.PolylineConnection"
+             isDefault="true">
        </erdConnectionRouter>
     </extension>
 

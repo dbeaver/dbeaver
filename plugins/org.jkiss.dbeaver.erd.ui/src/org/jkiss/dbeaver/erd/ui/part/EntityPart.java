@@ -309,7 +309,8 @@ public class EntityPart extends NodePart {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        return !connectionRouterDescriptor.isDefault() && !ERDAttributeVisibility.isHideAttributeAssociations(store);
+        return connectionRouterDescriptor.supportedAttributeAssociation()
+            && !ERDAttributeVisibility.isHideAttributeAssociations(store);
     }
 
     @Override
@@ -317,7 +318,8 @@ public class EntityPart extends NodePart {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!connectionRouterDescriptor.supportedAttributeAssociation()
+            || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelTargetConnections();
         }
         List<ERDAssociation> list = new ArrayList<>();

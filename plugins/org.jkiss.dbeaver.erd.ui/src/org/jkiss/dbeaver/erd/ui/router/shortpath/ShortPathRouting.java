@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.erd.ui.router;
+package org.jkiss.dbeaver.erd.ui.router.shortpath;
 
 import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.Bendpoint;
@@ -29,6 +29,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.Path;
 import org.eclipse.draw2d.graph.ShortestPathRouter;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class OrthogonalShortPathRouting extends AbstractRouter implements ERDConnectionRouter {
+public class ShortPathRouting extends AbstractRouter implements ERDConnectionRouter {
 
     private double indentation = 30.0;
     private static final int RIGHT = 180;
@@ -53,6 +54,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter implements ERDCon
     private IFigure container;
     private final Set<Connection> staleConnections = new HashSet<>();
     private final LayoutListener listener = new LayoutTracker();
+    private boolean ignoreInvalidate;
 
     private final FigureListener figureListener = source -> {
         Rectangle newBounds = source.getBounds().getCopy();
@@ -63,7 +65,6 @@ public class OrthogonalShortPathRouting extends AbstractRouter implements ERDCon
 
         figuresToBounds.put(source, newBounds);
     };
-    private boolean ignoreInvalidate;
 
     void addChild(IFigure child) {
         if (connectionToPaths == null) {

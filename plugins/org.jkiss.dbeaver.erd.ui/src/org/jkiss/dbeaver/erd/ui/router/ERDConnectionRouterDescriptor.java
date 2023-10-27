@@ -24,12 +24,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     private String id;
     private String name;
     private String description;
     private boolean isDefault = false;
+    private boolean isEnableAttributeAssociation;
     private AbstractRouter router;
     private PolylineConnection connection;
     private ObjectType lazyRouter;
@@ -43,8 +45,9 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
         this.name = cf.getAttribute(RegistryConstants.ATTR_NAME);
         this.description = cf.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.isDefault = Boolean.valueOf(cf.getAttribute(RegistryConstants.ATTR_IS_DEFAULT));
-        this.lazyRouter = new ObjectType(cf.getAttribute("router")); //$NON-NLS-1$
-        this.lazyConnection = new ObjectType(cf.getAttribute("connection")); //$NON-NLS-1$
+        this.isEnableAttributeAssociation = CommonUtils.toBoolean(cf.getAttribute(RegistryConstants.ATTR_SUPPORT_ATTRIBUTES_ASSOCIATION));
+        this.lazyRouter = new ObjectType(cf.getAttribute(RegistryConstants.ATTR_ROUTER)); //$NON-NLS-1$
+        this.lazyConnection = new ObjectType(cf.getAttribute(RegistryConstants.ATTR_CONNECTION)); //$NON-NLS-1$
     }
 
     /**
@@ -83,15 +86,13 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     }
 
     /**
-     * Get contributed connection type
+     * Create contributed connection type
      */
-    public PolylineConnection getRouterConnection() {
-        if (connection == null) {
-            try {
-                connection = lazyConnection.createInstance(PolylineConnection.class);
-            } catch (DBException e) {
-                log.error(e.getMessage());
-            }
+    public PolylineConnection createRouterConnectionInstance() {
+        try {
+            connection = lazyConnection.createInstance(PolylineConnection.class);
+        } catch (DBException e) {
+            log.error(e.getMessage());
         }
         return connection;
     }
@@ -102,4 +103,14 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     public boolean isDefault() {
         return isDefault;
     }
+
+    /**
+     * Get flag of supported attribute association
+     *
+     * @return - true if support attributes enabled
+     */
+    public boolean supportedAttributeAssociation() {
+        return isEnableAttributeAssociation;
+    }
+
 }

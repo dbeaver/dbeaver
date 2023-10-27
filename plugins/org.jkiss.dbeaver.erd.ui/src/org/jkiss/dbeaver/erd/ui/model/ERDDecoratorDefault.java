@@ -82,10 +82,10 @@ public class ERDDecoratorDefault implements ERDDecorator {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouter = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (connectionRouter.isDefault()) {
-            return new Insets(40, 40, 30, 30);
-        } else {
+        if (connectionRouter.supportedAttributeAssociation()) {
             return new Insets(50, 50, 50, 50);
+        } else {
+            return new Insets(40, 40, 30, 30);
         }
     }
 

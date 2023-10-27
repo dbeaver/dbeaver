@@ -14,7 +14,7 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    package org.jkiss.dbeaver.erd.ui.router;
+    package org.jkiss.dbeaver.erd.ui.router.mikkami;
 
 
     import org.eclipse.draw2d.*;
@@ -23,7 +23,8 @@
     import org.eclipse.draw2d.geometry.PointList;
     import org.eclipse.draw2d.geometry.PrecisionPoint;
     import org.eclipse.draw2d.geometry.Rectangle;
-    import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.ui.UIUtils;
     import org.jkiss.utils.CommonUtils;
 
     import java.util.*;

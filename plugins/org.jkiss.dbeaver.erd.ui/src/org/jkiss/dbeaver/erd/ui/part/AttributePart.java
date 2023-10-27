@@ -85,7 +85,7 @@ public class AttributePart extends NodePart {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!connectionRouterDescriptor.supportedAttributeAssociation() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
         if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
@@ -98,7 +98,7 @@ public class AttributePart extends NodePart {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!connectionRouterDescriptor.supportedAttributeAssociation() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
         List<ERDAssociation> list = new ArrayList<>();
@@ -115,7 +115,7 @@ public class AttributePart extends NodePart {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!connectionRouterDescriptor.supportedAttributeAssociation() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
         List<ERDAssociation> list = new ArrayList<>();
@@ -132,7 +132,7 @@ public class AttributePart extends NodePart {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
             .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (connectionRouterDescriptor.isDefault() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!connectionRouterDescriptor.supportedAttributeAssociation() || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
         if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
