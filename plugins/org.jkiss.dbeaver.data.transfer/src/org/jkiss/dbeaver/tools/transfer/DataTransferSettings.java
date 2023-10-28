@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskInfoCollector;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -794,4 +795,9 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     public DBPProject getProject() {
         return project;
     }
+
+    public static void collectTaskInfo(DBTTask task, DBTTaskInfoCollector.TaskInformation information) {
+
+    }
+
 }
