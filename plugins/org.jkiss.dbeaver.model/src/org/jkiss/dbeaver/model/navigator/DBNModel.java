@@ -327,12 +327,6 @@ public class DBNModel implements IResourceChangeListener {
             if (ArrayUtils.isEmpty(projects)) {
                 throw new DBException("No projects in workspace");
             }
-            if (projects.length > 1) {
-                boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
-                if (!multiNode) {
-                    throw new DBException("Multi-project workspace. Extension nodes not supported");
-                }
-            }
             var projectId = nodePath.first();
             DBNProject parentProjectNode = projectId == null
                 ? null
