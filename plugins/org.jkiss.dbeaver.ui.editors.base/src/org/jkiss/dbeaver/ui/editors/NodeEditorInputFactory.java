@@ -43,6 +43,7 @@ public class NodeEditorInputFactory implements IElementFactory {
         // Get the node path.
         final String nodePath = memento.getString(TAG_NODE);
         if (nodePath == null) {
+            log.debug("No node ID found in memento");
             return null;
         }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
@@ -51,6 +52,8 @@ public class NodeEditorInputFactory implements IElementFactory {
             final DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
             if (node != null) {
                 return new NodeEditorInput(node);
+            } else {
+                log.debug("Node not found by path '" + nodePath + "'");
             }
         } catch (DBException e) {
             log.error("Error opening node '" + nodePath + "'", e);
