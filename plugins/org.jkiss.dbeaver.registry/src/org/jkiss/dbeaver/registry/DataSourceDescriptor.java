@@ -1016,10 +1016,10 @@ public class DataSourceDescriptor
             // 1. Get credentials from origin
             boolean authProvidedFromOrigin = false;
             DBPDataSourceOrigin dsOrigin = getOrigin();
-            if (dsOrigin instanceof DBACredentialsProvider) {
+            if (dsOrigin instanceof DBACredentialsProvider cp) {
                 monitor.beginTask("Read auth parameters from " + dsOrigin.getDisplayName(), 1);
                 try {
-                    authProvidedFromOrigin = ((DBACredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                    authProvidedFromOrigin = cp.provideAuthParameters(monitor, this, resolvedConnectionInfo);
                 } finally {
                     monitor.done();
                 }
