@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -35,28 +38,37 @@ public interface DBTTaskInfoCollector {
         private final Set<String> ioLocations = new LinkedHashSet<>();
         private final Set<String> inetAddresses = new LinkedHashSet<>();
 
-        public Set<DBPDataSourceContainer> getDataSources() {
+        @NotNull
+        public Collection<DBPDataSourceContainer> getDataSources() {
             return dataSources;
         }
 
-        public Set<String> getIOLocations() {
+        @NotNull
+        public Collection<String> getIOLocations() {
             return ioLocations;
         }
 
-        public Set<String> getInetAddresses() {
+        @NotNull
+        public Collection<String> getInetAddresses() {
             return inetAddresses;
         }
 
-        public void addDataSource(DBPDataSourceContainer ds) {
-            dataSources.add(ds);
+        public void addDataSource(@Nullable DBPDataSourceContainer ds) {
+            if (ds != null) {
+                dataSources.add(ds);
+            }
         }
 
-        public void addLocation(String pathOrURI) {
-            ioLocations.add(pathOrURI);
+        public void addLocation(@Nullable String pathOrURI) {
+            if (!CommonUtils.isEmpty(pathOrURI)) {
+                ioLocations.add(pathOrURI);
+            }
         }
 
-        public void addInetAddress(String hostOrIp) {
-            inetAddresses.add(hostOrIp);
+        public void addInetAddress(@Nullable String hostOrIp) {
+            if (!CommonUtils.isEmpty(hostOrIp)) {
+                inetAddresses.add(hostOrIp);
+            }
         }
 
     }
