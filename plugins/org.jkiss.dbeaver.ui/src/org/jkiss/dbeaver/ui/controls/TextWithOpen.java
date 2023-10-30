@@ -143,10 +143,9 @@ public class TextWithOpen extends Composite {
             });
             TextWithOpen.this.text.addModifyListener(e -> {
                 String fileName = TextWithOpen.this.text.getText().trim();
-                DBPProject project = getProject();
                 Path targetFile;
                 try {
-                    if (IOUtils.isLocalFile(fileName)) {
+                    if (!IOUtils.isLocalFile(fileName)) {
                         editItem.setEnabled(false);
                     } else {
                         targetFile = Path.of(fileName);
