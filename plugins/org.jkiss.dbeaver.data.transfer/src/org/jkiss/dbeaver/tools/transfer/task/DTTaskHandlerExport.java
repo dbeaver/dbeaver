@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.task;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -33,9 +34,16 @@ import java.util.Locale;
  */
 public class DTTaskHandlerExport extends DTTaskHandlerTransfer {
 
+    @NotNull
     @Override
-    public DBTTaskRunStatus executeTask(DBRRunnableContext runnableContext, DBTTask task, Locale locale, Log log, PrintStream logStream,
-        DBTTaskExecutionListener listener) throws DBException {
+    public DBTTaskRunStatus executeTask(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBTTask task,
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @NotNull PrintStream logStream,
+        @NotNull DBTTaskExecutionListener listener
+    ) throws DBException {
         if (BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
             throw new DBException("Error: Data export operation is restricted by policy"); //$NON-NLS-1$
         }
