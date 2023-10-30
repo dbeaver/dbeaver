@@ -61,6 +61,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     private DBNNode[] children;
     private DBPImage resImage;
+    // Cache expensive properties
+    private transient Long size;
+    private transient FileTime lastModified;
 
     protected DBNPathBase(DBNNode parentNode) {
         super(parentNode);
@@ -91,7 +94,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public String getNodeType() {
-        return "Path";
+        return NodePathType.dbvfs.name() + ".path";
     }
 
     @Override
@@ -213,6 +216,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
         children = null;
+        size = null;
+        lastModified = null;
 
         this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, DBNEvent.NodeChange.REFRESH, this));
         return this;
@@ -338,17 +343,21 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Property(viewable = true, order = 11)
     public String getResourceSize() throws IOException {
-        long size = getPath() == null ? 0 : Files.size(getPath());
+        if (size == null) {
+            size = getPath() == null ? 0 : Files.size(getPath());
+        }
         return numberFormat.format(size);
     }
 
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() throws IOException {
-        FileTime time = Files.getLastModifiedTime(getPath());
-        if (time.toMillis() <= 0) {
+        if (lastModified == null) {
+            lastModified = Files.getLastModifiedTime(getPath());
+        }
+        if (lastModified.toMillis() <= 0) {
             return null;
         }
-        return time.toString();
+        return lastModified.toString();
     }
 
     protected boolean isResourceExists() {
