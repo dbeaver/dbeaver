@@ -218,6 +218,15 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     public DBNResource findResource(IResource resource) {
+        try {
+            return findResource(new VoidProgressMonitor(), resource);
+        } catch (Exception e) {
+            log.debug(e);
+            return null;
+        }
+    }
+
+    public DBNResource findResource(DBRProgressMonitor monitor, IResource resource) throws DBException {
         List<IResource> path = new ArrayList<>();
         for (IResource parent = resource;
              !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, project.getRootResource());
@@ -228,11 +237,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
         DBNResource resNode = this;
         for (IResource res : path) {
-            try {
-                resNode.getChildren(new VoidProgressMonitor());
-            } catch (DBException e) {
-                log.error(e);
-            }
+            resNode.getChildren(monitor);
             resNode = resNode.getChild(res);
             if (resNode == null) {
                 return null;

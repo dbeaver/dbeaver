@@ -23,11 +23,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -175,9 +175,7 @@ public interface DBPPlatformUI {
 
     void showInSystemExplorer(@NotNull String path);
 
-    boolean supportsMultiFileSystems(@NotNull DBPProject project);
-
-    String openFileSystemSelector(
+    DBNPath openFileSystemSelector(
         @NotNull String title,
         boolean folder,
         int style,

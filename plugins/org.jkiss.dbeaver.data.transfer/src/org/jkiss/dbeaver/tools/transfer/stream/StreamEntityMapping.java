@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSource;
@@ -70,7 +71,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         if (CommonUtils.isEmpty(inputFileName)) {
             inputFileName = this.entityName;
         }
-        this.inputFile = DBUtils.resolvePathFromString(monitor, project, inputFileName);
+        this.inputFile = DBFUtils.resolvePathFromString(monitor, project, inputFileName);
 
         this.dataSource = new StreamDataSource(entityName);
         this.child = false;

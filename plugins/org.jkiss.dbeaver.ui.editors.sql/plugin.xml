@@ -242,6 +242,13 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.log" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.variables" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" name="Switch presentation to" description="Switch SQL editor presentation" categoryId="org.jkiss.dbeaver.core.sql">
+            <commandParameter
+                    id="presentationId"
+                    name="Presentation"
+                    optional="false"
+                    values="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation$ParameterValues"/>
+        </command>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" name="%command.org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -537,6 +544,9 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPanel">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExecute">
@@ -990,6 +1000,8 @@
                 </menu>
                 <menu label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
                     <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
+                    <separator name="mode_toggles" visible="true"/>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" style="toggle"/>
                     <separator name="layout_toggles" visible="true"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
@@ -1035,7 +1047,6 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
-                <dynamic class="org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution" id="org.jkiss.dbeaver.ui.editors.sql.toggle.multipleResultsPerTab.cmcontributor" />
                 <separator name="additions_plan" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>
@@ -1077,6 +1088,8 @@
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
                 <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
+                <separator name="mode_toggles" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" style="toggle"/>
                 <separator name="layout_toggles" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
