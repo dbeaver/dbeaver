@@ -23,6 +23,9 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -106,5 +109,35 @@ public class ERDNotationRegistry {
             }
         }
         return null;
+    }
+
+    /**
+     * The method designed to retrieve stored value of notation from configuration
+     * scope
+     *
+     * @param store - preferences node
+     * @return - descriptor
+     */
+    public ERDNotationDescriptor getDefaultNotation(DBPPreferenceStore store) {
+        ERDNotationDescriptor notation = getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+        if (notation != null) {
+            return notation;
+        }
+        return getNotation(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_NOTATION_ID);
+    }
+
+    /**
+     * The method designed to get index of default element
+     *
+     * @param store - preferences node
+     * @return - integer value of index
+     */
+    public int getDefaultNotationIndex(DBPPreferenceStore store) {
+        ERDNotationDescriptor notation = getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+        if (notation != null) {
+            return getERDNotations().indexOf(notation);
+        } else {
+            return 0;
+        }
     }
 }

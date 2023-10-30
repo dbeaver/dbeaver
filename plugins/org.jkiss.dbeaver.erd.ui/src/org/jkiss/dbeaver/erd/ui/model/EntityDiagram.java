@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
@@ -70,7 +69,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
         this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
-        this.notationStyle = ERDNotationRegistry.getInstance().getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+        this.notationStyle = ERDNotationRegistry.getInstance().getDefaultNotation(store);
     }
 
     @NotNull

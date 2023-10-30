@@ -27,7 +27,6 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.ERDObject;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
@@ -404,7 +403,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     }
 
     protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
-        return connectionRouterRegistry.getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        return connectionRouterRegistry.getDefaultRouter(store);
     }
 
     protected DBPPreferenceStore getPreferences() {

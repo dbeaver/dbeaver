@@ -22,7 +22,6 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDObject;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
@@ -112,7 +111,7 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
     }
 
     protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
-        return connectionRouterRegistry.getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        return connectionRouterRegistry.getDefaultRouter(store);
     }
 
     protected DBPPreferenceStore getPreferences() {

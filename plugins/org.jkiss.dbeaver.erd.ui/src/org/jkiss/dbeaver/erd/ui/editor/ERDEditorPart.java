@@ -1204,9 +1204,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 refreshDiagram(true, true);
             } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
                 DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-                ERDNotationDescriptor notation = ERDNotationRegistry.getInstance()
-                    .getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
-                getDiagram().setDiagramNotation(notation);
+                ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getDefaultNotation(store);
+                getDiagram().setDiagramNotation(defaultNotation);
                 refreshDiagram(true, true);
             }
         }

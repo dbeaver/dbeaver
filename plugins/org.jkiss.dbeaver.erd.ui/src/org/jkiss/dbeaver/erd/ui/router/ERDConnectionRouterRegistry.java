@@ -23,12 +23,14 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ERDConnectionRouterRegistry {
 
@@ -70,12 +72,16 @@ public class ERDConnectionRouterRegistry {
 
     @NotNull
     public List<ERDConnectionRouterDescriptor> getDescriptors() {
-        return connectionRouters.values().stream().collect(Collectors.toList());
+        List<ERDConnectionRouterDescriptor> descriptors = new ArrayList<>();
+        for (ERDConnectionRouterDescriptor descriptor : connectionRouters.values()) {
+            descriptors.add(descriptor);
+        }
+        return descriptors;
     }
 
     /**
-     * Get connector router by identifier, as compatibility next attempt retrieve descriptor by
-     * name
+     * Get connector router by identifier, as compatibility next attempt retrieve
+     * descriptor by name
      *
      * @param id - identifier or name
      * @return - descriptor
@@ -91,6 +97,36 @@ public class ERDConnectionRouterRegistry {
             }
         }
         return connectionRouters.get(id);
+    }
+
+    /**
+     * The method designed to retrieve stored value of router from configuration
+     * scope
+     *
+     * @param store - preferences node
+     * @return - descriptor
+     */
+    public ERDConnectionRouterDescriptor getDefaultRouter(DBPPreferenceStore store) {
+        ERDConnectionRouterDescriptor connectionRouter = getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouter != null) {
+            return connectionRouter;
+        }
+        return getConnectionRouter(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID);
+    }
+
+    /**
+     * The method designed to get index of default element
+     *
+     * @param store - preferences node
+     * @return - integer value of index
+     */
+    public int getDefaultRouterIndex(DBPPreferenceStore store) {
+        ERDConnectionRouterDescriptor connectionRouter = getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (connectionRouter != null) {
+            return getDescriptors().indexOf(connectionRouter);
+        } else {
+            return 0;
+        }
     }
 
 }

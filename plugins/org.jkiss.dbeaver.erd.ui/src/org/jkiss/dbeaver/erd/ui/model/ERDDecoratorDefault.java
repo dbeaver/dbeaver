@@ -161,9 +161,9 @@ public class ERDDecoratorDefault implements ERDDecorator {
 
         return controls;
     }
-    
+
     protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
-        return connectionRouterRegistry.getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        return connectionRouterRegistry.getDefaultRouter(store);
     }
 
 }
