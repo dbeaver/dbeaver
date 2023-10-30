@@ -17,8 +17,8 @@
          </appInfo>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="generator" minOccurs="0" maxOccurs="unbounded"/>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="generator" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,9 +47,10 @@
       </complexType>
    </element>
 
-   <element name="formatter">
+   <element name="generator">
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="objectType"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -91,8 +92,53 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="order" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
+   <element name="objectType">
+      <complexType>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+
+
+
+
+   <annotation>
+      <appInfo>
+         <meta.section type="copyright"/>
+      </appInfo>
+      <documentation>
+          DBeaver - Universal Database Manager
+ Copyright (C) 2010-2023 DBeaver Corp and others
+ 
+ Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+       http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+      </documentation>
+   </annotation>
 
 </schema>
