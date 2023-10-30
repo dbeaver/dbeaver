@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -109,7 +111,9 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER_LINK;
+        DBFFileSystemDescriptor provider = DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProvider(
+            fileSystem.getProviderId());
+        return provider == null ? DBIcon.TREE_FOLDER_LINK : provider.getIcon();
     }
 
     @Override
@@ -161,7 +165,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getName();
+        return getParentNode().getNodeItemPath() + "/" + fileSystem.getId();
     }
 
     @Override

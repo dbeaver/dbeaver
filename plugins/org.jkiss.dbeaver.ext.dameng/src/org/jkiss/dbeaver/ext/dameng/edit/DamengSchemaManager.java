@@ -69,7 +69,7 @@ public class DamengSchemaManager extends SQLObjectEditor<DamengSchema, DamengDat
     @Override
     protected DamengSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         DamengDataSource dataSource = (DamengDataSource) container;
-        DamengSchema damengSchema = new DamengSchema(dataSource, null, "NEW_SCHEMA");
+        DamengSchema damengSchema = new DamengSchema(dataSource, "NEW_SCHEMA", false);
         setNewObjectName(monitor, dataSource, damengSchema);
         return damengSchema;
     }
