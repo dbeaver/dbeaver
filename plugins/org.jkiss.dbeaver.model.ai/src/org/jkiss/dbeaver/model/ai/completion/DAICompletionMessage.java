@@ -18,33 +18,26 @@ package org.jkiss.dbeaver.model.ai.completion;
 
 import org.jkiss.code.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Completion session
+ * Represents a single completion message
+ *
+ * @param role    role of the message
+ * @param content content of the message
  */
-public class DAICompletionSession {
-    private final List<DAICompletionMessage> messages;
+public record DAICompletionMessage(@NotNull Role role, @NotNull String content) {
+    /**
+     * Role of the message
+     */
+    public enum Role {
+        SYSTEM,
+        USER;
 
-    public DAICompletionSession() {
-        this.messages = new ArrayList<>();
-    }
-
-    public void add(@NotNull DAICompletionMessage message) {
-        messages.add(message);
-    }
-
-    public void remove(@NotNull DAICompletionMessage message) {
-        messages.remove(message);
-    }
-
-    public void clear() {
-        messages.clear();
-    }
-
-    @NotNull
-    public List<DAICompletionMessage> getMessages() {
-        return messages;
+        @NotNull
+        public String getId() {
+            return switch (this) {
+                case SYSTEM -> "system";
+                case USER -> "user";
+            };
+        }
     }
 }

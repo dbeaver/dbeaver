@@ -27,6 +27,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
@@ -130,17 +131,19 @@ public class AITranslateHandler extends AbstractHandler {
                 return null;
             }
 
-            final DAICompletionRequest request = new DAICompletionRequest.Builder()
-                .setPromptText(aiCompletionPopup.getInputText())
-                .setContext(new DAICompletionContext.Builder()
-                    .setScope(aiCompletionPopup.getScope())
-                    .setCustomEntities(aiCompletionPopup.getCustomEntities())
-                    .setDataSource(lDataSource)
-                    .setExecutionContext(executionContext)
-                    .build())
+            final DAICompletionContext context = new DAICompletionContext.Builder()
+                .setScope(aiCompletionPopup.getScope())
+                .setCustomEntities(aiCompletionPopup.getCustomEntities())
+                .setDataSource(lDataSource)
+                .setExecutionContext(executionContext)
                 .build();
 
-            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, request);
+            final DAICompletionMessage message = new DAICompletionMessage(
+                DAICompletionMessage.Role.USER,
+                aiCompletionPopup.getInputText()
+            );
+
+            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, context, message);
         }
         return null;
     }
@@ -150,10 +153,11 @@ public class AITranslateHandler extends AbstractHandler {
         QMTranslationHistoryManager historyManager,
         DBSLogicalDataSource lDataSource,
         SQLEditor editor,
-        DAICompletionEngine engine,
-        DAICompletionRequest request
+        @NotNull DAICompletionEngine<?> engine,
+        @NotNull DAICompletionContext context,
+        @NotNull DAICompletionMessage message
     ) {
-        if (CommonUtils.isEmptyTrimmed(request.getPromptText())) {
+        if (CommonUtils.isEmptyTrimmed(message.content())) {
             return;
         }
 
@@ -164,7 +168,8 @@ public class AITranslateHandler extends AbstractHandler {
                     completionResult.addAll(
                         engine.performQueryCompletion(
                             monitor,
-                            request,
+                            context,
+                            message,
                             AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER)
                         ));
                 } catch (Exception e) {
@@ -195,7 +200,7 @@ public class AITranslateHandler extends AbstractHandler {
                         monitor,
                         lDataSource,
                         executionContext,
-                        request.getPromptText(),
+                        message.content(),
                         completion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
@@ -228,7 +233,7 @@ public class AITranslateHandler extends AbstractHandler {
         AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", lDataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "engine", engine.getEngineName(),
-            "scope", request.getContext().getScope().name()
+            "scope", context.getScope().name()
         ));
 
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
