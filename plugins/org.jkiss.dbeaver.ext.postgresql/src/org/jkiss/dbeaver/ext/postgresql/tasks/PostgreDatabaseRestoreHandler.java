@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -86,8 +87,13 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    public void fillProcessParameters(PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, List<String> cmd) throws IOException {
-        super.fillProcessParameters(settings, arg, cmd);
+    public void fillProcessParameters(
+        PostgreDatabaseRestoreSettings settings,
+        PostgreDatabaseRestoreInfo arg,
+        List<String> cmd,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
+        super.fillProcessParameters(settings, arg, cmd, monitor);
 
         if (settings.isCleanFirst()) {
             cmd.add("--clean");
@@ -106,9 +112,13 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg) throws IOException {
+    protected List<String> getCommandLine(
+        PostgreDatabaseRestoreSettings settings,
+        PostgreDatabaseRestoreInfo arg,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
         List<String> cmd = new ArrayList<>();
-        fillProcessParameters(settings, arg, cmd);
+        fillProcessParameters(settings, arg, cmd, monitor);
 
         if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
             cmd.add("--format=" + settings.getFormat().getId());

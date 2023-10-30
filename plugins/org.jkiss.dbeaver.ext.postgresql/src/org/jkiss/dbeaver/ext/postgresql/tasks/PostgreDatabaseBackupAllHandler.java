@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -93,10 +95,11 @@ public class PostgreDatabaseBackupAllHandler
     public void fillProcessParameters(
         PostgreBackupAllSettings settings,
         PostgreDatabaseBackupAllInfo arg,
-        List<String> cmd
+        List<String> cmd,
+        @NotNull DBRProgressMonitor monitor
     ) throws IOException {
 
-        super.fillProcessParameters(settings, arg, cmd);
+        super.fillProcessParameters(settings, arg, cmd, monitor);
 
         if (!CommonUtils.isEmpty(settings.getEncoding())) {
             cmd.add("--encoding=" + settings.getEncoding());
@@ -150,9 +153,13 @@ public class PostgreDatabaseBackupAllHandler
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreBackupAllSettings settings, PostgreDatabaseBackupAllInfo arg) throws IOException {
+    protected List<String> getCommandLine(
+        PostgreBackupAllSettings settings,
+        PostgreDatabaseBackupAllInfo arg,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
         List<String> cmd = new ArrayList<>();
-        fillProcessParameters(settings, arg, cmd);
+        fillProcessParameters(settings, arg, cmd, monitor);
         return cmd;
     }
 }

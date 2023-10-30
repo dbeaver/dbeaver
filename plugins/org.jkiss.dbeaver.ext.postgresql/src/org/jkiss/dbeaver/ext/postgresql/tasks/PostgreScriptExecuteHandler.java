@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -60,8 +61,13 @@ public class PostgreScriptExecuteHandler extends PostgreNativeToolHandler<Postgr
     }
 
     @Override
-    public void fillProcessParameters(PostgreScriptExecuteSettings settings, PostgreDatabase arg, List<String> cmd) throws IOException {
-        super.fillProcessParameters(settings, arg, cmd);
+    public void fillProcessParameters(
+        PostgreScriptExecuteSettings settings,
+        PostgreDatabase arg,
+        List<String> cmd,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
+        super.fillProcessParameters(settings, arg, cmd, monitor);
 
         if (arg.getDataSource().isServerVersionAtLeast(9, 5)) {
             cmd.add("--echo-errors"); //$NON-NLS-1$
@@ -74,9 +80,13 @@ public class PostgreScriptExecuteHandler extends PostgreNativeToolHandler<Postgr
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreScriptExecuteSettings settings, PostgreDatabase arg) throws IOException {
+    protected List<String> getCommandLine(
+        PostgreScriptExecuteSettings settings,
+        PostgreDatabase arg,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
         List<String> cmd = new ArrayList<>();
-        fillProcessParameters(settings, arg, cmd);
+        fillProcessParameters(settings, arg, cmd, monitor);
 
         cmd.add(arg.getName());
 

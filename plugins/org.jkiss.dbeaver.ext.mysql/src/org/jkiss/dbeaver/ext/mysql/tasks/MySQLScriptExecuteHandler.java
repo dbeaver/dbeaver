@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -65,8 +66,12 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     }
 
     @Override
-    protected List<String> getCommandLine(MySQLScriptExecuteSettings settings, MySQLCatalog arg) throws IOException {
-        List<String> cmd = super.getCommandLine(settings, arg);
+    protected List<String> getCommandLine(
+        MySQLScriptExecuteSettings settings,
+        MySQLCatalog arg,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
+        List<String> cmd = super.getCommandLine(settings, arg, monitor);
         if (settings.isVerbose()) {
             cmd.add("-v");
         }
@@ -78,7 +83,12 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     }
 
     @Override
-    public void fillProcessParameters(MySQLScriptExecuteSettings settings, MySQLCatalog arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(
+        MySQLScriptExecuteSettings settings,
+        MySQLCatalog arg,
+        List<String> cmd,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
         String dumpPath = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         if (settings.getLogLevel() == MySQLScriptExecuteSettings.LogLevel.Debug) {

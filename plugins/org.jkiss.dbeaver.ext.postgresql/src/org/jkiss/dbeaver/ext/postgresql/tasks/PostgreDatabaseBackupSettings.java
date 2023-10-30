@@ -20,22 +20,23 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings implements ExportSettingsExtension<PostgreDatabaseBackupInfo> {
 
@@ -221,19 +222,53 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                             }
                         }
                     }
+                    PostgreDataSource dataSource = database.getDataSource();
+                    SQLIdentifierDetector detector = new SQLIdentifierDetector(dataSource.getSQLDialect());
+                    Set<PostgreSchema> excludeSchemas = new HashSet<>();
                     if (!CommonUtils.isEmpty(tableNames) && !CommonUtils.isEmpty(schemas)) {
-                        PostgreSchema schema = schemas.get(0);
+                        PostgreSchema firstSchema = schemas.get(0);
                         tables = new ArrayList<>();
                         for (String tableName : tableNames) {
-                            PostgreTableBase table = schema.getTableCache().getObject(monitor, schema, tableName);
+                            String[] strings = detector.splitIdentifier(tableName);
+                            PostgreTableBase table;
+                            if (ArrayUtils.isEmpty(strings) || strings.length != 2) {
+                                // + Backward compatibility for old tasks with not full tables names
+                                log.debug("Can't parse table name " + tableName +
+                                    ". Try to find table in the first schema " + firstSchema.getName());
+                                table = firstSchema.getTableCache().getObject(monitor, firstSchema, tableName);
+                                if (table != null) {
+                                    excludeSchemas.add(firstSchema);
+                                }
+                            } else {
+                                String schemaName = DBUtils.getUnQuotedIdentifier(dataSource, strings[0]);
+                                PostgreSchema schema = database.getSchema(monitor, schemaName);
+                                if (schema == null) {
+                                    log.debug("Can't find schema " + schemaName);
+                                    continue;
+                                }
+                                String onlyTableName = DBUtils.getUnQuotedIdentifier(dataSource, strings[1]);
+                                table = schema.getTableCache().getObject(monitor, schema, onlyTableName);
+                                excludeSchemas.add(schema);
+                            }
                             if (table != null) {
                                 tables.add(table);
                             } else {
-                                log.debug("Table '" + tableName + "' not found in schema '" + schema.getName() + "'");
+                                log.debug("Table '" + tableName + "' not found");
                             }
                         }
                     }
-                    exportInfo[0] = new PostgreDatabaseBackupInfo(database, schemas, tables);
+                    List<PostgreSchema> resultSchemas = new ArrayList<>();
+                    if (!CommonUtils.isEmpty(excludeSchemas)) {
+                        for (PostgreSchema schema : CommonUtils.safeCollection(schemas)) {
+                            // We do not need these entire schemas because we want to export only some objects from them
+                            if (!excludeSchemas.contains(schema)) {
+                                resultSchemas.add(schema);
+                            }
+                        }
+                    } else {
+                        resultSchemas = schemas;
+                    }
+                    exportInfo[0] = new PostgreDatabaseBackupInfo(database, resultSchemas, tables);
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);
                 }
@@ -273,7 +308,8 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                 if (!CommonUtils.isEmpty(object.getTables())) {
                     List<String> tableList = new ArrayList<>();
                     for (PostgreTableBase table : object.getTables()) {
-                        tableList.add(table.getName());
+                        // Use full tables names to identify it in the future
+                        tableList.add(table.getFullyQualifiedName(DBPEvaluationContext.DDL));
                     }
                     objInfo.put("tables", tableList);
                 }

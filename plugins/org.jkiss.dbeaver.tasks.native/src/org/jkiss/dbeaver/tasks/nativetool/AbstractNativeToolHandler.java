@@ -175,9 +175,11 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         return true;
     }
 
-    abstract protected java.util.List<String> getCommandLine(SETTINGS settings, PROCESS_ARG arg) throws IOException;
+    abstract protected java.util.List<String> getCommandLine(SETTINGS settings, PROCESS_ARG arg, @NotNull DBRProgressMonitor monitor)
+        throws IOException;
 
-    public abstract void fillProcessParameters(SETTINGS settings, PROCESS_ARG arg, List<String> cmd) throws IOException;
+    public abstract void fillProcessParameters(SETTINGS settings, PROCESS_ARG arg, List<String> cmd, @NotNull DBRProgressMonitor monitor)
+        throws IOException;
 
     protected void setupProcessParameters(DBRProgressMonitor monitor, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
     }
@@ -214,7 +216,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         monitor.beginTask(task.getType().getName(), 1);
         try {
             monitor.subTask("Start native tool");
-            final List<String> commandLine = getCommandLine(settings, arg);
+            final List<String> commandLine = getCommandLine(settings, arg, monitor);
             final File execPath = new File(commandLine.get(0));
 
             ProcessBuilder processBuilder = new ProcessBuilder(commandLine);
