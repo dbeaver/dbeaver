@@ -1286,7 +1286,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (SQLConstants.KEYWORD_WHERE.equals(prevWord) ||
             SQLConstants.KEYWORD_AND.equals(prevWord)) {
             String tableName = "";
-            DBSEntity parentObject = null ;
+            DBSEntity parentObject = null;
             if (object instanceof JDBCTableColumn<?>) {
                 aliasMode = SQLTableAliasInsertMode
                     .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
