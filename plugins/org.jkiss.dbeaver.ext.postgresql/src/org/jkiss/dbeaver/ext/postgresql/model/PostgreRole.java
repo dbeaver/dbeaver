@@ -552,19 +552,24 @@ public class PostgreRole implements
                                 }
                             }
                             for (PostgrePrivilege p : CommonUtils.safeCollection(privileges)) {
-                                if (p instanceof PostgreObjectPrivilege && getName().equals(((PostgreObjectPrivilege) p).getGrantee())) {
-                                    List<PostgrePrivilegeGrant> grants = new ArrayList<>();
-                                    for (PostgrePrivilege.ObjectPermission perm : p.getPermissions()) {
-                                        grants.add(new PostgrePrivilegeGrant(perm.getGrantor(), getName(), getDatabase().getName(),
+                                if (p instanceof PostgreObjectPrivilege) {
+                                    String grantee = ((PostgreObjectPrivilege) p).getGrantee();
+                                    if (CommonUtils.isNotEmpty(grantee) &&
+                                        getName().equals(DBUtils.getUnQuotedIdentifier(getDataSource(), grantee))
+                                    ) {
+                                        List<PostgrePrivilegeGrant> grants = new ArrayList<>();
+                                        for (PostgrePrivilege.ObjectPermission perm : p.getPermissions()) {
+                                            grants.add(new PostgrePrivilegeGrant(perm.getGrantor(), getName(), getDatabase().getName(),
                                                 schema.getName(), objectName, perm.getPrivilegeType(), false, false));
-                                    }
-                                    permissions.add(
+                                        }
+                                        permissions.add(
                                             new PostgreRolePrivilege(
-                                                    this,
-                                                    pKind,
-                                                    schema.getName(),
-                                                    objectName,
-                                                    grants));
+                                                this,
+                                                pKind,
+                                                schema.getName(),
+                                                objectName,
+                                                grants));
+                                    }
                                 }
                             }
                         }

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -43,11 +42,14 @@ public class DamengSchema extends GenericSchema implements DBPQualifiedObject, D
     @NotNull
     private String schemaName;
 
+    private boolean persisted;
+
     private boolean hasStatistics;
 
-    public DamengSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
-        super(dataSource, catalog, schemaName);
+    public DamengSchema(GenericDataSource dataSource, String schemaName, boolean persisted) {
+        super(dataSource, null, schemaName);
         this.schemaName = schemaName;
+        this.persisted = persisted;
     }
 
     @NotNull
@@ -97,5 +99,10 @@ public class DamengSchema extends GenericSchema implements DBPQualifiedObject, D
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), this);
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return persisted;
     }
 }
