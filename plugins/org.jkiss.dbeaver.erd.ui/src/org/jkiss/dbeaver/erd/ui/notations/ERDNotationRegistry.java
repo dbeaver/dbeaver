@@ -132,7 +132,7 @@ public class ERDNotationRegistry {
      * @return - integer value of index
      */
     public int getDefaultNotationIndex(DBPPreferenceStore store) {
-        ERDNotationDescriptor notation = getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+        ERDNotationDescriptor notation = getDefaultNotation(store);
         if (notation != null) {
             return getERDNotations().indexOf(notation);
         } else {

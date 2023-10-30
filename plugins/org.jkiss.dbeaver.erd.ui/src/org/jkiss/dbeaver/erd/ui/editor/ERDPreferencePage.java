@@ -216,8 +216,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
         contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
-        routingType.select(erdNotationRegistry.getDefaultNotationIndex(store));
-        notationType.select(erdRouterRegistry.getDefaultRouterIndex(store));
+        routingType.select(erdRouterRegistry.getDefaultRouterIndex(store));
+        notationType.select(erdNotationRegistry.getDefaultNotationIndex(store));
         changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
         changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
         gridCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_ENABLED));

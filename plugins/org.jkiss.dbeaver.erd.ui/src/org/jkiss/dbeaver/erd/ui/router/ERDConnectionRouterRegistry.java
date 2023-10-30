@@ -121,7 +121,7 @@ public class ERDConnectionRouterRegistry {
      * @return - integer value of index
      */
     public int getDefaultRouterIndex(DBPPreferenceStore store) {
-        ERDConnectionRouterDescriptor connectionRouter = getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        ERDConnectionRouterDescriptor connectionRouter = getDefaultRouter(store);
         if (connectionRouter != null) {
             return getDescriptors().indexOf(connectionRouter);
         } else {
