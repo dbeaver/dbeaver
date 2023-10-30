@@ -16,17 +16,21 @@
  */
 package org.jkiss.dbeaver.model.sql.translate;
 
+import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -128,10 +132,10 @@ public class SQLQueryTranslator implements SQLTranslator {
 
         List<SQLScriptElement> extraQueries = null;
 
+        boolean defChanged = false;
+        SQLDialect targetDialect = sqlTranslateContext.getTargetDialect();
         if (statement instanceof CreateTable) {
-            boolean defChanged = false;
             CreateTable createTable = (CreateTable) statement;
-            SQLDialect targetDialect = sqlTranslateContext.getTargetDialect();
             SQLDialectDDLExtension extendedDialect = null;
             if (targetDialect instanceof SQLDialectDDLExtension) {
                 extendedDialect = (SQLDialectDDLExtension) targetDialect;
@@ -222,18 +226,33 @@ public class SQLQueryTranslator implements SQLTranslator {
                     }
                 }
             }
-            if (defChanged) {
-                String newQueryText = SQLFormatUtils.formatSQL(null,
-                    sqlTranslateContext.getSyntaxManager(),
-                    createTable.toString());
-
-                query.setText(newQueryText);
-
-                if (extraQueries == null) {
-                    extraQueries = new ArrayList<>();
+            if (extendedDialect != null &&
+                !extendedDialect.supportsNoActionIndex() &&
+                !CommonUtils.isEmpty(createTable.getIndexes())
+            ) {
+                for (var index : createTable.getIndexes()) {
+                    if (index instanceof ForeignKeyIndex) {
+                        ForeignKeyIndex fkIndex = (ForeignKeyIndex) index;
+                        ReferentialAction ra = fkIndex.getReferentialAction(ReferentialAction.Type.DELETE);
+                        if (ra != null && ReferentialAction.Action.NO_ACTION.equals(ra.getAction())) {
+                            fkIndex.removeReferentialAction(ReferentialAction.Type.DELETE);
+                            defChanged = true;
+                        }
+                    }
                 }
-                extraQueries.add(query);
             }
+        }
+        if (defChanged) {
+            String newQueryText = SQLFormatUtils.formatSQL(null,
+                    sqlTranslateContext.getSyntaxManager(),
+                    statement.toString());
+
+            query.setText(newQueryText);
+
+            if (extraQueries == null) {
+                extraQueries = new ArrayList<>();
+            }
+            extraQueries.add(query);
         }
         if (extraQueries == null) {
             return Collections.singletonList(query);
@@ -258,5 +277,17 @@ public class SQLQueryTranslator implements SQLTranslator {
      */
     public void setSqlTranslateContext(@NotNull SQLTranslateContext sqlTranslateContext) {
         this.sqlTranslateContext = sqlTranslateContext;
+    }
+
+    @NotNull
+    public static DBPPreferenceStore getDefaultPreferenceStore() {
+        DBPPreferenceStore prefStore = new SimplePreferenceStore() {
+            @Override
+            public void save() throws IOException {
+
+            }
+        };
+        prefStore.setValue(SQLModelPreferences.SQL_FORMAT_FORMATTER, "default");
+        return prefStore;
     }
 }
