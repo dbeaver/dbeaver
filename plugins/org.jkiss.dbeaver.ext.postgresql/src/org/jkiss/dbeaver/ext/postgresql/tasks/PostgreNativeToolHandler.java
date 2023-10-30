@@ -53,7 +53,7 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
     @Override
     public void fillProcessParameters(
         SETTINGS settings,
-        PROCESS_ARG process_arg,
+        PROCESS_ARG processArg,
         List<String> cmd,
         @NotNull DBRProgressMonitor monitor
     ) throws IOException {

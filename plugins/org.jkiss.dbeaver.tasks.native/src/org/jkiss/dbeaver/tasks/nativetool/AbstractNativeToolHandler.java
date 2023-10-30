@@ -175,11 +175,18 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         return true;
     }
 
-    abstract protected java.util.List<String> getCommandLine(SETTINGS settings, PROCESS_ARG arg, @NotNull DBRProgressMonitor monitor)
-        throws IOException;
+    abstract protected java.util.List<String> getCommandLine(
+        SETTINGS settings,
+        PROCESS_ARG arg,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException;
 
-    public abstract void fillProcessParameters(SETTINGS settings, PROCESS_ARG arg, List<String> cmd, @NotNull DBRProgressMonitor monitor)
-        throws IOException;
+    public abstract void fillProcessParameters(
+        SETTINGS settings,
+        PROCESS_ARG arg,
+        List<String> cmd,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException;
 
     protected void setupProcessParameters(DBRProgressMonitor monitor, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
     }
