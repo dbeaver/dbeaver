@@ -22,6 +22,7 @@ import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.PolylineConnection;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -30,9 +31,7 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     private String id;
     private String name;
     private String description;
-    private boolean isDefault = false;
     private boolean isEnableAttributeAssociation;
-    private AbstractRouter router;
     private ObjectType lazyRouter;
     private ObjectType lazyConnection;
 
@@ -43,10 +42,9 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
         this.id = cf.getAttribute(RegistryConstants.ATTR_ID);
         this.name = cf.getAttribute(RegistryConstants.ATTR_NAME);
         this.description = cf.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.isDefault = Boolean.valueOf(cf.getAttribute(RegistryConstants.ATTR_IS_DEFAULT));
-        this.isEnableAttributeAssociation = CommonUtils.toBoolean(cf.getAttribute(RegistryConstants.ATTR_SUPPORT_ATTRIBUTES_ASSOCIATION));
-        this.lazyRouter = new ObjectType(cf.getAttribute(RegistryConstants.ATTR_ROUTER)); //$NON-NLS-1$
-        this.lazyConnection = new ObjectType(cf.getAttribute(RegistryConstants.ATTR_CONNECTION)); //$NON-NLS-1$
+        this.isEnableAttributeAssociation = CommonUtils.toBoolean(cf.getAttribute(ERDUIConstants.ATTR_ERD_SUPPORT_ATTRIBUTES_ASSOCIATION));
+        this.lazyRouter = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_ROUTER)); // $NON-NLS-1$
+        this.lazyConnection = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_CONNECTION)); // $NON-NLS-1$
     }
 
     /**
@@ -71,37 +69,27 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     }
 
     /**
-     * Get contributed router type
+     * Create contributed router type
      */
     public AbstractRouter getRouter() {
-        if (router == null) {
-            try {
-                router = lazyRouter.createInstance(AbstractRouter.class);
-            } catch (DBException e) {
-                log.error(e.getMessage());
-            }
+        try {
+            return lazyRouter.createInstance(AbstractRouter.class);
+        } catch (DBException e) {
+            log.error(e.getMessage());
         }
-        return router;
+        return null;
     }
 
     /**
      * Create contributed connection type
      */
-    public PolylineConnection createRouterConnectionInstance() {
-        PolylineConnection connection = null;
+    public PolylineConnection createRouterConnection() {
         try {
-            connection = lazyConnection.createInstance(PolylineConnection.class);
+            return lazyConnection.createInstance(PolylineConnection.class);
         } catch (DBException e) {
             log.error(e.getMessage());
         }
-        return connection;
-    }
-
-    /**
-     * Is descriptor has default flag
-     */
-    public boolean isDefault() {
-        return isDefault;
+        return null;
     }
 
     /**

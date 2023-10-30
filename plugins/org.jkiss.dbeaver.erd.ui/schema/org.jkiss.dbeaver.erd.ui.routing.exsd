@@ -90,13 +90,6 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="isDefault" type="boolean">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
          <attribute name="supportAttributesAssociation" type="boolean" use="default" value="false">
             <annotation>
                <documentation>

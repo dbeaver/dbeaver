@@ -22,7 +22,12 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDObject;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,6 +39,10 @@ import java.beans.PropertyChangeListener;
  * @author Serge Rider
  */
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener, DBPNamedObject {
+
+    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+    private ERDConnectionRouterRegistry connectionRouterRegistry = ERDConnectionRouterRegistry.getInstance();
+
     @NotNull
     public DiagramPart getDiagramPart() {
         RootEditPart root = getRoot();
@@ -100,6 +109,14 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 		 * re-layout
 		 */
         ((GraphicalEditPart) (getViewer().getContents())).getFigure().revalidate();
+    }
+
+    protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
+        return connectionRouterRegistry.getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+    }
+
+    protected DBPPreferenceStore getPreferences() {
+        return store;
     }
 
 }

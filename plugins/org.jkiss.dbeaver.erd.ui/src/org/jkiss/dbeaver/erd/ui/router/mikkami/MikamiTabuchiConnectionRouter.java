@@ -30,10 +30,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
     import java.util.*;
 
 
-    public class MikamiTabuchiConnectionRouter extends AbstractRouter implements ERDConnectionRouter {
+    public class MikamiTabuchiConnectionRouter extends ERDConnectionRouter {
         private boolean isDirty = false;
-
-        private IFigure container;
 
         private final Map<Connection, Object> constraintMap = new HashMap<>();
         private final Map<IFigure, Rectangle> figuresToBounds = new HashMap<>();
@@ -115,8 +113,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
                 Point start = conn.getSourceAnchor().getReferencePoint().getCopy();
                 Point end = conn.getTargetAnchor().getReferencePoint().getCopy();
-                this.container.translateToRelative(start);
-                this.container.translateToRelative(end);
+                getContainer().translateToRelative(start);
+                getContainer().translateToRelative(end);
                 path.setStartPoint(start);
                 path.setEndPoint(end);
                 if (constraint.isEmpty()) {
@@ -137,12 +135,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
         private void hookAll() {
             this.figuresToBounds.clear();
-
-            for (int i = 0; i < this.container.getChildren().size(); ++i) {
-                this.addChild((IFigure) this.container.getChildren().get(i));
+            for (int i = 0; i < getContainer().getChildren().size(); ++i) {
+                this.addChild((IFigure) getContainer().getChildren().get(i));
             }
-
-            this.container.addLayoutListener(this.listener);
+            getContainer().addLayoutListener(this.listener);
         }
 
         @Override
@@ -153,7 +149,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
             this.ignoreInvalidate = true;
             this.processStaleConnections();
             this.isDirty = false;
-            this.algorithm.setClientArea(container);
+            this.algorithm.setClientArea(getContainer());
             UIUtils.asyncExec(() -> {
                     List<OrthogonalPath> updated = this.algorithm.solve();
                     for (OrthogonalPath path : updated) {
@@ -182,7 +178,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 
         private void unhookAll() {
-            this.container.removeLayoutListener(this.listener);
+            getContainer().removeLayoutListener(this.listener);
             if (!this.figuresToBounds.isEmpty()) {
                 Iterator<IFigure> figureItr = this.figuresToBounds.keySet().iterator();
 
@@ -232,10 +228,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
             return !this.connectionToPath.isEmpty();
         }
 
-        public IFigure getContainer() {
-            return this.container;
-        }
-
         public void setIgnoreInvalidate(boolean b) {
             this.ignoreInvalidate = b;
         }
@@ -281,8 +273,4 @@ import org.jkiss.dbeaver.ui.UIUtils;
             }
         }
 
-        @Override
-        public void setContainer(IFigure figure) {
-            this.container = figure;
-        }
     }

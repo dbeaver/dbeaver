@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ERDConnectionRouterRegistry {
@@ -36,7 +35,6 @@ public class ERDConnectionRouterRegistry {
     private Log log = Log.getLog(ERDNotationRegistry.class);
     private Map<String, ERDConnectionRouterDescriptor> connectionRouters = new LinkedHashMap<>();
     private static ERDConnectionRouterRegistry instance;
-    private ERDConnectionRouterDescriptor defaultRouter;
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.routing"; //$NON-NLS-1$
 
     private ERDConnectionRouterRegistry(IExtensionRegistry registry) {
@@ -56,13 +54,6 @@ public class ERDConnectionRouterRegistry {
             return;
         }
         connectionRouters.put(descriptor.getId(), descriptor);
-        if (descriptor.isDefault()) {
-            if (defaultRouter == null) {
-                defaultRouter = descriptor;
-            } else {
-                log.error("The default ERD Connection router is already defined for id:" + defaultRouter.getId());
-            }
-        }
     }
 
     /**
@@ -83,7 +74,7 @@ public class ERDConnectionRouterRegistry {
     }
 
     /**
-     * Get connector router by identifier, as compatibility next attempt retrieve by
+     * Get connector router by identifier, as compatibility next attempt retrieve descriptor by
      * name
      *
      * @param id - identifier or name
@@ -93,26 +84,13 @@ public class ERDConnectionRouterRegistry {
     public ERDConnectionRouterDescriptor getConnectionRouter(String id) {
         if (!connectionRouters.containsKey(id)) {
             // attempt to get by name
-            Optional<ERDConnectionRouterDescriptor> optRouter = connectionRouters.values().stream()
-                .filter(c -> c.getName().equals(id))
-                .findAny();
-            if (optRouter.isPresent()) {
-                return optRouter.get();
-            } else {
-                log.error("ERD Connection router is not defined for key:" + id);
+            for (ERDConnectionRouterDescriptor descriptor : connectionRouters.values()) {
+                if (descriptor.getName().equals(id)) {
+                    return descriptor;
+                }
             }
-            return null;
         }
         return connectionRouters.get(id);
-    }
-
-    /**
-     * Get default descriptor
-     *
-     * @return - default descriptor
-     */
-    public ERDConnectionRouterDescriptor getDefaultRouter() {
-        return defaultRouter;
     }
 
 }

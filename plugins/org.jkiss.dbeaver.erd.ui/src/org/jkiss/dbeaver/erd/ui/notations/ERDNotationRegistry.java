@@ -33,7 +33,6 @@ public class ERDNotationRegistry {
 
     private Log log = Log.getLog(ERDNotationRegistry.class);
     private Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
-    private ERDNotationDescriptor defaultNotation;
     private static ERDNotationRegistry instance;
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.notation.style";
 
@@ -76,20 +75,13 @@ public class ERDNotationRegistry {
             return;
         }
         notations.put(descriptor.getId(), descriptor);
-        if (descriptor.isDefault()) {
-            if (defaultNotation == null) {
-                defaultNotation = descriptor;
-            } else {
-                log.error("The default ERD Notation already defined for id:" + defaultNotation.getId());
-            }
-        }
     }
 
     /**
      * Get notation by identifier
      *
-     *@param id - notation descriptor identifier
-     *@return - ERDNotationDescriptor
+     * @param id - notation descriptor identifier
+     * @return - ERDNotationDescriptor
      */
     @Nullable
     public ERDNotationDescriptor getNotation(@NotNull String id) {
@@ -98,11 +90,6 @@ public class ERDNotationRegistry {
             return null;
         }
         return notations.get(id);
-    }
-
-    @Nullable
-    public ERDNotationDescriptor getDefaultNotation() {
-        return this.defaultNotation;
     }
 
     /**

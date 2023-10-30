@@ -37,17 +37,13 @@ import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
-import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
-import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -105,10 +101,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
-            .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        PolylineConnection conn = connectionRouterDescriptor.createRouterConnectionInstance();
+        PolylineConnection conn = getConnectionRouterDescriptor().createRouterConnection();
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
@@ -148,12 +141,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             if (entityPart == null) {
                 entityPart = getTarget();
             }
-            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
-                .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
             if (entityPart instanceof GraphicalEditPart
-                && (!connectionRouterDescriptor.supportedAttributeAssociation()
-                    || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
+                && (!getConnectionRouterDescriptor().supportedAttributeAssociation()
+                    || ERDAttributeVisibility.isHideAttributeAssociations(getPreferences()))) {
                 // Self link
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
                 final Dimension figureSize = entityFigure.getMinimumSize();

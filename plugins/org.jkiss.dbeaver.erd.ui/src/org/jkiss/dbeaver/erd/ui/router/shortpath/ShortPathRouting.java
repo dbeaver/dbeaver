@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.erd.ui.router.shortpath;
 
-import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.FigureListener;
@@ -39,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ShortPathRouting extends AbstractRouter implements ERDConnectionRouter {
+public class ShortPathRouting extends ERDConnectionRouter {
 
     private double indentation = 30.0;
     private static final int RIGHT = 180;
@@ -51,7 +50,6 @@ public class ShortPathRouting extends AbstractRouter implements ERDConnectionRou
     private Map<Connection, Path> connectionToPaths;
     private boolean isDirty;
     private ShortestPathRouter algorithm = new ShortestPathRouter();
-    private IFigure container;
     private final Set<Connection> staleConnections = new HashSet<>();
     private final LayoutListener listener = new LayoutTracker();
     private boolean ignoreInvalidate;
@@ -82,12 +80,12 @@ public class ShortPathRouting extends AbstractRouter implements ERDConnectionRou
 
     private void hookAll() {
         figuresToBounds = new HashMap<>();
-        container.getChildren().forEach(this::addChild);
-        container.addLayoutListener(listener);
+        getContainer().getChildren().forEach(this::addChild);
+        getContainer().addLayoutListener(listener);
     }
 
     private void unhookAll() {
-        container.removeLayoutListener(listener);
+        getContainer().removeLayoutListener(listener);
         if (figuresToBounds != null) {
             Iterator<IFigure> figureItr = figuresToBounds.keySet().iterator();
             while (figureItr.hasNext()) {
@@ -126,6 +124,7 @@ public class ShortPathRouting extends AbstractRouter implements ERDConnectionRou
             return;
         }
         staleConnections.add(connection);
+        getConnectionPoints().put(connection, new PointList());
         isDirty = true;
     }
 
@@ -154,8 +153,8 @@ public class ShortPathRouting extends AbstractRouter implements ERDConnectionRou
             Point start = conn.getSourceAnchor().getReferencePoint().getCopy();
             Point end = conn.getTargetAnchor().getReferencePoint().getCopy();
 
-            container.translateToRelative(start);
-            container.translateToRelative(end);
+            getContainer().translateToRelative(start);
+            getContainer().translateToRelative(end);
 
             path.setStartPoint(start);
             path.setEndPoint(end);
@@ -366,13 +365,6 @@ public class ShortPathRouting extends AbstractRouter implements ERDConnectionRou
     }
 
     /**
-     * Return a container
-     */
-    public IFigure getContainer() {
-        return container;
-    }
-
-    /**
      * Sets the value indicating if connection invalidation should be ignored.
      */
     public void setIgnoreInvalidate(boolean b) {
@@ -434,11 +426,6 @@ public class ShortPathRouting extends AbstractRouter implements ERDConnectionRou
      */
     public void setIndentation(double indentation) {
         this.indentation = indentation;
-    }
-
-    @Override
-    public void setContainer(IFigure figure) {
-        this.container = figure;
     }
 
 }

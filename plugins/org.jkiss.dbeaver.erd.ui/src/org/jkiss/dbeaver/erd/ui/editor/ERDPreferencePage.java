@@ -104,7 +104,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         if (connectionRouter != null) {
             routingType.select(connectionRouters.indexOf(connectionRouter));
         } else {
-            routingType.select(connectionRouters.indexOf(ERDConnectionRouterRegistry.getInstance().getDefaultRouter()));
+            routingType.select(connectionRouters
+                .indexOf(ERDConnectionRouterRegistry.getInstance().getConnectionRouter(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID)));
         }
         // notation
         notationType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_notation_combo,
@@ -117,7 +118,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         if (notation != null) {
             notationType.select(erdNotations.indexOf(notation));
         } else {
-            notationType.select(erdNotations.indexOf(ERDNotationRegistry.getInstance().getDefaultNotation()));
+            notationType
+                .select(erdNotations.indexOf(ERDNotationRegistry.getInstance().getNotation(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_NOTATION_ID)));
         }
     }
 
@@ -216,9 +218,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
         contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
         ERDConnectionRouterRegistry connectionRegistry = ERDConnectionRouterRegistry.getInstance();
-        routingType.select(connectionRegistry.getDescriptors().indexOf(connectionRegistry.getDefaultRouter()));
+        routingType.select(connectionRegistry.getDescriptors()
+            .indexOf(connectionRegistry.getConnectionRouter(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID)));
         ERDNotationRegistry registry = ERDNotationRegistry.getInstance();
-        notationType.select(registry.getERDNotations().indexOf(registry.getDefaultNotation()));
+        notationType.select(registry.getERDNotations().indexOf(registry.getNotation(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_NOTATION_ID)));
         changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
         changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
         gridCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_ENABLED));

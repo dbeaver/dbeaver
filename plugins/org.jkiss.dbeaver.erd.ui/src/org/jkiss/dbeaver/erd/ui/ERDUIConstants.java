@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.erd.ui;
 
 import org.eclipse.draw2d.PrintFigureOperation;
-import org.jkiss.dbeaver.ui.UIFonts;
 
 /**
  * ERD constants
@@ -83,4 +82,11 @@ public class ERDUIConstants {
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
 
+    public static final String ATTR_ERD_NOTATION = "notation"; // $NON-NLS-N$
+    public static final String ATTR_ERD_SUPPORT_ATTRIBUTES_ASSOCIATION = "supportAttributesAssociation"; //$NON-NLS-1$
+    public static final String ATTR_ERD_ROUTER = "router"; //$NON-NLS-1$
+    public static final String ATTR_ERD_CONNECTION = "connection"; //$NON-NLS-1$
+
+    public static final String PREF_DEFAULT_ATTR_ERD_ROUTER_ID = "org.jkiss.dbeaver.erd.router.shortest.path"; //$NON-NLS-1$
+    public static final String PREF_DEFAULT_ATTR_ERD_NOTATION_ID = "org.jkiss.dbeaver.erd.notaion.idef1x"; //$NON-NLS-1$
 }

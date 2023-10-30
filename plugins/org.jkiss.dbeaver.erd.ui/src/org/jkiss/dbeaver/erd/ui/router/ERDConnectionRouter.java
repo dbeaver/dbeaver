@@ -16,18 +16,47 @@
  */
 package org.jkiss.dbeaver.erd.ui.router;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.draw2d.AbstractRouter;
+import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.PointList;
 
 /**
  * Generic interface designed to set container for particular router
  */
-public interface ERDConnectionRouter {
+public abstract class ERDConnectionRouter extends AbstractRouter {
+
+    private Map<Connection, PointList> connection2points = new HashMap<>();
+    private IFigure container;
 
     /**
      * Set container
      *
      * @param figure - container
      */
-    void setContainer(IFigure figure);
+    public void setContainer(IFigure figure) {
+        this.container = figure;
+        // here considering reset points if container reset
+        getConnectionPoints().clear();
+    }
+
+    /**
+     * Return a container
+     */
+    public IFigure getContainer() {
+        return container;
+    }
+
+    /**
+     * Connection to points
+     *
+     * @return - map of points related to connection
+     */
+    public Map<Connection, PointList> getConnectionPoints() {
+        return connection2points;
+    }
 
 }

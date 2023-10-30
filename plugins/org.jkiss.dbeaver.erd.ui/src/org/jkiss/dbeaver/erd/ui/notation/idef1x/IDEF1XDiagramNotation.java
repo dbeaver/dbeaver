@@ -64,7 +64,7 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
             final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
             ERDConnectionRouterDescriptor connectionRouterDescriptor = ERDConnectionRouterRegistry.getInstance()
                 .getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-            if (connectionRouterDescriptor.isDefault()) {
+            if (connectionRouterDescriptor.supportedAttributeAssociation()) {
                 conn.setLineStyle(SWT.LINE_CUSTOM);
             } else {
                 conn.setLineStyle(SWT.LINE_DOT);
