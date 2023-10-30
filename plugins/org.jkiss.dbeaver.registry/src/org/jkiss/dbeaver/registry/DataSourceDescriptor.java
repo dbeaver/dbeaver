@@ -1014,31 +1014,39 @@ public class DataSourceDescriptor
             processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
             // 1. Get credentials from origin
+            boolean authProvidedFromOrigin = false;
             DBPDataSourceOrigin dsOrigin = getOrigin();
-            if (dsOrigin instanceof DBACredentialsProvider) {
-                monitor.beginTask("Read auth parameters from " + dsOrigin.getDisplayName(), 1);
+            if (dsOrigin instanceof DBACredentialsProvider cp) {
+                String originID = dsOrigin.getType() +
+                    (dsOrigin.getSubType() == null ? "" : ("/" + dsOrigin.getSubType()));
+                monitor.beginTask("Read auth parameters from " + originID, 1);
                 try {
-                    ((DBACredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                    authProvidedFromOrigin = cp.provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                    if (authProvidedFromOrigin) {
+                        log.debug("Auth parameters were provided by origin " + originID);
+                    }
                 } finally {
                     monitor.done();
                 }
             }
 
             // 2. Get credentials from global provider
-            boolean authProvided = true;
-            DBACredentialsProvider authProvider = registry.getAuthCredentialsProvider();
-            if (authProvider != null) {
-                authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
-            } else {
-                // 3. Use legacy password provider
-                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
-                    // Ask for password
-                    authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
+            if (!authProvidedFromOrigin) {
+                boolean authProvidedFromCredProvider = true;
+                DBACredentialsProvider authProvider = registry.getAuthCredentialsProvider();
+                if (authProvider != null) {
+                    authProvidedFromCredProvider = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                } else {
+                    // 3. Use legacy password provider
+                    if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                        // Ask for password
+                        authProvidedFromCredProvider = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
+                    }
                 }
-            }
-            if (!authProvided) {
-                // Auth parameters were canceled
-                return false;
+                if (!authProvidedFromCredProvider) {
+                    // Auth parameters were canceled
+                    return false;
+                }
             }
 
             resolveConnectVariables(secretController);

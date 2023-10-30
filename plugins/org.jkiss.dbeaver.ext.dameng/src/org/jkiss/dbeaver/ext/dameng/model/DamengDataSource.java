@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.Types;
@@ -37,6 +39,25 @@ import java.sql.Types;
 public class DamengDataSource extends GenericDataSource {
     public DamengDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel, new DamengSQLDialect());
+    }
+
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new DamengExecutionContext(instance, type);
+    }
+
+    @Override
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        DamengExecutionContext executionContext = (DamengExecutionContext) context;
+        if (initFrom == null) {
+            executionContext.refreshDefaults(monitor, true);
+            return;
+        }
+        DamengExecutionContext executionMetaContext = (DamengExecutionContext) initFrom;
+        DamengSchema defaultSchema = executionMetaContext.getDefaultSchema();
+        if (defaultSchema != null) {
+            executionContext.setDefaultSchema(monitor, defaultSchema);
+        }
     }
 
     @Override

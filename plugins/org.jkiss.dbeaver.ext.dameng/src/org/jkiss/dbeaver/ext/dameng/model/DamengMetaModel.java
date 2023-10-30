@@ -62,7 +62,7 @@ public class DamengMetaModel extends GenericMetaModel {
 
     @Override
     public DamengSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
-        return new DamengSchema(dataSource, catalog, schemaName);
+        return new DamengSchema(dataSource, schemaName, true);
     }
 
     @Override
