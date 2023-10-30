@@ -1017,10 +1017,14 @@ public class DataSourceDescriptor
             boolean authProvidedFromOrigin = false;
             DBPDataSourceOrigin dsOrigin = getOrigin();
             if (dsOrigin instanceof DBACredentialsProvider cp) {
-                monitor.beginTask("Read auth parameters from " + dsOrigin.getType() +
-                    (dsOrigin.getSubType() == null ? "" : ("/" + dsOrigin.getSubType())), 1);
+                String originID = dsOrigin.getType() +
+                    (dsOrigin.getSubType() == null ? "" : ("/" + dsOrigin.getSubType()));
+                monitor.beginTask("Read auth parameters from " + originID, 1);
                 try {
                     authProvidedFromOrigin = cp.provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                    if (authProvidedFromOrigin) {
+                        log.debug("Auth parameters were provided by origin " + originID);
+                    }
                 } finally {
                     monitor.done();
                 }
