@@ -843,6 +843,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     private void deserializeModifyPermissions(Map<String, Object> conObject, DBPDataSourcePermissionOwner permissionOwner) {
+        if (conObject == null) {
+            return;
+        }
         Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
         if (!CommonUtils.isEmpty(securityCfg)) {
             List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
