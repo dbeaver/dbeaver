@@ -52,4 +52,7 @@ public interface STMTreeNode extends Tree {
     @NotNull
     String getText();
     
+    default STMTreeNode getStmParent() {
+        return getParent() instanceof STMTreeNode parent ? parent : null;
+    }
 }

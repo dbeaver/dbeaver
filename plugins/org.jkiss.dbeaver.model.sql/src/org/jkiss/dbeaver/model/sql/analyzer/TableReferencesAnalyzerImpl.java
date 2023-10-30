@@ -83,7 +83,7 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
     }
 
     @Override
-    public Map<String, String> getTableAlicesFromQuery(String query) {
+    public Map<String, String> getTableAliasesFromQuery(String query) {
         try {
             prepareTableReferences(query);
         } catch (Exception e) {

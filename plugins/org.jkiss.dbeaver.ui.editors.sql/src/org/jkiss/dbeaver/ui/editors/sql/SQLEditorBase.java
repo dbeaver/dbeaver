@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.extended.SQLBackgroundParsingJob;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -123,6 +124,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Nullable
     private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
+    private SQLBackgroundParsingJob backgroundParsingJob;
 
     //private Map<Annotation, Position> curAnnotations;
 
@@ -143,6 +145,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
+        backgroundParsingJob = new SQLBackgroundParsingJob(this);
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime = 0;
 
@@ -627,6 +630,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
+        this.backgroundParsingJob.dispose();
         this.occurrencesHighlighter.dispose();
 /*
         if (this.activationListener != null) {
@@ -742,7 +746,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(getDataSource(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
-        ruleScanner.refreshRules(getDataSource(), ruleManager);
+        ruleScanner.refreshRules(getDataSource(), ruleManager, backgroundParsingJob);
         parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
 
         if (document instanceof IDocumentExtension3) {
@@ -791,6 +795,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (verticalRuler != null) {
             verticalRuler.update();
         }
+        
+        backgroundParsingJob.setup();
     }
 
     boolean hasActiveQuery() {

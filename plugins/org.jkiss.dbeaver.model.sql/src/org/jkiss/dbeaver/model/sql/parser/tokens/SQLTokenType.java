@@ -29,7 +29,11 @@ public enum SQLTokenType implements TPTokenType {
     T_QUOTED(502),
     T_TYPE(503),
     T_NUMBER(504),
-
+    T_TABLE(505),
+    T_COLUMN(506),
+    T_COLUMN_ALIAS(507),
+    T_SEMANTIC_ERROR(508),
+    
     T_UNKNOWN(1000),
     T_BLOCK_BEGIN(1001),
     T_BLOCK_END(1002),

@@ -661,6 +661,10 @@ public class SQLConstants {
     public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
     public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
     public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
+    public static final String CONFIG_COLOR_TABLE = "org.jkiss.dbeaver.sql.editor.color.table.foreground";
+    public static final String CONFIG_COLOR_COLUMN = "org.jkiss.dbeaver.sql.editor.color.column.foreground";
+    public static final String CONFIG_COLOR_COLUMN_ALIAS = "org.jkiss.dbeaver.sql.editor.color.columnAlias.foreground";
+    public static final String CONFIG_COLOR_SEMANTIC_ERROR = "org.jkiss.dbeaver.sql.editor.color.semanticError.foreground";
     public static final String CONFIG_COLOR_NUMBER = "org.jkiss.dbeaver.sql.editor.color.number.foreground";
     public static final String CONFIG_COLOR_COMMENT = "org.jkiss.dbeaver.sql.editor.color.comment.foreground";
     public static final String CONFIG_COLOR_DELIMITER = "org.jkiss.dbeaver.sql.editor.color.delimiter.foreground";
