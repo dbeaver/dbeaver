@@ -98,7 +98,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
-        return fileSystem.getId();
+        return fileSystem.getFileSystemDisplayName();
     }
 
     @Override
@@ -161,7 +161,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getName();
+        return getParentNode().getNodeItemPath() + "/" + fileSystem.getId();
     }
 
     @Override
