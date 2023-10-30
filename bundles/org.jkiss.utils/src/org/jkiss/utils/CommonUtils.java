@@ -939,7 +939,7 @@ public class CommonUtils {
             .replace("\r\n", "<br>")
             .replace("\r", "<br>")
             .replace("\n", "<br>")
-            .replace("\t", "&emsp");
+            .replace("\t", "&emsp;");
     }
 
     /**
