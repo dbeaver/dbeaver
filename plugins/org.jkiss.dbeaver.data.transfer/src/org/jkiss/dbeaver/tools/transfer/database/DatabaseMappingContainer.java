@@ -227,7 +227,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     DatabaseMappingAttribute getAttributeMapping(@NotNull DBDAttributeBinding sourceAttr) {
         return CommonUtils.findBestCaseAwareMatch(
             attributeMappings,
-            CommonUtils.notNull(sourceAttr.getLabel(), sourceAttr.getName()), attr -> attr.getSourceLabelOrName(attr.getSource(), false));
+            CommonUtils.notNull(sourceAttr.getLabel(), sourceAttr.getName()),
+            attr -> attr.getSourceLabelOrName(attr.getSource(), false, false));
     }
 
     /**
@@ -286,7 +287,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 DBSAttributeBase sourceAttr = attrMapping.getSource();
                 if (sourceAttr != null) {
                     Map<String, Object> attrSettings = new LinkedHashMap<>();
-                    attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr, false), attrSettings);
+                    attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr, false, false), attrSettings);
                     attrMapping.saveSettings(attrSettings);
                 }
             }
@@ -339,7 +340,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                     if (sourceAttr != null) {
                         Map<String, Object> attrSettings = JSONUtils.getObject(
                             attrsSection,
-                            attrMapping.getSourceLabelOrName(sourceAttr, false));
+                            attrMapping.getSourceLabelOrName(sourceAttr, false, false));
                         if (!attrSettings.isEmpty()) {
                             attrMapping.loadSettings(attrSettings);
                         }
