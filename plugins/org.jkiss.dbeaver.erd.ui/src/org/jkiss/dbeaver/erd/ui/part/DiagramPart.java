@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.erd.ui.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +59,7 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-
+    
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
         @Override
@@ -134,11 +135,8 @@ public class DiagramPart extends PropertyAwarePart {
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-
-        AbstractRouter router = getConnectionRouterDescriptor().getRouter();
-        if (router instanceof ERDConnectionRouter) {
-            ((ERDConnectionRouter) router).setContainer(figure);
-        }
+        ERDConnectionRouter router = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().createRouter();
+        router.setContainer(figure);
         cLayer.setConnectionRouter(router);
         return figure;
     }

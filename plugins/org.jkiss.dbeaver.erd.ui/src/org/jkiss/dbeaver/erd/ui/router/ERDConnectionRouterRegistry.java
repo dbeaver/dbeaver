@@ -37,27 +37,28 @@ public class ERDConnectionRouterRegistry {
 
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.routing"; //$NON-NLS-1$
     private static ERDConnectionRouterRegistry instance;
-    private Map<String, ERDConnectionRouterDescriptor> connectionRouters = new LinkedHashMap<>();
+    private Map<String, ERDConnectionRouterDescriptor> connectionRouterDescriptors = new LinkedHashMap<>();
     private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
     private Log log = Log.getLog(ERDNotationRegistry.class);
+    private ERDConnectionRouterDescriptor activeRouterDescriptor;
 
     private ERDConnectionRouterRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] cfgElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement cfe : cfgElements) {
             try {
-                addRouterConnection(new ERDConnectionRouterDescriptor(cfe));
+                addDescriptor(new ERDConnectionRouterDescriptor(cfe));
             } catch (CoreException e) {
                 log.error(e.getStatus());
             }
         }
     }
 
-    private void addRouterConnection(@NotNull ERDConnectionRouterDescriptor descriptor) {
-        if (connectionRouters.containsKey(descriptor.getId())) {
+    private void addDescriptor(@NotNull ERDConnectionRouterDescriptor descriptor) {
+        if (connectionRouterDescriptors.containsKey(descriptor.getId())) {
             log.error("ER Diagram Connection router is already defined for id:" + descriptor.getId());
             return;
         }
-        connectionRouters.put(descriptor.getId(), descriptor);
+        connectionRouterDescriptors.put(descriptor.getId(), descriptor);
     }
 
     /**
@@ -73,9 +74,9 @@ public class ERDConnectionRouterRegistry {
     }
 
     @NotNull
-    public List<ERDConnectionRouterDescriptor> getConnectionRouters() {
+    public List<ERDConnectionRouterDescriptor> getDescriptors() {
         List<ERDConnectionRouterDescriptor> descriptors = new ArrayList<>();
-        for (ERDConnectionRouterDescriptor descriptor : connectionRouters.values()) {
+        for (ERDConnectionRouterDescriptor descriptor : connectionRouterDescriptors.values()) {
             descriptors.add(descriptor);
         }
         return descriptors;
@@ -89,30 +90,52 @@ public class ERDConnectionRouterRegistry {
      * @return - descriptor
      */
     @Nullable
-    public ERDConnectionRouterDescriptor getConnectionRouter(String id) {
-        if (!connectionRouters.containsKey(id)) {
+    public ERDConnectionRouterDescriptor getDescriptorById(String id) {
+        if (!connectionRouterDescriptors.containsKey(id)) {
             // attempt to get by name
-            for (ERDConnectionRouterDescriptor descriptor : connectionRouters.values()) {
+            for (ERDConnectionRouterDescriptor descriptor : connectionRouterDescriptors.values()) {
                 if (descriptor.getName().equals(id)) {
                     return descriptor;
                 }
             }
         }
-        return connectionRouters.get(id);
+        return connectionRouterDescriptors.get(id);
     }
 
     /**
-     * The method designed to retrieve stored value of router from configuration
-     * scope
+     * The method designed to retrieve default router
      *
      * @param store - preferences node
      * @return - descriptor
      */
-    public ERDConnectionRouterDescriptor getDefaultRouter() {
-        ERDConnectionRouterDescriptor connectionRouter = getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
-        if (connectionRouter != null) {
-            return connectionRouter;
+    public ERDConnectionRouterDescriptor getActiveDescriptor() {
+        if (activeRouterDescriptor != null) {
+            return activeRouterDescriptor;
         }
-        return getConnectionRouter(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID);
+        activeRouterDescriptor = getDescriptorById(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        if (activeRouterDescriptor != null) {
+            return activeRouterDescriptor;
+        }
+        activeRouterDescriptor = getDefaultDescriptor();
+        return activeRouterDescriptor;
+    }
+
+    /**
+     * Set default router
+     *
+     * @param connectionRouter
+     */
+    public void setActiveDescriptor(ERDConnectionRouterDescriptor connectionRouter) {
+        activeRouterDescriptor = connectionRouter;
+        store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, activeRouterDescriptor.getId());
+    }
+    
+    /**
+     * Get default descriptor
+     *
+     * @return - default descriptor
+     */
+    public ERDConnectionRouterDescriptor getDefaultDescriptor() {
+        return getDescriptorById(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID);
     }
 }

@@ -29,13 +29,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
-import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
-import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
-import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
@@ -54,9 +50,6 @@ import java.util.List;
  */
 public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener, DBPNamedObject {
 
-    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-    private ERDConnectionRouterRegistry  connectionRouterRegistry = ERDConnectionRouterRegistry.getInstance();
-    
     @NotNull
     @Override
     public String getName() {
@@ -400,13 +393,5 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             return null;
         }
         return super.getAdapter(key);
-    }
-
-    protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
-        return connectionRouterRegistry.getDefaultRouter();
-    }
-
-    protected DBPPreferenceStore getPreferences() {
-        return store;
     }
 }

@@ -71,8 +71,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
     private List<Button> visibilityButtons = new ArrayList<>();
     private List<Button> styleButtons = new ArrayList<>();
-    private ERDConnectionRouterRegistry erdRouterRegistry = ERDConnectionRouterRegistry.getInstance();
-    private ERDNotationRegistry erdNotationRegistry = ERDNotationRegistry.getInstance();
+    private ERDConnectionRouterRegistry routerRegistry = ERDConnectionRouterRegistry.getInstance();
+    private ERDNotationRegistry notationRegistry = ERDNotationRegistry.getInstance();
     private List<ERDConnectionRouterDescriptor> routerDescriptors = new ArrayList<>();
     private List<ERDNotationDescriptor> notationDescriptors = new ArrayList<>();
     
@@ -80,8 +80,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        routerDescriptors = erdRouterRegistry.getConnectionRouters();
-        notationDescriptors = erdNotationRegistry.getNotations();
+        routerDescriptors = routerRegistry.getDescriptors();
+        notationDescriptors = notationRegistry.getNotations();
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         createContentsGroup(store, composite);
         createColorPrefGroup(store, composite);
@@ -102,7 +102,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         for (ERDConnectionRouterDescriptor descriptor : routerDescriptors) {
             routingType.add(descriptor.getName());
         }
-        ERDConnectionRouterDescriptor defConnectionRouter = erdRouterRegistry.getDefaultRouter();
+        ERDConnectionRouterDescriptor defConnectionRouter = routerRegistry.getActiveDescriptor();
         if (defConnectionRouter != null) {
             routingType.select(routerDescriptors.indexOf(defConnectionRouter));
         } else {
@@ -114,7 +114,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         for (ERDNotationDescriptor descriptor : notationDescriptors) {
             notationType.add(descriptor.getName());
         }
-        ERDNotationDescriptor defNotation = erdNotationRegistry.getDefaultNotation();
+        ERDNotationDescriptor defNotation = notationRegistry.getActiveDescriptor();
         if (defNotation != null) {
             notationType.select(notationDescriptors.indexOf(defNotation));
         } else {
@@ -216,9 +216,9 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
         contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
-        routingType.select(routerDescriptors.indexOf(erdRouterRegistry.getDefaultRouter()));
+        routingType.select(routerDescriptors.indexOf(routerRegistry.getDefaultDescriptor()));
         changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
-        notationType.select(notationDescriptors.indexOf(erdNotationRegistry.getDefaultNotation()));
+        notationType.select(notationDescriptors.indexOf(notationRegistry.getDefaultDescriptor()));
         changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
         gridCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_ENABLED));
         snapCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED));
@@ -245,22 +245,19 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     public boolean performOk()
     {
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
         ERDConnectionRouterDescriptor connectionRouter = ERDConnectionRouterRegistry.getInstance()
-            .getConnectionRouter(routingType.getText());
+            .getDescriptorById(routingType.getText());
         if (connectionRouter != null) {
-            store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, connectionRouter.getId());
+            ERDConnectionRouterRegistry.getInstance().setActiveDescriptor(connectionRouter);
         }
-        ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getERDNotationByName(notationType.getText());
+        ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getDescriptorByName(notationType.getText());
         if (erdNotation != null) {
-            store.setValue(ERDUIConstants.PREF_NOTATION_TYPE, erdNotation.getId());
+            ERDNotationRegistry.getInstance().setActiveDescriptor(erdNotation);
         }
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
-
-
         store.setValue(ERDUIConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
         store.setValue(ERDUIConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
         store.setValue(ERDUIConstants.PREF_GRID_WIDTH, spinnerGridWidth.getSelection());

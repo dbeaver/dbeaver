@@ -39,7 +39,7 @@ public class AttributeListFigure extends Figure {
 
     public AttributeListFigure(ERDEntity entity, boolean key) {
         GridLayout layout = new GridLayout(2, false);
-        layout.marginHeight = 1;
+        layout.marginHeight = 3;
         layout.marginWidth = 5;
         layout.verticalSpacing = 0;
         layout.horizontalSpacing = 0;

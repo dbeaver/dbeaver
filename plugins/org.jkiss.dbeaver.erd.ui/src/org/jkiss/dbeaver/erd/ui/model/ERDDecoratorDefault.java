@@ -163,7 +163,7 @@ public class ERDDecoratorDefault implements ERDDecorator {
     }
 
     protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
-        return connectionRouterRegistry.getDefaultRouter();
+        return connectionRouterRegistry.getActiveDescriptor();
     }
 
 }

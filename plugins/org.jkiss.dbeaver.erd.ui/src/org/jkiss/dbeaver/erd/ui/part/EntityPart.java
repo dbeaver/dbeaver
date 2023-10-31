@@ -33,13 +33,16 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.beans.PropertyChangeEvent;
@@ -56,6 +59,8 @@ import java.util.Map;
 public class EntityPart extends NodePart {
     protected DirectEditManager manager;
     private AccessibleGraphicalEditPart accPart;
+    private final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+    private ERDConnectionRouterRegistry connectionRouterRegistry = ERDConnectionRouterRegistry.getInstance();
     
     public EntityPart() {
     }
@@ -301,14 +306,14 @@ public class EntityPart extends NodePart {
     }
 
     private boolean supportsAttributeAssociations() {
-        return getConnectionRouterDescriptor().supportedAttributeAssociation()
-            && !ERDAttributeVisibility.isHideAttributeAssociations(getPreferences());
+        return connectionRouterRegistry.getActiveDescriptor().supportedAttributeAssociation()
+            && !ERDAttributeVisibility.isHideAttributeAssociations(store);
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        if (!getConnectionRouterDescriptor().supportedAttributeAssociation() 
-            || ERDAttributeVisibility.isHideAttributeAssociations(getPreferences())) {
+        if (!connectionRouterRegistry.getActiveDescriptor().supportedAttributeAssociation() 
+            || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelTargetConnections();
         }
         List<ERDAssociation> list = new ArrayList<>();

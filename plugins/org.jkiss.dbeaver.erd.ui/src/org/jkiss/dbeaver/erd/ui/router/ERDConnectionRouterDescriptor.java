@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.erd.ui.router;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.draw2d.AbstractRouter;
-import org.eclipse.draw2d.PolylineConnection;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -27,13 +25,16 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
+/**
+ * The class descriptor of representing visual connection between figures
+ */
 public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     private String id;
     private String name;
     private String description;
     private boolean isEnableAttributeAssociation;
     private ObjectType lazyRouter;
-    private ObjectType lazyConnection;
+    private ERDConnectionRouter router;
 
     private Log log = Log.getLog(ERDConnectionRouterDescriptor.class.getName());
 
@@ -44,7 +45,6 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
         this.description = cf.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.isEnableAttributeAssociation = CommonUtils.toBoolean(cf.getAttribute(ERDUIConstants.ATTR_ERD_SUPPORT_ATTRIBUTES_ASSOCIATION));
         this.lazyRouter = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_ROUTER)); // $NON-NLS-1$
-        this.lazyConnection = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_CONNECTION)); // $NON-NLS-1$
     }
 
     /**
@@ -71,25 +71,22 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     /**
      * Create contributed router type
      */
-    public AbstractRouter getRouter() {
+    public ERDConnectionRouter createRouter() {
         try {
-            return lazyRouter.createInstance(AbstractRouter.class);
+            router = lazyRouter.createInstance(ERDConnectionRouter.class);
         } catch (DBException e) {
             log.error(e.getMessage());
         }
-        return null;
+        return router;
     }
 
     /**
-     * Create contributed connection type
+     * Get active router
+     *
+     * @return - router object
      */
-    public PolylineConnection createRouterConnection() {
-        try {
-            return lazyConnection.createInstance(PolylineConnection.class);
-        } catch (DBException e) {
-            log.error(e.getMessage());
-        }
-        return null;
+    public ERDConnectionRouter getRouter() {
+        return router;
     }
 
     /**
