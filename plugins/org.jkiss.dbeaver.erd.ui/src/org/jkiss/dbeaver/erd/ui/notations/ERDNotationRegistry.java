@@ -117,7 +117,6 @@ public class ERDNotationRegistry {
      * The method designed to retrieve stored value of notation from configuration
      * scope
      *
-     * @param store - preferences node
      * @return - descriptor
      */
     public ERDNotationDescriptor getActiveDescriptor() {

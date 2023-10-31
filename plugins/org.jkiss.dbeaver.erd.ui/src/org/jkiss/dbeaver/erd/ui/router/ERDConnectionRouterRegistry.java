@@ -105,7 +105,6 @@ public class ERDConnectionRouterRegistry {
     /**
      * The method designed to retrieve default router
      *
-     * @param store - preferences node
      * @return - descriptor
      */
     public ERDConnectionRouterDescriptor getActiveDescriptor() {
@@ -123,7 +122,6 @@ public class ERDConnectionRouterRegistry {
     /**
      * Set default router
      *
-     * @param connectionRouter
      */
     public void setActiveDescriptor(ERDConnectionRouterDescriptor connectionRouter) {
         activeRouterDescriptor = connectionRouter;

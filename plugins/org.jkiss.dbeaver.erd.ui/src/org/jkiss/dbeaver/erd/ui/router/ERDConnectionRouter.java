@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.router;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.PointList;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Generic interface designed to set container for particular router
@@ -61,7 +61,7 @@ public abstract class ERDConnectionRouter extends AbstractRouter {
     }
 
     /**
-     * Get instance of connection 
+     * Get instance of connection
      *
      * @return
      */
