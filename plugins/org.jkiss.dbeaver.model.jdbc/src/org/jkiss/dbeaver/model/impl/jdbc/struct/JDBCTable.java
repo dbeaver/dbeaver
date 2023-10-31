@@ -60,7 +60,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     private static final String DEFAULT_TABLE_ALIAS = "x";
 
-    private static final String geometryDataType = "MDSYS.\"MDSYS.ST_GEOMETRY\"";
+    private static final String geometryDataType = "MDSYS.ST_GEOMETRY";
 
     private boolean persisted;
     private boolean allNulls;
