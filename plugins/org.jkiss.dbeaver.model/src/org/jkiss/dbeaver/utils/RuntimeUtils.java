@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -533,6 +530,41 @@ public final class RuntimeUtils {
         if (result == null)
             throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), ""); //$NON-NLS-1$
         return result;
+    }
+
+    public static <T> void executeJobsForEach(List<T> objects, DBRRunnableParametrizedWithProgress<T> task) {
+        List<AbstractJob> checkJobs = new ArrayList<>(objects.size());
+        for (T object : objects) {
+            AbstractJob job = new AbstractJob("Execute for " + object) {
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    if (!monitor.isCanceled()) {
+                        try {
+                            task.run(monitor, object);
+                        } catch (InvocationTargetException e) {
+                            log.debug(e.getTargetException());
+                        } catch (InterruptedException e) {
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            job.schedule();
+            checkJobs.add(job);
+        }
+        // Wait for all jobs to finish
+        for (AbstractJob job : checkJobs) {
+            try {
+                job.join();
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
     }
 
     private enum CommandLineState {
