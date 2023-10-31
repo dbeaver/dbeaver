@@ -27,12 +27,20 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Virtual file system utils
@@ -40,7 +48,10 @@ import java.nio.file.Path;
 public class DBFUtils {
 
     private static final Log log = Log.getLog(DBFUtils.class);
+
     private static volatile Boolean SUPPORT_MULTI_FS = null;
+
+    private static Map<FileSystem, String> fileSystemIdCache = new IdentityHashMap<>();
 
     public static boolean supportsMultiFileSystems(@NotNull DBPProject project) {
         if (SUPPORT_MULTI_FS == null) {
@@ -118,4 +129,60 @@ public class DBFUtils {
             return Path.of(pathOrUri);
         }
     }
+
+    public static URI getUriFromPath(Path path) {
+        URI uri = path.toUri();
+        String fileSystemId = getFileSystemId(path.getFileSystem());
+        if (!CommonUtils.isEmpty(fileSystemId)) {
+            try {
+                if (!CommonUtils.isEmpty(uri.getAuthority())) {
+                    uri = new URI(
+                        uri.getScheme(),
+                        uri.getAuthority(),
+                        uri.getPath(),
+                        DBFFileSystemManager.QUERY_PARAM_FS_ID + "=" + fileSystemId,
+                        null
+                    );
+                } else {
+                    uri = new URI(
+                        uri.getScheme(),
+                        uri.getHost(),
+                        uri.getPath(),
+                        DBFFileSystemManager.QUERY_PARAM_FS_ID + "=" + fileSystemId
+                    );
+                }
+            } catch (URISyntaxException e) {
+                log.debug("Error generating FS URI", e);
+            }
+        }
+        return uri;
+    }
+
+    public static Map<String, String> getQueryParameters(String query) {
+        if (query == null || query.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        final Map<String, String> result = new LinkedHashMap<>();
+        final String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            final int idx = pair.indexOf("=");
+            final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8) : pair;
+            final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8) : null;
+            result.put(key, value);
+        }
+        return result;
+    }
+
+    public static String getFileSystemId(FileSystem fs) {
+        return fileSystemIdCache.get(fs);
+    }
+
+    public static void mapFileSystem(FileSystem fs, String id) {
+        if (id == null) {
+            fileSystemIdCache.remove(fs);
+        } else {
+            fileSystemIdCache.put(fs, id);
+        }
+    }
+
 }
