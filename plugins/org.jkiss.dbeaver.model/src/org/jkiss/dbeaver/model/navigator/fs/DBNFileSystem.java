@@ -94,7 +94,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public String getNodeType() {
-        return "FileSystem";
+        return NodePathType.dbvfs.name() + ".fileSystem";
     }
 
     @Override
