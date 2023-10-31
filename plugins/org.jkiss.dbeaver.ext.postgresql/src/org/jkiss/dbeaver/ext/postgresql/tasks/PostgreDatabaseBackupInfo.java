@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * PostgreDatabaseBackupInfo
@@ -32,6 +33,8 @@ public class PostgreDatabaseBackupInfo extends PostgreDatabaseBackupRestoreInfo 
     private List<PostgreSchema> schemas;
     @Nullable
     private List<PostgreTableBase> tables;
+    @Nullable
+    private Map<PostgreSchema, List<PostgreTableBase>> mapToExclude;
 
     public PostgreDatabaseBackupInfo(@NotNull PostgreDatabase database, @Nullable List<PostgreSchema> schemas, @Nullable List<PostgreTableBase> tables) {
         super(database);
@@ -55,5 +58,18 @@ public class PostgreDatabaseBackupInfo extends PostgreDatabaseBackupRestoreInfo 
 
     public void setTables(@Nullable List<PostgreTableBase> tables) {
         this.tables = tables;
+    }
+
+    /**
+     *
+     * Return map schema/tables to configure exclude tables list
+     */
+    @Nullable
+    public Map<PostgreSchema, List<PostgreTableBase>> getMapToExclude() {
+        return mapToExclude;
+    }
+
+    void setMapToExclude(@Nullable Map<PostgreSchema, List<PostgreTableBase>> mapToExclude) {
+        this.mapToExclude = mapToExclude;
     }
 }

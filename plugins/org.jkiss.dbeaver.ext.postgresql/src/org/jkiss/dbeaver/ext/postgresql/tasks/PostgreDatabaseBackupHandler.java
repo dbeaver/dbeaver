@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
@@ -35,9 +34,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<PostgreDatabaseBackupSettings, DBSObject, PostgreDatabaseBackupInfo> {
 
@@ -140,22 +137,36 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             log.debug("Can't find specific schemas/tables for the backup");
             return;
         }
+        if (!CommonUtils.isEmpty(arg.getSchemas())) {
+            arg.getSchemas().forEach(schema -> addObjectToCLI(cmd, "-n", DBUtils.getQuotedIdentifier(schema)));
+        }
         if (!CommonUtils.isEmpty(arg.getTables())) {
-            arg.getTables().forEach(table -> addObjectToCLI(cmd, "-t", table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
-            if (!CommonUtils.isEmpty(arg.getSchemas())) {
-                for (PostgreSchema schema : arg.getSchemas()) {
-                    // We can't use -n and -t together in one command line. Only tables from -t list will be dumped.
-                    // Let's unwrap schemas list then.
+            Map<PostgreSchema, List<PostgreTableBase>> mapToExclude = arg.getMapToExclude();
+            if (!CommonUtils.isEmpty(mapToExclude)) {
+                // We can't use -n and -t together in one command line. Only tables from -t list will be dumped.
+                // Let's unwrap schemas list then, create list to exclude tables with -T param
+                Set<PostgreTableBase> excludeTables = new HashSet<>();
+                for (Map.Entry<PostgreSchema, List<PostgreTableBase>> entry : mapToExclude.entrySet()) {
+                    PostgreSchema schema = entry.getKey();
+                    List<PostgreTableBase> values = entry.getValue();
                     try {
-                        List<? extends PostgreTable> tables = schema.getTables(monitor);
-                        tables.forEach(table -> addObjectToCLI(cmd, "-t", table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                        List<PostgreTableBase> tablesAndViews = schema.getTableCache().getAllObjects(monitor, schema);
+                        for (PostgreTableBase object : tablesAndViews) {
+                            if (!values.contains(object) && (object instanceof PostgreTableRegular || object instanceof PostgreView)) {
+                                excludeTables.add(object);
+                            }
+                        }
                     } catch (DBException e) {
                         log.debug("Can't read tables from schema " + schema.getName());
                     }
                 }
+                if (!CommonUtils.isEmpty(excludeTables)) {
+                    excludeTables.forEach(table -> addObjectToCLI(cmd, "-T", table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                }
+            } else {
+                // Backward compatibility
+                arg.getTables().forEach(table -> addObjectToCLI(cmd, "-t", table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
             }
-        } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
-            arg.getSchemas().forEach(schema -> addObjectToCLI(cmd, "-n", DBUtils.getQuotedIdentifier(schema)));
         }
     }
 
