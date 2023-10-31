@@ -150,14 +150,18 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     private void hideMessageBar() {
-        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        gridData.heightHint = 0;
-        messageBar.setLayoutData(gridData);
+        Object layoutData = messageBar.getLayoutData();
+        if (layoutData instanceof GridData) {
+            ((GridData) layoutData).exclude = true;
+        }
         messageBar.getParent().layout();
     }
 
     private void showMessageBar(String msg) {
-        messageBar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        Object layoutData = messageBar.getLayoutData();
+        if (layoutData instanceof GridData) {
+            ((GridData) layoutData).exclude = false;
+        }
         messageBar.setForeground(UIStyles.getErrorTextForeground());
         messageBar.setText(msg);
         messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
