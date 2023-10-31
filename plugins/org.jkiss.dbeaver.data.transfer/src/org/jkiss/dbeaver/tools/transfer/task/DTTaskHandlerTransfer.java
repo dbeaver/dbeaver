@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
-import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
@@ -42,7 +39,7 @@ import java.util.Locale;
 /**
  * DTTaskHandlerTransfer
  */
-public class DTTaskHandlerTransfer implements DBTTaskHandler {
+public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector {
     private static final Log log = Log.getLog(DTTaskHandlerTransfer.class);
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
@@ -148,9 +145,14 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
     }
 
     @Nullable
-    private Throwable runDataTransferJobs(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale,
-                                     @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
-                                     @NotNull DataTransferSettings settings) {
+    private Throwable runDataTransferJobs(
+        @NotNull DBRRunnableContext runnableContext,
+        DBTTask task,
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @NotNull DBTTaskExecutionListener listener,
+        @NotNull DataTransferSettings settings
+    ) {
         int totalJobs = settings.getDataPipes().size();
         if (totalJobs > settings.getMaxJobCount()) {
             totalJobs = settings.getMaxJobCount();
@@ -206,8 +208,11 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         }
     }
 
-    private static boolean enableReferentialIntegrity(@NotNull IDataTransferConsumer<?, ?> consumer,
-                                                   @NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+    private static boolean enableReferentialIntegrity(
+        @NotNull IDataTransferConsumer<?, ?> consumer,
+        @NotNull DBRProgressMonitor monitor,
+        boolean enable
+    ) throws DBException {
         if (!(consumer instanceof DatabaseTransferConsumer)) {
             return false;
         }
@@ -219,4 +224,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         }
         return false;
     }
+
+    @Override
+    public void collectTaskInfo(@NotNull DBTTask task, @NotNull TaskInformation information) {
+        DataTransferSettings.collectTaskInfo(task, information);
+    }
+
 }

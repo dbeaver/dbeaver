@@ -129,7 +129,7 @@
             class="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
             id="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.resource"
-            properties="canOpen,canDelete,canCreateFile,canCreateFolder,canCreateLink,canSetActive,isLocalFS,type"
+            properties="canOpen,canDelete,canCreateFile,canCreateFolder,canCreateLink,canSetActive,isLocalFS,isFolder,type"
             type="org.eclipse.core.resources.IResource"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
@@ -852,6 +852,9 @@
                         <or>
                             <instanceof value="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
                             <instanceof value="org.jkiss.dbeaver.model.navigator.DBNContainer"/>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource">
+                                <test property="org.jkiss.dbeaver.core.resource.isFolder"/>
+                            </instanceof>
                         </or>
                     </iterate>
                 </with>

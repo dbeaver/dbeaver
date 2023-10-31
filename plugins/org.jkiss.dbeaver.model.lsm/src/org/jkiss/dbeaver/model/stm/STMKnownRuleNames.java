@@ -309,8 +309,10 @@ public class STMKnownRuleNames {
     public static final String updateStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_updateStatement];
     public static final String setClauseList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setClauseList];
     public static final String setClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setClause];
-    public static final String objectColumn = SQLStandardParser.ruleNames[SQLStandardParser.RULE_objectColumn];
+    public static final String setTarget = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setTarget];
+    public static final String setTargetList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setTargetList];
     public static final String updateSource = SQLStandardParser.ruleNames[SQLStandardParser.RULE_updateSource];
+    public static final String updateValue = SQLStandardParser.ruleNames[SQLStandardParser.RULE_updateValue];
 
     // transactions
     public static final String sqlTransactionStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlTransactionStatement];
