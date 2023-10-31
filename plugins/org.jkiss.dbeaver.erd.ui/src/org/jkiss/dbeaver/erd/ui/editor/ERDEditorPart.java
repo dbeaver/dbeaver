@@ -855,7 +855,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     public void fillNotationsMenu(IMenuManager menu) {
         MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_notation_style);
-        for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getERDNotations()) {
+        for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getNotations()) {
             ntMenu.add(new ChangeERDNotationStyleAction(ntType));
         }
         menu.add(ntMenu);
@@ -1203,8 +1203,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 doSave(new NullProgressMonitor());
                 refreshDiagram(true, true);
             } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
-                DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-                ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getDefaultNotation(store);
+                ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getDefaultNotation();
                 getDiagram().setDiagramNotation(defaultNotation);
                 refreshDiagram(true, true);
             }

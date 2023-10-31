@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.LinkedHashMap;
@@ -33,10 +34,11 @@ import java.util.stream.Collectors;
 
 public class ERDNotationRegistry {
 
-    private Log log = Log.getLog(ERDNotationRegistry.class);
-    private Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
-    private static ERDNotationRegistry instance;
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.notation.style";
+    private static ERDNotationRegistry instance;
+    private Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
+    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+    private Log log = Log.getLog(ERDNotationRegistry.class);
 
     private ERDNotationRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] cfgElements = registry.getConfigurationElementsFor(EXTENSION_ID);
@@ -62,7 +64,7 @@ public class ERDNotationRegistry {
     }
 
     @NotNull
-    public List<ERDNotationDescriptor> getERDNotations() {
+    public List<ERDNotationDescriptor> getNotations() {
         return notations.values().stream().collect(Collectors.toList());
     }
 
@@ -117,26 +119,11 @@ public class ERDNotationRegistry {
      * @param store - preferences node
      * @return - descriptor
      */
-    public ERDNotationDescriptor getDefaultNotation(DBPPreferenceStore store) {
+    public ERDNotationDescriptor getDefaultNotation() {
         ERDNotationDescriptor notation = getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
         if (notation != null) {
             return notation;
         }
         return getNotation(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_NOTATION_ID);
-    }
-
-    /**
-     * The method designed to get index of default element
-     *
-     * @param store - preferences node
-     * @return - integer value of index
-     */
-    public int getDefaultNotationIndex(DBPPreferenceStore store) {
-        ERDNotationDescriptor notation = getDefaultNotation(store);
-        if (notation != null) {
-            return getERDNotations().indexOf(notation);
-        } else {
-            return 0;
-        }
     }
 }

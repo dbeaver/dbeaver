@@ -111,7 +111,7 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
     }
 
     protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
-        return connectionRouterRegistry.getDefaultRouter(store);
+        return connectionRouterRegistry.getDefaultRouter();
     }
 
     protected DBPPreferenceStore getPreferences() {

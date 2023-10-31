@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
@@ -34,10 +35,11 @@ import java.util.Map;
 
 public class ERDConnectionRouterRegistry {
 
-    private Log log = Log.getLog(ERDNotationRegistry.class);
-    private Map<String, ERDConnectionRouterDescriptor> connectionRouters = new LinkedHashMap<>();
-    private static ERDConnectionRouterRegistry instance;
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.routing"; //$NON-NLS-1$
+    private static ERDConnectionRouterRegistry instance;
+    private Map<String, ERDConnectionRouterDescriptor> connectionRouters = new LinkedHashMap<>();
+    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+    private Log log = Log.getLog(ERDNotationRegistry.class);
 
     private ERDConnectionRouterRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] cfgElements = registry.getConfigurationElementsFor(EXTENSION_ID);
@@ -71,7 +73,7 @@ public class ERDConnectionRouterRegistry {
     }
 
     @NotNull
-    public List<ERDConnectionRouterDescriptor> getDescriptors() {
+    public List<ERDConnectionRouterDescriptor> getConnectionRouters() {
         List<ERDConnectionRouterDescriptor> descriptors = new ArrayList<>();
         for (ERDConnectionRouterDescriptor descriptor : connectionRouters.values()) {
             descriptors.add(descriptor);
@@ -106,27 +108,11 @@ public class ERDConnectionRouterRegistry {
      * @param store - preferences node
      * @return - descriptor
      */
-    public ERDConnectionRouterDescriptor getDefaultRouter(DBPPreferenceStore store) {
+    public ERDConnectionRouterDescriptor getDefaultRouter() {
         ERDConnectionRouterDescriptor connectionRouter = getConnectionRouter(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
         if (connectionRouter != null) {
             return connectionRouter;
         }
         return getConnectionRouter(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID);
     }
-
-    /**
-     * The method designed to get index of default element
-     *
-     * @param store - preferences node
-     * @return - integer value of index
-     */
-    public int getDefaultRouterIndex(DBPPreferenceStore store) {
-        ERDConnectionRouterDescriptor connectionRouter = getDefaultRouter(store);
-        if (connectionRouter != null) {
-            return getDescriptors().indexOf(connectionRouter);
-        } else {
-            return 0;
-        }
-    }
-
 }

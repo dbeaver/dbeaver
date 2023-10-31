@@ -403,7 +403,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     }
 
     protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
-        return connectionRouterRegistry.getDefaultRouter(store);
+        return connectionRouterRegistry.getDefaultRouter();
     }
 
     protected DBPPreferenceStore getPreferences() {

@@ -69,7 +69,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
         this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
-        this.notationStyle = ERDNotationRegistry.getInstance().getDefaultNotation(store);
+        this.notationStyle = ERDNotationRegistry.getInstance().getDefaultNotation();
     }
 
     @NotNull
