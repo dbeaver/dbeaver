@@ -168,6 +168,12 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return getParentNode().getNodeItemPath() + "/" + getName();
     }
 
+    @NotNull
+    @Override
+    public String getName() {
+        return fileSystem.getId();
+    }
+
     @Override
     public boolean supportsRename() {
         return false;

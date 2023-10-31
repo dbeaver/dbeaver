@@ -17,8 +17,8 @@
          </appInfo>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="generator" minOccurs="0" maxOccurs="unbounded"/>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="generator" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,9 +47,10 @@
       </complexType>
    </element>
 
-   <element name="formatter">
+   <element name="generator">
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="objectType"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -91,8 +92,31 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="order" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
+
+   <element name="objectType">
+      <complexType>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+
+
+
 
 
 </schema>

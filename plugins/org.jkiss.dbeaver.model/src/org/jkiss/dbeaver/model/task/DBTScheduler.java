@@ -70,7 +70,7 @@ public interface DBTScheduler {
     @Nullable
     DBTTaskScheduleConfiguration getScheduledTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
-    default boolean canSchedule(@NotNull DBTTask task) throws DBException {
+    default boolean canSchedule(@NotNull DBTTask task, List<String> warnings) throws DBException {
         return true;
     }
 

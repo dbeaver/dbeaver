@@ -622,6 +622,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public String getOffsetLimitQueryPart(int offset, int limit) {
+        return String.format("LIMIT %d OFFSET %d", limit, offset);
+    }
+
+    @Override
     public boolean supportsAliasInHaving() {
         return true;
     }
@@ -977,6 +982,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return false;
+    }
+
+    @Override
+    public boolean supportsUuid() {
+        return true;
     }
 
     @NotNull
