@@ -50,6 +50,7 @@ public abstract class CubridObjectContainer implements CubridStructContainer, DB
     private final CubridDataSource dataSource;
     private final TableCache tableCache;
     private final SystemTableCache systemTableCache;
+    private final SystemViewCache systemViewCache;
     private final IndexCache indexCache;
     private final ForeignKeysCache foreignKeysCache;
     private final ConstraintKeysCache constraintKeysCache;
@@ -67,6 +68,7 @@ public abstract class CubridObjectContainer implements CubridStructContainer, DB
         this.dataSource = dataSource;
         this.tableCache = createTableCache(dataSource);
         this.systemTableCache = createSystemTableCache(dataSource);
+        this.systemViewCache = createSystemViewCache(dataSource);
         this.indexCache = new IndexCache(tableCache);
         this.constraintKeysCache = new ConstraintKeysCache(tableCache);
         this.foreignKeysCache = new ForeignKeysCache(tableCache);
@@ -94,6 +96,15 @@ public abstract class CubridObjectContainer implements CubridStructContainer, DB
     @Override
     public final SystemTableCache getSystemTableCache() {
     	return systemTableCache;
+    }
+    
+    public SystemViewCache createSystemViewCache(CubridDataSource dataSource) {
+    	return new SystemViewCache(dataSource);
+    }
+
+    @Override
+    public final SystemViewCache getSystemViewCache() {
+    	return systemViewCache;
     }
 
     @Override
@@ -138,14 +149,29 @@ public abstract class CubridObjectContainer implements CubridStructContainer, DB
     }
 
     @Override
-    public List<? extends CubridView> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends CubridView> getViews(DBRProgressMonitor monitor, String owner) throws DBException {
         List<? extends CubridTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<CubridView> filtered = new ArrayList<>();
             for (CubridTableBase table : tables) {
-                if (table instanceof CubridView) {
+                if (table instanceof CubridView && owner.toUpperCase().equals(table.getOwner().getName())) {
                     filtered.add((CubridView) table);
                 }
+            }
+            return filtered;
+        }
+        return null;
+    }
+    
+    @Override
+    public List<? extends CubridView> getSystemViews(DBRProgressMonitor monitor, String owner) throws DBException {
+        List<? extends CubridTableBase> tables = systemViewCache.getAllObjects(monitor, this);
+        if (tables != null) {
+            List<CubridView> filtered = new ArrayList<>();
+            for (CubridTableBase table : tables) {
+            	if(owner.toUpperCase().equals(table.getOwner().getName())) {
+            		filtered.add((CubridView) table);
+            	}
             }
             return filtered;
         }
@@ -525,6 +551,19 @@ public abstract class CubridObjectContainer implements CubridStructContainer, DB
 	    }
     }
 
+    public class SystemViewCache extends TableCache {
+
+		protected SystemViewCache(CubridDataSource dataSource) {
+			super(dataSource);
+		}
+
+		@NotNull
+	    @Override
+	    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridStructContainer owner, @Nullable CubridTableBase object, @Nullable String objectName) throws SQLException {
+	        return dataSource.getMetaModel().prepareSystemViewLoadStatement(session, owner, object, objectName);
+	    }
+    }
+    
     public class ContainerTriggerCache extends JDBCObjectCache<CubridStructContainer, CubridTrigger> {
 
         @NotNull

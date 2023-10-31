@@ -74,5 +74,13 @@ public class CubridUser implements DBSObject, CubridScriptObject{
     public CubridTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
 		return this.container.getDataSource().getTable(monitor, name);
     }
+    
+    public List<? extends CubridView> getViews(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getDataSource().getViews(monitor, name);
+    }
+    
+    public List<? extends CubridView> getSystemViews(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getDataSource().getSystemViews(monitor, name);
+    }
 
 }

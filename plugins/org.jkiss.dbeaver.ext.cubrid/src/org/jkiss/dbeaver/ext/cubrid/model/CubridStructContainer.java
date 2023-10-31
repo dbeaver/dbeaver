@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer.SystemTableCache;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer.SystemViewCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -54,12 +55,16 @@ public interface CubridStructContainer extends DBSObjectContainer, DBSProcedureC
     TableTriggerCache getTableTriggerCache();
     
     SystemTableCache getSystemTableCache();
+    
+    SystemViewCache getSystemViewCache();
 
     CubridObjectContainer.CubridSequenceCache getSequenceCache();
 
     CubridObjectContainer.CubridSynonymCache getSynonymCache();
 
-    List<? extends CubridView> getViews(DBRProgressMonitor monitor) throws DBException;
+    List<? extends CubridView> getViews(DBRProgressMonitor monitor, String owner) throws DBException;
+    
+    List<? extends CubridView> getSystemViews(DBRProgressMonitor monitor, String owner) throws DBException;
     
     List<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor, String owner) throws DBException;
     
