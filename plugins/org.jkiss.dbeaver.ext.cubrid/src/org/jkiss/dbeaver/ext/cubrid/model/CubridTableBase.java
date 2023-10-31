@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -60,6 +61,7 @@ public abstract class CubridTableBase extends JDBCTable<CubridDataSource, Cubrid
     private boolean isSystem;
     private boolean isUtility;
     private String description;
+    private CubridUser owner;
     private Long rowCount;
     private List<? extends CubridTrigger> triggers;
     private final String tableCatalogName;
@@ -75,9 +77,20 @@ public abstract class CubridTableBase extends JDBCTable<CubridDataSource, Cubrid
         if (this.tableType == null) {
             this.tableType = "";
         }
+        
+        String owner_name;
 
         if (dbResult != null) {
             this.description = CubridUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.REMARKS);
+            owner_name = CubridUtils.safeGetString(container.getTableCache().tableObject, dbResult, CubridConstants.OWNER_NAME);
+        } else {
+        	owner_name = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+        }
+        
+        for(CubridUser cbOwner : getDataSource().getOwners()){
+            if(cbOwner.getName().equals(owner_name)) {
+	            this.owner = cbOwner;
+            }
         }
 
         final CubridMetaModel metaModel = container.getDataSource().getMetaModel();
@@ -279,6 +292,16 @@ public abstract class CubridTableBase extends JDBCTable<CubridDataSource, Cubrid
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    @Nullable
+    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
+    public CubridUser getOwner() {
+        return owner;
+    }
+
+    public void setOwner(CubridUser owner) {
+        this.owner = owner;
     }
 
     @Override
@@ -528,5 +551,18 @@ public abstract class CubridTableBase extends JDBCTable<CubridDataSource, Cubrid
 
     public Collection<DBSIndexType> getTableIndexTypes() {
         return Collections.singletonList(DBSIndexType.OTHER);
+    }
+    
+    public static class OwnerListProvider implements IPropertyValueListProvider<CubridTableBase> {
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        @Override
+        public Object[] getPossibleValues(CubridTableBase object)
+        {
+        	return object.getDataSource().getOwners().toArray();
+        }
     }
 }

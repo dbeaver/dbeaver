@@ -62,6 +62,43 @@
 	                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
 	                                </items>
 	                            </items>
+	                            <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.system_table.node.name" icon="#folder_table" description="%tree.system_table.node.tip">
+	                                <items label="%tree.table.node.name" path="table" property="physicalSystemTables" icon="#table">
+		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+		                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+		                                    </items>
+		                                </folder>
+		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+		                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+		                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+		                                        </items>
+		                                    </items>
+		                                </folder>
+		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+		                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+		                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+		                                        </items>
+		                                    </items>
+		                                </folder>
+		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" visibleIf="object.dataSource.info.supportsIndexes()">
+		                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+		                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+		                                        </items>
+		                                    </items>
+		                                </folder>
+		                                <folder label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+		                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+		                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+		                                        </items>
+		                                    </items>
+		                                </folder>
+		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+		                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+		                                </folder>
+		                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
+		                                </items>
+		                            </items>
+	                            </folder>
 	                        </folder>
 	                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip" visibleIf="object.dataSource.metaModel.supportsViews(object.dataSource)">
 	                            <items label="%tree.tview.node.name" path="view" property="views" icon="#view">

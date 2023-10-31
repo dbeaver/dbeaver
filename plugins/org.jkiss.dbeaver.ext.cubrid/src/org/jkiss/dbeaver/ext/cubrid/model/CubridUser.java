@@ -53,14 +53,26 @@ public class CubridUser implements DBSObject, CubridScriptObject{
 		return this.container.getDataSource();
 	}
     
-    public CubridTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
-		return this.container.getDataSource().getTable(monitor, name);
-    }
-    
 	@Override
 	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public List<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getDataSource().getPhysicalTables(monitor, name);
+	}
+	
+    public List<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getDataSource().getPhysicalSystemTables(monitor, name);
+    }
+    
+    public List<? extends CubridTableBase> getTables(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getDataSource().getTables(monitor);
+    }
+    
+    public CubridTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
+		return this.container.getDataSource().getTable(monitor, name);
+    }
 
 }

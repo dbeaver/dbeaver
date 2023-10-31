@@ -566,29 +566,27 @@ public class CubridMetaModel {
      *  </OL>
      */
     public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull CubridStructContainer owner, @Nullable CubridTableBase object, @Nullable String objectName)
-        throws SQLException
+            throws SQLException
     {
-        String tableNamePattern;
-        if (object == null && objectName == null) {
-            final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getObjectFilter(CubridTable.class, owner, false);
+	   String sql= "select a.*, case when class_type = 'CLASS' then 'TABLE' \r\n"
+	   		+ "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
+	   		+ "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
+	   		+ "a.class_name = b.class_name where a.is_system_class='NO'";
+       final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
 
-            if (tableFilters != null && tableFilters.hasSingleMask()) {
-                tableNamePattern = tableFilters.getSingleMask();
-                if (!CommonUtils.isEmpty(tableNamePattern)) {
-                    tableNamePattern = SQLUtils.makeSQLLike(tableNamePattern);
-                }
-            } else {
-                tableNamePattern = owner.getDataSource().getAllObjectsPattern();
-            }
-        } else {
-            tableNamePattern = JDBCUtils.escapeWildCards(session, (object != null ? object.getName() : objectName));
-        }
+       return dbStat;
+    }
+    
+    public JDBCStatement prepareSystemTableLoadStatement(@NotNull JDBCSession session, @NotNull CubridStructContainer owner, @Nullable CubridTableBase object, @Nullable String objectName)
+            throws SQLException
+    {
+       String sql= "select *, class_name as TABLE_NAME, case when class_type = 'CLASS' \r\n"
+    		+ "then 'TABLE' end as TABLE_TYPE from db_class\r\n"
+       		+ "where class_type = 'CLASS' \r\n"
+       		+ "and is_system_class = 'YES'";
+       final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
 
-        return session.getMetaData().getTables(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
-            tableNamePattern,
-            null).getSourceStatement();
+       return dbStat;
     }
 
     /**
@@ -602,12 +600,9 @@ public class CubridMetaModel {
         return false;
     }
 
-    public CubridTableBase createTableImpl(@NotNull JDBCSession session, @NotNull CubridStructContainer owner, @NotNull CubridMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
-        String tableName = isTrimObjectNames()?
-            CubridUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME)
-            : CubridUtils.safeGetString(tableObject, dbResult, JDBCConstants.TABLE_NAME);
+    public CubridTableBase createTableImpl(@NotNull JDBCSession session, @NotNull CubridStructContainer owner, @NotNull CubridMetaObject tableObject, @NotNull JDBCResultSet dbResult) {	
+    	String tableName = CubridUtils.safeGetStringTrimmed(tableObject, dbResult, CubridConstants.CLASS_NAME);
         String tableType = CubridUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
-
         String tableSchema = CubridUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
         CubridDataSource dataSource = owner.getDataSource();
         if (!CommonUtils.isEmpty(tableSchema) && dataSource.isOmitSchema()) {

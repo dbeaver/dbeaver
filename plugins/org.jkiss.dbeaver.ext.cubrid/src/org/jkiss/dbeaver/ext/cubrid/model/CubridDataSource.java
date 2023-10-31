@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer.SystemTableCache;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaObject;
 import org.jkiss.dbeaver.model.*;
@@ -382,6 +383,11 @@ public class CubridDataSource extends JDBCDataSource implements DBPTermProvider,
     public TableCache getTableCache() {
         return structureContainer.getTableCache();
     }
+    
+    @Override
+    public SystemTableCache getSystemTableCache() {
+    	return structureContainer.getSystemTableCache();
+    }
 
     @Override
     public IndexCache getIndexCache() {
@@ -419,10 +425,15 @@ public class CubridDataSource extends JDBCDataSource implements DBPTermProvider,
     }
 
     @Override
-    public List<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
-        return structureContainer == null ? null : structureContainer.getPhysicalTables(monitor);
+    public List<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor, String owner) throws DBException {
+        return structureContainer == null ? null : structureContainer.getPhysicalTables(monitor, owner);
     }
 
+    @Override
+    public List<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor, String owner) throws DBException {
+        return structureContainer == null ? null : structureContainer.getPhysicalSystemTables(monitor, owner);
+    }
+    
     @Override
     public List<? extends CubridTableBase> getTables(DBRProgressMonitor monitor)
         throws DBException {
