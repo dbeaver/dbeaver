@@ -24,9 +24,11 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
-
-public class TreeNodeFilterExpander extends TreeNodeSpecial implements IToolTipProvider {
-    public TreeNodeFilterExpander(@NotNull DBNNode parent) {
+/**
+ * A special node that is shown when a filter is applied to a parent folder node.
+ */
+public class TreeNodeFilterConfigurator extends TreeNodeSpecial implements IToolTipProvider {
+    public TreeNodeFilterConfigurator(@NotNull DBNNode parent) {
         super(parent);
     }
 

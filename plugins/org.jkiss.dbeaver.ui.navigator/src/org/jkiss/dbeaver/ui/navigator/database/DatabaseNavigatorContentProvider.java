@@ -175,7 +175,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             final List<Object> nodes = new ArrayList<>(maxFetchSize);
 
             if (parent.isFiltered()) {
-                nodes.add(new TreeNodeFilterExpander(parent));
+                nodes.add(new TreeNodeFilterConfigurator(parent));
             }
 
             if (maxFetchSize < children.length) {
