@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskInfoCollector;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
@@ -235,7 +237,8 @@ public class DTUtils {
 
     public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(
         @NotNull DBRRunnableContext runnableContext,
-        SerializerContext serializeContext, OBJECT_CONTEXT objectContext,
+        SerializerContext serializeContext,
+        OBJECT_CONTEXT objectContext,
         @NotNull Map<String, Object> objectConfig
     ) throws DBCException {
         String typeID = CommonUtils.toString(objectConfig.get("type"));
@@ -268,6 +271,14 @@ public class DTUtils {
         state.put("location", location);
 
         return state;
+    }
+
+    public static void collectTaskInfo(
+        DBTTask task,
+        Map<String, Object> objectConfig,
+        DBTTaskInfoCollector.TaskInformation information
+    ) {
+
     }
 
     private static class MetadataReceiver implements DBDDataReceiver {

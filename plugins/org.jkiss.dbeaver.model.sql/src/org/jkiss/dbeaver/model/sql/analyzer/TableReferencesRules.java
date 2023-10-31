@@ -29,6 +29,7 @@ public class TableReferencesRules {
         STMKnownRuleNames.sqlQuery,
         STMKnownRuleNames.directSqlDataStatement,
         STMKnownRuleNames.selectStatement,
+        STMKnownRuleNames.updateStatement,
         STMKnownRuleNames.queryExpression,
         STMKnownRuleNames.nonJoinQueryTerm,
         STMKnownRuleNames.queryPrimary,

@@ -55,6 +55,10 @@ public class EFSNIOFileSystem extends FileSystem {
         Path path = null;
 
         String projectName = uri.getHost();
+        if (CommonUtils.isEmpty(projectName)) {
+            // First part is host or authority depending on characters used (e.g. host cannot have underscore)
+            projectName = uri.getAuthority();
+        }
         String[] vfsPath = CommonUtils.removeTrailingSlash(CommonUtils.removeLeadingSlash(uri.getPath()))
             .split("/");
         String relPath = uri.getQuery();

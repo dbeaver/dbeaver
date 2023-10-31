@@ -721,7 +721,6 @@
    <element name="tools">
       <complexType>
          <sequence>
-            <element ref="tool" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
       </complexType>
    </element>

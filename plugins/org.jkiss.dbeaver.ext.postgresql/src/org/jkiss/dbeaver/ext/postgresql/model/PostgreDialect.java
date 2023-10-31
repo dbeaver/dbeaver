@@ -1074,6 +1074,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return PostgreConstants.TYPE_BOOLEAN;
     }
 
+    @Override
+    public boolean supportsNoActionIndex() {
+        return true;
+    }
+
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
