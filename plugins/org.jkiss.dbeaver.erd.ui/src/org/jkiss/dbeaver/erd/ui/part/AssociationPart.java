@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -103,7 +104,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().getRouter().getConnectionInstance();
+        PolylineConnection conn;
+        ERDConnectionRouter router = getDiagramPart().getRouter();
+        if (router != null) {
+            conn = router.getConnectionInstance();
+        } else {
+            conn = new PolylineConnection();
+        }
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {

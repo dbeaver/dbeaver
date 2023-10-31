@@ -60,6 +60,7 @@ import java.util.List;
  */
 public class DiagramPart extends PropertyAwarePart {
     
+    private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
         @Override
@@ -135,7 +136,7 @@ public class DiagramPart extends PropertyAwarePart {
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-        ERDConnectionRouter router = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().createRouter();
+        router = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().createRouter();
         router.setContainer(figure);
         cLayer.setConnectionRouter(router);
         return figure;
@@ -403,6 +404,15 @@ public class DiagramPart extends PropertyAwarePart {
     public String toString()
     {
         return ERDUIMessages.entity_diagram_ + " " + getDiagram().getName();
+    }
+
+    /**
+     * Gets the diagram router
+     *
+     * @return - router
+     */
+    public ERDConnectionRouter getRouter() {
+        return router;
     }
 
 

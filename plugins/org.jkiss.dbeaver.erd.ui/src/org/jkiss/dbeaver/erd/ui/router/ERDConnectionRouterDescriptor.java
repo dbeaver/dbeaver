@@ -34,7 +34,6 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     private String description;
     private boolean isEnableAttributeAssociation;
     private ObjectType lazyRouter;
-    private ERDConnectionRouter router;
 
     private Log log = Log.getLog(ERDConnectionRouterDescriptor.class.getName());
 
@@ -73,20 +72,11 @@ public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
      */
     public ERDConnectionRouter createRouter() {
         try {
-            router = lazyRouter.createInstance(ERDConnectionRouter.class);
+            return lazyRouter.createInstance(ERDConnectionRouter.class);
         } catch (DBException e) {
             log.error(e.getMessage());
         }
-        return router;
-    }
-
-    /**
-     * Get active router
-     *
-     * @return - router object
-     */
-    public ERDConnectionRouter getRouter() {
-        return router;
+        return null;
     }
 
     /**
