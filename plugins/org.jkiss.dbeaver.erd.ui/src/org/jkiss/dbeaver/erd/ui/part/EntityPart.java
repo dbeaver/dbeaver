@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.erd.ui.policy.EntityEditPolicy;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.beans.PropertyChangeEvent;
@@ -59,8 +58,6 @@ import java.util.Map;
 public class EntityPart extends NodePart {
     protected DirectEditManager manager;
     private AccessibleGraphicalEditPart accPart;
-    private final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-    private ERDConnectionRouterRegistry connectionRouterRegistry = ERDConnectionRouterRegistry.getInstance();
     
     public EntityPart() {
     }
@@ -306,14 +303,14 @@ public class EntityPart extends NodePart {
     }
 
     private boolean supportsAttributeAssociations() {
-        return connectionRouterRegistry.getActiveDescriptor().supportedAttributeAssociation()
-            && !ERDAttributeVisibility.isHideAttributeAssociations(store);
+        return ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+            && !ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences());
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        if (!connectionRouterRegistry.getActiveDescriptor().supportedAttributeAssociation() 
-            || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation() 
+            || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return super.getModelTargetConnections();
         }
         List<ERDAssociation> list = new ArrayList<>();

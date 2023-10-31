@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -68,8 +67,6 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     private ERDHighlightingHandle associatedAttributesHighlighing = null;
     private AccessibleGraphicalEditPart accPart;
     private final Color labelForegroundColor;
-    private final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-    private ERDConnectionRouterRegistry connectionRouterRegistry = ERDConnectionRouterRegistry.getInstance();
 
     public AssociationPart() {
         Color foreground = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND);
@@ -106,7 +103,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn = connectionRouterRegistry.getActiveDescriptor().getRouter().getConnectionInstance();
+        PolylineConnection conn = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().getRouter().getConnectionInstance();
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
@@ -141,8 +138,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 entityPart = getTarget();
             }
             if (entityPart instanceof GraphicalEditPart
-                && (!connectionRouterRegistry.getActiveDescriptor().supportedAttributeAssociation()
-                    || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
+                && (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+                    || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences()))) {
                 // Self link
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
                 final Dimension figureSize = entityFigure.getMinimumSize();
