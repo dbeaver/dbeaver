@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -64,7 +65,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     private ILabelDecorator labelDecorator;
 
     public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
-        this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
+        this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
         this.themeChangeListener = e -> {
             final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
@@ -179,6 +180,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 return transientForeground;
             }
         }
+        if (element instanceof TreeNodeSpecial) {
+            return lockedForeground;
+        }
         return null;
     }
 
@@ -258,6 +262,8 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 return description;
             }
             return ((DBNNode) element).getNodeName();
+        } else if (element instanceof IToolTipProvider) {
+            return ((IToolTipProvider) element).getToolTipText(element);
         }
         return null;
     }
