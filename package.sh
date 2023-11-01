@@ -18,6 +18,7 @@ mac_zip_package_name="${zip_basename}-${package_version}-${mac_package_name}.zip
 
 package_dir="product/community/target/products/org.jkiss.dbeaver.core.product"
 
+cd ${package_dir}
 rm -rf macosx/cocoa/aarch64
 cd "${base_pwd}/${package_dir}/win32"
 zip -r ${win32_zip_package_name} win32
