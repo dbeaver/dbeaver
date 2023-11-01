@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.qm;
 import org.jkiss.code.Nullable;
 
 /**
- * Query manager session receiver.
+ * Query manager session provider.
  * It helps us to differ CE and EE products (CE product doesn't have QM database).
  */
 public interface QMSessionProvider {
