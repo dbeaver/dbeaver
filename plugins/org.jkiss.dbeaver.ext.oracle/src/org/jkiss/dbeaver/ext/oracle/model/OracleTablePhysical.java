@@ -155,6 +155,10 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return this.getContainer().indexCache.getObject(monitor, getContainer(), this, name);
     }
 
+    public PartitionCache getPartitionCache() {
+        return partitionCache;
+    }
+
     @PropertyGroup
     @LazyProperty(cacheValidator = PartitionInfoValidator.class)
     public PartitionInfo getPartitionInfo(DBRProgressMonitor monitor) throws DBException
@@ -178,6 +182,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     }
 
     @Association
+    @Property(viewable = true, order = 13)
     public boolean isPartitioned() {
         return partitioned;
     }
