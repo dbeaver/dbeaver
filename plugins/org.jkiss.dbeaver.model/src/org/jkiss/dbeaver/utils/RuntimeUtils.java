@@ -20,6 +20,7 @@ import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.internal.runtime.CommonMessages;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobGroup;
 import org.eclipse.osgi.service.localization.BundleLocalization;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -533,7 +534,7 @@ public final class RuntimeUtils {
     }
 
     public static <T> void executeJobsForEach(List<T> objects, DBRRunnableParametrizedWithProgress<T> task) {
-        List<AbstractJob> checkJobs = new ArrayList<>(objects.size());
+        JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
         for (T object : objects) {
             AbstractJob job = new AbstractJob("Execute for " + object) {
                 {
@@ -554,16 +555,13 @@ public final class RuntimeUtils {
                     return Status.OK_STATUS;
                 }
             };
+            job.setJobGroup(jobGroup);
             job.schedule();
-            checkJobs.add(job);
         }
-        // Wait for all jobs to finish
-        for (AbstractJob job : checkJobs) {
-            try {
-                job.join();
-            } catch (InterruptedException e) {
-                // ignore
-            }
+        try {
+            jobGroup.join(0, new NullProgressMonitor());
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 
