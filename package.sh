@@ -25,5 +25,6 @@ cp ${win32_zip_package_name} ${base_pwd}/${package_dir}
 cd ${base_pwd}/${package_dir}
 zip -r ${mac_zip_package_name} macosx
 zip -r ${linux_x86_zip_package_name} linux/gtk/x86_64
+zip -r ${linux_arrch64_zip_package_name} linux/gtk/aarch64
 
 
