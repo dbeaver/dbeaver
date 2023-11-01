@@ -64,7 +64,6 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
     private static final Map<String, GPTCompletionAdapter> clientInstances = new HashMap<>();
-    private static final int GPT_MODEL_MAX_RESPONSE_TOKENS = 2000;
 
     private static final Pattern sizeErrorPattern = Pattern.compile("This model's maximum context length is [0-9]+ tokens. "
         + "\\wowever[, ]+you requested [0-9]+ tokens \\(([0-9]+) in \\w+ \\w+[;,] [0-9]+ \\w+ \\w+ completion\\). "
@@ -81,7 +80,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         String modelId
     ) {
         return CompletionRequest.builder()
-            .prompt(buildSingleMessage(messages))
+            .prompt(buildSingleMessage(truncateMessages(messages, maxTokens)))
             .temperature(temperature)
             .maxTokens(maxTokens)
             .frequencyPenalty(0.0)
@@ -100,7 +99,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         String modelId
     ) {
         return ChatCompletionRequest.builder()
-            .messages(messages.stream()
+            .messages(truncateMessages(messages, maxTokens).stream()
                 .map(m -> new ChatMessage(m.role().getId(), m.content()))
                 .toList())
             .temperature(temperature)
@@ -165,7 +164,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             mainObject,
             formatter,
             model,
-            getMaxTokens()
+            getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS
         );
 
         final List<DAICompletionMessage> mergedMessages = new ArrayList<>();
@@ -244,7 +243,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
             try {
                 List<?> choices;
-                int responseSize = GPT_MODEL_MAX_RESPONSE_TOKENS;
+                int responseSize = AIConstants.MAX_RESPONSE_TOKENS;
                 for (int i = 0; ; i++) {
                     try {
                         choices = getCompletionChoices(service, completionRequest);
@@ -345,7 +344,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     }
 
     protected Object createCompletionRequest(@NotNull List<DAICompletionMessage> messages) {
-        return createCompletionRequest(messages, GPT_MODEL_MAX_RESPONSE_TOKENS);
+        return createCompletionRequest(messages, AIConstants.MAX_RESPONSE_TOKENS);
     }
 
     protected Object createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) {
@@ -393,5 +392,32 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         buffer.add("SELECT ");
 
         return buffer.toString();
+    }
+
+    @NotNull
+    private static List<DAICompletionMessage> truncateMessages(@NotNull List<DAICompletionMessage> messages, int maxTokens) {
+        final Deque<DAICompletionMessage> pending = new LinkedList<>(messages);
+        final List<DAICompletionMessage> truncated = new ArrayList<>();
+        int remainingTokens = maxTokens - 20; // Just to be sure
+
+        if (pending.getFirst().role() == DAICompletionMessage.Role.SYSTEM) {
+            // Always append system message
+            truncated.add(pending.remove());
+        }
+
+        while (!pending.isEmpty()) {
+            final DAICompletionMessage message = pending.remove();
+            final int messageTokens = message.content().length();
+
+            if (remainingTokens < 0 || messageTokens > remainingTokens) {
+                // Exclude old messages that don't fit into given number of tokens
+                break;
+            }
+
+            truncated.add(message);
+            remainingTokens -= messageTokens;
+        }
+
+        return truncated;
     }
 }

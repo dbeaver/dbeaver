@@ -46,8 +46,6 @@ public class MetadataProcessor {
     private static final Log log = Log.getLog(MetadataProcessor.class);
 
     private static final boolean SUPPORTS_ATTRS = true;
-    private static final int MAX_RESPONSE_TOKENS = 2000;
-
 
     public String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
@@ -109,7 +107,7 @@ public class MetadataProcessor {
         @Nullable DBSObjectContainer mainObject,
         @NotNull IAIFormatter formatter,
         @NotNull GPTModel model,
-        int maxTokens
+        int maxRequestTokens
     ) throws DBException {
         if (mainObject == null || mainObject.getDataSource() == null) {
             throw new DBException("Invalid completion request");
@@ -140,6 +138,8 @@ public class MetadataProcessor {
 
         sb.append("\nSQL tables, with their properties are:");
 
+        final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
+
         if (context.getScope() == DAICompletionScope.CUSTOM) {
             for (DBSEntity entity : context.getCustomEntities()) {
                 sb.append(generateObjectDescription(
@@ -147,7 +147,7 @@ public class MetadataProcessor {
                     entity,
                     executionContext,
                     formatter,
-                    maxTokens,
+                    remainingRequestTokens,
                     isRequiresFullyQualifiedName(entity, executionContext)
                 ));
             }
@@ -157,7 +157,7 @@ public class MetadataProcessor {
                 mainObject,
                 executionContext,
                 formatter,
-                maxTokens,
+                remainingRequestTokens,
                 false
             ));
         }
