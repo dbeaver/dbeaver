@@ -14,13 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+
+package org.jkiss.dbeaver.model.runtime;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
- * Task initializer.
+ * Runnable with parameter and progress
  */
-public interface DBTTaskInitializer {
+@FunctionalInterface
+public interface DBRRunnableParametrizedWithProgress<T> {
 
-    void initializeTaskSettings(DBTTask task);
+    void run(DBRProgressMonitor monitor, T param)
+        throws InvocationTargetException, InterruptedException;
 
 }
