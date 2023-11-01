@@ -1804,17 +1804,19 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
+
+        try {
+            if (!extraPresentationManager.setActivePresentation(presentation)) {
+                return;
+            }
+        } catch (DBException e) {
+            log.error("Error creating presentation", e);
+        }
+
         resultsSash.setRedraw(false);
 
         try {
-            StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
-
-            try {
-                extraPresentationManager.setActivePresentation(presentation);
-            } catch (DBException e) {
-                log.error("Error creating presentation", e);
-            }
-
             if (extraPresentationManager.activePresentation == null) {
                 stackLayout.topControl = presentationStack.getChildren()[0];
                 getEditorControlWrapper().setFocus();
@@ -4926,7 +4928,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (executionContext != null) {
             // Refresh active object
             if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     new AbstractJob("Refresh default object") {
                         @Override
@@ -4984,38 +4986,63 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        public void setActivePresentation(@Nullable SQLPresentationDescriptor descriptor) throws DBException {
+        public boolean setActivePresentation(@Nullable SQLPresentationDescriptor descriptor) throws DBException {
             if (presentationStack == null || activePresentationDescriptor == descriptor) {
-                return;
+                // Same presentation, no op
+                return true;
             }
 
-            if (activePresentation != null && !activePresentation.hidePresentation(SQLEditor.this)) {
-                return;
+            if (activePresentation != null && !activePresentation.canHidePresentation(SQLEditor.this)) {
+                // Presentation decided not to close
+                return false;
             }
 
-            if (descriptor != null) {
-                activePresentationDescriptor = descriptor;
-                activePresentation = presentations.get(descriptor);
+            if (descriptor == null) {
+                // Just hide presentation
+                activePresentationDescriptor = null;
+                activePresentation = null;
+                activePresentationPanel = null;
+                return true;
+            }
 
-                if (activePresentation == null) {
+            SQLEditorPresentation presentation = presentations.get(descriptor);
+
+            if (presentation == null) {
+                presentation = descriptor.createPresentation();
+
+                if (presentation.canShowPresentation(SQLEditor.this, true)) {
+                    // Must be done before doing something to presentationStack
                     presentationStackIndices.put(descriptor, presentationStack.getChildren().length);
 
                     final Composite placeholder = new Composite(presentationStack, SWT.NONE);
                     placeholder.setLayout(new FillLayout());
 
-                    activePresentation = descriptor.createPresentation();
+                    if (activePresentation != null) {
+                        activePresentation.hidePresentation(SQLEditor.this);
+                    }
+
+                    activePresentationDescriptor = descriptor;
+                    activePresentation = presentation;
                     activePresentation.createPresentation(placeholder, SQLEditor.this);
                     activePresentation.showPresentation(SQLEditor.this, true);
-
                     presentations.put(descriptor, activePresentation);
-                } else {
-                    activePresentation.showPresentation(SQLEditor.this, false);
+
+                    return true;
                 }
             } else {
-                activePresentationDescriptor = null;
-                activePresentation = null;
-                activePresentationPanel = null;
+                if (presentation.canShowPresentation(SQLEditor.this, false)) {
+                    if (activePresentation != null) {
+                        activePresentation.hidePresentation(SQLEditor.this);
+                    }
+
+                    activePresentationDescriptor = descriptor;
+                    activePresentation = presentation;
+                    activePresentation.showPresentation(SQLEditor.this, false);
+                    return true;
+                }
             }
+
+            return false;
         }
 
         @Nullable

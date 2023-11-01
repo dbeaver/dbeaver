@@ -14,21 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.completion;
+
+import org.jkiss.code.NotNull;
 
 /**
- * GPT preference constants
+ * Represents a single completion message
+ *
+ * @param role    role of the message
+ * @param content content of the message
  */
-public class AIConstants {
-    public static final String CORE_FORMATTER = "core";
+public record DAICompletionMessage(@NotNull Role role, @NotNull String content) {
+    /**
+     * Role of the message
+     */
+    public enum Role {
+        SYSTEM,
+        USER;
 
-    public static final String OPENAI_ENGINE = "openai";
-
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_LOG_QUERY = "gpt.log.query";
-
-    public static final int MAX_RESPONSE_TOKENS = 2000;
+        @NotNull
+        public String getId() {
+            return switch (this) {
+                case SYSTEM -> "system";
+                case USER -> "user";
+            };
+        }
+    }
 }
-
