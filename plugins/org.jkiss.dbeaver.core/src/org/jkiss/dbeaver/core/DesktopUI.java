@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -66,6 +67,7 @@ import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
+import org.jkiss.dbeaver.ui.navigator.project.FileSystemExplorerView;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
@@ -161,7 +163,7 @@ public class DesktopUI implements DBPPlatformUI {
             return;
         }
         if (TrayIconHandler.isSupported()) {
-            Display.getCurrent().beep();
+            UIUtils.syncExec(() -> Display.getCurrent().beep());
             getInstance().trayItem.notify(message, status);
         } else {
             DBeaverNotifications.showNotification(
@@ -676,6 +678,29 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public void showInSystemExplorer(@NotNull String path) {
         UIUtils.asyncExec(() -> ShellUtils.showInSystemExplorer(path));
+    }
+
+    @Override
+    public DBNPath openFileSystemSelector(
+        @NotNull String title,
+        boolean folder,
+        int style,
+        boolean binary,
+        String[] filterExt,
+        String defaultValue
+    ) {
+        DBNNode object = ObjectBrowserDialog.selectObject(
+            UIUtils.getActiveWorkbenchShell(),
+            title,
+            FileSystemExplorerView.getFileSystemsNode(),
+            null,
+            null,
+            new Class[] { DBNPath.class },
+            null);
+        if (object instanceof DBNPath path) {
+            return path;
+        }
+        return null;
     }
 
     @Override

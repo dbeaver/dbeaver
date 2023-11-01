@@ -237,7 +237,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException
     {
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {

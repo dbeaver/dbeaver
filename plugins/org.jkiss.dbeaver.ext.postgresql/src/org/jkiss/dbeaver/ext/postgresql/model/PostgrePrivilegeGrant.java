@@ -32,7 +32,8 @@ public class PostgrePrivilegeGrant {
         SEQUENCE,
         FUNCTION,
         PROCEDURE,
-        COLUMN
+        COLUMN,
+        TYPE
     }
 
     private Kind kind;

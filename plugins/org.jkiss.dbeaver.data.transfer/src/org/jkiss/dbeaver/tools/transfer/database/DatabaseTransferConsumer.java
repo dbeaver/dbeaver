@@ -615,7 +615,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<String, Object> processorProperties) {
+    public void initTransfer(@NotNull DBSObject sourceObject, @Nullable DatabaseConsumerSettings settings, @NotNull TransferParameters parameters, @Nullable IDataTransferProcessor processor, @Nullable Map<String, Object> processorProperties, @Nullable DBPProject project) {
         this.settings = settings;
         this.containerMapping = settings.getDataMapping((DBSDataContainer) sourceObject);
     }
@@ -722,7 +722,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, @Nullable DBTTask task, boolean last) {
-        if (last && exception != null) {
+        if (last && exception == null) {
             // Refresh navigator
             monitor.subTask("Refresh database model");
             try {
@@ -741,7 +741,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        if (!last && settings.isOpenTableOnFinish() && exception != null) {
+        if (!last && settings.isOpenTableOnFinish() && exception == null) {
             try {
                 // Mappings can be outdated so is the target object.
                 // This may happen when several database consumers point to the same container node

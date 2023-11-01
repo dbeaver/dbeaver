@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskInfoCollector;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -794,4 +795,45 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     public DBPProject getProject() {
         return project;
     }
+
+    // Dirty code to examine DT configuration and extract all DS or IO references
+    public static void collectTaskInfo(DBTTask task, DBTTaskInfoCollector.TaskInformation information) {
+        Map<String, Object> config = task.getProperties();
+
+        String[] dtNodeTypes = { "producers", "consumers" };
+
+        Map<String, Object> dtConfig = JSONUtils.getObject(config, "configuration");
+
+        for (String dtNodeType : dtNodeTypes) {
+            List<Map<String, Object>> nodeList = JSONUtils.getObjectList(config, dtNodeType);
+            for (Map<String, Object> nodeObj : nodeList) {
+                String type = JSONUtils.getString(nodeObj, "type");
+                if (CommonUtils.isEmpty(type)) {
+                    continue;
+                }
+                Map<String, Object> nodeConfig = JSONUtils.getObject(dtConfig,
+                    Character.toUpperCase(type.charAt(0)) + type.substring(1));
+                switch (type) {
+                    case "databaseTransferProducer" -> {
+                        Map<String, Object> location = JSONUtils.getObject(nodeObj, "location");
+                        String entityId = JSONUtils.getString(location, "entityId");
+                        if (entityId != null) {
+                            String dsID = entityId.split("/")[0];
+                            information.addDataSource(task.getProject().getDataSourceRegistry().getDataSource(dsID));
+                        }
+                    }
+                    case "databaseTransferConsumer" -> {
+
+                    }
+                    case "streamTransferConsumer" -> {
+                        information.addLocation(JSONUtils.getString(nodeConfig, "outputFolder"));
+                    }
+                    case "streamTransferProducer" -> {
+
+                    }
+                }
+            }
+        }
+    }
+
 }

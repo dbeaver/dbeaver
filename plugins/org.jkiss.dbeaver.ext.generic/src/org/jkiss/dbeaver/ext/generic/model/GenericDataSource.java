@@ -518,7 +518,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                 }
 
                 if (isMergeEntities() || (schemas == null || schemas.isEmpty())) {
-                    this.structureContainer = new DataSourceObjectContainer();
+                    this.structureContainer = new GenericDataSourceObjectContainer(this);
                 }
             }
         } catch (Throwable ex) {
@@ -618,8 +618,23 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return super.createQueryTransformer(type);
     }
 
-    GenericTableBase findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
-        throws DBException {
+    /**
+     * Find table in a parent container by container name or in default container.
+     *
+     * @param monitor for schemas and tables searching
+     * @param catalogName nullable catalog name for search (can be a parent or a grandparent)
+     * @param schemaName nullable schema name for search
+     * @param tableName not null table name for search
+     * @return generic table base object by name from parent by parent's name
+     * @throws DBException for schema or table incorrect searching
+     */
+    @Nullable
+    public GenericTableBase findTable(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @NotNull String tableName
+    ) throws DBException {
         GenericObjectContainer container = null;
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(catalogs)) {
             container = getCatalog(catalogName);
@@ -643,6 +658,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         }
         if (container == null) {
             container = structureContainer;
+        }
+        if (container == null) {
+            return null;
         }
         return container.getTable(monitor, tableName);
     }
@@ -882,50 +900,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     getMetaObject(GenericConstants.OBJECT_TABLE_TYPE),
                     resultSet,
                     JDBCConstants.TABLE_TYPE));
-        }
-    }
-
-    private class DataSourceObjectContainer extends GenericObjectContainer {
-        private DataSourceObjectContainer() {
-            super(GenericDataSource.this);
-        }
-
-        @Override
-        public GenericCatalog getCatalog() {
-            return null;
-        }
-
-        @Override
-        public GenericSchema getSchema() {
-            return null;
-        }
-
-        @Override
-        public GenericStructContainer getObject() {
-            return GenericDataSource.this;
-        }
-
-        @NotNull
-        @Override
-        public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
-            return GenericTable.class;
-        }
-
-        @NotNull
-        @Override
-        public String getName() {
-            return GenericDataSource.this.getName();
-        }
-
-        @Nullable
-        @Override
-        public String getDescription() {
-            return GenericDataSource.this.getDescription();
-        }
-
-        @Override
-        public DBSObject getParentObject() {
-            return GenericDataSource.this.getParentObject();
         }
     }
 

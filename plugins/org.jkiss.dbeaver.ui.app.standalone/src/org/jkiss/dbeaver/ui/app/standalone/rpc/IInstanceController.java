@@ -30,7 +30,7 @@ public interface IInstanceController {
 
     String CONFIG_PROP_FILE = "dbeaver-instance.properties";
 
-    @RequestMapping("ping")
+    @RequestMapping(value = "ping", timeout = 5)
     long ping(@RequestParameter("payload") long payload);
 
     @RequestMapping("version")

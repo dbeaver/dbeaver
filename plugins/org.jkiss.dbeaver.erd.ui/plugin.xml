@@ -20,6 +20,7 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="ERD Export Formats" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.erd.ui.notation.style" name="ER Diagram Notation Style Specification" schema="schema/org.jkiss.dbeaver.erd.ui.notation.style.exsd"/>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
@@ -187,6 +188,14 @@
                 id="org.jkiss.dbeaver.erd.diagram.font"
                 defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.description</description>
+        </fontDefinition>
+        <fontDefinition
+                id="org.jkiss.dbeaver.erd.diagram.font.notation.label"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.notation.label"
+                value="Segoe UI-regular-8">
+            <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.notation.description</description>
+            <fontValue os="macosx" value="Sans-regular-12"/>
         </fontDefinition>
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.background.label"
@@ -432,6 +441,7 @@
         <key commandId="org.jkiss.dbeaver.erd.focus.outline" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+3"/>
         <key commandId="org.jkiss.dbeaver.erd.focus.parameter" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+4"/>
         <key commandId="org.jkiss.dbeaver.erd.toggleHand" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
+        <key commandId="org.jkiss.dbeaver.erd.diagram.view" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ENTER"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -588,6 +598,23 @@
             message="%confirm.erd_open_exported_file.message"
             toggleMessage="%confirm.erd_open_exported_file.toggleMessage"
             group="%editor.erd.name"/>
+    </extension>
+    <extension
+          point="org.jkiss.dbeaver.erd.ui.notation.style">
+       <erdNotation
+             description="Integration DEFinition for information modeling (IDEF1X) notation"
+             id="org.jkiss.dbeaver.erd.notaion.idef1x"
+             isDefault="true"
+             name="IDEF1X"
+             notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
+       </erdNotation>
+       <erdNotation
+             description="Crow’s Foot diagram notation"
+             id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
+             isDefault="false"
+             name="Crows Foot"
+             notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
+       </erdNotation>
     </extension>
 
 </plugin>

@@ -176,6 +176,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_row_colors_group_settings_background_color_label;
     public static String dialog_row_colors_group_settings_foreground_color_label;
     public static String dialog_row_colors_group_settings_tip;
+    public static String dialog_row_colors_error_message_title;
+    public static String dialog_row_colors_error_message_text;
 
     public static String dialog_value_view_button_cancel;
     public static String dialog_value_view_button_sat_null;
@@ -242,6 +244,7 @@ public class ResultSetMessages extends NLS {
     public static String dialog_paste_as_insert_nulls_tip;
     public static String dialog_paste_as_null_value_mark_text;
     public static String dialog_paste_as_null_value_mark_tip;
+
 
     // Pref pages
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
@@ -370,6 +373,8 @@ public class ResultSetMessages extends NLS {
     public static String results_decorator_grouping_is_not_supported;
     public static String results_decorator_no_connected_to_db;
     public static String results_decorator_no_groupings;
+    public static String results_goto_column_dialog_title;
+    public static String results_goto_column_dialog_message;
     
     public static String virtual_edit_columns_page_add;
     public static String virtual_edit_columns_page_table_column_name;
@@ -404,6 +409,7 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_auto_format_name;
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
+    public static String panel_editor_text_content_limitation_lbl;
 
     public static String error_part_button_go_to_error;
 
@@ -462,13 +468,19 @@ public class ResultSetMessages extends NLS {
     public static String meta_data_panel_action_copy_column_text;
     public static String result_set_viewer_selection_stat_tooltip;
 
+    public static String panel_metadata_filter_label;
+    public static String panel_metadata_filter_hint;
+
 
     public static String reference_value_editor_value_label;
     public static String reference_value_editor_current_page_value;
     public static String reference_value_editor_current_pagination_value;
     public static String reference_value_editor_define_description_value;
     public static String reference_value_editor_search_hint_value;
-    
+
+    public static String dialog_policy_data_export_msg;
+    public static String dialog_policy_data_export_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);

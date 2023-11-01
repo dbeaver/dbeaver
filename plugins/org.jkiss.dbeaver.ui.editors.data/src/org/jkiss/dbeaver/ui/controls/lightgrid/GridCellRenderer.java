@@ -324,8 +324,11 @@ class GridCellRenderer extends AbstractRenderer {
         final Color disabledForeground = UIUtils.getSharedColor(UIUtils.blend(activeForeground.getRGB(), activeBackground.getRGB(), 50));
 
         int start = 0;
+        int index = 0;
 
-        for (int index = 0; index < text.length(); index++) {
+        while (index < text.length()) {
+            boolean matched = false;
+
             for (String[] mapping : SPECIAL_CHARACTERS_MAP) {
                 final String expected = mapping[0];
                 final String replacement = mapping[1];
@@ -342,7 +345,12 @@ class GridCellRenderer extends AbstractRenderer {
 
                     index += expected.length();
                     start = index;
+                    matched = true;
                 }
+            }
+
+            if (!matched) {
+                index += 1;
             }
         }
 
@@ -359,6 +367,10 @@ class GridCellRenderer extends AbstractRenderer {
         @NotNull Color disabledForeground,
         boolean highlight
     ) {
+        if (segment.isEmpty()) {
+            return false;
+        }
+
         final Point extent = gc.textExtent(segment);
 
         if (extent.x > bounds.width) {
@@ -402,6 +414,10 @@ class GridCellRenderer extends AbstractRenderer {
         @NotNull Rectangle bounds,
         boolean highlight
     ) {
+        if (text.isEmpty()) {
+            return;
+        }
+
         gc.setTextAntialias(SWT.ON);
         gc.setForeground(foreground);
 

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
-import org.eclipse.core.internal.runtime.Activator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -56,6 +56,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private final Property propInfo;
     private final String propName;
     private final String propDescription;
+    private final String propHint;
     private Method setter;
     private IPropertyValueTransformer valueTransformer;
     private IPropertyValueTransformer valueRenderer;
@@ -119,6 +120,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
                 propName :
                 getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false, locale);
+        this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
+            null :
+            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, propName, false, locale);
     }
 
     @Override
@@ -344,6 +348,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public String getDescription()
     {
         return propDescription;
+    }
+
+    @Override
+    public String getHint()
+    {
+        return propHint;
     }
 
     @NotNull
@@ -617,11 +627,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     private ResourceBundle getPluginResourceBundle(Bundle bundle, Class<?> ownerClass, String language) {
-        return Activator.getDefault().getLocalization(bundle, language);
+        return RuntimeUtils.getBundleLocalization(bundle, language);
         // Copied from ResourceTranslator.getResourceBundle
 //        Locale locale = (language == null) ? Locale.getDefault() : new Locale(language);
 //        return ResourceBundle.getBundle("plugin", locale, ownerClass.getClassLoader()); //$NON-NLS-1$
     }
-
 
 }

@@ -21,6 +21,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -96,7 +98,11 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
                         return ((DBNLocalFolder) element).hasConnected();
                     }
                 }
-                if (element instanceof TreeNodeSpecial || element instanceof DBNLocalFolder) {
+                if (element instanceof TreeNodeSpecial ||
+                    element instanceof DBNLocalFolder ||
+                    element instanceof DBNFileSystem ||
+                    element instanceof DBNPathBase
+                ) {
                     return true;
                 }
                 if (element instanceof DBNNode) {

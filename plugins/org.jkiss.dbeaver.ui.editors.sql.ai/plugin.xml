@@ -2,12 +2,15 @@
 <?eclipse version="3.4"?>
 
 <plugin>
+	<extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+		<propertyConfigurator class="org.jkiss.dbeaver.model.ai.openai.OpenAICompletionEngine" uiClass="org.jkiss.dbeaver.ui.editors.sql.ai.openai.OpenAiConfigurator"/>
+	</extension>
 	<extension point="org.eclipse.core.runtime.preferences">
 		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencesInitializer"/>
 	</extension>
 
 	<extension point="org.eclipse.ui.preferencePages">
-		<page id="org.jkiss.dbeaver.preferences.ai" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage" name="%pref.page.name.gpt">
+		<page id="org.jkiss.dbeaver.preferences.ai" category="org.eclipse.ui.preferencePages.Workbench" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage" name="%pref.page.name.gpt">
 			<keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
 			<keywordReference id="org.jkiss.dbeaver.ui.editors.ai.keyword.gtp"/>
 		</page>

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.erd.ui.editor;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.IFigure;
@@ -26,6 +27,7 @@ import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.*;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
@@ -80,6 +82,8 @@ import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
@@ -235,14 +239,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
-        try {
-            // Use reflection to make it compile with older Eclipse versions
-            rootPart = ScalableFreeformRootEditPart.class
-                .getConstructor(Boolean.TYPE)
-                .newInstance(false);
-        } catch (Throwable e) {
-            rootPart = new ScalableFreeformRootEditPart();
-        }
+        rootPart = new ScalableFreeformRootEditPart();
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 
@@ -851,6 +848,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
+    /**
+     * Fill ERD notations popup menu
+     *
+     *@param menu - root node
+     */
+    public void fillNotationsMenu(IMenuManager menu) {
+        MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_notation_style);
+        for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getERDNotations()) {
+            ntMenu.add(new ChangeERDNotationStyleAction(ntType));
+        }
+        menu.add(ntMenu);
+    }
+
     public void fillPartContextMenu(IMenuManager menu, IStructuredSelection selection) {
         if (selection.isEmpty()) {
             return;
@@ -1078,6 +1088,29 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             refreshEntityAndAttributes();
         }
     }
+    
+    private class ChangeERDNotationStyleAction extends Action {
+        private final ERDNotationDescriptor notation;
+
+        public ChangeERDNotationStyleAction(@NotNull ERDNotationDescriptor notation) {
+            super(notation.getName(), AS_CHECK_BOX);
+            this.notation = notation;
+        }
+
+        @Override
+        public boolean isChecked() {
+            if (notation == null || getDiagram().getDiagramNotation() == null) {
+                return false;
+            }
+            return notation.getId().equals(getDiagram().getDiagramNotation().getId());
+        }
+
+        @Override
+        public void run() {
+            getDiagram().setDiagramNotation(notation);
+            refreshDiagram(true, true);
+        }
+    }
 
     private class ChangeAttributeVisibilityAction extends Action {
         private final boolean defStyle;
@@ -1164,7 +1197,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 refreshEntityAndAttributes();
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshEntityAndAttributes();
-            } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
+            } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) ||
+                ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty()) ||
+                ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
+                doSave(new NullProgressMonitor());
+                refreshDiagram(true, true);
+            } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
+                DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+                ERDNotationDescriptor notation = ERDNotationRegistry.getInstance()
+                    .getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+                getDiagram().setDiagramNotation(notation);
                 refreshDiagram(true, true);
             }
         }
@@ -1282,6 +1324,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
                 getCommandStack().flush();
                 if (entityDiagram != null) {
+                    if (entityDiagram.isDirty()) {
+                        // Associated connections were changed during the loading process
+                        getCommandStack().execute(new MarkDirtyCommand());
+                    }
                     EditPart oldContents = getGraphicalViewer().getContents();
                     if (oldContents instanceof DiagramPart) {
                         if (restoreVisualSettings((DiagramPart) oldContents, entityDiagram)) {
@@ -1516,6 +1562,26 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void setSelection(ISelection selection, boolean reveal) {
 
+        }
+    }
+
+    /**
+     * A special command that marks the editor dirty without the possibility to undo it.
+     */
+    private static class MarkDirtyCommand extends Command {
+        @Override
+        public boolean canExecute() {
+            return true;
+        }
+
+        @Override
+        public boolean canRedo() {
+            return false;
+        }
+
+        @Override
+        public boolean canUndo() {
+            return false;
         }
     }
 }

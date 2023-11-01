@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver SSH implementation (JSch)
 Bundle-SymbolicName: org.jkiss.dbeaver.net.ssh.jsch;singleton:=true
-Bundle-Version: 1.1.122.qualifier
-Bundle-Release-Date: 20230821
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 1.1.127.qualifier
+Bundle-Release-Date: 20231023
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model,

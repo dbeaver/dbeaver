@@ -16,22 +16,26 @@
  */
 package org.jkiss.dbeaver.utils;
 
+import org.eclipse.core.internal.runtime.Activator;
+import org.eclipse.core.internal.runtime.CommonMessages;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobGroup;
+import org.eclipse.osgi.service.localization.BundleLocalization;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+import org.osgi.framework.Bundle;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -70,15 +74,15 @@ public final class RuntimeUtils {
     }
 
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor) {
-        if (monitor instanceof DBRProgressMonitor) {
-            return (DBRProgressMonitor) monitor;
+        if (monitor instanceof DBRProgressMonitor monitor1) {
+            return monitor1;
         }
         return new DefaultProgressMonitor(monitor);
     }
 
     public static IProgressMonitor getNestedMonitor(DBRProgressMonitor monitor) {
-        if (monitor instanceof IProgressMonitor) {
-            return (IProgressMonitor) monitor;
+        if (monitor instanceof IProgressMonitor monitor1) {
+            return monitor1;
         }
         return monitor.getNestedMonitor();
     }
@@ -152,7 +156,7 @@ public final class RuntimeUtils {
             }
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
-            String messagePrefix = "";
+            String messagePrefix;
             if (status.getException() != null && (CommonUtils.isEmpty(status.getException().getMessage()))) {
                 messagePrefix = status.getException().getClass().getName() + ": ";
                 return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
@@ -294,7 +298,7 @@ public final class RuntimeUtils {
                     return err.toString();
                 }
 
-                return out.length() == 0 ? null: out.toString();
+                return out.toString();
             } finally {
                 p.destroy();
             }
@@ -312,8 +316,8 @@ public final class RuntimeUtils {
             return getProcessResults(p);
         }
         catch (Exception ex) {
-            if (ex instanceof DBException) {
-                throw (DBException) ex;
+            if (ex instanceof DBException dbe) {
+                throw dbe;
             }
             throw new DBException("Error executing process " + binPath, ex);
         }
@@ -504,6 +508,61 @@ public final class RuntimeUtils {
             }
         }
         return workingDirectory;
+    }
+
+    // Extraction from Eclipse source to support old and new API versions
+    // Activator.getLocalization became static after 2023-09
+    public static ResourceBundle getBundleLocalization(Bundle bundle, String locale) throws MissingResourceException {
+        Activator activator = Activator.getDefault();
+        if (activator == null) {
+            throw new MissingResourceException(CommonMessages.activator_resourceBundleNotStarted,
+                bundle.getSymbolicName(), ""); //$NON-NLS-1$
+        }
+        ServiceCaller<BundleLocalization> localizationTracker;
+        try {
+            localizationTracker = BeanUtils.getFieldValue(activator, "localizationTracker");
+        } catch (Throwable e) {
+            throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), e.getMessage());
+        }
+        BundleLocalization location = localizationTracker.current().orElse(null);
+        ResourceBundle result = null;
+        if (location != null)
+            result = location.getLocalization(bundle, locale);
+        if (result == null)
+            throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), ""); //$NON-NLS-1$
+        return result;
+    }
+
+    public static <T> void executeJobsForEach(List<T> objects, DBRRunnableParametrizedWithProgress<T> task) {
+        JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
+        for (T object : objects) {
+            AbstractJob job = new AbstractJob("Execute for " + object) {
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    if (!monitor.isCanceled()) {
+                        try {
+                            task.run(monitor, object);
+                        } catch (InvocationTargetException e) {
+                            log.debug(e.getTargetException());
+                        } catch (InterruptedException e) {
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            job.setJobGroup(jobGroup);
+            job.schedule();
+        }
+        try {
+            jobGroup.join(0, new NullProgressMonitor());
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
     private enum CommandLineState {

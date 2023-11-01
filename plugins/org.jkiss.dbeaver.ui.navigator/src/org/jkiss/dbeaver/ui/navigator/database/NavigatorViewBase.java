@@ -65,8 +65,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         super();
     }
 
-    public DBNModel getModel()
-    {
+    @NotNull
+    public static DBNModel getGlobalNavigatorModel() {
         return DBWorkbench.getPlatform().getNavigatorModel();
     }
 
@@ -96,8 +96,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
      * it.
      */
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         this.tree = createNavigatorTree(parent, null);
         this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer(this));
 
@@ -110,8 +109,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         UIExecutionQueue.queueExec(() -> tree.setInput(getRootNode()));
     }
 
-    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
-    {
+    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode) {
         // Create tree
         final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle(), false, getNavigatorFilter());
 

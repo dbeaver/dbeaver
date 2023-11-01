@@ -67,7 +67,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
 
     @Override
     public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(monitor, this, getAcl());
+        return PostgreUtils.extractPermissionsFromACL(monitor, this, getAcl(), false);
     }
 
     @Override

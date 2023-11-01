@@ -172,12 +172,18 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
 
     protected boolean matchesResultNode(DBNNode node) {
         if (node instanceof DBSWrapper) {
-            DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
-            if (object != null) {
-                return matchesType(object, true);
+            DBSObject object = ((DBSWrapper) node).getObject();
+            if (object != null && matchesType(object, true)) {
+                return true;
+            }
+            object = DBUtils.getAdapter(DBSObject.class, object);
+            if (object != null && matchesType(object, true)) {
+                return true;
             }
         } else if (node instanceof DBNObjectNode) {
             return matchesType(((DBNObjectNode) node).getNodeObject(), true);
+        } else {
+            return matchesType(node, true);
         }
         return false;
     }

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreSettings;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFileRemote;
 
 
 class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<PostgreRestoreWizard> {
@@ -104,7 +105,13 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
 
         Group inputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_input, 2, GridData.FILL_HORIZONTAL, 0);
         UIUtils.createControlLabel(inputGroup, PostgreMessages.wizard_restore_page_setting_label_backup_file);
-        inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*.sql","*"});
+        inputFileText = new TextWithOpenFileRemote(
+            inputGroup,
+            PostgreMessages.wizard_restore_page_setting_label_choose_backup_file,
+            new String[] {"*.backup","*.sql","*"},
+            SWT.OPEN | SWT.SINGLE,
+            true,
+            getWizard().getProject());
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
         inputFileText.setText(settings.getInputFile());

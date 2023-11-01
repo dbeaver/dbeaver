@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Detached Application
 Bundle-SymbolicName: org.jkiss.dbeaver.dpi.app;singleton:=true
-Bundle-Version: 1.0.2.qualifier
-Bundle-Release-Date: 20230821
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 1.0.7.qualifier
+Bundle-Release-Date: 20231023
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.dpi.app.DPIActivator
 Export-Package: org.jkiss.dbeaver.dpi.app

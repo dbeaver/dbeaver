@@ -425,15 +425,19 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
             try {
                 runnableContext.run(true, true, monitor -> {
                     try {
+                        DBSObject dbObject = null;
                         if (!CommonUtils.isEmpty(entityId)) {
-                            container = DBUtils.getAdapter(DBSObjectContainer.class,
-                                DBUtils.findObjectById(monitor, settings.getProject(), entityId));
+                            dbObject = DBUtils.findObjectById(monitor, settings.getProject(), entityId);
                         } else if (!CommonUtils.isEmpty(containerNodePath)) {
                             DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, containerNodePath);
                             if (node instanceof DBNDatabaseNode) {
-                                container = DBUtils.getAdapter(DBSObjectContainer.class, ((DBNDatabaseNode) node).getObject());
+                                dbObject = ((DBNDatabaseNode) node).getObject();
                             }
                         }
+                        if (dbObject instanceof DBPDataSourceContainer) {
+                            DBUtils.initDataSource(monitor, (DBPDataSourceContainer) dbObject, null);
+                        }
+                        container = DBUtils.getAdapter(DBSObjectContainer.class, dbObject);
                         if (container == null) {
                             container = producerContainer;
                         }

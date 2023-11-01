@@ -42,7 +42,7 @@ import java.util.Map;
 public class ClickhouseViewManager extends GenericViewManager {
 
     @Override
-    protected String getDropViewType(GenericTableBase object) {
+    protected String getViewType(GenericTableBase object) {
         return "TABLE";
     }
     

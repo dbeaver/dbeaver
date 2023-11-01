@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.vertica.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -26,10 +28,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
-public class VerticaSQLDialect extends GenericSQLDialect {
+public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
     private static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
@@ -117,6 +123,24 @@ public class VerticaSQLDialect extends GenericSQLDialect {
     @Override
     public String[][] getBlockBoundStrings() {
         return VERTICA_BEGIN_END_BLOCK;
+    }
+
+    @NotNull
+    @Override
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
+        if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
+            return new TPRule[] {
+                new SQLDollarQuoteRule(
+                    position == RulePosition.PARTITION,
+                    false,
+                    false,
+                    dataSource == null ||
+                        CommonUtils.toBoolean(
+                            dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING))
+                )
+            };
+        }
+        return new TPRule[0];
     }
 
     @Override

@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -119,7 +120,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                         .map(item -> (CommandContributionItem) item)
                         .map(CommandContributionItem::getCommand)
                         .filter(Objects::nonNull)
-                        .filter(command -> command.getId().equals(NavigatorCommands.CMD_OBJECT_CREATE))
+                        .filter(command -> command.getId().contains(".create")) // All create commands allowed
                         .toArray(ParameterizedCommand[]::new);
 
                     if (commands.length == 1) {
@@ -169,8 +170,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (node != null && !node.isDisposed()) {
                 List<IContributionItem> actions = fillCreateMenuItems(workbenchWindow.getActivePage().getActivePart().getSite(), node);
                 for (IContributionItem item : actions) {
-                    if (item instanceof CommandContributionItem) {
-                        ParameterizedCommand command = ((CommandContributionItem) item).getCommand();
+                    if (item instanceof CommandContributionItem cci) {
+                        ParameterizedCommand command = cci.getCommand();
                         if (command != null) {
                             typeName = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
                             if (typeName != null) {
@@ -276,7 +277,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 ) {
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
                 }
-                if (resource instanceof IContainer && projectResourceEditable && !DBWorkbench.isDistributed()) {
+                if (resource instanceof IContainer && !(resource instanceof DBFFileStoreProvider) && projectResourceEditable && !DBWorkbench.isDistributed()) {
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
                 }

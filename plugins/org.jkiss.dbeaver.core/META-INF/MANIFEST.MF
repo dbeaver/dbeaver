@@ -3,11 +3,11 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Desktop Application Core
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 23.1.5.qualifier
-Bundle-Release-Date: 20230821
+Bundle-Version: 23.2.3.qualifier
+Bundle-Release-Date: 20231023
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.registry,
@@ -28,7 +28,8 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.views,
  org.jkiss.dbeaver.ui.views.process,
  org.jkiss.dbeaver.ui.views.qm
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/awt.injector-1.0.0.jar
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,
@@ -39,6 +40,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.editors,
  org.eclipse.ui.forms,
  org.eclipse.ui.views,
+ org.eclipse.ui.browser,
  org.eclipse.ui.workbench,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.ide,

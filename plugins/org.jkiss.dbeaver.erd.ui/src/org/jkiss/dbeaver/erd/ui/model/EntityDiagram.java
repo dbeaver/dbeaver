@@ -23,8 +23,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -46,12 +49,14 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
     private ERDModelAdapter modelAdapter;
     private final ERDDecorator decorator;
     private boolean needsAutoLayout;
+    private boolean dirty;
 
     private final Map<ERDNote, NodeVisualInfo> noteVisuals = new IdentityHashMap<>();
     private final Map<DBSEntity, NodeVisualInfo> entityVisuals = new IdentityHashMap<>();
 
     private ERDAttributeVisibility attributeVisibility;
     private ERDViewStyle[] attributeStyles;
+    private ERDNotationDescriptor notationStyle;
 
     public EntityDiagram(DBSObject container, String name, ERDContentProvider contentProvider, ERDDecorator decorator) {
         super(container, name, contentProvider);
@@ -65,6 +70,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
         this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
+        this.notationStyle = ERDNotationRegistry.getInstance().getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
     }
 
     @NotNull
@@ -191,4 +197,21 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         });
         return children;
     }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public ERDNotationDescriptor getDiagramNotation() {
+        return notationStyle;
+    }
+    
+    public void setDiagramNotation(ERDNotationDescriptor notation) {
+        this.notationStyle = notation;
+    }
+
 }

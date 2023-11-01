@@ -32,10 +32,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DefaultCertificateStorage
@@ -138,14 +135,21 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             List<Certificate> certChain = new ArrayList<>();
             if (caCertData != null) {
-                Certificate caCert = cf.generateCertificate(new ByteArrayInputStream(caCertData));
-                keyStore.setCertificateEntry(CA_CERT_ALIAS, caCert);
+                List<? extends Certificate> certificates =
+                    new ArrayList<>(cf.generateCertificates(new ByteArrayInputStream(caCertData)));
+                for (int i = 0; i < certificates.size(); i++) {
+                    keyStore.setCertificateEntry(i == 0 ? CA_CERT_ALIAS : CA_CERT_ALIAS + i, certificates.get(i));
+                }
                 //certChain.add(caCert);
             }
             if (clientCertData != null) {
-                Certificate clientCert = cf.generateCertificate(new ByteArrayInputStream(clientCertData));
-                keyStore.setCertificateEntry(CLIENT_CERT_ALIAS, clientCert);
-                certChain.add(clientCert);
+                List<? extends Certificate> certificates
+                    = new ArrayList<>(cf.generateCertificates(new ByteArrayInputStream(clientCertData)));
+                for (int i = 0; i < certificates.size(); i++) {
+                    keyStore.setCertificateEntry(i == 0 ? CLIENT_CERT_ALIAS : CLIENT_CERT_ALIAS + i,
+                        certificates.get(i));
+                    certChain.add(certificates.get(i));
+                }
             }
             if (keyData != null) {
                 PrivateKey privateKey = loadPrivateKeyFromPEM(keyData);
@@ -165,6 +169,19 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             getKeyStoreName(dataSource, certType),
             new UserDefinedKeystore(new File(keyStorePath), keyStorePassword)
         );
+    }
+
+    @Override
+    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull byte[] keyStoreData, @NotNull char[] keyStorePassword) throws DBException {
+        final Path keyStorePath = getKeyStorePath(dataSource, certType);
+        if (!Files.exists(keyStorePath)) {
+            try {
+                Files.write(keyStorePath, keyStoreData);
+            } catch (Throwable e) {
+                throw new DBException("Error adding certificate to keystore", e);
+            }
+        }
+        userDefinedKeystores.put(getKeyStoreName(dataSource, certType), new UserDefinedKeystore(keyStorePath.toFile(), keyStorePassword));
     }
 
     @Override

@@ -230,7 +230,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     // External configurations
-                    if (!CommonUtils.isEmpty(externalConfigurations)) {
+                    if (!DBWorkbench.isDistributed() && !CommonUtils.isEmpty(externalConfigurations)) {
                         jsonWriter.name("external-configurations");
                         jsonWriter.beginObject();
                         for (Map.Entry<String, DBPExternalConfiguration> ecfg : externalConfigurations.entrySet()) {
@@ -456,10 +456,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             // External configurations
             Map<String, DBPExternalConfiguration> externalConfigurations = new LinkedHashMap<>();
-            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
-                String id = ctMap.getKey();
-                Map<String, Object> configMap = ctMap.getValue();
-                externalConfigurations.put(id, new DBPExternalConfiguration(id, configMap));
+            if (!DBWorkbench.isDistributed()) {
+                // External configurations not used in distributed mode
+                for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
+                    String id = ctMap.getKey();
+                    Map<String, Object> configMap = ctMap.getValue();
+                    externalConfigurations.put(id, new DBPExternalConfiguration(id, () -> configMap));
+                }
             }
 
             // Virtual models
@@ -618,10 +621,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
+                        } else {
+                            config.setUserPassword(null);
                         }
-                        boolean savePasswordApplicable = (!dataSource.getProject().isUseSecretStorage() || dataSource.isSharedCredentials());
+                        boolean savePasswordApplicable = (!dataSource.getProject()
+                            .isUseSecretStorage() || dataSource.isSharedCredentials());
                         if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {
                             dataSource.setSavePassword(true);
+                        }
+                        if (!CommonUtils.isEmpty(creds.getProperties())) {
+                            dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
                         }
                         dataSource.forgetSecrets();
                     }
@@ -634,6 +643,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
+                    config.setConfigProfileSource(JSONUtils.getString(cfgObject, "config-profile-source"));
                     config.setConfigProfileName(JSONUtils.getString(cfgObject, "config-profile"));
                     config.setConnectionType(
                         DataSourceProviderRegistry.getInstance().getConnectionType(
@@ -658,7 +668,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
                     config.setAuthModelId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_AUTH_MODEL));
-                    config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, "auth-properties"));
+                    //backward compatibility
+                    //in the current version the configuration should not contain auth-properties, they should be in secrets
+                    if (cfgObject.containsKey(RegistryConstants.TAG_AUTH_PROPERTIES)) {
+                        config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, RegistryConstants.TAG_AUTH_PROPERTIES));
+                    }
 
                     // Events
                     for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
@@ -829,6 +843,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     private void deserializeModifyPermissions(Map<String, Object> conObject, DBPDataSourcePermissionOwner permissionOwner) {
+        if (conObject == null) {
+            return;
+        }
         Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
         if (!CommonUtils.isEmpty(securityCfg)) {
             List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
@@ -1026,11 +1043,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
             if (connectionInfo.getCloseIdleInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
+            JSONUtils.fieldNE(json, "config-profile-source", connectionInfo.getConfigProfileSource());
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties(), true);
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_AUTH_MODEL, connectionInfo.getAuthModelId());
-            JSONUtils.serializeProperties(json, "auth-properties", connectionInfo.getAuthProperties());
 
             // Save events
             if (!ArrayUtils.isEmpty(connectionInfo.getDeclaredEvents())) {

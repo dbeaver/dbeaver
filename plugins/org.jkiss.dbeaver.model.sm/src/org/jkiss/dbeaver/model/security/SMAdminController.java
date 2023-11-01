@@ -104,7 +104,7 @@ public interface SMAdminController extends SMController {
 
     void updateTeam(String teamId, String name, String description) throws DBException;
 
-    void deleteTeam(String teamId) throws DBException;
+    void deleteTeam(String teamId, boolean force) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
@@ -193,5 +193,21 @@ public interface SMAdminController extends SMController {
     List<SMObjectPermissionsGrant> getSubjectObjectPermissionGrants(
         @NotNull String subjectId,
         @NotNull SMObjectType smObjectType
+    ) throws DBException;
+
+
+    void addObjectPermissions(
+        @NotNull Set<String> objectIds,
+        @NotNull SMObjectType objectType,
+        @NotNull Set<String> subjectIds,
+        @NotNull Set<String> permissions,
+        @NotNull String grantor
+    ) throws DBException;
+
+    void deleteObjectPermissions(
+        @NotNull Set<String> objectIds,
+        @NotNull SMObjectType objectType,
+        @NotNull Set<String> subjectIds,
+        @NotNull Set<String> permissions
     ) throws DBException;
 }
