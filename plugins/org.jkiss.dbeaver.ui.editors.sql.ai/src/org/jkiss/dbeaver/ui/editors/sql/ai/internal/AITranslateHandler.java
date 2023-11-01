@@ -131,19 +131,7 @@ public class AITranslateHandler extends AbstractHandler {
                 return null;
             }
 
-            final DAICompletionContext context = new DAICompletionContext.Builder()
-                .setScope(aiCompletionPopup.getScope())
-                .setCustomEntities(aiCompletionPopup.getCustomEntities())
-                .setDataSource(lDataSource)
-                .setExecutionContext(executionContext)
-                .build();
-
-            final DAICompletionMessage message = new DAICompletionMessage(
-                DAICompletionMessage.Role.USER,
-                aiCompletionPopup.getInputText()
-            );
-
-            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, context, message);
+            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, aiCompletionPopup);
         }
         return null;
     }
@@ -154,9 +142,13 @@ public class AITranslateHandler extends AbstractHandler {
         DBSLogicalDataSource lDataSource,
         SQLEditor editor,
         @NotNull DAICompletionEngine<?> engine,
-        @NotNull DAICompletionContext context,
-        @NotNull DAICompletionMessage message
+        @NotNull AISuggestionPopup popup
     ) {
+        final DAICompletionMessage message = new DAICompletionMessage(
+            DAICompletionMessage.Role.USER,
+            popup.getInputText()
+        );
+
         if (CommonUtils.isEmptyTrimmed(message.content())) {
             return;
         }
@@ -164,6 +156,13 @@ public class AITranslateHandler extends AbstractHandler {
         List<DAICompletionResponse> completionResult = new ArrayList<>();
         try {
             UIUtils.runInProgressDialog(monitor -> {
+                final DAICompletionContext context = new DAICompletionContext.Builder()
+                    .setScope(popup.getScope())
+                    .setCustomEntities(popup.getCustomEntities(monitor))
+                    .setDataSource(lDataSource)
+                    .setExecutionContext(executionContext)
+                    .build();
+
                 try {
                     completionResult.addAll(
                         engine.performQueryCompletion(
@@ -233,7 +232,7 @@ public class AITranslateHandler extends AbstractHandler {
         AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", lDataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "engine", engine.getEngineName(),
-            "scope", context.getScope().name()
+            "scope", popup.getScope().name()
         ));
 
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
