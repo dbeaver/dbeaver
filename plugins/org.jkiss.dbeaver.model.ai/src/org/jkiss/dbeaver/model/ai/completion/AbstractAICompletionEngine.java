@@ -155,10 +155,12 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         completionText = formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText);
 
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            StringBuilder completionTextBuilder = new StringBuilder(completionText);
+            StringBuilder completionTextBuilder = new StringBuilder();
 
             for (DAICompletionMessage message : messages) {
-                completionTextBuilder.append(SQLUtils.generateCommentLine(mainObject.getDataSource(), message.content()));
+                if (message.role() == DAICompletionMessage.Role.USER) {
+                    completionTextBuilder.append(SQLUtils.generateCommentLine(mainObject.getDataSource(), message.content()));
+                }
             }
 
             completionTextBuilder.append(completionText);

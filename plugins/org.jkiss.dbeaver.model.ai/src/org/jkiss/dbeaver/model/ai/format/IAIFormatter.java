@@ -32,13 +32,6 @@ public interface IAIFormatter {
         String completionText
     );
 
-    // String postProcessPrompt(
-    //     DBRProgressMonitor monitor,
-    //     DBSObjectContainer mainObject,
-    //     DBCExecutionContext executionContext,
-    //     String promptText
-    // );
-
     @Nullable
     String getExtraInstructions(
         @NotNull DBRProgressMonitor monitor,
