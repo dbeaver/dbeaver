@@ -534,7 +534,11 @@ public final class RuntimeUtils {
     }
 
     public static <T> void executeJobsForEach(List<T> objects, DBRRunnableParametrizedWithProgress<T> task) {
-        JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
+        executeJobsForEach(objects, 10, new VoidProgressMonitor(), task);
+    }
+
+    public static <T> void executeJobsForEach(List<T> objects, int maxJobs, DBRProgressMonitor monitor, DBRRunnableParametrizedWithProgress<T> task) {
+        JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, maxJobs, 1);
         for (T object : objects) {
             AbstractJob job = new AbstractJob("Execute for " + object) {
                 {
@@ -559,7 +563,7 @@ public final class RuntimeUtils {
             job.schedule();
         }
         try {
-            jobGroup.join(0, new NullProgressMonitor());
+            jobGroup.join(0, monitor.getNestedMonitor());
         } catch (InterruptedException e) {
             // ignore
         }
