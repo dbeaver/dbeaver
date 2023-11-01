@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.erd.ui.notations;
+package org.jkiss.dbeaver.erd.ui.router;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -23,51 +23,69 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
-public class ERDNotationDescriptor extends AbstractDescriptor {
-
+/**
+ * The class descriptor of representing visual connection between figures
+ */
+public class ERDConnectionRouterDescriptor extends AbstractDescriptor {
     private String id;
     private String name;
     private String description;
-    private ERDNotation notation;
-    private ObjectType lazyWrapper;
+    private boolean isEnableAttributeAssociation;
+    private ObjectType lazyRouter;
 
-    Log log = Log.getLog(ERDNotationDescriptor.class.getName());
+    private Log log = Log.getLog(ERDConnectionRouterDescriptor.class.getName());
 
-    protected ERDNotationDescriptor(IConfigurationElement cf) throws CoreException {
+    protected ERDConnectionRouterDescriptor(IConfigurationElement cf) throws CoreException {
         super(cf);
         this.id = cf.getAttribute(RegistryConstants.ATTR_ID);
         this.name = cf.getAttribute(RegistryConstants.ATTR_NAME);
         this.description = cf.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.lazyWrapper = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_NOTATION));
+        this.isEnableAttributeAssociation = CommonUtils.toBoolean(cf.getAttribute(ERDUIConstants.ATTR_ERD_SUPPORT_ATTRIBUTES_ASSOCIATION));
+        this.lazyRouter = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_ROUTER)); // $NON-NLS-1$
     }
 
+    /**
+     * Id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Description
+     */
     public String getDescription() {
         return description;
     }
 
     /**
-     * The method instantiate ERDNotation object
-     *
-     * @return - Notation instance
+     * Create contributed router type
      */
-    public ERDNotation getNotation() {
-        if (notation == null) {
-            try {
-                notation = lazyWrapper.createInstance(ERDNotation.class);
-            } catch (DBException e) {
-                log.error(e.getMessage());
-            }
+    public ERDConnectionRouter createRouter() {
+        try {
+            return lazyRouter.createInstance(ERDConnectionRouter.class);
+        } catch (DBException e) {
+            log.error(e.getMessage());
         }
-        return notation;
+        return null;
+    }
+
+    /**
+     * Get flag of supported attribute association
+     *
+     * @return - true if support attributes enabled
+     */
+    public boolean supportedAttributeAssociation() {
+        return isEnableAttributeAssociation;
     }
 
 }

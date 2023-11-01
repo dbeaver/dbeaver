@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.erd.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.erd.ui" id="org.jkiss.dbeaver.erd.ui.notation.style" name="ER Diagram Notation Style"/>
+         <meta.schema plugin="org.jkiss.dbeaver.erd.ui" id="org.jkiss.dbeaver.erd.ui.routing" name="ER Diagram Routing Specification"/>
       </appInfo>
       <documentation>
          
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="erdNotation"/>
+            <element ref="erdConnectionRouter" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="erdNotation">
+   <element name="erdConnectionRouter">
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -70,14 +70,21 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="notation" type="string" use="required">
+         <attribute name="router" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.erd.core.ERDNotation"/>
+                  <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter:"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="supportAttributesAssociation" type="boolean" use="default" value="false">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
