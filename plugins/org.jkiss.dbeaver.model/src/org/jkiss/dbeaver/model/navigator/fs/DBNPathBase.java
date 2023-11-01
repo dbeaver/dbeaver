@@ -275,6 +275,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
                 if (monitor.isCanceled()) {
                     break;
                 }
+                if (node.getParentNode() == this.getParentNode() || node.getParentNode() == this) {
+                    // Already in this container
+                    continue;
+                }
                 IResource resource = node.getAdapter(IResource.class);
                 if (resource == null || !resource.exists()) {
                     continue;
