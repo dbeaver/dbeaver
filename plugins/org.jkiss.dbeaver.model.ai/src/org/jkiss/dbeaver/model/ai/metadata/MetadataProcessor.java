@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionMessage;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
@@ -106,6 +108,7 @@ public class MetadataProcessor {
         @NotNull DAICompletionContext context,
         @Nullable DBSObjectContainer mainObject,
         @NotNull IAIFormatter formatter,
+        @NotNull GPTModel model,
         int maxTokens
     ) throws DBException {
         if (mainObject == null || mainObject.getDataSource() == null) {
@@ -115,15 +118,27 @@ public class MetadataProcessor {
         final DBCExecutionContext executionContext = context.getExecutionContext();
 
         final StringBuilder sb = new StringBuilder();
-        sb.append("You need to perform SQL completion using the provided information. Start your response with SELECT keyword");
+        sb.append("Perform SQL completion");
+
+        if (model.isChatAPI()) {
+            sb.append(". Start response with SELECT keyword");
+        }
 
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
         if (CommonUtils.isNotEmpty(extraInstructions)) {
             sb.append(", ").append(extraInstructions);
         }
 
-        sb.append("\nDialect is: ").append(mainObject.getDataSource().getSQLDialect().getDialectName());
-        sb.append("\nTables with their properties:");
+        sb.append("\nDialect is ").append(mainObject.getDataSource().getSQLDialect().getDialectName());
+
+        if (executionContext.getContextDefaults() != null) {
+            final DBSSchema defaultSchema = executionContext.getContextDefaults().getDefaultSchema();
+            if (defaultSchema != null) {
+                sb.append("\nCurrent schema is ").append(defaultSchema.getName());
+            }
+        }
+
+        sb.append("\nSQL tables, with their properties are:");
 
         if (context.getScope() == DAICompletionScope.CUSTOM) {
             for (DBSEntity entity : context.getCustomEntities()) {
@@ -152,36 +167,6 @@ public class MetadataProcessor {
             sb.toString()
         );
     }
-
-    // @NotNull
-    // private static String generatePrompt(DAICompletionRequest request, @Nullable DAICompletionSession session, int maxRequestLength) {
-    //     final StringJoiner sb = new StringJoiner("\n");
-    //
-    //     if (session != null && !session.getMessages().isEmpty()) {
-    //         final List<DAICompletionRequest> requests = session.getMessages();
-    //         int capacity = maxRequestLength - request.getPromptText().length();
-    //         int index = requests.size() - 1;
-    //
-    //         for (; index > 0; index--) {
-    //             final String prompt = requests.get(index).getPromptText();
-    //             final int length = prompt.length();
-    //
-    //             if (capacity > length) {
-    //                 capacity -= length;
-    //             } else {
-    //                 break;
-    //             }
-    //         }
-    //
-    //         for (int i = index; i < requests.size(); i++) {
-    //             sb.add(requests.get(i).getPromptText());
-    //         }
-    //     }
-    //
-    //     sb.add(request.getPromptText());
-    //
-    //     return sb.toString();
-    // }
 
     protected boolean addPromptAttributes(
         DBRProgressMonitor monitor,

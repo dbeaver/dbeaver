@@ -158,11 +158,13 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         final DBCExecutionContext executionContext = context.getExecutionContext();
         DBSObjectContainer mainObject = getScopeObject(context, executionContext);
 
+        final GPTModel model = getModel();
         final DAICompletionMessage metadataMessage = MetadataProcessor.INSTANCE.createMetadataMessage(
             monitor,
             context,
             mainObject,
             formatter,
+            model,
             getMaxTokens()
         );
 
@@ -178,7 +180,15 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         Object completionRequest = createCompletionRequest(mergedMessages);
         String completionText = callCompletion(monitor, mergedMessages, service, completionRequest);
 
-        return processCompletion(mergedMessages, monitor, executionContext, mainObject, completionText, formatter);
+        return processCompletion(
+            mergedMessages,
+            monitor,
+            executionContext,
+            mainObject,
+            completionText,
+            formatter,
+            model
+        );
     }
 
     protected int getMaxTokens() {
@@ -341,16 +351,18 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     protected Object createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) {
         Double temperature =
             CommonUtils.toDouble(getSettings().getProperties().get(AIConstants.GPT_MODEL_TEMPERATURE), 0.0);
-        String modelId = CommonUtils.toString(getSettings().getProperties().get(AIConstants.GPT_MODEL), "");
-        GPTModel model = CommonUtils.isEmpty(modelId) ? null : GPTModel.getByName(modelId);
-        if (model == null) {
-            model = GPTModel.GPT_TURBO16;
-        }
+        final GPTModel model = getModel();
         if (model.isChatAPI()) {
             return buildChatRequest(messages, responseSize, temperature, model.getName());
         } else {
             return buildLegacyAPIRequest(messages, responseSize, temperature, model.getName());
         }
+    }
+
+    @NotNull
+    private GPTModel getModel() {
+        final String modelId = CommonUtils.toString(getSettings().getProperties().get(AIConstants.GPT_MODEL), "");
+        return CommonUtils.isEmpty(modelId) ? GPTModel.GPT_TURBO16 : GPTModel.getByName(modelId);
     }
 
     private List<?> getCompletionChoices(GPTCompletionAdapter service, Object completionRequest) {
@@ -377,6 +389,8 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
                 buffer.add(message.content());
             }
         }
+
+        buffer.add("SELECT ");
 
         return buffer.toString();
     }
