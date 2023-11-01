@@ -38,6 +38,7 @@ public class ERDUIConstants {
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
     public static final String PROP_DIAGRAM_FONT = "org.jkiss.dbeaver.erd.diagram.font";
+    public static final String PROP_DIAGRAM_NOTATION_LABEL_FONT = "org.jkiss.dbeaver.erd.diagram.font.notation.label";
 
     public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
     public static final String PREF_DIAGRAM_SHOW_PARTITIONS = "erd.diagram.show.partitions";
@@ -83,6 +84,6 @@ public class ERDUIConstants {
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
 
     public static final String ROUTING_MIKAMI = "Mikami-Tabuchi (Experimental)";
-    public static final String ROUTING_SHORTEST_PATH = "Shortest Path";
+    public static final String ROUTING_SHORTEST_PATH = "Ortho Shortest Path";
 
 }

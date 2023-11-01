@@ -18,15 +18,20 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.metadata;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -52,6 +57,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * RSV value view panel
@@ -60,6 +66,9 @@ public class MetaDataPanel implements IResultSetPanel {
 
     public static final String PANEL_ID = "results-metadata";
 
+    private Composite panelContents;
+    private Text filterTextBox;
+    
     private IResultSetPresentation presentation;
     private MetaDataTable attributeList;
     private List<DBDAttributeBinding> curAttributes;
@@ -71,9 +80,31 @@ public class MetaDataPanel implements IResultSetPanel {
 
     @Override
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
+        panelContents = UIUtils.createComposite(parent, 1);
+        panelContents.setLayout(GridLayoutFactory.swtDefaults().create());
+        
+        Composite filterPanel = UIUtils.createComposite(panelContents, 2);
+        filterPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createControlLabel(filterPanel,  ResultSetMessages.panel_metadata_filter_label);
+        filterTextBox = new Text(filterPanel, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
+        filterTextBox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        filterTextBox.setMessage(ResultSetMessages.panel_metadata_filter_hint);
+        filterTextBox.addModifyListener(e -> {
+            refresh(true);
+        });
+        filterTextBox.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.character == SWT.ESC) {
+                    filterTextBox.setText("");
+                }
+            }
+        });
+        
         this.presentation = presentation;
         this.colorDisabled = presentation.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        this.attributeList = new MetaDataTable(parent);
+        this.attributeList = new MetaDataTable(panelContents);
+        this.attributeList.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL));
         this.attributeList.setFitWidth(true);
         this.attributeList.getItemsViewer().addSelectionChangedListener(event -> {
             DBDAttributeBinding attr = getSelectedAttribute();
@@ -111,7 +142,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
         DataEditorFeatures.RESULT_SET_PANEL_METADATA.use();
 
-        return this.attributeList;
+        return panelContents;
     }
 
     @Override
@@ -149,6 +180,12 @@ public class MetaDataPanel implements IResultSetPanel {
             return;
         }
         List<DBDAttributeBinding> newAttributes = Arrays.asList(presentation.getController().getModel().getAttributes());
+        String filterText = filterTextBox.getText().toUpperCase();
+        if (CommonUtils.isNotEmpty(filterText)) {
+            newAttributes = newAttributes.stream()
+                .filter(a -> a.getName().toUpperCase().contains(filterText))
+                .collect(Collectors.toList());
+        }
         if (curAttributes != null && curAttributes.size() == newAttributes.size()) {
             boolean equals = true;
             for (int i = 0; i < curAttributes.size(); i++) {
@@ -184,7 +221,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
     private class MetaDataTable extends DatabaseObjectListControl<DBDAttributeBinding> {
         MetaDataTable(Composite parent) {
-            super(parent, SWT.SHEET, presentation.getController().getSite(), new TreeContentProvider() {
+            super(parent, SWT.SHEET | SWT.BORDER, presentation.getController().getSite(), new TreeContentProvider() {
                 @Override
                 public Object[] getChildren(Object parentElement) {
                     List<DBDAttributeBinding> nested = ((DBDAttributeBinding) parentElement).getNestedBindings();

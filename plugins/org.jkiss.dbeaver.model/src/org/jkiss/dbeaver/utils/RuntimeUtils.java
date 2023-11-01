@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -76,15 +73,15 @@ public final class RuntimeUtils {
     }
 
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor) {
-        if (monitor instanceof DBRProgressMonitor) {
-            return (DBRProgressMonitor) monitor;
+        if (monitor instanceof DBRProgressMonitor monitor1) {
+            return monitor1;
         }
         return new DefaultProgressMonitor(monitor);
     }
 
     public static IProgressMonitor getNestedMonitor(DBRProgressMonitor monitor) {
-        if (monitor instanceof IProgressMonitor) {
-            return (IProgressMonitor) monitor;
+        if (monitor instanceof IProgressMonitor monitor1) {
+            return monitor1;
         }
         return monitor.getNestedMonitor();
     }
@@ -158,7 +155,7 @@ public final class RuntimeUtils {
             }
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
-            String messagePrefix = "";
+            String messagePrefix;
             if (status.getException() != null && (CommonUtils.isEmpty(status.getException().getMessage()))) {
                 messagePrefix = status.getException().getClass().getName() + ": ";
                 return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
@@ -300,7 +297,7 @@ public final class RuntimeUtils {
                     return err.toString();
                 }
 
-                return out.length() == 0 ? null: out.toString();
+                return out.toString();
             } finally {
                 p.destroy();
             }
@@ -318,8 +315,8 @@ public final class RuntimeUtils {
             return getProcessResults(p);
         }
         catch (Exception ex) {
-            if (ex instanceof DBException) {
-                throw (DBException) ex;
+            if (ex instanceof DBException dbe) {
+                throw dbe;
             }
             throw new DBException("Error executing process " + binPath, ex);
         }
@@ -533,6 +530,41 @@ public final class RuntimeUtils {
         if (result == null)
             throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), ""); //$NON-NLS-1$
         return result;
+    }
+
+    public static <T> void executeJobsForEach(List<T> objects, DBRRunnableParametrizedWithProgress<T> task) {
+        List<AbstractJob> checkJobs = new ArrayList<>(objects.size());
+        for (T object : objects) {
+            AbstractJob job = new AbstractJob("Execute for " + object) {
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    if (!monitor.isCanceled()) {
+                        try {
+                            task.run(monitor, object);
+                        } catch (InvocationTargetException e) {
+                            log.debug(e.getTargetException());
+                        } catch (InterruptedException e) {
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            job.schedule();
+            checkJobs.add(job);
+        }
+        // Wait for all jobs to finish
+        for (AbstractJob job : checkJobs) {
+            try {
+                job.join();
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
     }
 
     private enum CommandLineState {

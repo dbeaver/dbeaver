@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -82,6 +83,8 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private final DBPWorkspace workspace;
     @NotNull
     private final SMSessionContext sessionContext;
+    @NotNull
+    private final DBFFileSystemManager fileSystemManager;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
@@ -98,6 +101,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
         this.workspace = workspace;
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
+        this.fileSystemManager = new DBFFileSystemManager(this);
     }
 
     public void setInMemory(boolean inMemory) {
@@ -229,6 +233,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return sessionContext;
     }
 
+    @NotNull
+    @Override
+    public DBFFileSystemManager getFileSystemManager() {
+        return fileSystemManager;
+    }
+
     ////////////////////////////////////////////////////////
     // Properties
 
@@ -257,6 +267,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         if (properties != null) {
             return;
         }
+        if (isInMemory() || DBWorkbench.isDistributed()) {
+            properties = new LinkedHashMap<>();
+            return;
+        }
 
         synchronized (metadataSync) {
             Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
@@ -275,7 +289,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     private void saveProperties() {
-        if (isInMemory()) {
+        if (isInMemory() || DBWorkbench.isDistributed()) {
             return;
         }
 
@@ -477,6 +491,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         if (dataSourceRegistry != null) {
             dataSourceRegistry.dispose();
         }
+        getFileSystemManager().close();
     }
 
     public ProjectFormat getFormat() {

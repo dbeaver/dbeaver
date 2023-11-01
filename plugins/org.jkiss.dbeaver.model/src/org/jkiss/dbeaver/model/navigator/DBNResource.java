@@ -36,21 +36,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
+import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNResource
@@ -63,6 +59,23 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private static final NumberFormat numberFormat = new DecimalFormat();
+    private static final Comparator<DBNNode> COMPARATOR = (o1, o2) -> {
+        if (o1 instanceof DBNProjectDatabases) {
+            return -1;
+        } else if (o2 instanceof DBNProjectDatabases) {
+            return 1;
+        } else if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
+            IResource res1 = ((DBNResource) o1).getResource();
+            IResource res2 = ((DBNResource) o2).getResource();
+            if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
+                return -1;
+            } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
+                return 1;
+            }
+        }
+
+        return AlphanumericComparator.getInstance().compare(o1.getSortName(), o2.getSortName());
+    };
 
     private IResource resource;
     private DBPResourceHandler handler;
@@ -122,22 +135,10 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         if (resource == null || handler == null) {
             return null;
         }
-        return URLDecoder.decode(resource.getName(), StandardCharsets.UTF_8);
+        return resource.getName();
     }
 
-/*
     @Override
-    protected String getSortName() {
-        if (resource == null || handler == null) {
-            return null;
-        }
-        return resource.getFullPath().removeFileExtension().lastSegment();
-    }
-*/
-
-
-    @Override
-//    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
         if (getOwnerProject().isVirtual()) {
             // Do not read descriptions for virtual (remote) projects
@@ -464,24 +465,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     protected void sortChildren(DBNNode[] list) {
-        Arrays.sort(list, (o1, o2) -> {
-            if (o1 instanceof DBNProjectDatabases) {
-                return -1;
-            } else if (o2 instanceof DBNProjectDatabases) {
-                return 1;
-            } else {
-                if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
-                    IResource res1 = ((DBNResource) o1).getResource();
-                    IResource res2 = ((DBNResource) o2).getResource();
-                    if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
-                        return -1;
-                    } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
-                        return 1;
-                    }
-                }
-                return o1.getSortName().compareToIgnoreCase(o2.getSortName());
-            }
-        });
+        Arrays.sort(list, COMPARATOR);
     }
 
     @Override

@@ -26,6 +26,9 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -161,13 +164,64 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, changeListener);
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, project, multiFS, changeListener);
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, value, changeListener);
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, value, project, multiFS, changeListener);
+    }
+
+    @NotNull
+    public static Text createOutputFolderChooser(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String tooltip,
+        @Nullable String value,
+        @Nullable DBPProject project,
+        boolean multiFS,
+        @Nullable ModifyListener changeListener
+    ) {
+        if (multiFS) {
+            multiFS = project != null && DBFUtils.supportsMultiFileSystems(project);
+        }
+        final String message = label != null ? label : UIMessages.output_label_directory;
+        UIUtils.createControlLabel(parent, message).setToolTipText(tooltip);
+        final TextWithOpen directoryText = new TextWithOpen(parent, multiFS) {
+            @Override
+            protected void openBrowser(boolean remoteFS) {
+                String fileName;
+                if (remoteFS && project != null) {
+                    DBNPath pathNode = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                        CommonUtils.toString(label, "Output folder"),
+                        true, SWT.SAVE, false, null, value);
+                    fileName = pathNode == null ? null : pathNode.getPath().toString();
+                    if (fileName != null) {
+                        setText(fileName);
+                    }
+                } else {
+                    fileName = openDirectoryDialog(parent.getShell(), message, getText());
+                }
+                if (fileName != null) {
+                    setText(fileName);
+                }
+            }
+
+            @Override
+            public DBPProject getProject() {
+                return project;
+            }
+        };
+        directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (value != null) {
+            directoryText.getTextControl().setText(value);
+        }
+        if (changeListener != null) {
+            directoryText.getTextControl().addModifyListener(changeListener);
+        }
+
+        return directoryText.getTextControl();
     }
 
     @Nullable
@@ -188,36 +242,6 @@ public class DialogUtils {
         }
 
         return directory;
-    }
-
-    @NotNull
-    public static Text createOutputFolderChooser(
-        @NotNull Composite parent,
-        @Nullable String label,
-        @Nullable String tooltip,
-        @Nullable String value,
-        @Nullable ModifyListener changeListener
-    ) {
-        final String message = label != null ? label : UIMessages.output_label_directory;
-        UIUtils.createControlLabel(parent, message).setToolTipText(tooltip);
-        final TextWithOpen directoryText = new TextWithOpen(parent) {
-            @Override
-            protected void openBrowser() {
-                final String text = openDirectoryDialog(parent.getShell(), message, getText());
-                if (text != null) {
-                    setText(text);
-                }
-            }
-        };
-        directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (value != null) {
-            directoryText.getTextControl().setText(value);
-        }
-        if (changeListener != null) {
-            directoryText.getTextControl().addModifyListener(changeListener);
-        }
-
-        return directoryText.getTextControl();
     }
 
     public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {

@@ -17,92 +17,56 @@
 
 package org.jkiss.dbeaver.model.ai.completion;
 
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.eclipse.core.runtime.Assert;
+import org.jkiss.code.NotNull;
 
 /**
  * Completion request
  */
 public class DAICompletionRequest {
+    private final String promptText;
+    private final DAICompletionContext context;
 
-    private String beginText;
-    private String promptText;
-    private String endText;
-    private boolean beginTruncated;
-    private boolean endTruncated;
-
-    private DAICompletionScope scope;
-    private List<DBSEntity> customEntities;
-
-    private final Map<String, Object> completionOptions = new HashMap<>();
-
-    public String getBeginText() {
-        return beginText;
+    private DAICompletionRequest(
+        @NotNull String promptText,
+        @NotNull DAICompletionContext context
+    ) {
+        this.promptText = promptText;
+        this.context = context;
     }
 
-    public void setBeginText(String beginText) {
-        this.beginText = beginText;
-    }
-
+    @NotNull
     public String getPromptText() {
         return promptText;
     }
 
-    public void setPromptText(String promptText) {
-        this.promptText = promptText;
+    @NotNull
+    public DAICompletionContext getContext() {
+        return context;
     }
 
-    public String getEndText() {
-        return endText;
-    }
+    public static class Builder {
+        private String promptText;
+        private DAICompletionContext context;
 
-    public void setEndText(String endText) {
-        this.endText = endText;
-    }
+        @NotNull
+        public Builder setPromptText(@NotNull String promptText) {
+            this.promptText = promptText;
+            return this;
+        }
 
-    public boolean isBeginTruncated() {
-        return beginTruncated;
-    }
+        @NotNull
+        public Builder setContext(@NotNull DAICompletionContext context) {
+            this.context = context;
+            return this;
+        }
 
-    public void setBeginTruncated(boolean beginTruncated) {
-        this.beginTruncated = beginTruncated;
-    }
+        @NotNull
+        public DAICompletionRequest build() {
+            Assert.isLegal(promptText != null, "Prompt text must be specified");
+            Assert.isLegal(context != null, "Context must be specified");
 
-    public boolean isEndTruncated() {
-        return endTruncated;
-    }
-
-    public void setEndTruncated(boolean endTruncated) {
-        this.endTruncated = endTruncated;
-    }
-
-    public DAICompletionScope getScope() {
-        return scope;
-    }
-
-    public void setScope(DAICompletionScope scope) {
-        this.scope = scope;
-    }
-
-    public List<DBSEntity> getCustomEntities() {
-        return customEntities;
-    }
-
-    public void setCustomEntities(List<DBSEntity> customEntities) {
-        this.customEntities = customEntities;
-    }
-
-    public Map<String, Object> getCompletionOptions() {
-        return completionOptions;
-    }
-
-    /**
-     * Sets completion option value
-     */
-    public void setCompletionOption(String name, Object value) {
-        completionOptions.put(name, value);
+            return new DAICompletionRequest(promptText, context);
+        }
     }
 }

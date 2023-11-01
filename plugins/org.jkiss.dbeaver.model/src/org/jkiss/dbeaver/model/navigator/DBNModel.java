@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -327,14 +328,22 @@ public class DBNModel implements IResourceChangeListener {
             if (ArrayUtils.isEmpty(projects)) {
                 throw new DBException("No projects in workspace");
             }
-            if (projects.length > 1) {
-                boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
-                if (!multiNode) {
-                    throw new DBException("Multi-project workspace. Extension nodes not supported");
-                }
+            var projectId = nodePath.first();
+            DBNProject parentProjectNode = projectId == null
+                ? null
+                : Arrays.stream(projects)
+                .filter(dbnProject -> dbnProject.getProject().getId().equals(projectId))
+                .findFirst()
+                .orElse(null);
+            int firstItem = 0;
+            //backward compatibility
+            if (parentProjectNode == null) {
+                parentProjectNode = projects[0];
+            } else {
+                // cause projectId included in the path
+                firstItem = 1;
             }
-            return findNodeByPath(monitor, nodePath,
-                projects[0], 0);
+            return findNodeByPath(monitor, nodePath, parentProjectNode, firstItem);
         } else if (nodePath.type == DBNNode.NodePathType.other) {
             return findNodeByPath(monitor, nodePath,
                 root, 0);
@@ -401,36 +410,19 @@ public class DBNModel implements IResourceChangeListener {
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
         //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
 
-        for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
-            String item = nodePath.pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
-
+        final List<String> pathItems = nodePath.pathItems;
+        for (int i = firstItem, itemsSize = pathItems.size(); i < itemsSize; i++) {
+            String item = pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
+            if (nodePath.type == DBNNode.NodePathType.ext && curNode instanceof DBNProject pn) {
+                // Trigger project to load extra nodes
+                pn.getExtraNode(DBNFileSystems.class);
+            }
             DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
             if (children != null && children.length > 0) {
                 for (DBNNode child : children) {
-                    if (nodePath.type == DBNNode.NodePathType.resource) {
-                        if (child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)) {
-                            nextChild = child;
-                        } else if (child instanceof DBNProjectDatabases && child.getName().equals(item)) {
-                            nextChild = child;
-                        }
-                    } else if (nodePath.type == DBNNode.NodePathType.folder) {
-                        if (child instanceof DBNLocalFolder && child.getName().equals(item)) {
-                            nextChild = child;
-                        }
-                    } else {
-                        if (child instanceof DBNDatabaseFolder) {
-                            DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
-                            if (meta != null) {
-                                String idOrType = meta.getIdOrType();
-                                if (!CommonUtils.isEmpty(idOrType) && idOrType.equals(item)) {
-                                    nextChild = child;
-                                }
-                            }
-                        }
-                        if (child.getName().equals(item)) {
-                            nextChild = child;
-                        }
+                    if (nodeMatchesPath(nodePath, child, item)) {
+                        nextChild = child;
                     }
                     if (nextChild != null) {
                         if (i < itemsSize - 1) {
@@ -448,12 +440,37 @@ public class DBNModel implements IResourceChangeListener {
                 log.debug("Node '" + item + "' not found in parent node '" + curNode.getNodeItemPath() + "'." +
                     "\nAllowed children: " + Arrays.toString(children));
             }
-            curNode = nextChild;
-            if (curNode == null) {
-                break;
+            if (nextChild != null) {
+                curNode = nextChild;
             }
         }
+        if (!pathItems.isEmpty() && !nodeMatchesPath(nodePath, curNode, pathItems.get(pathItems.size() - 1))) {
+            // Tail node doesn't match tail node from the desired path
+            return null;
+        }
         return curNode;
+    }
+
+    private boolean nodeMatchesPath(@NotNull NodePath path, @NotNull DBNNode child, @NotNull String item) {
+        if (path.type == DBNNode.NodePathType.resource) {
+            return child instanceof DBNProject && ((DBNProject) child).getProject().getId().equals(item)
+                || child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)
+                || child instanceof DBNProjectDatabases && child.getName().equals(item);
+        } else if (path.type == DBNNode.NodePathType.folder) {
+            return child instanceof DBNLocalFolder && child.getName().equals(item);
+        } else if (child instanceof DBNDataSource) {
+            return ((DBNDataSource) child).getDataSourceContainer().getId().equals(item);
+        } else if (child instanceof DBNDatabaseFolder) {
+            DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
+            if (meta != null) {
+                String idOrType = meta.getIdOrType();
+                if (!CommonUtils.isEmpty(idOrType) && idOrType.equals(item)) {
+                    return true;
+                }
+            }
+        }
+
+        return child.getName().equals(item);
     }
 
     private boolean cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, DBSObject objectToCache, boolean addFiltered) throws DBException

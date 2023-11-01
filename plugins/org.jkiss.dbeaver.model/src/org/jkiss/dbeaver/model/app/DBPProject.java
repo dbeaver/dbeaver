@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
@@ -152,4 +153,11 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @Nullable
     DBNModel getNavigatorModel();
 
+    @NotNull
+    DBFFileSystemManager getFileSystemManager();
+
+    /**
+     * close project and all related resources
+     */
+    void dispose();
 }

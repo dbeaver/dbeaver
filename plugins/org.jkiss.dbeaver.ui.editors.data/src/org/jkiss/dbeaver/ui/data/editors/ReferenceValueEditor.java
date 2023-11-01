@@ -356,18 +356,12 @@ public class ReferenceValueEditor {
             }
         }
         if (refConstraint instanceof DBSEntityAssociation) {
-            valueFilterText = new Text(parent, SWT.BORDER);
+            valueFilterText = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
             valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            valueFilterText.setMessage(ResultSetMessages.reference_value_editor_search_hint_value);
             valueFilterText.addModifyListener(e -> {
                 String filterPattern = valueFilterText.getText();
                 controller.filter(valueController.getValue(), filterPattern);
-            });
-            valueFilterText.addPaintListener(e -> {
-                if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
-                    e.gc.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                    e.gc.drawText(ResultSetMessages.reference_value_editor_search_hint_value, 2, 0, true);
-                    e.gc.setFont(null);
-                }
             });
         }
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);

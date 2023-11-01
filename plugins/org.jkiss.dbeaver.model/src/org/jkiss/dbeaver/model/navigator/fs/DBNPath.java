@@ -64,6 +64,11 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     }
 
     @Override
+    public String getNodeType() {
+        return NodePathType.dbvfs.name() + (allowsChildren() ? ".folder" : ".file");
+    }
+
+    @Override
     public String getNodeDescription() {
         return null;
     }

@@ -169,9 +169,12 @@ public class NavigatorObjectsDeleter {
                 dbrMonitor.beginTask("Delete objects", selection.size());
                 try {
                     for (Object obj: selection) {
+                        if (dbrMonitor.isCanceled()) {
+                            break;
+                        }
                         if (obj instanceof DBNDatabaseNode) {
                             dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeName() + "'");
-                            deleteDatabaseNode((DBNDatabaseNode)obj);
+                            UIUtils.asyncExec(() -> deleteDatabaseNode((DBNDatabaseNode)obj));
                         } else if (obj instanceof DBNNodeWithResource) {
                             dbrMonitor.subTask("Delete resource '" + ((DBNNodeWithResource) obj).getResource().getName() + "'");
                             deleteResource(dbrMonitor, ((DBNNodeWithResource) obj).getResource());

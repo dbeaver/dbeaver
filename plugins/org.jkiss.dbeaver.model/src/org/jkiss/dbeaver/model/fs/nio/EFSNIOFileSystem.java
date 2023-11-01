@@ -54,7 +54,7 @@ public class EFSNIOFileSystem extends FileSystem {
     public IFileStore getStore(URI uri) {
         Path path = null;
 
-        String projectName = uri.getHost();
+        String projectName = CommonUtils.toString(uri.getHost(), uri.getAuthority());
         String[] vfsPath = CommonUtils.removeTrailingSlash(CommonUtils.removeLeadingSlash(uri.getPath()))
             .split("/");
         String relPath = uri.getQuery();

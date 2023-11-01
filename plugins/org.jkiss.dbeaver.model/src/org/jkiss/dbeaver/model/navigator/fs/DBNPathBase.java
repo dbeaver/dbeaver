@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -44,14 +43,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * DBNPath
  */
-public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource, DBNLazyNode
-{
-    private static final Log log = Log.getLog(DBNPathBase.class);
+public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource, DBNLazyNode {
 
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
@@ -59,6 +61,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     private DBNNode[] children;
     private DBPImage resImage;
+    // Cache expensive properties
+    private transient Long size;
+    private transient FileTime lastModified;
 
     protected DBNPathBase(DBNNode parentNode) {
         super(parentNode);
@@ -89,7 +94,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     public String getNodeType() {
-        return "Path";
+        return NodePathType.dbvfs.name() + ".path";
     }
 
     @Override
@@ -132,19 +137,18 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     }
 
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
-        List<DBNNode> result = new ArrayList<>();
+        List<DBNNode> result;
         Path path = getPath();
         if (allowsChildren() && Files.exists(path)) {
             try {
-                Files.list(path).forEach(c -> {
-                    DBNNode newChild = makeNode(c);
-                    if (newChild != null) {
-                        result.add(newChild);
-                    }
-                });
+                try (Stream<Path> fileList = Files.list(path)) {
+                    result = fileList.map(this::makeNode).collect(Collectors.toList());
+                }
             } catch (IOException e) {
                 throw new DBException("Error reading directory members", e);
             }
+        } else {
+            result = Collections.emptyList();
         }
         if (result.isEmpty()) {
             return EMPTY_NODES;
@@ -212,6 +216,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
         children = null;
+        size = null;
+        lastModified = null;
 
         this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, DBNEvent.NodeChange.REFRESH, this));
         return this;
@@ -266,6 +272,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         monitor.beginTask("Copy files", nodes.size());
         try {
             for (DBNNode node : nodes) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 IResource resource = node.getAdapter(IResource.class);
                 if (resource == null || !resource.exists()) {
                     continue;
@@ -275,7 +284,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
                 }
                 monitor.subTask("Copy file " + resource.getName());
                 try {
-                    IFile targetFile = ((IFolder)folder).getFile(resource.getName());
+                    IFile targetFile = ((IFolder) folder).getFile(resource.getName());
                     try (InputStream is = ((IFile) resource).getContents()) {
                         if (targetFile.exists()) {
                             targetFile.setContents(is, true, false, monitor.getNestedMonitor());
@@ -334,17 +343,21 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Property(viewable = true, order = 11)
     public String getResourceSize() throws IOException {
-        long size = getPath() == null ? 0 : Files.size(getPath());
+        if (size == null) {
+            size = getPath() == null ? 0 : Files.size(getPath());
+        }
         return numberFormat.format(size);
     }
 
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() throws IOException {
-        FileTime time = Files.getLastModifiedTime(getPath());
-        if (time.toMillis() <= 0) {
+        if (lastModified == null) {
+            lastModified = Files.getLastModifiedTime(getPath());
+        }
+        if (lastModified.toMillis() <= 0) {
             return null;
         }
-        return time.toString();
+        return lastModified.toString();
     }
 
     protected boolean isResourceExists() {

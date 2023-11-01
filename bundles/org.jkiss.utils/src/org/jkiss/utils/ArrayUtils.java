@@ -51,8 +51,8 @@ public class ArrayUtils {
     {
         if (array == null)
             return false;
-        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value)
+        for (short item : array) {
+            if (item == value)
                 return true;
         }
         return false;
@@ -62,8 +62,8 @@ public class ArrayUtils {
     {
         if (array == null || array.length == 0)
             return false;
-        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value)
+        for (char c : array) {
+            if (c == value)
                 return true;
         }
         return false;
@@ -105,8 +105,8 @@ public class ArrayUtils {
     {
         if (isEmpty(array))
             return false;
-        for (int i = 0; i < array.length; i++) {
-            if (CommonUtils.equalObjects(value, array[i]))
+        for (OBJECT_TYPE object_type : array) {
+            if (CommonUtils.equalObjects(value, object_type))
                 return true;
         }
         return false;
@@ -116,8 +116,8 @@ public class ArrayUtils {
     {
         if (isEmpty(array) || value == null)
             return false;
-        for (int i = 0; i < array.length; i++) {
-            if (value.equalsIgnoreCase(array[i]))
+        for (String s : array) {
+            if (value.equalsIgnoreCase(s))
                 return true;
         }
         return false;
@@ -126,8 +126,8 @@ public class ArrayUtils {
     public static <OBJECT_TYPE> boolean containsRef(@NotNull OBJECT_TYPE[] array, @Nullable OBJECT_TYPE value)
     {
         final int length = array.length;
-        for (int i = 0; i < length; i++) {
-            if (value == array[i])
+        for (OBJECT_TYPE object_type : array) {
+            if (value == object_type)
                 return true;
         }
         return false;
