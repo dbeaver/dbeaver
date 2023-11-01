@@ -262,8 +262,8 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 return description;
             }
             return ((DBNNode) element).getNodeName();
-        } else if (element instanceof IToolTipProvider) {
-            return ((IToolTipProvider) element).getToolTipText(element);
+        } else if (element instanceof IToolTipProvider provider) {
+            return provider.getToolTipText(element);
         }
         return null;
     }
