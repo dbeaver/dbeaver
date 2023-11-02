@@ -28,11 +28,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWizard;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -49,6 +45,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageActive;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
@@ -215,10 +212,16 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean canFinish() {
-        if (isCurrentTaskSaved()) {
-            return true;
-        }
         for (IWizardPage page : getPages()) {
+            // We need to make sure that change at the current page didn't break any other loaded pages
+            if (
+                page instanceof ActiveWizardPage activeWizardPage
+                && getContainer().getCurrentPage() != activeWizardPage
+                && page.getControl() != null
+                && !page.getControl().isDisposed()
+            ) {
+                activeWizardPage.updatePageCompletion();
+            }
             if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
                 return false;
             }

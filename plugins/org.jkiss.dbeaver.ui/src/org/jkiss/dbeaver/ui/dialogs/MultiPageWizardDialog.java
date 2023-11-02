@@ -47,6 +47,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * MultiPageWizardDialog
@@ -68,6 +70,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
     private Composite leftBottomPanel;
     private Font boldFont;
+    private final HashSet<Object> preloadedPages = new HashSet<>();
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
@@ -114,6 +117,13 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return false;
     }
 
+    /**
+     * Do pages should be already loaded at creation
+     */
+    protected boolean isPreloadPages() {
+        return false;
+    }
+
     protected Tree getPagesTree() {
         return pagesTree;
     }
@@ -139,7 +149,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
         applyDialogFont(contents);
-
+        if (isPreloadPages()) {
+            preLoadPages();
+        }
         // Show the first page first - it may initialize state required later
         showPage((IWizardPage) pagesTree.getItem(0).getData());
 
@@ -157,6 +169,36 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         updateWindowTitle();
 
         return contents;
+    }
+
+    private void preLoadPages() {
+        pageArea.setRedraw(false);
+        try {
+            for (IWizardPage page : wizard.getPages()) {
+                page.createControl(pageArea);
+                Control pageControl = page.getControl();
+                applyDialogFont(pageControl);
+                GridData gd = (GridData) pageControl.getLayoutData();
+                if (gd == null) {
+                    gd = new GridData(GridData.FILL_BOTH);
+                    gd.exclude = true;
+                    pageControl.setLayoutData(gd);
+                }
+                if (page instanceof ActiveWizardPage activeWizardPage) {
+                    activeWizardPage.updatePageCompletion();
+                    activeWizardPage.activatePage();
+                }
+                page.setVisible(false);
+                if (page instanceof ActiveWizardPage activeWizardPage) {
+                    activeWizardPage.deactivatePage();
+                }
+                preloadedPages.add(page);
+            }
+        } catch (Throwable e) {
+            DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
+        } finally {
+            pageArea.setRedraw(true);
+        }
     }
 
     @Override
@@ -277,9 +319,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                     ((ActiveWizardPage) prevPage).deactivatePage();
                 }
             }
-
-            boolean pageCreated = false;
             IDialogPage page = (IDialogPage) newItem.getData();
+            boolean pageCreated = preloadedPages.remove(page);
             Control pageControl = page.getControl();
             if (pageControl == null) {
                 // Create page contents

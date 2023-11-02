@@ -37,7 +37,7 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
     /**
      * Determine if the page is complete and update the page appropriately.
      */
-    protected void updatePageCompletion() {
+    public void updatePageCompletion() {
         boolean pageComplete = determinePageCompletion();
         setPageComplete(pageComplete);
         if (pageComplete) {
