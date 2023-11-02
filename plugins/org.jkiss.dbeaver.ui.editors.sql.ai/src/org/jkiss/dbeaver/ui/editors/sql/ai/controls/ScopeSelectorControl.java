@@ -208,6 +208,9 @@ public class ScopeSelectorControl extends Composite {
 
         scopeConfigItem.setEnabled(scope == DAICompletionScope.CUSTOM);
         scopeText.setText(CommonUtils.toString(text, "N/A"));
+
+        requestLayout();
+        layout(true, true);
     }
 
     private void loadCheckedEntitiesById(
