@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
@@ -50,6 +51,8 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.services.IEvaluationReference;
+import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -233,7 +236,7 @@ public class SQLEditor extends SQLEditorBase implements
     private VerticalButton switchPresentationSQLButton;
     private VerticalButton[] switchPresentationExtraButtons;
 
-    private final ExtraPresentationManager extraPresentationManager = new ExtraPresentationManager();
+    private ExtraPresentationManager extraPresentationManager;
     private final List<SQLEditorListener> listeners = new ArrayList<>();
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
@@ -1107,12 +1110,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         final List<VerticalButton> buttons = new ArrayList<>(presentations.size());
         for (SQLPresentationDescriptor presentation : presentations) {
-            final VerticalButton button = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-            button.setData(presentation);
-            button.setText(presentation.getLabel());
-            button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
+            final VerticalButton button = extraPresentationManager.createPresentationButton(presentation, this);
             button.addSelectionListener(switchListener);
-            button.setToolTipText(presentation.getDescription());
             buttons.add(button);
         }
         switchPresentationExtraButtons = buttons.toArray(VerticalButton[]::new);
@@ -1804,6 +1803,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        if (presentation != null && !presentation.isEnabled(getSite())) {
+            return;
+        }
+
         StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
 
         try {
@@ -2106,6 +2109,8 @@ public class SQLEditor extends SQLEditorBase implements
                 log.error("Error during SQL editor add-in initialization", ex); //$NON-NLS-1$
             }
         }
+
+        extraPresentationManager = new ExtraPresentationManager();
     }
 
     /**
@@ -5052,6 +5057,43 @@ public class SQLEditor extends SQLEditorBase implements
             }
             final int index = presentationStackIndices.get(activePresentationDescriptor);
             return presentationStack.getChildren()[index];
+        }
+
+        @NotNull
+        private VerticalButton createPresentationButton(@NotNull SQLPresentationDescriptor presentation, SQLEditor editor) {
+            final VerticalButton button = new VerticalButton(editor.presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
+            button.setData(presentation);
+            button.setText(presentation.getLabel());
+            button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
+            button.setToolTipText(presentation.getDescription());
+
+            final IEvaluationService evaluationService = getSite().getService(IEvaluationService.class);
+            final Expression enabledWhen = presentation.getEnabledWhen();
+
+            if (evaluationService != null && enabledWhen != null) {
+                final IEvaluationReference reference = evaluationService.addEvaluationListener(
+                    enabledWhen,
+                    event -> handlePresentationEnablement(button, presentation, CommonUtils.toBoolean(event.getNewValue())),
+                    "enabled"
+                );
+
+                button.addDisposeListener(e -> evaluationService.removeEvaluationListener(reference));
+            }
+
+            return button;
+        }
+
+        private void handlePresentationEnablement(
+            @NotNull VerticalButton button,
+            @NotNull SQLPresentationDescriptor presentation,
+            boolean enabled
+        ) {
+            if (!enabled && activePresentationDescriptor == presentation) {
+                showExtraPresentation((SQLPresentationDescriptor) null);
+            }
+
+            button.setVisible(enabled);
+            button.getParent().layout(true, true);
         }
 
         public void dispose() {
