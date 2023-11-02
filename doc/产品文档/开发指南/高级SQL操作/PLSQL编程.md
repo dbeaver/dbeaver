@@ -1,6 +1,7 @@
 本文档介绍如何在DBeaver中进行PLSQL编程。
 
 ## 权限需求
+
 在使用PLSQL编程前，确保使用的用户有如下权限：
 
 | 权限                  | 说明                                                 |
@@ -10,8 +11,7 @@
 | DROP ANY PROCEDURE    | 删除任意过程体或函数（sys schema除外）               |
 | EXECUTE ANY PROCEDURE | 执行任意过程体或函数（sys schema除外）               |
 
-DBeaver For YashanDB不支持将DBMS_OUTPUT等输出文本至结果栏。
-
+DBeaver for YashanDB不支持将DBMS_OUTPUT等输出文本至结果栏。
 
 准备表和数据如下：
 
@@ -50,6 +50,7 @@ WHERE area_no IN ('01','02','03');
 COMMIT;      
 END;
 ```
+
 这个存储过程演示了在存储过程中使用DML语句。
 将上面的SQL语句复制到编辑器，成功执行，刷新左侧Schema，可以看到存储过程目录下已存在创建好的存储过程。
 

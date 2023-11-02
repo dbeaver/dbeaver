@@ -82,7 +82,8 @@ drwxrwxrwx.  9 root root 24576 Sep 25 00:03 plugins
 -rwxrwxrwx.  1 root root  1811 Sep 25 00:03 readme.txt
 ```
 
-编辑*dbeaver.ini*文件，在文件内容头部加入如下内容：
+编辑*dbeaver.ini*文件，在文件内容**头部**加入如下内容：
+
 ``` shell
 -vm
 /usr/local/java/jdk-17.0.8.1/bin  #此为示例，具体路径以本地解压的jdk目录为准，定位到bin目录即可

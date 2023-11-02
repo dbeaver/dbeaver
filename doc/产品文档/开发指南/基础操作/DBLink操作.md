@@ -1,7 +1,7 @@
 本文档介绍如何在DBeaver中创建，查看YashanDB的数据库连接。
 
 ## 权限需求
-使用DBeaver For YashanDB管理DBLink，请确保当前用户具有以下权限。
+使用DBeaver for YashanDB管理DBLink，请确保当前用户具有以下权限。
 
 | 权限                          | 说明        |
 |-----------------------------|-----------|
