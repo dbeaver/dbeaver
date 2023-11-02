@@ -58,8 +58,8 @@ import java.util.*;
 public class ScopeSelectorControl extends Composite {
     private static final Log log = Log.getLog(ScopeSelectorControl.class);
 
-    private final DBSLogicalDataSource dataSource;
-    private final DBCExecutionContext executionContext;
+    private DBSLogicalDataSource dataSource;
+    private DBCExecutionContext executionContext;
 
     private final Combo scopeCombo;
     private final Text scopeText;
@@ -124,6 +124,12 @@ public class ScopeSelectorControl extends Composite {
         showScopeSettings(currentScope);
     }
 
+    public void setInput(@NotNull DBSLogicalDataSource dataSource, @NotNull DBCExecutionContext executionContext) {
+        this.dataSource = dataSource;
+        this.executionContext = executionContext;
+        showScopeSettings(currentScope);
+    }
+
     @NotNull
     public ToolBar getToolBar() {
         return toolBar;
@@ -166,6 +172,16 @@ public class ScopeSelectorControl extends Composite {
             log.error(e);
         }
         return entities;
+    }
+
+    @NotNull
+    public DBSLogicalDataSource getDataSource() {
+        return dataSource;
+    }
+
+    @NotNull
+    public DBCExecutionContext getExecutionContext() {
+        return executionContext;
     }
 
     private void showScopeSettings(@NotNull DAICompletionScope scope) {
