@@ -178,16 +178,13 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 page.createControl(pageArea);
                 Control pageControl = page.getControl();
                 applyDialogFont(pageControl);
-                GridData gd = (GridData) pageControl.getLayoutData();
-                if (gd == null) {
-                    gd = new GridData(GridData.FILL_BOTH);
-                    gd.exclude = true;
-                    pageControl.setLayoutData(gd);
-                }
                 if (page instanceof ActiveWizardPage activeWizardPage) {
                     activeWizardPage.updatePageCompletion();
                     activeWizardPage.activatePage();
                 }
+                GridData gd = new GridData(GridData.FILL_BOTH);
+                gd.exclude = true;
+                pageControl.setLayoutData(gd);
                 page.setVisible(false);
                 if (page instanceof ActiveWizardPage activeWizardPage) {
                     activeWizardPage.deactivatePage();
@@ -197,6 +194,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
         } finally {
+            pageArea.layout();
             pageArea.setRedraw(true);
         }
     }
