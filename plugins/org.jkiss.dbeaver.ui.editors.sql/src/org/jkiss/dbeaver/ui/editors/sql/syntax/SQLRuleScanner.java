@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.extended.SQLBackgroundParsingJob;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLBackgroundParsingJob;
 
 import java.util.*;
 
@@ -100,7 +100,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
 
         TPRule[] allRules = ruleManager.getAllRules();
-        IRule[] extraRules = backgroundParsingJob.prepareRules(this);
+        IRule[] extraRules = backgroundParsingJob != null ? backgroundParsingJob.prepareRules(this) : new IRule[0];
 
         IRule[] result = new IRule[allRules.length + extraRules.length];
         int i = 0;

@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -75,8 +76,9 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLBackgroundParsingJob;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.extended.SQLBackgroundParsingJob;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -145,7 +147,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
-        backgroundParsingJob = new SQLBackgroundParsingJob(this);
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLCompletionAnalyzer.ENABLE_EXPERIMENTAL_FEATURES)) {
+            backgroundParsingJob = new SQLBackgroundParsingJob(this);
+        }
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime = 0;
 
@@ -178,6 +182,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         completionContext = new SQLEditorCompletionContext(this);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
+    }
+    
+    public SQLDocumentSyntaxContext getSyntaxContext() {
+        return backgroundParsingJob == null ? null : backgroundParsingJob.getCurrentContext();
     }
 
     @Override
@@ -630,7 +638,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
-        this.backgroundParsingJob.dispose();
+        if (backgroundParsingJob != null) {
+            this.backgroundParsingJob.dispose();
+        }
         this.occurrencesHighlighter.dispose();
 /*
         if (this.activationListener != null) {
@@ -796,7 +806,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             verticalRuler.update();
         }
         
-        backgroundParsingJob.setup();
+        if (backgroundParsingJob != null) {
+            backgroundParsingJob.setup();
+        }
     }
 
     boolean hasActiveQuery() {

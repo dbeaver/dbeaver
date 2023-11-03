@@ -11,6 +11,10 @@ public interface STMTreeNode extends Tree {
     
     void fixup(@NotNull STMParserOverrides parserCtx);
 
+    default int getNodeKindId() {
+        return -1;
+    } 
+    
     @NotNull
     String getNodeName();
         
@@ -54,5 +58,19 @@ public interface STMTreeNode extends Tree {
     
     default STMTreeNode getStmParent() {
         return getParent() instanceof STMTreeNode parent ? parent : null;
+    }
+    
+    default STMTreeNode getStmChild(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+    default STMTreeNode findChildOfName(String nodeName) {
+        for (int i = 0; i < this.getChildCount(); i++){
+            STMTreeNode cn = this.getStmChild(i);
+            if (cn.getNodeName().equals(nodeName)) {
+                return cn;
+            }
+        }
+        return null;
     }
 }

@@ -80,7 +80,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private static final String ALL_COLUMNS_PATTERN = "*";
     private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
-    private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
+    public static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
     private static final String MATCH_ANY_PATTERN = "%";
     private static final String TABLE_TO_ATTRIBUTE_PATTERN = "%s%s%s";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;

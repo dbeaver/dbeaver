@@ -99,12 +99,20 @@ public class SQLTokenAdapter extends Token {
                     colorKey = SQLConstants.CONFIG_COLOR_TABLE;
                     style = SWT.NORMAL;
                     break;
+                case T_TABLE_ALIAS:
+                    colorKey = SQLConstants.CONFIG_COLOR_TABLE;
+                    style = SWT.NORMAL;
+                    break;
                 case T_COLUMN:
                     colorKey = SQLConstants.CONFIG_COLOR_COLUMN;
                     style = SWT.NORMAL;
                     break;
-                case T_COLUMN_ALIAS:
-                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN_ALIAS;
+                case T_COLUMN_DERIVED:
+                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN;
+                    style = SWT.NORMAL;
+                    break;
+                case T_SCHEMA:
+                    colorKey = SQLConstants.CONFIG_COLOR_SCHEMA;
                     style = SWT.NORMAL;
                     break;
                 case T_SEMANTIC_ERROR:
