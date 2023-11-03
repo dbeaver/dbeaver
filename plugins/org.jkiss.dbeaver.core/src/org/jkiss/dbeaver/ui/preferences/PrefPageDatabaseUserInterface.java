@@ -78,6 +78,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
+    private Button enableExtendedJawsSupportCheck;
 
 
     public PrefPageDatabaseUserInterface()
@@ -216,8 +217,25 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 });
             }
         }
-        setSettings();
+        {
+            final Group group = UIUtils.createControlGroup(
+                composite,
+                "Accessibility",
+                1,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
 
+            enableExtendedJawsSupportCheck = UIUtils.createCheckbox(
+                group,
+                "Enable extended JAWS support",
+                "Enable extended support for JAWS screen reader. When enabled, other screen readers may stop working.",
+                false,
+                1
+            );
+        }
+        setSettings();
+        //performDefaults();
         return composite;
     }
 
@@ -242,23 +260,25 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
+
+        enableExtendedJawsSupportCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT));
     }
 
-    @Override
-    protected void performDefaults() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        if (isStandalone) {
-            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
-        }
-        if (isWindowsDesktopClient()) {
-            SWTBrowserRegistry.getActiveBrowser();
-            browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
-        }
-        if (clientTimezone != null) {
-            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
-        }
-    }
+//    @Override
+//    protected void performDefaults() {
+//        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+//        if (isStandalone) {
+//            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+//            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+//        }
+//        if (isWindowsDesktopClient()) {
+//            SWTBrowserRegistry.getActiveBrowser();
+//            browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
+//        }
+//        if (clientTimezone != null) {
+//            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
+//        }
+//    }
 
     private boolean isWindowsDesktopClient() {
         return isStandalone && RuntimeUtils.isWindows();
@@ -311,6 +331,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
+
+        store.setValue(DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT, enableExtendedJawsSupportCheck.getSelection());
 
         return true;
     }

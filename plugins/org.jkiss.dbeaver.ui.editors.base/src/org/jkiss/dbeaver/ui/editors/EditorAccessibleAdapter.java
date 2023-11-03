@@ -16,71 +16,67 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.swt.accessibility.*;
+import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.accessibility.AccessibleControlAdapter;
+import org.eclipse.swt.accessibility.AccessibleControlEvent;
+import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
-
-import java.lang.ref.WeakReference;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 public class EditorAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
     private static final String DATA_KEY = EditorAccessibleAdapter.class.getName();
 
-    private final WeakReference<Composite> composite;
+    private final Control composite;
     private boolean active;
 
-    private EditorAccessibleAdapter(@NotNull Composite composite) {
-        this.composite = new WeakReference<>(composite);
+    EditorAccessibleAdapter(@NotNull Control composite) {
+        this.composite = composite;
     }
 
-    /**
-     * Checks if any control in the hierarchy has this accessible adapter installed and it's active.
-     * <p>
-     * In other words, if any method of this adapter was called at least once, it will be treated as "active".
-     */
-    public static boolean isActive(@NotNull Composite composite) {
-        for (Composite c = composite; c != null; c = c.getParent()) {
-            final Object data = c.getData(DATA_KEY);
-            if (data instanceof EditorAccessibleAdapter && ((EditorAccessibleAdapter) data).active) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Installs this accessible adapter on the given control.
-     */
-    public static void install(@NotNull Composite composite) {
-        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(composite);
-
-        final Accessible accessible = composite.getAccessible();
-        accessible.addAccessibleListener(adapter);
-        accessible.addAccessibleControlListener(adapter);
-
-        composite.setData(DATA_KEY, adapter);
-    }
+//    /**
+//     * Checks if any control in the hierarchy has this accessible adapter installed
+//     * and it's active.
+//     * <p>
+//     * In other words, if any method of this adapter was called at least once, it
+//     * will be treated as "active".
+//     */
+//    public static boolean isActive(@NotNull Composite composite) {
+//        for (Composite c = composite; c != null; c = c.getParent()) {
+//            final Object data = c.getData(DATA_KEY);
+//            if (data instanceof EditorAccessibleAdapter && ((EditorAccessibleAdapter) data).active) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
+//
+//    /**
+//     * Installs this accessible adapter on the given control.
+//     */
+//    public static void install(@NotNull Composite composite) {
+//        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(composite);
+//        final Accessible accessible = composite.getAccessible();
+//        accessible.addAccessibleListener(adapter);
+//        accessible.addAccessibleControlListener(adapter);
+//        composite.setData(DATA_KEY, adapter);
+//    }
 
     @Override
     public void getName(AccessibleEvent e) {
-        final Composite composite = this.composite.get();
-
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
+        if (this.composite != null) {
+            e.result = composeActiveEditorTabName(this.composite);
             active = true;
         }
     }
 
     @Override
     public void getValue(AccessibleControlEvent e) {
-        final Composite composite = this.composite.get();
-
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
+        if (this.composite != null) {
+            e.result = composeActiveEditorTabName(this.composite);
             active = true;
         }
     }
@@ -101,32 +97,22 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
     }
 
     @NotNull
-    private static String getWorkbenchLocation(@NotNull Composite composite) {
-        final Deque<String> path = new ArrayDeque<>();
-
-        for (Composite c = composite; c != null; c = c.getParent()) {
-            if (c instanceof TabFolder) {
-                final TabFolder folder = (TabFolder) c;
-                final int index = folder.getSelectionIndex();
-
-                if (index >= 0) {
-                    path.offerFirst(getTabName(folder.getItem(index).getText(), index, folder.getItemCount()));
-                }
-            } else if (c instanceof CTabFolder) {
-                final CTabFolder folder = (CTabFolder) c;
-                final int index = folder.getSelectionIndex();
-
-                if (index >= 0) {
-                    path.offerFirst(getTabName(folder.getItem(index).getText(), index, folder.getItemCount()));
-                }
-            }
+    private static String composeActiveEditorTabName(@NotNull Control composite) {
+        String msg = "";
+        Composite parentTab = composite.getParent();
+        if (parentTab instanceof CTabFolder) {
+            CTabFolder tabFoler = (CTabFolder) parentTab;
+            msg = String.format("active tab %s %s of %s",
+                tabFoler.getSelection().getText(),
+                tabFoler.getSelectionIndex() + 1,
+                tabFoler.getItemCount());
+//            Composite parentEditor = parentTab.getParent();
+//            if (parentEditor instanceof CTabFolder) {
+//                CTabFolder editorFoler = (CTabFolder) parentTab;
+//                msg = String.format("active editor %s %s", editorFoler.getSelection().getText(), msg);
+//            }
         }
-
-        return String.join(", ", path);
-    }
-
-    @NotNull
-    private static String getTabName(@NotNull String text, int index, int count) {
-        return String.format("%s tab, %d out of %d", text, index + 1, count);
+        System.out.println("!--->>>  msg:" + msg);
+        return msg;
     }
 }

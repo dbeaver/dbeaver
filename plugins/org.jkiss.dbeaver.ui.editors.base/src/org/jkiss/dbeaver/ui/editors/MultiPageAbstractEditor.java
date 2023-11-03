@@ -19,6 +19,10 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleActionAdapter;
+import org.eclipse.swt.accessibility.AccessibleActionEvent;
+import org.eclipse.swt.accessibility.AccessibleTextAdapter;
+import org.eclipse.swt.accessibility.AccessibleTextEvent;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
@@ -30,6 +34,8 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -40,20 +46,20 @@ import java.util.List;
 /**
  * MultiPageAbstractEditor
  */
-public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
-{
+public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     private ImageDescriptor curTitleImage;
     private final List<Image> oldImages = new ArrayList<>();
     private int activePageIndex = -1;
+    private List<CTabItem> tabsList = new ArrayList<>();
 
     @Override
     public void init(IEditorSite site, IEditorInput input)
-        throws PartInitException
-    {
+        throws PartInitException {
         if (getEditorInput() == null) {
             super.init(site, input);
         } else {
-            // Pages re-initialization. Do not call init bcause it recreates selection provider
+            // Pages re-initialization. Do not call init bcause it recreates selection
+            // provider
             setSite(site);
             setInput(input);
         }
@@ -63,14 +69,18 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
 
     @Override
     protected CTabItem createItem(int index, Control control) {
-        EditorAccessibleAdapter.install((Composite) control);
-        return super.createItem(index, control);
+        CTabItem item = super.createItem(index, control);
+//        EditorAccessibleAdapter.install((Composite) control);
+        item.getControl().getAccessible().addAccessibleListener(new EditorAccessibleAdapter(item.getControl())); 
+      
+        tabsList.add(item);
+        return item;
     }
 
     protected void setTitleImage(ImageDescriptor titleImage) {
-    	if (getContainer() != null && getContainer().isDisposed()) {
-    		return;
-    	}
+        if (getContainer() != null && getContainer().isDisposed()) {
+            return;
+        }
         if (CommonUtils.equalObjects(curTitleImage, titleImage)) {
             return;
         }
@@ -90,32 +100,27 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor)
-    {
+    public void doSave(IProgressMonitor monitor) {
     }
 
     @Override
-    public void doSaveAs()
-    {
+    public void doSaveAs() {
     }
 
     @Override
-    public boolean isSaveAsAllowed()
-    {
+    public boolean isSaveAsAllowed() {
         return false;
     }
 
     @Override
-    protected void createPages()
-    {
+    protected void createPages() {
         this.setContainerStyles();
     }
 
-    protected void setContainerStyles()
-    {
+    protected void setContainerStyles() {
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder && !pageContainer.isDisposed()) {
-            CTabFolder tabFolder = (CTabFolder)pageContainer;
+            CTabFolder tabFolder = (CTabFolder) pageContainer;
             tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);
             tabFolder.setTabPosition(SWT.TOP);
@@ -126,35 +131,28 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
                 tabFolder.setTopRight(topRight, SWT.RIGHT | SWT.WRAP);
             }
 
-/*
-            final Accessible accessible = tabFolder.getAccessible();
-            accessible.addAccessibleListener(new AccessibleAdapter() {
-                public void getName(AccessibleEvent e) {
-                    if (e.childID < 0) {
-                        CTabItem selection = tabFolder.getSelection();
-                        if (selection != null) {
-                            e.result = "Tab " + selection.getText();
-                        }
-                    }
-                }
-            });
-*/
+            /*
+             * final Accessible accessible = tabFolder.getAccessible();
+             * accessible.addAccessibleListener(new AccessibleAdapter() { public void
+             * getName(AccessibleEvent e) { if (e.childID < 0) { CTabItem selection =
+             * tabFolder.getSelection(); if (selection != null) { e.result = "Tab " +
+             * selection.getText(); } } } });
+             */
 
 //            tabFolder.setSimple(false);
-            //tabFolder.setBorderVisible(true);
+            // tabFolder.setBorderVisible(true);
             Layout parentLayout = tabFolder.getParent().getLayout();
             if (parentLayout instanceof FillLayout) {
-                ((FillLayout)parentLayout).marginHeight = 0;
+                ((FillLayout) parentLayout).marginHeight = 0;
 //                ((FillLayout)parentLayout).marginWidth = 5;
             }
         }
     }
 
-    protected void setPageToolTip(int index, String toolTip)
-    {
+    protected void setPageToolTip(int index, String toolTip) {
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder) {
-            CTabFolder tabFolder = (CTabFolder)pageContainer;
+            CTabFolder tabFolder = (CTabFolder) pageContainer;
             if (index < tabFolder.getItemCount()) {
                 tabFolder.getItem(index).setToolTipText(toolTip);
             }
@@ -162,16 +160,14 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     }
 
     @Override
-    protected void pageChange(int newPageIndex)
-    {
+    protected void pageChange(int newPageIndex) {
         deactivateEditor();
         this.activePageIndex = newPageIndex;
         super.pageChange(newPageIndex);
         activateEditor();
     }
 
-    protected final void deactivateEditor()
-    {
+    protected final void deactivateEditor() {
         // Deactivate the nested services from the last active service locator.
         if (activePageIndex >= 0 && getEditorCount() > activePageIndex) {
             final IWorkbenchPart part = getEditor(activePageIndex);
@@ -181,8 +177,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         }
     }
 
-    protected final void activateEditor()
-    {
+    protected final void activateEditor() {
         final int pageIndex = getActivePage();
         final IWorkbenchPart part = getEditor(pageIndex);
 
@@ -192,8 +187,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     }
 
     @Override
-    public IEditorPart getActiveEditor()
-    {
+    public IEditorPart getActiveEditor() {
         if (getContainer().isDisposed()) {
             return null;
         }
@@ -201,7 +195,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     }
 
     protected IEditorPart getEditor(int pageIndex) {
-        Item item = ((CTabFolder)getContainer()).getItem(pageIndex);
+        Item item = ((CTabFolder) getContainer()).getItem(pageIndex);
         if (item != null && !item.isDisposed()) {
             Object data = item.getData();
             if (data instanceof IEditorPart) {
@@ -225,5 +219,31 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
             removePage(i - 1);
         }
         createPages();
+    }
+
+    @Override
+    public void setFocus() {
+         //super.setFocus();
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (store.getBoolean(DatabaseEditorPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT)) {
+            if (activePageIndex != -1) {
+                CTabItem cTabItem = tabsList.get(activePageIndex);
+                if (cTabItem != null && !cTabItem.isDisposed()) {
+                    if (cTabItem.getControl() != null && !cTabItem.getControl().isDisposed()) {
+                        System.out.println("SET FOCUS");
+                        //cTabItem.getControl().forceFocus();
+                        cTabItem.getParent().forceFocus();
+//                        Composite parent2 = parent.getParent();
+//                        Composite parent3 = parent2.getParent();
+//                        Composite parent4 = parent3.getParent();
+//                        parent4.setFocus();
+//                        System.out.println("TTT");
+//                        //cTabItem.getParent().forceFocus();
+                    }
+                }
+            }
+        } else {
+            super.setFocus();
+        }
     }
 }
