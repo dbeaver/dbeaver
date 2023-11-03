@@ -3344,7 +3344,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         UIUtils.asyncExec(() -> {
-            topBarMan.update(true);
+            if (topBarMan != null) {
+                topBarMan.update(true);
+            }
             this.updateMultipleResultsPerTabToolItem();
         });
 
