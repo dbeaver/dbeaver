@@ -923,7 +923,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 } else {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
                     DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
-                    if (targetDataSource != null) {
+                    if (targetDataSource != null && updateAttributesNames) {
                         name = DBUtils.getUnQuotedIdentifier(targetDataSource, name);
                     }
                     if (attrMapping.getParent().getTarget() instanceof DBSEntity) {

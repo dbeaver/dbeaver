@@ -14,12 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.ai.completion;
+
+import org.jkiss.code.NotNull;
 
 /**
- * Query manager session receiver.
- * It helps us to differ CE and EE products (CE product doesn't have QM database).
+ * Represents a single completion message
+ *
+ * @param role    role of the message
+ * @param content content of the message
  */
-public interface QMSessionReceiver {
+public record DAICompletionMessage(@NotNull Role role, @NotNull String content) {
+    /**
+     * Role of the message
+     */
+    public enum Role {
+        SYSTEM,
+        USER;
 
+        @NotNull
+        public String getId() {
+            return switch (this) {
+                case SYSTEM -> "system";
+                case USER -> "user";
+            };
+        }
+    }
 }

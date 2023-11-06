@@ -142,7 +142,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             return Collections.emptyList();
         }
         // qm session id might be null if database migration is in progress for single user product
-        if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionReceiver) {
+        if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider qmSessionProvider) {
             for (QMMetaEvent event : eventPool) {
                 if (event.getSessionId() != null) {
                     continue;
@@ -151,7 +151,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 if (workspace == null) {
                     continue;
                 }
-                var sessionId = QMUtils.getQmSessionId(workspace.getWorkspaceSession());
+                var sessionId = qmSessionProvider.getQmSessionId();
                 if (sessionId == null) {
                     return Collections.emptyList();
                 }

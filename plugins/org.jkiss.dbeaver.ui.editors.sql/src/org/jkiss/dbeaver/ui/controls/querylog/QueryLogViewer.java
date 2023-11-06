@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -1219,7 +1220,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
 
-                var qmSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+                String qmSessionId = null;
+                if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
+                    qmSessionId = provider.getQmSessionId();
+                }
                 var cursorFilter = new QMCursorFilter(
                     qmSessionId,
                     criteria,

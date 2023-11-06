@@ -25,22 +25,26 @@ import java.util.List;
  * Completion session
  */
 public class DAICompletionSession {
-    private final List<DAICompletionRequest> requests;
+    private final List<DAICompletionMessage> messages;
 
     public DAICompletionSession() {
-        this.requests = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 
-    public void add(@NotNull DAICompletionRequest request) {
-        requests.add(request);
+    public void add(@NotNull DAICompletionMessage message) {
+        messages.add(message);
+    }
+
+    public void remove(@NotNull DAICompletionMessage message) {
+        messages.remove(message);
     }
 
     public void clear() {
-        requests.clear();
+        messages.clear();
     }
 
     @NotNull
-    public List<DAICompletionRequest> getRequests() {
-        return requests;
+    public List<DAICompletionMessage> getMessages() {
+        return messages;
     }
 }

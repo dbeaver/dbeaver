@@ -824,8 +824,8 @@ public class JDBCUtils {
         return null;
     }
 
-    public static long executeInsertAutoIncrement(Connection session, String sql, Object... params) throws SQLException {
-        try (PreparedStatement dbStat = session.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    public static long executeInsertAutoIncrement(Connection session, String sql, String columnName, Object... params) throws SQLException {
+        try (PreparedStatement dbStat = session.prepareStatement(sql, getColumnList(columnName))) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
                     dbStat.setObject(i + 1, params[i]);
@@ -850,5 +850,16 @@ public class JDBCUtils {
                 statement.execute(sql);
             }
         }
+    }
+
+    /**
+     * Needed for {@link Connection#prepareStatement(String, String[])}
+     * Postgres can't find column if column id is in upper case.
+     * Oracle doesn't return id of inserted row for {@link Connection#prepareStatement(String, int)}.
+     * @param columnName name of column.
+     * @return array of column name.
+     */
+    public static String[] getColumnList(@NotNull String columnName) {
+        return new String[] {columnName.toLowerCase()};
     }
 }

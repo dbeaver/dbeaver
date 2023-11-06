@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
@@ -34,6 +35,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DBFFileSystemManager implements DBFEventListener {
+    public static final String QUERY_PARAM_FS_ID = "file-system-id";
+
     private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
     @NotNull
     private final DBPProject project;
@@ -72,15 +75,18 @@ public class DBFFileSystemManager implements DBFEventListener {
         if (CommonUtils.isEmpty(fsType)) {
             throw new DBException("File system type not present in the file uri: " + uri);
         }
-        String fsId = uri.getAuthority();
+        String fsId = DBFUtils.getQueryParameters(uri.getRawQuery()).get(QUERY_PARAM_FS_ID);
         if (CommonUtils.isEmpty(fsId)) {
-            throw new DBException("File system id not present in the file uri: " + uri);
+            // Try to get FS id from first path item
+            fsId = CommonUtils.toString(uri.getHost(), uri.getAuthority());
+            if (CommonUtils.isEmpty(fsId)) {
+                throw new DBException("File system id not present in the file uri: " + uri);
+            }
         }
-        DBFVirtualFileSystem fileSystem = getVirtualFileSystems()
-            .stream()
-            .filter(fs -> fs.getType().equals(fsType) && fs.getId().equals(fsId))
-            .findFirst()
-            .orElseThrow(() -> new DBException("Cannot find file system provider for the uri '" + uri + "'"));
+        DBFVirtualFileSystem fileSystem = getVirtualFileSystem(fsType, fsId);
+        if (fileSystem == null) {
+            throw new DBException("Cannot find file system provider for the uri '" + uri + "'");
+        }
 
         try {
             return fileSystem.getPathByURI(monitor, uri);
@@ -95,6 +101,16 @@ public class DBFFileSystemManager implements DBFEventListener {
             reloadFileSystems(new LoggingProgressMonitor());
         }
         return dbfFileSystems.values();
+    }
+
+    @Nullable
+    public DBFVirtualFileSystem getVirtualFileSystem(@NotNull String type, @NotNull String id) {
+        for (DBFVirtualFileSystem fs : getVirtualFileSystems()) {
+            if (fs.getType().equals(type) && fs.getId().equals(id)) {
+                return fs;
+            }
+        }
+        return null;
     }
 
     @Override

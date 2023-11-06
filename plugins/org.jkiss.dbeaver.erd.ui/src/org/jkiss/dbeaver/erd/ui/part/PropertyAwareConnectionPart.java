@@ -34,6 +34,7 @@ import java.beans.PropertyChangeListener;
  * @author Serge Rider
  */
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener, DBPNamedObject {
+
     @NotNull
     public DiagramPart getDiagramPart() {
         RootEditPart root = getRoot();
@@ -101,5 +102,4 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 		 */
         ((GraphicalEditPart) (getViewer().getContents())).getFigure().revalidate();
     }
-
 }
