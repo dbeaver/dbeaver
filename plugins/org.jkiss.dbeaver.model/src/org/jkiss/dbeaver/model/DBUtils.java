@@ -2506,6 +2506,51 @@ public final class DBUtils {
         return result[0];
     }
 
+    public static long countDataFromQuery(
+        @NotNull DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull SQLQuery query
+    ) throws DBCException {
+        try (DBCStatement dbStatement = makeStatement(source, session, DBCStatementType.SCRIPT, query, 0, 0)) {
+            if (dbStatement.executeStatement()) {
+                try (DBCResultSet rs = dbStatement.openResultSet()) {
+                    if (rs.nextRow()) {
+                        List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
+                        Object countValue = null;
+                        if (resultAttrs.size() == 1) {
+                            countValue = rs.getAttributeValue(0);
+                        } else {
+                            // In some databases (Influx?) SELECT count(*) produces multiple columns. Try to find first one with 'count' in its name.
+                            for (int i = 0; i < resultAttrs.size(); i++) {
+                                DBCAttributeMetaData ma = resultAttrs.get(i);
+                                if (ma.getName().toLowerCase(Locale.ENGLISH).contains("count")) {
+                                    countValue = rs.getAttributeValue(i);
+                                    break;
+                                }
+                            }
+                        }
+                        if (countValue instanceof Map && ((Map<?, ?>) countValue).size() == 1) {
+                            // For document-based DBs
+                            Object singleValue = ((Map<?, ?>) countValue).values().iterator().next();
+                            if (singleValue instanceof Number) {
+                                countValue = singleValue;
+                            }
+                        }
+                        if (countValue instanceof Number) {
+                            return ((Number) countValue).longValue();
+                        } else {
+                            throw new DBCException("Unexpected row count value: " + countValue);
+                        }
+                    } else {
+                        throw new DBCException("Row count result is empty");
+                    }
+                }
+            } else {
+                throw new DBCException("Row count query didn't return any value");
+            }
+        }
+    }
+
     public interface ChildExtractor<PARENT, CHILD> {
         @Nullable
         CHILD extract(@NotNull PARENT parent, @NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException;

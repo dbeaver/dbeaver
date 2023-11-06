@@ -4088,53 +4088,15 @@ public class SQLEditor extends SQLEditorBase implements
             if (dataSource == null) {
                 throw new DBCException("Query transform is not supported by datasource");
             }
-            if (!(query instanceof SQLQuery)) {
+            if (!(query instanceof SQLQuery sqlQuery)) {
                 throw new DBCException("Can't count rows for control command");
             }
             try {
-                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery(dataSource, getSyntaxManager(), (SQLQuery) query);
+                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery(dataSource, getSyntaxManager(), sqlQuery);
                 if (!CommonUtils.isEmpty(countQuery.getParameters())) {
                     countQuery.setParameters(parseQueryParameters(countQuery));
                 }
-
-                try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.SCRIPT, countQuery, 0, 0)) {
-                    if (dbStatement.executeStatement()) {
-                        try (DBCResultSet rs = dbStatement.openResultSet()) {
-                            if (rs.nextRow()) {
-                                List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
-                                Object countValue = null;
-                                if (resultAttrs.size() == 1) {
-                                    countValue = rs.getAttributeValue(0);
-                                } else {
-                                    // In some databases (Influx?) SELECT count(*) produces multiple columns. Try to find first one with 'count' in its name.
-                                    for (int i = 0; i < resultAttrs.size(); i++) {
-                                        DBCAttributeMetaData ma = resultAttrs.get(i);
-                                        if (ma.getName().toLowerCase(Locale.ENGLISH).contains("count")) {
-                                            countValue = rs.getAttributeValue(i);
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (countValue instanceof Map && ((Map<?, ?>) countValue).size() == 1) {
-                                    // For document-based DBs
-                                    Object singleValue = ((Map<?, ?>) countValue).values().iterator().next();
-                                    if (singleValue instanceof Number) {
-                                        countValue = singleValue;
-                                    }
-                                }
-                                if (countValue instanceof Number) {
-                                    return ((Number) countValue).longValue();
-                                } else {
-                                    throw new DBCException("Unexpected row count value: " + countValue);
-                                }
-                            } else {
-                                throw new DBCException("Row count result is empty");
-                            }
-                        }
-                    } else {
-                        throw new DBCException("Row count query didn't return any value");
-                    }
-                }
+                return DBUtils.countDataFromQuery(source, session, countQuery);
             } catch (DBException e) {
                 throw new DBCException("Error executing row count", e);
             }
@@ -4312,7 +4274,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     }
-    
+
     class MultiTabsQueryResultsContainer extends QueryResultsContainer {
         private CTabItem resultsTab;
 
