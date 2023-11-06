@@ -75,7 +75,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
         }
         if (newName == null) {
             newName = EnterNameDialog.chooseName(shell,
-                NLS.bind(UINavigatorMessages.actions_navigator_rename_object, node.getNodeType()), oldName);
+                NLS.bind(UINavigatorMessages.actions_navigator_rename_object, node.getNodeTypeLabel()), oldName);
         }
         if (CommonUtils.isEmpty(newName) || newName.equals(oldName)) {
             return false;

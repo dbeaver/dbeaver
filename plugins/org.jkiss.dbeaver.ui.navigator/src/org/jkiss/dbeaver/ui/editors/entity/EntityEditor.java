@@ -612,7 +612,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 DBNNode node = editorInput.getNavigatorNode();
                 int propEditorIndex = getPageCount() - 1;
                 setPageText(propEditorIndex, UINavigatorMessages.editors_entity_properties_text);
-                setPageToolTip(propEditorIndex, node.getNodeType() + UINavigatorMessages.editors_entity_properties_tooltip_suffix);
+                setPageToolTip(propEditorIndex, node.getNodeTypeLabel() + UINavigatorMessages.editors_entity_properties_tooltip_suffix);
                 setPageImage(propEditorIndex, DBeaverIcons.getImage(node.getNodeIconDefault()));
             }
         }
@@ -1141,7 +1141,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         item.setData(databaseNode);
 
         if (databaseNode == curNode) {
-            item.setToolTipText(databaseNode.getNodeType());
+            item.setToolTipText(databaseNode.getNodeTypeLabel());
             //item.setEnabled(false);
         } else {
             item.addSelectionListener(new SelectionAdapter() {
@@ -1189,7 +1189,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     }
                 }
             });
-            item.setToolTipText(NLS.bind(UINavigatorMessages.actions_navigator_open, databaseNode.getNodeType()));
+            item.setToolTipText(NLS.bind(UINavigatorMessages.actions_navigator_open, databaseNode.getNodeTypeLabel()));
         }
     }
 

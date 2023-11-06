@@ -210,7 +210,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (node instanceof DBNContainer && !(node instanceof DBNDataSource)) {
                 return ((DBNContainer)node).getChildrenType();
             } else {
-                return node.getNodeType();
+                return node.getNodeTypeLabel();
             }
         }
         return null;
@@ -395,7 +395,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                         UIIcon.SQL_NEW_CONNECTION : node.getNodeIconDefault();
                     createActions.add(
                         makeCreateContributionItem(
-                            site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
+                            site, nodeItemClass.getName(), node.getNodeTypeLabel(), nodeIcon, false));
                 }
             }
 
