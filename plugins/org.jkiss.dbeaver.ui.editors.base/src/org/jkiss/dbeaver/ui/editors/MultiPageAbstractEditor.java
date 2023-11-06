@@ -91,11 +91,17 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
         oldImages.clear();
         super.dispose();
     }
-
+    
+    /**
+     * Save method
+     */
     @Override
     public void doSave(IProgressMonitor monitor) {
     }
 
+    /**
+     * Save as method
+     */
     @Override
     public void doSaveAs() {
     }
@@ -221,8 +227,9 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
             if (activePageIndex != -1) {
                 CTabItem tabItem = tabsList.get(activePageIndex);
                 if (tabItem != null && !tabItem.isDisposed()) {
-                    if (tabItem.getControl() != null && !tabItem.getControl().isDisposed()) {
-                        tabItem.getControl().forceFocus();
+                    Control control = tabItem.getControl();
+                    if (control != null && !control.isDisposed()) {
+                        control.forceFocus();
                     }
                 }
             }
