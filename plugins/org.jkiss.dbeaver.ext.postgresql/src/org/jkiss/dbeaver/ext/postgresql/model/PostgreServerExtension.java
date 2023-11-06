@@ -95,7 +95,7 @@ public interface PostgreServerExtension {
 
     boolean supportsTemporalAccessor();
 
-    boolean supportsTeblespaceLocation();
+    boolean supportsTablespaceLocation();
 
     boolean supportsTemplates();
 
