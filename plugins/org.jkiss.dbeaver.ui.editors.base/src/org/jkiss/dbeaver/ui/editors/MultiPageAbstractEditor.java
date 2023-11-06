@@ -49,8 +49,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     private List<CTabItem> tabsList = new ArrayList<>();
 
     @Override
-    public void init(IEditorSite site, IEditorInput input)
-        throws PartInitException {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         if (getEditorInput() == null) {
             super.init(site, input);
         } else {
@@ -220,10 +219,10 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             if (activePageIndex != -1) {
-                CTabItem cTabItem = tabsList.get(activePageIndex);
-                if (cTabItem != null && !cTabItem.isDisposed()) {
-                    if (cTabItem.getControl() != null && !cTabItem.getControl().isDisposed()) {
-                        cTabItem.getControl().forceFocus();
+                CTabItem tabItem = tabsList.get(activePageIndex);
+                if (tabItem != null && !tabItem.isDisposed()) {
+                    if (tabItem.getControl() != null && !tabItem.getControl().isDisposed()) {
+                        tabItem.getControl().forceFocus();
                     }
                 }
             }
