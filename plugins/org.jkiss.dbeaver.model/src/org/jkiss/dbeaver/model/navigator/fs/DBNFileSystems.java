@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOListener;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOMonitor;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -64,6 +65,11 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name();
+    }
+
+    @Override
+    public String getNodeTypeLabel() {
+        return ModelMessages.fs_root;
     }
 
     @Override
