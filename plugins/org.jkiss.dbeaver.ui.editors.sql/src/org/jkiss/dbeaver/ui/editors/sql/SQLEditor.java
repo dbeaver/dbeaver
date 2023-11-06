@@ -116,6 +116,7 @@ import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -5071,7 +5072,17 @@ public class SQLEditor extends SQLEditorBase implements
             button.setData(presentation);
             button.setText(presentation.getLabel());
             button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
-            button.setToolTipText(presentation.getDescription());
+
+            final String toolTip = ActionUtils.findCommandDescription(
+                SQLEditorHandlerSwitchPresentation.CMD_SWITCH_PRESENTATION_ID, getSite(), true,
+                SQLEditorHandlerSwitchPresentation.PARAM_PRESENTATION_ID, presentation.getId()
+            );
+
+            if (CommonUtils.isEmpty(toolTip)) {
+                button.setToolTipText(presentation.getDescription());
+            } else {
+                button.setToolTipText(presentation.getDescription() + " (" + toolTip + ")");
+            }
 
             final IEvaluationService evaluationService = getSite().getService(IEvaluationService.class);
             final Expression enabledWhen = presentation.getEnabledWhen();
