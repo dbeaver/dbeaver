@@ -745,8 +745,8 @@
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
             <propertyGroup label="SSL Settings">
-                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,password" length="MULTILINE"/>
-                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
             </propertyGroup>
             <propertyGroup label="Advanced SSL Settings">

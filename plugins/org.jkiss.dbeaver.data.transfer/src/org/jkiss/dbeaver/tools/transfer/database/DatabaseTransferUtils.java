@@ -267,7 +267,7 @@ public class DatabaseTransferUtils {
      *
      * @param dataSource for preferences and dialect info
      * @param targetName name for transformation
-     * @param skipCaseChanging true if we do not want to change name case
+     * @param skipCaseChanging true if we do not want to change name case of the original name
      * @return transformed target name (container or attribute)
      */
     @NotNull

@@ -21,6 +21,7 @@
 
     <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="ERD Export Formats" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
     <extension-point id="org.jkiss.dbeaver.erd.ui.notation.style" name="ER Diagram Notation Style Specification" schema="schema/org.jkiss.dbeaver.erd.ui.notation.style.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.erd.ui.routing" name="ER Diagram Connection Routing Specification" schema="schema/org.jkiss.dbeaver.erd.ui.routing.exsd"/>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
@@ -604,17 +605,30 @@
        <erdNotation
              description="Integration DEFinition for information modeling (IDEF1X) notation"
              id="org.jkiss.dbeaver.erd.notaion.idef1x"
-             isDefault="true"
              name="IDEF1X"
              notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
        </erdNotation>
        <erdNotation
              description="Crow’s Foot diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
-             isDefault="false"
              name="Crows Foot"
              notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
        </erdNotation>
+    </extension>
+    <extension
+          point="org.jkiss.dbeaver.erd.ui.routing">
+       <erdConnectionRouter
+             id="org.jkiss.dbeaver.erd.router.mikammi"
+             name="Mikami-Tabuchi (Experimental)"
+             router="org.jkiss.dbeaver.erd.ui.router.mikkami.MikamiTabuchiConnectionRouter"
+             supportAttributesAssociation="true">
+       </erdConnectionRouter>
+       <erdConnectionRouter
+             id="org.jkiss.dbeaver.erd.router.shortest.path"
+             name="Shortest paths"
+             description="Router based on shortest pathes"
+             router="org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting">
+       </erdConnectionRouter>
     </extension>
 
 </plugin>

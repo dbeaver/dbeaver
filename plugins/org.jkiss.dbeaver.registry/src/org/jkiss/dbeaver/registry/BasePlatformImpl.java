@@ -99,17 +99,21 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
         if (!getApplication().isExclusiveMode()) {
             // Activate plugin services
-            for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
-                try {
-                    pluginService.activateService();
-                    activatedServices.add(pluginService);
-                } catch (Throwable e) {
-                    log.error("Error activating plugin service", e);
-                }
-            }
+            activatePluginServices();
 
             // Connections monitoring job
             new DataSourceMonitorJob(this).scheduleMonitor();
+        }
+    }
+
+    protected void activatePluginServices() {
+        for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
+            try {
+                pluginService.activateService();
+                activatedServices.add(pluginService);
+            } catch (Throwable e) {
+                log.error("Error activating plugin service", e);
+            }
         }
     }
 

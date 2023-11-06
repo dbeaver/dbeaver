@@ -28,5 +28,7 @@ public class AIConstants {
     public static final String GPT_MODEL = "gpt.model";
     public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     public static final String GPT_LOG_QUERY = "gpt.log.query";
+
+    public static final int MAX_RESPONSE_TOKENS = 2000;
 }
 

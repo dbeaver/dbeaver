@@ -41,7 +41,8 @@ public interface DAICompletionEngine<SERVICE> {
     @NotNull
     List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request,
+        @NotNull DAICompletionContext context,
+        @NotNull DAICompletionMessage message,
         @NotNull IAIFormatter formatter
     ) throws DBException;
 
@@ -51,7 +52,7 @@ public interface DAICompletionEngine<SERVICE> {
     @NotNull
     List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request,
+        @NotNull DAICompletionContext context,
         @NotNull DAICompletionSession session,
         @NotNull IAIFormatter formatter
     ) throws DBException;

@@ -203,8 +203,8 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return scopeSelectorControl.getScope();
     }
 
-    public List<DBSEntity> getCustomEntities() {
-        return scopeSelectorControl.getCustomEntities();
+    public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
+        return scopeSelectorControl.getCustomEntities(monitor);
     }
 
     @Override
