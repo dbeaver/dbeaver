@@ -1931,10 +1931,14 @@ public class SQLEditor extends SQLEditorBase implements
      * Toggles editor/results maximization
      */
     public void toggleEditorMaximize() {
+        setEditorMaximized(resultsSash.getMaximizedControl() == null);
+    }
+
+    public void setEditorMaximized(boolean maximized) {
         if (isHideQueryText()) {
             return;
         }
-        if (resultsSash.getMaximizedControl() == null) {
+        if (maximized) {
             resultsSash.setMaximizedControl(resultTabs);
             switchFocus(true);
         } else {
