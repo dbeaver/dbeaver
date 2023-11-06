@@ -1096,10 +1096,14 @@ public class SQLEditor extends SQLEditorBase implements
             @Override
             public void widgetSelected(SelectionEvent e) {
                 final VerticalButton button = (VerticalButton) e.item;
-                if (button.isChecked() || presentationSwitchFolder.getSelection() == e.item) {
-                    return;
+                final SQLPresentationDescriptor newPresentation = (SQLPresentationDescriptor) button.getData();
+                final SQLPresentationDescriptor curPresentation = getExtraPresentationDescriptor();
+
+                if (curPresentation != null && curPresentation == newPresentation) {
+                    showExtraPresentation((SQLPresentationDescriptor) null);
+                } else {
+                    showExtraPresentation(newPresentation);
                 }
-                showExtraPresentation((SQLPresentationDescriptor) button.getData());
             }
         };
 
