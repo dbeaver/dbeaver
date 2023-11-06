@@ -81,7 +81,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Button useEmbeddedBrowserAuth;
     private Button enableScreenReaderSupport;
 
-
     public PrefPageDatabaseUserInterface()
     {
         super();
@@ -226,7 +225,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
                 0
             );
-
             enableScreenReaderSupport = UIUtils.createCheckbox(
                 group,
                 "Enable screen reader accessibility",
@@ -261,7 +259,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
-
         enableScreenReaderSupport.setSelection(store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY));
     }
 
@@ -332,9 +329,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
-
         store.setValue(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY, enableScreenReaderSupport.getSelection());
-
         return true;
     }
 
