@@ -27,8 +27,8 @@ import org.jkiss.code.NotNull;
 
 public class EditorAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
 
-    private static final String ACTIVE_NAME_EDITOR = "Active editor %s %s"; // $NON-NLS-0$
-    private static final String ACTIVE_NAME_TAB = "Active tab %s %s of %s"; // $NON-NLS-0$
+    private static final String ACTIVE_NAME_EDITOR = "editor %s %s"; // $NON-NLS-0$
+    private static final String ACTIVE_NAME_TAB = "active tab %s %s of %s"; // $NON-NLS-0$
     private final Control composite;
 
     EditorAccessibleAdapter(@NotNull Control composite) {
