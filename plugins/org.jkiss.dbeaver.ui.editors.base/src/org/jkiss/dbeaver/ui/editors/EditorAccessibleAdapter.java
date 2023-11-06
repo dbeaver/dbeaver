@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleControlAdapter;
 import org.eclipse.swt.accessibility.AccessibleControlEvent;
 import org.eclipse.swt.accessibility.AccessibleEvent;
@@ -27,49 +26,19 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 
 public class EditorAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
-    private static final String DATA_KEY = EditorAccessibleAdapter.class.getName();
 
+    private static final String ACTIVE_NAME_EDITOR = "Active editor %s %s"; // $NON-NLS-0$
+    private static final String ACTIVE_NAME_TAB = "Active tab %s %s of %s"; // $NON-NLS-0$
     private final Control composite;
-    private boolean active;
 
     EditorAccessibleAdapter(@NotNull Control composite) {
         this.composite = composite;
     }
 
-//    /**
-//     * Checks if any control in the hierarchy has this accessible adapter installed
-//     * and it's active.
-//     * <p>
-//     * In other words, if any method of this adapter was called at least once, it
-//     * will be treated as "active".
-//     */
-//    public static boolean isActive(@NotNull Composite composite) {
-//        for (Composite c = composite; c != null; c = c.getParent()) {
-//            final Object data = c.getData(DATA_KEY);
-//            if (data instanceof EditorAccessibleAdapter && ((EditorAccessibleAdapter) data).active) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-//
-//    /**
-//     * Installs this accessible adapter on the given control.
-//     */
-//    public static void install(@NotNull Composite composite) {
-//        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(composite);
-//        final Accessible accessible = composite.getAccessible();
-//        accessible.addAccessibleListener(adapter);
-//        accessible.addAccessibleControlListener(adapter);
-//        composite.setData(DATA_KEY, adapter);
-//    }
-
     @Override
     public void getName(AccessibleEvent e) {
         if (this.composite != null) {
             e.result = composeActiveEditorTabName(this.composite);
-            active = true;
         }
     }
 
@@ -77,7 +46,6 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
     public void getValue(AccessibleControlEvent e) {
         if (this.composite != null) {
             e.result = composeActiveEditorTabName(this.composite);
-            active = true;
         }
     }
 
@@ -96,23 +64,37 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
         // not implemented
     }
 
+    /**
+     * The method designed to combine name of editor-tab by selection context
+     *
+     * @param context - initial selection
+     * @return - string message
+     */
     @NotNull
-    private static String composeActiveEditorTabName(@NotNull Control composite) {
+    private static String composeActiveEditorTabName(@NotNull Control context) {
         String msg = "";
-        Composite parentTab = composite.getParent();
+        Composite parentTab = context.getParent();
         if (parentTab instanceof CTabFolder) {
             CTabFolder tabFoler = (CTabFolder) parentTab;
-            msg = String.format("active tab %s %s of %s",
-                tabFoler.getSelection().getText(),
+            msg = String.format(ACTIVE_NAME_TAB,
+                tabFoler.getSelection().getToolTipText(),
                 tabFoler.getSelectionIndex() + 1,
                 tabFoler.getItemCount());
-//            Composite parentEditor = parentTab.getParent();
-//            if (parentEditor instanceof CTabFolder) {
-//                CTabFolder editorFoler = (CTabFolder) parentTab;
-//                msg = String.format("active editor %s %s", editorFoler.getSelection().getText(), msg);
-//            }
+            // level 3
+            Composite parentEditor = parentTab.getParent();
+            if (parentEditor != null && !parentEditor.isDisposed()) {
+                // level 2
+                parentEditor = parentEditor.getParent();
+                if (parentEditor != null && !parentEditor.isDisposed()) {
+                    // level 1
+                    parentEditor = parentEditor.getParent();
+                    if (parentEditor != null && !parentEditor.isDisposed() && parentEditor instanceof CTabFolder) {
+                        CTabFolder parentEditorFolder = (CTabFolder) parentEditor;
+                        msg = String.format(ACTIVE_NAME_EDITOR, parentEditorFolder.getSelection().getText(), msg);
+                    }
+                }
+            }
         }
-        System.out.println("!--->>>  msg:" + msg);
         return msg;
     }
 }

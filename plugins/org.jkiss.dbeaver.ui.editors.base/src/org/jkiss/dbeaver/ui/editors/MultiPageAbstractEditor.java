@@ -19,10 +19,6 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.AccessibleActionAdapter;
-import org.eclipse.swt.accessibility.AccessibleActionEvent;
-import org.eclipse.swt.accessibility.AccessibleTextAdapter;
-import org.eclipse.swt.accessibility.AccessibleTextEvent;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
@@ -70,9 +66,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     @Override
     protected CTabItem createItem(int index, Control control) {
         CTabItem item = super.createItem(index, control);
-//        EditorAccessibleAdapter.install((Composite) control);
         item.getControl().getAccessible().addAccessibleListener(new EditorAccessibleAdapter(item.getControl())); 
-      
         tabsList.add(item);
         return item;
     }
@@ -223,22 +217,13 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
 
     @Override
     public void setFocus() {
-         //super.setFocus();
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        if (store.getBoolean(DatabaseEditorPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT)) {
+        if (store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             if (activePageIndex != -1) {
                 CTabItem cTabItem = tabsList.get(activePageIndex);
                 if (cTabItem != null && !cTabItem.isDisposed()) {
                     if (cTabItem.getControl() != null && !cTabItem.getControl().isDisposed()) {
-                        System.out.println("SET FOCUS");
-                        //cTabItem.getControl().forceFocus();
-                        cTabItem.getParent().forceFocus();
-//                        Composite parent2 = parent.getParent();
-//                        Composite parent3 = parent2.getParent();
-//                        Composite parent4 = parent3.getParent();
-//                        parent4.setFocus();
-//                        System.out.println("TTT");
-//                        //cTabItem.getParent().forceFocus();
+                        cTabItem.getControl().forceFocus();
                     }
                 }
             }

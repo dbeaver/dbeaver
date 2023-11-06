@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -78,7 +79,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
-    private Button enableExtendedJawsSupportCheck;
+    private Button enableScreenReaderSupport;
 
 
     public PrefPageDatabaseUserInterface()
@@ -226,10 +227,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 0
             );
 
-            enableExtendedJawsSupportCheck = UIUtils.createCheckbox(
+            enableScreenReaderSupport = UIUtils.createCheckbox(
                 group,
-                "Enable extended JAWS support",
-                "Enable extended support for JAWS screen reader. When enabled, other screen readers may stop working.",
+                "Enable screen reader accessibility",
+                "Enable additinal support of screen reader accessibility for database editors",
                 false,
                 1
             );
@@ -261,7 +262,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
         }
 
-        enableExtendedJawsSupportCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT));
+        enableScreenReaderSupport.setSelection(store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY));
     }
 
 //    @Override
@@ -332,7 +333,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
         }
 
-        store.setValue(DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT, enableExtendedJawsSupportCheck.getSelection());
+        store.setValue(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY, enableScreenReaderSupport.getSelection());
 
         return true;
     }
