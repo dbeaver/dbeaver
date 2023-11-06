@@ -262,21 +262,21 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         enableScreenReaderSupport.setSelection(store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY));
     }
 
-//    @Override
-//    protected void performDefaults() {
-//        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-//        if (isStandalone) {
-//            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-//            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
-//        }
-//        if (isWindowsDesktopClient()) {
-//            SWTBrowserRegistry.getActiveBrowser();
-//            browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
-//        }
-//        if (clientTimezone != null) {
-//            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
-//        }
-//    }
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (isStandalone) {
+            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+        }
+        if (isWindowsDesktopClient()) {
+            SWTBrowserRegistry.getActiveBrowser();
+            browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
+        }
+        if (clientTimezone != null) {
+            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
+        }
+    }
 
     private boolean isWindowsDesktopClient() {
         return isStandalone && RuntimeUtils.isWindows();
