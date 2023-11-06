@@ -372,9 +372,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         // If accessibility is active, set focus to the page control rather the active editor so
         // the tab names can be read correctly
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        if (store.getBoolean(DatabaseEditorPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT)) {
+        if (store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             pageControl.setFocus();
-        }else {
+        } else {
             if (folderComposite != null) {
                 ITabbedFolder selectedPage = folderComposite.getActiveFolder();
                 if (selectedPage != null) {
