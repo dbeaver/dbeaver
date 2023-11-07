@@ -91,7 +91,7 @@ public class GeneralUtils {
         }
     }
 
-    private static final Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)(\\:[^\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)(\\:[^\\$\\{\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
 
     /**
      * Default encoding (UTF-8)
