@@ -53,7 +53,7 @@ public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
         }
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
         if (node != null) {
-            return NLS.bind(UINavigatorMessages.actions_navigator_copy_object_copy_node, node.getNodeType());
+            return NLS.bind(UINavigatorMessages.actions_navigator_copy_object_copy_node, node.getNodeTypeLabel());
         }
         return null;
     }
