@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -87,7 +88,7 @@ public class TextWithOpenFile extends TextWithOpen {
                 binary,
                 filterExt,
                 getText());
-            selected = selPath != null ? selPath.getPath().toString() : null;
+            selected = selPath != null ? DBFUtils.getUriFromPath(selPath.getPath()).toString() : null;
         } else {
             String directory = getDialogDirectory();
             if (openFolder) {

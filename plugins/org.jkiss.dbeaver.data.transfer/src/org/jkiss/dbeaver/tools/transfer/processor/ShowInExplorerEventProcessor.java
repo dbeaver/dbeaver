@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.IOUtils;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor<StreamTransferConsumer> {
@@ -37,24 +38,14 @@ public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor
         if (!consumer.getSettings().isOutputClipboard()) {
             final String folder = consumer.getOutputFolder();
             final String filename = consumer.getOutputFileName();
-            String finalPath = DBFUtils.resolvePathFromString(
-                monitor,
-                consumer.getProject(),
-                folder)
-                .resolve(filename).toAbsolutePath().toString();
-            if (IOUtils.isLocalFile(finalPath)) {
+            Path finalFile = DBFUtils.resolvePathFromString(
+                    monitor,
+                    consumer.getProject(),
+                    folder)
+                .resolve(filename);
+            if (IOUtils.isLocalURI(finalFile.toUri())) {
+                String finalPath = finalFile.toAbsolutePath().toString();
                 DBWorkbench.getPlatformUI().showInSystemExplorer(finalPath);
-            } else {
-                // TODO: open file system explorer
-/*
-                DBWorkbench.getPlatformUI().openFileSystemSelector(
-                    "File folder",
-                    true,
-                    SWT.OPEN,
-                    false,
-                    null,
-                    finalPath);
-*/
             }
         }
     }
