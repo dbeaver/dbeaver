@@ -19,7 +19,7 @@
             description="Cubrid JDBC connector"
             id="cubrid"
             label="Cubrid"
-            icon="#database_icon_default"
+            icon="icons/cubrid_icon.png"
             dialect="cubrid">
             
             <tree path="cubrid" label="Cubrid data source" supportsEntityMerge="true">
@@ -207,7 +207,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="cubrid" parent="basic" class="org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect" label="Cubrid" description="Dialect based on JDBC API information." icon="#database_icon_default" hidden="true">
+        <dialect id="cubrid" parent="basic" class="org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect" label="Cubrid" description="Dialect based on JDBC API information." icon="icons/cubrid_icon.png" hidden="true">
         </dialect>
     </extension>
     
