@@ -250,6 +250,11 @@ public class ModelMessages extends NLS {
 
     public static String dbutils_type_name_unknown;
 
+	public static String fs_root;
+	public static String fs_file_system;
+	public static String fs_folder;
+	public static String fs_file;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

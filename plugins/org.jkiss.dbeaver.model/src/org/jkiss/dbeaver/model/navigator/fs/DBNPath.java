@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator.fs;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 
@@ -67,6 +68,12 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     public String getNodeType() {
         return NodePathType.dbvfs.name() + (allowsChildren() ? ".folder" : ".file");
     }
+
+    @Override
+    public String getNodeTypeLabel() {
+        return allowsChildren() ? ModelMessages.fs_folder : ModelMessages.fs_file;
+    }
+
 
     @Override
     public String getNodeDescription() {
