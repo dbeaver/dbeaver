@@ -81,9 +81,8 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
-    protected ColumnModifier[] getSupportedModifiers(OracleTableColumn column, Map<String, Object> options)
-    {
-        return new ColumnModifier[] {OracleDataTypeModifier, DefaultModifier, NullNotNullModifier};
+    protected ColumnModifier[] getSupportedModifiers(OracleTableColumn column, Map<String, Object> options) {
+        return new ColumnModifier[]{OracleDataTypeModifier, DefaultModifier, NullNotNullModifierConditional};
     }
 
     @Override
