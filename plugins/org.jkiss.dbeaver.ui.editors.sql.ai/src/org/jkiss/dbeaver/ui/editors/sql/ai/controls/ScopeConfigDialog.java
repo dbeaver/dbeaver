@@ -85,9 +85,7 @@ public class ScopeConfigDialog extends BaseDialog {
             private void checkTreeItems(TreeItem[] items, boolean check) {
                 for (TreeItem child : items) {
                     child.setChecked(check);
-                    if (child.getData() instanceof DBSEntity) {
-
-                    } else {
+                    if (!(child.getData() instanceof DBSEntity)) {
                         TreeItem[] children = child.getItems();
                         if (!ArrayUtils.isEmpty(children)) {
                             checkTreeItems(children, check);
