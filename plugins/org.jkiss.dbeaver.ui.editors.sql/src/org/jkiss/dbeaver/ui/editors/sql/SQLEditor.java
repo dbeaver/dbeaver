@@ -5109,6 +5109,10 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull SQLPresentationDescriptor presentation,
             boolean enabled
         ) {
+            if (isDisposed()) {
+                return;
+            }
+
             if (!enabled && activePresentationDescriptor == presentation) {
                 showExtraPresentation((SQLPresentationDescriptor) null);
             }
