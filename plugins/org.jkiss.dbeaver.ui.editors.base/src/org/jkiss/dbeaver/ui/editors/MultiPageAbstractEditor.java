@@ -91,19 +91,21 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
         oldImages.clear();
         super.dispose();
     }
-    
+
     /**
-     * Save method
+     * The method do save
      */
     @Override
     public void doSave(IProgressMonitor monitor) {
+        // nothing
     }
 
     /**
-     * Save as method
+     * The method do save as
      */
     @Override
     public void doSaveAs() {
+        // nothing
     }
 
     @Override
