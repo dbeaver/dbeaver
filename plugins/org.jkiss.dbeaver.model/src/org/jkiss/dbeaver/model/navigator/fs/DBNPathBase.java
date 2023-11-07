@@ -282,6 +282,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
                 if (!(resource instanceof IFile)) {
                     continue;
                 }
+                if (resource.getParent().equals(folder)) {
+                    // Already in this container
+                    continue;
+                }
                 monitor.subTask("Copy file " + resource.getName());
                 try {
                     IFile targetFile = ((IFolder) folder).getFile(resource.getName());

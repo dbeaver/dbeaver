@@ -852,9 +852,9 @@
                         <or>
                             <instanceof value="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
                             <instanceof value="org.jkiss.dbeaver.model.navigator.DBNContainer"/>
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource">
+                            <adapt type="org.eclipse.core.resources.IResource">
                                 <test property="org.jkiss.dbeaver.core.resource.isFolder"/>
-                            </instanceof>
+                            </adapt>
                         </or>
                     </iterate>
                 </with>
