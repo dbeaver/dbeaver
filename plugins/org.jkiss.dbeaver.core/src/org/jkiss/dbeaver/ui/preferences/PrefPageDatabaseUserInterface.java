@@ -220,21 +220,20 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         {
             final Group group = UIUtils.createControlGroup(
                 composite,
-                "Accessibility",
+                CoreMessages.pref_page_accessibility_screen_reader_group_lbl,
                 1,
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
                 0
             );
             enableScreenReaderSupport = UIUtils.createCheckbox(
                 group,
-                "Enable screen reader accessibility",
-                "Enable additinal support of screen reader accessibility for database editors",
+                CoreMessages.pref_page_accessibility_screen_reader_msg,
+                CoreMessages.pref_page_accessibility_screen_reader_description,
                 false,
                 1
             );
         }
         setSettings();
-        //performDefaults();
         return composite;
     }
 
