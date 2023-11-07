@@ -135,6 +135,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             @Override
             public void mouseUp(MouseEvent e) {
                 super.mouseUp(e);
+                Point point = new Point(e.x, e.y);
+                TreeItem item = navigatorTree.getViewer().getTree().getItem(point);
+                if (item == null) {
+                    navigatorTree.getViewer().setSelection(new StructuredSelection());
+                } 
             }
         });
         navigatorTree.getViewer().addDoubleClickListener(event -> {
