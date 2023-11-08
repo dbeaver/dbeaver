@@ -73,7 +73,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                 shell,
                 dsRegistry,
-                globalFilter ? "All " + node.getNodeType() : node.getNodeType() + " of " + parentName,
+                globalFilter ? "All " + node.getNodeTypeLabel() : node.getNodeTypeLabel() + " of " + parentName,
                 objectFilter,
                 globalFilter);
             switch (dialog.open()) {
@@ -85,7 +85,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                     objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null, true);
                     dialog = new EditObjectFilterDialog(
                         shell,
-                            dsRegistry, "All " + node.getNodeType(),
+                            dsRegistry, "All " + node.getNodeTypeLabel(),
                         objectFilter != null  ?objectFilter : new DBSObjectFilter(),
                         true);
                     if (dialog.open() == IDialogConstants.OK_ID) {
@@ -110,7 +110,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             node = node.getParentNode();
         }
         if (node != null) {
-            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_filter_objects, node.getNodeType()));
+            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_filter_objects, node.getNodeTypeLabel()));
         }
     }
 
