@@ -14,21 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.*;
 
 import java.util.*;
 
-class SQLQuerySelectionModel {
+public class SQLQuerySelectionModel {
 
     // TODO bring cte here apparently
     
     private final HashSet<SQLQuerySymbolEntry> symbolEntries;
-    private final SQLQueryRowsSource resultSource;
+    private final SQLQueryRowsSourceModel resultSource;
     
-    public SQLQuerySelectionModel(@Nullable SQLQueryRowsSource resultSource, @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries) {
+    public SQLQuerySelectionModel(@Nullable SQLQueryRowsSourceModel resultSource, @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries) {
         this.resultSource = resultSource;
         this.symbolEntries = symbolEntries;
     }
@@ -39,6 +41,8 @@ class SQLQuerySelectionModel {
     }
 
     public void propagateContex(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
-        SQLQueryDataContext resultContext = resultSource.propagateContext(dataContext, recognitionContext);
+        if (this.resultSource != null) {
+            this.resultSource.propagateContext(dataContext, recognitionContext);
+        }
     }
 }

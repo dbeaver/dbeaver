@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -38,12 +38,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
-class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
+public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
     @FunctionalInterface
     private static interface DummyObjectCtor {
@@ -85,7 +87,7 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
         
         private List<DummyDbObject> getChildrenListImpl() {
-            return this.children != null ? this.children : (this.children = this.getChildrenMapImpl().values().stream().collect(Collectors.toList()));
+            return this.children != null ? this.children : (this.children = new ArrayList<>(this.getChildrenMapImpl().values()));
         }
 
         @NotNull
@@ -200,6 +202,7 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return null;
         }
 
+        @NotNull
         @Override
         public String getFullyQualifiedName(DBPEvaluationContext context) {
             StringBuilder sb = new StringBuilder();
@@ -210,22 +213,23 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
             return this.getChildrenListImpl();
         }
 
         @Override
-        public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+        public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
             return this.getChildrenMapImpl().get(childName);
         }
 
+        @NotNull
         @Override
         public Class<? extends DBSObject> getPrimaryChildType(DBRProgressMonitor monitor) throws DBException {
             return DummyDbObject.class;
         }
 
         @Override
-        public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+        public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         }
 
         @Override
@@ -233,6 +237,7 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return null;
         }
 
+        @NotNull
         @Override
         public Collection<? extends DBSInstance> getAvailableInstances() {
             return Collections.emptyList();
@@ -282,7 +287,7 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public void initialize(DBRProgressMonitor monitor) throws DBException {
+        public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         }
 
         @Override
@@ -296,26 +301,31 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
 
         @Override
-        public List<? extends DBSTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        public List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
     }
     
-    private final DummyDbObject dummyDataSource, defaultDummyCatalog, defaultDummySchema;
-    private final Set<String> knownColumnNames, knownTableNames, knownSchemaNames, knownCatalogNames;
+    private final DummyDbObject dummyDataSource;
+    private final DummyDbObject defaultDummyCatalog;
+    private final DummyDbObject defaultDummySchema;
+    private final Set<String> knownColumnNames;
+    private final Set<String> knownTableNames;
+    private final Set<String> knownSchemaNames;
+    private final Set<String> knownCatalogNames;
 
-    public SQLQueryDummyDataSourceContext(Set<String> knownColumnNames, Set<List<String>> knownTableNames) {        
+    public SQLQueryDummyDataSourceContext(@NotNull Set<String> knownColumnNames, @NotNull Set<List<String>> knownTableNames) {
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();
         this.knownSchemaNames = new HashSet<>();
         this.knownCatalogNames = new HashSet<>();
         
-        for (List<String> name: knownTableNames) {
+        for (List<String> name : knownTableNames) {
             this.knownTableNames.add(name.get(name.size() - 1));
             if (name.size() > 1) {
                 this.knownSchemaNames.add(name.get(name.size() - 2));
@@ -365,13 +375,15 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     @Override
     public DBSEntity findRealTable(List<String> tableName) {
         DummyDbObject source = this.dummyDataSource;
-        DummyDbObject catalog = tableName.size() > 2 ? source.getChildrenMapImpl().get(tableName.get(tableName.size() - 3)) : this.defaultDummyCatalog;
-        DummyDbObject schema = tableName.size() > 1 ? catalog.getChildrenMapImpl().get(tableName.get(tableName.size() - 2)) : this.defaultDummySchema;
+        DummyDbObject catalog = tableName.size() > 2
+            ? source.getChildrenMapImpl().get(tableName.get(tableName.size() - 3)) : this.defaultDummyCatalog;
+        DummyDbObject schema = tableName.size() > 1
+            ? catalog.getChildrenMapImpl().get(tableName.get(tableName.size() - 2)) : this.defaultDummySchema;
         return schema.getChildrenMapImpl().get(tableName.get(tableName.size() - 1));
     }
     
     @Override
-    public SQLQueryRowsSource findRealSource(DBSEntity table) {
+    public SQLQueryRowsSourceModel findRealSource(DBSEntity table) {
         return null;
     }
     
@@ -381,7 +393,7 @@ class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    SQLDialect getDialect() {
+    public SQLDialect getDialect() {
         return BasicSQLDialect.INSTANCE;
     }
 }

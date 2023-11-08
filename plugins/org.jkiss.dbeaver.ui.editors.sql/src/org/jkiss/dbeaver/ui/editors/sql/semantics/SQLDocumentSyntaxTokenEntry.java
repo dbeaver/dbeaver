@@ -26,7 +26,11 @@ public class SQLDocumentSyntaxTokenEntry {
     public int end;
     
     public SQLDocumentSyntaxTokenEntry(@NotNull SQLScriptElement scriptElement, @NotNull SQLQuerySymbolEntry symbolEntry) {
-        this(scriptElement, symbolEntry, symbolEntry.getInterval().a + scriptElement.getOffset(), symbolEntry.getInterval().b + scriptElement.getOffset() + 1);
+        this(
+            scriptElement, symbolEntry,
+            symbolEntry.getInterval().a + scriptElement.getOffset(),
+            symbolEntry.getInterval().b + scriptElement.getOffset() + 1
+        );
     }
     
     private SQLDocumentSyntaxTokenEntry(

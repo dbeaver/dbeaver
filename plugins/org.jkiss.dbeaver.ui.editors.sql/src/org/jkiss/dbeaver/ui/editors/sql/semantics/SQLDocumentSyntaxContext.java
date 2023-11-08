@@ -23,20 +23,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 public class SQLDocumentSyntaxContext {
     
     class SQLDocumentLineSyntaxContext {
         private final TreeMap<Integer, SQLDocumentSyntaxTokenEntry> entries = new TreeMap<>();
-        private int lineNumber;
-        private int lineOffset;
-        private int lineLength;
+        private final int lineNumber;
+        private final int lineOffset;
+        private final int lineLength;
         
         public SQLDocumentLineSyntaxContext(int lineNumber, int lineOffset, int lineLength) {
             this.lineNumber = lineNumber;
             this.lineOffset = lineOffset;
+            this.lineLength = lineLength;
         }
     
         public int getLineNumber() {
@@ -148,8 +149,11 @@ public class SQLDocumentSyntaxContext {
             int toLine = document.getLineOfOffset(token.end);
             
             SQLDocumentLineSyntaxContext lineContext = getOrCreateLineContext(fromLine);
+            if (lineContext == null) {
+                return;
+            }
             if (toLine == fromLine) {
-                lineContext.registerToken(token);    
+                lineContext.registerToken(token);
             } else {
                 SQLDocumentLineSyntaxContext nextLineContext = getOrCreateLineContext(fromLine + 1);
                 lineContext.registerToken(token.withInterval(token.position, nextLineContext.getLineOffset()));

@@ -61,7 +61,6 @@ public interface STMTreeNode extends Tree {
     /**
      * Returns child node by index
      */
-    @Nullable
     default STMTreeNode getStmChild(int index) {
         throw new UnsupportedOperationException();
     }

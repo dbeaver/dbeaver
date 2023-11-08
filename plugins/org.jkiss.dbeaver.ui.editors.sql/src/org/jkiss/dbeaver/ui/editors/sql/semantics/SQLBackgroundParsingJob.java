@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 
 import java.util.*;
@@ -57,7 +58,7 @@ public class SQLBackgroundParsingJob {
     private IDocument document = null;
     private volatile TimerTask task = null;
     private volatile boolean isRunning = false;
-    private final List<DocumentEvent> documentEvents = new LinkedList<DocumentEvent>();
+    private final List<DocumentEvent> documentEvents = new LinkedList<>();
 
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
@@ -139,23 +140,25 @@ public class SQLBackgroundParsingJob {
                 return;
             }
 
-            this.task = new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        SQLBackgroundParsingJob.this.doWork();
-                    } catch (BadLocationException e) {
-                        log.debug(e);
-                    }
-                }
-            };
+            if (this.task == null) { // test wether we really need to create new task instance each time even when rescheduling
+	            this.task = new TimerTask() {
+	                @Override
+	                public void run() {
+	                    try {
+	                        SQLBackgroundParsingJob.this.doWork();
+	                    } catch (BadLocationException e) {
+	                        log.debug(e);
+	                    }
+	                }
+	            };
+            }
             if (event != null) {
                 // TODO drop only on lines-set change and apply in line offset on local insert or remove
                 // this.getContext().dropLineOfOffset(event.getOffset());
                 this.getContext().dropLinesOfRange(event.getOffset(), event.getLength());
                 //documentEvents.add(event);
-//                System.out.println(event);
-//                this.getContext().replace(event.getOffset(), event.getLength(), event.getText().length());
+                // System.out.println(event);
+                // this.getContext().replace(event.getOffset(), event.getLength(), event.getText().length());
             }
             schedulingTimer.schedule(this.task, schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1));
         }
@@ -205,6 +208,9 @@ public class SQLBackgroundParsingJob {
                 }
             });
             if (region == null) {
+                return;
+            }
+            if (editor.getRuleManager() == null) {
                 return;
             }
             List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(

@@ -16,19 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import org.jkiss.utils.Pair;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 
-public class OffsetKeyedTreeMap<T>{
+public class OffsetKeyedTreeMap<T> {
     
     @FunctionalInterface
     public interface RemappingFunction<T> {
@@ -53,7 +48,7 @@ public class OffsetKeyedTreeMap<T>{
         }
     }
     
-    private static class NodeAndParentAtOffset<T> extends NodeAndOffset<T>{
+    private static class NodeAndParentAtOffset<T> extends NodeAndOffset<T> {
         public final Node<T> parent;
         public final boolean isLeft;
         
@@ -90,12 +85,15 @@ public class OffsetKeyedTreeMap<T>{
         return (Node<T>)sentinel();
     }
 
-    private static class Node<T>
-    {
+    private static class Node<T> {
         public static final Node<?> SENTINEL = new Node<>(0, null, false, null, null);
 
-        public boolean isSentinel() { return this == SENTINEL; }
-        public boolean isNotSentinel() { return this != SENTINEL; }
+        public boolean isSentinel() {
+            return this == SENTINEL;
+        }
+        public boolean isNotSentinel() {
+            return this != SENTINEL;
+        }
 
         public int blackHeight = 0;
         public boolean isRed = false;
@@ -162,7 +160,7 @@ public class OffsetKeyedTreeMap<T>{
             if (relPos < node.offset) {
                 node = node.left;
                 isLeft = true;
-            } else if (relPos >= node.offset) {
+            } else if (relPos > node.offset) {
                 relPos -= node.offset;
                 node = node.right;
                 isLeft = false;
@@ -409,24 +407,41 @@ public class OffsetKeyedTreeMap<T>{
     public NodesIterator<T> nodesIteratorAt(int position) {
         NodeAndParentAtOffset<T> initialLocation = this.findImpl(position);
         return switch(this.size) {
-        case 0 -> new NodesIterator<T>() {
+            case 0 -> new NodesIterator<T>() {
                 @Override
-                public T getCurrValue() { return null; }
+                public T getCurrValue() {
+                    return null;
+                }
+
                 @Override
-                public int getCurrOffset() { return 0; }
+                public int getCurrOffset() {
+                    return 0;
+                }
+
                 @Override
-                public boolean prev() { return false; }
+                public boolean prev() {
+                    return false;
+                }
+
                 @Override
-                public boolean next() { return false; }
+                public boolean next() {
+                    return false;
+                }
             };
-        case 1 -> new NodesIterator<T>() {
+            case 1 -> new NodesIterator<T>() {
                 boolean beforeFirst = position < OffsetKeyedTreeMap.this.root.offset;
                 boolean afterLast = position > OffsetKeyedTreeMap.this.root.offset;
                 Node<T> theOnlyNode = OffsetKeyedTreeMap.this.root;
                 @Override
-                public T getCurrValue() { return !this.beforeFirst && !this.afterLast ? this.theOnlyNode.content : null; }
+                public T getCurrValue() {
+                    return !this.beforeFirst && !this.afterLast ? this.theOnlyNode.content : null;
+                }
+
                 @Override
-                public int getCurrOffset() { return this.beforeFirst ? 0 : (this.afterLast ? Integer.MAX_VALUE : this.theOnlyNode.offset); }
+                public int getCurrOffset() {
+                    return this.beforeFirst ? 0 : (this.afterLast ? Integer.MAX_VALUE : this.theOnlyNode.offset);
+                }
+
                 @Override
                 public boolean prev() {
                     if (this.beforeFirst) {
@@ -439,6 +454,7 @@ public class OffsetKeyedTreeMap<T>{
                         return false;
                     }
                 }
+
                 @Override
                 public boolean next() {
                     if (this.afterLast) {
@@ -452,20 +468,22 @@ public class OffsetKeyedTreeMap<T>{
                     }
                 }
             };
-        default -> new NodesIterator<T>() {                
-                boolean beforeFirst = false, afterLast = false, initial = true;
+            default -> new NodesIterator<T>() {
+                boolean beforeFirst = false;
+                boolean afterLast = false;
+                boolean initial = true;
                 NodeAndOffset<T> currentLocation = new NodeAndOffset<>(initialLocation.node.isSentinel() ? null : initialLocation.node, position);
-                
+
                 @Override
                 public T getCurrValue() {
                     return this.currentLocation.node != null ? this.currentLocation.node.content : null;
                 }
-                
+
                 @Override
                 public int getCurrOffset() {
                     return this.currentLocation.offset;
                 }
-                
+
                 @Override
                 public boolean prev() {
                     if (this.initial && initialLocation.node.isSentinel()) {
@@ -478,13 +496,13 @@ public class OffsetKeyedTreeMap<T>{
                         this.currentLocation = findLast(new NodeAndOffset<>(OffsetKeyedTreeMap.this.root, 0));
                         this.afterLast = false;
                     } else {
-                        this.currentLocation = findPrev(this.currentLocation); 
+                        this.currentLocation = findPrev(this.currentLocation);
                     }
                     this.initial = false;
                     this.beforeFirst = this.currentLocation.node == null;
                     return this.currentLocation.node != null;
                 }
-                
+
                 @Override
                 public boolean next() {
                     if (this.initial && initialLocation.node.isSentinel()) {
@@ -502,8 +520,8 @@ public class OffsetKeyedTreeMap<T>{
                     this.initial = false;
                     this.afterLast = this.currentLocation.node == null;
                     return this.currentLocation.node != null;
-                }          
-            };            
+                }
+            };
         };
     }
 
@@ -644,20 +662,22 @@ public class OffsetKeyedTreeMap<T>{
         }
 
         long count = this.root.isSentinel() ? 0 : StreamSupport.stream(flatten(
-                this.root, n -> Stream.of(n.left, n.right).filter(c -> c.isNotSentinel()).toList()
+                this.root, n -> Stream.of(n.left, n.right).filter(Node::isNotSentinel).toList()
             ).spliterator(), false).count();
             
-        if (count != (long)this.size) {
+        if (count != (long) this.size) {
             throw new IllegalStateException("size property is inconsistent");
         }
 
         if (this.root.isNotSentinel()) {
             StreamSupport.stream(flatten(
-                    this.root, n -> Stream.of(n.left, n.right).filter(c -> c.isNotSentinel()).toList()
+                    this.root, n -> Stream.of(n.left, n.right).filter(Node::isNotSentinel).toList()
                 ).spliterator(), false).forEach(n -> {
-                if (n != this.root && n.parent == null || n.parent == sentinel())
-                    throw new IllegalStateException("Missing parent reference detected");
-            });
+                    if (n != this.root && n.parent == null || n.parent == sentinel()) {
+                        throw new IllegalStateException("Missing parent reference detected");
+                    }
+                }
+            );
         }
 
         return bh.stream().findFirst().get();
@@ -905,9 +925,33 @@ public class OffsetKeyedTreeMap<T>{
     */
     
     public void applyOffset(int position, int delta) {
-
-        // TODO
-        
+    	if (delta == 0) {
+    		return;
+    	}
+    	if (delta < 0) {
+    		throw new UnsupportedOperationException("Negative delta not supported at the moment");
+    	}
+    	
+    	NodeAndParentAtOffset<T> location = this.findImpl(position);		
+    	Node<T> node = location.node.isSentinel() ? location.parent : location.node;
+    	
+    	while (node != null) {
+    		node.offset += delta;
+    		Node<T> parent = node.parent;
+    		while (parent != null) {
+    			if (node == parent.left) {
+    				parent.offset += delta;
+    				node = parent;
+    				parent = node.parent;
+    			} else {
+    				while (parent != null && node == parent.right) {
+    					node = parent;
+    					parent = node.parent;
+    				}
+    			}
+    		}
+    	}
     }
-
+    
+    
 }

@@ -14,16 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
-public interface SQLQueryRecognitionContext {
-    void appendError(@NotNull STMTreeNode treeNode, @NotNull String error);
+public abstract class SQLQueryValueExpression {
 
-    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error);
+    @Nullable
+    public SQLQuerySymbol getColumnNameIfTrivialExpression() {
+        return null;
+    }
 
-    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex);
+    abstract void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
 }
+

@@ -81,6 +81,6 @@ public class SQLPassiveSyntaxRule implements IPredicateRule {
     
     @Override
     public IToken evaluate(ICharacterScanner scanner, boolean resume) {
-        return this.evaluate(scanner, false);
+        return this.evaluate(scanner);
     }
 }

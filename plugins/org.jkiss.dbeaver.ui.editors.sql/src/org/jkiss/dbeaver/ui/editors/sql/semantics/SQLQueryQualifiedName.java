@@ -20,10 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.List;
 
-class SQLQueryQualifiedName { // qualifier
+public class SQLQueryQualifiedName { // qualifier
     
     public final SQLQuerySymbolEntry catalogName;
     public final SQLQuerySymbolEntry schemaName;
@@ -84,7 +86,7 @@ class SQLQueryQualifiedName { // qualifier
     public void setDefinition(@NotNull SourceResolutionResult rr) {
         if (rr.aliasOrNull != null) {
             this.entityName.merge(rr.aliasOrNull);
-        } else if (rr.tableOrNull instanceof SQLQueryTableDataModel tableModel) {
+        } else if (rr.tableOrNull instanceof SQLQueryRowsTableDataModel tableModel) {
             if (this.entityName != null) {
                 this.entityName.setDefinition(tableModel);
                 if (this.schemaName != null) {

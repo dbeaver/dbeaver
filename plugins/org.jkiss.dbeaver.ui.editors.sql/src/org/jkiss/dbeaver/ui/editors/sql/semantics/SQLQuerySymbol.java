@@ -18,39 +18,11 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-enum SQLQuerySymbolClass {
-    UNKNOWN(SQLTokenType.T_OTHER),
-    CATALOG(SQLTokenType.T_SCHEMA),
-    SCHEMA(SQLTokenType.T_SCHEMA),
-    TABLE(SQLTokenType.T_TABLE),
-    TABLE_ALIAS(SQLTokenType.T_TABLE_ALIAS),
-    COLUMN(SQLTokenType.T_COLUMN),
-    COLUMN_DERIVED(SQLTokenType.T_COLUMN_DERIVED),
-    ERROR(SQLTokenType.T_SEMANTIC_ERROR);
-    
-    private final SQLTokenType tokenType;
-    
-    private SQLQuerySymbolClass(@NotNull SQLTokenType tokenType) {
-        this.tokenType = tokenType;
-    }
-
-    @NotNull
-    public SQLTokenType getTokenType() {
-        return this.tokenType;
-    }
-}
-
-interface SQLQuerySymbolDefinition {
-    @NotNull
-    SQLQuerySymbolClass getSymbolClass();
-}
 
 public class SQLQuerySymbol {
     private final String name;

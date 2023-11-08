@@ -26,43 +26,44 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
 
-class DirectedGraphNode {
-    public final int id;
-    public String label;
-    public String color;
-    
-    public DirectedGraphNode(int id, String label, String color) {
-        this.id = id;
-        this.label = label;
-        this.color = color;
-    }
-}
-
-class DirectedGraphEdge {
-    public final DirectedGraphNode from, to;
-    public String label;
-    public String color;
-    
-    public DirectedGraphEdge(DirectedGraphNode from, DirectedGraphNode to, String label, String color) {
-        this.from = from;
-        this.to = to;
-        this.label = label;
-        this.color = color;
-    }
-}
-
 public class DirectedGraph {
-    private final List<DirectedGraphNode> nodes = new LinkedList<>();
-    private final List<DirectedGraphEdge> edges = new LinkedList<>();
+    private final List<Node> nodes = new LinkedList<>();
+    private final List<Edge> edges = new LinkedList<>();
+
+    class Edge {
+        public final Node from, to;
+        public String label;
+        public String color;
+
+        public Edge(Node from, Node to, String label, String color) {
+            this.from = from;
+            this.to = to;
+            this.label = label;
+            this.color = color;
+        }
+    }
+
+    class Node {
+        public final int id;
+        public String label;
+        public String color;
+
+        public Node(int id, String label, String color) {
+            this.id = id;
+            this.label = label;
+            this.color = color;
+        }
+    }
+
     
-    public DirectedGraphNode createNode(String label, String color) {
-        DirectedGraphNode node = new DirectedGraphNode(nodes.size(), label, color);
+    public Node createNode(String label, String color) {
+        Node node = new Node(nodes.size(), label, color);
         this.nodes.add(node);
         return node;
     }
 
-    public DirectedGraphEdge createEdge(DirectedGraphNode from, DirectedGraphNode to, String label, String color) {
-        DirectedGraphEdge edge = new DirectedGraphEdge(from, to, label, color);
+    public Edge createEdge(Node from, Node to, String label, String color) {
+        Edge edge = new Edge(from, to, label, color);
         this.edges.add(edge);
         return edge;
     }
@@ -72,12 +73,12 @@ public class DirectedGraph {
             writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n");
             writer.write("<DirectedGraph xmlns=\"http://schemas.microsoft.com/vs/2009/dgml\">\r\n");
             writer.write("   <Nodes>\r\n");
-            for (DirectedGraphNode node: nodes) {
+            for (Node node: nodes) {
                 writer.write("      <Node Id=\"" + node.id + "\" Label=\"" + node.label + "\" Background=\"" + node.color + "\" />\r\n");
             }
             writer.write("   </Nodes>\r\n");
             writer.write("   <Links>\r\n");
-            for (DirectedGraphEdge edge: edges) {
+            for (Edge edge: edges) {
                 writer.write("      <Link Source=\"" + edge.from.id + "\" Target=\"" + edge.to.id + "\" Label=\"" + edge.label + "\" Background=\"" + edge.color + "\" />\r\n");
             }
             writer.write("   </Links>\r\n");
