@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -151,12 +150,17 @@ public class ScopeSelectorControl extends Composite {
     }
 
     @NotNull
-    public List<DBSEntity> getCustomEntities() {
+    public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
         List<DBSEntity> entities = new ArrayList<>();
         try {
             DBPDataSource dataSource = executionContext.getDataSource();
             if (dataSource instanceof DBSObjectContainer) {
-                loadCheckedEntitiesById((DBSObjectContainer) dataSource, entities);
+                monitor.beginTask("Load custom entities", 1);
+                try {
+                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) dataSource, entities);
+                } finally {
+                    monitor.done();
+                }
             }
         } catch (Exception e) {
             log.error(e);
@@ -190,8 +194,12 @@ public class ScopeSelectorControl extends Composite {
         scopeText.setText(CommonUtils.toString(text, "N/A"));
     }
 
-    private void loadCheckedEntitiesById(DBSObjectContainer container, List<DBSEntity> entities) throws DBException {
-        Collection<? extends DBSObject> children = container.getChildren(new LoggingProgressMonitor(log));
+    private void loadCheckedEntitiesById(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull List<DBSEntity> entities
+    ) throws DBException {
+        Collection<? extends DBSObject> children = container.getChildren(monitor);
 
         if (children != null) {
             for (DBSObject child : children) {
@@ -200,7 +208,7 @@ public class ScopeSelectorControl extends Composite {
                         entities.add((DBSEntity) child);
                     }
                 } else if (child instanceof DBSStructContainer) {
-                    loadCheckedEntitiesById((DBSObjectContainer) child, entities);
+                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) child, entities);
                 }
             }
         }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.erd.ui.router;
+package org.jkiss.dbeaver.erd.ui.router.mikkami;
 
 
 import org.eclipse.draw2d.Connection;
@@ -50,10 +50,8 @@ public class MikamiTabuchiRouter {
 
     private int spacing = 15;
     private final Set<Rectangle> obstacles = new HashSet<>();
-
     private PrecisionPoint start;
     private PrecisionPoint finish;
-
     private OrthogonalPath activePath;
     private final List<OrthogonalPath> userPaths = new ArrayList<>();
     private final Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();

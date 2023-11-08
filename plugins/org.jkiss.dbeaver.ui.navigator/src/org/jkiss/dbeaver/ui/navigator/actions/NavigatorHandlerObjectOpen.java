@@ -156,7 +156,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         try {
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
                 if (defaultFolderId == null) {
-                    defaultFolderId = selectedNode.getNodeType();
+                    defaultFolderId = selectedNode.getNodeTypeLabel();
                 }
                 selectedNode = selectedNode.getParentNode();
             }
@@ -350,7 +350,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     if (node instanceof DBNNodeWithResource) {
                         label = actionName + " '" +  node.getNodeName() + "'"; //$NON-NLS-1$
                     } else {
-                        label = NLS.bind(actionName, node.getNodeType()); //$NON-NLS-1$
+                        label = NLS.bind(actionName, node.getNodeTypeLabel()); //$NON-NLS-1$
                     }
                 }
                 element.setText(label);

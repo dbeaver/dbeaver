@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -63,6 +64,11 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name() + ".folder";
+    }
+
+    @Override
+    public String getNodeTypeLabel() {
+        return ModelMessages.fs_folder;
     }
 
     @Override

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -198,6 +199,9 @@ public class QMUtils {
      * Extract QM session from execution context
      */
     public static String getQmSessionId(DBCExecutionContext executionContext) throws DBException {
+        if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
+            return provider.getQmSessionId();
+        }
         DBRProgressMonitor monitor = new LoggingProgressMonitor();
         DBPProject project = executionContext.getDataSource().getContainer().getProject();
         SMSessionContext projectAuthContext = project.getSessionContext();
@@ -234,6 +238,18 @@ public class QMUtils {
             return object.getCloseTime();
         }
         return object.getOpenTime();
+    }
+
+    /**
+     * Returns workspace session
+     */
+    public static SMSession getWorkspaceSession(DBRProgressMonitor monitor) throws DBException {
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        SMSession workspaceSession = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
+        if (workspaceSession == null) {
+            throw new DBException("No workspace session");
+        }
+        return workspaceSession;
     }
 
     public static class ListCursorImpl implements QMEventCursor {

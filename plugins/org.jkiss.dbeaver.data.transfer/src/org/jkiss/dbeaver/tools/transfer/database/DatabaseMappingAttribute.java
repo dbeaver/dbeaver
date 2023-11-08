@@ -149,7 +149,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
-                targetName = getSourceLabelOrName(getSource(), true);
+                targetName = getSourceLabelOrName(getSource(), true, false);
                 break;
         }
     }
@@ -167,7 +167,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         mappingType = DatabaseMappingType.unspecified;
         if (parent.getTarget() instanceof DBSEntity) {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                targetName = getSourceLabelOrName(source, false);
+                targetName = getSourceLabelOrName(source, false, updateAttributesNames);
             }
             DBSEntity targetEntity = (DBSEntity) parent.getTarget();
             List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
@@ -233,9 +233,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
                 if (!updateAttributesNames && CommonUtils.isNotEmpty(targetName)) {
                     // We want to keep targetName in this case. It can be the targetName from a task as example
-                    targetName = getSourceLabelOrName(targetName, false);
+                    targetName = getSourceLabelOrName(targetName, false, false);
                 } else {
-                    targetName = getSourceLabelOrName(source, true);
+                    targetName = getSourceLabelOrName(source, true, updateAttributesNames);
                 }
             }
         }
@@ -251,7 +251,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     DBUtils.isQuotedIdentifier(targetDataSource, targetName) || isSkipNameTransformation());
             }
         } else if (mappingType == DatabaseMappingType.unspecified && source != null && targetName != null) {
-            String sourceLabelOrName = getSourceLabelOrName(source, false);
+            String sourceLabelOrName = getSourceLabelOrName(source, false, updateAttributesNames);
             if (sourceLabelOrName != null && sourceLabelOrName.equalsIgnoreCase(targetName) && !sourceLabelOrName.equals(targetName)) {
                 // Here we change the target name if we switched from target container with identifier case X to container with identifier case Y
                 // See https://github.com/dbeaver/dbeaver/issues/13236
@@ -260,11 +260,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    String getSourceLabelOrName(DBSAttributeBase source, boolean addSpecialTransformation) {
-        return getSourceLabelOrName(getSourceAttributeName(source), addSpecialTransformation);
+    String getSourceLabelOrName(DBSAttributeBase source, boolean addSpecialTransformation, boolean updateAttributesNames) {
+        return getSourceLabelOrName(getSourceAttributeName(source), addSpecialTransformation, updateAttributesNames);
     }
 
-    private String getSourceLabelOrName(String name, boolean addSpecialTransformation) {
+    private String getSourceLabelOrName(String name, boolean addSpecialTransformation, boolean updateAttributesNames) {
         DBSObjectContainer container = parent.getSettings().getContainer();
 
         if (container != null && container.getDataSource() != null) {
@@ -272,7 +272,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 name = DatabaseTransferUtils.getTransformedName(
                     container.getDataSource(),
                     name,
-                    DBUtils.isQuotedIdentifier(container.getDataSource(), name) || isSkipNameTransformation());
+                    DBUtils.isQuotedIdentifier(container.getDataSource(), name) || isSkipNameTransformation() || !updateAttributesNames);
             } else if (!DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {
                 name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
             }

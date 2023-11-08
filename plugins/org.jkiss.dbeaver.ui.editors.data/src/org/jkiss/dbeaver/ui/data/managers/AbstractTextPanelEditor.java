@@ -149,6 +149,25 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         return messageBar;
     }
 
+    private void hideMessageBar() {
+        Object layoutData = messageBar.getLayoutData();
+        if (layoutData instanceof GridData) {
+            ((GridData) layoutData).exclude = true;
+        }
+        messageBar.getParent().layout();
+    }
+
+    private void showMessageBar(String msg) {
+        Object layoutData = messageBar.getLayoutData();
+        if (layoutData instanceof GridData) {
+            ((GridData) layoutData).exclude = false;
+        }
+        messageBar.setForeground(UIStyles.getErrorTextForeground());
+        messageBar.setText(msg);
+        messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
+        messageBar.getParent().layout();
+    }
+
     protected abstract EDITOR createEditorParty(IValueController valueController);
 
     protected void contributeTextEditorActions(@NotNull IContributionManager manager, @NotNull final StyledText control) {
@@ -364,8 +383,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                             UIUtils.drawMessageOverControl(textWidget, gc,
                                 NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
                             editor.setInput(textInput);
-                            messageBar.setForeground(UIStyles.getDefaultTextForeground());
-                            messageBar.setText(String.format("Content size: %s Bytes", textInput.getContentLength()));
+                            hideMessageBar();
                         } finally {
                             gc.dispose();
                         }
@@ -390,9 +408,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                         String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000);
                         editor.setInput(new StringEditorInput("Limited Content ", content, true,
                             StandardCharsets.UTF_8.name()));
-                        messageBar.setForeground(UIStyles.getErrorTextForeground());
-                        messageBar.setText(msg);
-                        messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
+                        showMessageBar(msg);
                     }
                 });
             }

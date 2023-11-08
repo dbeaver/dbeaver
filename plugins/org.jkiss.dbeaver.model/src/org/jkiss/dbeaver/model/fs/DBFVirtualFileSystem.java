@@ -22,13 +22,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 
 /**
  * Virtual file system
  */
-public interface DBFVirtualFileSystem {
+public interface DBFVirtualFileSystem extends Closeable {
 
     @NotNull
     String getFileSystemDisplayName();
@@ -51,4 +53,9 @@ public interface DBFVirtualFileSystem {
 
     @NotNull
     Path getPathByURI(@NotNull DBRProgressMonitor monitor, @NotNull URI uri) throws DBException;
+
+    default void refreshRoots(DBRProgressMonitor monitor) throws DBException {}
+
+    @Override
+    default void close() throws IOException {}
 }

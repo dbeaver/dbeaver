@@ -121,8 +121,8 @@ public class OracleConstants {
     public static final String TYPE_INTERVAL_DAY_SECOND = "INTERVAL DAY TO SECOND";
     public static final String TYPE_NAME_BLOB = "BLOB";
     public static final String TYPE_NAME_NUMERIC = "NUMERIC";
-    public static final String TYPE_UUID = "STRING AS UUID";
-    public static final String TYPE_BOOLEAN = "BOOLEAN";
+    public static final String TYPE_UUID = "VARCHAR2(36)";
+    public static final String TYPE_BOOLEAN = "VARCHAR(1)";
 
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;

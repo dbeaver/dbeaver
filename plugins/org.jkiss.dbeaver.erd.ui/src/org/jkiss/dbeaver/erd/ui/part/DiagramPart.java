@@ -42,8 +42,8 @@ import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.MikamiTabuchiConnectionRouter;
-import org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -59,7 +59,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-
+    
+    private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
         @Override
@@ -135,14 +136,8 @@ public class DiagramPart extends PropertyAwarePart {
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-
-        ConnectionRouter router;
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-            router = new MikamiTabuchiConnectionRouter(figure);
-        } else {
-            router = new OrthogonalShortPathRouting(figure);
-        }
+        router = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().createRouter();
+        router.setContainer(figure);
         cLayer.setConnectionRouter(router);
         return figure;
     }
@@ -409,6 +404,15 @@ public class DiagramPart extends PropertyAwarePart {
     public String toString()
     {
         return ERDUIMessages.entity_diagram_ + " " + getDiagram().getName();
+    }
+
+    /**
+     * Gets the diagram router
+     *
+     * @return - router
+     */
+    public ERDConnectionRouter getRouter() {
+        return router;
     }
 
 

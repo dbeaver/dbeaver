@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -327,12 +328,6 @@ public class DBNModel implements IResourceChangeListener {
             if (ArrayUtils.isEmpty(projects)) {
                 throw new DBException("No projects in workspace");
             }
-            if (projects.length > 1) {
-                boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
-                if (!multiNode) {
-                    throw new DBException("Multi-project workspace. Extension nodes not supported");
-                }
-            }
             var projectId = nodePath.first();
             DBNProject parentProjectNode = projectId == null
                 ? null
@@ -418,7 +413,10 @@ public class DBNModel implements IResourceChangeListener {
         final List<String> pathItems = nodePath.pathItems;
         for (int i = firstItem, itemsSize = pathItems.size(); i < itemsSize; i++) {
             String item = pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
-
+            if (nodePath.type == DBNNode.NodePathType.ext && curNode instanceof DBNProject pn) {
+                // Trigger project to load extra nodes
+                pn.getExtraNode(DBNFileSystems.class);
+            }
             DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
             if (children != null && children.length > 0) {

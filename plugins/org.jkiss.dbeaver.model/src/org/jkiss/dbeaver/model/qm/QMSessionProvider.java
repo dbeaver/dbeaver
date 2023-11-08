@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+package org.jkiss.dbeaver.model.qm;
+
+import org.jkiss.code.Nullable;
 
 /**
- * Task initializer.
+ * Query manager session provider.
+ * It helps us to differ CE and EE products (CE product doesn't have QM database).
  */
-public interface DBTTaskInitializer {
+public interface QMSessionProvider {
 
-    void initializeTaskSettings(DBTTask task);
+    @Nullable
+    String getQmSessionId();
 
 }

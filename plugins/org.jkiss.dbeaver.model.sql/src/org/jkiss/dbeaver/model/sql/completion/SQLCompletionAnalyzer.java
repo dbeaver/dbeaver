@@ -1285,31 +1285,39 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (SQLConstants.KEYWORD_WHERE.equals(prevWord) ||
             SQLConstants.KEYWORD_AND.equals(prevWord)) {
             String tableName = "";
+            DBSEntity parentObject = null;
             if (object instanceof JDBCTableColumn<?>) {
                 aliasMode = SQLTableAliasInsertMode
                     .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
                 JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
-                DBSEntity parentObject = tableColumn.getParentObject();
+                parentObject = tableColumn.getParentObject();
                 tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
             } else if (object instanceof DBSEntityAttribute) {
                 DBSEntityAttribute tableColumn = (DBSEntityAttribute) object;
                 aliasMode = SQLTableAliasInsertMode
                     .fromPreferences(tableColumn.getDataSource().getContainer().getPreferenceStore());
-                DBSObject parentObject = tableColumn.getParentObject();
+                parentObject = tableColumn.getParentObject();
                 tableName = parentObject != null ? parentObject.getName() : tableColumn.getName();
             }
             SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
+            if (parentObject != null) {
+                tableName = DBUtils.getQuotedIdentifier(parentObject);
+            } else {
+                tableName = object.getName();
+            }
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 String query = request.getActiveQuery().getText();
                 Map<String, String> table2Alices = tableRefsAnalyzer.getTableAliasesFromQuery(query);
                 alias = table2Alices.get(tableName);
-                if (alias == null) {
-                    alias = tableName;
-                }
                 String wordPart = request.getWordDetector().getWordPart();
-                objectName = wordPart.isEmpty()
-                    ? String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), object.getName())
-                    : object.getName();
+                objectName = DBUtils.getQuotedIdentifier(object);
+                if (wordPart.isEmpty()) {
+                    if (alias != null) {
+                        objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), objectName);
+                    } else {
+                        objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, sqlDialect.getStructSeparator(), objectName);
+                    }
+                }
                 replaceString = objectName;
             }
         }

@@ -27,8 +27,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.*;
@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
 import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -91,18 +92,8 @@ public class AITranslateHandler extends AbstractHandler {
         DAICompletionSettings settings = new DAICompletionSettings(dataSourceContainer);
 
         // Show info transfer warning
-        if (!settings.isMetaTransferConfirmed()) {
-            if (UIUtils.confirmAction(editor.getSite().getShell(), "Transfer information to OpenAI",
-                "In order to perform AI smart completion DBeaver needs to transfer\n" +
-                    "your database metadata information (table and column names) to OpenAI API.\n" +
-                    "Do you confirm it for connection '" + dataSourceContainer.getName() + "'?",
-                DBIcon.AI))
-            {
-                settings.setMetaTransferConfirmed(true);
-                settings.saveSettings();
-            } else {
-                return null;
-            }
+        if (!AIUIUtils.confirmMetaTransfer(settings, dataSourceContainer)) {
+            return null;
         }
 
         QMTranslationHistoryManager historyManager = GeneralUtils.adapt(AISuggestionPopup.class, QMTranslationHistoryManager.class);
@@ -140,17 +131,7 @@ public class AITranslateHandler extends AbstractHandler {
                 return null;
             }
 
-            final DAICompletionRequest request = new DAICompletionRequest.Builder()
-                .setPromptText(aiCompletionPopup.getInputText())
-                .setContext(new DAICompletionContext.Builder()
-                    .setScope(aiCompletionPopup.getScope())
-                    .setCustomEntities(aiCompletionPopup.getCustomEntities())
-                    .setDataSource(lDataSource)
-                    .setExecutionContext(executionContext)
-                    .build())
-                .build();
-
-            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, request);
+            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, aiCompletionPopup);
         }
         return null;
     }
@@ -160,21 +141,34 @@ public class AITranslateHandler extends AbstractHandler {
         QMTranslationHistoryManager historyManager,
         DBSLogicalDataSource lDataSource,
         SQLEditor editor,
-        DAICompletionEngine engine,
-        DAICompletionRequest request
+        @NotNull DAICompletionEngine<?> engine,
+        @NotNull AISuggestionPopup popup
     ) {
-        if (CommonUtils.isEmptyTrimmed(request.getPromptText())) {
+        final DAICompletionMessage message = new DAICompletionMessage(
+            DAICompletionMessage.Role.USER,
+            popup.getInputText()
+        );
+
+        if (CommonUtils.isEmptyTrimmed(message.content())) {
             return;
         }
 
         List<DAICompletionResponse> completionResult = new ArrayList<>();
         try {
             UIUtils.runInProgressDialog(monitor -> {
+                final DAICompletionContext context = new DAICompletionContext.Builder()
+                    .setScope(popup.getScope())
+                    .setCustomEntities(popup.getCustomEntities(monitor))
+                    .setDataSource(lDataSource)
+                    .setExecutionContext(executionContext)
+                    .build();
+
                 try {
                     completionResult.addAll(
                         engine.performQueryCompletion(
                             monitor,
-                            request,
+                            context,
+                            message,
                             AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER)
                         ));
                 } catch (Exception e) {
@@ -205,7 +199,7 @@ public class AITranslateHandler extends AbstractHandler {
                         monitor,
                         lDataSource,
                         executionContext,
-                        request.getPromptText(),
+                        message.content(),
                         completion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
@@ -238,7 +232,7 @@ public class AITranslateHandler extends AbstractHandler {
         AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", lDataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "engine", engine.getEngineName(),
-            "scope", request.getContext().getScope().name()
+            "scope", popup.getScope().name()
         ));
 
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
