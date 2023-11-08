@@ -20,6 +20,7 @@ import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
@@ -39,7 +40,11 @@ public class SQLPassiveSyntaxRule implements IPredicateRule {
     private final SQLTokenAdapter token;
     private final SQLTokenType tokenType;
     
-    public SQLPassiveSyntaxRule(SQLBackgroundParsingJob backgroundParsingJob, SQLRuleScanner sqlRuleScanner, SQLTokenType tokenType) {
+    public SQLPassiveSyntaxRule(
+        @NotNull SQLBackgroundParsingJob backgroundParsingJob,
+        @NotNull SQLRuleScanner sqlRuleScanner,
+        @NotNull SQLTokenType tokenType
+    ) {
         this.backgroundParsingJob = backgroundParsingJob;
         this.token = new SQLTokenAdapter(new LazyToken(tokenType), sqlRuleScanner);
         this.tokenType = tokenType;
@@ -50,8 +55,9 @@ public class SQLPassiveSyntaxRule implements IPredicateRule {
         return token;
     }
 
+    @NotNull
     @Override
-    public IToken evaluate(ICharacterScanner scanner) {
+    public IToken evaluate(@NotNull ICharacterScanner scanner) {
         if (scanner instanceof TPCharacterScanner s) {
             int offset = s.getOffset();
             SQLDocumentSyntaxTokenEntry entry = this.backgroundParsingJob.getCurrentContext().findToken(offset);

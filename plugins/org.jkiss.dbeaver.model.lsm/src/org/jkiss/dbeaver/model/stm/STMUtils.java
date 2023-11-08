@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.stm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class STMUtils {
     @NotNull
     public static List<STMTreeNode> expandSubtree(
         @NotNull STMTreeNode root,
-        @NotNull Set<String> toExpand,
+        @Nullable Set<String> toExpand,
         @NotNull Set<String> toCollect
     ) {
         List<STMTreeNode> result = new ArrayList<>();
@@ -42,7 +43,7 @@ public class STMUtils {
             if (toCollect.contains(nodeName)) {
                 result.add(node);
             } else if (toExpand == null || toExpand.contains(nodeName)) {
-                for (int i = 0; i < node.getChildCount(); i++) {
+                for (int i = node.getChildCount() - 1; i >= 0; i--) {
                     stack.push((STMTreeNode) node.getChild(i));
                 }
             }

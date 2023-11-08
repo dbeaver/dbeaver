@@ -16,28 +16,41 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 
 public class SQLDocumentSyntaxTokenEntry {
     public final SQLScriptElement scriptElement;
     public final SQLQuerySymbolEntry symbolEntry;
-    public final int position, end;
+    public int position;
+    public int end;
     
-    public SQLDocumentSyntaxTokenEntry(SQLScriptElement scriptElement, SQLQuerySymbolEntry symbolEntry) {
+    public SQLDocumentSyntaxTokenEntry(@NotNull SQLScriptElement scriptElement, @NotNull SQLQuerySymbolEntry symbolEntry) {
         this(scriptElement, symbolEntry, symbolEntry.getInterval().a + scriptElement.getOffset(), symbolEntry.getInterval().b + scriptElement.getOffset() + 1);
     }
     
-    private SQLDocumentSyntaxTokenEntry(SQLScriptElement scriptElement, SQLQuerySymbolEntry symbolEntry, int position, int end) {
+    private SQLDocumentSyntaxTokenEntry(
+        @NotNull SQLScriptElement scriptElement,
+        @NotNull SQLQuerySymbolEntry symbolEntry,
+        int position,
+        int end
+    ) {
         this.scriptElement = scriptElement;
         this.symbolEntry = symbolEntry;
         this.position = position; 
         this.end = end; 
     }
-    
+
+    /**
+     * Get token entry length
+     */
     public int length() {
         return this.end - this.position;
     }
-    
+
+    /**
+     * Get new token entry with new position and end
+     */
     public SQLDocumentSyntaxTokenEntry withInterval(int position, int end) {
         return new SQLDocumentSyntaxTokenEntry(this.scriptElement, this.symbolEntry, position, end);
     }

@@ -115,6 +115,6 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     @Override
     public STMTreeNode getStmChild(int index) {
-        return (STMTreeNode)super.getChild(index);
+        return (STMTreeNode) super.getChild(index);
     }
 }

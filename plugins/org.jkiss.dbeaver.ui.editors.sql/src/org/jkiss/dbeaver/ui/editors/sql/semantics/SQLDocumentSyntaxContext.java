@@ -18,82 +18,131 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-
-class SQLDocumentLineSyntaxContext {
-    private final TreeMap<Integer, SQLDocumentSyntaxTokenEntry> entries = new TreeMap<>();
-    private int lineNumber, lineOffset;
-    
-    public SQLDocumentLineSyntaxContext(int lineNumber, int lineOffset) {
-        this.lineNumber = lineNumber;
-        this.lineOffset = lineOffset;
-    }
-
-    public int getLineNumber() {
-        return lineNumber;
-    }
-    
-    public int getLineOffset() {
-        return lineNumber;
-    }
-
-    public SQLDocumentSyntaxTokenEntry findToken(int offset) {
-        int column = offset - lineOffset;
-        Entry<Integer, SQLDocumentSyntaxTokenEntry> kv = entries.floorEntry(column);
-        return kv != null &&  kv.getValue().end > column ? kv.getValue() : null;
-    }
-
-    public void registerToken(SQLDocumentSyntaxTokenEntry token) {
-        entries.put(token.position - lineOffset, token);
-    }
-
-    public void reset() {
-        entries.clear();
-    }
-
-}
-
 public class SQLDocumentSyntaxContext {
+    
+    class SQLDocumentLineSyntaxContext {
+        private final TreeMap<Integer, SQLDocumentSyntaxTokenEntry> entries = new TreeMap<>();
+        private int lineNumber;
+        private int lineOffset;
+        private int lineLength;
+        
+        public SQLDocumentLineSyntaxContext(int lineNumber, int lineOffset, int lineLength) {
+            this.lineNumber = lineNumber;
+            this.lineOffset = lineOffset;
+        }
+    
+        public int getLineNumber() {
+            return lineNumber;
+        }
+        
+        public int getLineOffset() {
+            return lineNumber;
+        }
+        
+        public int getLineLength() {
+            return lineLength;
+        }
+
+        @Nullable
+        public SQLDocumentSyntaxTokenEntry findToken(int offset) {
+            int column = offset - lineOffset;
+            Entry<Integer, SQLDocumentSyntaxTokenEntry> kv = entries.floorEntry(column);
+            return kv != null &&  kv.getValue().end > column ? kv.getValue() : null;
+        }
+    
+        public void registerToken(@NotNull SQLDocumentSyntaxTokenEntry token) {
+            entries.put(token.position - lineOffset, token);
+        }
+    
+        public void reset() {
+            entries.clear();
+        }
+
+        public void replace(int offset, int length, int newLength) {
+            int column = offset - lineOffset;
+            Entry<Integer, SQLDocumentSyntaxTokenEntry> firstEntry = entries.floorEntry(column);
+            if (firstEntry.getValue().end > column) {
+                if (column + length < firstEntry.getValue().end) { // only this entry affected
+                    entries.remove(firstEntry.getKey());
+                } else if (offset + length >= this.lineLength) { // the rest of line affected
+                    entries.tailMap(firstEntry.getKey()).clear();
+                } else { // subset of entries affected
+                    entries.subMap(firstEntry.getKey(), column + length).clear();
+                }
+            }
+            int delta = newLength - length;
+            for (SQLDocumentSyntaxTokenEntry token : entries.tailMap(column + length).values()) {
+                token.end += delta;
+                token.position += delta;
+            }
+        }
+    }
+
     private static final Log log = Log.getLog(SQLDocumentSyntaxContext.class);
     
     private final IDocument document;
     private final TreeMap<Integer, SQLDocumentLineSyntaxContext> lines = new TreeMap<>();
+    
+    private int lastAccessedOffset = -1;
+    private SQLDocumentSyntaxTokenEntry lastAccessedTokenEntry = null;
     private SQLDocumentLineSyntaxContext lastAccessedLine = null;
     
     public SQLDocumentSyntaxContext(IDocument document) {
         this.document = document;
     }
 
+    /**
+     * Find token by offset
+     */
+    @Nullable
     public SQLDocumentSyntaxTokenEntry findToken(int offset) {
         try {
-            int line = document.getLineOfOffset(offset);
-            SQLDocumentLineSyntaxContext lineContext = lastAccessedLine != null && lastAccessedLine.getLineNumber() == line ? lastAccessedLine : lines.get(line);
-            if (lineContext != null) {
-                return lineContext.findToken(offset);
+            if (offset == this.lastAccessedOffset) {
+                return this.lastAccessedTokenEntry; 
             } else {
-                return null;
+                int line = document.getLineOfOffset(offset);
+                SQLDocumentLineSyntaxContext lineContext = this.lastAccessedLine != null && this.lastAccessedLine.getLineNumber() == line 
+                    ? this.lastAccessedLine : this.lines.get(line);
+                this.lastAccessedOffset = offset;
+                if (lineContext != null) {
+                    return this.lastAccessedTokenEntry = lineContext.findToken(offset);
+                } else {
+                    return this.lastAccessedTokenEntry = null;
+                }
             }
         } catch (BadLocationException e) {
             return null;
         }
     }
-    
+
+    @Nullable
     private SQLDocumentLineSyntaxContext getOrCreateLineContext(int line) {
         return lines.computeIfAbsent(line, n -> { 
             try {
-                return new SQLDocumentLineSyntaxContext(n, document.getLineOffset(line));
+                IRegion region = document.getLineInformation(line);
+                return new SQLDocumentLineSyntaxContext(n, region.getOffset(), region.getLength());
             } catch (BadLocationException e) {
                 log.debug(e);
                 return null;
             }
         });
     }
+    
+    private void resetLastAccessCache() {
+        this.lastAccessedOffset = -1;
+        this.lastAccessedTokenEntry = null;
+        this.lastAccessedLine = null;
+    }
 
-    public void registerToken(SQLDocumentSyntaxTokenEntry token) {
+    public void registerToken(@NotNull SQLDocumentSyntaxTokenEntry token) {
         try {
             int fromLine = document.getLineOfOffset(token.position);
             int toLine = document.getLineOfOffset(token.end);
@@ -119,13 +168,56 @@ public class SQLDocumentSyntaxContext {
     public void dropLineOfOffset(int offset) {
         try {
             int line = document.getLineOfOffset(offset);
-            SQLDocumentLineSyntaxContext lineContext = lastAccessedLine != null && lastAccessedLine.getLineNumber() == line ? lastAccessedLine : lines.get(line);
-            if (lineContext != null) {
-                lineContext.reset();
+            this.dropLine(line);
+        } catch (BadLocationException e) {
+            log.debug(e);
+        }
+    }
+    
+    private void dropLine(int line) {
+        SQLDocumentLineSyntaxContext lineContext = lastAccessedLine != null && lastAccessedLine.getLineNumber() == line
+            ? lastAccessedLine : lines.get(line);
+        if (lineContext != null) {
+            lineContext.reset();
+        }
+        this.lastAccessedOffset = -1;
+        this.lastAccessedTokenEntry = null;
+    }
+
+    public void dropLinesOfRange(int offset, int length) {
+        try {
+            int firstLine = document.getLineOfOffset(offset);
+            int lastLine = document.getLineOfOffset(offset + length);
+            if (firstLine == lastLine) {
+                this.dropLine(firstLine);
+            } else {
+                for (SQLDocumentLineSyntaxContext ctx : lines.subMap(firstLine, lastLine).values()) {
+                    ctx.reset();
+                }
+                this.resetLastAccessCache();
             }
         } catch (BadLocationException e) {
             log.debug(e);
         }
     }
+//    
+//    public void replace(int offset, int length, int newLength) {
+//        try {
+//            int firstLine = document.getLineOfOffset(offset);
+//            int lastLine = document.getLineOfOffset(offset + length);
+//            if (firstLine == lastLine) {
+//                SQLDocumentLineSyntaxContext lineContext = lastAccessedLine != null && lastAccessedLine.getLineNumber() == firstLine ? lastAccessedLine : lines.get(firstLine);
+//                lineContext.replace(offset, length, newLength);
+//                int delta = newLength - length;
+//                for (SQLDocumentLineSyntaxContext ctx : lines.tailMap(firstLine, false).values()) {
+//                    ctx.lineOffset += delta;
+//                }
+//            } else {
+//                
+//            }
+//        } catch (BadLocationException e) {
+//            log.debug(e);
+//        }
+//    }
 
 }

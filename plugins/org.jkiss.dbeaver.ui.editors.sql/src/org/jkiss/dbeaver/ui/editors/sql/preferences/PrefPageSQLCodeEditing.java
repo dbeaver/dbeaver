@@ -17,6 +17,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -24,11 +29,14 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLSemanticAnalysisDepth;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
+
+import java.util.List;
 
 /**
  * PrefPageSQLCodeEditing
@@ -43,6 +51,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     private Button csMarkOccurrencesUnderCursor;
     private Button csMarkOccurrencesForSelection;
     private Button csProblemMarkersEnabled;
+    private List<Button> btnAnalysisDepth;
     // Auto-close
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
@@ -51,6 +60,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     private Button afKeywordCase;
     private Button afExtractFromSource;
 
+    private SQLSemanticAnalysisDepth semanticAnalysisDepth;  
 
     public PrefPageSQLCodeEditing() {
         super();
@@ -63,13 +73,36 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
         // Folding
         {
-            Composite foldingGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_completion_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite foldingGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_completion_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
-            csSmartWordsIterator = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator_tip, false, 2);
-            csMarkOccurrencesUnderCursor = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 2);
-            csMarkOccurrencesForSelection = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_for_selections, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_for_selections_tip, false, 2);
-            csProblemMarkersEnabled = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_problem_markers_enabled, SQLEditorMessages.pref_page_sql_completion_label_problem_markers_enabled_tip, false, 2);
+            csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 1);
+            csSmartWordsIterator = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator_tip, false, 1);
+            csMarkOccurrencesUnderCursor = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 1);
+            csMarkOccurrencesForSelection = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_for_selections, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_for_selections_tip, false, 1);
+            csProblemMarkersEnabled = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_problem_markers_enabled, SQLEditorMessages.pref_page_sql_completion_label_problem_markers_enabled_tip, false, 1);
+            UIUtils.createHorizontalLine(foldingGroup, 1, 0);           
+            Composite analysisDepthGroupContainer = UIUtils.createComposite(foldingGroup, 2);
+            analysisDepthGroupContainer.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+            Composite analysisDepthGroup = UIUtils.createComposite(analysisDepthGroupContainer, 1);
+            UIUtils.createLabel(analysisDepthGroup, "Experimental query analysis:");
+            SelectionListener analysisDepthListener = new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    semanticAnalysisDepth = (SQLSemanticAnalysisDepth)e.widget.getData();
+                }
+            };
+            btnAnalysisDepth = List.of(
+                UIUtils.createRadioButton(analysisDepthGroup, "No extra analysis", SQLSemanticAnalysisDepth.None, analysisDepthListener),
+                UIUtils.createRadioButton(analysisDepthGroup, "Identifiers highlighting", SQLSemanticAnalysisDepth.Highlighting, analysisDepthListener),
+                UIUtils.createRadioButton(analysisDepthGroup, "Identifiers highlighting and classification", SQLSemanticAnalysisDepth.Classification, analysisDepthListener),
+                UIUtils.createRadioButton(analysisDepthGroup, "Identifiers highlighting, classification and validation (by metadata)", SQLSemanticAnalysisDepth.Validation, analysisDepthListener)
+            );
+            String msg = "No extra analysis - disable this experimental feature.\n\n"
+                    + "Identifiers highlighting - parse query and highlight any thing treated as table or column name.\n\n"
+                    + "Highlighting and classification - same as above, plus resolve all the aliases and table names according to FROM clauses.\n\n"
+                    + "Classification and validation - same as above, plus validate all the table and column names with respect to real database objects (uses database metadata connection or fails back to 'Highlighting and classification' when connection is not established).";
+            UIUtils.createInfoToolButton(analysisDepthGroupContainer, msg)
+                   .setLayoutData(GridDataFactory.swtDefaults().align(SWT.BEGINNING, SWT.BEGINNING).create());
         }
 
         // Autoclose
@@ -107,6 +140,9 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
         csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         csProblemMarkersEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
+        semanticAnalysisDepth = SQLSemanticAnalysisDepth.getPreference(store, SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH);
+        btnAnalysisDepth.forEach(b -> b.setSelection(false));
+        btnAnalysisDepth.get(semanticAnalysisDepth.value).setSelection(true);
 
         acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
         acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
@@ -123,7 +159,8 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, csMarkOccurrencesUnderCursor.getSelection());
         store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, csMarkOccurrencesForSelection.getSelection());
         store.setValue(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, csProblemMarkersEnabled.getSelection());
-
+        store.setValue(SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH, semanticAnalysisDepth.value);
+        
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
@@ -139,6 +176,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
         store.setToDefault(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED);
+        store.setToDefault(SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH);
 
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
@@ -156,6 +194,11 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         csMarkOccurrencesUnderCursor.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
         csMarkOccurrencesForSelection.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         csProblemMarkersEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
+        
+        semanticAnalysisDepth = SQLSemanticAnalysisDepth.fromInt(store.getDefaultInt(SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH));
+        btnAnalysisDepth.forEach(b -> b.setSelection(false));
+        btnAnalysisDepth.get(semanticAnalysisDepth.value).setSelection(true);
+
         acSingleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
         acDoubleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
         acBracketsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
@@ -172,6 +215,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
             || store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR)
             || store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION)
             || store.contains(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
+            || store.contains(SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)

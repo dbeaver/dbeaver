@@ -64,7 +64,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -147,9 +146,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLCompletionAnalyzer.ENABLE_EXPERIMENTAL_FEATURES)) {
-            backgroundParsingJob = new SQLBackgroundParsingJob(this);
-        }
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime = 0;
 
@@ -224,6 +220,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static boolean isWriteEmbeddedBinding() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
+    }
+    
+    public SQLSemanticAnalysisDepth getSemanticAnalysisDepth() {
+        return SQLSemanticAnalysisDepth.getPreference(this.getActivePreferenceStore(), SQLModelPreferences.SEMANTIC_ANALYSIS_DEPTH);
     }
 
     private void handleInputChange(IEditorInput input) {
@@ -750,6 +750,19 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public void reloadSyntaxRules() {
+       if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) &&
+            this.getSemanticAnalysisDepth().value > SQLSemanticAnalysisDepth.None.value
+       ) {
+            if (backgroundParsingJob == null) { 
+                backgroundParsingJob = new SQLBackgroundParsingJob(this);
+            }
+        } else {
+            if (backgroundParsingJob != null) {
+                backgroundParsingJob.dispose();
+                backgroundParsingJob = null;
+            }
+        }
+
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
         IDocument document = getDocument();
@@ -1164,6 +1177,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
             case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
             case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
+            case SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH:
             case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
             case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:
             case ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET:
@@ -1173,7 +1187,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 reloadSyntaxRules();
         }
     }
-
+    
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {
         this.lastQueryErrorPosition = lastQueryErrorPosition;
     }

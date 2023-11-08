@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.antlr.v4.runtime.misc.Interval;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
     private final Interval region;
@@ -25,25 +27,28 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
     private SQLQuerySymbol symbol = null;
     private SQLQuerySymbolDefinition definition = null;
     
-    public SQLQuerySymbolEntry(Interval region, String name) {
+    public SQLQuerySymbolEntry(@NotNull Interval region, @NotNull String name) {
         this.region = region;
         this.name = name;
     }
-    
+
+    @NotNull
     public String getName() {
         return name;
     }
-    
+
+    @NotNull
     public Interval getInterval() {
         return region;
     }
-    
+
+    @Nullable
     public SQLQuerySymbolDefinition getDefinition() {
         return this.definition != null ? this.definition 
                 : (this.symbol != null ? this.symbol.getDefinition() : null);
     }
     
-    public void setDefinition(SQLQuerySymbolDefinition definition) {
+    public void setDefinition(@Nullable SQLQuerySymbolDefinition definition) {
         if (this.definition != null) {
             throw new UnsupportedOperationException("Symbol entry definition has already been set");
         } else {
@@ -51,7 +56,8 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
             this.getSymbol().setSymbolClass(definition.getSymbolClass());
         }
     }
-    
+
+    @NotNull
     public SQLQuerySymbol getSymbol() {
         if (symbol == null) {
             symbol = new SQLQuerySymbol(name);
@@ -60,12 +66,13 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
         return symbol;
     }
 
+    @NotNull
     @Override
     public SQLQuerySymbolClass getSymbolClass() {
         return this.getSymbol().getSymbolClass();
     }
     
-    public void merge(SQLQuerySymbol symbol) {
+    public void merge(@Nullable SQLQuerySymbol symbol) {
         if (this.symbol != null) {
             
         } else {
@@ -73,8 +80,8 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
             this.symbol.registerEntry(this);
         }
     }
-    
-    public SQLQuerySymbol merge(SQLQuerySymbolEntry other) {
+
+    public SQLQuerySymbol merge(@NotNull SQLQuerySymbolEntry other) {
         SQLQuerySymbol symbol;
         if (this.symbol != null && other.symbol != null) {
             symbol = this.symbol.merge(other.symbol);
@@ -99,7 +106,7 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
     }
     
     // private operation for symbol merging
-    static void updateSymbol(SQLQuerySymbolEntry entry, SQLQuerySymbol newSymbol) {
+    static void updateSymbol(@NotNull SQLQuerySymbolEntry entry, @NotNull SQLQuerySymbol newSymbol) {
         entry.symbol = newSymbol;
     }
 

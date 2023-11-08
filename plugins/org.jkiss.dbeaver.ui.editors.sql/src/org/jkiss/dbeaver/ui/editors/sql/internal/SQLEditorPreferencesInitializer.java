@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.model.sql.SQLSemanticAnalysisDepth;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -100,6 +101,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FOLDING_ENABLED, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH, SQLSemanticAnalysisDepth.None.value);
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);

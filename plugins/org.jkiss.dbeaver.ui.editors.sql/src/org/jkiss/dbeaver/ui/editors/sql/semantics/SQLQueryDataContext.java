@@ -18,13 +18,17 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 import java.util.*;
 
+// // TODO
 //
 //class SQLQueryCteSubqueryModel implements SQLQueryRowsSource {
 //    private final SQLQueryCorrelationSpec correlation;
@@ -38,16 +42,16 @@ import java.util.*;
 
 class SourceResolutionResult {
     public final SQLQueryRowsSource source;
-    public final DBSTable tableOrNull;
+    public final DBSEntity tableOrNull;
     public final SQLQuerySymbol aliasOrNull;
     
-    private SourceResolutionResult(SQLQueryRowsSource source, DBSTable tableOrNull, SQLQuerySymbol aliasOrNull) {
+    private SourceResolutionResult(SQLQueryRowsSource source, DBSEntity tableOrNull, SQLQuerySymbol aliasOrNull) {
         this.source = source;
         this.tableOrNull = tableOrNull;
         this.aliasOrNull = aliasOrNull;
     }
     
-    public static SourceResolutionResult forRealTableByName(SQLQueryRowsSource source, DBSTable table) {
+    public static SourceResolutionResult forRealTableByName(SQLQueryRowsSource source, DBSEntity table) {
         return new SourceResolutionResult(source, table, null);
     }
     
@@ -60,19 +64,19 @@ abstract class SQLQueryDataContext {
     
     abstract List<SQLQuerySymbol> getColumnsList();
     
-    abstract DBSTable findRealTable(List<String> tableName);
+    abstract DBSEntity findRealTable(List<String> tableName);
 
     abstract SQLQuerySymbolDefinition resolveColumn(String simpleName);  // TODO consider ambiguous column names
 
 //    abstract SQLQuerySymbolDefinition resolveColumn(List<String> tableName, String columnName);
     
     public SourceResolutionResult resolveSource(List<String> tableName) { // TODO consider ambiguous table names
-        DBSTable table = this.findRealTable(tableName);
+        DBSEntity table = this.findRealTable(tableName);
         SQLQueryRowsSource source = this.findRealSource(table);;
         return source == null ? null : SourceResolutionResult.forRealTableByName(source, table); 
     }
     
-    abstract SQLQueryRowsSource findRealSource(DBSTable table);
+    abstract SQLQueryRowsSource findRealSource(DBSEntity table);
 
     public final SQLQueryDataContext overrideResultTuple(List<SQLQuerySymbol> columns) {
         return new SQLQueryResultTupleContext(this, columns);
@@ -82,7 +86,7 @@ abstract class SQLQueryDataContext {
         return new SQLQueryCombinedContext(this, other);
     }
     
-    public final SQLQueryDataContext extendWithRealTable(DBSTable table, SQLQueryRowsSource source) {
+    public final SQLQueryDataContext extendWithRealTable(DBSEntity table, SQLQueryRowsSource source) {
         return new SQLQueryTableRowsContext(this, table, source);
     }
 
@@ -93,6 +97,8 @@ abstract class SQLQueryDataContext {
     public final SQLQueryDataContext hideSources() {
         return new SQLQueryPureResultTupleContext(this);
     }
+
+    abstract SQLDialect getDialect();
 }
 
 /**
@@ -100,9 +106,11 @@ abstract class SQLQueryDataContext {
  */
 class SQLQueryDataSourceContext extends SQLQueryDataContext {
     private final DBCExecutionContext executionContext;
+    private final SQLDialect dialect;
 
-    public SQLQueryDataSourceContext(DBCExecutionContext executionContext) {
+    public SQLQueryDataSourceContext(DBCExecutionContext executionContext, SQLDialect dialect) {
         this.executionContext = executionContext;
+        this.dialect = dialect;
     }
     
     @Override
@@ -111,19 +119,19 @@ class SQLQueryDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public DBSTable findRealTable(List<String> tableName) {
+    public DBSEntity findRealTable(List<String> tableName) {
         // System.out.println("looking for " + tableName);
         if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(new VoidProgressMonitor(), container, this.executionContext, tableName2, false, null);
-            return obj instanceof DBSTable table ? table : null;
+            return obj instanceof DBSTable table ? table : (obj instanceof DBSView view ? view : null);
         } else {
             throw new UnsupportedOperationException();
         }
     }
     
     @Override
-    public SQLQueryRowsSource findRealSource(DBSTable table) {
+    public SQLQueryRowsSource findRealSource(DBSEntity table) {
         return null;
     }
     
@@ -140,6 +148,11 @@ class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Override
     public SQLQuerySymbolDefinition resolveColumn(String simpleName) {
         return null;
+    }
+    
+    @Override
+    SQLDialect getDialect() {
+        return this.dialect;
     }
 }
 
@@ -159,12 +172,12 @@ abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     }
     
     @Override
-    public DBSTable findRealTable(List<String> tableName) {
+    public DBSEntity findRealTable(List<String> tableName) {
         return this.parent.findRealTable(tableName);
     }
     
     @Override
-    public SQLQueryRowsSource findRealSource(DBSTable table) {
+    public SQLQueryRowsSource findRealSource(DBSEntity table) {
         return this.parent.findRealSource(table);
     }
     
@@ -176,6 +189,16 @@ abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     @Override
     public SQLQuerySymbolDefinition resolveColumn(String columnName) {
         return this.parent.resolveColumn(columnName);
+    }
+    
+    @Override
+    public SourceResolutionResult resolveSource(List<String> tableName) {
+        return this.parent.resolveSource(tableName);
+    }
+    
+    @Override
+    SQLDialect getDialect() {
+        return this.parent.getDialect();
     }
 }
 
@@ -214,12 +237,12 @@ class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
     }
     
     @Override
-    public SQLQueryRowsSource findRealSource(DBSTable table) {
+    public SQLQueryRowsSource findRealSource(DBSEntity table) {
         return anyOfTwo(parent.findRealSource(table), otherParent.findRealSource(table)); // TODO consider ambiguity
     }
     
     @Override
-    public DBSTable findRealTable(List<String> tableName) {
+    public DBSEntity findRealTable(List<String> tableName) {
         return anyOfTwo(parent.findRealTable(tableName), otherParent.findRealTable(tableName)); // TODO consider ambiguity
     }
     
@@ -257,24 +280,24 @@ class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
     public SourceResolutionResult resolveSource(List<String> tableName) { return null; }
     
     @Override
-    public SQLQueryRowsSource findRealSource(DBSTable table) { return null; }
+    public SQLQueryRowsSource findRealSource(DBSEntity table) { return null; }
 }
 
 /**
  * Represents any source typically introduced with real table reference in parent context
  */
 class SQLQueryTableRowsContext extends SQLQuerySyntaxContext {
-    private final DBSTable table;
+    private final DBSEntity table;
     private final SQLQueryRowsSource source;
 
-    public SQLQueryTableRowsContext(SQLQueryDataContext parent, DBSTable table, SQLQueryRowsSource source) {
+    public SQLQueryTableRowsContext(SQLQueryDataContext parent, DBSEntity table, SQLQueryRowsSource source) {
         super(parent);
         this.table = table;
         this.source = source;
     }
     
     @Override
-    public SQLQueryRowsSource findRealSource(DBSTable table) {
+    public SQLQueryRowsSource findRealSource(DBSEntity table) {
         return this.table.equals(table) ? this.source : super.findRealSource(table);
     }
 }
@@ -295,7 +318,7 @@ class SQLQueryAliasedRowsContext extends SQLQuerySyntaxContext {
     @Override
     public SourceResolutionResult resolveSource(List<String> tableName) {
         return tableName.size() == 1 && tableName.get(0).equals(this.alias.getName()) 
-                        ? SourceResolutionResult.forSourceByAlias(this.source, this.alias) 
-                        : super.resolveSource(tableName);
+            ? SourceResolutionResult.forSourceByAlias(this.source, this.alias) 
+            : super.resolveSource(tableName);
     }
 }

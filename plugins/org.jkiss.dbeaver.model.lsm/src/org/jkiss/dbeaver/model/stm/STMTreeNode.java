@@ -24,8 +24,7 @@ public interface STMTreeNode extends Tree {
     @Nullable
     default String getTextContent() {
         String result = null;
-        if (this instanceof STMTreeRuleNode) {
-            STMTreeRuleNode ruleNode = ((STMTreeRuleNode) this);
+        if (this instanceof STMTreeRuleNode ruleNode) {
             Interval textRange = ruleNode.getRealInterval();
             result = ruleNode.getStart().getInputStream().getText(textRange);
         } else if (this instanceof TerminalNode) {
@@ -43,9 +42,7 @@ public interface STMTreeNode extends Tree {
             while (!(last instanceof TerminalNode) && last.getChildCount() > 0) {
                 last = last.getChild(last.getChildCount() - 1);
             }
-            if (first instanceof TerminalNode && last instanceof TerminalNode) {
-                TerminalNode a = (TerminalNode) first;
-                TerminalNode b = (TerminalNode) last;
+            if (first instanceof TerminalNode a && last instanceof TerminalNode b) {
                 Interval textRange = Interval.of(a.getSymbol().getStartIndex(), b.getSymbol().getStopIndex());
                 result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
             }
@@ -55,19 +52,28 @@ public interface STMTreeNode extends Tree {
 
     @NotNull
     String getText();
-    
+
+    @Nullable
     default STMTreeNode getStmParent() {
         return getParent() instanceof STMTreeNode parent ? parent : null;
     }
-    
+
+    /**
+     * Returns child node by index
+     */
+    @Nullable
     default STMTreeNode getStmChild(int index) {
         throw new UnsupportedOperationException();
     }
 
-    default STMTreeNode findChildOfName(String nodeName) {
-        for (int i = 0; i < this.getChildCount(); i++){
+    /**
+     * Returns child node by name
+     */
+    @Nullable
+    default STMTreeNode findChildOfName(@NotNull String nodeName) {
+        for (int i = 0; i < this.getChildCount(); i++) {
             STMTreeNode cn = this.getStmChild(i);
-            if (cn.getNodeName().equals(nodeName)) {
+            if (cn != null && cn.getNodeName().equals(nodeName)) {
                 return cn;
             }
         }

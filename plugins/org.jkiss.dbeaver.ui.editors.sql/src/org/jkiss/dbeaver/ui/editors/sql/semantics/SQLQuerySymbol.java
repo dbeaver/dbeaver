@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -35,36 +37,19 @@ enum SQLQuerySymbolClass {
     
     private final SQLTokenType tokenType;
     
-    private SQLQuerySymbolClass(SQLTokenType tokenType) {
+    private SQLQuerySymbolClass(@NotNull SQLTokenType tokenType) {
         this.tokenType = tokenType;
     }
-    
+
+    @NotNull
     public SQLTokenType getTokenType() {
         return this.tokenType;
     }
 }
 
 interface SQLQuerySymbolDefinition {
+    @NotNull
     SQLQuerySymbolClass getSymbolClass();
-}
-
-class SQLQuerySymbolByDbObjectDefinition implements SQLQuerySymbolDefinition {
-    private final DBSObject dbObject;
-    private final SQLQuerySymbolClass symbolClass;
-
-    public SQLQuerySymbolByDbObjectDefinition(DBSObject dbObject, SQLQuerySymbolClass symbolClass) {
-        this.dbObject = dbObject;
-        this.symbolClass = symbolClass;
-    }
-    
-    public DBSObject getDbObject() {
-        return this.dbObject;
-    }
-
-    @Override
-    public SQLQuerySymbolClass getSymbolClass() {
-        return this.symbolClass;
-    }
 }
 
 public class SQLQuerySymbol {
@@ -74,35 +59,39 @@ public class SQLQuerySymbol {
     private SQLQuerySymbolClass symbolClass = SQLQuerySymbolClass.UNKNOWN;
     private SQLQuerySymbolDefinition definition = null;
 
-    public SQLQuerySymbol(String name) {
+    public SQLQuerySymbol(@NotNull String name) {
         this.name = name;
     }
-    
+
+    @NotNull
     public String getName() {
         return this.name;
     }
 
+    @NotNull
     public SQLQuerySymbolClass getSymbolClass() {
         return this.symbolClass;
     }
 
-    public void setSymbolClass(SQLQuerySymbolClass symbolClass) {
+    public void setSymbolClass(@NotNull SQLQuerySymbolClass symbolClass) {
         if (this.symbolClass != SQLQuerySymbolClass.UNKNOWN) {
             throw new UnsupportedOperationException("Symbol already classified");
         } else {
             this.symbolClass = symbolClass;
         }
     }
-    
+
+    @NotNull
     public Collection<SQLQuerySymbolEntry> getEntries() {
         return this.entries;
     }
-    
+
+    @Nullable
     public SQLQuerySymbolDefinition getDefinition() {
         return this.definition;
     }
     
-    public void setDefinition(SQLQuerySymbolDefinition definition) {
+    public void setDefinition(@Nullable SQLQuerySymbolDefinition definition) {
         if (this.definition != null) {
             throw new UnsupportedOperationException("Symbol definition has already been set");
         } else if (definition != null) {
@@ -111,15 +100,16 @@ public class SQLQuerySymbol {
         }
     }
     
-    public void registerEntry(SQLQuerySymbolEntry entry) {
+    public void registerEntry(@NotNull SQLQuerySymbolEntry entry) {
         if (!entry.getName().equals(this.name)) {
             throw new UnsupportedOperationException("Cannot treat symbols '" + entry.getName() + "' as an instance of '" + this.name + "'");
         }
         
         this.entries.add(entry);
     }
-    
-    public SQLQuerySymbol merge(SQLQuerySymbol other) { // TODO merge multiple definitions and check for symbolClass
+
+    @NotNull
+    public SQLQuerySymbol merge(@NotNull SQLQuerySymbol other) { // TODO merge multiple definitions and check for symbolClass
         if (!other.name.equals(this.name)) {
             throw new UnsupportedOperationException("Cannot treat different symbols as one ('" + this.name + "' and '" + other.name + "')");
         }

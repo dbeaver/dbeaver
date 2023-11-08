@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-package org.jkiss.dbeaver.model.sql;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-/**
- * Preferences constants
- */
-public final class SQLModelPreferences {
+interface SQLQueryRecognitionContext {
+    void appendError(@NotNull STMTreeNode treeNode, @NotNull String error);
 
-    public final static String SQL_FORMAT_FORMATTER             = "sql.format.formatter";
-    public static final String SQL_PROPOSAL_INSERT_TABLE_ALIAS  = "sql.proposals.insert.table.alias";
-    
+    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error);
 
-    public static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
-    public static final String SEMANTIC_ANALYSIS_DEPTH = "SQLEditor.Semantics.analysis.depth";
-
+    void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex);
 }

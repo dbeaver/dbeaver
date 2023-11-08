@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import java.util.*;
-import static java.util.Map.entry;
-import java.util.stream.Collectors;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -27,30 +26,32 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLSemanticAnalysisDepth;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.utils.Pair;
 
-interface SQLQueryRecognitionContext {
-    void appendError(STMTreeNode treeNode, String error);
-    void appendError(SQLQuerySymbolEntry symbol, String error);
-    void appendError(SQLQuerySymbolEntry symbol, String error, DBException ex);
-}
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class SQLQueryModelRecognizer {
     
     @FunctionalInterface
-    private static interface TreeMapperCallback<T, C> {
+    private interface TreeMapperCallback<T, C> {
         T apply(STMTreeNode node, List<T> children, C context);
     }
     
     private static class TreeMapper<T, C> {
         private interface MapperFrame {
-            public abstract void doWork();
+            void doWork();
         }    
         
         private interface MapperResultFrame<T> extends MapperFrame {
@@ -61,7 +62,7 @@ public class SQLQueryModelRecognizer {
             public final STMTreeNode node;
             public final MapperResultFrame<T> parent;
             
-            public MapperNodeFrame(STMTreeNode node, MapperResultFrame<T> parent) {
+            public MapperNodeFrame(@NotNull STMTreeNode node, @NotNull MapperResultFrame<T> parent) {
                 this.node = node;
                 this.parent = parent;
             }
@@ -69,7 +70,7 @@ public class SQLQueryModelRecognizer {
         
         private class MapperQueuedNodeFrame extends MapperNodeFrame {
 
-            public MapperQueuedNodeFrame(STMTreeNode node, MapperResultFrame<T> parent) {
+            public MapperQueuedNodeFrame(@NotNull STMTreeNode node, @NotNull MapperResultFrame<T> parent) {
                 super(node, parent);
             }
             
@@ -97,13 +98,17 @@ public class SQLQueryModelRecognizer {
             public final List<T> childrenData = new LinkedList<>();
             public final TreeMapperCallback<T, C> translation;
             
-            public MapperDataPendingNodeFrame(STMTreeNode node, MapperResultFrame<T> parent, TreeMapperCallback<T, C> translation) {
+            public MapperDataPendingNodeFrame(
+                @NotNull STMTreeNode node,
+                @NotNull MapperResultFrame<T> parent,
+                @NotNull TreeMapperCallback<T, C> translation
+            ) {
                 super(node, parent);
                 this.translation = translation;
             }
             
             @Override
-            public void aggregate(T result) {
+            public void aggregate(@NotNull T result) {
                 this.childrenData.add(result);
             }
             
@@ -118,12 +123,12 @@ public class SQLQueryModelRecognizer {
             public final STMTreeNode node;
             public T result = null;
             
-            public MapperRootFrame(STMTreeNode node) {
+            public MapperRootFrame(@NotNull STMTreeNode node) {
                 this.node = node;
             }
 
             @Override
-            public void aggregate(T result) {
+            public void aggregate(@NotNull T result) {
                 this.result = result;
             }
             
@@ -139,14 +144,19 @@ public class SQLQueryModelRecognizer {
         private final Stack<MapperFrame> stack = new Stack<>();
         private final C context;
         
-        public TreeMapper(Class<T> mappingResultType, Set<String> transparentNodeNames, Map<String, TreeMapperCallback<T, C>> translations, C context) {
+        public TreeMapper(
+            @NotNull Class<T> mappingResultType,
+            @NotNull Set<String> transparentNodeNames,
+            @NotNull Map<String, TreeMapperCallback<T, C>> translations,
+            @NotNull C context
+        ) {
             this.mappingResultType = mappingResultType;
             this.transparentNodeNames = transparentNodeNames;
             this.translations = translations;
             this.context = context;
         }
 
-        public T translate(STMTreeNode root) {
+        public T translate(@NotNull STMTreeNode root) {
             MapperRootFrame rootFrame = new MapperRootFrame(root);
             stack.push(rootFrame);
 
@@ -193,7 +203,7 @@ public class SQLQueryModelRecognizer {
         );
         
         private static final Map<String, TreeMapperCallback<SQLQueryRowsSource, SQLQueryModelRecognizer>> translations = Map.ofEntries(
-            entry(STMKnownRuleNames.queryExpression, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.queryExpression, (n, cc, r) -> {
                 SQLQueryRowsSource source = cc.get(0);
                 for (int i = 1; i < cc.size(); i++) {
                     STMTreeNode childNode = n.getStmChild(i);
@@ -207,7 +217,7 @@ public class SQLQueryModelRecognizer {
                 }
                 return source;
             }),
-            entry(STMKnownRuleNames.nonJoinQueryTerm, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.nonJoinQueryTerm, (n, cc, r) -> {
                 SQLQueryRowsSource source = cc.get(0);
                 for (int i = 1; i < cc.size(); i++) {
                     STMTreeNode childNode = n.getStmChild(i);
@@ -220,10 +230,11 @@ public class SQLQueryModelRecognizer {
                 }
                 return source;
             }),
-            entry(STMKnownRuleNames.joinedTable, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.joinedTable, (n, cc, r) -> {
                 SQLQueryRowsSource source = cc.get(0);
                 for (int i = 1; i < cc.size(); i++) {
-                    final SQLQueryRowsSource currSource = source, nextSource = cc.get(i);
+                    final SQLQueryRowsSource currSource = source;
+                    final SQLQueryRowsSource nextSource = cc.get(i);
                     STMTreeNode childNode = n.getStmChild(i);
                     source = switch (childNode.getNodeKindId()) {
                         case SQLStandardParser.RULE_naturalJoinTerm -> Optional.ofNullable(childNode.findChildOfName(STMKnownRuleNames.joinSpecification))
@@ -238,7 +249,7 @@ public class SQLQueryModelRecognizer {
                 }
                 return source;
             }),
-            entry(STMKnownRuleNames.fromClause, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.fromClause, (n, cc, r) -> {
                 SQLQueryRowsSource source = cc.get(0);
                 for (int i = 1; i < cc.size(); i++) {
                     STMTreeNode childNode = n.getStmChild(1 + i * 2);
@@ -250,7 +261,7 @@ public class SQLQueryModelRecognizer {
                 }
                 return source;
             }),
-            entry(STMKnownRuleNames.tableExpression, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.tableExpression, (n, cc, r) -> {
                 // tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
                 SQLQueryValueExpression whereExpr = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.whereClause))
                         .map(r::collectValueExpression).orElse(null);
@@ -262,7 +273,7 @@ public class SQLQueryModelRecognizer {
                         .map(r::collectValueExpression).orElse(null);
                 return new SQLQuerySelectionFilterModel(cc.get(0), whereExpr, havingClause, groupByClause, orderByClause);
             }),
-            entry(STMKnownRuleNames.querySpecification, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.querySpecification, (n, cc, r) -> {
                 STMTreeNode selectListNode = n.findChildOfName(STMKnownRuleNames.selectList);
                 List<SQLQueryResultSublistSpec> sublists = new ArrayList<>((selectListNode.getChildCount() + 1) / 2);
                 for (int i = 0; i < selectListNode.getChildCount(); i += 2) {
@@ -286,7 +297,7 @@ public class SQLQueryModelRecognizer {
 
                 return new SQLQueryProjectionModel(cc.get(0), new SQLQuerySelectionResultModel(sublists));
             }),
-            entry(STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> { 
+            Map.entry(STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
                 SQLQueryRowsSource source = cc.size() > 0 ? cc.get(0) : r.collectTableReference(n.getStmChild(0));
                 if (n.getChildCount() > 1) {
                     STMTreeNode lastSubnode = n.getStmChild(n.getChildCount() - 1);
@@ -299,10 +310,10 @@ public class SQLQueryModelRecognizer {
                 }
                 return source;
             }),
-            entry(STMKnownRuleNames.explicitTable, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.explicitTable, (n, cc, r) -> {
                 return r.collectTableReference(n);
             }),
-            entry(STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
+            Map.entry(STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
                 return new SQLTableValueRowsSource();                 // TODO
             })
         );
@@ -312,45 +323,73 @@ public class SQLQueryModelRecognizer {
         }
     }
     
-    private final DBCExecutionContext executionContext;
-    
-    private final HashSet<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
-    
     private final SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext() {
         
         @Override
-        public void appendError(SQLQuerySymbolEntry symbol, String error, DBException ex) {
-            System.out.println(symbol.getName() + ": " + error + ": " + ex.toString());
+        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
+            // System.out.println(symbol.getName() + ": " + error + ": " + ex.toString());
         }
         
         @Override
-        public void appendError(SQLQuerySymbolEntry symbol, String error) {
-            System.out.println(symbol.getName() + ": " + error);
+        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
+            // System.out.println(symbol.getName() + ": " + error);
         }
         
         @Override
-        public void appendError(STMTreeNode treeNode, String error) {
+        public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error) {
             // TODO Auto-generated method stub
             
         }
     };
 
+    private final HashSet<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
+    
+    private final SQLSemanticAnalysisDepth analysisDepth;
 
-    public SQLQueryModelRecognizer(DBCExecutionContext executionContext) {
+    private final DBCExecutionContext executionContext;    
+
+    public SQLQueryModelRecognizer(@NotNull SQLSemanticAnalysisDepth analysisDepth, @NotNull DBCExecutionContext executionContext) {
+        this.analysisDepth = analysisDepth;
         this.executionContext = executionContext;
     }
     
-    private SQLQueryDataContext prepareDataContext(STMTreeNode root) {
-        if (this.executionContext != null && this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
-            return new SQLQueryDataSourceContext(this.executionContext);
-        } else {
-            List<SQLQueryColumnReferenceExpression> knownColumns= STMUtils.expandSubtree(root, null, Set.of(STMKnownRuleNames.columnReference)).stream()
-                    .map(r -> (SQLQueryColumnReferenceExpression)collectKnownValueExpression(r))
-                    .collect(Collectors.toList());
-            return new SQLQueryFakeDataSourceContext(knownColumns);
+    private void traverseForIdentifiers(
+        @NotNull STMTreeNode root,
+        @NotNull Consumer<SQLQuerySymbolEntry> columnAction,
+        @NotNull Consumer<SQLQueryQualifiedName> entityAction
+    ) {
+        List<STMTreeNode> refs = STMUtils.expandSubtree(root, null, Set.of(STMKnownRuleNames.columnReference, STMKnownRuleNames.tableName));
+        for (STMTreeNode ref : refs) {
+            switch (ref.getNodeKindId()) {
+                case SQLStandardParser.RULE_columnReference -> {
+                    if (ref.getChildCount() > 1) {
+                        entityAction.accept(this.collectTableName(ref.getStmChild(0)));
+                    }
+                    columnAction.accept(this.collectIdentifier(ref.getStmChild(ref.getChildCount() - 1)));
+                }
+                case SQLStandardParser.RULE_tableName -> {
+                    entityAction.accept(this.collectTableName(ref));
+                }
+                default -> throw new IllegalArgumentException("Unexpected value: " + ref.getNodeName());
+            }
         }
     }
-    
+
+    @NotNull
+    private SQLQueryDataContext prepareDataContext(@NotNull STMTreeNode root) {
+        if (this.analysisDepth.value >= SQLSemanticAnalysisDepth.Validation.value && this.executionContext != null && 
+                this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
+            return new SQLQueryDataSourceContext(this.executionContext, this.executionContext.getDataSource().getSQLDialect());
+        } else {
+            Set<String> allColumnNames = new HashSet<>();
+            Set<List<String>> allTableNames = new HashSet<>();
+            this.traverseForIdentifiers(root, c -> allColumnNames.add(c.getName()), e -> allTableNames.add(e.toListOfStrings()));
+            symbolEntries.clear();
+            return new SQLQueryDummyDataSourceContext(allColumnNames, allTableNames);
+        }
+    }
+
+    @NotNull
     private SQLDialect obtainSqlDialect() {
         if (this.executionContext != null && this.executionContext.getDataSource() != null) {
             return this.executionContext.getDataSource().getSQLDialect();
@@ -359,44 +398,148 @@ public class SQLQueryModelRecognizer {
         }
     }
     
-    public SQLQuerySelectionModel recognizeQuery(String text) {
+    private static class DebugGraphBuilder {
+        private final DirectedGraph graph = new DirectedGraph();
+        private final LinkedList<Pair<Object, Object>> stack = new LinkedList<>();
+        private final Set<Object> done = new HashSet<>();
+        private final Map<Object, DirectedGraphNode> objs = new HashMap<>();
+        
+        private void expandObject(Object prev, Object o) {
+            String propName = prev == null ? null : (String) ((Pair) prev).getFirst();
+            Object src = prev == null ? null : ((Pair) prev).getSecond();
+            if (o instanceof SQLQueryDataContext || o instanceof SQLQueryRowsSource || o instanceof SQLQueryValueExpression ) {                
+                DirectedGraphNode node = objs.get(o);
+                DirectedGraphNode prevNode = objs.get(src);
+                if (node == null) {
+                    var color = o instanceof SQLQueryDataContext ? "#bbbbff" 
+                            : (o instanceof SQLQueryRowsSource ? "#bbffbb" 
+                            : (o instanceof SQLQueryValueExpression ? "#ffbbbb"
+                            : "#bbbbbb"));
+                    node = graph.createNode(o.toString().substring(o.getClass().getPackageName().length()), color);
+                    objs.put(o, node);
+                }
+                if (prevNode != null) {
+                    graph.createEdge(prevNode, node, propName, null);
+                    
+//                    System.out.println(src.toString().substring(src.getClass().getPackageName().length()));
+//                    System.out.println("\t\t\t --> " + o.toString().substring(o.getClass().getPackageName().length()));
+                }
+                src = o;
+                propName = "";
+            } 
+            if (done.contains(o)) {
+                return;
+            }
+            done.add(o);
+            // System.out.println((prev == null ? "<NULL>" : prev.toString()) + " --> " + o.toString());
+
+            if (o instanceof String || o.getClass().isPrimitive() || o.getClass().isEnum()) {
+                return;
+            } else if (o instanceof SQLQuerySymbol || o instanceof DBSObject || o instanceof DBCExecutionContext) {
+                // || o instanceof SQLQueryColumnReferenceExpression) {
+                return;
+            } else if (o instanceof Iterable it) {
+//                int index = 0;
+//                for (Object y: it) {
+//                    if (y != null && !done.contains(y)) { 
+//                        stack.addLast(new Pair<Object, Object>(new Pair(propName + "[" + (index++) + "]", src), y));
+//                    }
+//                }
+                return;
+            }
+            
+            Class t = o.getClass();
+            while (t != Object.class) {
+                for (Field f : t.getDeclaredFields()) {
+                    try {
+                        if (f.canAccess(o) || f.trySetAccessible()) {
+                            Object x = f.get(o);
+                            if (x != null) {
+                                if (x instanceof String) {
+                                    DirectedGraphNode prevNode = objs.get(src);
+                                    if (prevNode != null) {
+                                        String text = x.toString().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;").replace("\n", "&#10;");
+//                                            DirectedGraphNode newNode = graph.createNode(text, null);
+//                                            graph.createEdge(prevNode, newNode, propName, null);
+                                        prevNode.label += "&#10;" + propName + "." + f.getName() + " = " + text;
+                                    }
+                                } else if (x instanceof Iterable it) {
+                                    int index = 0;
+                                    for (Object y : it) {
+                                        if (y != null && !done.contains(y)) {
+                                            stack.addLast(new Pair<Object, Object>(new Pair(propName + "[" + (index++) + "]", src), y));
+                                        }
+                                    }
+                                } else {
+                                    stack.addLast(new Pair(new Pair(propName + "." + f.getName(), src), x));
+                                }
+                            }
+                        }
+                    } catch (Throwable e) {
+                    }
+                }
+                t = t.getSuperclass();
+            }
+        }
+        
+        public void traverseObjs(Object obj) {
+            stack.addLast(new Pair(null, obj));
+            while (stack.size() > 0) {
+                Pair p = stack.removeLast();
+                this.expandObject(p.getFirst(), p.getSecond());
+            }
+        }
+    }
+
+    @Nullable
+    public SQLQuerySelectionModel recognizeQuery(@NotNull String text) {
         STMSource querySource = STMSource.fromString(text);
         LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(this.obtainSqlDialect());
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
         
-        SQLQueryRowsSource source = this.collectQueryExpression(tree);
-        if (source != null) {
+        if (tree != null) {
+            if (this.analysisDepth.value >= SQLSemanticAnalysisDepth.Classification.value) {
+                SQLQueryDataContext context = this.prepareDataContext(tree);
+                
+                SQLQueryRowsSource source = this.collectQueryExpression(tree);
+                if (source != null) {                
+                    SQLQuerySelectionModel model = new SQLQuerySelectionModel(source, symbolEntries);
+                    
+                    model.propagateContex(context, recognitionContext);
         
-            SQLQuerySelectionModel model = new SQLQuerySelectionModel(source, symbolEntries);
+//                    var tt = new DebugGraphBuilder();
+//                    tt.traverseObjs(model);
+//                    tt.graph.saveToFile("c:/temp/outx.dgml");
+                    
+                    return model;
+                } else {
+                    // TODO log query model collection error 
+                    // and failing back to simple highlighting
+                }
+            } 
             
-            SQLQueryDataContext context = this.prepareDataContext(tree);
-            model.propagateContex(context, recognitionContext);
-            
-            // model.collectTableRefs(query);
-            
-            /*
-            done:
-                collect union recursively if any
-            almost done:
-                collect selection sources (referenced, subqueries, direct table, query spec, table-values, explicit tables - and correlation alias)
-             
-            collect cte recursively
-            collect result model
-            collect conditionals (where, group, having, orderings, etc)
-            resolve and merge all symbols
-            classify all symbols
-            */
-
-            return model;
+            this.traverseForIdentifiers(tree, 
+                c -> c.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN), 
+                e -> {
+                    e.entityName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE);
+                    if (e.schemaName != null) {
+                        e.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
+                        if (e.catalogName != null) {
+                            e.catalogName.getSymbol().setSymbolClass(SQLQuerySymbolClass.CATALOG);    
+                        }
+                    }
+                }
+            );
+            return new SQLQuerySelectionModel(null, symbolEntries);
         } else {
             return null;
         }
     }
-    
-    private SQLQueryRowsSource collectQueryExpression(STMTreeNode tree) {
+
+    @NotNull
+    private SQLQueryRowsSource collectQueryExpression(@NotNull STMTreeNode tree) {
         QueryExpressionMapper queryMapper = new QueryExpressionMapper(this);
-        SQLQueryRowsSource rowsSource = queryMapper.translate(tree);
-        return rowsSource; 
+        return queryMapper.translate(tree);
     }
     
     
@@ -424,20 +567,23 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.viewColumnList,
         STMKnownRuleNames.insertColumnList
     );
-    
-    private List<SQLQuerySymbolEntry> collectColumnNameList(STMTreeNode node) {
+
+    @NotNull
+    private List<SQLQuerySymbolEntry> collectColumnNameList(@NotNull STMTreeNode node) {
         if (!node.getNodeName().equals(STMKnownRuleNames.columnNameList)) {
             if (!columnNameListWrapperNames.contains(node.getNodeName())) {
                 throw new UnsupportedOperationException("columnNameList (or its wrapper) expected while facing with " + node.getNodeName());
             }
             
             List<STMTreeNode> actual = STMUtils.expandSubtree(node, columnNameListWrapperNames, Set.of(STMKnownRuleNames.columnNameList));
-            if (actual.size() > 1) {
-                throw new UnsupportedOperationException("Ambiguous columnNameList collection at " + node.getNodeName());
-            } else if (actual.size() == 0) {
-                return Collections.emptyList(); 
-            } else {
-                node = actual.get(0);
+            switch (actual.size()) {
+                case 0 -> {
+                    return Collections.emptyList();
+                }
+                case 1 -> {
+                    node = actual.get(0);
+                }
+                default -> throw new UnsupportedOperationException("Ambiguous columnNameList collection at " + node.getNodeName());
             }
         }
         
@@ -455,14 +601,17 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.authorizationIdentifier,
         STMKnownRuleNames.columnName
     );
-    
-    private SQLQuerySymbolEntry collectIdentifier(STMTreeNode node) {
+
+    @NotNull
+    private SQLQuerySymbolEntry collectIdentifier(@NotNull STMTreeNode node) {
         STMTreeNode actual = identifierDirectWrapperNames.contains(node.getNodeName()) ? node.getStmChild(0) : node;
         if (!actual.getNodeName().equals(STMKnownRuleNames.identifier)) {
             throw new UnsupportedOperationException("identifier expected while facing with " + node.getNodeName());
         }
-        String identifierString = actual.getTextContent(); // TODO: consider escaping and such, see parser grammar for the details
-        SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actual.getRealInterval(), identifierString);
+        String rawIdentifierString = actual.getTextContent(); // TODO: consider escaping and such, see parser grammar for the details
+        SQLDialect dialect = this.obtainSqlDialect();
+        String actualIdentifierString = dialect.isQuotedIdentifier(rawIdentifierString) ? rawIdentifierString : rawIdentifierString.toLowerCase();
+        SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actual.getRealInterval(), actualIdentifierString);
         symbolEntries.add(entry);
         return entry;
     }
@@ -486,30 +635,33 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.tableName, 
         STMKnownRuleNames.correlationName
     );
-    
-    private SQLQueryTableDataModel collectTableReference(STMTreeNode node) {
+
+    @NotNull
+    private SQLQueryTableDataModel collectTableReference(@NotNull STMTreeNode node) {
         return new SQLQueryTableDataModel(collectTableName(node));
     }
 
-    private SQLQueryQualifiedName collectTableName(STMTreeNode node) {
+    @NotNull
+    private SQLQueryQualifiedName collectTableName(@NotNull STMTreeNode node) {
         List<STMTreeNode> actual = STMUtils.expandSubtree(node, tableNameContainers, actualTableNameContainers);
-        if (actual.size() > 1) {
-            throw new UnsupportedOperationException("Ambiguous tableName collection at " + node.getNodeName());
-        } else if (actual.size() == 0) {
-            return null;
-        } else {
-            node = actual.get(0);
-        }
-        return node.getNodeName().equals(STMKnownRuleNames.tableName) ? collectQualifiedName(node)
-                                            : new SQLQueryQualifiedName(collectIdentifier(node));
+        return switch (actual.size()) {
+            case 0 -> null;
+            case 1 -> {
+                node = actual.get(0);
+                yield node.getNodeName().equals(STMKnownRuleNames.tableName) ? collectQualifiedName(node)
+                        : new SQLQueryQualifiedName(collectIdentifier(node));
+            }
+            default -> throw new UnsupportedOperationException("Ambiguous tableName collection at " + node.getNodeName());
+        };
     }
     
     private static final Set<String> qualifiedNameDirectWrapperNames = Set.of(
         STMKnownRuleNames.tableName,
         STMKnownRuleNames.constraintName
     );
-    
-    private SQLQueryQualifiedName collectQualifiedName(STMTreeNode node) { // qualifiedName
+
+    @NotNull
+    private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node) { // qualifiedName
         STMTreeNode entityNameNode = qualifiedNameDirectWrapperNames.contains(node.getNodeName()) ? node.getStmChild(0) : node;
         if (!entityNameNode.getNodeName().equals(STMKnownRuleNames.qualifiedName)) {
             throw new UnsupportedOperationException("identifier expected while facing with " + node.getNodeName());
@@ -532,38 +684,40 @@ public class SQLQueryModelRecognizer {
     }
     
     private static final Set<String> knownValueExpressionRootNames = Set.of(
-            STMKnownRuleNames.valueExpression,
-            STMKnownRuleNames.searchCondition,
-            STMKnownRuleNames.havingClause,
-            STMKnownRuleNames.whereClause,
-            STMKnownRuleNames.groupByClause,
-            STMKnownRuleNames.orderByClause
+        STMKnownRuleNames.valueExpression,
+        STMKnownRuleNames.searchCondition,
+        STMKnownRuleNames.havingClause,
+        STMKnownRuleNames.whereClause,
+        STMKnownRuleNames.groupByClause,
+        STMKnownRuleNames.orderByClause
     );
         
     private static final Set<String> knownRecognizableValueExpressionNames = Set.of(
-            STMKnownRuleNames.subquery,
-            STMKnownRuleNames.columnReference
+        STMKnownRuleNames.subquery,
+        STMKnownRuleNames.columnReference
     );
-    
-    private SQLQueryValueExpression collectValueExpression(STMTreeNode node) {
+
+    @NotNull
+    private SQLQueryValueExpression collectValueExpression(@NotNull STMTreeNode node) {
         if (!knownValueExpressionRootNames.contains(node.getNodeName())) {
             throw new UnsupportedOperationException("Search condition or value expression expected while facing with " + node.getNodeName());
         }
         
         List<STMTreeNode> knownExprs = STMUtils.expandSubtree(node, null, knownRecognizableValueExpressionNames);
         return knownExprs.size() == 1 ? collectKnownValueExpression(knownExprs.get(0))
-                : new SQLQueryFlattenedExpression(knownExprs.stream().map(e -> collectKnownValueExpression(e)).collect(Collectors.toList()));
+            : new SQLQueryFlattenedExpression(knownExprs.stream().map(this::collectKnownValueExpression).collect(Collectors.toList()));
     }
-    
-    private SQLQueryValueExpression collectKnownValueExpression(STMTreeNode node) {
+
+    @NotNull
+    private SQLQueryValueExpression collectKnownValueExpression(@NotNull STMTreeNode node) {
         return switch (node.getNodeKindId()) {
-        case SQLStandardParser.RULE_subquery -> new SQLQuerySubqueryExpression(this.collectQueryExpression(node));
-        case SQLStandardParser.RULE_columnReference -> {
-            SQLQuerySymbolEntry columnName = collectIdentifier(node.getStmChild(node.getChildCount() - 1));
-            yield node.getChildCount() == 1 ? new SQLQueryColumnReferenceExpression(columnName) 
+            case SQLStandardParser.RULE_subquery -> new SQLQuerySubqueryExpression(this.collectQueryExpression(node));
+            case SQLStandardParser.RULE_columnReference -> {
+                SQLQuerySymbolEntry columnName = collectIdentifier(node.getStmChild(node.getChildCount() - 1));
+                yield node.getChildCount() == 1 ? new SQLQueryColumnReferenceExpression(columnName)
                     : new SQLQueryColumnReferenceExpression(collectTableName(node.getStmChild(0)), columnName);
-        }
-        default -> throw new UnsupportedOperationException("Unexpected expression node kind");
+            }
+            default -> throw new UnsupportedOperationException("subquery of columnReference expected while facing with " + node.getNodeName());
         };
     }
 }

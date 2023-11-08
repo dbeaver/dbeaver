@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 public class SQLPreferenceConstants {
@@ -62,7 +63,8 @@ public class SQLPreferenceConstants {
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
-    public static final String ENABLE_EXPERIMENTAL_FEATURES            = "SQLEditor.ContentAssistant.experimental.enable";
+    public static final String ENABLE_EXPERIMENTAL_FEATURES            = SQLModelPreferences.ENABLE_EXPERIMENTAL_FEATURES;
+    public static final String SEMANTIC_ANALYSIS_DEPTH                 = SQLModelPreferences.SEMANTIC_ANALYSIS_DEPTH;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";

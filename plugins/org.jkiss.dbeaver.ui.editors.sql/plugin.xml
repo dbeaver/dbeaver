@@ -1233,52 +1233,52 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.datatype.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
-                value="COLOR_DARK_GREEN">
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
+            value="COLOR_DARK_GREEN">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.table.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.table.foreground"
-                value="56,140,148">
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.table.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.table.foreground"
+            value="142,0,198">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.table.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.table.alias.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.table.alias.foreground"
-                value="56,140,148">
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.table.alias.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.table.alias.foreground"
+            value="142,0,198">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.table.alias.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.column.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.column.foreground"
-                value="136,56,148">
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.column.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.column.foreground"
+            value="0,100,100">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.column.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.column.derived.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.column.derived.foreground"
-                value="136,56,148">
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.column.derived.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.column.derived.foreground"
+            value="0,100,100">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.column.derived.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.schema.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.schema.foreground"
-                value="255,20,147">
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.schema.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.schema.foreground"
+            value="149,96,55">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.schema.foreground.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.semanticError.foreground"
-                value="255,128,128">
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.semanticError.foreground"
+            value="255,55,55">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.description</description>
         </colorDefinition>
         <colorDefinition

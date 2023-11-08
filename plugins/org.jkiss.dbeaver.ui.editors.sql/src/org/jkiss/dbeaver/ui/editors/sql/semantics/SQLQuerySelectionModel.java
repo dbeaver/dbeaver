@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.util.*;
 
 class SQLQuerySelectionModel {
@@ -25,16 +28,17 @@ class SQLQuerySelectionModel {
     private final HashSet<SQLQuerySymbolEntry> symbolEntries;
     private final SQLQueryRowsSource resultSource;
     
-    public SQLQuerySelectionModel(SQLQueryRowsSource resultSource, HashSet<SQLQuerySymbolEntry> symbolEntries) {
+    public SQLQuerySelectionModel(@Nullable SQLQueryRowsSource resultSource, @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries) {
         this.resultSource = resultSource;
         this.symbolEntries = symbolEntries;
     }
 
+    @NotNull
     public Collection<SQLQuerySymbolEntry> getAllSymbols() {
         return symbolEntries;
     }
 
-    public void propagateContex(SQLQueryDataContext dataContext, SQLQueryRecognitionContext recognitionContext) {
+    public void propagateContex(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         SQLQueryDataContext resultContext = resultSource.propagateContext(dataContext, recognitionContext);
     }
 }

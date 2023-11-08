@@ -253,7 +253,7 @@ intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign 
 
 valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |anyWordsWithProperty|columnReference;//|anyWordsWithProperty;
+    |anyWordsWithProperty2|columnReference|anyWordsWithProperty;
 
 
 numericPrimary: (valueExpressionPrimary|extractExpression|anyWordsWithProperty);
