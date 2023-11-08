@@ -63,8 +63,9 @@ public class SQLPreferenceConstants {
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
-    public static final String ENABLE_EXPERIMENTAL_FEATURES            = SQLModelPreferences.ENABLE_EXPERIMENTAL_FEATURES;
-    public static final String SEMANTIC_ANALYSIS_DEPTH                 = SQLModelPreferences.SEMANTIC_ANALYSIS_DEPTH;
+    public static final String ENABLE_EXPERIMENTAL_FEATURES            = SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE;
+    public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
+    public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";

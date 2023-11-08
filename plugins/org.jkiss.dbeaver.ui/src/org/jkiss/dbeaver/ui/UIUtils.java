@@ -2384,7 +2384,7 @@ public class UIUtils {
                 }
             } else if (data instanceof HandledContributionItem) {
                 MHandledItem model = ((HandledContributionItem) data).getModel();
-                if (model != null ) {
+                if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null) {
                         item.setData("commandId", cmd.getId());
@@ -2392,57 +2392,5 @@ public class UIUtils {
                 }
             }
         }
-    }
-
-    public static Control createInfoToolButton(Composite parent, String msg) {
-        ToolBar toolBar = new ToolBar(parent, SWT.FLAT);
-        ToolItem infoToolItem = new ToolItem(toolBar, SWT.CHECK);
-        infoToolItem.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        ToolTip toolTip = new ToolTip(toolBar.getShell(), SWT.BALLOON);
-        toolTip.setAutoHide(false);
-        toolTip.setMessage(msg);
-        Consumer<ShellEvent> hideToolTip = ev -> {
-            if (ev == null || ev.widget != toolBar) {
-                infoToolItem.setSelection(false);
-                toolTip.setVisible(false);
-            }
-        };
-        infoToolItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (infoToolItem.getSelection()) {
-                    Shell shell = toolBar.getShell();
-                    Point size = toolBar.getSize();
-                    toolTip.setLocation(shell.toDisplay(shell.getDisplay().map(toolBar, shell, size.x / 2, size.y / 2)));
-                    toolTip.setVisible(true);
-                } else {
-                    hideToolTip.accept(null);
-                }
-            }
-        });
-        
-        ControlListener controlListener = new ControlListener() {
-            @Override
-            public void controlMoved(ControlEvent e) {
-                hideToolTip.accept(null);
-            }
-            @Override
-            public void controlResized(ControlEvent e) {
-                hideToolTip.accept(null);
-            }
-        };
-        Listener displayListener = e -> hideToolTip.accept(new ShellEvent(e));
-        ShellListener shellListener = ShellListener.shellDeactivatedAdapter(hideToolTip);
-        toolBar.getShell().addShellListener(shellListener);
-        toolBar.getShell().addControlListener(controlListener);
-        toolBar.getDisplay().addFilter(SWT.MouseDown, displayListener); 
-        toolBar.getDisplay().addFilter(SWT.KeyDown, displayListener);
-        toolBar.addDisposeListener(e -> {
-            toolBar.getShell().removeShellListener(shellListener);
-            toolBar.getShell().removeControlListener(controlListener);
-            toolBar.getDisplay().removeFilter(SWT.MouseDown, displayListener);
-            toolBar.getDisplay().removeFilter(SWT.KeyDown, displayListener);
-        });
-        return toolBar;
     }
 }

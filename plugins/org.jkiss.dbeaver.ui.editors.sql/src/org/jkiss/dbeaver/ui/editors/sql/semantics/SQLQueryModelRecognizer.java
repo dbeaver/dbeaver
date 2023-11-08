@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLSemanticAnalysisDepth;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
@@ -45,6 +45,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class SQLQueryModelRecognizer {
+
+    
+    private final HashSet<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
+    
+    private final boolean isReadMetadataForSemanticAnalysis;
+
+    private final DBCExecutionContext executionContext;
     
     @FunctionalInterface
     private interface TreeMapperCallback<T, C> {
@@ -290,15 +297,15 @@ public class SQLQueryModelRecognizer {
                                 SQLQuerySymbolEntry asColumnName = r.collectIdentifier(asClause.getStmChild(asClause.getChildCount() - 1));
                                 resultModel.addColumnSpec(expr, asColumnName);
                             } else {
-                            	resultModel.addColumnSpec(expr);
+                                resultModel.addColumnSpec(expr);
                             }
                         }
-                        default -> { 
-                        	if (selectSublist.getChildCount() == 1) {
-                        		resultModel.addCompleteTupleSpec();
-                        	} else {
-                        		resultModel.addTupleSpec(r.collectTableName(sublistNode));
-                        	}
+                        default -> {
+                            if (selectSublist.getChildCount() == 1) {
+                                resultModel.addCompleteTupleSpec();
+                            } else {
+                                resultModel.addTupleSpec(r.collectTableName(sublistNode));
+                            }
                         }
                     }
                 }
@@ -350,14 +357,8 @@ public class SQLQueryModelRecognizer {
         }
     };
 
-    private final HashSet<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
-    
-    private final SQLSemanticAnalysisDepth analysisDepth;
-
-    private final DBCExecutionContext executionContext;    
-
-    public SQLQueryModelRecognizer(@NotNull SQLSemanticAnalysisDepth analysisDepth, @Nullable DBCExecutionContext executionContext) {
-        this.analysisDepth = analysisDepth;
+    public SQLQueryModelRecognizer(@Nullable DBCExecutionContext executionContext, boolean isReadMetadataForSemanticAnalysis) {
+        this.isReadMetadataForSemanticAnalysis = isReadMetadataForSemanticAnalysis;
         this.executionContext = executionContext;
     }
     
@@ -385,8 +386,10 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     private SQLQueryDataContext prepareDataContext(@NotNull STMTreeNode root) {
-        if (this.analysisDepth.value >= SQLSemanticAnalysisDepth.Validation.value && this.executionContext != null && 
-                this.executionContext.getDataSource() instanceof DBSObjectContainer) {
+        if (this.isReadMetadataForSemanticAnalysis
+            && this.executionContext != null
+            && this.executionContext.getDataSource() instanceof DBSObjectContainer
+        ) {
             return new SQLQueryDataSourceContext(this.executionContext, this.executionContext.getDataSource().getSQLDialect());
         } else {
             Set<String> allColumnNames = new HashSet<>();
@@ -510,26 +513,23 @@ public class SQLQueryModelRecognizer {
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
         
         if (tree != null) {
-            if (this.analysisDepth.value >= SQLSemanticAnalysisDepth.Classification.value) {
-                SQLQueryDataContext context = this.prepareDataContext(tree);
-                
-                SQLQueryRowsSourceModel source = this.collectQueryExpression(tree);
-                if (source != null) {                
-                    SQLQuerySelectionModel model = new SQLQuerySelectionModel(source, symbolEntries);
-                    
-                    model.propagateContex(context, recognitionContext);
-        
-//                    var tt = new DebugGraphBuilder();
-//                    tt.traverseObjs(model);
-//                    tt.graph.saveToFile("c:/temp/outx.dgml");
-                    
-                    return model;
-                } else {
-                    // TODO log query model collection error 
-                    // and failing back to simple highlighting
-                }
-            } 
-            
+            SQLQueryDataContext context = this.prepareDataContext(tree);
+
+            SQLQueryRowsSourceModel source = this.collectQueryExpression(tree);
+            if (source != null) {
+                SQLQuerySelectionModel model = new SQLQuerySelectionModel(source, symbolEntries);
+
+                model.propagateContex(context, recognitionContext);
+
+                // var tt = new DebugGraphBuilder();
+                // tt.traverseObjs(model);
+                // tt.graph.saveToFile("c:/temp/outx.dgml");
+
+                return model;
+            } else {
+                // TODO log query model collection error
+            }
+
             this.traverseForIdentifiers(tree, 
                 c -> c.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN), 
                 e -> {

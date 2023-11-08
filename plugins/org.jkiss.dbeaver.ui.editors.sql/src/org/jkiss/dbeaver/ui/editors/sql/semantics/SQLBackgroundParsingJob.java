@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLSemanticAnalysisDepth;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -133,7 +132,7 @@ public class SQLBackgroundParsingJob {
 
     private void schedule(@Nullable DocumentEvent event) {
         synchronized (this.syncRoot) {
-            if (this.editor.getRuleManager() == null || this.editor.getSemanticAnalysisDepth().equals(SQLSemanticAnalysisDepth.None) ||
+            if (this.editor.getRuleManager() == null || !this.editor.isAdvancedHighlightingEnabled() ||
                 !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor.getEditorInput())
             ) {
                 this.context = null;
@@ -141,16 +140,16 @@ public class SQLBackgroundParsingJob {
             }
 
             if (this.task == null) { // test wether we really need to create new task instance each time even when rescheduling
-	            this.task = new TimerTask() {
-	                @Override
-	                public void run() {
-	                    try {
-	                        SQLBackgroundParsingJob.this.doWork();
-	                    } catch (BadLocationException e) {
-	                        log.debug(e);
-	                    }
-	                }
-	            };
+                this.task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
+                            SQLBackgroundParsingJob.this.doWork();
+                        } catch (BadLocationException e) {
+                            log.debug(e);
+                        }
+                    }
+                };
             }
             if (event != null) {
                 // TODO drop only on lines-set change and apply in line offset on local insert or remove
@@ -222,7 +221,7 @@ public class SQLBackgroundParsingJob {
                 false
             );
 
-            SQLSemanticAnalysisDepth analysisDepth = editor.getSemanticAnalysisDepth();
+            boolean isReadMetadataForQueryAnalysis = editor.isReadMetadataForQueryAnalysisEnabled();
             DBCExecutionContext executionContext = editor.getExecutionContext();
             
             monitor.beginTask("Background query analysis", 1 + elements.size());
@@ -231,7 +230,7 @@ public class SQLBackgroundParsingJob {
             int i = 1;
             for (SQLScriptElement element : elements) {
                 try {
-                    SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(analysisDepth, executionContext);
+                    SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, isReadMetadataForQueryAnalysis);
                     SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(element.getOriginalText());
                 
                     if (queryModel != null) {

@@ -221,9 +221,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     static boolean isWriteEmbeddedBinding() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
     }
-    
-    public SQLSemanticAnalysisDepth getSemanticAnalysisDepth() {
-        return SQLSemanticAnalysisDepth.getPreference(this.getActivePreferenceStore(), SQLModelPreferences.SEMANTIC_ANALYSIS_DEPTH);
+
+    public boolean isAdvancedHighlightingEnabled() {
+        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
+    }
+
+    public boolean isReadMetadataForQueryAnalysisEnabled() {
+        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
     }
 
     private void handleInputChange(IEditorInput input) {
@@ -750,10 +754,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public void reloadSyntaxRules() {
-       if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) &&
-            this.getSemanticAnalysisDepth().value > SQLSemanticAnalysisDepth.None.value
-       ) {
-            if (backgroundParsingJob == null) { 
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) && isAdvancedHighlightingEnabled()) {
+            if (backgroundParsingJob == null) {
                 backgroundParsingJob = new SQLBackgroundParsingJob(this);
             }
         } else {
@@ -778,7 +780,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 SQLParserPartitions.SQL_CONTENT_TYPES);
             partitioner.connect(document);
             try {
-                ((IDocumentExtension3)document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
+                ((IDocumentExtension3) document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
             } catch (Throwable e) {
                 log.warn("Error setting SQL partitioner", e); //$NON-NLS-1$
             }
@@ -818,7 +820,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (verticalRuler != null) {
             verticalRuler.update();
         }
-        
+
         if (backgroundParsingJob != null) {
             backgroundParsingJob.setup();
         }
@@ -1177,7 +1179,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
             case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
             case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
-            case SQLPreferenceConstants.SEMANTIC_ANALYSIS_DEPTH:
+            case SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE:
+            case SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS:
             case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
             case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:
             case ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET:
