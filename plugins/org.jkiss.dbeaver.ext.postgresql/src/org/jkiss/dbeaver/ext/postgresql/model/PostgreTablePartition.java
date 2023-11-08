@@ -58,6 +58,12 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         return partitionOf;
     }
 
+    @Override
+    public boolean needFullPath() {
+        // Postgres tables can be queried directly without a parent table.
+        return false;
+    }
+
     @Property(viewable = true, editable = true, updatable = true, order = 60)
     @Nullable
     public String getPartitionExpression() {

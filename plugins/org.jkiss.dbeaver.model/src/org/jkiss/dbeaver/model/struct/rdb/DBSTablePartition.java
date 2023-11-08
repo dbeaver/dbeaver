@@ -26,4 +26,12 @@ public interface DBSTablePartition extends DBSObject {
 
     @NotNull
     DBSTable getParentTable();
+
+    /**
+     * Return true for partitions directly connected with paren tables
+     */
+    default boolean needFullPath() {
+        return true;
+    }
+
 }

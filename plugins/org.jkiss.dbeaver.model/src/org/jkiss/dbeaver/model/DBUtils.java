@@ -525,7 +525,7 @@ public final class DBUtils {
             obj = getPublicObjectContainer(obj);
             depth++;
         }
-        if (object instanceof DBSTablePartition) {
+        if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
             // For the parent table
             depth++;
         }
@@ -533,8 +533,8 @@ public final class DBUtils {
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
             obj = getPublicObjectContainer(obj);
             path[depth-- - 1] = obj;
-            if (obj instanceof DBSTablePartition) {
-                path[depth-- - 1] = ((DBSTablePartition) obj).getParentTable();
+            if ((obj instanceof DBSTablePartition part) && part.needFullPath()) {
+                path[depth-- - 1] = part.getParentTable();
             }
         }
         return path;
