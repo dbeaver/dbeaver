@@ -229,9 +229,9 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
             if (activePageIndex != -1) {
                 CTabItem tabItem = tabsList.get(activePageIndex);
                 if (tabItem != null && !tabItem.isDisposed()) {
-                    Control control = tabItem.getControl();
-                    if (control != null && !control.isDisposed()) {
-                        control.forceFocus();
+                    if (tabItem.getControl() != null && !tabItem.getControl().isDisposed()) {
+                        tabItem.getControl().setFocus();
+                        tabItem.getParent().forceFocus();
                     }
                 }
             }
