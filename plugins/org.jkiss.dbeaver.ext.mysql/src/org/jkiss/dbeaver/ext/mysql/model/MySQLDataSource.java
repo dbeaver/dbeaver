@@ -961,6 +961,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return false;
     }
 
+    /**
+     * Return true if WHERE condition can be added for SHOW DATABASES statement
+     */
     public boolean supportsConditionForShowDatabasesStatement() {
         return true;
     }
