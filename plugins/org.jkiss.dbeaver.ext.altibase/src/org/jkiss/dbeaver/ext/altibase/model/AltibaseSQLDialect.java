@@ -618,4 +618,9 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         
         System.out.println();
     }
+
+    @Override
+    public boolean supportsNoActionIndex() {
+        return false;
+    }
 }
