@@ -139,18 +139,16 @@ public class SQLBackgroundParsingJob {
                 return;
             }
 
-            if (this.task == null) { // test wether we really need to create new task instance each time even when rescheduling
-                this.task = new TimerTask() {
-                    @Override
-                    public void run() {
-                        try {
-                            SQLBackgroundParsingJob.this.doWork();
-                        } catch (BadLocationException e) {
-                            log.debug(e);
-                        }
+            this.task = new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        SQLBackgroundParsingJob.this.doWork();
+                    } catch (BadLocationException e) {
+                        log.debug(e);
                     }
-                };
-            }
+                }
+            };
             if (event != null) {
                 // TODO drop only on lines-set change and apply in line offset on local insert or remove
                 // this.getContext().dropLineOfOffset(event.getOffset());
