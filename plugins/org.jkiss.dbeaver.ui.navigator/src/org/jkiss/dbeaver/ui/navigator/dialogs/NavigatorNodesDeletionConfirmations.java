@@ -70,8 +70,8 @@ public final class NavigatorNodesDeletionConfirmations {
             );
         }
         DBNNode node = (DBNNode) selectedObjects.iterator().next();
-        String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeType(), node.getNodeName());
-        String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName());
+        String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeTypeLabel(), node.getNodeName());
+        String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeTypeLabel(), node.getNodeName());
         return confirm(shell, title, message, selectedObjects, deleter);
     }
 
@@ -165,7 +165,7 @@ public final class NavigatorNodesDeletionConfirmations {
                 item.setText(2, resLocation == null ? "" : resLocation.toString());
             } else {
                 item.setText(0, node.getNodeFullName());
-                item.setText(1, node.getNodeType());
+                item.setText(1, node.getNodeTypeLabel());
                 item.setText(2, CommonUtils.toString(node.getNodeDescription()));
             }
         }
