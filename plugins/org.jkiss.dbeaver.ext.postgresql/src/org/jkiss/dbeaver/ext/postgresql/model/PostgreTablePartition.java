@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
@@ -48,6 +50,12 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         super(container, dbResult);
         this.setPartition(true);
         this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
+    }
+
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return partitionOf;
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 60)

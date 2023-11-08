@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPartitionContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -49,7 +50,7 @@ import java.util.List;
 /**
  * Oracle physical table
  */
-public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>
+public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>, DBSPartitionContainer
 {
     private static final Log log = Log.getLog(OracleTablePhysical.class);
 

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
@@ -148,6 +149,12 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         super(schema, name);
         this.parent = parent;
         this.partitionParent = partitionParent;
+    }
+
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return parent;
     }
 
     @Property(viewable = true, order = 10)

@@ -525,10 +525,17 @@ public final class DBUtils {
             obj = getPublicObjectContainer(obj);
             depth++;
         }
+        if (object instanceof DBSTablePartition) {
+            // For the parent table
+            depth++;
+        }
         DBSObject[] path = new DBSObject[depth];
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
             obj = getPublicObjectContainer(obj);
             path[depth-- - 1] = obj;
+            if (obj instanceof DBSTablePartition) {
+                path[depth-- - 1] = ((DBSTablePartition) obj).getParentTable();
+            }
         }
         return path;
     }
@@ -633,6 +640,15 @@ public final class DBUtils {
                     DBSTableIndex index = DBUtils.findObject(indices, objectName);
                     if (index != null) {
                         return index;
+                    }
+                }
+                if (finalEntity instanceof DBSPartitionContainer) {
+                    Collection<? extends DBSTablePartition> partitions = ((DBSPartitionContainer) finalEntity).getPartitions(monitor);
+                    if (!CommonUtils.isEmpty(partitions)) {
+                        DBSTablePartition partition = DBUtils.findObject(partitions, objectName);
+                        if (partition != null) {
+                            return partition;
+                        }
                     }
                 }
                 log.debug("Object '" + objectName + "' not found in entity " + DBUtils.getObjectFullName(finalEntity, DBPEvaluationContext.UI));
