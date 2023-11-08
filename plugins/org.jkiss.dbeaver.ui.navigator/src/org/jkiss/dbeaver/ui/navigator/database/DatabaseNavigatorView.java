@@ -83,7 +83,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public DBNNode getRootNode()
     {
-        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 

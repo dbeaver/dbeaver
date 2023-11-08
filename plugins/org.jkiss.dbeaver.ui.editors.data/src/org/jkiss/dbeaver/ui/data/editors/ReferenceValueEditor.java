@@ -169,7 +169,7 @@ public class ReferenceValueEditor {
 
         private void reloadData() {
             SelectorLoaderService loadingService = new SelectorLoaderService(accessor -> {
-                if (accessor.isKeyComparable()) {
+                if (accessor.isKeyComparable() && keyValue != null) {
                     return loadComparableKeyValues(accessor);
                 } else {
                     return loadNoncomparableKeyValues(accessor);
@@ -184,12 +184,16 @@ public class ReferenceValueEditor {
         
         private List<DBDLabelValuePair> loadNoncomparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
             List<DBDLabelValuePair> data;
-            if (searchText == null) {
+            if (searchText == null && keyValue != null) { 
                 data = accessor.getValueEntry(keyValue);
                 estimateOnePage(true);
             } else {
                 long offset = currPageNumber * pageSize;
-                data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
+                if (searchText == null) {
+                    data = accessor.getValues(offset, pageSize);
+                } else {
+                    data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
+                }
                 if (currPageNumber == 0) {
                     estimateOnePage(false);
                 }
@@ -352,18 +356,12 @@ public class ReferenceValueEditor {
             }
         }
         if (refConstraint instanceof DBSEntityAssociation) {
-            valueFilterText = new Text(parent, SWT.BORDER);
+            valueFilterText = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
             valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            valueFilterText.setMessage(ResultSetMessages.reference_value_editor_search_hint_value);
             valueFilterText.addModifyListener(e -> {
                 String filterPattern = valueFilterText.getText();
                 controller.filter(valueController.getValue(), filterPattern);
-            });
-            valueFilterText.addPaintListener(e -> {
-                if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
-                    e.gc.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                    e.gc.drawText(ResultSetMessages.reference_value_editor_search_hint_value, 2, 0, true);
-                    e.gc.setFont(null);
-                }
             });
         }
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);

@@ -42,7 +42,8 @@ import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.MikamiTabuchiConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +59,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-
+    
+    private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
         @Override
@@ -125,37 +127,18 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     @Override
-    protected IFigure createFigure()
-    {
+    protected IFigure createFigure() {
         EntityDiagramFigure figure = new EntityDiagramFigure(this);
         delegatingLayoutManager = new DelegatingLayoutManager(this);
         figure.setLayoutManager(delegatingLayoutManager);
-
-/*
-        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
-        ViewportAwareConnectionLayerClippingStrategy clippingStrategy = new ViewportAwareConnectionLayerClippingStrategy(cLayer);
-        figure.setClippingStrategy(clippingStrategy);
-*/
         Control control = getViewer().getControl();
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-
-        FanRouter router = new FanRouter();
-        router.setSeparation(15);
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        //router.setNextRouter(new BendpointConnectionRouter());
-        if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-            router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
-        } else {
-            router.setNextRouter(new ShortestPathConnectionRouter(figure));
-        }
-
-//        router.setNextRouter(new ManhattanConnectionRouter());
-        //router.setNextRouter(new BendpointConnectionRouter());
+        router = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().createRouter();
+        router.setContainer(figure);
         cLayer.setConnectionRouter(router);
-
         return figure;
     }
 
@@ -421,6 +404,15 @@ public class DiagramPart extends PropertyAwarePart {
     public String toString()
     {
         return ERDUIMessages.entity_diagram_ + " " + getDiagram().getName();
+    }
+
+    /**
+     * Gets the diagram router
+     *
+     * @return - router
+     */
+    public ERDConnectionRouter getRouter() {
+        return router;
     }
 
 

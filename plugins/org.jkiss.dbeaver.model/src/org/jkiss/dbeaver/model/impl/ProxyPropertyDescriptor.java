@@ -54,6 +54,11 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
     }
 
     @Override
+    public String getHint() {
+        return this.original.getHint();
+    }
+
+    @Override
     public Class<?> getDataType() {
         return original.getDataType();
     }

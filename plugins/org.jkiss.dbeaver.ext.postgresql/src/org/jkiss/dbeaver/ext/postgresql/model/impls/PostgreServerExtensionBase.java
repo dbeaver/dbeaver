@@ -347,7 +347,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException {
-        List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl());
+        List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl(), false);
         if (!includeNestedObjects) {
             return tablePermissions;
         }
@@ -505,6 +505,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsDefaultPrivileges() {
+        return dataSource.isServerVersionAtLeast(9, 0);
+    }
+
+    @Override
     public boolean supportSerialTypes() {
         return true;
     }
@@ -582,5 +587,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsAlterTableForViewRename() {
         return false;
+    }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return true;
     }
 }

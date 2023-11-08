@@ -44,7 +44,6 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -71,9 +70,11 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
@@ -84,7 +85,6 @@ import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetRowColorAction;
-import org.jkiss.dbeaver.ui.controls.resultset.colors.SetRowColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
@@ -118,7 +118,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 /**
  * ResultSetViewer
  *
@@ -1743,7 +1742,10 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
+            if (!BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
+                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
+            }
+
             addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
@@ -2863,7 +2865,9 @@ public class ResultSetViewer extends Viewer
 
         // Fill general menu
         if (dataContainer != null) {
-            manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+            if (!BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+            }
             MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
             openWithMenu.setRemoveAllWhenShown(true);
             openWithMenu.addMenuListener(manager1 -> ResultSetHandlerOpenWith.fillOpenWithMenu(ResultSetViewer.this, manager1));
@@ -2944,7 +2948,13 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new Separator());
         if (model.getDocumentAttribute() == null) {
             if (valueController != null) {
-                viewMenu.add(new SetRowColorAction(this, attr, valueController.getValue()));
+                String bindingText = attr.getName()
+                    + " = "
+                    + UITextUtils.getShortText(this.getControl(), CommonUtils.toString(valueController.getValue()), 100);
+                String msgSelectRowColor = NLS.bind(ResultSetMessages.actions_name_color_by, bindingText);
+                // select row color
+                viewMenu.add(ActionUtils.makeCommandContribution(this.getSite(),
+                    ResultSetHandlerMain.CMD_SELECT_ROW_COLOR, msgSelectRowColor, null));
                 for (DBVColorOverride mapping : getColorOverrides(attr, valueController.getValue())) {
                     viewMenu.add(new ResetRowColorAction(this, mapping, valueController.getValue()));
                 }
@@ -3099,7 +3109,8 @@ public class ResultSetViewer extends Viewer
 
         navigateMenu.add(new Separator());
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FOCUS_FILTER));
-        navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GO_TO_ROW));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GO_TO_COLUMN));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
@@ -4590,14 +4601,19 @@ public class ResultSetViewer extends Viewer
 
                     if (docAttribute != null) {
                         try {
-                            Object cellValue = model.getCellValue(new ResultSetCellLocation(docAttribute, sourceRow));
                             final Object sourceValue = docAttribute.getValueHandler().getValueFromObject(
-                                session, docAttribute, cellValue, true, false);
+                                session,
+                                docAttribute,
+                                model.getCellValue(new ResultSetCellLocation(docAttribute, sourceRow)),
+                                true,
+                                false
+                            );
                             final ResultSetValueController controller = new ResultSetValueController(
                                 this,
                                 new ResultSetCellLocation(docAttribute, targetRow, null),
                                 IValueController.EditType.NONE,
-                                null);
+                                null
+                            );
                             controller.updateValue(sourceValue, false);
                         } catch (DBCException e) {
                             log.error("Can't extract document value", e);
@@ -4607,13 +4623,19 @@ public class ResultSetViewer extends Viewer
                             if (!metaAttr.isPseudoAttribute() && !metaAttr.isAutoGenerated()) {
                                 final DBSAttributeBase attribute = metaAttr.getAttribute();
                                 try {
-                                    Object cellValue = model.getCellValue(new ResultSetCellLocation(metaAttr, sourceRow));
-                                    final Object sourceValue = metaAttr.getValueHandler().getValueFromObject(session, attribute, cellValue, true, false);
+                                    final Object sourceValue = metaAttr.getValueHandler().getValueFromObject(
+                                        session,
+                                        attribute,
+                                        model.getCellValue(new ResultSetCellLocation(metaAttr, sourceRow)),
+                                        true,
+                                        false
+                                    );
                                     final ResultSetValueController controller = new ResultSetValueController(
                                         this,
-                                        new ResultSetCellLocation(metaAttr, sourceRow),
+                                        new ResultSetCellLocation(metaAttr, targetRow),
                                         IValueController.EditType.NONE,
-                                        null);
+                                        null
+                                    );
                                     controller.updateValue(sourceValue, false);
                                 } catch (DBCException e) {
                                     log.error("Can't extract cell value", e);

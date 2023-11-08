@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Git integration UI
 Bundle-SymbolicName: org.jkiss.dbeaver.team.git.ui;singleton:=true
-Bundle-Version: 1.0.101.qualifier
-Bundle-Release-Date: 20230904
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 1.0.106.qualifier
+Bundle-Release-Date: 20231106
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,

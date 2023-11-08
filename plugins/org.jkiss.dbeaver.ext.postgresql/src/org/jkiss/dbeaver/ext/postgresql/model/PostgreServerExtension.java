@@ -165,6 +165,11 @@ public interface PostgreServerExtension {
      */
     boolean supportsCommentsOnRole();
 
+    /**
+     * Determines whether the database supports syntax like {@code ALTER DEFAULT PRIVILEGES FOR roleName...} or not
+     */
+    boolean supportsDefaultPrivileges();
+
     // Data types
 
     /** True if supports serials - serial types are auto-incrementing integer data types */
@@ -217,4 +222,9 @@ public interface PostgreServerExtension {
      * or use standard {@code ALTER VIEW schema.view RENAME TO schema.view_new}.
      */
     boolean supportsAlterTableForViewRename();
+
+    /**
+     * True if database can use pg_dump and pg_restore clients without errors.
+     */
+    boolean supportsNativeClient();
 }

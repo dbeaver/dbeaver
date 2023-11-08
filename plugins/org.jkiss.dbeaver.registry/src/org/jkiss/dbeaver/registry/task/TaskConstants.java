@@ -22,6 +22,8 @@ public class TaskConstants {
     public static final String CONFIG_FILE = "tasks.json";
     public static final String TASK_STATS_FOLDER = "task-stats";
     static final String TASKS_FOLDERS_TAG = "##tasksFolders";
+    
+    public static final String TOOL_TASK_PROP = "isToolTask";
 
     static final String TAG_TASK = "task";
     static final String TAG_LABEL = "label";

@@ -117,6 +117,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (driver.isEmbedded()) {
                 xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
             }
+            if (driver.isPropagateDriverProperties()) {
+                xml.addAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES, driver.isPropagateDriverProperties());
+            }
             if (driver.isAnonymousAccess()) {
                 xml.addAttribute(RegistryConstants.ATTR_ANONYMOUS, driver.isAnonymousAccess());
             }
@@ -293,6 +296,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.setDriverDefaultServer(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_SERVER), curDriver.getDefaultServer()));
                         curDriver.setDriverDefaultUser(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_USER), curDriver.getDefaultUser()));
                         curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
+                        curDriver.setPropagateDriverProperties(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES), curDriver.isPropagateDriverProperties()));
                         curDriver.setAnonymousAccess(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ANONYMOUS), curDriver.isAnonymousAccess()));
                         curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));
                         curDriver.setInstantiable(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_INSTANTIABLE), curDriver.isInstantiable()));

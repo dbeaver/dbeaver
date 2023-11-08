@@ -154,7 +154,7 @@
                     <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="%tree.user_privileges.node.name" icon="#info" description="User privileges">
                         <items label="%tree.privilege.node.name" path="privileges" property="privileges" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin" label="%tree.plugin.node.name" icon="#info" description="Database plugins">
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin" label="%tree.plugin.node.name" icon="#info" description="Database plugins" visibleIf="connected &amp;&amp; object.dataSource.supportsPlugins()">
                         <items label="%tree.plugin.node.name" path="plugins" property="plugins" icon="#info" navigable="false" virtual="true"/>
                     </folder>
                 </folder>
@@ -337,7 +337,9 @@
             label="MySQL data types provider">
 
             <datasource id="mysql"/>
-
+            <type name="FLOAT"/>
+            <type name="DOUBLE"/>
+            <type name="DOUBLE PRECISION"/>
             <type name="ENUM"/>
             <type name="SET"/>
             <type standard="DATE"/>
@@ -374,8 +376,8 @@
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <propertyGroup label="SSL Settings">
-                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,password" length="MULTILINE"/>
-                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
                 <property id="ssl.cipher.suites" label="Cipher suites (optional)" type="string" features="secured,password"/>
             </propertyGroup>
@@ -466,21 +468,21 @@
 
         <task id="mysqlDatabaseBackup" name="%task.mysqlDatabaseBackup.name" description="%task.mysqlDatabaseBackup.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql"
-              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler" supportsDistributedMode="false">
+              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
         </task>
         <task id="mysqlDatabaseRestore" name="%task.mysqlDatabaseRestore.name" description="%task.mysqlDatabaseRestore.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql"
-              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler"
-              confirmationMessage="%mysqlDatabaseRestore.confirmationMessage" supportsDistributedMode="false">
+              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler" requiresMutability="true"
+              confirmationMessage="%mysqlDatabaseRestore.confirmationMessage">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
         <task id="mysqlScriptExecute" name="%task.mysqlScriptExecute.name" description="%task.mysqlScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <datasource id="mysql"/>
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
 
         <!-- SQL tools -->

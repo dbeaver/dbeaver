@@ -134,6 +134,7 @@ KEY: K E Y ;
 LEFT: L E F T ;
 LEVEL: L E V E L ;
 LIKE: L I K E ;
+LIMIT: L I M I T ;
 LOCAL: L O C A L ;
 MATCH: M A T C H ;
 MINUTE: M I N U T E ;
@@ -142,8 +143,10 @@ NAMES: N A M E S ;
 NATURAL: N A T U R A L ;
 NO: N O ;
 NOT: N O T ;
+NOTNULL: N O T N U L L;
 NULL: N U L L ;
 NULLIF: N U L L I F ;
+OFFSET: O F F S E T;
 ON: O N ;
 ONLY: O N L Y ;
 OPTION: O P T I O N ;
@@ -158,6 +161,7 @@ PRIMARY: P R I M A R Y ;
 READ: R E A D ;
 RECURSIVE: R E C U R S I V E;
 REFERENCES: R E F E R E N C E S ;
+REGEXP: R E G E X P;
 REPEATABLE: R E P E A T A B L E ;
 RESTRICT: R E S T R I C T ;
 RIGHT: R I G H T ;
@@ -204,7 +208,7 @@ ZONE: Z O N E ;
 
 // symbols
 EqualsOperator: '=';
-NotEqualsOperator: '<>';
+NotEqualsOperator: '<>' | '!=';
 RightParen: ')';
 LeftParen: '(';
 SingleQuote: '\'';
@@ -231,6 +235,7 @@ PlusSign: '+';
 QuestionMark: '?';
 Underscore: '_';
 VerticalBar: '|';
+Tilda: '~';
 
 
 // characters
@@ -249,8 +254,7 @@ fragment Bit: ('0'|'1');
 DecimalLiteral: (UnsignedInteger Period UnsignedInteger)|(UnsignedInteger Period)|(Period UnsignedInteger);
 UnsignedInteger: (Digit)+;
 ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
-fragment SignedInteger: (Sign)? UnsignedInteger;
-Sign: (PlusSign|MinusSign);
+fragment SignedInteger: (PlusSign|MinusSign)? UnsignedInteger;
 
 LineComment
    : '--' ~ [\r\n]* -> channel (HIDDEN)
@@ -258,7 +262,7 @@ LineComment
 
 // special characters and character sequences
 fragment NonquoteCharacter: ~'\'';
-QuoteSymbol: SingleQuote SingleQuote;
+fragment QuoteSymbol: SingleQuote SingleQuote;
 Introducer: Underscore;
 fragment NewLine: ([\r][\n])|[\n]|[\r];
 Separator: (NewLine|Space)+ -> channel(HIDDEN);
@@ -280,8 +284,8 @@ fragment IdentifierPart: (IdentifierStart|Digit);
 
 
 // string literals
+fragment CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
 NationalCharacterStringLiteral: 'N' SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
-CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
 BitStringLiteral: 'B' SingleQuote Bit* SingleQuote ((Separator)+ SingleQuote Bit* SingleQuote)*;
 HexStringLiteral: 'X' SingleQuote Hexit* SingleQuote ((Separator)+ SingleQuote Hexit* SingleQuote)*;
 StringLiteralContent: SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
