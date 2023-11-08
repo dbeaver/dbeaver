@@ -28,7 +28,7 @@
                 class="org.jkiss.dbeaver.ext.altibase.AltibaseDataSourceProvider"
                 description="Altibase JDBC connector"
                 id="altibase"
-                
+                parent="generic"
                 label="Altibase"
                 icon="icons/altibase_icon.png"
                 dialect="altibase">
@@ -47,8 +47,8 @@
                      sampleURL="jdbc:Altibase://{host}:{port}/{database}">
                      
                     <replace provider="generic" driver="altibase"/>
-                    <file type="jar" path="https://s3.amazonaws.com/ALTI-US/TEMP/Altibase42.jar"  bundle="!drivers.altibase"/>
-                    <file type="jar" path="drivers/altibase" bundle="drivers.altibase"/>-->
+                    <file type="jar" path="maven:/com.altibase:altibase-jdbc:RELEASE[7.1.0.9.0]" bundle="!drivers.altibase"/>
+                    <file type="jar" path="drivers/altibase" bundle="drivers.altibase"/>
                     
                     <!-- PARAM list: public class GenericConstants -->
                     <parameter name="omit-catalog" value="true"/>

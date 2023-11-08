@@ -65,7 +65,7 @@ public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             if (typeName == null) {
                                 continue;
                             }
-                            int dataTypeId = JDBCUtils.safeGetInt(dbResult, "DATA_TYPE");
+                            //int dataTypeId = JDBCUtils.safeGetInt(dbResult, "DATA_TYPE");
                             boolean searchabel = (JDBCUtils.safeGetInt(dbResult, "SEARCHABLE") > 0);
                             int precision = JDBCUtils.safeGetInt(dbResult, "COLUMN_SIZE");
                             //int nullable = JDBCUtils.safeGetInt(dbResult, "NULLABLE");
