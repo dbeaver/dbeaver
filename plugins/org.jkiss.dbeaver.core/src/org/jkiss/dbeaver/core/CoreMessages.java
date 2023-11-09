@@ -415,6 +415,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_label_shell_command;
 	public static String dialog_connection_wizard_connection_init_hint;
 	public static String dialog_connection_wizard_connection_init_hint_tip;
+	public static String dialog_connection_wizard_connection_init_docs_hint;
 	public static String dialog_connection_wizard_description;
 	public static String dialog_connection_wizard_final_label_bootstrap_tooltip;
 	public static String dialog_connection_wizard_socksproxy_host;

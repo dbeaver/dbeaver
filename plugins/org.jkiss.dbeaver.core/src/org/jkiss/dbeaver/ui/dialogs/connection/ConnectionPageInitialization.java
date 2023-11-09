@@ -41,10 +41,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -59,6 +57,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     static final String PAGE_NAME = ConnectionPageInitialization.class.getSimpleName();
 
     private static final Log log = Log.getLog(ConnectionPageInitialization.class);
+
+    private static final String PAGE_DOCS_LINK = "https://dbeaver.com/docs/dbeaver/Configure-Connection-Initialization-Settings/";
 
     private DataSourceDescriptor dataSourceDescriptor;
 
@@ -300,7 +300,17 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         gd.grabExcessHorizontalSpace = true;
         infoLabel.setLayoutData(gd);
         infoLabel.setToolTipText(CoreMessages.dialog_connection_wizard_connection_init_hint_tip);
-
+        Link urlHelpLabel = UIUtils.createLink(
+            group,
+            "<a href=\"" + HelpUtils.getHelpExternalReference(PAGE_DOCS_LINK) + "\">"
+                    + CoreMessages.dialog_connection_wizard_connection_init_docs_hint + "</a>",
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(PAGE_DOCS_LINK));
+                }
+            }
+        );
 
         setControl(group);
 
