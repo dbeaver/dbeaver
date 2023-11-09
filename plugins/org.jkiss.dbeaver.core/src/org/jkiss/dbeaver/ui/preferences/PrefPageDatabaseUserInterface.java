@@ -257,17 +257,18 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
-        DatabaseEditorPreferences.screenReaders.forEach(c -> cmbScreenReaderSupport.add(c));
+        DatabaseEditorPreferences.getScreenReaders().forEach(cmbScreenReaderSupport::add);
         String screenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
         if (screenReader != null) {
-            int index = DatabaseEditorPreferences.screenReaders.indexOf(screenReader);
+            int index = DatabaseEditorPreferences.getScreenReaders().indexOf(screenReader);
             if (index == -1) {
                 cmbScreenReaderSupport
-                    .select(DatabaseEditorPreferences.screenReaders.indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
+                    .select(DatabaseEditorPreferences.getScreenReaders().indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
             }
             cmbScreenReaderSupport.select(index);
         } else {
-            cmbScreenReaderSupport.select(DatabaseEditorPreferences.screenReaders.indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
+            cmbScreenReaderSupport
+                .select(DatabaseEditorPreferences.getScreenReaders().indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
         }
     }
 
@@ -285,7 +286,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (clientTimezone != null) {
             UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
-        cmbScreenReaderSupport.select(DatabaseEditorPreferences.screenReaders.indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
+        cmbScreenReaderSupport
+            .select(DatabaseEditorPreferences.getScreenReaders().indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
     }
 
     private boolean isWindowsDesktopClient() {

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public class DatabaseEditorPreferences {
     public static final String SCREEN_READER_JAWS = "JAWS"; //$NON-NLS-1$
     public static final String SCREEN_READER_NARRATOR = "Narrator"; //$NON-NLS-1$
     public static final String SCREEN_READER_OTHER = "Other"; //$NON-NLS-1$
-    public static final List<String> screenReaders = new ArrayList<>();
+    private static final List<String> screenReaders = new ArrayList<>();
 
     static {
         screenReaders.add(SCREEN_READER_DEFAULT);
@@ -42,5 +43,14 @@ public class DatabaseEditorPreferences {
         screenReaders.add(SCREEN_READER_JAWS);
         screenReaders.add(SCREEN_READER_NARRATOR);
         screenReaders.add(SCREEN_READER_OTHER);
+    }
+
+    /**
+     * List of screen readers
+     *
+     * @return - unmodifiable collection
+     */
+    public static List<String> getScreenReaders() {
+        return Collections.unmodifiableList(screenReaders);
     }
 }

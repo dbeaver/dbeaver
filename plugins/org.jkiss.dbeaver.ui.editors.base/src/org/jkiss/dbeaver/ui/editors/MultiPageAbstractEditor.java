@@ -226,32 +226,38 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     public void setFocus() {
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         String screenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
-        if (DatabaseEditorPreferences.SCREEN_READER_JAWS.equals(screenReader)) {
-            if (activePageIndex != -1) {
-                CTabItem tabItem = tabsList.get(activePageIndex);
-                if (tabItem != null && !tabItem.isDisposed()) {
-                    if (tabItem.getControl() != null && !tabItem.getControl().isDisposed()) {
-                        tabItem.getControl().setFocus();
-                        tabItem.getParent().forceFocus();
-                    }
-                }
-            }
-        } else if (DatabaseEditorPreferences.SCREEN_READER_NARRATOR.equals(screenReader) ||
-            DatabaseEditorPreferences.SCREEN_READER_NVDA.equals(screenReader) ||
-            DatabaseEditorPreferences.SCREEN_READER_OTHER.equals(screenReader)) {
-            if (activePageIndex != -1) {
-                CTabItem tabItem = tabsList.get(activePageIndex);
-                if (tabItem != null && !tabItem.isDisposed()) {
+        switch (screenReader) {
+            case DatabaseEditorPreferences.SCREEN_READER_JAWS:
+                if (activePageIndex != -1) {
+                    CTabItem tabItem = tabsList.get(activePageIndex);
                     if (tabItem != null && !tabItem.isDisposed()) {
-                        Control control = tabItem.getControl();
-                        if (control != null && !control.isDisposed()) {
-                            control.forceFocus();
+                        if (tabItem.getControl() != null && !tabItem.getControl().isDisposed()) {
+                            tabItem.getControl().setFocus();
+                            tabItem.getParent().forceFocus();
                         }
                     }
                 }
-            }
-        } else {
-            super.setFocus();
+                break;
+            case DatabaseEditorPreferences.SCREEN_READER_NARRATOR:
+            case DatabaseEditorPreferences.SCREEN_READER_NVDA:
+            case DatabaseEditorPreferences.SCREEN_READER_OTHER:
+                if (activePageIndex != -1) {
+                    CTabItem tabItem = tabsList.get(activePageIndex);
+                    if (tabItem != null && !tabItem.isDisposed()) {
+                        if (tabItem != null && !tabItem.isDisposed()) {
+                            Control control = tabItem.getControl();
+                            if (control != null && !control.isDisposed()) {
+                                control.forceFocus();
+                            }
+                        }
+                    }
+                }
+                break;
+            case DatabaseEditorPreferences.SCREEN_READER_DEFAULT:
+                super.setFocus();
+                break;
+            default:
+                super.setFocus();
         }
     }
 }
