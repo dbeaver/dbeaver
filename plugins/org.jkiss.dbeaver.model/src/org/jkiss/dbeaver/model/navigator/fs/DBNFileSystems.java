@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.eclipse.core.runtime.IPath;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -271,7 +273,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
             if (CommonUtils.equalObjects(fs.getFileSystem(), dbfRoot.getFileSystem())) {
                 DBNFileSystemRoot rootNode = fs.getRoot(dbfRoot);
                 if (rootNode != null) {
-                    String[] pathSegments = resource.getFullPath().segments();
+                    String[] pathSegments = getPathSegments(resource);
                     DBNPathBase parentNode = rootNode;
                     // NIO path format /[config-id]/root-id/folder1/file1
                     for (int i = 1; i < pathSegments.length - 1; i++) {
@@ -300,6 +302,22 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
                 break;
             }
         }
+    }
+
+    private String[] getPathSegments(EFSNIOResource resource) {
+        IPath fullPath = resource.getFullPath();
+        String[] pathSegments = fullPath.segments();
+        String device = fullPath.getDevice();
+        if (!CommonUtils.isEmpty(device)) {
+            if (device.endsWith(":")) {
+                device = device.substring(0, device.length() - 1);
+            }
+            List<String> totalPath = new ArrayList<>();
+            totalPath.add(device);
+            Collections.addAll(totalPath, pathSegments);
+            pathSegments = totalPath.toArray(new String[0]);
+        }
+        return pathSegments;
     }
 
     @Override
