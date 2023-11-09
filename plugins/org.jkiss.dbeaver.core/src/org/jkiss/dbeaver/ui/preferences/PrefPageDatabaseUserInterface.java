@@ -52,8 +52,6 @@ import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
-import org.jkiss.dbeaver.ui.editors.ScreenReader;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -80,7 +78,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
-    private Combo cmbScreenReaderSupport;
+    
 
     public PrefPageDatabaseUserInterface()
     {
@@ -218,21 +216,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 });
             }
         }
-        {
-            final Group group = UIUtils.createControlGroup(
-                composite,
-                CoreMessages.pref_page_accessibility_screen_reader_group_lbl,
-                1,
-                GridData.FILL_HORIZONTAL,
-                0
-            );
-            cmbScreenReaderSupport = UIUtils.createLabelCombo(
-                group,
-                CoreMessages.pref_page_accessibility_screen_reader_msg,
-                CoreMessages.pref_page_accessibility_screen_reader_description,
-                SWT.DROP_DOWN | SWT.READ_ONLY 
-            );
-        }
         setSettings();
         return composite;
     }
@@ -258,12 +241,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
-        for (ScreenReader reader : ScreenReader.values()) {
-            cmbScreenReaderSupport.add(reader.getScreenReaderName());
-        }
-        String storedScreenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
-        ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
-        cmbScreenReaderSupport.select(screenReader.ordinal());
     }
 
     @Override
@@ -280,7 +257,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (clientTimezone != null) {
             UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
-        cmbScreenReaderSupport.select(ScreenReader.DEFAULT.ordinal());
     }
 
     private boolean isWindowsDesktopClient() {
@@ -334,8 +310,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
-        ScreenReader screenReader = ScreenReader.getScreenReader(cmbScreenReaderSupport.getText());
-        store.setValue(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY, screenReader.name());
         return true;
     }
 
