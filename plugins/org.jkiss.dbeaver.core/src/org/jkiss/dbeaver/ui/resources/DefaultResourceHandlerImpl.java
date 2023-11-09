@@ -31,6 +31,7 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -148,7 +149,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 } else {
                     IDE.openEditor(
                         UIUtils.getActiveWorkbenchWindow().getActivePage(),
-                        target[0].toUri(),
+                        DBFUtils.getUriFromPath(target[0]),
                         editorDesc.getId(),
                         true
                     );
