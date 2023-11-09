@@ -311,6 +311,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 }
             }
         );
+        urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
 
         setControl(group);
 
