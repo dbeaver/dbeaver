@@ -302,8 +302,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         infoLabel.setToolTipText(CoreMessages.dialog_connection_wizard_connection_init_hint_tip);
         Link urlHelpLabel = UIUtils.createLink(
             group,
-            "<a href=\"" + HelpUtils.getHelpExternalReference(PAGE_DOCS_LINK) + "\">"
-                    + CoreMessages.dialog_connection_wizard_connection_init_docs_hint + "</a>",
+            CoreMessages.dialog_connection_wizard_connection_init_docs_hint,
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
