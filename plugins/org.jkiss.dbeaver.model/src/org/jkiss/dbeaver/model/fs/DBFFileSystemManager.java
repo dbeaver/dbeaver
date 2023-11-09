@@ -37,7 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DBFFileSystemManager implements DBFEventListener {
-    public static final String QUERY_PARAM_FS_ID = "file-system-id";
+    public static final String QUERY_PARAM_FS_ID = "fs";
 
     private static final Log log = Log.getLog(DBFFileSystemManager.class);
     private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
@@ -91,11 +91,13 @@ public class DBFFileSystemManager implements DBFEventListener {
         if (CommonUtils.isEmpty(fsId)) {
             // Try to get FS id from first path item
             fsId = CommonUtils.toString(uri.getHost(), uri.getAuthority());
-            if (CommonUtils.isEmpty(fsId)) {
-                throw new DBException("File system id not present in the file uri: " + uri);
-            }
         }
-        DBFVirtualFileSystem fileSystem = getVirtualFileSystem(fsType, fsId);
+        DBFVirtualFileSystem fileSystem;
+        if (CommonUtils.isEmpty(fsId)) {
+            fileSystem = getDefaultVirtualFileSystem(fsType);
+        } else {
+            fileSystem = getVirtualFileSystem(fsType, fsId);
+        }
         if (fileSystem == null) {
             throw new DBException("Cannot find file system provider for the uri '" + uri + "'");
         }
@@ -119,6 +121,16 @@ public class DBFFileSystemManager implements DBFEventListener {
     public DBFVirtualFileSystem getVirtualFileSystem(@NotNull String type, @NotNull String id) {
         for (DBFVirtualFileSystem fs : getVirtualFileSystems()) {
             if (fs.getType().equals(type) && fs.getId().equals(id)) {
+                return fs;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public DBFVirtualFileSystem getDefaultVirtualFileSystem(@NotNull String type) {
+        for (DBFVirtualFileSystem fs : getVirtualFileSystems()) {
+            if (fs.getType().equals(type)) {
                 return fs;
             }
         }
