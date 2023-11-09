@@ -42,6 +42,7 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
 
     @Override
     public void init(IWorkbench workbench) {
+        // no implementation
     }
 
     @Override

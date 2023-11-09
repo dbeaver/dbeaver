@@ -228,7 +228,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
         String storedScreenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
         ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
         switch (screenReader) {
-            case JAWS:
+            case JAWS -> {
                 if (activePageIndex != -1) {
                     CTabItem tabItem = tabsList.get(activePageIndex);
                     if (tabItem != null && !tabItem.isDisposed()) {
@@ -238,10 +238,8 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
                         }
                     }
                 }
-                break;
-            case NARRATOR:
-            case NVDA:
-            case OTHER:
+            }
+            case NARRATOR, NVDA, OTHER -> {
                 if (activePageIndex != -1) {
                     CTabItem tabItem = tabsList.get(activePageIndex);
                     if (tabItem != null && !tabItem.isDisposed()) {
@@ -253,12 +251,10 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
                         }
                     }
                 }
-                break;
-            case DEFAULT:
+            }
+            case DEFAULT -> {
                 super.setFocus();
-                break;
-            default:
-                super.setFocus();
+            }
         }
     }
 }
