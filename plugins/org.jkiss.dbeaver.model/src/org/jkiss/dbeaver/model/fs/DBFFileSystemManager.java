@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -37,6 +39,7 @@ import java.util.Map;
 public class DBFFileSystemManager implements DBFEventListener {
     public static final String QUERY_PARAM_FS_ID = "file-system-id";
 
+    private static final Log log = Log.getLog(DBFFileSystemManager.class);
     private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
     @NotNull
     private final DBPProject project;
@@ -47,6 +50,15 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
+        if (dbfFileSystems != null) {
+            for (DBFVirtualFileSystem fs : dbfFileSystems.values()) {
+                try {
+                    fs.close();
+                } catch (IOException e) {
+                    log.debug("Error closing virtual FS", e);
+                }
+            }
+        }
         this.dbfFileSystems = new LinkedHashMap<>();
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
