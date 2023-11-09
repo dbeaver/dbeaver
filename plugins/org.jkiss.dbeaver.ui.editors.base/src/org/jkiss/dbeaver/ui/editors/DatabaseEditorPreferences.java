@@ -35,6 +35,7 @@ public class DatabaseEditorPreferences {
     public static final String SCREEN_READER_NARRATOR = "Narrator"; //$NON-NLS-1$
     public static final String SCREEN_READER_OTHER = "Other"; //$NON-NLS-1$
     public static final List<String> screenReaders = new ArrayList<>();
+
     static {
         screenReaders.add(SCREEN_READER_DEFAULT);
         screenReaders.add(SCREEN_READER_NVDA);
