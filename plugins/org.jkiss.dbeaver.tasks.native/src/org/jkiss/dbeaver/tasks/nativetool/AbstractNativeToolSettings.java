@@ -270,8 +270,19 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
 
     @NotNull
     protected String makeOutFilePath(String outputFolder, String outputFileName) {
+        // Check URI query
+        String query = null;
+        int queryStartPos = outputFolder.lastIndexOf("?");
+        if (queryStartPos != -1) {
+            query = outputFolder.substring(queryStartPos);
+            outputFolder = outputFolder.substring(0, queryStartPos - 1);
+        }
         if (!outputFolder.endsWith("/")) outputFolder += "/";
-        return outputFolder + outputFileName;
+        String outFile = outputFolder + outputFileName;
+        if (query != null) {
+            outFile += query;
+        }
+        return outFile;
     }
 
 }
