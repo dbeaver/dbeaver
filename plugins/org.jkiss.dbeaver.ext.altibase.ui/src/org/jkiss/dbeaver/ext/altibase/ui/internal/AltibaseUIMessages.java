@@ -26,19 +26,6 @@ public class AltibaseUIMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, AltibaseUIMessages.class);
     }
 
-    public static String dialog_connection_advanced_tab;
-    public static String dialog_connection_advanced_tab_tooltip;
-    public static String dialog_connection_browse_button;
-    public static String dialog_connection_browse_button_tip;
-    public static String dialog_connection_create_button;
-    public static String dialog_connection_create_button_tip;
-    public static String dialog_connection_database_schema_label;
-    public static String dialog_connection_db_file_chooser_text;
-    public static String dialog_connection_db_folder_chooser_message;
-    public static String dialog_connection_db_folder_chooser_text;
-    public static String dialog_connection_general_tab;
-    public static String dialog_connection_general_tab_tooltip;
-    public static String dialog_connection_host_label;
     public static String dialog_connection_jdbc_url_;
     public static String dialog_connection_password_label;
     public static String dialog_connection_path_label;
