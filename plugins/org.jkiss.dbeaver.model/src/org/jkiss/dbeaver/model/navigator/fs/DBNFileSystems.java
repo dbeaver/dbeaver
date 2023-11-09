@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
@@ -159,7 +162,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
             result.add(newChild);
         }
 
-        result.sort(DBUtils.nameComparatorIgnoreCase());
+        result.sort((o1, o2) -> o1.getNodeName().compareToIgnoreCase(o2.getNodeName()));
         monitor.done();
         return result.toArray(new DBNFileSystem[0]);
     }
