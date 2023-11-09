@@ -81,7 +81,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         sql.append(column.isRequired() ? " NOT NULL" : " NULL");
 
     protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (monitor, column, sql, command) -> {
-        if (command instanceof DBECommandComposite) {
+        if (column.isPersisted() && command instanceof DBECommandComposite) {
             if (((DBECommandComposite) command).getProperty("required") == null) {
                 // Do not set NULL/NOT NULL if it wasn't changed
                 return;
