@@ -225,9 +225,10 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     @Override
     public void setFocus() {
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        String screenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
+        String storedScreenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
+        ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
         switch (screenReader) {
-            case DatabaseEditorPreferences.SCREEN_READER_JAWS:
+            case JAWS:
                 if (activePageIndex != -1) {
                     CTabItem tabItem = tabsList.get(activePageIndex);
                     if (tabItem != null && !tabItem.isDisposed()) {
@@ -238,9 +239,9 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
                     }
                 }
                 break;
-            case DatabaseEditorPreferences.SCREEN_READER_NARRATOR:
-            case DatabaseEditorPreferences.SCREEN_READER_NVDA:
-            case DatabaseEditorPreferences.SCREEN_READER_OTHER:
+            case NARRATOR:
+            case NVDA:
+            case OTHER:
                 if (activePageIndex != -1) {
                     CTabItem tabItem = tabsList.get(activePageIndex);
                     if (tabItem != null && !tabItem.isDisposed()) {
@@ -253,7 +254,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
                     }
                 }
                 break;
-            case DatabaseEditorPreferences.SCREEN_READER_DEFAULT:
+            case DEFAULT:
                 super.setFocus();
                 break;
             default:
