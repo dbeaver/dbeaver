@@ -184,7 +184,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         return null;
     }
 
-    void addChildResource(Path path) {
+    public void addChildResource(Path path) {
         if (children == null) {
             return;
         }
@@ -193,7 +193,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, child));
     }
 
-    void removeChildResource(Path path) {
+    public void removeChildResource(Path path) {
         if (children == null) {
             return;
         }
