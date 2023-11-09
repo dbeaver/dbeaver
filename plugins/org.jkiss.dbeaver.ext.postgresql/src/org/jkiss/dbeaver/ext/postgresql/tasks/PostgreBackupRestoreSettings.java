@@ -33,7 +33,7 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
         TAR("t", "Tar", "tar");
 
         private final String id;
-        private String title;
+        private final String title;
         @NotNull
         private final String ext;
 

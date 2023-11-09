@@ -179,7 +179,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         @Override
         public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferProducer object, @NotNull Map<String, Object> state) {
             final StreamEntityMapping mapping = object.getEntityMapping();
-            state.put("file", mapping.getInputFile().toUri());
+            state.put("file", DBFUtils.getUriFromPath(mapping.getInputFile()));
             state.put("name", mapping.getEntityName());
             state.put("child", mapping.isChild());
             if (object.defaultProcessor != null) {
