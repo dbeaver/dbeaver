@@ -127,7 +127,7 @@ public class OracleCompilerDialog extends BaseDialog
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
-                        cell.setText(node.getNodeType());
+                        cell.setText(node.getNodeTypeLabel());
                     } else {
                         cell.setText("???"); //$NON-NLS-1$
                     }
