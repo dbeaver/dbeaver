@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -87,26 +86,17 @@ public class DBFFileSystemManager implements DBFEventListener {
         if (CommonUtils.isEmpty(fsType)) {
             throw new DBException("File system type not present in the file uri: " + uri);
         }
-        String fsId = DBFUtils.getQueryParameters(uri.getRawQuery()).get(QUERY_PARAM_FS_ID);
-        if (CommonUtils.isEmpty(fsId)) {
-            // Try to get FS id from first path item
-            fsId = CommonUtils.toString(uri.getHost(), uri.getAuthority());
-        }
-        DBFVirtualFileSystem fileSystem;
-        if (CommonUtils.isEmpty(fsId)) {
-            fileSystem = getDefaultVirtualFileSystem(fsType);
-        } else {
-            fileSystem = getVirtualFileSystem(fsType, fsId);
-        }
-        if (fileSystem == null) {
-            throw new DBException("Cannot find file system provider for the uri '" + uri + "'");
+
+        DBFFileSystemDescriptor fsProvider = DBWorkbench.getPlatform().getFileSystemRegistry()
+            .getFileSystemProviderBySchema(fsType);
+        if (fsProvider == null) {
+            throw new DBException("File system schema '" + fsType + "' not recognized");
         }
 
-        try {
-            return fileSystem.getPathByURI(monitor, uri);
-        } catch (Throwable e) {
-            throw new DBException("Failed to get path from uri '" + uri + "': " + e.getMessage(), e);
-        }
+        DBFVirtualFileSystem[] fsCandidates = dbfFileSystems.values().stream()
+            .filter(fs -> fs.getProviderId().equals(fsProvider.getId())).toArray(DBFVirtualFileSystem[]::new);
+
+        return fsProvider.getInstance().getPathByURI(monitor, uri, fsCandidates);
     }
 
     @NotNull
@@ -115,26 +105,6 @@ public class DBFFileSystemManager implements DBFEventListener {
             reloadFileSystems(new LoggingProgressMonitor());
         }
         return dbfFileSystems.values();
-    }
-
-    @Nullable
-    public DBFVirtualFileSystem getVirtualFileSystem(@NotNull String type, @NotNull String id) {
-        for (DBFVirtualFileSystem fs : getVirtualFileSystems()) {
-            if (fs.getType().equals(type) && fs.getId().equals(id)) {
-                return fs;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    public DBFVirtualFileSystem getDefaultVirtualFileSystem(@NotNull String type) {
-        for (DBFVirtualFileSystem fs : getVirtualFileSystems()) {
-            if (fs.getType().equals(type)) {
-                return fs;
-            }
-        }
-        return null;
     }
 
     @Override
