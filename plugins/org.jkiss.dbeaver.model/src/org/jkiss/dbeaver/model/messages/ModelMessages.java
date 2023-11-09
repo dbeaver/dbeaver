@@ -255,6 +255,10 @@ public class ModelMessages extends NLS {
 	public static String fs_folder;
 	public static String fs_file;
 
+	public static String struct_utils_object_ddl_source;
+	public static String struct_utils_object_ddl_definition;
+	public static String struct_utils_object_ddl_foreign_keys;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

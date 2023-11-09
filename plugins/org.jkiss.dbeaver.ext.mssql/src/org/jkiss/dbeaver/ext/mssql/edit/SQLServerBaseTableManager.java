@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -74,10 +75,12 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
                 extendedProperties.addAll(attribute.getExtendedProperties(monitor));
             }
             if (!extendedProperties.isEmpty()) {
-                actionList.add(new SQLDatabasePersistActionComment(
-                    table.getDataSource(),
-                    "Extended properties"
-                ));
+                if (table.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
+                    actionList.add(new SQLDatabasePersistActionComment(
+                        table.getDataSource(),
+                        "Extended properties"
+                    ));
+                }
 
                 for (SQLServerExtendedProperty extendedProperty : extendedProperties) {
                     actionList.add(new SQLDatabasePersistAction(

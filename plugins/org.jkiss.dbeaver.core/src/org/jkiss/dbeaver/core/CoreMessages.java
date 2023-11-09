@@ -442,6 +442,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_server_side_object_filters;
 	public static String pref_page_database_general_server_side_object_filters_tip;
 	public static String pref_page_database_general_group_query_metadata;
+	public static String pref_page_database_general_checkbox_add_special_DDL_info;
+	public static String pref_page_database_general_checkbox_add_special_DDL_info_tip;
 	// EntityEditor
 	public static String pref_page_ui_general_show_full_name_in_editor;
 	public static String pref_page_ui_general_show_table_grid;
