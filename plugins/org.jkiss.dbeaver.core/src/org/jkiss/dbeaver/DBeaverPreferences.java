@@ -48,8 +48,6 @@ public final class DBeaverPreferences
     public static final String UI_KEEP_DATABASE_EDITORS = DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE; //$NON-NLS-1$
     public static final String UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT = DatabaseEditorPreferences.PROP_KEEP_EDITORS_ON_DISCONNECT; //$NON-NLS-1$
     public static final String UI_USE_EMBEDDED_AUTH = "ui.use.redirect.auth"; //$NON-NLS-1$
-    public static final String UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT = "ui.accessibility.extended.jaws.support"; //$NON-NLS-1$
-
 
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$

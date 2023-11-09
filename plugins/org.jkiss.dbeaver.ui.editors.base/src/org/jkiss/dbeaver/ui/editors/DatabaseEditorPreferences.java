@@ -16,14 +16,30 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * DatabaseEditorPreferences
  */
-public class DatabaseEditorPreferences
-{
+public class DatabaseEditorPreferences {
     public static final String PROP_TITLE_SHOW_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
     public static final String PROP_SAVE_EDITORS_STATE = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
     public static final String PROP_KEEP_EDITORS_ON_DISCONNECT = "ui.editors.keep-editors-on-disconnect"; //$NON-NLS-1$
-    
+
     public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
+
+    public static final String SCREEN_READER_DEFAULT = "Default"; //$NON-NLS-1$
+    public static final String SCREEN_READER_NVDA = "NVDA"; //$NON-NLS-1$
+    public static final String SCREEN_READER_JAWS = "JAWS"; //$NON-NLS-1$
+    public static final String SCREEN_READER_NARRATOR = "Narrator"; //$NON-NLS-1$
+    public static final String SCREEN_READER_OTHER = "Other"; //$NON-NLS-1$
+    public static final List<String> screenReaders = new ArrayList<>();
+    static {
+        screenReaders.add(SCREEN_READER_DEFAULT);
+        screenReaders.add(SCREEN_READER_NVDA);
+        screenReaders.add(SCREEN_READER_JAWS);
+        screenReaders.add(SCREEN_READER_NARRATOR);
+        screenReaders.add(SCREEN_READER_OTHER);
+    }
 }

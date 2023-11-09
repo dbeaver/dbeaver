@@ -79,7 +79,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
-    private Button enableScreenReaderSupport;
+    private Combo cmbScreenReaderSupport;
 
     public PrefPageDatabaseUserInterface()
     {
@@ -222,15 +222,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 composite,
                 CoreMessages.pref_page_accessibility_screen_reader_group_lbl,
                 1,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                GridData.FILL_HORIZONTAL,
                 0
             );
-            enableScreenReaderSupport = UIUtils.createCheckbox(
+            cmbScreenReaderSupport = UIUtils.createLabelCombo(
                 group,
                 CoreMessages.pref_page_accessibility_screen_reader_msg,
                 CoreMessages.pref_page_accessibility_screen_reader_description,
-                false,
-                1
+                SWT.DROP_DOWN | SWT.READ_ONLY 
             );
         }
         setSettings();
@@ -258,7 +257,18 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
-        enableScreenReaderSupport.setSelection(store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY));
+        DatabaseEditorPreferences.screenReaders.forEach(c -> cmbScreenReaderSupport.add(c));
+        String screenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
+        if (screenReader != null) {
+            int index = DatabaseEditorPreferences.screenReaders.indexOf(screenReader);
+            if (index == -1) {
+                cmbScreenReaderSupport
+                    .select(DatabaseEditorPreferences.screenReaders.indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
+            }
+            cmbScreenReaderSupport.select(index);
+        } else {
+            cmbScreenReaderSupport.select(DatabaseEditorPreferences.screenReaders.indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
+        }
     }
 
     @Override
@@ -275,6 +285,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (clientTimezone != null) {
             UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
+        cmbScreenReaderSupport.select(DatabaseEditorPreferences.screenReaders.indexOf(DatabaseEditorPreferences.SCREEN_READER_DEFAULT));
     }
 
     private boolean isWindowsDesktopClient() {
@@ -328,7 +339,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
-        store.setValue(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY, enableScreenReaderSupport.getSelection());
+        store.setValue(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY, cmbScreenReaderSupport.getText());
         return true;
     }
 
