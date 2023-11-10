@@ -64,7 +64,7 @@ public class SQLSemanticProcessor {
     private static final boolean ALLOW_COMPLEX_PARSING = false;
 
     public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-        String sqlWithoutComments = SQLUtils.stripComments(dialect, sql);
+        String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqlWithoutComments));
         try {
             parser.withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
