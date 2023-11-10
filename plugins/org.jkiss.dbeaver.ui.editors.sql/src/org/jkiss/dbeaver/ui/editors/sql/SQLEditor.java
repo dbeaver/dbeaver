@@ -4437,6 +4437,16 @@ public class SQLEditor extends SQLEditorBase implements
             this.section = sectionAndContents.getFirst();
             this.setupSection(sectionAndContents.getSecond());
         }
+
+        @Override
+        public IResultSetDecorator createResultSetDecorator() {
+            return new QueryResultsDecorator() {
+                @Override
+                public long getDecoratorFeatures() {
+                    return FEATURE_STATUS_BAR | FEATURE_PANELS | FEATURE_PRESENTATIONS | FEATURE_EDIT | FEATURE_LINKS;
+                }
+            };
+        }
         
         private void setupSection(@NotNull Composite sectionContents) {
             Composite control = this.viewer.getControl();
