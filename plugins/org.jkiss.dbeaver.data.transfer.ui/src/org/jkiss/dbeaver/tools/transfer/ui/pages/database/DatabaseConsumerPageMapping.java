@@ -551,7 +551,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
                     String name = CommonUtils.toString(value);
                     DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
-                    if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
+                    if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE)
+                        && dataSource != null && !DBUtils.isQuotedIdentifier(dataSource, name)
+                    ) {
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     String finalName = name;
@@ -923,14 +925,14 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 } else {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
                     DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
-                    if (targetDataSource != null && updateAttributesNames) {
-                        name = DBUtils.getUnQuotedIdentifier(targetDataSource, name);
-                    }
                     if (attrMapping.getParent().getTarget() instanceof DBSEntity) {
                         DBSEntity parentEntity = (DBSEntity) attrMapping.getParent().getTarget();
                         Iterable<? extends DBSEntityAttribute> attributes = parentEntity.getAttributes(new LoggingProgressMonitor(log));
                         if (attributes != null) {
-                            DBSEntityAttribute matchingAttribute = CommonUtils.findBestCaseAwareMatch(attributes, name, DBSEntityAttribute::getName);
+                            DBSEntityAttribute matchingAttribute = CommonUtils.findBestCaseAwareMatch(
+                                attributes,
+                                targetDataSource != null ? DBUtils.getUnQuotedIdentifier(targetDataSource, name) : name, // unquote for better search
+                                DBSEntityAttribute::getName);
                             if (matchingAttribute != null) {
                                 attrMapping.setMappingType(DatabaseMappingType.existing);
                                 attrMapping.setTarget(matchingAttribute);
@@ -940,7 +942,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         }
                     }
                     attrMapping.setMappingType(DatabaseMappingType.create);
-                    attrMapping.setTargetName(name);
+                    attrMapping.setTargetName(updateAttributesNames && targetDataSource != null
+                        ? DBUtils.getUnQuotedIdentifier(targetDataSource, name) : name);
                 }
                 UIUtils.asyncExec(this::updateMappingsAndButtons);
             }
