@@ -1171,15 +1171,15 @@ public class OracleSchema extends OracleGlobalObject implements
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTablePhysical, OracleTableIndex, OracleTableIndexColumn> {
+    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableIndex, OracleTableIndexColumn> {
         IndexCache()
         {
-            super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
+            super(tableCache, OracleTableBase.class, "TABLE_NAME", "INDEX_NAME");
         }
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTablePhysical forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -1211,9 +1211,13 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Nullable
         @Override
-        protected OracleTableIndex fetchObject(JDBCSession session, OracleSchema owner, OracleTablePhysical parent, String indexName, JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+        protected OracleTableIndex fetchObject(
+            JDBCSession session,
+            OracleSchema owner,
+            OracleTableBase parent,
+            String indexName,
+            JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             return new OracleTableIndex(owner, parent, indexName, dbResult);
         }
 
@@ -1221,9 +1225,10 @@ public class OracleSchema extends OracleGlobalObject implements
         @Override
         protected OracleTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTablePhysical parent, OracleTableIndex object, JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+            OracleTableBase parent,
+            OracleTableIndex object,
+            JDBCResultSet dbResult
+        ) throws DBException {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION");
             boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND"));
