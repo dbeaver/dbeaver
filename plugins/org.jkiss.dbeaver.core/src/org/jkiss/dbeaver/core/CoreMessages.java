@@ -380,6 +380,7 @@ public class CoreMessages extends NLS {
     public static String toolbar_editors_sql_run_statementNew_name;
     public static String toolbar_editors_sql_run_script_name;
     public static String toolbar_editors_sql_run_scriptNew_name;
+
     public static String toolbar_editors_sql_run_explain_name;
 
     public static String editor_file_open_in_explorer;
@@ -414,6 +415,7 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_wizard_final_label_shell_command;
     public static String dialog_connection_wizard_connection_init_hint;
     public static String dialog_connection_wizard_connection_init_hint_tip;
+    public static String dialog_connection_wizard_connection_init_docs_hint;
     public static String dialog_connection_wizard_description;
     public static String dialog_connection_wizard_final_label_bootstrap_tooltip;
     public static String dialog_connection_wizard_socksproxy_host;
@@ -620,6 +622,10 @@ public class CoreMessages extends NLS {
     public static String pref_page_logs_files_max_count_label;
 
     public static String popup_open_browser_open_external_browser;
+
+    public static String pref_page_accessibility_screen_reader_msg;
+    public static String pref_page_accessibility_screen_reader_description;
+    public static String pref_page_accessibility_screen_reader_group_lbl;
 
     static {
         // initialize resource bundle

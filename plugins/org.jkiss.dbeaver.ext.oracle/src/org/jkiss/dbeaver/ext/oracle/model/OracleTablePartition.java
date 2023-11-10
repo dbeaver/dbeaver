@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
@@ -84,7 +86,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
             return partitionCount;
         }
 
-        @Property(category = CAT_PARTITIONING, order = 124)
+        @Property(category = CAT_PARTITIONING, order = 124, updatable = true)
         public Object getPartitionTablespace() {
             return partitionTablespace;
         }
@@ -103,6 +105,10 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
                 }
             }
         }
+
+        public void setPartitionTablespace(Object partitionTablespace) {
+            this.partitionTablespace = partitionTablespace;
+        }
     }
 
     private OracleTablePhysical parent;
@@ -113,6 +119,8 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
     private long sampleSize;
     private Timestamp lastAnalyzed;
     private List<OracleTablePartition> subPartitions;
+    private boolean partitionByRange;
+    private String valuesForCreating;
 
     OracleTablePartition(
         @NotNull OracleTablePhysical parent,
@@ -130,6 +138,23 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         this.usable = "USABLE".equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
         this.sampleSize = JDBCUtils.safeGetLong(dbResult, "SAMPLE_SIZE");
         this.lastAnalyzed = JDBCUtils.safeGetTimestamp(dbResult, "LAST_ANALYZED");
+    }
+
+    public OracleTablePartition(
+        @NotNull OracleSchema schema,
+        @NotNull String name,
+        @NotNull OracleTablePhysical parent,
+        @Nullable OracleTablePartition partitionParent
+    ) {
+        super(schema, name);
+        this.parent = parent;
+        this.partitionParent = partitionParent;
+    }
+
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return parent;
     }
 
     @Property(viewable = true, order = 10)
@@ -155,6 +180,12 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
     @Property(viewable = true, order = 42)
     public Timestamp getLastAnalyzed() {
         return lastAnalyzed;
+    }
+
+    @Override
+    @Property(viewable = true, order = 13)
+    public boolean isPartitioned() {
+        return !CommonUtils.isEmpty(subPartitions);
     }
 
     @Association
@@ -194,6 +225,13 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return subPartitions;
     }
 
+    public void addSubPartition(@NotNull OracleTablePartition partition) {
+        if (subPartitions == null) {
+            subPartitions = new ArrayList<>();
+        }
+        subPartitions.add(partition);
+    }
+
     @Nullable
     @Override
     public DBPImage getObjectImage() {
@@ -224,6 +262,34 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return false;
     }
 
+    public OracleTablePhysical getParent() {
+        return parent;
+    }
+
+    public OracleTablePartition getPartitionParent() {
+        return partitionParent;
+    }
+
+    public boolean isSubPartition() {
+        return partitionParent != null;
+    }
+
+    public boolean isPartitionByRange() {
+        return partitionByRange;
+    }
+
+    public void setPartitionByRange(boolean partitionByRange) {
+        this.partitionByRange = partitionByRange;
+    }
+
+    public String getValuesForCreating() {
+        return valuesForCreating;
+    }
+
+    public void setValuesForCreating(String valuesForCreating) {
+        this.valuesForCreating = valuesForCreating;
+    }
+
     @NotNull
     @Override
     protected String getTableName() {
@@ -237,5 +303,11 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
             .append("PARTITION (")
             .append(DBUtils.getQuotedIdentifier(this))
             .append(")");
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        subPartitions = null;
+        return super.refreshObject(monitor);
     }
 }

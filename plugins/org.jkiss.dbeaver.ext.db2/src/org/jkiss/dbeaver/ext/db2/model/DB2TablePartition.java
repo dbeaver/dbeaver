@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
@@ -106,6 +107,12 @@ public class DB2TablePartition extends DB2Object<DB2Table> implements DBSTablePa
             this.longTablespace = DB2Utils.findTablespaceById(new VoidProgressMonitor(), db2Table.getDataSource(),
                 indexTablespaceId);
         }
+    }
+
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return parent;
     }
 
     // -----------------
