@@ -34,9 +34,11 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class DBFFileSystemManager implements DBFEventListener {
     public static final String QUERY_PARAM_FS_ID = "fs";
+    public static final Pattern URI_SCHEME_PREFIX = Pattern.compile("[a-z\\d]+:/.+", Pattern.CASE_INSENSITIVE);
 
     private static final Log log = Log.getLog(DBFFileSystemManager.class);
     private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
@@ -70,7 +72,7 @@ public class DBFFileSystemManager implements DBFEventListener {
 
     @NotNull
     public Path getPathFromString(DBRProgressMonitor monitor, String pathOrUri) throws DBException {
-        if (pathOrUri.contains("://")) {
+        if (URI_SCHEME_PREFIX.matcher(pathOrUri).matches()) {
             return getPathFromURI(monitor, URI.create(pathOrUri));
         } else {
             return Path.of(pathOrUri);
@@ -93,6 +95,9 @@ public class DBFFileSystemManager implements DBFEventListener {
             throw new DBException("File system schema '" + fsType + "' not recognized");
         }
 
+        if (dbfFileSystems == null) {
+            reloadFileSystems(monitor);
+        }
         DBFVirtualFileSystem[] fsCandidates = dbfFileSystems.values().stream()
             .filter(fs -> fs.getProviderId().equals(fsProvider.getId())).toArray(DBFVirtualFileSystem[]::new);
 
