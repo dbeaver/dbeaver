@@ -190,6 +190,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         }
         DBNPath child = new DBNPath(this, path);
         children = ArrayUtils.add(DBNNode.class, children, child);
+        sortChildren(children);
         fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, child));
     }
 
