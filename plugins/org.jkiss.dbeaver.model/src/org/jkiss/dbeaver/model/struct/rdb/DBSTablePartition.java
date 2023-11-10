@@ -16,10 +16,22 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBSTablePartition
  */
 public interface DBSTablePartition extends DBSObject {
+
+    @NotNull
+    DBSTable getParentTable();
+
+    /**
+     * Return true for partitions directly connected with paren tables
+     */
+    default boolean needFullPath() {
+        return true;
+    }
+
 }

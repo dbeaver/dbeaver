@@ -55,6 +55,8 @@ public class SMAuthInfo {
     @Nullable
     private final SMAuthPermissions authPermissions;
 
+    private final boolean mainAuth;
+
     private SMAuthInfo(
         @NotNull SMAuthStatus authStatus,
         @Nullable String error,
@@ -65,7 +67,8 @@ public class SMAuthInfo {
         @Nullable String smAccessToken,
         @Nullable String smRefreshToken,
         @Nullable String authRole,
-        @Nullable SMAuthPermissions authPermissions
+        @Nullable SMAuthPermissions authPermissions,
+        boolean mainAuth
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -77,27 +80,32 @@ public class SMAuthInfo {
         this.smRefreshToken = smRefreshToken;
         this.authRole = authRole;
         this.authPermissions = authPermissions;
+        this.mainAuth = mainAuth;
     }
 
     public static SMAuthInfo expired(
         @NotNull String authAttemptId,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
+        boolean mainAuth
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.EXPIRED)
             .setAuthAttemptId(authAttemptId)
             .setAuthData(authData)
+            .setMainAuth(mainAuth)
             .build();
     }
 
     public static SMAuthInfo error(
         @NotNull String authAttemptId,
-        @NotNull String error
+        @NotNull String error,
+        boolean mainAuth
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.ERROR)
             .setAuthAttemptId(authAttemptId)
             .setError(error)
+            .setMainAuth(mainAuth)
             .build();
     }
 
@@ -105,14 +113,16 @@ public class SMAuthInfo {
         @NotNull String authAttemptId,
         @Nullable String signInLink,
         @Nullable String signOutLink,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
+        boolean mainAuth
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
             .setAuthAttemptId(authAttemptId)
             .setSignInLink(signInLink)
-            .setSignOutLink(signInLink)
+            .setSignOutLink(signOutLink)
             .setAuthData(authData)
+            .setMainAuth(mainAuth)
             .build();
     }
 
@@ -131,6 +141,7 @@ public class SMAuthInfo {
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
             .setAuthRole(authRole)
+            .setMainAuth(true)
             .build();
     }
 
@@ -143,6 +154,7 @@ public class SMAuthInfo {
             .setAuthAttemptId(authAttemptId)
             .setAuthPermissions(permissions)
             .setAuthData(authData)
+            .setMainAuth(false)
             .build();
     }
 
@@ -205,6 +217,10 @@ public class SMAuthInfo {
         return error;
     }
 
+    public boolean isMainAuth() {
+        return mainAuth;
+    }
+
     private static final class Builder {
         private SMAuthStatus authStatus;
         private String error;
@@ -216,6 +232,7 @@ public class SMAuthInfo {
         private String smRefreshToken;
         private String authRole;
         private SMAuthPermissions authPermissions;
+        private boolean mainAuth;
 
         private Builder() {
         }
@@ -270,6 +287,11 @@ public class SMAuthInfo {
             return this;
         }
 
+        public Builder setMainAuth(boolean mainAuth) {
+            this.mainAuth = mainAuth;
+            return this;
+        }
+
         public SMAuthInfo build() {
             return new SMAuthInfo(
                 authStatus,
@@ -281,7 +303,8 @@ public class SMAuthInfo {
                 smAccessToken,
                 smRefreshToken,
                 authRole,
-                authPermissions
+                authPermissions,
+                mainAuth
             );
         }
     }
