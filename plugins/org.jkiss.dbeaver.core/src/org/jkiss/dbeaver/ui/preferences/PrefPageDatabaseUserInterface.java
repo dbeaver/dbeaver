@@ -78,7 +78,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
-
+    
 
     public PrefPageDatabaseUserInterface()
     {
@@ -217,7 +217,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
         }
         setSettings();
-
         return composite;
     }
 
@@ -311,7 +310,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
-
         return true;
     }
 
