@@ -145,12 +145,14 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         final MySQLDataSource dataSource = command.getObject().getDataSource();
+        boolean alterTable = dataSource.supportsAlterTableRenameSyntax();
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "RENAME TABLE " +
+                (alterTable ? "ALTER" : "RENAME") + " TABLE " + //$NON-NLS-3$
                     DBUtils.getQuotedIdentifier(command.getObject().getContainer()) + "." + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +
-                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getContainer()) + "." + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
+                    (alterTable ? " RENAME" : "") + " TO " + DBUtils.getQuotedIdentifier(command.getObject().getContainer()) //$NON-NLS-2$
+                    + "." + DBUtils.getQuotedIdentifier(dataSource, command.getNewName()))
         );
     }
 
