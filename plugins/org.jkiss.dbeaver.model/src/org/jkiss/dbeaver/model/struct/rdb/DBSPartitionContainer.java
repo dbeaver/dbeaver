@@ -16,22 +16,15 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Collection;
 
 /**
- * DBSTablePartition
+ * Table which contains partitions.
  */
-public interface DBSTablePartition extends DBSObject {
+public interface DBSPartitionContainer {
 
-    @NotNull
-    DBSTable getParentTable();
-
-    /**
-     * Return true for partitions directly connected with paren tables
-     */
-    default boolean needFullPath() {
-        return true;
-    }
-
+    Collection<? extends DBSTablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException;
 }
