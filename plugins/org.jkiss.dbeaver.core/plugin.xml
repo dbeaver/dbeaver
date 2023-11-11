@@ -1291,6 +1291,12 @@
             id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
             class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
             name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+         <page 
+             id="org.jkiss.dbeaver.preferences.accessibility" 
+             category="org.jkiss.dbeaver.preferences.main"
+             class="org.jkiss.dbeaver.ui.preferences.PrefPageAccessibility" 
+             name="%page.org.jkiss.dbeaver.preferences.accessibility.name">
+        </page>
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">

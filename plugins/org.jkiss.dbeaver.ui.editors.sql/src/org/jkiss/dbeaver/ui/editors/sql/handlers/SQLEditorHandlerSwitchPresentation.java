@@ -31,7 +31,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SQLEditorHandlerSwitchPresentation extends AbstractHandler {
-    private static final String PARAM_PRESENTATION_ID = "presentationId";
+    public static final String CMD_SWITCH_PRESENTATION_ID = "org.jkiss.dbeaver.ui.editors.sql.switch.presentation";
+    public static final String PARAM_PRESENTATION_ID = "presentationId";
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

@@ -19,16 +19,13 @@ package org.jkiss.dbeaver.model.ai.completion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -152,22 +149,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
             completionText = "SELECT " + completionText.trim() + ";";
         }
 
-        completionText = formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText);
-
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            StringBuilder completionTextBuilder = new StringBuilder();
-
-            for (DAICompletionMessage message : messages) {
-                if (message.role() == DAICompletionMessage.Role.USER) {
-                    completionTextBuilder.append(SQLUtils.generateCommentLine(mainObject.getDataSource(), message.content()));
-                }
-            }
-
-            completionTextBuilder.append(completionText);
-            completionText = completionTextBuilder.toString();
-        }
-
-        return completionText.trim();
+        return formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText).trim();
     }
 
 }
