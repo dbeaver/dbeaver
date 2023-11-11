@@ -25,7 +25,8 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
-import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
+import org.jkiss.dbeaver.ui.editors.ScreenReader;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -66,6 +67,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT, true);
+        PrefUtils.setDefaultPreferenceValue(store, DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY, ScreenReader.DEFAULT);
 
         // QM
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);

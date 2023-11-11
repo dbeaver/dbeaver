@@ -17,7 +17,11 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
@@ -42,6 +46,7 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
     private final DBPImage icon;
     private final int order;
     private final List<SQLPresentationPanelDescriptor> panels = new ArrayList<>();
+    private final Expression enabledWhen;
 
     public SQLPresentationDescriptor(IConfigurationElement config)
     {
@@ -55,6 +60,7 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         for (IConfigurationElement panelConfig : config.getChildren("panel")) {
             this.panels.add(new SQLPresentationPanelDescriptor(panelConfig));
         }
+        this.enabledWhen = getEnablementExpression(config);
     }
 
     public String getId() {
@@ -79,6 +85,15 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
 
     public List<SQLPresentationPanelDescriptor> getPanels() {
         return panels;
+    }
+
+    @Nullable
+    public Expression getEnabledWhen() {
+        return enabledWhen;
+    }
+
+    public boolean isEnabled(@NotNull IWorkbenchSite site) {
+        return isExpressionTrue(enabledWhen, site);
     }
 
     public SQLEditorPresentation createPresentation()
