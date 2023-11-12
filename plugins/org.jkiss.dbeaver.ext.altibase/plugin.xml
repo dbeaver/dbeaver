@@ -42,6 +42,7 @@
                      description="Altibase JDBC Driver"
                      icon="icons/altibase_icon.png"
                      iconBig="icons/altibase_icon_big.png"
+                     logoImage="icons/altibase_logo_wide.png"
                      id="Altibase"
                      label="Altibase"
                      sampleURL="jdbc:Altibase://{host}:{port}/{database}">
