@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -201,7 +202,11 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         IStorage storage = EditorUtils.getStorageFromInput(getEditorInput());
 
         final DiagramPart diagramPart = getDiagramPart();
-
+        ERDNotationDescriptor diagramNotation=null;
+        EntityDiagram existingDiagram = diagramPart.getDiagram();
+        if (existingDiagram != null) {
+             diagramNotation = existingDiagram.getDiagramNotation();
+        }
         EntityDiagram entityDiagram = new EntityDiagram(
             null,
             storage == null ? CommonUtils.toString(getEditorInput()) : storage.getName(),
@@ -210,6 +215,9 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
+        if (diagramNotation != null) {
+            entityDiagram.setDiagramNotation(diagramNotation);
+        }
         diagramPart.setModel(entityDiagram);
 
         if (storage != null) {
