@@ -70,6 +70,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     }
 
     public abstract Path getPath();
+    protected abstract void setPath(Path path);
 
     @Override
     protected void dispose(boolean reflect) {
@@ -184,7 +185,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         return null;
     }
 
-    void addChildResource(Path path) {
+    public void addChildResource(Path path) {
         if (children == null) {
             return;
         }
@@ -193,7 +194,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, child));
     }
 
-    void removeChildResource(Path path) {
+    public void removeChildResource(Path path) {
         if (children == null) {
             return;
         }
@@ -237,7 +238,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
         Path path = getPath();
         try {
-            Files.move(path, path.getParent().resolve(newName));
+            setPath(Files.move(path, path.getParent().resolve(newName)));
         } catch (IOException e) {
             throw new DBException("Can't rename resource", e);
         }
