@@ -878,6 +878,25 @@
                     <parameter name="supports-references" value="false"/>
                 </driver>
                 <driver
+                    id="apache_flink"
+                    label="Apache Flink"
+                    icon="icons/flink_icon.png"
+                    iconBig="icons/flink_icon_big.png"
+                    class="org.apache.flink.table.jdbc.FlinkDriver"
+                    sampleURL="jdbc:flink://{host}[:{port}][/{database}]"
+                    defaultPort="8083"
+                    description="Apache Flink JDBC Driver For SQL Gateway"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://flink.apache.org/"
+                    category="Hadoop"
+                    categories="hadoop"
+                    singleConnection="true">
+                    <file type="jar" path="maven:/org.apache.flink:flink-sql-jdbc-driver-bundle:RELEASE" bundle="!drivers.apache_flink"/>
+                    <file type="jar" path="drivers/apache_flink" bundle="drivers.apache_flink"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                </driver>
+                <driver
                     id="apache_drill"
                     label="Apache Drill"
                     icon="icons/drill_icon.png"
