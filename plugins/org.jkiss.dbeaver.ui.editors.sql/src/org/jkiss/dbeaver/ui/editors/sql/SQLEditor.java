@@ -51,6 +51,7 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
+import org.eclipse.ui.texteditor.IStatusField;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
@@ -80,6 +81,7 @@ import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -94,6 +96,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -139,6 +142,7 @@ import org.jkiss.utils.Pair;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -193,7 +197,9 @@ public class SQLEditor extends SQLEditorBase implements
     private static final EditorPartContextualProperty multipleResultsPerTabProperty = EditorPartContextualProperty.setup(
         MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
         SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB, CommonUtils.toString(false));
-    
+
+    static final String STATS_CATEGORY_TRANSACTION_TIMEOUT = "TransactionTimeout";
+
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
@@ -240,6 +246,7 @@ public class SQLEditor extends SQLEditorBase implements
     private boolean isResultSetAutoFocusEnabled = true;
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
+    private TransactionStatusUpdateJob transactionStatusUpdateJob;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -1139,6 +1146,35 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         return res;
+    }
+
+    @Override
+    protected void updateStatusField(String category) {
+        if (STATS_CATEGORY_TRANSACTION_TIMEOUT.equals(category)) {
+            final IStatusField field = getStatusField(category);
+
+            if (field != null) {
+                String status;
+
+                try {
+                    status = getTransactionStatusText();
+                } catch (DBCException ignored) {
+                    status = null;
+                }
+
+                if (CommonUtils.isNotEmpty(status)) {
+                    field.setText(status);
+                    field.setImage(DBeaverIcons.getImage(DBIcon.SMALL_WARNING));
+                } else {
+                    field.setText(null);
+                    field.setImage(null);
+                }
+            }
+
+            return;
+        }
+
+        super.updateStatusField(category);
     }
 
     private void updateMultipleResultsPerTabToolItem() {
@@ -2106,6 +2142,9 @@ public class SQLEditor extends SQLEditorBase implements
                 log.error("Error during SQL editor add-in initialization", ex); //$NON-NLS-1$
             }
         }
+
+        transactionStatusUpdateJob = new TransactionStatusUpdateJob();
+        transactionStatusUpdateJob.schedule();
     }
 
     /**
@@ -2994,6 +3033,9 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;
+
+        transactionStatusUpdateJob.cancel();
+        transactionStatusUpdateJob = null;
     }
 
     private void deleteFileIfEmpty(IFile sqlFile) {
@@ -5338,4 +5380,72 @@ public class SQLEditor extends SQLEditorBase implements
             : DBWorkbench.getPlatform().getPreferenceStore();
         return contextPrefStore;
     }
+
+    private class TransactionStatusUpdateJob extends AbstractJob {
+        public TransactionStatusUpdateJob() {
+            super("Update transaction status");
+            setUser(false);
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+
+            UIUtils.syncExec(() -> updateStatusField(STATS_CATEGORY_TRANSACTION_TIMEOUT));
+
+            schedule(500);
+            return Status.OK_STATUS;
+        }
+    }
+
+    @Nullable
+    private String getTransactionStatusText() throws DBCException {
+        if (dataSourceContainer == null) {
+            return null;
+        }
+
+        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        if (lastUserActivityTime < 0) {
+            return null;
+        }
+
+        final long currentTime = System.currentTimeMillis();
+        final long elapsedSeconds = (currentTime - lastUserActivityTime) / 1000;
+        if (elapsedSeconds < 1) {
+            return null;
+        }
+
+        final DBCExecutionContext executionContext = getExecutionContext();
+        final DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+        final QMTransactionState txnState = QMUtils.getTransactionState(executionContext);
+
+        final boolean isTransactionInProgress = txnManager != null
+            && txnManager.isSupportsTransactions()
+            && !txnManager.isAutoCommit()
+            && txnState.getUpdateCount() > 0;
+
+        final long disconnectTimeoutSeconds = DataSourceMonitorJob.getDisconnectTimeoutSeconds(dataSourceContainer);
+        final long rollbackTimeoutSeconds = DataSourceMonitorJob.getTransactionTimeoutSeconds(dataSourceContainer);
+
+        if ((isTransactionInProgress && rollbackTimeoutSeconds > 0) &&
+            (rollbackTimeoutSeconds > elapsedSeconds) &&
+            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds)
+        ) {
+            return NLS.bind(
+                SQLEditorMessages.sql_editor_status_bar_rollback_label,
+                RuntimeUtils.formatExecutionTimeShort(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds))
+            );
+        } else if (disconnectTimeoutSeconds > 0 && disconnectTimeoutSeconds > elapsedSeconds) {
+            return NLS.bind(
+                SQLEditorMessages.sql_editor_status_bar_disconnect_label,
+                RuntimeUtils.formatExecutionTimeShort(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds))
+            );
+        } else {
+            return null;
+        }
+    }
+
 }
