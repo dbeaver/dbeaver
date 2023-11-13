@@ -92,6 +92,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.SortedMap;
+import java.util.function.Consumer;
 
 /**
  * UI Utils
@@ -2383,7 +2384,7 @@ public class UIUtils {
                 }
             } else if (data instanceof HandledContributionItem) {
                 MHandledItem model = ((HandledContributionItem) data).getModel();
-                if (model != null ) {
+                if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null) {
                         item.setData("commandId", cmd.getId());

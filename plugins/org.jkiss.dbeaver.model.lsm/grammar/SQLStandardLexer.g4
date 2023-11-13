@@ -257,7 +257,7 @@ ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
 fragment SignedInteger: (PlusSign|MinusSign)? UnsignedInteger;
 
 LineComment
-   : '--' ~ [\r\n]* -> channel (HIDDEN)
+   : ('--'|'#') ~ [\r\n]* -> channel (HIDDEN)
    ;
 
 // special characters and character sequences
