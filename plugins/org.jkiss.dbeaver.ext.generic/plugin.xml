@@ -887,14 +887,16 @@
                     defaultPort="8083"
                     description="Apache Flink SQL Gateway"
                     supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://flink.apache.org/"
+                    webURL="https://nightlies.apache.org/flink/flink-docs-release-1.18/docs/dev/table/jdbcdriver/"
                     category="Hadoop"
                     categories="hadoop"
                     singleConnection="true">
                     <file type="jar" path="maven:/org.apache.flink:flink-sql-jdbc-driver-bundle:RELEASE" bundle="!drivers.apache_flink"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_flink"/>
                     <file type="jar" path="drivers/apache_flink" bundle="drivers.apache_flink"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
                 </driver>
                 <driver
                     id="apache_drill"
