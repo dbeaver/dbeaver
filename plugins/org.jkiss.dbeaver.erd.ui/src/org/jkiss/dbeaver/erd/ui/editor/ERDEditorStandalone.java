@@ -205,7 +205,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         ERDNotationDescriptor diagramNotation = null;
         EntityDiagram existingDiagram = diagramPart.getDiagram();
         if (existingDiagram != null) {
-             diagramNotation = existingDiagram.getDiagramNotation();
+            diagramNotation = existingDiagram.getDiagramNotation();
         }
         EntityDiagram entityDiagram = new EntityDiagram(
             null,
