@@ -212,6 +212,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean canFinish() {
+        ActiveWizardPage wizardWithError = null;
         for (IWizardPage page : getPages()) {
             // We need to make sure that change at the current page didn't break any other loaded pages
             if (
@@ -221,6 +222,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 && !page.getControl().isDisposed()
             ) {
                 activeWizardPage.updatePageCompletion();
+                if (activeWizardPage.getErrorMessage() != null
+                    && (getContainer().getErrorMessage() == null
+                    || activeWizardPage.getPreviousPage().equals(wizardWithError))) {
+                    wizardWithError = activeWizardPage;
+                    getContainer().setErrorMessage(
+                        activeWizardPage.getTitle() + ": " + activeWizardPage.getErrorMessage());
+                }
             }
             if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
                 return false;
