@@ -885,7 +885,7 @@
                     class="org.apache.flink.table.jdbc.FlinkDriver"
                     sampleURL="jdbc:flink://{host}[:{port}][/{database}]"
                     defaultPort="8083"
-                    description="Apache Flink JDBC Driver For SQL Gateway"
+                    description="Apache Flink SQL Gateway"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://flink.apache.org/"
                     category="Hadoop"
