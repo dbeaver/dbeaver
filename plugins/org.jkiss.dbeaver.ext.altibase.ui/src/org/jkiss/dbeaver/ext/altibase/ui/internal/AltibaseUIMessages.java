@@ -25,14 +25,6 @@ public class AltibaseUIMessages extends NLS {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, AltibaseUIMessages.class);
     }
-
-    public static String dialog_connection_jdbc_url_;
-    public static String dialog_connection_password_label;
-    public static String dialog_connection_path_label;
-    public static String dialog_connection_port_label;
-    public static String dialog_connection_server_label;
-    public static String dialog_connection_test_connection_button;
-    public static String dialog_connection_user_name_label;
     
     public static String editors_altibase_session_editor_action_disconnect;
     public static String editors_altibase_session_editor_action__session;
@@ -44,6 +36,10 @@ public class AltibaseUIMessages extends NLS {
     public static String pref_page_altibase_legend_misc;
     public static String pref_page_altibase_checkbox_enable_dbms_output;
     public static String pref_page_altibase_checkbox_plan_prefix_depth;
+    
+    public static String edit_altibase_typeset_manager_dialog_title;
+    public static String edit_altibase_typeset_manager_container;
+    public static String edit_altibase_typeset_manager_name;
     
     private AltibaseUIMessages() {
     }

@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset;
+import org.jkiss.dbeaver.ext.altibase.ui.internal.AltibaseUIMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -39,7 +40,7 @@ public class CreateTypesetPage extends BaseObjectEditPage {
     private String name;
 
     public CreateTypesetPage(AltibaseTypeset procedure) {
-        super("Create New Typeset");
+        super(AltibaseUIMessages.edit_altibase_typeset_manager_dialog_title);
         this.procedure = procedure;
     }
 
@@ -51,11 +52,11 @@ public class CreateTypesetPage extends BaseObjectEditPage {
         propsGroup.setLayoutData(gd);
 
         final Text containerText = UIUtils.createLabelText(propsGroup, 
-                "Container", 
+                AltibaseUIMessages.edit_altibase_typeset_manager_container, 
                 DBUtils.getObjectFullName(this.procedure.getParentObject(), DBPEvaluationContext.UI));
         containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, 
-                "Name", null);
+                AltibaseUIMessages.edit_altibase_typeset_manager_name, null);
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
             updatePageState();
