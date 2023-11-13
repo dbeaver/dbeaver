@@ -22,7 +22,6 @@ public class AltibaseUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.altibase.ui.internal.AltibaseUIMessages"; //$NON-NLS-1$
 
     static {
-        // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, AltibaseUIMessages.class);
     }
     

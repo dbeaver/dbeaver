@@ -62,20 +62,17 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public DBSObjectCache<? extends DBSObject, GenericPackage> getObjectsCache(GenericPackage object) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected GenericPackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
             Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -84,7 +81,6 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
             List<DBEPersistAction> actions,
             SQLObjectEditor<GenericPackage, GenericStructContainer>.ObjectCreateCommand command,
             Map<String, Object> options) throws DBException {
-        // TODO Auto-generated method stub
         
     }
 }

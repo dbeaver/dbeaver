@@ -61,7 +61,6 @@ public class AltibasePlanBuilder {
                 // sibling
                 if (prevNode.getDepth() == depth) {
                     node = new AltibasePlanNode(dataSource, id++, depth, plan, (AltibasePlanNode) prevNode.getParent());
-                    //prevNode.appendPlan(plan);
                 // prevNode is parent
                 } else if (prevNode.getDepth() < depth) {
                     node = new AltibasePlanNode(dataSource, id++, depth, plan, prevNode);

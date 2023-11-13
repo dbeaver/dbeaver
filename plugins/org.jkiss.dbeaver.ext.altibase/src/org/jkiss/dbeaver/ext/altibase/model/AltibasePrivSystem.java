@@ -39,5 +39,4 @@ public class AltibasePrivSystem extends AltibasePriv {
     public String getGrantor() {
         return grantorName;
     }
-
 }

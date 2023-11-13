@@ -25,11 +25,9 @@ public enum AltibaseDataTypeDomain {
     // char types
     CHAR(JDBCType.CHAR),
     VARCHAR(JDBCType.VARCHAR),
-    NCHAR(JDBCType.NCHAR.getName(), Types.NVARCHAR), // Types.NCHAR returns question mark.
+    NCHAR(JDBCType.NCHAR.getName(), Types.NVARCHAR),
     NVARCHAR(JDBCType.NVARCHAR),
-    // encrypted column data type: should not visible to user.
-    //ECHAR    ("ECHAR",    AltibaseConstants.TYPE_ECHAR,         DBPDataKind.STRING, Types.BINARY),
-    //EVARCHAR("EVARCHAR",AltibaseConstants.TYPE_EVARCHAR,    DBPDataKind.STRING, Types.BINARY),
+    // encrypted column data type: ECHAR, EVARCHAR should not visible to user.
 
     // number types
     INTEGER(JDBCType.INTEGER),

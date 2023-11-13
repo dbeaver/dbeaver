@@ -71,14 +71,6 @@ public class AltibaseReplication extends AltibaseGlobalObject implements DBSObje
         
         remoteAddr = JDBCUtils.safeGetString(resultSet, "REMOTE_ADDR");
         remoteConnType = JDBCUtils.safeGetString(resultSet, "REMOTE_CONN_TYPE");
-        
-        /*
-        try {
-            ((AltibaseDataSource)owner.getDataSource()).getReplicationCache().loadChildren(session.getProgressMonitor(), owner, this);
-        } catch (DBException e) {
-            e.printStackTrace();
-        }
-        */
     }
     
     @NotNull

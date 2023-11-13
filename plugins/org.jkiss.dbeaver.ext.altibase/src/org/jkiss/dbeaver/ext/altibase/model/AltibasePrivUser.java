@@ -38,7 +38,7 @@ public class AltibasePrivUser extends AltibasePriv implements DBSObjectLazy<Alti
         this.user = this.name;
         grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR_NAME");
     }
-
+    
     @NotNull
     @Override
     public String getName() {
@@ -62,5 +62,4 @@ public class AltibasePrivUser extends AltibasePriv implements DBSObjectLazy<Alti
     public Object getLazyReference(Object propertyId) {
         return this.user;
     }
-
 }

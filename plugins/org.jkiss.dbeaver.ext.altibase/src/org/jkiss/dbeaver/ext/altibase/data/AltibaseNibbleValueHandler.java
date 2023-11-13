@@ -49,7 +49,6 @@ public class AltibaseNibbleValueHandler extends JDBCStringValueHandler {
         }
         
         return value;
-        
     }
     
     @Override

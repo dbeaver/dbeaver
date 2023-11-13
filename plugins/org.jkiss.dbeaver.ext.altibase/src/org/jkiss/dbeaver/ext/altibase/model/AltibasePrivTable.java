@@ -65,7 +65,6 @@ public class AltibasePrivTable extends AltibaseObject<AltibaseTable> implements 
         }
         return getDataSource().getGrantee(monitor, grantee);
     }
-
     
     @Property(viewable = true, order = 12)
     public String getGranteeType() throws DBException {
@@ -76,5 +75,4 @@ public class AltibasePrivTable extends AltibaseObject<AltibaseTable> implements 
     public boolean isGrantable() {
         return grantable;
     }
-
 }

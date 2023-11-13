@@ -126,7 +126,6 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
                     dataSource.getContainer().getPreferenceStore().getInt(
                             AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE));
 
-            // sConn.setExplainPlan(AltibaseConnection.EXPLAIN_PLAN_ONLY);
             method.invoke(conn, expPlan.getArgValue());
             stmt = conn.prepareStatement(query);
             
@@ -139,7 +138,6 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
                 }
             }
             
-            // sStmt.getExplainPlan()            
             planQuery = (String) stmt.getClass().getMethod("getExplainPlan").invoke(stmt);
 
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException

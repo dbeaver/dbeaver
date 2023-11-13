@@ -28,49 +28,23 @@ import java.sql.Timestamp;
 
 public class AltibaseUser extends AltibaseGrantee {
 
-    //private int id;
-    //private boolean lock = false;
     private Timestamp lockDate;
-    
-    //private int failedLoginAttempts;
-    //private int failedLoginCount;
-    
-    //private int passwordLockTime;
     private Timestamp passwordexpiryDate;
-    //private int passwordLifeTime;
     private int passwordGraceTime;
-    //private Timestamp passwordReuseDate;
-    //private int passwordReuseMax;
-    
     private Object defaultTablespace;
     private Object tempTablespace;
     private Object profile;
-    
     private Timestamp createDate;
         
     public AltibaseUser(AltibaseDataSource dataSource, JDBCResultSet resultSet) {
         super(dataSource, JDBCUtils.safeGetString(resultSet, "USER_NAME"));
         
-        //this.id = JDBCUtils.safeGetInt(resultSet, "USER_ID");
         this.name = JDBCUtils.safeGetString(resultSet, "USER_NAME");
-        
-        //this.lock = JDBCUtils.safeGetBoolean(resultSet, "ACCOUNT_LOCK", "L");
         this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "ACCOUNT_LOCK_DATE");
-        
-        //this.failedLoginAttempts = JDBCUtils.safeGetInt(resultSet, "FAILED_LOGIN_ATTEMPTS");
-        //this.failedLoginCount = JDBCUtils.safeGetInt(resultSet, "FAILED_LOGIN_COUNT");
-        
-        //this.passwordLockTime = JDBCUtils.safeGetInt(resultSet, "PASSWORD_LOCK_TIME");
         this.passwordexpiryDate = JDBCUtils.safeGetTimestamp(resultSet, "PASSWORD_EXPIRY_DATE");
-        //this.passwordLifeTime = JDBCUtils.safeGetInt(resultSet, "PASSWORD_LIFE_TIME");
         this.passwordGraceTime = JDBCUtils.safeGetInt(resultSet, "PASSWORD_GRACE_TIME");
-        
-        //this.passwordReuseDate = JDBCUtils.safeGetTimestamp(resultSet, "PASSWORD_REUSE_DATE");
-        //this.passwordReuseMax = JDBCUtils.safeGetInt(resultSet, "PASSWORD_REUSE_MAX");
-        
         this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TBS_NAME");
         this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMP_TBS_NAME");
-        
         this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
     }
     

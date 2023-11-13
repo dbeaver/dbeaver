@@ -33,8 +33,6 @@ public class AltibaseProcedureStandAlone extends AltibaseProcedureBase {
             String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
-
-
     
     @Property(viewable = false, hidden = true, order = 5)
     public GenericPackage getPackage() {

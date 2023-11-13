@@ -63,5 +63,4 @@ public class AltibasePrivRole extends AltibasePriv implements DBSObjectLazy<Alti
     public Object getLazyReference(Object propertyId) {
         return this.role;
     }
-
 }

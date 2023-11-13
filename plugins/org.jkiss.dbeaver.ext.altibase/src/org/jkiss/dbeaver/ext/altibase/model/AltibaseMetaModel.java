@@ -879,10 +879,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
             loadPSMs(monitor, container, session);
 
-            /* TODO: Typeset also loaded at loadPSMs
-             * loadTypesets(monitor, container, session);
-             */
-
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
@@ -1265,7 +1261,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 + " AND STATUS = 0"; // valid
 
         try (JDBCPreparedStatement jpstmt = session.prepareStatement(sql)) {
-            //jpstmt = session.prepareStatement(sql);
             JDBCResultSet jrs =  jpstmt.executeQuery();
             if (jrs.next()) {
                 hasDbmsMetadataPacakge = (jrs.getInt(1) == 2);

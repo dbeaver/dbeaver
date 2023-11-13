@@ -54,7 +54,4 @@ public class AltibasePrivObject extends AltibasePriv {
     public boolean getGrantable() {
         return grantable;
     }
-    
-
-
 }

@@ -110,9 +110,6 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
     private String extentManagement;
     private String segmentManagement;
     private int dataFileCount;
-    //private BigInteger totalPageCount;
-    //private int extentPageCount;
-    //private BigInteger allocatedPageCount;
     private boolean isLogCompression;
     private int pageSizeInBytes;
     
@@ -135,9 +132,6 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         this.extentManagement   = JDBCUtils.safeGetString(dbResult, "EXTENT_MANAGEMENT");
         this.segmentManagement  = JDBCUtils.safeGetString(dbResult, "SEGMENT_MANAGEMENT");    
         this.dataFileCount      = JDBCUtils.safeGetInt(dbResult, "DATAFILE_COUNT");
-        //this.totalPageCount     = new BigInteger(JDBCUtils.safeGetString(dbResult, "TOTAL_PAGE_COUNT"));
-        //this.extentPageCount    = JDBCUtils.safeGetInt(dbResult, "EXTENT_PAGE_COUNT");
-        //this.allocatedPageCount = new BigInteger(JDBCUtils.safeGetString(dbResult, "ALLOCATED_PAGE_COUNT"));
         this.pageSizeInBytes    = JDBCUtils.safeGetInt(dbResult, "PAGE_SIZE");
         this.isLogCompression   = (JDBCUtils.safeGetInt(dbResult, "ATTR_LOG_COMPRESS") == 1);
         

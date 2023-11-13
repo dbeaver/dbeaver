@@ -13,7 +13,6 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
     private String replObjFrom;
     private String replObjTo;
 
-    //private boolean isPartitionedTable;
     private boolean isPartitionedRepl;
     private long invalidMaxSn;
 
@@ -22,7 +21,6 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
 
         tableOid = JDBCUtils.safeGetString(resultSet, "TABLE_OID");
         
-        //isPartitionedTable = JDBCUtils.safeGetBoolean(resultSet, "IS_PARTITION", "Y");
         isPartitionedRepl = JDBCUtils.safeGetBoolean(resultSet, "REPLICATION_UNIT", "P");
         
         invalidMaxSn = JDBCUtils.safeGetLong(resultSet, "INVALID_MAX_SN");

@@ -30,60 +30,9 @@ public class AltibaseConstants {
     public static final String USER_SYS = "SYS";
     
     public static final String SYSTEM_GENERATED_PREFIX = "__SYS_";
-    
-    
+
     public static final int PACKAGE_TYPE_SPEC = 6;
     public static final int PACKAGE_TYPE_BODY = 7;
-
-    /* TODO: remove later if not used anymore 
-    public static final int TYPE_BIGINT = Types.BIGINT;
-    public static final int TYPE_BINARY = Types.BINARY;
-    public static final int TYPE_BIT = Types.BIT;
-    public static final int TYPE_BLOB = 30;
-    
-    public static final int TYPE_CHAR = Types.CHAR;
-    public static final int TYPE_CLOB = 40;
-    public static final int TYPE_DATE = 9;
-    public static final int TYPE_DOUBLE = Types.DOUBLE;
-    public static final int TYPE_ECHAR = 60;
-    public static final int TYPE_EVARCHAR = 61;
-    public static final int TYPE_FLOAT = Types.FLOAT;
-    
-    public static final int TYPE_INTEGER = Types.INTEGER;
-    public static final int TYPE_NCHAR = -8;
-    public static final int TYPE_NIBBLE = 20002;
-    public static final int TYPE_NUMBER = 10002;
-    public static final int TYPE_NUMERIC = Types.NUMERIC;
-    public static final int TYPE_NVARCHAR = -9;
-    public static final int TYPE_REAL = Types.REAL;
-    public static final int TYPE_SMALLINT = Types.SMALLINT;
-    public static final int TYPE_TIMESTAMP = 3010;
-    public static final int TYPE_VARBIT = -100;
-    
-    public static final int TYPE_VARCHAR = 12;
-
-    public static final String TYPE_NAME_CHAR = "CHAR";
-    public static final String TYPE_NAME_VARCHAR = "VARCHAR";
-    public static final String TYPE_NAME_NCHAR = "NCHAR";
-    public static final String TYPE_NAME_NVARCHAR = "NVARCHAR";
-    
-    
-    public static final String TYPE_NAME_DATE = "DATE";
-    
-    public static final String TYPE_NAME_BLOB = "BLOB";
-    public static final String TYPE_NAME_CLOB = "CLOB";
-    
-    public static final String TYPE_NAME_BYTE = "BYTE"; // for reflection
-    public static final String TYPE_NAME_VARBYTE = "VARBYTE";
-    public static final String TYPE_NAME_BIT = "BIT";
-    public static final String TYPE_NAME_VARBIT = "VARBIT";
-    public static final String TYPE_NAME_NIBBLE = "VARBYTE";
-    public static final String TYPE_NAME_BINARY = "BINARY";
-    public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
-        
-    public static final String TYPE_NAME_BIT = "BIT";
-    public static final String TYPE_NAME_VARBIT = "VARBIT";
-    */
     
     public static final int TYPE_BYTE = 20001;
     public static final int TYPE_VARBYTE = 20003;
@@ -158,7 +107,6 @@ public class AltibaseConstants {
     /*
      * DBMS output
      */
-    //public static final String CLASS_NAME_4_CONNECTION = "Altibase.jdbc.driver.AltibaseConnection";
     // e.g. Altibase.jdbc.driver.AltibaseMessageCallback, Altibase7_1.jdbc.driver.AltibaseMessageCallback
     public static final String CLASS_NAME_4_CONNECTION_POSTFIX = ".jdbc.driver.AltibaseConnection";
     public static final String CLASS_NAME_4_MESSAGE_CALLBACK_POSTFIX = ".jdbc.driver.AltibaseMessageCallback";

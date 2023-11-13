@@ -72,20 +72,17 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public DBSObjectCache<? extends DBSObject, GenericSynonym> getObjectsCache(GenericSynonym object) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected GenericSynonym createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
             Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -94,7 +91,5 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
             List<DBEPersistAction> actions,
             SQLObjectEditor<GenericSynonym, GenericStructContainer>.ObjectCreateCommand command,
             Map<String, Object> options) throws DBException {
-        // TODO Auto-generated method stub
-        
     }
 }

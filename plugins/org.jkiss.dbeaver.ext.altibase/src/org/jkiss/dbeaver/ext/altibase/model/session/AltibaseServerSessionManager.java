@@ -69,7 +69,6 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
     public void alterSession(DBCSession session, AltibaseServerSession sessionType, Map<String, Object> options) throws DBException {
         try {
 
-            // ALTER DATABASE mydb SESSION CLOSE session_id;
             String sql = String.format("ALTER DATABASE %s SESSION CLOSE %s",
                     dataSource.getDbName((JDBCSession) session), 
                     sessionType.getSessionId());
