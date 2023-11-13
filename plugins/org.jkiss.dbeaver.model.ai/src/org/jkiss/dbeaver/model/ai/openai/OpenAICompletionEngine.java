@@ -231,7 +231,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.GPT_LOG_QUERY))) {
                 if (completionRequest instanceof ChatCompletionRequest) {
                     log.debug("Chat GPT request:\n" + ((ChatCompletionRequest) completionRequest).getMessages().stream()
-                        .map(ChatMessage::getContent)
+                        .map(message -> "# " + message.getRole() + "\n" + message.getContent())
                         .collect(Collectors.joining("\n")));
                 } else {
                     log.debug("GPT request:\n" + ((CompletionRequest) completionRequest).getPrompt());

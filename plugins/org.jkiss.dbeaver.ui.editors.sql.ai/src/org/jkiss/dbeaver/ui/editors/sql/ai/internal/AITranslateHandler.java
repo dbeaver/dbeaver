@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -190,6 +191,12 @@ public class AITranslateHandler extends AbstractHandler {
             return;
         }
 
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
+            completion = SQLUtils.generateCommentLine(executionContext.getDataSource(), message.content()) + completion;
+        }
+
+        final String finalCompletion = completion;
+
         // Save to history
         new AbstractJob("Save smart completion history") {
             @Override
@@ -200,7 +207,7 @@ public class AITranslateHandler extends AbstractHandler {
                         lDataSource,
                         executionContext,
                         message.content(),
-                        completion);
+                        finalCompletion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
                 }
