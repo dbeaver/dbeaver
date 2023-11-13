@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.erd.ui.router;
 
 import org.eclipse.draw2d.AbstractRouter;
+import org.eclipse.draw2d.AutomaticRouter;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
@@ -28,7 +29,7 @@ import java.util.Map;
 /**
  * Generic interface designed to set container for particular router
  */
-public abstract class ERDConnectionRouter extends AbstractRouter {
+public abstract class ERDConnectionRouter extends AutomaticRouter {
 
     private Map<Connection, PointList> connection2points = new HashMap<>();
     private IFigure container;
@@ -67,5 +68,9 @@ public abstract class ERDConnectionRouter extends AbstractRouter {
      */
     public PolylineConnection getConnectionInstance() {
         return new PolylineConnection();
+    }
+    
+    @Override
+    protected void handleCollision(PointList list, int index) {
     }
 }
