@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.erd.ui.router;
+package org.jkiss.dbeaver.erd.ui.router.shortpath;
 
-import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.FigureListener;
@@ -29,6 +28,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.Path;
 import org.eclipse.draw2d.graph.ShortestPathRouter;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class OrthogonalShortPathRouting extends AbstractRouter {
+public class ShortPathRouting extends ERDConnectionRouter {
 
     private double indentation = 30.0;
     private static final int RIGHT = 180;
@@ -50,9 +50,9 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
     private Map<Connection, Path> connectionToPaths;
     private boolean isDirty;
     private ShortestPathRouter algorithm = new ShortestPathRouter();
-    private final IFigure container;
     private final Set<Connection> staleConnections = new HashSet<>();
     private final LayoutListener listener = new LayoutTracker();
+    private boolean ignoreInvalidate;
 
     private final FigureListener figureListener = source -> {
         Rectangle newBounds = source.getBounds().getCopy();
@@ -63,20 +63,6 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
 
         figuresToBounds.put(source, newBounds);
     };
-    private boolean ignoreInvalidate;
-
-    /**
-     * Creates a new shortest path router with the given container. The container
-     * contains all the figure's which will be treated as obstacles for the
-     * connections to avoid. Any time a child of the container moves, one or more
-     * connections will be revalidated to process the new obstacle locations. The
-     * connections being routed must not be contained within the container.
-     */
-    public OrthogonalShortPathRouting(IFigure container) {
-        isDirty = false;
-        algorithm = new ShortestPathRouter();
-        this.container = container;
-    }
 
     void addChild(IFigure child) {
         if (connectionToPaths == null) {
@@ -94,12 +80,12 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
 
     private void hookAll() {
         figuresToBounds = new HashMap<>();
-        container.getChildren().forEach(this::addChild);
-        container.addLayoutListener(listener);
+        getContainer().getChildren().forEach(this::addChild);
+        getContainer().addLayoutListener(listener);
     }
 
     private void unhookAll() {
-        container.removeLayoutListener(listener);
+        getContainer().removeLayoutListener(listener);
         if (figuresToBounds != null) {
             Iterator<IFigure> figureItr = figuresToBounds.keySet().iterator();
             while (figureItr.hasNext()) {
@@ -138,6 +124,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
             return;
         }
         staleConnections.add(connection);
+        getConnectionPoints().put(connection, new PointList());
         isDirty = true;
     }
 
@@ -166,8 +153,8 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
             Point start = conn.getSourceAnchor().getReferencePoint().getCopy();
             Point end = conn.getTargetAnchor().getReferencePoint().getCopy();
 
-            container.translateToRelative(start);
-            container.translateToRelative(end);
+            getContainer().translateToRelative(start);
+            getContainer().translateToRelative(end);
 
             path.setStartPoint(start);
             path.setEndPoint(end);
@@ -375,13 +362,6 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
      */
     public boolean hasMoreConnections() {
         return connectionToPaths != null && !connectionToPaths.isEmpty();
-    }
-
-    /**
-     * Return a container
-     */
-    public IFigure getContainer() {
-        return container;
     }
 
     /**

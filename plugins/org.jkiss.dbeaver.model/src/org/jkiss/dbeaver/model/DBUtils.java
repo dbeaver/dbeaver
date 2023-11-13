@@ -71,19 +71,19 @@ public final class DBUtils {
     private static final int MAX_SAMPLE_ROWS = 1000;
 
     @NotNull
-    public static String getQuotedIdentifier(@NotNull DBPNamedObject object)
-    {
+    public static String getQuotedIdentifier(@NotNull DBPNamedObject object) {
         if (object instanceof DBSContextBoundAttribute) {
             return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, DBPAttributeReferencePurpose.UNSPECIFIED);
         } else {
-            return object instanceof DBSObject 
-                ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) 
+            return object instanceof DBSObject dbo
+                ? getQuotedIdentifier(dbo.getDataSource(), object.getName())
                 : object.getName();
         }
     }
+
     /**
      * Get object name in quotes if they are needed.
-
+     *
      * @param object to get identifier of
      * @return object identifier
      */
@@ -98,8 +98,8 @@ public final class DBUtils {
 
     /**
      * Get object name in quotes if they are needed.
-
-     * @param object to get identifier of
+     *
+     * @param object  to get identifier of
      * @param purpose of identifier usage
      * @return object identifier
      */
@@ -117,8 +117,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
-    {
+    public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return dataSource.getSQLDialect().getUnquotedIdentifier(str);
     }
 
@@ -139,19 +138,16 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getUnQuotedIdentifier(@NotNull String str, @NotNull String quote1, @NotNull String quote2)
-    {
+    public static String getUnQuotedIdentifier(@NotNull String str, @NotNull String quote1, @NotNull String quote2) {
         if (quote1 != null && quote2 != null && str.length() >= quote1.length() + quote2.length() &&
-            str.startsWith(quote1) && str.endsWith(quote2))
-        {
+            str.startsWith(quote1) && str.endsWith(quote2)) {
             return str.substring(quote1.length(), str.length() - quote2.length());
         }
         return str;
     }
 
     @NotNull
-    public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
-    {
+    public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return getQuotedIdentifier(dataSource, str, true, false);
     }
 
@@ -161,16 +157,17 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getFullQualifiedName(@Nullable DBPDataSource dataSource, @NotNull DBPNamedObject ... path)
-    {
+    public static String getFullQualifiedName(@Nullable DBPDataSource dataSource, @NotNull DBPNamedObject... path) {
         StringBuilder name = new StringBuilder(20 * path.length);
-        if (dataSource  == null) {
+        if (dataSource == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
                 if (isVirtualObject(namePart)) {
                     continue;
                 }
-                if (name.length() > 0) { name.append('.'); }
+                if (name.length() > 0) {
+                    name.append('.');
+                }
                 name.append(namePart.getName());
             }
         } else {
@@ -191,7 +188,7 @@ public final class DBUtils {
                 }
                 // Check for valid object name
                 if (!isValidObjectName(namePart.getName())) {
-                   continue;
+                    continue;
                 }
                 if (name.length() > 0) {
                     if (parent instanceof DBSCatalog) {
@@ -211,8 +208,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getSimpleQualifiedName(@NotNull Object... names)
-    {
+    public static String getSimpleQualifiedName(@NotNull Object... names) {
         StringBuilder name = new StringBuilder(names.length * 16);
         for (Object namePart : names) {
             if (namePart == null) {
@@ -227,8 +223,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getFullyQualifiedName(@NotNull DBPDataSource dataSource, @NotNull String... names)
-    {
+    public static String getFullyQualifiedName(@NotNull DBPDataSource dataSource, @NotNull String... names) {
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         StringBuilder name = new StringBuilder(names.length * 16);
         for (String namePart : names) {
@@ -243,11 +238,11 @@ public final class DBUtils {
 
     /**
      * Checks that object has valid object name.
+     *
      * @param name object name
      * @return true or false
      */
-    public static boolean isValidObjectName(@Nullable String name)
-    {
+    public static boolean isValidObjectName(@Nullable String name) {
         if (name == null || name.isEmpty()) {
             return false;
         }
@@ -262,12 +257,13 @@ public final class DBUtils {
 
     /**
      * Finds catalog, schema or table within specified object container
-     * @param monitor progress monitor
+     *
+     * @param monitor          progress monitor
      * @param executionContext
-     * @param rootSC container
-     * @param catalogName catalog name (optional)
-     * @param schemaName schema name (optional)
-     * @param objectName table name (optional)
+     * @param rootSC           container
+     * @param catalogName      catalog name (optional)
+     * @param schemaName       schema name (optional)
+     * @param objectName       table name (optional)
      * @return found object or null
      */
     @Nullable
@@ -278,8 +274,7 @@ public final class DBUtils {
         @Nullable String catalogName,
         @Nullable String schemaName,
         @Nullable String objectName)
-        throws DBException
-    {
+        throws DBException {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
@@ -308,8 +303,7 @@ public final class DBUtils {
                 DBSObject selectedObject = getSelectedObject(executionContext);
                 if (selectedObject instanceof DBSObjectContainer) {
                     if (selectedObject instanceof DBSSchema && selectedObject.getParentObject() instanceof DBSCatalog && CommonUtils.isEmpty(catalogName) &&
-                        !CommonUtils.equalObjects(schemaName, selectedObject.getName()))
-                    {
+                        !CommonUtils.equalObjects(schemaName, selectedObject.getName())) {
                         // We search for schema and active object is schema. Let's search our schema in catalog
                         selectedObject = selectedObject.getParentObject();
                     }
@@ -324,10 +318,10 @@ public final class DBUtils {
                 if (!(sc instanceof DBSObjectContainer)) {
                     return null;
                 }
-            } else if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && sc instanceof DBSCatalog) {
+            } else if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && sc instanceof DBSCatalog catalog) {
                 // Just check a side case - then we have catalog with schema inside with equal names.
                 // Probably on this step we found a catalog, but not a schema.
-                Class<? extends DBSObject> childType = ((DBSCatalog) sc).getPrimaryChildType(monitor);
+                Class<? extends DBSObject> childType = catalog.getPrimaryChildType(monitor);
                 if (DBSSchema.class.isAssignableFrom(childType)) {
                     DBSObject child = ((DBSCatalog) sc).getChild(monitor, schemaName);
                     if (child instanceof DBSSchema) {
@@ -347,8 +341,8 @@ public final class DBUtils {
             // Child is not an entity. May be catalog/schema names was omitted.
             // Try to use selected object
             DBSObject selectedObject = DBUtils.getSelectedObject(executionContext);
-            if (selectedObject instanceof DBSObjectContainer) {
-                return ((DBSObjectContainer) selectedObject).getChild(monitor, objectName);
+            if (selectedObject instanceof DBSObjectContainer oc) {
+                return oc.getChild(monitor, objectName);
             }
 
             // Table container not found
@@ -362,8 +356,7 @@ public final class DBUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer parent,
         @NotNull List<String> names)
-        throws DBException
-    {
+        throws DBException {
         for (int i = 0; i < names.size(); i++) {
             String childName = names.get(i);
             DBSObject child = parent.getChild(monitor, childName);
@@ -388,8 +381,8 @@ public final class DBUtils {
             if (i == names.size() - 1) {
                 return child;
             }
-            if (child instanceof DBSObjectContainer) {
-                parent = (DBSObjectContainer) child;
+            if (child instanceof DBSObjectContainer oc) {
+                parent = oc;
             } else {
                 break;
             }
@@ -425,9 +418,8 @@ public final class DBUtils {
      * Find object (case-sensitive)
      */
     @Nullable
-    public static <T extends DBPNamedObject> T findObject(@Nullable T[] theList, String objectName)
-    {
-        if (theList != null && theList.length > 0 ) {
+    public static <T extends DBPNamedObject> T findObject(@Nullable T[] theList, String objectName) {
+        if (theList != null && theList.length > 0) {
             for (T object : theList) {
                 if (object.getName().equals(objectName)) {
                     return object;
@@ -445,8 +437,7 @@ public final class DBUtils {
      * @return object or null
      */
     @Nullable
-    public static <T extends DBPNamedObject> List<T> findObjects(@Nullable Collection<T> theList, @Nullable String objectName)
-    {
+    public static <T extends DBPNamedObject> List<T> findObjects(@Nullable Collection<T> theList, @Nullable String objectName) {
         if (theList != null && !theList.isEmpty()) {
             List<T> result = new ArrayList<>();
             for (T object : theList) {
@@ -460,28 +451,26 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static <T> T getAdapter(@NotNull Class<T> adapterType, @Nullable Object object)
-    {
-        if (object instanceof DBPDataSourceContainer) {
+    public static <T> T getAdapter(@NotNull Class<T> adapterType, @Nullable Object object) {
+        if (object instanceof DBPDataSourceContainer ds) {
             // Root object's parent is data source container (not datasource)
             // So try to get adapter from real datasource object
-            object = ((DBPDataSourceContainer)object).getDataSource();
+            object = ds.getDataSource();
         }
         if (object == null) {
             return null;
         }
         if (adapterType.isAssignableFrom(object.getClass())) {
             return adapterType.cast(object);
-        } else if (object instanceof IAdaptable) {
-            return ((IAdaptable)object).getAdapter(adapterType);
+        } else if (object instanceof IAdaptable adaptable) {
+            return adaptable.getAdapter(adapterType);
         } else {
             return null;
         }
     }
 
     @Nullable
-    public static <T> T getParentAdapter(@NotNull Class<T> i, DBSObject object)
-    {
+    public static <T> T getParentAdapter(@NotNull Class<T> i, DBSObject object) {
         if (object == null) {
             return null;
         }
@@ -495,8 +484,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static <T> T getParentOfType(@NotNull Class<T> type, DBSObject object)
-    {
+    public static <T> T getParentOfType(@NotNull Class<T> type, DBSObject object) {
         if (object == null) {
             return null;
         }
@@ -525,22 +513,29 @@ public final class DBUtils {
 
     /**
      * Search for virtual entity descriptor
+     *
      * @param object object
      * @return object path
      */
     @NotNull
-    public static DBSObject[] getObjectPath(@NotNull DBSObject object, boolean includeSelf)
-    {
+    public static DBSObject[] getObjectPath(@NotNull DBSObject object, boolean includeSelf) {
         int depth = 0;
         final DBSObject root = includeSelf ? object : object.getParentObject();
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
             obj = getPublicObjectContainer(obj);
             depth++;
         }
+        if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
+            // For the parent table
+            depth++;
+        }
         DBSObject[] path = new DBSObject[depth];
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
             obj = getPublicObjectContainer(obj);
             path[depth-- - 1] = obj;
+            if ((obj instanceof DBSTablePartition part) && part.needFullPath()) {
+                path[depth-- - 1] = part.getParentTable();
+            }
         }
         return path;
     }
@@ -556,8 +551,8 @@ public final class DBUtils {
                 pathStr.append('/');
             }
             obj = getPublicObjectContainer(obj);
-            if (obj instanceof DBPDataSourceContainer) {
-                pathStr.append(((DBPDataSourceContainer) obj).getId());
+            if (obj instanceof DBPDataSourceContainer ds) {
+                pathStr.append(ds.getId());
             } else {
                 pathStr.append(obj.getName());
             }
@@ -607,8 +602,8 @@ public final class DBUtils {
                     log.debug("Can't find child container " + name + " in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                     return null;
                 }
-                if (child instanceof DBSObjectContainer) {
-                    sc = (DBSObjectContainer) child;
+                if (child instanceof DBSObjectContainer oc) {
+                    sc = oc;
                 } else if (child instanceof DBSEntity && i == names.length - 2) {
                     sc = null;
                     finalEntity = (DBSEntity) child;
@@ -632,19 +627,28 @@ public final class DBUtils {
             if (attribute != null) {
                 return attribute;
             }
-            if (finalEntity instanceof DBSTable) {
-                List<? extends DBSTrigger> triggers = ((DBSTable) finalEntity).getTriggers(monitor);
+            if (finalEntity instanceof DBSTable table) {
+                List<? extends DBSTrigger> triggers = table.getTriggers(monitor);
                 if (triggers != null) {
                     DBSTrigger trigger = DBUtils.findObject(triggers, objectName);
                     if (trigger != null) {
                         return trigger;
                     }
                 }
-                Collection<? extends DBSTableIndex> indices = ((DBSTable) finalEntity).getIndexes(monitor);
+                Collection<? extends DBSTableIndex> indices = table.getIndexes(monitor);
                 if (indices != null) {
                     DBSTableIndex index = DBUtils.findObject(indices, objectName);
                     if (index != null) {
                         return index;
+                    }
+                }
+                if (finalEntity instanceof DBSPartitionContainer) {
+                    Collection<? extends DBSTablePartition> partitions = ((DBSPartitionContainer) finalEntity).getPartitions(monitor);
+                    if (!CommonUtils.isEmpty(partitions)) {
+                        DBSTablePartition partition = DBUtils.findObject(partitions, objectName);
+                        if (partition != null) {
+                            return partition;
+                        }
                     }
                 }
                 log.debug("Object '" + objectName + "' not found in entity " + DBUtils.getObjectFullName(finalEntity, DBPEvaluationContext.UI));
@@ -658,25 +662,21 @@ public final class DBUtils {
         return project.getDataSourceRegistry().getDataSource(objectId.split("/")[0]);
     }
 
-    public static boolean isNullValue(@Nullable Object value)
-    {
-        return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
+    public static boolean isNullValue(@Nullable Object value) {
+        return (value == null || (value instanceof DBDValue dbv && dbv.isNull()));
     }
 
-    public static boolean isErrorValue(@Nullable Object value)
-    {
+    public static boolean isErrorValue(@Nullable Object value) {
         return value instanceof DBDValueError;
     }
 
     @Nullable
-    public static Object makeNullValue(@NotNull DBCSession session, @NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type) throws DBCException
-    {
+    public static Object makeNullValue(@NotNull DBCSession session, @NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type) throws DBCException {
         return valueHandler.getValueFromObject(session, type, null, false, false);
     }
 
     @NotNull
-    public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBSDataContainer dataContainer, @NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
-    {
+    public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBSDataContainer dataContainer, @NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta) {
         return new DBDAttributeBindingMeta(dataContainer, session, attributeMeta);
     }
 
@@ -713,8 +713,8 @@ public final class DBUtils {
             }
         }
 
-        if (filterAttributes && dataContainer instanceof DBDAttributeFilter) {
-            return ((DBDAttributeFilter) dataContainer).filterAttributeBindings(bindings);
+        if (filterAttributes && dataContainer instanceof DBDAttributeFilter attributeFilter) {
+            return attributeFilter.filterAttributeBindings(bindings);
         } else {
             return bindings;
         }
@@ -723,6 +723,7 @@ public final class DBUtils {
     /**
      * Returns "bottom" level attributes out of resultset.
      * For regular resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
+     *
      * @return
      */
     @NotNull
@@ -735,9 +736,9 @@ public final class DBUtils {
             DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(dataContainer, session, attributeMeta);
             try {
                 List<Object[]> sampleRows = Collections.emptyList();
-                if (resultSet instanceof DBCResultSetSampleProvider) {
+                if (resultSet instanceof DBCResultSetSampleProvider rssp) {
                     session.getProgressMonitor().subTask("Read sample rows");
-                    sampleRows = ((DBCResultSetSampleProvider) resultSet).getSampleRows(session, MAX_SAMPLE_ROWS);
+                    sampleRows = rssp.getSampleRows(session, MAX_SAMPLE_ROWS);
                 }
                 session.getProgressMonitor().subTask("Discover attribute structure");
                 docBinding.lateBinding(session, sampleRows);
@@ -798,8 +799,7 @@ public final class DBUtils {
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
         DBDAttributeBinding[] allAttributes,
-        Object[] row)
-    {
+        Object[] row) {
         return getAttributeValue(attribute, allAttributes, row, null);
     }
 
@@ -882,8 +882,7 @@ public final class DBUtils {
 
     @Nullable
     private static Object getValueElement(@NotNull Object value, int index) {
-        if (value instanceof DBDComposite) {
-            final DBDComposite composite = (DBDComposite) value;
+        if (value instanceof DBDComposite composite) {
             final DBSAttributeBase attribute = composite.getAttributes()[index];
 
             try {
@@ -901,20 +900,17 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(@NotNull DBCSession session, @NotNull DBSTypedObject column)
-    {
+    public static DBDValueHandler findValueHandler(@NotNull DBCSession session, @NotNull DBSTypedObject column) {
         return findValueHandler(session.getDataSource(), session, column);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column)
-    {
+    public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column) {
         return findValueHandler(dataSource, dataSource.getContainer(), column);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(@Nullable DBPDataSource dataSource, @Nullable DBDFormatSettings preferences, @NotNull DBSTypedObject column)
-    {
+    public static DBDValueHandler findValueHandler(@Nullable DBPDataSource dataSource, @Nullable DBDFormatSettings preferences, @NotNull DBSTypedObject column) {
         DBDValueHandler valueHandler = null;
         // Get handler provider from datasource
         DBDValueHandlerProvider handlerProvider = getAdapter(DBDValueHandlerProvider.class, dataSource);
@@ -948,12 +944,11 @@ public final class DBUtils {
      * Identifying association is an association which associated entity's attributes are included into owner entity primary key. I.e. they
      * identifies entity.
      */
-    public static boolean isIdentifyingAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException
-    {
+    public static boolean isIdentifyingAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException {
         if (!(association instanceof DBSEntityReferrer)) {
             return false;
         }
-        final DBSEntityReferrer referrer = (DBSEntityReferrer)association;
+        final DBSEntityReferrer referrer = (DBSEntityReferrer) association;
         final DBSEntity refEntity = association.getAssociatedEntity();
         final DBSEntity ownerEntity = association.getParentObject();
         assert ownerEntity != null;
@@ -973,11 +968,10 @@ public final class DBUtils {
                 }
             }
             for (DBSEntityConstraint constraint : constraints) {
-                if (constraint instanceof DBSEntityReferrer &&
+                if (constraint instanceof DBSEntityReferrer eref &&
                     ((hasPrimaryKey && constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) ||
-                    (!hasPrimaryKey && constraint.getConstraintType().isUnique())))
-                {
-                    List<DBSEntityAttribute> constAttrs = getEntityAttributes(monitor, (DBSEntityReferrer) constraint);
+                        (!hasPrimaryKey && constraint.getConstraintType().isUnique()))) {
+                    List<DBSEntityAttribute> constAttrs = getEntityAttributes(monitor, eref);
 
                     boolean included = true;
                     for (DBSEntityAttribute attr : ownAttrs) {
@@ -999,11 +993,11 @@ public final class DBUtils {
      * Optional association is the one which can be set to NULL
      */
     public static boolean isOptionalAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException {
-        if (!(association instanceof DBSEntityReferrer)) {
+        if (!(association instanceof DBSEntityReferrer eref)) {
             return false;
         }
 
-        for (DBSEntityAttributeRef ref : CommonUtils.safeCollection(((DBSEntityReferrer) association).getAttributeReferences(monitor))) {
+        for (DBSEntityAttributeRef ref : CommonUtils.safeCollection(eref.getAttributeReferences(monitor))) {
             if (ref.getAttribute() != null && !ref.getAttribute().isRequired()) {
                 return true;
             }
@@ -1012,10 +1006,9 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getDefaultDataTypeName(@NotNull DBSObject objectContainer, DBPDataKind dataKind)
-    {
-        if (objectContainer instanceof DBPDataTypeProvider) {
-            return ((DBPDataTypeProvider) objectContainer).getDefaultDataTypeName(dataKind);
+    public static String getDefaultDataTypeName(@NotNull DBSObject objectContainer, DBPDataKind dataKind) {
+        if (objectContainer instanceof DBPDataTypeProvider dtp) {
+            return dtp.getDefaultDataTypeName(dataKind);
         } else {
             // Unsupported data kind
             return "?";
@@ -1023,8 +1016,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBDAttributeBinding findBinding(@NotNull Collection<DBDAttributeBinding> bindings, @NotNull DBSAttributeBase attribute)
-    {
+    public static DBDAttributeBinding findBinding(@NotNull Collection<DBDAttributeBinding> bindings, @NotNull DBSAttributeBase attribute) {
         for (DBDAttributeBinding binding : bindings) {
             if (binding.matches(attribute, true)) {
                 return binding;
@@ -1041,8 +1033,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @Nullable DBSAttributeBase attribute)
-    {
+    public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @Nullable DBSAttributeBase attribute) {
         if (attribute == null) {
             return null;
         }
@@ -1063,15 +1054,14 @@ public final class DBUtils {
 
     @NotNull
     public static List<DBSEntityReferrer> getAttributeReferrers(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute entityAttribute, boolean includeVirtual)
-        throws DBException
-    {
+        throws DBException {
         DBSEntity entity = entityAttribute.getParentObject();
         Collection<? extends DBSEntityAssociation> associations = includeVirtual ? DBVUtils.getAllAssociations(monitor, entity) : entity.getAssociations(monitor);
         if (associations != null) {
             List<DBSEntityReferrer> refs = new ArrayList<>();
             for (DBSEntityAssociation fk : associations) {
-                if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintAttribute(monitor, (DBSEntityReferrer) fk, entityAttribute) != null) {
-                    refs.add((DBSEntityReferrer)fk);
+                if (fk instanceof DBSEntityReferrer referrer && DBUtils.getConstraintAttribute(monitor, referrer, entityAttribute) != null) {
+                    refs.add((DBSEntityReferrer) fk);
                 }
             }
             return refs;
@@ -1081,9 +1071,8 @@ public final class DBUtils {
 
     @NotNull
     public static List<? extends DBSEntityAttribute> getBestTableIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
-        throws DBException
-    {
-        if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
+        throws DBException {
+        if (entity instanceof DBSTable table && table.isView()) {
             return Collections.emptyList();
         }
         if (CommonUtils.isEmpty(entity.getAttributes(monitor))) {
@@ -1094,9 +1083,9 @@ public final class DBUtils {
         //List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
         // Check indexes
-        if (entity instanceof DBSTable) {
+        if (entity instanceof DBSTable table) {
             try {
-                Collection<? extends DBSTableIndex> indexes = ((DBSTable)entity).getIndexes(monitor);
+                Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     for (DBSTableIndex index : indexes) {
                         if (isIdentifierIndex(monitor, index)) {
@@ -1129,16 +1118,16 @@ public final class DBUtils {
             DBSEntityConstraint uniqueId = null;
             //DBSEntityConstraint uniqueIndex = null;
             for (DBSEntityConstraint id : identifiers) {
-                if (id instanceof DBSEntityReferrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                    return getEntityAttributes(monitor, (DBSEntityReferrer) id);
+                if (id instanceof DBSEntityReferrer referrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                    return getEntityAttributes(monitor, referrer);
                 } else if (id.getConstraintType().isUnique()) {
                     uniqueId = id;
-                } else if (id instanceof DBSTableIndex && ((DBSTableIndex) id).isUnique()) {
+                } else if (id instanceof DBSTableIndex tableIndex && tableIndex.isUnique()) {
                     uniqueId = id;
                 }
             }
-            return uniqueId instanceof DBSEntityReferrer ?
-                getEntityAttributes(monitor, (DBSEntityReferrer)uniqueId)
+            return uniqueId instanceof DBSEntityReferrer referrer ?
+                getEntityAttributes(monitor, referrer)
                 : Collections.<DBSTableColumn>emptyList();
         } else {
 //            if (nonIdentifyingConstraints != null) {
@@ -1167,8 +1156,8 @@ public final class DBUtils {
 
     public static boolean isIdentifierConstraint(DBRProgressMonitor monitor, DBSEntityConstraint constraint) throws DBException {
         if (constraint.getConstraintType().isUnique()) {
-            if (constraint instanceof DBSEntityReferrer) {
-                List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+            if (constraint instanceof DBSEntityReferrer referrer) {
+                List<? extends DBSEntityAttributeRef> attrs = referrer.getAttributeReferences(monitor);
                 if (attrs == null || attrs.isEmpty()) {
                     return false;
                 }
@@ -1190,19 +1179,18 @@ public final class DBUtils {
     }
 
     public static DBSEntityConstraint findEntityConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity, @NotNull Collection<? extends DBSEntityAttribute> attributes)
-        throws DBException
-    {
+        throws DBException {
         // Check constraints
         Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
         if (!CommonUtils.isEmpty(constraints)) {
             for (DBSEntityConstraint constraint : constraints) {
-                if (constraint instanceof DBSEntityReferrer && referrerMatches(monitor, (DBSEntityReferrer)constraint, attributes)) {
+                if (constraint instanceof DBSEntityReferrer referrer && referrerMatches(monitor, referrer, attributes)) {
                     return constraint;
                 }
             }
         }
-        if (entity instanceof DBSTable) {
-            Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
+        if (entity instanceof DBSTable table) {
+            Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexes)) {
                 for (DBSTableIndex index : indexes) {
                     if (index.isUnique() && referrerMatches(monitor, index, attributes)) {
@@ -1223,8 +1211,7 @@ public final class DBUtils {
                     return false;
                 }
                 if (ref.getAttribute() == null ||
-                    !CommonUtils.equalObjects(ref.getAttribute().getName(), attrIterator.next().getName()))
-                {
+                    !CommonUtils.equalObjects(ref.getAttribute().getName(), attrIterator.next().getName())) {
                     return false;
                 }
             }
@@ -1234,11 +1221,10 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static List<DBSEntityAttribute> getEntityAttributes(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityReferrer referrer)
-    {
+    public static List<DBSEntityAttribute> getEntityAttributes(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityReferrer referrer) {
         try {
-            if (referrer instanceof DBVEntityConstraint && ((DBVEntityConstraint) referrer).isUseAllColumns()) {
-                DBSEntity realEntity = ((DBVEntityConstraint) referrer).getEntity().getRealEntity(monitor);
+            if (referrer instanceof DBVEntityConstraint ec && ec.isUseAllColumns()) {
+                DBSEntity realEntity = ec.getEntity().getRealEntity(monitor);
                 if (realEntity != null) {
                     Collection<? extends DBSEntityAttribute> attributes = realEntity.getAttributes(monitor);
                     return attributes == null ? Collections.emptyList() : new ArrayList<>(attributes);
@@ -1269,8 +1255,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull DBSEntityAttribute tableColumn) throws DBException
-    {
+    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull DBSEntityAttribute tableColumn) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
@@ -1283,8 +1268,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull String columnName) throws DBException
-    {
+    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull String columnName) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
@@ -1306,12 +1290,11 @@ public final class DBUtils {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAssociation association,
         @NotNull DBSEntityAttribute tableColumn,
-        boolean reference) throws DBException
-    {
+        boolean reference) throws DBException {
         final DBSEntityConstraint refConstr = association.getReferencedConstraint();
-        if (association instanceof DBSEntityReferrer && refConstr instanceof DBSEntityReferrer) {
-            final Collection<? extends DBSEntityAttributeRef> ownAttrs = ((DBSEntityReferrer) association).getAttributeReferences(monitor);
-            final Collection<? extends DBSEntityAttributeRef> refAttrs = ((DBSEntityReferrer) refConstr).getAttributeReferences(monitor);
+        if (association instanceof DBSEntityReferrer eRef && refConstr instanceof DBSEntityReferrer rRef) {
+            final Collection<? extends DBSEntityAttributeRef> ownAttrs = eRef.getAttributeReferences(monitor);
+            final Collection<? extends DBSEntityAttributeRef> refAttrs = rRef.getAttributeReferences(monitor);
             if (ownAttrs == null || refAttrs == null || ownAttrs.size() != refAttrs.size()) {
                 log.error("Invalid internal state of referrer association");
                 return null;
@@ -1321,7 +1304,7 @@ public final class DBUtils {
             while (ownIterator.hasNext()) {
                 DBSEntityAttributeRef ownAttr = ownIterator.next();
                 if (reference) {
-                    if (ownAttr instanceof DBSTableForeignKeyColumn && ((DBSTableForeignKeyColumn) ownAttr).getReferencedColumn() == tableColumn) {
+                    if (ownAttr instanceof DBSTableForeignKeyColumn fkc && fkc.getReferencedColumn() == tableColumn) {
                         return refIterator.next().getAttribute();
                     }
                 } else if (ownAttr.getAttribute() == tableColumn) {
@@ -1340,8 +1323,7 @@ public final class DBUtils {
         @NotNull DBCStatementType statementType,
         @NotNull String query,
         long offset,
-        long maxRows) throws DBCException
-    {
+        long maxRows) throws DBCException {
         SQLQuery sqlQuery = new SQLQuery(session.getDataSource(), query);
         return makeStatement(
             executionSource,
@@ -1360,8 +1342,7 @@ public final class DBUtils {
         @NotNull SQLQuery sqlQuery,
         long offset,
         long maxRows)
-        throws DBCException
-    {
+        throws DBCException {
         // We need to detect whether it is a plain select statement
         // or some DML. For DML statements we mustn't set limits
         // because it sets update rows limit [SQL Server]
@@ -1376,12 +1357,12 @@ public final class DBUtils {
         if (selectQuery) {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
-                if (transformProvider instanceof DBCQueryTransformProviderExt) {
-                    isShouldSetLimit = ((DBCQueryTransformProviderExt) transformProvider).isLimitApplicableTo(sqlQuery);
+                if (transformProvider instanceof DBCQueryTransformProviderExt qtp) {
+                    isShouldSetLimit = qtp.isLimitApplicableTo(sqlQuery);
                 }
                 if (hasLimits) {
                     if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
-                            (transformProvider instanceof DBCQueryTransformProviderExt && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery))) {
+                        (transformProvider instanceof DBCQueryTransformProviderExt qtp && qtp.isForceTransform(session, sqlQuery))) {
                         limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
                     }
                 } else {
@@ -1390,10 +1371,10 @@ public final class DBUtils {
             }
         }
         // Check that transformers are applicable
-        if (limitTransformer instanceof DBCQueryTransformerExt && !((DBCQueryTransformerExt) limitTransformer).isApplicableTo(sqlQuery)) {
+        if (limitTransformer instanceof DBCQueryTransformerExt lQT && !lQT.isApplicableTo(sqlQuery)) {
             limitTransformer = null;
         }
-        if (fetchAllTransformer instanceof DBCQueryTransformerExt && !((DBCQueryTransformerExt) fetchAllTransformer).isApplicableTo(sqlQuery)) {
+        if (fetchAllTransformer instanceof DBCQueryTransformerExt faQT && !faQT.isApplicableTo(sqlQuery)) {
             fetchAllTransformer = null;
         }
 
@@ -1419,7 +1400,7 @@ public final class DBUtils {
             createStatement(session, queryText, doScrollable) :
             makeStatement(session, queryText, doScrollable);
         dbStat.setStatementSource(executionSource);
-        
+
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
                 if (isShouldSetLimit) {
@@ -1440,8 +1421,7 @@ public final class DBUtils {
     public static DBCStatement createStatement(
         @NotNull DBCSession session,
         @NotNull String query,
-        boolean scrollable) throws DBCException
-    {
+        boolean scrollable) throws DBCException {
         SQLDialect dialect = SQLUtils.getDialectFromObject(session.getDataSource());
 
         DBCStatementType statementType = DBCStatementType.SCRIPT;
@@ -1462,8 +1442,7 @@ public final class DBUtils {
     public static DBCStatement makeStatement(
         @NotNull DBCSession session,
         @NotNull String query,
-        boolean scrollable) throws DBCException
-    {
+        boolean scrollable) throws DBCException {
         DBCStatementType statementType = DBCStatementType.QUERY;
         // Normalize query
         query = SQLUtils.makeUnifiedLineFeeds(session.getDataSource(), query);
@@ -1480,21 +1459,18 @@ public final class DBUtils {
             false);
     }
 
-    public static void fireObjectUpdate(@NotNull DBSObject object)
-    {
+    public static void fireObjectUpdate(@NotNull DBSObject object) {
         fireObjectUpdate(object, null, null);
     }
 
-    public static void fireObjectUpdate(DBSObject object, boolean enabled)
-    {
+    public static void fireObjectUpdate(DBSObject object, boolean enabled) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, enabled));
         }
     }
 
-    public static void fireObjectUpdate(DBSObject object, @Nullable Map<String, Object> options, @Nullable Object data)
-    {
+    public static void fireObjectUpdate(DBSObject object, @Nullable Map<String, Object> options, @Nullable Object data) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             DBPEvent event = new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, data);
@@ -1503,13 +1479,11 @@ public final class DBUtils {
         }
     }
 
-    public static void fireObjectUpdate(DBSObject object, @Nullable Object data)
-    {
+    public static void fireObjectUpdate(DBSObject object, @Nullable Object data) {
         fireObjectUpdate(object, null, data);
     }
 
-    public static void fireObjectAdd(DBSObject object, Map<String, Object> options)
-    {
+    public static void fireObjectAdd(DBSObject object, Map<String, Object> options) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             DBPEvent event = new DBPEvent(DBPEvent.Action.OBJECT_ADD, object);
@@ -1518,16 +1492,14 @@ public final class DBUtils {
         }
     }
 
-    public static void fireObjectRemove(DBSObject object)
-    {
+    public static void fireObjectRemove(DBSObject object) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, object));
         }
     }
 
-    public static void fireObjectSelect(DBSObject object, boolean select)
-    {
+    public static void fireObjectSelect(DBSObject object, boolean select) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select));
@@ -1537,25 +1509,22 @@ public final class DBUtils {
     /**
      * Refresh object in UI
      */
-    public static void fireObjectRefresh(DBSObject object)
-    {
+    public static void fireObjectRefresh(DBSObject object) {
         // Select with true parameter is the same as refresh
         fireObjectSelect(object, true);
     }
 
     @NotNull
-    public static String getObjectUniqueName(@NotNull DBSObject object)
-    {
-        if (object instanceof DBPUniqueObject) {
-            return ((DBPUniqueObject) object).getUniqueName();
+    public static String getObjectUniqueName(@NotNull DBSObject object) {
+        if (object instanceof DBPUniqueObject uo) {
+            return uo.getUniqueName();
         } else {
             return object.getName();
         }
     }
 
     @Nullable
-    public static DBSDataType findBestDataType(@NotNull Collection<? extends DBSDataType> allTypes, @NotNull String ... typeNames)
-    {
+    public static DBSDataType findBestDataType(@NotNull Collection<? extends DBSDataType> allTypes, @NotNull String... typeNames) {
         for (String testType : typeNames) {
             for (DBSDataType dataType : allTypes) {
                 if (dataType.getName().equalsIgnoreCase(testType)) {
@@ -1579,8 +1548,7 @@ public final class DBUtils {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
         @NotNull String fullTypeName)
-        throws DBException
-    {
+        throws DBException {
         DBPDataTypeProvider dataTypeProvider = getAdapter(DBPDataTypeProvider.class, dataSource);
         if (dataTypeProvider == null) {
             // NoSuchElementException data type provider
@@ -1592,8 +1560,7 @@ public final class DBUtils {
     @Nullable
     public static DBSDataType getLocalDataType(
         @NotNull DBPDataSource dataSource,
-        @NotNull String fullTypeName)
-    {
+        @NotNull String fullTypeName) {
         DBPDataTypeProvider dataTypeProvider = getAdapter(DBPDataTypeProvider.class, dataSource);
         if (dataTypeProvider == null) {
             return null;
@@ -1601,10 +1568,9 @@ public final class DBUtils {
         return dataTypeProvider.getLocalDataType(fullTypeName);
     }
 
-    public static DBSObject getPublicObject(@Nullable DBSObject object)
-    {
+    public static DBSObject getPublicObject(@Nullable DBSObject object) {
         if (object instanceof DBPDataSourceContainer) {
-            return ((DBPDataSourceContainer) object).getDataSource();
+            return object.getDataSource();
         } else {
             return object;
         }
@@ -1613,34 +1579,31 @@ public final class DBUtils {
     /**
      * Returns DBPDataSourceContainer from DBPDataSource or object itself otherwise
      */
-    public static DBSObject getPublicObjectContainer(@NotNull DBSObject object)
-    {
-        if (object instanceof DBPDataSource) {
-            return ((DBPDataSource) object).getContainer();
+    public static DBSObject getPublicObjectContainer(@NotNull DBSObject object) {
+        if (object instanceof DBPDataSource ds) {
+            return ds.getContainer();
         } else {
             return object;
         }
     }
 
     @Nullable
-    public static DBPDataSourceContainer getContainer(@Nullable DBSObject object)
-    {
+    public static DBPDataSourceContainer getContainer(@Nullable DBSObject object) {
         if (object == null) {
             return null;
         }
-        if (object instanceof DBPDataSourceContainer) {
-            return (DBPDataSourceContainer) object;
+        if (object instanceof DBPDataSourceContainer dsc) {
+            return dsc;
         }
         final DBPDataSource dataSource = object.getDataSource();
         return dataSource == null ? null : dataSource.getContainer();
     }
 
     @Nullable
-    public static DBPDataSourceRegistry getObjectRegistry(@NotNull DBSObject object)
-    {
+    public static DBPDataSourceRegistry getObjectRegistry(@NotNull DBSObject object) {
         DBPDataSourceContainer container;
-        if (object instanceof DBPDataSourceContainer) {
-            container = (DBPDataSourceContainer) object;
+        if (object instanceof DBPDataSourceContainer dsc) {
+            container = dsc;
         } else {
             DBPDataSource dataSource = object.getDataSource();
             if (dataSource == null) {
@@ -1659,11 +1622,10 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getObjectShortName(Object object)
-    {
+    public static String getObjectShortName(Object object) {
         String strValue;
-        if (object instanceof DBPNamedObject) {
-            strValue = ((DBPNamedObject)object).getName();
+        if (object instanceof DBPNamedObject no) {
+            strValue = no.getName();
         } else {
             strValue = String.valueOf(object);
         }
@@ -1671,61 +1633,58 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getObjectFullName(@NotNull DBPNamedObject object, DBPEvaluationContext context)
-    {
-        if (object instanceof DBPQualifiedObject) {
-            return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
-        } else if (object instanceof DBSObject && ((DBSObject) object).getDataSource() != null) {
-            return getObjectFullName(((DBSObject) object).getDataSource(), object, context, DBPAttributeReferencePurpose.UNSPECIFIED);
+    public static String getObjectFullName(@NotNull DBPNamedObject object, DBPEvaluationContext context) {
+        if (object instanceof DBPQualifiedObject qo) {
+            return qo.getFullyQualifiedName(context);
+        } else if (object instanceof DBSObject dbso && dbso.getDataSource() != null) {
+            return getObjectFullName(dbso.getDataSource(), object, context, DBPAttributeReferencePurpose.UNSPECIFIED);
         } else {
             return object.getName();
         }
     }
-    
+
     /**
      * Get the full name of the object.
-
+     *
      * @param dataSource container
-     * @param object object to get name of
-     * @param context evaluation context
+     * @param object     object to get name of
+     * @param context    evaluation context
      * @return full name of the object
      */
     @NotNull
     public static String getObjectFullName(
         @NotNull DBPDataSource dataSource,
-        @NotNull DBPNamedObject object, 
+        @NotNull DBPNamedObject object,
         @NotNull DBPEvaluationContext context) {
         return getObjectFullName(dataSource, object, context, DBPAttributeReferencePurpose.UNSPECIFIED);
     }
 
     /**
      * Get the full name of the object.
-
+     *
      * @param dataSource container
-     * @param object object to get name of
-     * @param context evaluation context
-     * @param purpose to use object name to
+     * @param object     object to get name of
+     * @param context    evaluation context
+     * @param purpose    to use object name to
      * @return full name of the object
      */
     @NotNull
     public static String getObjectFullName(
         @NotNull DBPDataSource dataSource,
-        @NotNull DBPNamedObject object, 
+        @NotNull DBPNamedObject object,
         @NotNull DBPEvaluationContext context,
-        @NotNull DBPAttributeReferencePurpose purpose)
-    {
-        if (object instanceof DBDAttributeBinding) {
-            return ((DBDAttributeBinding) object).getFullyQualifiedName(context, purpose);
-        } else if (object instanceof DBPQualifiedObject) {
-            return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
+        @NotNull DBPAttributeReferencePurpose purpose) {
+        if (object instanceof DBDAttributeBinding binding) {
+            return binding.getFullyQualifiedName(context, purpose);
+        } else if (object instanceof DBPQualifiedObject qo) {
+            return qo.getFullyQualifiedName(context);
         } else {
             return getQuotedIdentifier(dataSource, object.getName());
         }
     }
 
     @NotNull
-    public static String getFullTypeName(@NotNull DBSTypedObject typedObject)
-    {
+    public static String getFullTypeName(@NotNull DBSTypedObject typedObject) {
         DBSObject structObject = getFromObject(typedObject);
         DBPDataSource dataSource = structObject == null ? null : structObject.getDataSource();
         return getFullTypeName(dataSource, typedObject);
@@ -1742,24 +1701,22 @@ public final class DBUtils {
         return typeModifiers == null ? typeName : (typeName + typeModifiers);
     }
 
-    public static void releaseValue(@Nullable Object value)
-    {
-        if (value instanceof DBDValue) {
-            ((DBDValue)value).release();
+    public static void releaseValue(@Nullable Object value) {
+        if (value instanceof DBDValue dbdv) {
+            dbdv.release();
         }
     }
 
-    public static void resetValue(@Nullable Object value)
-    {
-        if (value instanceof DBDContent) {
-            ((DBDContent)value).resetContents();
+    public static void resetValue(@Nullable Object value) {
+        if (value instanceof DBDContent dbdc) {
+            dbdc.resetContents();
         }
     }
 
     @NotNull
     public static DBCLogicalOperator[] getAttributeOperators(DBSTypedObject attribute) {
-        if (attribute instanceof DBSTypedObjectEx) {
-            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
+        if (attribute instanceof DBSTypedObjectEx typedObjectEx) {
+            DBSDataType dataType = typedObjectEx.getDataType();
             if (dataType != null) {
                 return dataType.getSupportedOperators(attribute);
             }
@@ -1771,7 +1728,7 @@ public final class DBUtils {
     public static DBCLogicalOperator[] getDefaultOperators(DBSTypedObject attribute) {
         List<DBCLogicalOperator> operators = new ArrayList<>();
         DBPDataKind dataKind = attribute.getDataKind();
-        if (attribute instanceof DBSAttributeBase && !((DBSAttributeBase)attribute).isRequired()) {
+        if (attribute instanceof DBSAttributeBase && !((DBSAttributeBase) attribute).isRequired()) {
             operators.add(DBCLogicalOperator.IS_NULL);
             operators.add(DBCLogicalOperator.IS_NOT_NULL);
         }
@@ -1795,7 +1752,7 @@ public final class DBUtils {
 
     public static Object getRawValue(Object value) {
         if (value instanceof DBDValue) {
-            return ((DBDValue)value).getRawValue();
+            return ((DBDValue) value).getRawValue();
         } else {
             return value;
         }
@@ -1874,8 +1831,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBSObject getDefaultOrActiveObject(@NotNull DBSInstance object)
-    {
+    public static DBSObject getDefaultOrActiveObject(@NotNull DBSInstance object) {
         DBCExecutionContext defaultContext = getDefaultContext(object, true);
         DBSObject activeObject = defaultContext == null ? null : getActiveInstanceObject(defaultContext);
         return activeObject == null ? object.getDataSource() : activeObject;
@@ -1924,11 +1880,11 @@ public final class DBUtils {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
             if (defaultCatalog != null && defaultSchema != null) {
-                return new DBSObject[] { defaultCatalog, defaultSchema };
+                return new DBSObject[]{defaultCatalog, defaultSchema};
             } else if (defaultCatalog != null) {
-                return new DBSObject[] { defaultCatalog };
+                return new DBSObject[]{defaultCatalog};
             } else if (defaultSchema != null) {
-                return new DBSObject[] { defaultSchema };
+                return new DBSObject[]{defaultSchema};
             }
         }
         return new DBSObject[0];
@@ -2079,14 +2035,14 @@ public final class DBUtils {
      * Returns client application identifier that contains application name, version and current connection purpose
      *
      * @param container data source container
-     * @param context execution context
-     * @param purpose if null, purpose will not be included
+     * @param context   execution context
+     * @param purpose   if null, purpose will not be included
      * @return the client application name built according to passed arguments
      */
     public static String getClientApplicationName(
-            @NotNull DBPDataSourceContainer container,
-            @Nullable DBCExecutionContext context,
-            @Nullable String purpose
+        @NotNull DBPDataSourceContainer container,
+        @Nullable DBCExecutionContext context,
+        @Nullable String purpose
     ) {
         return getClientApplicationName(container, context, purpose, true);
     }
@@ -2095,9 +2051,9 @@ public final class DBUtils {
      * Returns client application identifier that contains application name and
      * optionally version and current connection purpose
      *
-     * @param container data source container
-     * @param context execution context
-     * @param purpose if null, purpose will not be included
+     * @param container  data source container
+     * @param context    execution context
+     * @param purpose    if null, purpose will not be included
      * @param addVersion if false version will not be included
      * @return the client application name built according to passed arguments
      */
@@ -2110,15 +2066,10 @@ public final class DBUtils {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
             String appName = container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
             IVariableResolver cVarResolver = container.getVariablesResolver(false);
-            return GeneralUtils.replaceVariables(appName, name -> {
-                switch (name) {
-                    case DBConstants.VAR_CONTEXT_NAME:
-                        return context == null ? null : context.getContextName();
-                    case DBConstants.VAR_CONTEXT_ID:
-                        return context == null ? null : String.valueOf(context.getContextId());
-                    default:
-                        return cVarResolver.get(name);
-                }
+            return GeneralUtils.replaceVariables(appName, name -> switch (name) {
+                case DBConstants.VAR_CONTEXT_NAME -> context == null ? null : context.getContextName();
+                case DBConstants.VAR_CONTEXT_ID -> context == null ? null : String.valueOf(context.getContextId());
+                default -> cVarResolver.get(name);
             });
         }
         final String productTitle = addVersion ? GeneralUtils.getProductTitle() : GeneralUtils.getProductName();
@@ -2155,7 +2106,7 @@ public final class DBUtils {
         if (context == null) {
             // Not connected - try to connect
             DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(object);
-            if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy)ownerInstance).isInstanceConnected()) {
+            if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy) ownerInstance).isInstanceConnected()) {
                 if (!RuntimeUtils.runTask(monitor -> {
                         try {
                             ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
@@ -2171,6 +2122,7 @@ public final class DBUtils {
         }
         return context;
     }
+
     public static List<DBPDataSourceRegistry> getAllRegistries(boolean forceLoad) {
         List<DBPDataSourceRegistry> result = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
@@ -2309,8 +2261,7 @@ public final class DBUtils {
         return null;
     }
 
-    public static boolean isReadOnly(DBSObject object)
-    {
+    public static boolean isReadOnly(DBSObject object) {
         if (object == null) {
             return true;
         }
@@ -2351,12 +2302,12 @@ public final class DBUtils {
     }
 
     public static boolean isView(DBSEntity table) {
-        return table  instanceof DBSView || table instanceof DBSTable && ((DBSTable) table).isView();
+        return table instanceof DBSView || table instanceof DBSTable && ((DBSTable) table).isView();
     }
 
     public static String getEntityScriptName(DBSEntity entity, Map<String, Object> options) {
         return CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) && entity instanceof DBPQualifiedObject ?
-            ((DBPQualifiedObject)entity).getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(entity);
+            ((DBPQualifiedObject) entity).getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(entity);
     }
 
     public static String getObjectTypeName(DBSObject object) {
@@ -2434,8 +2385,7 @@ public final class DBUtils {
         @NotNull PARENT parent,
         @NotNull Class<? extends CHILD> type,
         @NotNull ChildExtractor<PARENT, CHILD> extractor,
-        @NotNull DBECommandContext context)
-    {
+        @NotNull DBECommandContext context) {
         int suffix = 1;
 
         while (true) {
@@ -2467,9 +2417,9 @@ public final class DBUtils {
 
     /**
      * Returns list of all underlying data containers from different kind of parent nodes (usually from the navigator tree)
-     * 
+     *
      * @param monitor can not be null
-     * @param parent Parent object: schema, catalog, datasource, DBNDatabaseFolder, even table
+     * @param parent  Parent object: schema, catalog, datasource, DBNDatabaseFolder, even table
      * @return List of data containers (tables, views etc.) from the parent container (schema, catalog, datasource etc.)
      * @throws DBException if connection is lost or something is going wrong during children loading
      */

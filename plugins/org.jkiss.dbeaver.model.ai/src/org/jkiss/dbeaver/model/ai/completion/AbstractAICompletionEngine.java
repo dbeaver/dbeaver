@@ -19,14 +19,13 @@ package org.jkiss.dbeaver.model.ai.completion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -39,11 +38,12 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @Override
     public List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request,
+        @NotNull DAICompletionContext context,
+        @NotNull DAICompletionMessage message,
         @NotNull IAIFormatter formatter
     ) throws DBException {
-        String result = requestCompletion(monitor, request, formatter, null);
-        DAICompletionResponse response = createCompletionResponse(request.getContext(), result);
+        String result = requestCompletion(monitor, context, List.of(message), formatter);
+        DAICompletionResponse response = createCompletionResponse(context, result);
         return Collections.singletonList(response);
     }
 
@@ -51,17 +51,13 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @Override
     public List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request,
+        @NotNull DAICompletionContext context,
         @NotNull DAICompletionSession session,
         @NotNull IAIFormatter formatter
     ) throws DBException {
-        final String result = requestCompletion(monitor, request, formatter, session);
+        final String result = requestCompletion(monitor, context, session.getMessages(), formatter);
         final DAICompletionResponse response = new DAICompletionResponse();
         response.setResultCompletion(result);
-
-        // Add request to the session history
-        session.add(request);
-
         return List.of(response);
     }
 
@@ -72,9 +68,9 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @Nullable
     abstract protected String requestCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request,
-        @NotNull IAIFormatter formatter,
-        @Nullable DAICompletionSession session
+        @NotNull DAICompletionContext context,
+        @NotNull List<DAICompletionMessage> messages,
+        @NotNull IAIFormatter formatter
     ) throws DBException;
 
     @NotNull
@@ -90,17 +86,17 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @Nullable
     protected abstract String callCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull String modifiedRequest,
+        @NotNull List<DAICompletionMessage> messages,
         @NotNull SERVICE service,
         @NotNull REQUEST completionRequest
     ) throws DBException;
 
     @NotNull
     protected DBSObjectContainer getScopeObject(
-        @NotNull DAICompletionRequest request,
+        @NotNull DAICompletionContext context,
         @NotNull DBCExecutionContext executionContext
     ) {
-        DAICompletionScope scope = request.getContext().getScope();
+        DAICompletionScope scope = context.getScope();
         DBSObjectContainer mainObject = null;
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
         if (contextDefaults != null) {
@@ -125,9 +121,9 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         return mainObject;
     }
 
-    protected abstract REQUEST createCompletionRequest(@NotNull String request);
+    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages);
 
-    protected abstract REQUEST createCompletionRequest(@NotNull String request, int responseSize);
+    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize);
 
     protected abstract SERVICE getServiceInstance(@NotNull DBCExecutionContext executionContext) throws DBException;
 
@@ -135,36 +131,25 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
 
     @Nullable
     protected String processCompletion(
-        @NotNull DAICompletionRequest request,
+        @NotNull List<DAICompletionMessage> messages,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer mainObject,
         @Nullable String completionText,
-        @NotNull IAIFormatter formatter
+        @NotNull IAIFormatter formatter,
+        @NotNull GPTModel model
     ) {
         if (CommonUtils.isEmpty(completionText)) {
             return null;
         }
-        completionText = "SELECT " + completionText.trim() + ";";
 
-        completionText = formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText);
-        if (DBWorkbench.getPlatform().getPreferenceStore()
-            .getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            String[] lines = request.getPromptText().split("\n");
-            StringBuilder completionTextBuilder = new StringBuilder(completionText);
-            for (String line : lines) {
-                if (!CommonUtils.isEmpty(line)) {
-                    String[] singleLineComments = mainObject.getDataSource().getSQLDialect().getSingleLineComments();
-                    if (singleLineComments == null || singleLineComments.length == 0) {
-                        completionTextBuilder.insert(0, "-- " + line.trim() + "\n");
-                    } else {
-                        completionTextBuilder.insert(0, singleLineComments[0] + " " + line.trim() + "\n");
-                    }
-                }
-            }
-            completionText = completionTextBuilder.toString();
+        if (model.isChatAPI()) {
+            completionText = completionText.trim() + ";";
+        } else {
+            completionText = "SELECT " + completionText.trim() + ";";
         }
-        return completionText.trim();
+
+        return formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText).trim();
     }
 
 }

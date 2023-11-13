@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
@@ -50,6 +51,8 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.services.IEvaluationReference;
+import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -113,6 +116,7 @@ import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -233,7 +237,7 @@ public class SQLEditor extends SQLEditorBase implements
     private VerticalButton switchPresentationSQLButton;
     private VerticalButton[] switchPresentationExtraButtons;
 
-    private final ExtraPresentationManager extraPresentationManager = new ExtraPresentationManager();
+    private ExtraPresentationManager extraPresentationManager;
     private final List<SQLEditorListener> listeners = new ArrayList<>();
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
@@ -1092,10 +1096,14 @@ public class SQLEditor extends SQLEditorBase implements
             @Override
             public void widgetSelected(SelectionEvent e) {
                 final VerticalButton button = (VerticalButton) e.item;
-                if (button.isChecked() || presentationSwitchFolder.getSelection() == e.item) {
-                    return;
+                final SQLPresentationDescriptor newPresentation = (SQLPresentationDescriptor) button.getData();
+                final SQLPresentationDescriptor curPresentation = getExtraPresentationDescriptor();
+
+                if (curPresentation != null && curPresentation == newPresentation) {
+                    showExtraPresentation((SQLPresentationDescriptor) null);
+                } else {
+                    showExtraPresentation(newPresentation);
                 }
-                showExtraPresentation((SQLPresentationDescriptor) button.getData());
             }
         };
 
@@ -1107,12 +1115,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         final List<VerticalButton> buttons = new ArrayList<>(presentations.size());
         for (SQLPresentationDescriptor presentation : presentations) {
-            final VerticalButton button = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-            button.setData(presentation);
-            button.setText(presentation.getLabel());
-            button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
+            final VerticalButton button = extraPresentationManager.createPresentationButton(presentation, this);
             button.addSelectionListener(switchListener);
-            button.setToolTipText(presentation.getDescription());
             buttons.add(button);
         }
         switchPresentationExtraButtons = buttons.toArray(VerticalButton[]::new);
@@ -1804,17 +1808,23 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        if (presentation != null && !presentation.isEnabled(getSite())) {
+            return;
+        }
+
+        StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
+
+        try {
+            if (!extraPresentationManager.setActivePresentation(presentation)) {
+                return;
+            }
+        } catch (DBException e) {
+            log.error("Error creating presentation", e);
+        }
+
         resultsSash.setRedraw(false);
 
         try {
-            StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
-
-            try {
-                extraPresentationManager.setActivePresentation(presentation);
-            } catch (DBException e) {
-                log.error("Error creating presentation", e);
-            }
-
             if (extraPresentationManager.activePresentation == null) {
                 stackLayout.topControl = presentationStack.getChildren()[0];
                 getEditorControlWrapper().setFocus();
@@ -1926,10 +1936,14 @@ public class SQLEditor extends SQLEditorBase implements
      * Toggles editor/results maximization
      */
     public void toggleEditorMaximize() {
+        setEditorMaximized(resultsSash.getMaximizedControl() == null);
+    }
+
+    public void setEditorMaximized(boolean maximized) {
         if (isHideQueryText()) {
             return;
         }
-        if (resultsSash.getMaximizedControl() == null) {
+        if (maximized) {
             resultsSash.setMaximizedControl(resultTabs);
             switchFocus(true);
         } else {
@@ -2104,6 +2118,8 @@ public class SQLEditor extends SQLEditorBase implements
                 log.error("Error during SQL editor add-in initialization", ex); //$NON-NLS-1$
             }
         }
+
+        extraPresentationManager = new ExtraPresentationManager();
     }
 
     /**
@@ -3342,7 +3358,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         UIUtils.asyncExec(() -> {
-            topBarMan.update(true);
+            if (topBarMan != null) {
+                topBarMan.update(true);
+            }
             this.updateMultipleResultsPerTabToolItem();
         });
 
@@ -4926,7 +4944,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (executionContext != null) {
             // Refresh active object
             if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     new AbstractJob("Refresh default object") {
                         @Override
@@ -4984,38 +5002,63 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        public void setActivePresentation(@Nullable SQLPresentationDescriptor descriptor) throws DBException {
+        public boolean setActivePresentation(@Nullable SQLPresentationDescriptor descriptor) throws DBException {
             if (presentationStack == null || activePresentationDescriptor == descriptor) {
-                return;
+                // Same presentation, no op
+                return true;
             }
 
-            if (activePresentation != null && !activePresentation.hidePresentation(SQLEditor.this)) {
-                return;
+            if (activePresentation != null && !activePresentation.canHidePresentation(SQLEditor.this)) {
+                // Presentation decided not to close
+                return false;
             }
 
-            if (descriptor != null) {
-                activePresentationDescriptor = descriptor;
-                activePresentation = presentations.get(descriptor);
+            if (descriptor == null) {
+                // Just hide presentation
+                activePresentationDescriptor = null;
+                activePresentation = null;
+                activePresentationPanel = null;
+                return true;
+            }
 
-                if (activePresentation == null) {
+            SQLEditorPresentation presentation = presentations.get(descriptor);
+
+            if (presentation == null) {
+                presentation = descriptor.createPresentation();
+
+                if (presentation.canShowPresentation(SQLEditor.this, true)) {
+                    // Must be done before doing something to presentationStack
                     presentationStackIndices.put(descriptor, presentationStack.getChildren().length);
 
                     final Composite placeholder = new Composite(presentationStack, SWT.NONE);
                     placeholder.setLayout(new FillLayout());
 
-                    activePresentation = descriptor.createPresentation();
+                    if (activePresentation != null) {
+                        activePresentation.hidePresentation(SQLEditor.this);
+                    }
+
+                    activePresentationDescriptor = descriptor;
+                    activePresentation = presentation;
                     activePresentation.createPresentation(placeholder, SQLEditor.this);
                     activePresentation.showPresentation(SQLEditor.this, true);
-
                     presentations.put(descriptor, activePresentation);
-                } else {
-                    activePresentation.showPresentation(SQLEditor.this, false);
+
+                    return true;
                 }
             } else {
-                activePresentationDescriptor = null;
-                activePresentation = null;
-                activePresentationPanel = null;
+                if (presentation.canShowPresentation(SQLEditor.this, false)) {
+                    if (activePresentation != null) {
+                        activePresentation.hidePresentation(SQLEditor.this);
+                    }
+
+                    activePresentationDescriptor = descriptor;
+                    activePresentation = presentation;
+                    activePresentation.showPresentation(SQLEditor.this, false);
+                    return true;
+                }
             }
+
+            return false;
         }
 
         @Nullable
@@ -5025,6 +5068,57 @@ public class SQLEditor extends SQLEditorBase implements
             }
             final int index = presentationStackIndices.get(activePresentationDescriptor);
             return presentationStack.getChildren()[index];
+        }
+
+        @NotNull
+        private VerticalButton createPresentationButton(@NotNull SQLPresentationDescriptor presentation, SQLEditor editor) {
+            final VerticalButton button = new VerticalButton(editor.presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
+            button.setData(presentation);
+            button.setText(presentation.getLabel());
+            button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
+
+            final String toolTip = ActionUtils.findCommandDescription(
+                SQLEditorHandlerSwitchPresentation.CMD_SWITCH_PRESENTATION_ID, getSite(), true,
+                SQLEditorHandlerSwitchPresentation.PARAM_PRESENTATION_ID, presentation.getId()
+            );
+
+            if (CommonUtils.isEmpty(toolTip)) {
+                button.setToolTipText(presentation.getDescription());
+            } else {
+                button.setToolTipText(presentation.getDescription() + " (" + toolTip + ")");
+            }
+
+            final IEvaluationService evaluationService = getSite().getService(IEvaluationService.class);
+            final Expression enabledWhen = presentation.getEnabledWhen();
+
+            if (evaluationService != null && enabledWhen != null) {
+                final IEvaluationReference reference = evaluationService.addEvaluationListener(
+                    enabledWhen,
+                    event -> handlePresentationEnablement(button, presentation, CommonUtils.toBoolean(event.getNewValue())),
+                    "enabled"
+                );
+
+                button.addDisposeListener(e -> evaluationService.removeEvaluationListener(reference));
+            }
+
+            return button;
+        }
+
+        private void handlePresentationEnablement(
+            @NotNull VerticalButton button,
+            @NotNull SQLPresentationDescriptor presentation,
+            boolean enabled
+        ) {
+            if (isDisposed()) {
+                return;
+            }
+
+            if (!enabled && activePresentationDescriptor == presentation) {
+                showExtraPresentation((SQLPresentationDescriptor) null);
+            }
+
+            button.setVisible(enabled);
+            button.getParent().layout(true, true);
         }
 
         public void dispose() {

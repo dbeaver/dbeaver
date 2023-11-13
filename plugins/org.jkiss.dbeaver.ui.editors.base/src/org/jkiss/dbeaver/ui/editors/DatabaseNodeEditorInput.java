@@ -68,7 +68,7 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
             if (node instanceof DBSFolder) {
                 continue;
             }
-            toolTip.append(node.getNodeType());
+            toolTip.append(node.getNodeTypeLabel());
             toolTip.append(": ");
             toolTip.append(node.getNodeName());
             toolTip.append(" \n");

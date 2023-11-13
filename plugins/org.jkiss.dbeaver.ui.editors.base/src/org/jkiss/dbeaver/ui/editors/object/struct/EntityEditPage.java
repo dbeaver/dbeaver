@@ -38,7 +38,7 @@ public class EntityEditPage extends BaseObjectEditPage {
 
     public EntityEditPage(DBPDataSource dataSource, DBSEntityType entityType)
     {
-        super(EditorsMessages.dialog_struct_create_entity_title + entityType.getName());
+        super(EditorsMessages.dialog_struct_create_entity_title + " " + entityType.getName());
         this.dataSource = dataSource;
     }
 

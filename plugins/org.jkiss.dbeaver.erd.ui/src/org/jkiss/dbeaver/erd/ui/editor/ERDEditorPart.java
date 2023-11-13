@@ -16,11 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PrintFigureOperation;
@@ -855,7 +851,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     public void fillNotationsMenu(IMenuManager menu) {
         MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_notation_style);
-        for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getERDNotations()) {
+        for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getNotations()) {
             ntMenu.add(new ChangeERDNotationStyleAction(ntType));
         }
         menu.add(ntMenu);
@@ -1203,10 +1199,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 doSave(new NullProgressMonitor());
                 refreshDiagram(true, true);
             } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
-                DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-                ERDNotationDescriptor notation = ERDNotationRegistry.getInstance()
-                    .getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
-                getDiagram().setDiagramNotation(notation);
+                ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getActiveDescriptor();
+                getDiagram().setDiagramNotation(defaultNotation);
                 refreshDiagram(true, true);
             }
         }

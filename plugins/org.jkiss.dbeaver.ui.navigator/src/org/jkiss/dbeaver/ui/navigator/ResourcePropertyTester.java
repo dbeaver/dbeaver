@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.model.app.*;
@@ -36,6 +37,7 @@ public class ResourcePropertyTester extends PropertyTester
     public static final String PROP_CAN_SET_ACTIVE = "canSetActive";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_IS_LOCAL_FS = "isLocalFS";
+    public static final String PROP_IS_FOLDER = "isFolder";
     public static final String PROP_TYPE = "type";
 
     public ResourcePropertyTester() {
@@ -74,6 +76,8 @@ public class ResourcePropertyTester extends PropertyTester
                 return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
             case PROP_IS_LOCAL_FS:
                 return !(resource instanceof EFSNIOResource) && resource.getLocation() != null;
+            case PROP_IS_FOLDER:
+                return resource instanceof IFolder;
         }
         return false;
     }

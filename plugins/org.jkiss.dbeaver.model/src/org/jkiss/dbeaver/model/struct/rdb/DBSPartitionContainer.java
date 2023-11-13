@@ -14,12 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.struct.rdb;
+
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Collection;
 
 /**
- * Query manager session receiver.
- * It helps us to differ CE and EE products (CE product doesn't have QM database).
+ * Table which contains partitions.
  */
-public interface QMSessionReceiver {
+public interface DBSPartitionContainer {
 
+    Collection<? extends DBSTablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException;
 }
