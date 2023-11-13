@@ -202,7 +202,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         IStorage storage = EditorUtils.getStorageFromInput(getEditorInput());
 
         final DiagramPart diagramPart = getDiagramPart();
-        ERDNotationDescriptor diagramNotation=null;
+        ERDNotationDescriptor diagramNotation = null;
         EntityDiagram existingDiagram = diagramPart.getDiagram();
         if (existingDiagram != null) {
              diagramNotation = existingDiagram.getDiagramNotation();
