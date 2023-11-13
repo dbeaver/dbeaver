@@ -4407,6 +4407,8 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     class SingleTabQueryResultsContainer extends QueryResultsContainer {
+        private static final Integer MIN_VIEWER_HEIGHT = 150;
+        
         private final SingleTabQueryProcessor queryProcessor;
         private final Section section;
 
@@ -4543,6 +4545,9 @@ public class SQLEditor extends SQLEditorBase implements
                 Point spreadsheetSize = s.getSize();
                 int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
                 if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
+                    if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
+                        desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                    }
                     rsvConstrainedLayout.heightHint = desiredViewerHeight;  
                     queryProcessor.relayoutContents();
                 }
