@@ -23,9 +23,12 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -38,11 +41,16 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
@@ -314,6 +322,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private final DummyDbObject dummyDataSource;
     private final DummyDbObject defaultDummyCatalog;
     private final DummyDbObject defaultDummySchema;
+    private final DummyDbObject defaultDummyTable;
     private final Set<String> knownColumnNames;
     private final Set<String> knownTableNames;
     private final Set<String> knownSchemaNames;
@@ -341,10 +350,14 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         if (this.knownSchemaNames.isEmpty()) {
             this.knownSchemaNames.add("dummySchema");
         }
+        if (this.knownTableNames.isEmpty()) {
+            this.knownTableNames.add("dummyTable");
+        }
         
         this.dummyDataSource = this.prepareDataSource();
         this.defaultDummyCatalog = this.dummyDataSource.getChildrenMapImpl().values().stream().findFirst().get();
         this.defaultDummySchema = this.defaultDummyCatalog.getChildrenMapImpl().values().stream().findFirst().get();
+        this.defaultDummyTable = this.defaultDummySchema.getChildrenMapImpl().values().stream().findFirst().get();
     }
     
     private DummyDbObject prepareDataSource() {
@@ -396,4 +409,30 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     public SQLDialect getDialect() {
         return BasicSQLDialect.INSTANCE;
     }
+    
+    @Override
+    public SQLQueryRowsSourceModel getDefaultTable() {
+        return new DummyTableRowsSource();
+    }
+    
+    private class DummyTableRowsSource extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
+        
+        public DummyTableRowsSource() {
+            super();
+        }
+
+        @Override
+        public SQLQuerySymbolClass getSymbolClass() {
+            return SQLQuerySymbolClass.TABLE;
+        }
+
+        @Override
+        protected SQLQueryDataContext propagateContextImpl(SQLQueryDataContext context, SQLQueryRecognitionContext statistics) {
+            context = context.overrideResultTuple(knownColumnNames.stream().map(s -> new SQLQuerySymbol(s)).collect(Collectors.toList()));
+            // statistics.appendError(this.name.entityName, "Rows source table not specified");
+            return context;
+        }
+        
+    }
+    
 }

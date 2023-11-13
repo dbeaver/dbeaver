@@ -75,6 +75,11 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     public SQLDialect getDialect() {
         return this.parent.getDialect();
     }
+    
+    @Override
+    public SQLQueryRowsSourceModel getDefaultTable() {
+        return this.parent.getDefaultTable();
+    }
 }
 
 
