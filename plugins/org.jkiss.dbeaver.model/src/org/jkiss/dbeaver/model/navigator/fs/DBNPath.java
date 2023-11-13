@@ -54,8 +54,13 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     }
 
     @Override
-    public Path getPath() {
+    public synchronized Path getPath() {
         return path;
+    }
+
+    @Override
+    protected void setPath(Path path) {
+        this.path = path;
     }
 
     @Override

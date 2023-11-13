@@ -93,7 +93,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
-    public Path getPath() {
+    public synchronized Path getPath() {
         if (path == null) {
             try {
                 path = root.getRootPath(new VoidProgressMonitor());
@@ -103,6 +103,11 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
             }
         }
         return path;
+    }
+
+    @Override
+    protected synchronized void setPath(Path path) {
+        this.path = path;
     }
 
 }
