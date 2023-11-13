@@ -332,6 +332,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private boolean saveAndCleanup() {
+        if (getWorkbenchConfigurer().emergencyClosing()) {
+            return true;
+        }
+
         try {
             IWorkbenchWindow window = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
