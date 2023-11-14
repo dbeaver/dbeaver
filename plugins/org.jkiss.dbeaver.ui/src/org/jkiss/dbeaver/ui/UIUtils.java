@@ -31,7 +31,9 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -56,7 +58,9 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -1256,6 +1260,49 @@ public class UIUtils {
         if (propDialog != null) {
             propDialog.open();
         }
+    }
+
+    /**
+     * Creates a new link that opens the given preference page either in the current
+     * preference container, is present, or in a new modal dialog.
+     */
+    @NotNull
+    public static Link createPreferenceLink(
+        @NotNull Composite parent,
+        @NotNull String message,
+        @NotNull String pageId,
+        @Nullable IWorkbenchPreferenceContainer pageContainer,
+        @Nullable Object pageData
+    ) {
+        final IPreferenceNode node = PlatformUI.getWorkbench().getPreferenceManager().getElements(PreferenceManager.PRE_ORDER).stream()
+            .filter(next -> next.getId().equals(pageId))
+            .findFirst()
+            .orElse(null);
+
+        final Link link = new Link(parent, 0);
+
+        if (node == null) {
+            link.setText(NLS.bind(WorkbenchMessages.PreferenceNode_NotFound, pageId));
+        } else {
+            link.setText(NLS.bind(message, node.getLabelText()));
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (pageContainer != null) {
+                    // Open in the same dialog
+                    pageContainer.openPage(pageId, pageData);
+                } else {
+                    // Open in a new dialog
+                    PreferencesUtil.createPreferenceDialogOn(
+                        link.getShell(),
+                        pageId,
+                        new String[]{pageId},
+                        pageData,
+                        PreferencesUtil.OPTION_NONE
+                    ).open();
+                }
+            }));
+        }
+
+        return link;
     }
 
     public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
