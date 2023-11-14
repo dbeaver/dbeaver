@@ -43,6 +43,10 @@ public class EFSNIOFileStore extends FileStore {
         this.path = path;
     }
 
+    public Path getPath() {
+        return path;
+    }
+
     @Override
     public String[] childNames(int options, IProgressMonitor monitor) throws CoreException {
         return new String[0];

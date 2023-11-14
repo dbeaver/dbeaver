@@ -505,6 +505,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         this.outputStream = new BufferedOutputStream(
             Files.newOutputStream(
                 outputFile,
+                StandardOpenOption.WRITE,
                 !fileExists ?
                     StandardOpenOption.CREATE_NEW :
                     (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND)),
