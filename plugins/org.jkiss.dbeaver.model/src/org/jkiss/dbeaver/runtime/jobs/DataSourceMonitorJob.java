@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -170,32 +171,16 @@ public class DataSourceMonitorJob extends AbstractJob {
             return;
         }
 
-        DBPPreferenceStore preferenceStore = dsDescriptor.getPreferenceStore();
-        long ttlSeconds = 0;
-        if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
-            // First check datasource settings from the Transactions preference page
-            ttlSeconds = preferenceStore.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
-        }
-        DBPConnectionConfiguration conConfig = dsDescriptor.getConnectionConfiguration();
-        if (ttlSeconds == 0) {
-            // Or get this info from the current connection type
-            DBPConnectionType connectionType = conConfig.getConnectionType();
-            if (connectionType.isAutoCloseTransactions()) {
-                ttlSeconds = connectionType.getCloseIdleConnectionPeriod();
-            }
-        }
-        DBPApplication application = DBWorkbench.getPlatform().getApplication();
-
-        long lastUserActivityTime = -1;
-        if (application instanceof DBPApplicationDesktop) {
-            lastUserActivityTime = ((DBPApplicationDesktop) application).getLastUserActivityTime();
-        }
-        if (lastUserActivityTime <= 0) {
+        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        if (lastUserActivityTime < 0) {
             return;
         }
-        long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
 
-        if (conConfig.getCloseIdleInterval() > 0 && idleInterval > conConfig.getCloseIdleInterval()) {
+        final long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
+        final long disconnectTimeoutSeconds = getDisconnectTimeoutSeconds(dsDescriptor);
+        final long rollbackTimeoutSeconds = getTransactionTimeoutSeconds(dsDescriptor);
+
+        if (disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
             if (DisconnectJob.isInProcess(dsDescriptor)) {
                 return;
             }
@@ -206,7 +191,7 @@ public class DataSourceMonitorJob extends AbstractJob {
             return;
         }
 
-        if (idleInterval < ttlSeconds) {
+        if (idleInterval < rollbackTimeoutSeconds) {
             return;
         }
         if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
@@ -244,4 +229,39 @@ public class DataSourceMonitorJob extends AbstractJob {
         schedule(MONITOR_INTERVAL);
     }
 
+    public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
+        final int timeout = container.getConnectionConfiguration().getCloseIdleInterval();
+        return Math.max(0, timeout);
+    }
+
+    public static long getTransactionTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
+        final DBPPreferenceStore pref = container.getPreferenceStore();
+        final DBPConnectionConfiguration config = container.getConnectionConfiguration();
+        long ttlSeconds = 0;
+
+        if (pref.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+            // First check datasource settings from the Transactions preference page
+            ttlSeconds = pref.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
+        }
+
+        if (ttlSeconds == 0) {
+            // Or get this info from the current connection type
+            final DBPConnectionType connectionType = config.getConnectionType();
+            if (connectionType.isAutoCloseTransactions()) {
+                ttlSeconds = connectionType.getCloseIdleConnectionPeriod();
+            }
+        }
+
+        return Math.max(0, ttlSeconds);
+    }
+
+    public static long getLastUserActivityTime() {
+        long lastUserActivityTime = -1;
+
+        if (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop app) {
+            lastUserActivityTime = app.getLastUserActivityTime();
+        }
+
+        return lastUserActivityTime;
+    }
 }
