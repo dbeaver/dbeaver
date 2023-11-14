@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -783,7 +784,17 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true, owner);
+                boolean supportsCondition = owner.supportsConditionForShowDatabasesStatement();
+                if (!supportsCondition) {
+                    catalogQuery.setLength(0);
+                    catalogQuery.append("SELECT SCHEMA_NAME FROM ").append(MySQLConstants.META_TABLE_SCHEMATA);
+                }
+                JDBCUtils.appendFilterClause(
+                    catalogQuery,
+                    catalogFilters,
+                    supportsCondition ? MySQLConstants.COL_DATABASE_NAME : MySQLConstants.COL_SCHEMA_NAME,
+                    true,
+                    owner);
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
@@ -931,6 +942,30 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     public boolean supportsSysSchema() {
         return isMariaDB() ? isServerVersionAtLeast(10, 6) : isServerVersionAtLeast(5, 7);
+    }
+
+    /**
+     * Returns list of supported index types
+     */
+    public List<DBSIndexType> supportedIndexTypes() {
+        return Arrays.asList(MySQLConstants.INDEX_TYPE_BTREE,
+            MySQLConstants.INDEX_TYPE_FULLTEXT,
+            MySQLConstants.INDEX_TYPE_HASH,
+            MySQLConstants.INDEX_TYPE_RTREE);
+    }
+
+    /**
+     * Returns true if different rename table syntax is used
+     */
+    public boolean supportsAlterTableRenameSyntax() {
+        return false;
+    }
+
+    /**
+     * Return true if WHERE condition can be added for SHOW DATABASES statement
+     */
+    public boolean supportsConditionForShowDatabasesStatement() {
+        return true;
     }
 
 }

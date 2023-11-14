@@ -240,7 +240,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
         BookmarkStorage storage = new BookmarkStorage(
             title,
-            node.getNodeType() + " " + node.getNodeName(), //$NON-NLS-1$
+            node.getNodeTypeLabel() + " " + node.getNodeName(), //$NON-NLS-1$
             node.getNodeIconDefault(),
             node.getDataSourceContainer().getId(),
             nodePath);

@@ -202,12 +202,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
 
         @Override
         public Object[] getPossibleValues(MySQLTableIndex object) {
-            return new DBSIndexType[] {
-                MySQLConstants.INDEX_TYPE_BTREE,
-                MySQLConstants.INDEX_TYPE_FULLTEXT,
-                MySQLConstants.INDEX_TYPE_HASH,
-                MySQLConstants.INDEX_TYPE_RTREE
-            };
+            return object.getDataSource().supportedIndexTypes().toArray();
         }
     }
 }

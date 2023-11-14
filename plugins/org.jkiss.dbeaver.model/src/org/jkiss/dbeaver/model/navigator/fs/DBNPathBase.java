@@ -21,15 +21,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFolder;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
+import org.jkiss.dbeaver.model.fs.nio.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,6 +53,8 @@ import java.util.stream.Stream;
  */
 public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource, DBNLazyNode {
 
+    private static final Log log = Log.getLog(DBNPath.class);
+
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
     private static final ByteNumberFormat numberFormat = new ByteNumberFormat();
@@ -70,6 +70,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     }
 
     public abstract Path getPath();
+    protected abstract void setPath(Path path);
 
     @Override
     protected void dispose(boolean reflect) {
@@ -184,7 +185,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         return null;
     }
 
-    void addChildResource(Path path) {
+    public void addChildResource(Path path) {
         if (children == null) {
             return;
         }
@@ -193,7 +194,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, child));
     }
 
-    void removeChildResource(Path path) {
+    public void removeChildResource(Path path) {
         if (children == null) {
             return;
         }
@@ -237,7 +238,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
         Path path = getPath();
         try {
-            Files.move(path, path.getParent().resolve(newName));
+            setPath(Files.move(path, path.getParent().resolve(newName)));
         } catch (IOException e) {
             throw new DBException("Can't rename resource", e);
         }
@@ -269,7 +270,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (!(folder instanceof IFolder)) {
             throw new DBException("Can't drop files into non-folder");
         }
-        monitor.beginTask("Copy files", nodes.size());
+        monitor.beginTask("Drop files", nodes.size());
         try {
             for (DBNNode node : nodes) {
                 if (monitor.isCanceled()) {
@@ -277,24 +278,56 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
                 }
                 IResource resource = node.getAdapter(IResource.class);
                 if (resource == null || !resource.exists()) {
+                    log.debug("Resource " + resource + " doesn't not exists");
                     continue;
                 }
                 if (!(resource instanceof IFile)) {
+                    log.debug("Resource " + resource + " is not a file");
                     continue;
                 }
                 if (resource.getParent().equals(folder)) {
                     // Already in this container
                     continue;
                 }
+                boolean doCopy = !isTheSameFileSystem(node);
+                boolean doDelete = false;
                 monitor.subTask("Copy file " + resource.getName());
                 try {
+
                     IFile targetFile = ((IFolder) folder).getFile(resource.getName());
-                    try (InputStream is = ((IFile) resource).getContents()) {
-                        if (targetFile.exists()) {
-                            targetFile.setContents(is, true, false, monitor.getNestedMonitor());
-                        } else {
-                            targetFile.create(is, true, monitor.getNestedMonitor());
+
+                    if (!doCopy) {
+                        // Try to move first
+                        // Note that move is not supported by some file systems
+                        boolean wasMoved = false;
+                        if (targetFile instanceof EFSNIOFile nioFile) {
+                            EFSNIOPath nioTargetPath = new EFSNIOPath(nioFile.getNioPath());
+                            try {
+                                resource.move(nioTargetPath, true, monitor.getNestedMonitor());
+                                wasMoved = true;
+                            } catch (UnsupportedOperationException e) {
+                                log.debug("Underlying FS doesn't support file move. Do copy instead");
+                            }
                         }
+                        if (!wasMoved) {
+                            doCopy = true;
+                            doDelete = true;
+                        }
+                    }
+
+                    // Copy files
+                    if (doCopy) {
+                        try (InputStream is = ((IFile) resource).getContents()) {
+                            if (targetFile.exists()) {
+                                targetFile.setContents(is, true, false, monitor.getNestedMonitor());
+                            } else {
+                                targetFile.create(is, true, monitor.getNestedMonitor());
+                            }
+                        }
+                    }
+                    if (doDelete) {
+                        // Delete source file after copy
+                        resource.delete(true, monitor.getNestedMonitor());
                     }
                 } finally {
                     monitor.worked(1);
@@ -305,6 +338,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         } finally {
             monitor.done();
         }
+    }
+
+    protected boolean isTheSameFileSystem(DBNNode node) {
+        return false;
     }
 
     protected void filterChildren(List<DBNNode> list) {

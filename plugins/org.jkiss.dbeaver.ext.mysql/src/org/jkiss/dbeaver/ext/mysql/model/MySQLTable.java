@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPartitionContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -47,7 +48,7 @@ import java.util.*;
 /**
  * MySQLTable
  */
-public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, DBPReferentialIntegrityController {
+public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer {
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";

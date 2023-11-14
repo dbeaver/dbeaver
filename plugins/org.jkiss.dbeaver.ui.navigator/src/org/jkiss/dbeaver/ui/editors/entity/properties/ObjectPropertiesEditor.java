@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -370,14 +371,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         // active folder by focus (which it doesn't have)
         // If accessibility is active, set focus to the page control rather the active editor so
         // the tab names can be read correctly
-        if (folderComposite != null && !EditorAccessibleAdapter.isActive(folderComposite.getParent())) {
-            ITabbedFolder selectedPage = folderComposite.getActiveFolder();
-            if (selectedPage != null) {
-                selectedPage.setFocus();
-                //            IEditorActionBarContributor contributor = pageContributors.get(selectedPage);
-            }
-        } else if (pageControl != null) {
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             pageControl.setFocus();
+        } else {
+            if (folderComposite != null) {
+                ITabbedFolder selectedPage = folderComposite.getActiveFolder();
+                if (selectedPage != null) {
+                    selectedPage.setFocus();
+                }
+            } else if (pageControl != null) {
+                pageControl.setFocus();
+            }
         }
     }
 

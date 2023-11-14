@@ -58,7 +58,9 @@ public class SQLPresentationRegistry
             }
         }
 
-        presentations.sort(Comparator.comparingInt(SQLPresentationDescriptor::getOrder));
+        presentations.sort(Comparator
+            .comparingInt(SQLPresentationDescriptor::getOrder)
+            .thenComparing(SQLPresentationDescriptor::getLabel));
     }
 
     public void dispose()
