@@ -77,6 +77,9 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
         Composite parentTab = context.getParent();
         if (parentTab instanceof CTabFolder) {
             CTabFolder tabFoler = (CTabFolder) parentTab;
+            if (tabFoler.getSelection() == null) {
+                return msg;
+            }
             String text = tabFoler.getSelection().getText();
             if (text != null) {
                 msg = String.format(ACTIVE_NAME_TAB,
