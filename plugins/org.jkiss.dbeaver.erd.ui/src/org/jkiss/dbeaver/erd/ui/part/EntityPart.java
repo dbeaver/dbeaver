@@ -303,13 +303,13 @@ public class EntityPart extends NodePart {
     }
 
     private boolean supportsAttributeAssociations() {
-        return ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+        return getEditor().getDiagramRouter().supportedAttributeAssociation()
             && !ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences());
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        if (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation() 
+        if (!getEditor().getDiagramRouter().supportedAttributeAssociation() 
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return super.getModelTargetConnections();
         }
