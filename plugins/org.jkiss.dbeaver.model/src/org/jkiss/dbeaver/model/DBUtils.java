@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
@@ -2490,6 +2491,80 @@ public final class DBUtils {
             }
         }
         return dataSource.isConnected();
+    }
+
+    public static long readRowCount(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
+        @Nullable DBSDataContainer dataContainer,
+        @Nullable DBDDataFilter dataFilter,
+        @NotNull Object controller
+    ) throws DBException {
+        if (executionContext == null || dataContainer == null) {
+            throw new DBException(ModelMessages.error_not_connected_to_database);
+        }
+        long[] result = new long[1];
+        DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+            try (DBCSession session = executionContext.openSession(
+                monitor,
+                DBCExecutionPurpose.USER,
+                "Read total row count")) {
+                long rowCount = dataContainer.countData(
+                    new AbstractExecutionSource(dataContainer, executionContext, controller),
+                    session,
+                    dataFilter,
+                    DBSDataContainer.FLAG_NONE);
+                result[0] = rowCount;
+            } catch (DBCException e) {
+                throw new InvocationTargetException(e);
+            }
+        });
+        return result[0];
+    }
+
+    public static long countDataFromQuery(
+        @NotNull DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull SQLQuery query
+    ) throws DBCException {
+        try (DBCStatement dbStatement = makeStatement(source, session, DBCStatementType.SCRIPT, query, 0, 0)) {
+            if (dbStatement.executeStatement()) {
+                try (DBCResultSet rs = dbStatement.openResultSet()) {
+                    if (rs.nextRow()) {
+                        List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
+                        Object countValue = null;
+                        if (resultAttrs.size() == 1) {
+                            countValue = rs.getAttributeValue(0);
+                        } else {
+                            // In some databases (Influx?) SELECT count(*) produces multiple columns. Try to find first one with 'count' in its name.
+                            for (int i = 0; i < resultAttrs.size(); i++) {
+                                DBCAttributeMetaData ma = resultAttrs.get(i);
+                                if (ma.getName().toLowerCase(Locale.ENGLISH).contains("count")) {
+                                    countValue = rs.getAttributeValue(i);
+                                    break;
+                                }
+                            }
+                        }
+                        if (countValue instanceof Map && ((Map<?, ?>) countValue).size() == 1) {
+                            // For document-based DBs
+                            Object singleValue = ((Map<?, ?>) countValue).values().iterator().next();
+                            if (singleValue instanceof Number) {
+                                countValue = singleValue;
+                            }
+                        }
+                        if (countValue instanceof Number) {
+                            return ((Number) countValue).longValue();
+                        } else {
+                            throw new DBCException("Unexpected row count value: " + countValue);
+                        }
+                    } else {
+                        throw new DBCException("Row count result is empty");
+                    }
+                }
+            } else {
+                throw new DBCException("Row count query didn't return any value");
+            }
+        }
     }
 
     public interface ChildExtractor<PARENT, CHILD> {
