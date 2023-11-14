@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.RowDataReceiver;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
@@ -972,58 +973,6 @@ class ResultSetPersister {
         }
     }
 
-    class RowDataReceiver implements DBDDataReceiver {
-        private final DBDAttributeBinding[] curAttributes;
-        private Object[] rowValues;
-
-        RowDataReceiver(DBDAttributeBinding[] curAttributes) {
-            this.curAttributes = curAttributes;
-        }
-
-        @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) {
-
-        }
-
-        @Override
-        public void fetchRow(DBCSession session, DBCResultSet resultSet)
-            throws DBCException {
-            DBCResultSetMetaData rsMeta = resultSet.getMeta();
-            // Compare attributes with existing model attributes
-            List<DBCAttributeMetaData> attributes = rsMeta.getAttributes();
-            if (attributes.size() != curAttributes.length) {
-                log.debug("Wrong meta attributes count (" + attributes.size() + " <> " + curAttributes.length + ") - can't refresh");
-                return;
-            }
-            for (int i = 0; i < curAttributes.length; i++) {
-                DBCAttributeMetaData metaAttribute = curAttributes[i].getMetaAttribute();
-                if (metaAttribute == null ||
-                    !CommonUtils.equalObjects(metaAttribute.getName(), attributes.get(i).getName())) {
-                    log.debug("Attribute '" + metaAttribute + "' doesn't match '" + attributes.get(i).getName() + "'");
-                    return;
-                }
-            }
-
-            rowValues = new Object[curAttributes.length];
-            for (int i = 0; i < curAttributes.length; i++) {
-                final DBDAttributeBinding attr = curAttributes[i];
-                DBDValueHandler valueHandler = attr.getValueHandler();
-                Object attrValue = valueHandler.fetchValueObject(session, resultSet, attr, i);
-                rowValues[i] = attrValue;
-            }
-
-        }
-
-        @Override
-        public void fetchEnd(DBCSession session, DBCResultSet resultSet) {
-
-        }
-
-        @Override
-        public void close() {
-        }
-    }
-
     private class RowRefreshJob extends ResultSetJobAbstract {
 
         private final DBDRowIdentifier rowIdentifier;
@@ -1088,7 +1037,7 @@ class ResultSetPersister {
                             0,
                             DBSDataContainer.FLAG_REFRESH,
                             0);
-                        refreshValues[i] = dataReceiver.rowValues;
+                        refreshValues[i] = dataReceiver.getRowValues();
                     }
                 }
 

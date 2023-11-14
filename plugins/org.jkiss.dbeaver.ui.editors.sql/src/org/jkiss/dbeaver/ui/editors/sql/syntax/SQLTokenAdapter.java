@@ -34,7 +34,7 @@ public class SQLTokenAdapter extends Token {
 
     private final TPToken token;
 
-    SQLTokenAdapter(TPToken token, SQLRuleScanner scanner) {
+    public SQLTokenAdapter(TPToken token, SQLRuleScanner scanner) {
         super(makeTextAttribute(token, scanner));
         this.token = token;
     }
@@ -94,6 +94,30 @@ public class SQLTokenAdapter extends Token {
                 case T_VARIABLE:
                     colorKey = SQLConstants.CONFIG_COLOR_PARAMETER;
                     style = scanner.getKeywordStyle();
+                    break;
+                case T_TABLE:
+                    colorKey = SQLConstants.CONFIG_COLOR_TABLE;
+                    style = SWT.NORMAL;
+                    break;
+                case T_TABLE_ALIAS:
+                    colorKey = SQLConstants.CONFIG_COLOR_TABLE;
+                    style = SWT.ITALIC;
+                    break;
+                case T_COLUMN:
+                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN;
+                    style = SWT.NORMAL;
+                    break;
+                case T_COLUMN_DERIVED:
+                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN;
+                    style = SWT.ITALIC;
+                    break;
+                case T_SCHEMA:
+                    colorKey = SQLConstants.CONFIG_COLOR_SCHEMA;
+                    style = SWT.NORMAL;
+                    break;
+                case T_SEMANTIC_ERROR:
+                    colorKey = SQLConstants.CONFIG_COLOR_SEMANTIC_ERROR;
+                    style = SWT.BOLD | SWT.ITALIC | TextAttribute.UNDERLINE;
                     break;
                 default:
                     colorKey = SQLConstants.CONFIG_COLOR_TEXT;

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
@@ -791,7 +792,9 @@ public class PostgreUtils {
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePrivilegeOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (object.isPersisted() && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(object, true);
-            actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
+            if (object.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
+                actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
+            }
 
             // Owner
             PostgreRole owner = object.getOwner(monitor);

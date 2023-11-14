@@ -58,7 +58,8 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-sshj -->
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact> <!-- repo:eclipse-bundle-apache-ant -->
-
+								<!-- Jackson -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jackson:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-batik -->
 								<!-- GraphQL -->

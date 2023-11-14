@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.fs.nio;
 
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -369,11 +368,19 @@ public abstract class EFSNIOResource extends PlatformObject implements DBFFileSt
     }
 
     public void move(IPath destination, boolean force, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        move(destination, IResource.FORCE, monitor);
     }
 
     public void move(IPath destination, int updateFlags, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            Path targetPath = destination.toPath();
+            Files.move(nioPath, targetPath);
+
+            EFSNIOMonitor.notifyResourceChange(new EFSNIOFile(root, targetPath), EFSNIOListener.Action.CREATE);
+            EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void move(IProjectDescription description, boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
@@ -481,7 +488,7 @@ public abstract class EFSNIOResource extends PlatformObject implements DBFFileSt
     }
 
     @Override
-    public IFileStore getFileStore() {
+    public EFSNIOFileStore getFileStore() {
         return new EFSNIOFileStore(getLocationURI(), getNioPath());
     }
 }
