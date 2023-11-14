@@ -31,8 +31,7 @@ import java.nio.file.Path;
 /**
  * DBNPath
  */
-public class DBNPath extends DBNPathBase implements DBNStreamData
-{
+public class DBNPath extends DBNPathBase implements DBNStreamData {
     private static final Log log = Log.getLog(DBNPath.class);
 
     private Path path;
@@ -97,6 +96,14 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
             isDirectory = Files.isDirectory(path);
         }
         return isDirectory;
+    }
+
+    @Override
+    protected boolean isTheSameFileSystem(DBNNode node) {
+        if (node instanceof DBNPath pn) {
+            return path.getFileSystem().equals(pn.path.getFileSystem());
+        }
+        return super.isTheSameFileSystem(node);
     }
 
     @Override

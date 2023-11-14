@@ -148,7 +148,8 @@ public class DBFUtils {
                         uri.getScheme(),
                         uri.getHost(),
                         uri.getPath(),
-                        DBFFileSystemManager.QUERY_PARAM_FS_ID + "=" + fileSystemId
+                        DBFFileSystemManager.QUERY_PARAM_FS_ID + "=" + fileSystemId,
+                        null
                     );
                 }
             } catch (URISyntaxException e) {
