@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLBackgroundParsingJob;
 
 import java.util.*;
 
@@ -91,21 +92,22 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         return posList;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, SQLRuleManager ruleManager) {
+    public void refreshRules(@Nullable DBPDataSource dataSource, SQLRuleManager ruleManager, SQLBackgroundParsingJob backgroundParsingJob) {
         tokenMap.clear();
-
-
         boolean boldKeywords = dataSource == null ?
                 DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :
                 dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
         keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
 
         TPRule[] allRules = ruleManager.getAllRules();
+        IRule[] extraRules = backgroundParsingJob != null ? backgroundParsingJob.prepareRules(this) : new IRule[0];
 
-        IRule[] result = new IRule[allRules.length];
-        for (int i = 0; i < allRules.length; i++) {
-            result[i] = adaptRule(allRules[i]);
+        IRule[] result = new IRule[allRules.length + extraRules.length];
+        int i = 0;
+        for (;i < allRules.length; i++) {
+            result[i + extraRules.length] = adaptRule(allRules[i]);
         }
+        System.arraycopy(extraRules, 0, result, 0, extraRules.length);
         setRules(result);
     }
 
@@ -189,5 +191,4 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
             return "Adapter of [" + rule.toString() + "]";
         }
     }
-
 }

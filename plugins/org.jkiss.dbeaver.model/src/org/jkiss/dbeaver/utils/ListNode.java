@@ -35,7 +35,19 @@ public class ListNode<T> implements Iterable<T> {
         this.next = next;
         this.data = data;
     }
+    
+    public static <T> boolean hasAny(@Nullable ListNode<T> list) {
+        return list != null;
+    }
 
+    public static <T> boolean hasOne(@Nullable ListNode<T> list) {
+        return list != null && list.next == null;
+    }
+
+    public static <T> boolean hasMany(@Nullable ListNode<T> list) {
+        return list != null && list.next != null;
+    }
+    
     @NotNull
     public static <T> ListNode<T> of(@NotNull T data) {
         return new ListNode<T>(null, data);

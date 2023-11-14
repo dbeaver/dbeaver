@@ -18,19 +18,22 @@
 package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.nio.file.spi.FileSystemProvider;
+import java.net.URI;
+import java.nio.file.Path;
 
 /**
  * Virtual file system provider
  */
 public interface DBFFileSystemProvider extends DBPObject {
+
+    @NotNull
+    Path getPathByURI(@NotNull DBRProgressMonitor monitor, @NotNull URI uri, @NotNull DBFVirtualFileSystem[] fileSystems) throws DBException;
+
     DBFVirtualFileSystem[] getAvailableFileSystems(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPProject project

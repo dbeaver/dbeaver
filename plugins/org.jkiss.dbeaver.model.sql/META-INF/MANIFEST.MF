@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.model.sql.internal.SQLModelActivator
 Export-Package: org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.model.sql.analyzer,
  org.jkiss.dbeaver.model.sql.commands,
  org.jkiss.dbeaver.model.sql.completion,
  org.jkiss.dbeaver.model.sql.data,
