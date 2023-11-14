@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.ai.controls;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -29,26 +27,19 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,8 +49,8 @@ import java.util.*;
 public class ScopeSelectorControl extends Composite {
     private static final Log log = Log.getLog(ScopeSelectorControl.class);
 
-    private final DBSLogicalDataSource dataSource;
-    private final DBCExecutionContext executionContext;
+    private DBSLogicalDataSource dataSource;
+    private DBCExecutionContext executionContext;
 
     private final Combo scopeCombo;
     private final Text scopeText;
@@ -99,11 +90,7 @@ public class ScopeSelectorControl extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                currentScope = CommonUtils.fromOrdinal(DAICompletionScope.class, scopeCombo.getSelectionIndex());
-                showScopeSettings(currentScope);
-                if (currentScope == DAICompletionScope.CUSTOM) {
-                    showScopeConfiguration();
-                }
+                changeScope(CommonUtils.fromOrdinal(DAICompletionScope.class, scopeCombo.getSelectionIndex()));
             }
         });
 
@@ -118,9 +105,15 @@ public class ScopeSelectorControl extends Composite {
             toolBar,
             "Customize",
             UIIcon.RS_DETAILS,
-            SelectionListener.widgetSelectedAdapter(e -> showScopeConfiguration())
+            SelectionListener.widgetSelectedAdapter(e -> changeScope(DAICompletionScope.CUSTOM))
         );
 
+        showScopeSettings(currentScope);
+    }
+
+    public void setInput(@NotNull DBSLogicalDataSource dataSource, @NotNull DBCExecutionContext executionContext) {
+        this.dataSource = dataSource;
+        this.executionContext = executionContext;
         showScopeSettings(currentScope);
     }
 
@@ -151,21 +144,17 @@ public class ScopeSelectorControl extends Composite {
 
     @NotNull
     public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
-        List<DBSEntity> entities = new ArrayList<>();
-        try {
-            DBPDataSource dataSource = executionContext.getDataSource();
-            if (dataSource instanceof DBSObjectContainer) {
-                monitor.beginTask("Load custom entities", 1);
-                try {
-                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) dataSource, entities);
-                } finally {
-                    monitor.done();
-                }
-            }
-        } catch (Exception e) {
-            log.error(e);
-        }
-        return entities;
+        return loadCustomEntities(monitor, executionContext.getDataSource(), checkedObjectIds);
+    }
+
+    @NotNull
+    public DBSLogicalDataSource getDataSource() {
+        return dataSource;
+    }
+
+    @NotNull
+    public DBCExecutionContext getExecutionContext() {
+        return executionContext;
     }
 
     private void showScopeSettings(@NotNull DAICompletionScope scope) {
@@ -192,186 +181,68 @@ public class ScopeSelectorControl extends Composite {
 
         scopeConfigItem.setEnabled(scope == DAICompletionScope.CUSTOM);
         scopeText.setText(CommonUtils.toString(text, "N/A"));
+
+        requestLayout();
+        layout(true, true);
     }
 
-    private void loadCheckedEntitiesById(
+    @NotNull
+    public static List<DBSEntity> loadCustomEntities(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull Set<String> ids
+    ) {
+        List<DBSEntity> entities = new ArrayList<>();
+        try {
+            if (dataSource instanceof DBSObjectContainer) {
+                monitor.beginTask("Load custom entities", 1);
+                try {
+                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) dataSource, ids, entities);
+                } finally {
+                    monitor.done();
+                }
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+        return entities;
+    }
+
+
+    private static void loadCheckedEntitiesById(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObjectContainer container,
-        @NotNull List<DBSEntity> entities
+        @NotNull Set<String> ids,
+        @NotNull List<DBSEntity> output
     ) throws DBException {
         Collection<? extends DBSObject> children = container.getChildren(monitor);
 
         if (children != null) {
             for (DBSObject child : children) {
                 if (child instanceof DBSEntity) {
-                    if (checkedObjectIds.contains(DBUtils.getObjectFullId(child))) {
-                        entities.add((DBSEntity) child);
+                    if (ids.contains(DBUtils.getObjectFullId(child))) {
+                        output.add((DBSEntity) child);
                     }
                 } else if (child instanceof DBSStructContainer) {
-                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) child, entities);
+                    loadCheckedEntitiesById(monitor, (DBSObjectContainer) child, ids, output);
                 }
             }
         }
     }
 
-    private void showScopeConfiguration() {
-        ScopeConfigDialog dialog = new ScopeConfigDialog(getShell(), checkedObjectIds);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return;
-        }
-
-        checkedObjectIds.clear();
-        checkedObjectIds.addAll(dialog.checkedObjectIds);
-        showScopeSettings(DAICompletionScope.CUSTOM);
-    }
-
-    private class ScopeConfigDialog extends BaseDialog {
-        private Tree objectTree;
-        private final Set<String> checkedObjectIds;
-
-        public ScopeConfigDialog(@NotNull Shell shell, Set<String> checkedIds) {
-            super(shell, "Customize scope", DBIcon.AI);
-            this.checkedObjectIds = new LinkedHashSet<>(checkedIds);
-        }
-
-        @Override
-        protected Composite createDialogArea(Composite parent) {
-            Composite composite = super.createDialogArea(parent);
-
-            objectTree = new Tree(composite, SWT.CHECK);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 400;
-            gd.heightHint = 300;
-            objectTree.setLayoutData(gd);
-            objectTree.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (e.detail != SWT.CHECK) {
-                        return;
-                    }
-                    TreeItem item = (TreeItem) e.item;
-                    if (item.getData() instanceof DBSStructContainer) {
-                        checkTreeItems(item.getItems(), item.getChecked());
-                    }
-                }
-
-                private void checkTreeItems(TreeItem[] items, boolean check) {
-                    for (TreeItem child : items) {
-                        child.setChecked(check);
-                        if (child.getData() instanceof DBSEntity) {
-
-                        } else {
-                            TreeItem[] children = child.getItems();
-                            if (!ArrayUtils.isEmpty(children)) {
-                                checkTreeItems(children, check);
-                            }
-                        }
-                    }
-                }
-            });
-
-            loadObjects(objectTree, executionContext.getDataSource());
-
-            return composite;
-        }
-
-        private void loadObjects(Tree objectTree, DBPDataSource ds) {
-            new AbstractJob("Load database structure") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    if (ds instanceof DBSObjectContainer) {
-                        try {
-                            loadContainer(monitor, objectTree, null, (DBSObjectContainer) ds, checkedObjectIds);
-                        } catch (Exception e) {
-                            return GeneralUtils.makeExceptionStatus(e);
-                        }
-                        UIUtils.syncExec(() -> {
-                            for (TreeItem item : objectTree.getItems()) {
-                                item.setExpanded(true);
-                            }
-                        });
-                    }
-                    return Status.OK_STATUS;
-                }
-            }.schedule();
-        }
-
-        private void loadContainer(
-            DBRProgressMonitor monitor,
-            Tree objectTree,
-            TreeItem parentItem,
-            DBSObjectContainer objectContainer,
-            Set<String> checkedObjectIds
-        ) throws DBException {
-            Collection<? extends DBSObject> children;
-            try {
-                children = objectContainer.getChildren(monitor);
-            } catch (Exception e) {
-                log.debug("Error loading container '" + objectContainer.getName() + "' contents: " + e.getMessage());
+    public void changeScope(@NotNull DAICompletionScope scope) {
+        if (scope == DAICompletionScope.CUSTOM) {
+            final ScopeConfigDialog dialog = new ScopeConfigDialog(getShell(), checkedObjectIds, executionContext.getDataSource());
+            if (dialog.open() != IDialogConstants.OK_ID) {
                 return;
             }
-            if (children == null) {
-                return;
-            }
-            Map<TreeItem, DBSObjectContainer> addedContainers = new LinkedHashMap<>();
-            UIUtils.syncExec(() -> {
-                for (DBSObject child : children) {
-                    if (monitor.isCanceled()) {
-                        return;
-                    }
-                    if (!(child instanceof DBSStructContainer) && !(child instanceof DBSEntity)) {
-                        continue;
-                    }
-                    DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, child, false);
-                    if (node == null) {
-                        continue;
-                    }
-                    TreeItem item = parentItem == null ?
-                        new TreeItem(objectTree, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
-                    item.setData(child);
-                    item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
-                    item.setText(node.getNodeName());
-                    String objectId = DBUtils.getObjectFullId(child);
-                    if (checkedObjectIds.contains(objectId)) {
-                        item.setChecked(true);
-                        if (parentItem != null && !parentItem.getExpanded()) {
-                            parentItem.setExpanded(true);
-                        }
-                    }
-                    if (child instanceof DBSObjectContainer) {
-                        addedContainers.put(item, (DBSObjectContainer) child);
-                    }
-                }
-            });
-            if (monitor.isCanceled()) {
-                return;
-            }
-            for (Map.Entry<TreeItem, DBSObjectContainer> contItem : addedContainers.entrySet()) {
-                DBSObjectContainer object = contItem.getValue();
-                loadContainer(monitor, objectTree, contItem.getKey(), object, checkedObjectIds);
-            }
-        }
 
-        @Override
-        protected void okPressed() {
             checkedObjectIds.clear();
-            collectCheckedObjects(objectTree.getItems());
-
-            super.okPressed();
+            checkedObjectIds.addAll(dialog.getCheckedObjectIds());
         }
 
-        private void collectCheckedObjects(TreeItem[] items) {
-            for (TreeItem item : items) {
-                if (item.getChecked()) {
-                    if (item.getData() instanceof DBSEntity) {
-                        checkedObjectIds.add(DBUtils.getObjectFullId((DBSEntity) item.getData()));
-                    }
-                }
-                TreeItem[] children = item.getItems();
-                if (!ArrayUtils.isEmpty(children)) {
-                    collectCheckedObjects(children);
-                }
-            }
-        }
+        currentScope = scope;
+        showScopeSettings(scope);
     }
+
 }

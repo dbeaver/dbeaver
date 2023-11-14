@@ -23,6 +23,11 @@
             'org.jkiss.dbeaver.sql.resultset.color.datetime.foreground=92,162,89'
             'org.jkiss.dbeaver.sql.resultset.color.numeric.foreground=192,192,255'
             'org.jkiss.dbeaver.sql.resultset.color.string.foreground=192,192,192'
+            'org.jkiss.dbeaver.sql.editor.color.schema.foreground=204,155,117'
+            'org.jkiss.dbeaver.sql.editor.color.column.derived.foreground=0,184,184'
+            'org.jkiss.dbeaver.sql.editor.color.column.foreground=0,184,184'
+            'org.jkiss.dbeaver.sql.editor.color.table.alias.foreground=183,136,211'
+            'org.jkiss.dbeaver.sql.editor.color.table.foreground=183,136,211'
 
             'org.jkiss.dbeaver.sql.editor.color.text.foreground=158,158,158'
             'org.jkiss.dbeaver.sql.editor.color.text.background=0,0,0'

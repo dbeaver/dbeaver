@@ -51,10 +51,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * MySQLCatalog
@@ -694,7 +691,9 @@ public class MySQLCatalog implements
                 indexType = MySQLConstants.INDEX_TYPE_BTREE;
             } else if (MySQLConstants.INDEX_TYPE_FULLTEXT.getId().equals(indexTypeName)) {
                 indexType = MySQLConstants.INDEX_TYPE_FULLTEXT;
-            } else if (MySQLConstants.INDEX_TYPE_HASH.getId().equals(indexTypeName)) {
+            } else if (CommonUtils.isNotEmpty(indexTypeName) &&
+                indexTypeName.toUpperCase(Locale.ENGLISH).contains(MySQLConstants.INDEX_TYPE_HASH.getId().toUpperCase(Locale.ENGLISH))
+            ) {
                 indexType = MySQLConstants.INDEX_TYPE_HASH;
             } else if (MySQLConstants.INDEX_TYPE_RTREE.getId().equals(indexTypeName)) {
                 indexType = MySQLConstants.INDEX_TYPE_RTREE;

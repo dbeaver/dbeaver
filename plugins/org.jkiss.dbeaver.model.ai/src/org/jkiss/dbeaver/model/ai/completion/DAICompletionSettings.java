@@ -36,15 +36,14 @@ public class DAICompletionSettings {
 
     private static final Log log = Log.getLog(DAICompletionSettings.class);
 
-    private final DBPDataSourceContainer dataSource;
+    private DBPDataSourceContainer dataSource;
     private boolean metaTransferConfirmed;
     private boolean allowMetaTransfer;
     private DAICompletionScope scope;
     private String[] customObjectIds;
 
     public DAICompletionSettings(DBPDataSourceContainer dataSource) {
-        this.dataSource = dataSource;
-        loadSettings();
+        setDataSource(dataSource);
     }
 
     public boolean isMetaTransferConfirmed() {
@@ -77,6 +76,11 @@ public class DAICompletionSettings {
 
     public void setCustomObjectIds(String[] customObjectIds) {
         this.customObjectIds = customObjectIds;
+    }
+
+    public void setDataSource(@NotNull DBPDataSourceContainer dataSource) {
+        this.dataSource = dataSource;
+        loadSettings();
     }
 
     @NotNull

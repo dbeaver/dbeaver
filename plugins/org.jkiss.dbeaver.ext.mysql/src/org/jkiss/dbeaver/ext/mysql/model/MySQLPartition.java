@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
@@ -128,6 +129,12 @@ public class MySQLPartition extends MySQLTable implements DBSTablePartition {
             subPartitions = new ArrayList<>();
         }
         subPartitions.add(partition);
+    }
+
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return table;
     }
 
     public MySQLPartition getParent()
