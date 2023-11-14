@@ -2463,17 +2463,18 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         List<SQLScriptElement> elements;
-        if (script) {
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        if (script ||
+            selection.getLength() > 1 // if we selected several queries - they should not be inside one SQLQuery instance
+        ) {
             if (executeFromPosition) {
                 // Get all queries from the current position
-                ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
                 elements = extractScriptQueries(selection.getOffset(), document.getLength(), true, false, true);
                 // Replace first query with query under cursor for case if the cursor is in the middle of the query
                 elements.remove(0);
                 elements.add(0, extractActiveQuery());
             } else {
                 // Execute all SQL statements consequently
-                ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
                 if (selection.getLength() > 1) {
                     elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
                 } else {
@@ -2550,12 +2551,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (queries.isEmpty()) {
             // Nothing to process
             return false;
-        }
-
-        // Single-tabbed mode always uses new tab
-        boolean useSingleTab = !useTabPerQuery(queries.size() == 1);
-        if (useSingleTab) {
-            newTab = true;
         }
         
         final DBPDataSourceContainer container = getDataSourceContainer();
@@ -2686,7 +2681,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Just create a new query processor
                 if (!foundSuitableTab) {
                     // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
-                    if (useSingleTab && curQueryProcessor instanceof MultiTabsQueryProcessor 
+                    if (curQueryProcessor instanceof MultiTabsQueryProcessor 
                         && curQueryProcessor.getResultContainers().size() == 1
                         && !curQueryProcessor.getFirstResults().viewer.hasData()
                     ) {
@@ -3783,6 +3778,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     class SingleTabQueryProcessor extends QueryProcessor {
+        private static final int SCROLL_SPEED = 10;
         private boolean tabCreated;
         private CTabItem resultsTab;
         private ScrolledComposite tabContentScroller;
@@ -3854,6 +3850,28 @@ public class SQLEditor extends SQLEditorBase implements
             sectionsContainer.setLayout(new GridLayout(1, false));
             sectionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             tabContentScroller.setContent(sectionsContainer);
+
+            Listener scrollListener = event -> {
+                Control underScroll = (Control) event.widget;
+                if (underScroll.getShell() == tabContentScroller.getShell() && tabContentScroller.isVisible()) {
+                    Point clickedPoint = underScroll.toDisplay(event.x, event.y);
+                    if (tabContentScroller.getClientArea().contains(tabContentScroller.toControl(clickedPoint))) {
+                        for (Control c = underScroll; c != null; c = c.getParent()) {
+                            if (c == tabContentScroller) {
+                                Point offset = tabContentScroller.getOrigin();
+                                offset.y -= event.count * SCROLL_SPEED;
+                                if (offset.y < 0) {
+                                    offset.y = 0;
+                                }
+                                tabContentScroller.setOrigin(offset);
+                                event.doit = false;
+                            }
+                        }
+                    }
+                }
+            };
+            tabContentScroller.getDisplay().addFilter(SWT.MouseVerticalWheel, scrollListener);
+            tabContentScroller.addDisposeListener(e -> tabContentScroller.getDisplay().removeFilter(SWT.MouseVerticalWheel, scrollListener));
         }
         
         @Override
@@ -4451,12 +4469,16 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public IResultSetDecorator createResultSetDecorator() {
-            return new QueryResultsDecorator() {
-                @Override
-                public long getDecoratorFeatures() {
-                    return FEATURE_STATUS_BAR | FEATURE_PANELS | FEATURE_PRESENTATIONS | FEATURE_EDIT | FEATURE_LINKS;
-                }
-            };
+            if (getActivePreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE)) {
+                return super.createResultSetDecorator();
+            } else {
+                return new QueryResultsDecorator() {
+                    @Override
+                    public long getDecoratorFeatures() {
+                        return FEATURE_STATUS_BAR | FEATURE_PANELS | FEATURE_PRESENTATIONS | FEATURE_EDIT | FEATURE_LINKS;
+                    }
+                };
+            }
         }
         
         private void setupSection(@NotNull Composite sectionContents) {
