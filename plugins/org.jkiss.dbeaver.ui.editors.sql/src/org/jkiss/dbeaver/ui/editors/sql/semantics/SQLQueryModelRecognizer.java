@@ -512,7 +512,7 @@ public class SQLQueryModelRecognizer {
                         if (f.canAccess(o) || f.trySetAccessible()) {
                             Object x = f.get(o);
                             if (x != null) {
-                                if (x instanceof String) {
+                                if (x instanceof String || x.getClass().isEnum()) {
                                     DirectedGraph.Node prevNode = objs.get(src);
                                     if (prevNode != null) {
                                         String text = x.toString().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;").replace("\n", "&#10;");
@@ -664,7 +664,8 @@ public class SQLQueryModelRecognizer {
         }
         String rawIdentifierString = actual.getTextContent(); // TODO: consider escaping and such, see parser grammar for the details
         SQLDialect dialect = this.obtainSqlDialect();
-        String actualIdentifierString = dialect.isQuotedIdentifier(rawIdentifierString) ? rawIdentifierString : rawIdentifierString.toLowerCase();
+        String actualIdentifierString = dialect.isQuotedIdentifier(rawIdentifierString) ? rawIdentifierString 
+            : (dialect.mustBeQuoted(rawIdentifierString, false) ? dialect.getQuotedIdentifier(rawIdentifierString, false, false) : rawIdentifierString.toLowerCase());
         SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actual.getRealInterval(), actualIdentifierString);
         symbolEntries.add(entry);
         return entry;

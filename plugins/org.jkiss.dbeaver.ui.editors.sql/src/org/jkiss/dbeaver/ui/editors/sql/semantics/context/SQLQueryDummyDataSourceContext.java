@@ -322,7 +322,6 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private final DummyDbObject dummyDataSource;
     private final DummyDbObject defaultDummyCatalog;
     private final DummyDbObject defaultDummySchema;
-    private final DummyDbObject defaultDummyTable;
     private final Set<String> knownColumnNames;
     private final Set<String> knownTableNames;
     private final Set<String> knownSchemaNames;
@@ -350,14 +349,10 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         if (this.knownSchemaNames.isEmpty()) {
             this.knownSchemaNames.add("dummySchema");
         }
-        if (this.knownTableNames.isEmpty()) {
-            this.knownTableNames.add("dummyTable");
-        }
         
         this.dummyDataSource = this.prepareDataSource();
         this.defaultDummyCatalog = this.dummyDataSource.getChildrenMapImpl().values().stream().findFirst().get();
         this.defaultDummySchema = this.defaultDummyCatalog.getChildrenMapImpl().values().stream().findFirst().get();
-        this.defaultDummyTable = this.defaultDummySchema.getChildrenMapImpl().values().stream().findFirst().get();
     }
     
     private DummyDbObject prepareDataSource() {

@@ -67,7 +67,8 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     @NotNull
     @Override
     public SourceResolutionResult resolveSource(@NotNull List<String> tableName) {
-        return this.parent.resolveSource(tableName);
+        SourceResolutionResult result = super.resolveSource(tableName);
+        return result != null ? result : this.parent.resolveSource(tableName);
     }
 
     @NotNull
