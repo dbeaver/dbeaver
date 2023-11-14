@@ -41,6 +41,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -188,6 +189,18 @@ public final class RuntimeUtils {
         long min = sec / 60;
         sec -= min * 60;
         return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
+    }
+
+    @NotNull
+    public static String formatExecutionTimeShort(@NotNull Duration duration) {
+        final long min = duration.toMinutes();
+        final long sec = duration.toSecondsPart();
+
+        if (min > 0) {
+            return "%dm %ds".formatted(min, sec);
+        } else {
+            return "%ds".formatted(sec);
+        }
     }
 
     public static File getPlatformFile(String platformURL) throws IOException {

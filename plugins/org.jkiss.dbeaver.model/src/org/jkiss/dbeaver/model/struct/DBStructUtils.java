@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -137,7 +139,7 @@ public final class DBStructUtils {
 
         // Good tables: generate full DDL
         for (T table : goodTableList) {
-            sql.append(getObjectNameComment(table, "definition"));
+            sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         {
@@ -157,41 +159,49 @@ public final class DBStructUtils {
 
             if (!CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true)) {
                 for (T table : goodCycleTableList) {
-                    sql.append(getObjectNameComment(table, "definition"));
+                    sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
                 }
             } else {
                 Map<String, Object> optionsNoFK = new HashMap<>(options);
                 optionsNoFK.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
-                    sql.append(getObjectNameComment(table, "definition"));
+                    sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments));
                 }
                 Map<String, Object> optionsOnlyFK = new HashMap<>(options);
                 optionsOnlyFK.put(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
-                    sql.append(getObjectNameComment(table, "foreign keys"));
+                    sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_foreign_keys));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments));
                 }
             }
 
             // the rest - tables which can't split their DDL
             for (T table : cycleTableList) {
-                sql.append(getObjectNameComment(table, "definition"));
+                sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
                 addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
             }
         }
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
-            sql.append(getObjectNameComment(table, "source"));
+            sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_source));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         monitor.done();
     }
 
-    private static String getObjectNameComment(DBSObject object, String comment) {
-        String[] singleLineComments = object.getDataSource().getSQLDialect().getSingleLineComments();
+    private static String getObjectNameComment(@NotNull DBSObject object, @NotNull String comment) {
+        DBPDataSource dataSource = object.getDataSource();
+        if (dataSource == null) {
+            return "";
+        }
+        if (!dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
+            // Skip this step, then
+            return "";
+        }
+        String[] singleLineComments = dataSource.getSQLDialect().getSingleLineComments();
         if (ArrayUtils.isEmpty(singleLineComments)) {
             return "";
         }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
@@ -50,7 +51,10 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.services.IEvaluationReference;
+import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
+import org.eclipse.ui.texteditor.IStatusField;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
@@ -80,6 +84,7 @@ import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -94,6 +99,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -113,6 +119,7 @@ import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -139,6 +146,7 @@ import org.jkiss.utils.Pair;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -193,7 +201,9 @@ public class SQLEditor extends SQLEditorBase implements
     private static final EditorPartContextualProperty multipleResultsPerTabProperty = EditorPartContextualProperty.setup(
         MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
         SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB, CommonUtils.toString(false));
-    
+
+    static final String STATS_CATEGORY_TRANSACTION_TIMEOUT = "TransactionTimeout";
+
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
@@ -233,13 +243,14 @@ public class SQLEditor extends SQLEditorBase implements
     private VerticalButton switchPresentationSQLButton;
     private VerticalButton[] switchPresentationExtraButtons;
 
-    private final ExtraPresentationManager extraPresentationManager = new ExtraPresentationManager();
+    private ExtraPresentationManager extraPresentationManager;
     private final List<SQLEditorListener> listeners = new ArrayList<>();
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
+    private TransactionStatusUpdateJob transactionStatusUpdateJob;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -1092,10 +1103,14 @@ public class SQLEditor extends SQLEditorBase implements
             @Override
             public void widgetSelected(SelectionEvent e) {
                 final VerticalButton button = (VerticalButton) e.item;
-                if (button.isChecked() || presentationSwitchFolder.getSelection() == e.item) {
-                    return;
+                final SQLPresentationDescriptor newPresentation = (SQLPresentationDescriptor) button.getData();
+                final SQLPresentationDescriptor curPresentation = getExtraPresentationDescriptor();
+
+                if (curPresentation != null && curPresentation == newPresentation) {
+                    showExtraPresentation((SQLPresentationDescriptor) null);
+                } else {
+                    showExtraPresentation(newPresentation);
                 }
-                showExtraPresentation((SQLPresentationDescriptor) button.getData());
             }
         };
 
@@ -1107,12 +1122,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         final List<VerticalButton> buttons = new ArrayList<>(presentations.size());
         for (SQLPresentationDescriptor presentation : presentations) {
-            final VerticalButton button = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-            button.setData(presentation);
-            button.setText(presentation.getLabel());
-            button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
+            final VerticalButton button = extraPresentationManager.createPresentationButton(presentation, this);
             button.addSelectionListener(switchListener);
-            button.setToolTipText(presentation.getDescription());
             buttons.add(button);
         }
         switchPresentationExtraButtons = buttons.toArray(VerticalButton[]::new);
@@ -1139,6 +1150,35 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         return res;
+    }
+
+    @Override
+    protected void updateStatusField(String category) {
+        if (STATS_CATEGORY_TRANSACTION_TIMEOUT.equals(category)) {
+            final IStatusField field = getStatusField(category);
+
+            if (field != null) {
+                String status;
+
+                try {
+                    status = getTransactionStatusText();
+                } catch (DBCException ignored) {
+                    status = null;
+                }
+
+                if (CommonUtils.isNotEmpty(status)) {
+                    field.setText(status);
+                    field.setImage(DBeaverIcons.getImage(DBIcon.SMALL_WARNING));
+                } else {
+                    field.setText(null);
+                    field.setImage(null);
+                }
+            }
+
+            return;
+        }
+
+        super.updateStatusField(category);
     }
 
     private void updateMultipleResultsPerTabToolItem() {
@@ -1804,6 +1844,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        if (presentation != null && !presentation.isEnabled(getSite())) {
+            return;
+        }
+
         StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
 
         try {
@@ -1928,10 +1972,14 @@ public class SQLEditor extends SQLEditorBase implements
      * Toggles editor/results maximization
      */
     public void toggleEditorMaximize() {
+        setEditorMaximized(resultsSash.getMaximizedControl() == null);
+    }
+
+    public void setEditorMaximized(boolean maximized) {
         if (isHideQueryText()) {
             return;
         }
-        if (resultsSash.getMaximizedControl() == null) {
+        if (maximized) {
             resultsSash.setMaximizedControl(resultTabs);
             switchFocus(true);
         } else {
@@ -2106,6 +2154,11 @@ public class SQLEditor extends SQLEditorBase implements
                 log.error("Error during SQL editor add-in initialization", ex); //$NON-NLS-1$
             }
         }
+
+        extraPresentationManager = new ExtraPresentationManager();
+
+        transactionStatusUpdateJob = new TransactionStatusUpdateJob();
+        transactionStatusUpdateJob.schedule();
     }
 
     /**
@@ -2994,6 +3047,9 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;
+
+        transactionStatusUpdateJob.cancel();
+        transactionStatusUpdateJob = null;
     }
 
     private void deleteFileIfEmpty(IFile sqlFile) {
@@ -4088,53 +4144,15 @@ public class SQLEditor extends SQLEditorBase implements
             if (dataSource == null) {
                 throw new DBCException("Query transform is not supported by datasource");
             }
-            if (!(query instanceof SQLQuery)) {
+            if (!(query instanceof SQLQuery sqlQuery)) {
                 throw new DBCException("Can't count rows for control command");
             }
             try {
-                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery(dataSource, getSyntaxManager(), (SQLQuery) query);
+                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery(dataSource, getSyntaxManager(), sqlQuery);
                 if (!CommonUtils.isEmpty(countQuery.getParameters())) {
                     countQuery.setParameters(parseQueryParameters(countQuery));
                 }
-
-                try (DBCStatement dbStatement = DBUtils.makeStatement(source, session, DBCStatementType.SCRIPT, countQuery, 0, 0)) {
-                    if (dbStatement.executeStatement()) {
-                        try (DBCResultSet rs = dbStatement.openResultSet()) {
-                            if (rs.nextRow()) {
-                                List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
-                                Object countValue = null;
-                                if (resultAttrs.size() == 1) {
-                                    countValue = rs.getAttributeValue(0);
-                                } else {
-                                    // In some databases (Influx?) SELECT count(*) produces multiple columns. Try to find first one with 'count' in its name.
-                                    for (int i = 0; i < resultAttrs.size(); i++) {
-                                        DBCAttributeMetaData ma = resultAttrs.get(i);
-                                        if (ma.getName().toLowerCase(Locale.ENGLISH).contains("count")) {
-                                            countValue = rs.getAttributeValue(i);
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (countValue instanceof Map && ((Map<?, ?>) countValue).size() == 1) {
-                                    // For document-based DBs
-                                    Object singleValue = ((Map<?, ?>) countValue).values().iterator().next();
-                                    if (singleValue instanceof Number) {
-                                        countValue = singleValue;
-                                    }
-                                }
-                                if (countValue instanceof Number) {
-                                    return ((Number) countValue).longValue();
-                                } else {
-                                    throw new DBCException("Unexpected row count value: " + countValue);
-                                }
-                            } else {
-                                throw new DBCException("Row count result is empty");
-                            }
-                        }
-                    } else {
-                        throw new DBCException("Row count query didn't return any value");
-                    }
-                }
+                return DBUtils.countDataFromQuery(source, session, countQuery);
             } catch (DBException e) {
                 throw new DBCException("Error executing row count", e);
             }
@@ -4312,7 +4330,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     }
-    
+
     class MultiTabsQueryResultsContainer extends QueryResultsContainer {
         private CTabItem resultsTab;
 
@@ -5056,6 +5074,57 @@ public class SQLEditor extends SQLEditorBase implements
             return presentationStack.getChildren()[index];
         }
 
+        @NotNull
+        private VerticalButton createPresentationButton(@NotNull SQLPresentationDescriptor presentation, SQLEditor editor) {
+            final VerticalButton button = new VerticalButton(editor.presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
+            button.setData(presentation);
+            button.setText(presentation.getLabel());
+            button.setImage(DBeaverIcons.getImage(presentation.getIcon()));
+
+            final String toolTip = ActionUtils.findCommandDescription(
+                SQLEditorHandlerSwitchPresentation.CMD_SWITCH_PRESENTATION_ID, getSite(), true,
+                SQLEditorHandlerSwitchPresentation.PARAM_PRESENTATION_ID, presentation.getId()
+            );
+
+            if (CommonUtils.isEmpty(toolTip)) {
+                button.setToolTipText(presentation.getDescription());
+            } else {
+                button.setToolTipText(presentation.getDescription() + " (" + toolTip + ")");
+            }
+
+            final IEvaluationService evaluationService = getSite().getService(IEvaluationService.class);
+            final Expression enabledWhen = presentation.getEnabledWhen();
+
+            if (evaluationService != null && enabledWhen != null) {
+                final IEvaluationReference reference = evaluationService.addEvaluationListener(
+                    enabledWhen,
+                    event -> handlePresentationEnablement(button, presentation, CommonUtils.toBoolean(event.getNewValue())),
+                    "enabled"
+                );
+
+                button.addDisposeListener(e -> evaluationService.removeEvaluationListener(reference));
+            }
+
+            return button;
+        }
+
+        private void handlePresentationEnablement(
+            @NotNull VerticalButton button,
+            @NotNull SQLPresentationDescriptor presentation,
+            boolean enabled
+        ) {
+            if (isDisposed()) {
+                return;
+            }
+
+            if (!enabled && activePresentationDescriptor == presentation) {
+                showExtraPresentation((SQLPresentationDescriptor) null);
+            }
+
+            button.setVisible(enabled);
+            button.getParent().layout(true, true);
+        }
+
         public void dispose() {
             activePresentationDescriptor = null;
             activePresentation = null;
@@ -5338,4 +5407,72 @@ public class SQLEditor extends SQLEditorBase implements
             : DBWorkbench.getPlatform().getPreferenceStore();
         return contextPrefStore;
     }
+
+    private class TransactionStatusUpdateJob extends AbstractJob {
+        public TransactionStatusUpdateJob() {
+            super("Update transaction status");
+            setUser(false);
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+
+            UIUtils.syncExec(() -> updateStatusField(STATS_CATEGORY_TRANSACTION_TIMEOUT));
+
+            schedule(500);
+            return Status.OK_STATUS;
+        }
+    }
+
+    @Nullable
+    private String getTransactionStatusText() throws DBCException {
+        if (dataSourceContainer == null) {
+            return null;
+        }
+
+        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        if (lastUserActivityTime < 0) {
+            return null;
+        }
+
+        final long currentTime = System.currentTimeMillis();
+        final long elapsedSeconds = (currentTime - lastUserActivityTime) / 1000;
+        if (elapsedSeconds < 1) {
+            return null;
+        }
+
+        final DBCExecutionContext executionContext = getExecutionContext();
+        final DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+        final QMTransactionState txnState = QMUtils.getTransactionState(executionContext);
+
+        final boolean isTransactionInProgress = txnManager != null
+            && txnManager.isSupportsTransactions()
+            && !txnManager.isAutoCommit()
+            && txnState.getUpdateCount() > 0;
+
+        final long disconnectTimeoutSeconds = DataSourceMonitorJob.getDisconnectTimeoutSeconds(dataSourceContainer);
+        final long rollbackTimeoutSeconds = DataSourceMonitorJob.getTransactionTimeoutSeconds(dataSourceContainer);
+
+        if ((isTransactionInProgress && rollbackTimeoutSeconds > 0) &&
+            (rollbackTimeoutSeconds > elapsedSeconds) &&
+            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds)
+        ) {
+            return NLS.bind(
+                SQLEditorMessages.sql_editor_status_bar_rollback_label,
+                RuntimeUtils.formatExecutionTimeShort(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds))
+            );
+        } else if (disconnectTimeoutSeconds > 0 && disconnectTimeoutSeconds > elapsedSeconds) {
+            return NLS.bind(
+                SQLEditorMessages.sql_editor_status_bar_disconnect_label,
+                RuntimeUtils.formatExecutionTimeShort(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds))
+            );
+        } else {
+            return null;
+        }
+    }
+
 }
