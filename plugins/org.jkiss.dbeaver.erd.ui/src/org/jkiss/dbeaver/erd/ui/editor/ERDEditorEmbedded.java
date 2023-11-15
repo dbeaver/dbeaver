@@ -72,6 +72,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
     private static final String GROUP_SAVE = "save";
 
     private Composite parent;
+    
 
     /**
      * No-arg constructor
