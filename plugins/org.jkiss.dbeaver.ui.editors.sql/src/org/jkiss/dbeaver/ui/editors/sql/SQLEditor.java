@@ -109,6 +109,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -4424,9 +4425,13 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     class SingleTabQueryResultsContainer extends QueryResultsContainer {
+        private static final Integer MIN_VIEWER_HEIGHT = 150;
+        
         private final SingleTabQueryProcessor queryProcessor;
         private final Section section;
 
+        private GridData rsvConstrainedLayout;
+        
         SingleTabQueryResultsContainer(
             @NotNull Pair<Section, Composite> sectionAndContents,
             @NotNull SingleTabQueryProcessor queryProcessor,
@@ -4457,9 +4462,9 @@ public class SQLEditor extends SQLEditorBase implements
             Composite control = this.viewer.getControl();
             sectionContents.setData(ResultSetViewer.CONTROL_ID, this.viewer);
 
-            GridData constrainedLayout = GridDataFactory.swtDefaults()
+            rsvConstrainedLayout = GridDataFactory.swtDefaults()
                 .align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 300).create();
-            control.setLayoutData(constrainedLayout);
+            control.setLayoutData(rsvConstrainedLayout);
             GridData freeLayout = GridDataFactory.swtDefaults()
                 .align(GridData.FILL, GridData.FILL).grab(true, false).create();
 
@@ -4469,7 +4474,7 @@ public class SQLEditor extends SQLEditorBase implements
             line.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseDoubleClick(MouseEvent e) {
-                    control.setLayoutData(control.getLayoutData() == constrainedLayout ? freeLayout : constrainedLayout);
+                    control.setLayoutData(control.getLayoutData() == rsvConstrainedLayout ? freeLayout : rsvConstrainedLayout);
                     queryProcessor.relayoutContents();
                 }
             });
@@ -4484,9 +4489,9 @@ public class SQLEditor extends SQLEditorBase implements
                     if (tracker.open()) {
                         Rectangle after = tracker.getRectangles()[0];
                         int newHeight = after.height - line.getSize().y / 2;
-                        if (newHeight != constrainedLayout.heightHint) {
-                            constrainedLayout.heightHint = newHeight;
-                            control.setLayoutData(constrainedLayout);
+                        if (newHeight != rsvConstrainedLayout.heightHint) {
+                            rsvConstrainedLayout.heightHint = newHeight;
+                            control.setLayoutData(rsvConstrainedLayout);
                             queryProcessor.relayoutContents();
                         }
                     }
@@ -4547,6 +4552,24 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void setPinned(boolean pinned) {
             setTabPinned(queryProcessor.resultsTab, pinned);
+        }
+        
+        @Override
+        public void handleExecuteResult(DBCExecutionResult result) {
+            super.handleExecuteResult(result);
+            
+            if (this.viewer.getActivePresentation().getControl() instanceof Spreadsheet s) {
+                Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+                Point spreadsheetSize = s.getSize();
+                int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
+                if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
+                    if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
+                        desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                    }
+                    rsvConstrainedLayout.heightHint = desiredViewerHeight;  
+                    queryProcessor.relayoutContents();
+                }
+            }
         }
 
         @Override
@@ -4724,7 +4747,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void processQueryResult(DBRProgressMonitor monitor, SQLQueryResult result, DBCStatistics statistics) {
-            dumpQueryServerOutput(result);
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
@@ -4800,9 +4822,12 @@ public class SQLEditor extends SQLEditorBase implements
                             if (resultSetViewer != null) {
                                 resultSetViewer.getModel().setStatistics(statistics);
                             }
+                            results.handleExecuteResult(result);
                         }
                         resultsIndex++;
                     }
+                } else {
+                    dumpQueryServerOutput(result);
                 }
             }
             // Close tab on error
