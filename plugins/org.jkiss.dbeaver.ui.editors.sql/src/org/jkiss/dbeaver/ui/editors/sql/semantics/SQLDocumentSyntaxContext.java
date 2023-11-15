@@ -195,7 +195,10 @@ public class SQLDocumentSyntaxContext {
                 scriptItem.item.applyDelta(offset, oldLength, newLength);
                 affectedRegion = new Region(scriptItem.offset, scriptItem.item.length());
             } else {
-                affectedRegion = null;
+                NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(offset);
+                int start = it.prev() ? it.getCurrOffset() + it.getCurrValue().length() : 0;
+                int length = it.next() ? (it.getCurrOffset() - start) : Integer.MAX_VALUE;
+                affectedRegion = new Region(start, length);
             }
             this.scriptItems.applyOffset(offset, newLength);
         }
@@ -212,9 +215,9 @@ public class SQLDocumentSyntaxContext {
         this.resetLastAccessCache();
     }
 
-    public Interval dropInvisibleScriptItems(Interval fragment, int stepsToKeep) {
-        int rangeStart = Math.max(0, fragment.a - fragment.length() * stepsToKeep); 
-        int rangeEnd = Math.max(0, fragment.b + fragment.length() * stepsToKeep);
+    public Interval dropInvisibleScriptItems(Interval actualFragment) {
+        int rangeStart = actualFragment.a; 
+        int rangeEnd = actualFragment.b;
 
         // TODO use split operation here
         ListNode<Integer> keyOffsetsToRemove = null;

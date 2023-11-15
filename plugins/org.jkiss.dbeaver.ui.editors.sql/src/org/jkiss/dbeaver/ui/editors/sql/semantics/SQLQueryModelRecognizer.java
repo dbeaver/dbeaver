@@ -52,6 +52,8 @@ public class SQLQueryModelRecognizer {
     private final boolean isReadMetadataForSemanticAnalysis;
 
     private final DBCExecutionContext executionContext;
+
+    private SQLQueryDataContext queryDataContext;
     
     @FunctionalInterface
     private interface TreeMapperCallback<T, C> {
@@ -213,63 +215,79 @@ public class SQLQueryModelRecognizer {
         
         private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations = Map.ofEntries(
             Map.entry(STMKnownRuleNames.queryExpression, (n, cc, r) -> {
-                SQLQueryRowsSourceModel source = cc.get(0);
-                for (int i = 1; i < cc.size(); i++) {
-                    STMTreeNode childNode = n.getStmChild(i);
-                    List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
-                    SQLQueryRowsSourceModel nextSource = cc.get(i);
-                    source = switch (childNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_exceptTerm -> new SQLQueryRowsSetCorrespondingOperationModel(source, nextSource, corresponding);
-                        case SQLStandardParser.RULE_unionTerm -> new SQLQueryRowsSetCorrespondingOperationModel(source, nextSource, corresponding);
-                        default -> throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
-                    };
+                if (cc.isEmpty()) {
+                    return r.queryDataContext.getDefaultTable();
+                } else {
+                    SQLQueryRowsSourceModel source = cc.get(0);
+                    for (int i = 1; i < cc.size(); i++) {
+                        STMTreeNode childNode = n.getStmChild(i);
+                        List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
+                        SQLQueryRowsSourceModel nextSource = cc.get(i);
+                        source = switch (childNode.getNodeKindId()) {
+                            case SQLStandardParser.RULE_exceptTerm -> new SQLQueryRowsSetCorrespondingOperationModel(source, nextSource, corresponding);
+                            case SQLStandardParser.RULE_unionTerm -> new SQLQueryRowsSetCorrespondingOperationModel(source, nextSource, corresponding);
+                            default -> throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
+                        };
+                    }
+                    return source;
                 }
-                return source;
             }),
             Map.entry(STMKnownRuleNames.nonJoinQueryTerm, (n, cc, r) -> {
-                SQLQueryRowsSourceModel source = cc.get(0);
-                for (int i = 1; i < cc.size(); i++) {
-                    STMTreeNode childNode = n.getStmChild(i);
-                    List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
-                    SQLQueryRowsSourceModel nextSource = cc.get(i);
-                    source = switch (childNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_intersectTerm -> new SQLQueryRowsSetCorrespondingOperationModel(source, nextSource, corresponding);
-                        default -> throw new UnsupportedOperationException("Unexpected child node kind at nonJoinQueryTerm");
-                    };
+                if (cc.isEmpty()) {
+                    return r.queryDataContext.getDefaultTable();
+                } else {
+                    SQLQueryRowsSourceModel source = cc.get(0);
+                    for (int i = 1; i < cc.size(); i++) {
+                        STMTreeNode childNode = n.getStmChild(i);
+                        List<SQLQuerySymbolEntry> corresponding = r.collectColumnNameList(childNode);
+                        SQLQueryRowsSourceModel nextSource = cc.get(i);
+                        source = switch (childNode.getNodeKindId()) {
+                            case SQLStandardParser.RULE_intersectTerm -> new SQLQueryRowsSetCorrespondingOperationModel(source, nextSource, corresponding);
+                            default -> throw new UnsupportedOperationException("Unexpected child node kind at nonJoinQueryTerm");
+                        };
+                    }
+                    return source;
                 }
-                return source;
             }),
             Map.entry(STMKnownRuleNames.joinedTable, (n, cc, r) -> {
-                SQLQueryRowsSourceModel source = cc.get(0);
-                for (int i = 1; i < cc.size(); i++) {
-                    final SQLQueryRowsSourceModel currSource = source;
-                    final SQLQueryRowsSourceModel nextSource = cc.get(i);
-                    STMTreeNode childNode = n.getStmChild(i);
-                    source = switch (childNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_naturalJoinTerm ->
-                            Optional.ofNullable(childNode.findChildOfName(STMKnownRuleNames.joinSpecification))
-                                .map(cn -> cn.findChildOfName(STMKnownRuleNames.joinCondition))
-                                .map(cn -> cn.findChildOfName(STMKnownRuleNames.searchCondition))
-                                .map(cn -> r.collectValueExpression(cn))
-                                .map(e -> new SQLQueryRowsNaturalJoinModel(currSource, nextSource, e))
-                                .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(currSource, nextSource, r.collectColumnNameList(childNode)));
-                        case SQLStandardParser.RULE_crossJoinTerm -> new SQLQueryRowsCrossJoinModel(currSource, nextSource);
-                        default -> throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
-                    };
+                if (cc.isEmpty()) {
+                    return r.queryDataContext.getDefaultTable();
+                } else {
+                    SQLQueryRowsSourceModel source = cc.get(0);
+                    for (int i = 1; i < cc.size(); i++) {
+                        final SQLQueryRowsSourceModel currSource = source;
+                        final SQLQueryRowsSourceModel nextSource = cc.get(i);
+                        STMTreeNode childNode = n.getStmChild(i);
+                        source = switch (childNode.getNodeKindId()) {
+                            case SQLStandardParser.RULE_naturalJoinTerm ->
+                                Optional.ofNullable(childNode.findChildOfName(STMKnownRuleNames.joinSpecification))
+                                    .map(cn -> cn.findChildOfName(STMKnownRuleNames.joinCondition))
+                                    .map(cn -> cn.findChildOfName(STMKnownRuleNames.searchCondition))
+                                    .map(cn -> r.collectValueExpression(cn))
+                                    .map(e -> new SQLQueryRowsNaturalJoinModel(currSource, nextSource, e))
+                                    .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(currSource, nextSource, r.collectColumnNameList(childNode)));
+                            case SQLStandardParser.RULE_crossJoinTerm -> new SQLQueryRowsCrossJoinModel(currSource, nextSource);
+                            default -> throw new UnsupportedOperationException("Unexpected child node kind at queryExpression");
+                        };
+                    }
+                    return source;
                 }
-                return source;
             }),
             Map.entry(STMKnownRuleNames.fromClause, (n, cc, r) -> {
-                SQLQueryRowsSourceModel source = cc.get(0);
-                for (int i = 1; i < cc.size(); i++) {
-                    STMTreeNode childNode = n.getStmChild(1 + i * 2);
-                    SQLQueryRowsSourceModel nextSource = cc.get(i);
-                    source = switch (childNode.getNodeKindId()) {
-                        case SQLStandardParser.RULE_tableReference -> new SQLQueryRowsCrossJoinModel(source, nextSource);
-                        default -> throw new UnsupportedOperationException("Unexpected child node kind at fromClause");
-                    };
+                if (cc.isEmpty()) {
+                    return r.queryDataContext.getDefaultTable();
+                } else {
+                    SQLQueryRowsSourceModel source = cc.get(0);
+                    for (int i = 1; i < cc.size(); i++) {
+                        STMTreeNode childNode = n.getStmChild(1 + i * 2);
+                        SQLQueryRowsSourceModel nextSource = cc.get(i);
+                        source = switch (childNode.getNodeKindId()) {
+                            case SQLStandardParser.RULE_tableReference -> new SQLQueryRowsCrossJoinModel(source, nextSource);
+                            default -> throw new UnsupportedOperationException("Unexpected child node kind at fromClause");
+                        };
+                    }
+                    return source;
                 }
-                return source;
             }),
             Map.entry(STMKnownRuleNames.tableExpression, (n, cc, r) -> {
                 // tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
@@ -281,39 +299,57 @@ public class SQLQueryModelRecognizer {
                         .map(r::collectValueExpression).orElse(null);
                 SQLQueryValueExpression orderByClause = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.orderByClause))
                         .map(r::collectValueExpression).orElse(null);
-                return new SQLQueryRowsSelectionFilterModel(cc.get(0), whereExpr, havingClause, groupByClause, orderByClause);
+                SQLQueryRowsSourceModel source = cc.isEmpty() ? r.queryDataContext.getDefaultTable() : cc.get(0);
+                return new SQLQueryRowsSelectionFilterModel(source, whereExpr, havingClause, groupByClause, orderByClause);
             }),
             Map.entry(STMKnownRuleNames.querySpecification, (n, cc, r) -> {
                 STMTreeNode selectListNode = n.findChildOfName(STMKnownRuleNames.selectList);
                 SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel((selectListNode.getChildCount() + 1) / 2);
                 for (int i = 0; i < selectListNode.getChildCount(); i += 2) {
                     STMTreeNode selectSublist = selectListNode.getStmChild(i);
-                    STMTreeNode sublistNode = selectSublist.getStmChild(0);
-                    switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
-                        case SQLStandardParser.RULE_derivedColumn -> { // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
-                            SQLQueryValueExpression expr = r.collectValueExpression(sublistNode.getStmChild(0));
-                            if (sublistNode.getChildCount() > 1) {
-                                STMTreeNode asClause = sublistNode.getStmChild(1);
-                                SQLQuerySymbolEntry asColumnName = r.collectIdentifier(asClause.getStmChild(asClause.getChildCount() - 1));
-                                resultModel.addColumnSpec(expr, asColumnName);
-                            } else {
-                                resultModel.addColumnSpec(expr);
-                            }
-                        }
-                        default -> {
-                            if (selectSublist.getChildCount() == 1) {
-                                resultModel.addCompleteTupleSpec();
-                            } else {
-                                resultModel.addTupleSpec(r.collectTableName(sublistNode));
+                    if (selectSublist.getChildCount() > 0) {
+                        STMTreeNode sublistNode = selectSublist.getStmChild(0);
+                        if (sublistNode != null) {
+                            switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
+                                case SQLStandardParser.RULE_derivedColumn -> { // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
+                                    SQLQueryValueExpression expr = r.collectValueExpression(sublistNode.getStmChild(0));
+                                    if (sublistNode.getChildCount() > 1) {
+                                        STMTreeNode asClause = sublistNode.getStmChild(1);
+                                        SQLQuerySymbolEntry asColumnName = r.collectIdentifier(asClause.getStmChild(asClause.getChildCount() - 1));
+                                        resultModel.addColumnSpec(expr, asColumnName);
+                                    } else {
+                                        resultModel.addColumnSpec(expr);
+                                    }
+                                }
+                                case SQLStandardParser.RULE_qualifier -> {
+                                    resultModel.addTupleSpec(r.collectTableName(sublistNode));
+                                }
+                                case SQLStandardParser.RULE_anyUnexpected -> {
+                                    // error in query text, ignoring it
+                                }
+                                default -> {
+                                    resultModel.addCompleteTupleSpec();
+                                }
                             }
                         }
                     }
                 }
-
-                return new SQLQueryRowsProjectionModel(cc.get(0), resultModel);
+                SQLQueryRowsSourceModel source = cc.isEmpty() ? r.queryDataContext.getDefaultTable() : cc.get(0);
+                return new SQLQueryRowsProjectionModel(source, resultModel);
             }),
             Map.entry(STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
-                SQLQueryRowsSourceModel source = cc.size() > 0 ? cc.get(0) : r.collectTableReference(n.getStmChild(0));
+                // can they both be missing?
+                SQLQueryRowsSourceModel source;
+                if (cc.isEmpty()) {
+                    STMTreeNode tableNameNode = n.findChildOfName(STMKnownRuleNames.tableName);
+                    if (tableNameNode != null) {
+                        source = r.collectTableReference(tableNameNode);
+                    } else {
+                        source = r.queryDataContext.getDefaultTable();
+                    }
+                } else {
+                    source = cc.get(0);
+                }
                 if (n.getChildCount() > 1) {
                     STMTreeNode lastSubnode = n.getStmChild(n.getChildCount() - 1);
                     if (lastSubnode.getNodeName().equals(STMKnownRuleNames.correlationSpecification)) {
@@ -372,12 +408,18 @@ public class SQLQueryModelRecognizer {
             switch (ref.getNodeKindId()) {
                 case SQLStandardParser.RULE_columnReference -> {
                     if (ref.getChildCount() > 1) {
-                        entityAction.accept(this.collectTableName(ref.getStmChild(0)));
+                        SQLQueryQualifiedName tableName = this.collectTableName(ref.getStmChild(0));
+                        if (tableName != null) {
+                            entityAction.accept(tableName);
+                        }
                     }
                     columnAction.accept(this.collectIdentifier(ref.getStmChild(ref.getChildCount() - 1)));
                 }
                 case SQLStandardParser.RULE_tableName -> {
-                    entityAction.accept(this.collectTableName(ref));
+                    SQLQueryQualifiedName tableName = this.collectTableName(ref);
+                    if (tableName != null) {
+                        entityAction.accept(tableName);
+                    }
                 }
                 default -> throw new IllegalArgumentException("Unexpected value: " + ref.getNodeName());
             }
@@ -470,7 +512,7 @@ public class SQLQueryModelRecognizer {
                         if (f.canAccess(o) || f.trySetAccessible()) {
                             Object x = f.get(o);
                             if (x != null) {
-                                if (x instanceof String) {
+                                if (x instanceof String || x.getClass().isEnum()) {
                                     DirectedGraph.Node prevNode = objs.get(src);
                                     if (prevNode != null) {
                                         String text = x.toString().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;").replace("\n", "&#10;");
@@ -513,13 +555,13 @@ public class SQLQueryModelRecognizer {
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
         
         if (tree != null) {
-            SQLQueryDataContext context = this.prepareDataContext(tree);
+            this.queryDataContext = this.prepareDataContext(tree);
 
             SQLQueryRowsSourceModel source = this.collectQueryExpression(tree);
             if (source != null) {
                 SQLQuerySelectionModel model = new SQLQuerySelectionModel(source, symbolEntries);
 
-                model.propagateContex(context, recognitionContext);
+                model.propagateContex(this.queryDataContext, recognitionContext);
 
                 // var tt = new DebugGraphBuilder();
                 // tt.traverseObjs(model);
@@ -622,7 +664,8 @@ public class SQLQueryModelRecognizer {
         }
         String rawIdentifierString = actual.getTextContent(); // TODO: consider escaping and such, see parser grammar for the details
         SQLDialect dialect = this.obtainSqlDialect();
-        String actualIdentifierString = dialect.isQuotedIdentifier(rawIdentifierString) ? rawIdentifierString : rawIdentifierString.toLowerCase();
+        String actualIdentifierString = dialect.isQuotedIdentifier(rawIdentifierString) ? rawIdentifierString 
+            : (dialect.mustBeQuoted(rawIdentifierString, false) ? dialect.getQuotedIdentifier(rawIdentifierString, false, false) : rawIdentifierString.toLowerCase());
         SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actual.getRealInterval(), actualIdentifierString);
         symbolEntries.add(entry);
         return entry;
@@ -653,7 +696,7 @@ public class SQLQueryModelRecognizer {
         return new SQLQueryRowsTableDataModel(collectTableName(node));
     }
 
-    @NotNull
+    @Nullable
     private SQLQueryQualifiedName collectTableName(@NotNull STMTreeNode node) {
         List<STMTreeNode> actual = STMUtils.expandSubtree(node, tableNameContainers, actualTableNameContainers);
         return switch (actual.size()) {

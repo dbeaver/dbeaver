@@ -215,13 +215,11 @@ public class OffsetKeyedTreeMap<T> {
               
                 if (location.isLeft) {
                     parent.left = newNode;
-                    newNode.parent = parent;
-                    this.size++;
                 } else {
                     parent.right = newNode;
-                    newNode.parent = parent;
-                    this.size++;
                 }
+                newNode.parent = parent;
+                this.size++;
         
                 this.restoreAfterInsert(newNode);
                 
@@ -959,6 +957,9 @@ public class OffsetKeyedTreeMap<T> {
         }
         if (delta < 0) {
             throw new UnsupportedOperationException("Negative delta not supported at the moment");
+        }
+        if (this.size == 0) {
+            return;
         }
 
         NodeAndParentAtOffset<T> location = this.findImpl(position);

@@ -74,7 +74,7 @@ characterSetSpecification: characterSetName;
 characterSetName: (schemaName Period)? Identifier;
 schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
-qualifiedName: (schemaName Period)? identifier?;
+qualifiedName: (schemaName Period)? identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|squareBracketIdentifier|nonReserved);
@@ -345,7 +345,7 @@ insertColumnList: columnNameList;
 // UPDATE
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
-setClause: (setTarget | setTargetList) (EqualsOperator updateSource)?;
+setClause: ((setTarget | setTargetList) (EqualsOperator updateSource)?)|anyUnexpected??;
 setTarget: columnReference;
 setTargetList: LeftParen columnReference? (Comma columnReference)* RightParen?;
 updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);

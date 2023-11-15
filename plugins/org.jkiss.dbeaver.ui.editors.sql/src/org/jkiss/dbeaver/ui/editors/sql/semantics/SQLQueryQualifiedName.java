@@ -86,7 +86,7 @@ public class SQLQueryQualifiedName { // qualifier
     public void setDefinition(@NotNull SourceResolutionResult rr) {
         if (rr.aliasOrNull != null) {
             this.entityName.merge(rr.aliasOrNull);
-        } else if (rr.tableOrNull instanceof SQLQueryRowsTableDataModel tableModel) {
+        } else if (rr.source instanceof SQLQueryRowsTableDataModel tableModel) {
             if (this.entityName != null) {
                 this.entityName.setDefinition(tableModel);
                 if (this.schemaName != null) {
