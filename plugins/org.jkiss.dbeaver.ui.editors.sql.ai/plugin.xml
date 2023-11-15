@@ -42,17 +42,21 @@
 		</menuContribution>
 	</extension>
 
+	<extension point="org.eclipse.core.expressions.definitions">
+		<definition id="org.jkiss.dbeaver.core.ai.completion.enabled">
+			<not>
+				<test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/>
+			</not>
+		</definition>
+	</extension>
+
 	<extension point="org.eclipse.ui.commandImages">
 		<image commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/misc/ai.png"/>
 	</extension>
 	<extension point="org.eclipse.ui.handlers">
 		<handler commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" class="org.jkiss.dbeaver.ui.editors.sql.ai.internal.AITranslateHandler">
 			<enabledWhen>
-				<with variable="activePart">
-					<adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-						<not><test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/></not>
-					</adapt>
-				</with>
+				<reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled"/>
 			</enabledWhen>
 		</handler>
 	</extension>

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.stm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class STMUtils {
     @NotNull
     public static List<STMTreeNode> expandSubtree(
         @NotNull STMTreeNode root,
-        @NotNull Set<String> toExpand,
+        @Nullable Set<String> toExpand,
         @NotNull Set<String> toCollect
     ) {
         List<STMTreeNode> result = new ArrayList<>();
@@ -41,7 +42,47 @@ public class STMUtils {
             
             if (toCollect.contains(nodeName)) {
                 result.add(node);
-            } else if (toExpand.contains(nodeName)) {
+            } else if (toExpand == null || toExpand.contains(nodeName)) {
+                for (int i = node.getChildCount() - 1; i >= 0; i--) {
+                    stack.push((STMTreeNode) node.getChild(i));
+                }
+            }
+        }
+        return result;
+    }
+
+    @NotNull
+    public static List<STMTreeTermNode> expandTerms(@NotNull STMTreeNode root) {
+        List<STMTreeTermNode> result = new ArrayList<>();
+        Stack<STMTreeNode> stack = new Stack<>();
+        stack.add(root);
+
+        while (stack.size() > 0) {
+            STMTreeNode node = stack.pop();
+            
+            if (node instanceof STMTreeTermNode term) {
+                result.add(term);
+            } else {
+                for (int i = 0; i < node.getChildCount(); i++) {
+                    stack.push((STMTreeNode) node.getChild(i));
+                }
+            }
+        }
+        return result;
+    }
+
+    @NotNull
+    public static List<String> expandTermStrings(@NotNull STMTreeNode root) {
+        List<String> result = new ArrayList<>();
+        Stack<STMTreeNode> stack = new Stack<>();
+        stack.add(root);
+
+        while (stack.size() > 0) {
+            STMTreeNode node = stack.pop();
+            
+            if (node instanceof STMTreeTermNode term) {
+                result.add(term.getText());
+            } else {
                 for (int i = 0; i < node.getChildCount(); i++) {
                     stack.push((STMTreeNode) node.getChild(i));
                 }
