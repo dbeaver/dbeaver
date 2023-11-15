@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
@@ -25,6 +26,8 @@ import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextInputListener;
 import org.eclipse.jface.text.IViewportListener;
+import org.eclipse.jface.text.JFaceTextUtil;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
@@ -39,26 +42,41 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.*;
 
 public class SQLBackgroundParsingJob {
 
     private static final Log log = Log.getLog(SQLBackgroundParsingJob.class);
+    private static final boolean DEBUG = false;
 
     private static final Timer schedulingTimer = new Timer("SQLBackgroundParsingJob.schedulingTimer.thread", true); //$NON-NLS-1
     private static final long schedulingTimeoutMilliseconds = 500;
+    
+    private static class QueuedRegionInfo {
+        public int length;
+        
+        public QueuedRegionInfo(int length) {
+            this.length = length;
+        }
+    }
+    
+    // TODO consider if we don't need such a detailed collection for reparse regions, and one expandable input region is enough
+    private final OffsetKeyedTreeMap<QueuedRegionInfo> queuedForReparse = new OffsetKeyedTreeMap<>();
 
     private final Object syncRoot = new Object();
     private final SQLEditorBase editor;
-    private SQLDocumentSyntaxContext context = null;
+    private final SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext();
     private IDocument document = null;
     private volatile TimerTask task = null;
     private volatile boolean isRunning = false;
-    private final List<DocumentEvent> documentEvents = new LinkedList<>();
-
+    private volatile int knownRegionStart = 0;
+    private volatile int knownRegionEnd = 0;
+    
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
     public SQLBackgroundParsingJob(SQLEditorBase editor) {
@@ -73,18 +91,18 @@ public class SQLBackgroundParsingJob {
      * Setup job - add listeners, schedule
      */
     public void setup() {
-        synchronized (syncRoot) {
+        synchronized (this.syncRoot) {
             if (this.editor.getTextViewer() != null) {
-                this.editor.getTextViewer().addTextInputListener(documentListener);
-                this.editor.getTextViewer().addViewportListener(documentListener);                
+                this.editor.getTextViewer().addTextInputListener(this.documentListener);
+                this.editor.getTextViewer().addViewportListener(this.documentListener);                
                 if (this.document == null) {
                     IDocument document = this.editor.getTextViewer().getDocument();
                     if (document != null) {
                         this.document = document;
-                        this.document.addDocumentListener(documentListener);
+                        this.document.addDocumentListener(this.documentListener);
                     }
                 }
-                this.schedule(null);
+                this.reset();
             }
         }
     }
@@ -93,14 +111,14 @@ public class SQLBackgroundParsingJob {
      * Dispose job - cancel schedule and remove listeners.
      */
     public void dispose() {
-        synchronized (syncRoot) {
+        synchronized (this.syncRoot) {
             this.cancel();
             TextViewer textViewer = this.editor.getTextViewer();
             if (textViewer != null) {
-                textViewer.removeViewportListener(documentListener);
-                textViewer.removeTextInputListener(documentListener);
+                textViewer.removeViewportListener(this.documentListener);
+                textViewer.removeTextInputListener(this.documentListener);
                 if (this.document != null) {
-                    this.document.removeDocumentListener(documentListener);
+                    this.document.removeDocumentListener(this.documentListener);
                 }
             }
         }
@@ -108,9 +126,6 @@ public class SQLBackgroundParsingJob {
 
     @NotNull
     private SQLDocumentSyntaxContext getContext() {
-        if (this.context == null) {
-            this.context = new SQLDocumentSyntaxContext(this.editor.getDocument());
-        }
         return this.context;
     }
 
@@ -119,7 +134,6 @@ public class SQLBackgroundParsingJob {
      */
     @NotNull
     public IRule[] prepareRules(@NotNull SQLRuleScanner sqlRuleScanner) {
-        this.getContext();
         return new IRule[] {
             new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_TABLE),
             new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_TABLE_ALIAS),
@@ -130,15 +144,91 @@ public class SQLBackgroundParsingJob {
         };
     }
 
+    private void beforeDocumentModification(DocumentEvent event) {
+        this.cancel();
+        
+        IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), event.getText().length());
+        int reparseStart = regionToReparse.getOffset();
+        int reparseLength = regionToReparse.getLength() < Integer.MAX_VALUE ? regionToReparse.getLength() 
+                : this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
+        if (DEBUG) {
+            System.out.println("reparse region @" + reparseStart + "+" + reparseLength);
+        }
+
+        // TODO if these further actions are heavy, maybe use background thread for them too
+        synchronized (this.syncRoot) {            
+            int delta = event.getText().length() - event.getLength();
+            if (delta > 0) { // just expand the region to reparse
+                this.queuedForReparse.applyOffset(event.getOffset(), delta);
+                this.enqueueToReparse(reparseStart, reparseLength);
+            } else {
+                // TODO remove just the affected fragment and enqueue regionToReparse
+                
+                // for now removing the whole tail as its offsets are being invalidated
+                ListNode<Integer> keyOffsetsToRemove = null;
+                NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(reparseStart);
+                int firstAffectedReparseOffset;
+                if (it.getCurrValue() != null || it.prev()) {
+                    firstAffectedReparseOffset = it.getCurrOffset();
+                    keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, firstAffectedReparseOffset);
+                }
+                while (it.next()) {
+                    keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, it.getCurrOffset());
+                }
+                for (ListNode<Integer> kn = keyOffsetsToRemove; kn != null; kn = kn.next) {
+                    this.queuedForReparse.removeAt(kn.data);    
+                }
+                this.queuedForReparse.put(reparseStart, new QueuedRegionInfo(reparseLength));
+            }
+        }
+    }
+
+    private void enqueueToReparse(int toParseStart, int toParseLength) {
+        synchronized (this.syncRoot) {
+            NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(toParseStart);
+            QueuedRegionInfo region = it.getCurrValue();
+            int regionOffset = it.getCurrOffset();
+            if (region == null && it.prev()) {
+                region = it.getCurrValue();
+                regionOffset = it.getCurrOffset();
+            }
+            // enlarge existing or add enqueue new one
+            if (region != null && regionOffset <= toParseStart && regionOffset + region.length > toParseStart) {
+                region.length = Math.max(region.length, toParseStart + toParseLength - regionOffset);
+            } else {
+                this.queuedForReparse.put(toParseStart, new QueuedRegionInfo(toParseLength));
+            }
+        }
+    }
+    
+    private void ensureVisibleRangeIsParsed() {
+        TextViewer viewer = this.editor.getTextViewer();
+        if (viewer == null) {
+            return;
+        }
+        int startOffset = viewer.getTopIndexStartOffset();
+        int endOffset = viewer.getBottomIndexEndOffset();
+        Interval visibleRange = new Interval(startOffset, endOffset);
+        Interval knownRange = new Interval(this.knownRegionStart, this.knownRegionEnd);
+        if (!knownRange.properlyContains(visibleRange)) {
+            Interval unknownRange = visibleRange.differenceNotProperlyContained(knownRange);
+            if (unknownRange == null) {
+                unknownRange = visibleRange;
+            }
+            this.enqueueToReparse(unknownRange.a, unknownRange.length());
+            this.schedule(null);
+        }
+    }
+    
     private void schedule(@Nullable DocumentEvent event) {
         synchronized (this.syncRoot) {
             if (this.editor.getRuleManager() == null || !this.editor.isAdvancedHighlightingEnabled() ||
                 !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor.getEditorInput())
             ) {
-                this.context = null;
                 return;
             }
 
+            // TODO should we really schedule a new task each time this method called? or maybe at least cancel it at first
             this.task = new TimerTask() {
                 @Override
                 public void run() {
@@ -149,14 +239,6 @@ public class SQLBackgroundParsingJob {
                     }
                 }
             };
-            if (event != null) {
-                // TODO drop only on lines-set change and apply in line offset on local insert or remove
-                // this.getContext().dropLineOfOffset(event.getOffset());
-                this.getContext().dropLinesOfRange(event.getOffset(), event.getLength());
-                //documentEvents.add(event);
-                // System.out.println(event);
-                // this.getContext().replace(event.getOffset(), event.getLength(), event.getText().length());
-            }
             schedulingTimer.schedule(this.task, schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1));
         }
     }
@@ -174,66 +256,148 @@ public class SQLBackgroundParsingJob {
         synchronized (this.syncRoot) {
             if (this.document != null) {
                 this.cancel();
-                this.document = null;
-                this.context = null;
             }
-
+            
             if (newDocument != null && SQLEditorUtils.isSQLSyntaxParserApplied(editor.getEditorInput())) {
-                this.context = new SQLDocumentSyntaxContext(newDocument);
                 this.document = newDocument;
-                this.schedule(null);
+                this.reset();
             }
+        }
+    }
+    
+    private void reset() {
+        synchronized (this.syncRoot) {
+            this.context.clear();
+            this.queuedForReparse.clear();
+            this.knownRegionEnd = 0;
+            this.knownRegionStart = 0;
+            this.ensureVisibleRangeIsParsed();
         }
     }
 
     private void doWork() throws BadLocationException {
-        synchronized (this.syncRoot) {
-            this.task = null;
-            this.isRunning = true;
+        TextViewer viewer = editor.getTextViewer();
+        if (viewer == null || this.editor.getRuleManager() == null) {
+            return;
+        }
+        Interval visibleFragment = UIUtils.syncExec(new RunnableWithResult<>() {
+            public Interval runWithResult() {
+                int startOffset = viewer.getTopIndexStartOffset();
+                int endOffset = viewer.getBottomIndexEndOffset();
+                return new Interval(startOffset, endOffset);
+            }
+        });
+
+        if (visibleFragment == null) {
+            return;
+        }
+        int workOffset;
+        int workLength;
+        try {
+            synchronized (this.syncRoot) {
+                this.task = null;
+                this.isRunning = true;
+                
+                int stepsToKeep = 2;
+                int rangeStart = Math.max(0, visibleFragment.a - visibleFragment.length() * stepsToKeep); 
+                int rangeEnd = Math.max(0, visibleFragment.b + visibleFragment.length() * stepsToKeep);
+                Interval actualFragment = new Interval(rangeStart, rangeEnd);
+                // drop unnecessary items
+                Interval preservedRegion = this.context.dropInvisibleScriptItems(actualFragment);
+                this.knownRegionStart = preservedRegion.a;
+                this.knownRegionEnd = preservedRegion.b; 
+                if (DEBUG) {
+                    System.out.println("preserved is " + knownRegionStart + "-" + knownRegionEnd);
+                    System.out.println("queued ranges total: " + this.queuedForReparse.size());
+                }
+                
+                // TODO reparse only changed elements
+                // for now just cover the region of interest
+                {
+                    NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(0);
+                    workOffset = (it.getCurrValue() != null || it.next()) ? it.getCurrOffset() : 0;
+                }
+                {
+                    NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(Integer.MAX_VALUE);
+                    workLength = (it.getCurrValue() != null || it.prev())
+                        ? (it.getCurrOffset() + it.getCurrValue().length - workOffset) : 0;
+                }
+                
+                // truncate work region to fit within actualFragment,
+                // as we've dropped what is outside already, so not point to parse outside of it
+                Interval workInterval = new Interval(workOffset, workOffset + workLength);
+                if (!actualFragment.properlyContains(workInterval)) {
+                    workInterval = actualFragment.intersection(workInterval);
+                    workOffset = workInterval.a;
+                    workLength = workInterval.length();
+                }
+                if (DEBUG) {
+                    System.out.println("requested " + workOffset + "+" + workLength);
+                    {
+                        NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(Integer.MAX_VALUE);
+                        while (it.prev()) {
+                            System.out.println("\t@" + it.getCurrOffset() + "+" + it.getCurrValue().length);
+                        }
+                    }
+                }
+                
+                this.queuedForReparse.clear();
+            }
+        } catch (Throwable ex) {
+            log.error(ex);
+            return;
         }
         IProgressMonitor monitor = Job.getJobManager().createProgressGroup();
-        SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext(document);
         try {
-            TextViewer viewer = editor.getTextViewer();
-            if (viewer == null) {
+            if (workLength == 0) {
                 return;
             }
-            IRegion region = UIUtils.syncExec(new RunnableWithResult<>() {
-                @Override
-                public IRegion runWithResult() {
-                    return viewer.getVisibleRegion();
+            
+            SQLParserContext parserContext = new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
+            List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
+            if (elements.isEmpty()) {
+                return;
+            } else {
+                elements.set(0, SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset()));
+                if (elements.size() > 1) {
+                    int index = elements.size() - 1;
+                    elements.set(index, SQLScriptParser.extractQueryAtPos(parserContext, elements.get(index).getOffset()));
                 }
-            });
-            if (region == null) {
-                return;
             }
-            if (editor.getRuleManager() == null) {
-                return;
+            
+            {
+                SQLScriptElement lastElement = elements.get(elements.size() - 1);
+                workOffset = elements.get(0).getOffset();
+                workLength = lastElement.getOffset() + lastElement.getLength() - workOffset;
+                if (DEBUG) {
+                    System.out.println("parsing " + workOffset + "+" + workLength);
+                }
             }
-            List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
-                new SQLParserContext(editor.getDataSource(), editor.getSyntaxManager(), editor.getRuleManager(), document),
-                region.getOffset(),
-                region.getLength(),
-                false,
-                false,
-                false
-            );
 
-            boolean isReadMetadataForQueryAnalysis = editor.isReadMetadataForQueryAnalysisEnabled();
-            DBCExecutionContext executionContext = editor.getExecutionContext();
+            boolean isReadMetadataForQueryAnalysis = this.editor.isReadMetadataForQueryAnalysisEnabled();
+            DBCExecutionContext executionContext = this.editor.getExecutionContext();
             
             monitor.beginTask("Background query analysis", 1 + elements.size());
             monitor.worked(1);
-
+            
             int i = 1;
             for (SQLScriptElement element : elements) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 try {
                     SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, isReadMetadataForQueryAnalysis);
                     SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(element.getOriginalText());
                 
                     if (queryModel != null) {
+                        if (DEBUG) {
+                            System.out.println("registering script item @" + element.getOffset() + "+" + element.getLength());
+                        }
+                        SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(element.getOffset(), element.getLength());
+                        itemContext.clear();
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
-                            context.registerToken(new SQLDocumentSyntaxTokenEntry(element, entry));
+                            // System.out.println("registering " + (element.getOffset() + entry.getInterval().a) + "+" + entry.getInterval().length() + " " + entry);
+                            itemContext.registerToken(entry.getInterval().a, entry);
                         }
                     }
                 } catch (Throwable ex) {
@@ -242,22 +406,27 @@ public class SQLBackgroundParsingJob {
                 monitor.worked(1);
                 monitor.setTaskName("Background query analysis: subtask #" + (i++));
             }
+            this.context.resetLastAccessCache();
         } catch (Throwable ex) {
             log.debug(ex);
         } finally {
             monitor.done();
         }
-
+        
+        int parsedOffset = workOffset;
+        int parsedLength = workLength;
+        
         synchronized (this.syncRoot) {
-            this.context = context;
+            this.knownRegionStart = Math.min(this.knownRegionStart, parsedOffset);
+            this.knownRegionEnd = Math.max(this.knownRegionEnd, parsedOffset + parsedLength);
+            if (DEBUG) {
+                System.out.println("known is " + knownRegionStart + "-" + knownRegionEnd);
+            }
             this.isRunning = false;
         }
         
         UIUtils.asyncExec(() -> {
-            TextViewer viewer = editor.getTextViewer();
-            if (viewer != null) {
-                viewer.invalidateTextPresentation(0, this.document.getLength());
-            }
+            viewer.invalidateTextPresentation(parsedOffset, parsedLength);
         });
     }
 
@@ -265,8 +434,7 @@ public class SQLBackgroundParsingJob {
 
         @Override
         public void documentAboutToBeChanged(DocumentEvent event) {
-            SQLBackgroundParsingJob.this.cancel();
-            // TODO apply offset at the current location
+            SQLBackgroundParsingJob.this.beforeDocumentModification(event);
         }
 
         @Override
@@ -292,8 +460,7 @@ public class SQLBackgroundParsingJob {
 
         @Override
         public void viewportChanged(int verticalOffset) {
-            //SQLBackgroundParsingJob.this.schedule(null);
-            // TODO drop newly hidden elements' info 
+            SQLBackgroundParsingJob.this.ensureVisibleRangeIsParsed();
         }
     }
 }

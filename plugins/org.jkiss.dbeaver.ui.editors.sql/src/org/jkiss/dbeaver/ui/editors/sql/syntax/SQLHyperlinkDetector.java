@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxTokenEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 
@@ -72,13 +71,13 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
         SQLEditorBase editor = contextInformer.getEditor();
         SQLDocumentSyntaxContext context = editor.getSyntaxContext();
         if (context != null) {
-            SQLDocumentSyntaxTokenEntry token = context.findToken(offset);
-            if (token != null && token.end > offset) {
-                final IRegion refRegion = new Region(token.position, token.length());
-                if (token.symbolEntry.getDefinition() instanceof SQLQuerySymbolEntry def) {
+            SQLQuerySymbolEntry token = context.findToken(offset);
+            if (token != null) {
+                final IRegion refRegion = new Region(context.getLastAccessedTokenOffset(), token.getInterval().length());
+                if (token.getDefinition() instanceof SQLQuerySymbolEntry def) {
                     // TODO consider multiple definitions
                     Interval interval = def.getInterval();
-                    final IRegion defRegion = new Region(interval.a + token.scriptElement.getOffset(), interval.length());
+                    final IRegion defRegion = new Region(interval.a + context.getLastAccessedScriptElementOffset(), interval.length());
                     return new IHyperlink[] {
                         new IHyperlink() {
                             @Override
@@ -106,7 +105,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
                             }
                         }
                     };
-                } else if (token.symbolEntry.getDefinition() instanceof SQLQuerySymbolByDbObjectDefinition def
+                } else if (token.getDefinition() instanceof SQLQuerySymbolByDbObjectDefinition def
                     && def.getDbObject().getDataSource().getContainer() != null
                 ) {
                     return new IHyperlink[] {
