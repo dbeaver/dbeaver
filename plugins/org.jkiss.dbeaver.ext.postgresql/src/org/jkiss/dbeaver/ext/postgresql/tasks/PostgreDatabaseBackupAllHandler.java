@@ -90,7 +90,8 @@ public class PostgreDatabaseBackupAllHandler
     }
 
     @Override
-    public void fillProcessParameters(PostgreBackupAllSettings settings,
+    public void fillProcessParameters(
+        PostgreBackupAllSettings settings,
         PostgreDatabaseBackupAllInfo arg,
         List<String> cmd
     ) throws IOException {

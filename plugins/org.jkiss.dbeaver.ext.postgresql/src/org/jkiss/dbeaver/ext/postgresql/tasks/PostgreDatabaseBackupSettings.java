@@ -20,19 +20,15 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -274,7 +270,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                 if (!CommonUtils.isEmpty(object.getTables())) {
                     List<String> tableList = new ArrayList<>();
                     for (PostgreTableBase table : object.getTables()) {
-                        // Use full tables names to identify it in the future
                         tableList.add(table.getName());
                     }
                     objInfo.put("tables", tableList);
