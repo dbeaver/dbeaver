@@ -74,4 +74,6 @@ public abstract class SQLQueryDataContext {
     }
 
     public abstract SQLDialect getDialect();
+
+    public abstract SQLQueryRowsSourceModel getDefaultTable();
 }

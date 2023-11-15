@@ -32,10 +32,10 @@ import java.util.stream.Collectors;
 
 
 public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition { 
-	private final SQLQueryQualifiedName name;
+    private final SQLQueryQualifiedName name;
     private DBSEntity table = null;
    
-    public SQLQueryRowsTableDataModel(SQLQueryQualifiedName name) {
+    public SQLQueryRowsTableDataModel(@NotNull SQLQueryQualifiedName name) {
         this.name = name;
     }
 
