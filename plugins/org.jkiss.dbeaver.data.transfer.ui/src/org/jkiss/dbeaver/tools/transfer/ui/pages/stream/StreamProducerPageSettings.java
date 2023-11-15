@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -95,10 +96,53 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
             UIUtils.createControlLabel(inputFilesGroup, DTMessages.data_transfer_wizard_settings_group_input_files);
 
-            filesTable = new Table(inputFilesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+            final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.BORDER);
+            inputFilesTableGroup.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
+            inputFilesTableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+            DBPProject project = getWizard().getProject();
+            boolean showLocalFS = true;//!DBWorkbench.isDistributed();
+            boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
+
+            if (showLocalFS || showRemoteFS) {
+                final ToolBar toolbar = new ToolBar(inputFilesTableGroup, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
+                if (showLocalFS) {
+                    tiOpenLocal = UIUtils.createToolItem(
+                        toolbar,
+                        UIMessages.text_with_open_dialog_browse,
+                        UIMessages.text_with_open_dialog_browse,
+                        DBIcon.TREE_FOLDER,
+                        SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(false).run())
+                    );
+                }
+                if (showRemoteFS) {
+                    tiOpenRemote = UIUtils.createToolItem(
+                        toolbar,
+                        UIMessages.text_with_open_dialog_browse_remote,
+                        UIMessages.text_with_open_dialog_browse_remote,
+                        UIIcon.OPEN_EXTERNAL,
+                        SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(true).run())
+                    );
+                }
+
+                UIUtils.createLabelSeparator(inputFilesTableGroup, SWT.HORIZONTAL);
+            }
+
+            filesTable = new Table(inputFilesTableGroup, SWT.SINGLE | SWT.FULL_SELECTION);
             filesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             filesTable.setHeaderVisible(true);
             filesTable.setLinesVisible(true);
+
+            if (showLocalFS || showRemoteFS) {
+                UIUtils.setControlContextMenu(filesTable, manager -> {
+                    if (showLocalFS) {
+                        manager.add(new SelectInputFileAction(false));
+                    }
+                    if (showRemoteFS) {
+                        manager.add(new SelectInputFileAction(true));
+                    }
+                });
+            }
 
             UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
             List<DBSObject> sourceObjects = getWizard().getSettings().getSourceObjects();
@@ -119,32 +163,6 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
             }
 
-            DBPProject project = getWizard().getProject();
-            boolean showLocalFS = true;//!DBWorkbench.isDistributed();
-            boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
-
-            UIUtils.setControlContextMenu(filesTable, manager -> {
-                if (showLocalFS) {
-                    manager.add(new SelectInputFileAction(false));
-                }
-                if (showRemoteFS) {
-                    manager.add(new SelectInputFileAction(true));
-                }
-            });
-
-            ToolBar tb = new ToolBar(inputFilesGroup, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
-            tiOpenLocal = null;
-            tiOpenRemote = null;
-            if (showLocalFS) {
-                tiOpenLocal = UIUtils.createToolItem(tb, UIMessages.text_with_open_dialog_browse, UIMessages.text_with_open_dialog_browse, DBIcon.TREE_FOLDER,
-                    SelectionListener.widgetSelectedAdapter(selectionEvent -> new SelectInputFileAction(false).run()));
-                tiOpenLocal.setEnabled(false);
-            }
-            if (showRemoteFS) {
-                tiOpenRemote = UIUtils.createToolItem(tb, UIMessages.text_with_open_dialog_browse_remote, UIMessages.text_with_open_dialog_browse_remote, UIIcon.OPEN_EXTERNAL,
-                    SelectionListener.widgetSelectedAdapter(selectionEvent -> new SelectInputFileAction(true).run()));
-                tiOpenRemote.setEnabled(false);
-            }
             {
                 filesTable.addSelectionListener(new SelectionAdapter() {
                     @Override
