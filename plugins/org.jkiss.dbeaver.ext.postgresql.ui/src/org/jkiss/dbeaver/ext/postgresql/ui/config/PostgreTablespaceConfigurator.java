@@ -44,6 +44,7 @@ public class PostgreTablespaceConfigurator implements DBEObjectConfigurator<Post
                 tablespace.setName(dialog.getName());
                 tablespace.setLoc(dialog.getLoc());
                 tablespace.setOwnerId(dialog.getOwner().getObjectId());
+                tablespace.setOptions(dialog.getOptions());
                 return tablespace;
             }
         }.execute();

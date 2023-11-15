@@ -158,7 +158,7 @@ public class PostgreServerCrateDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportsTeblespaceLocation() {
+    public boolean supportsTablespaceLocation() {
         return false;
     }
 
