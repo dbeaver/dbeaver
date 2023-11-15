@@ -222,44 +222,19 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                             }
                         }
                     }
-                    PostgreDataSource dataSource = database.getDataSource();
-                    SQLIdentifierDetector detector = new SQLIdentifierDetector(dataSource.getSQLDialect());
-                    Map<PostgreSchema, List<PostgreTableBase>> partiallySchemas = new HashMap<>();
                     if (!CommonUtils.isEmpty(tableNames) && !CommonUtils.isEmpty(schemas)) {
-                        PostgreSchema firstSchema = schemas.get(0);
+                        PostgreSchema schema = schemas.get(0);
                         tables = new ArrayList<>();
                         for (String tableName : tableNames) {
-                            String[] strings = detector.splitIdentifier(tableName);
-                            PostgreTableBase table;
-                            if (ArrayUtils.isEmpty(strings) || strings.length != 2) {
-                                // + Backward compatibility for old tasks with not full tables names
-                                log.debug("Can't parse table name " + tableName +
-                                    ". Try to find table in the first schema " + firstSchema.getName());
-                                table = firstSchema.getTableCache().getObject(monitor, firstSchema, tableName);
-                            } else {
-                                String schemaName = DBUtils.getUnQuotedIdentifier(dataSource, strings[0]);
-                                PostgreSchema schema = database.getSchema(monitor, schemaName);
-                                if (schema == null) {
-                                    log.debug("Can't find schema " + schemaName);
-                                    continue;
-                                }
-                                String onlyTableName = DBUtils.getUnQuotedIdentifier(dataSource, strings[1]);
-                                table = schema.getTableCache().getObject(monitor, schema, onlyTableName);
-                            }
+                            PostgreTableBase table = schema.getTableCache().getObject(monitor, schema, tableName);
                             if (table != null) {
                                 tables.add(table);
-                                if (!partiallySchemas.containsKey(table.getSchema())) {
-                                    partiallySchemas.put(table.getSchema(), new ArrayList<>(Collections.singletonList(table)));
-                                } else {
-                                    partiallySchemas.get(table.getSchema()).add(table);
-                                }
                             } else {
-                                log.debug("Table '" + tableName + "' not found");
+                                log.debug("Table '" + tableName + "' not found in schema '" + schema.getName() + "'");
                             }
                         }
                     }
                     exportInfo[0] = new PostgreDatabaseBackupInfo(database, schemas, tables);
-                    exportInfo[0].setMapToExclude(partiallySchemas);
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);
                 }
@@ -300,7 +275,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                     List<String> tableList = new ArrayList<>();
                     for (PostgreTableBase table : object.getTables()) {
                         // Use full tables names to identify it in the future
-                        tableList.add(table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+                        tableList.add(table.getName());
                     }
                     objInfo.put("tables", tableList);
                 }

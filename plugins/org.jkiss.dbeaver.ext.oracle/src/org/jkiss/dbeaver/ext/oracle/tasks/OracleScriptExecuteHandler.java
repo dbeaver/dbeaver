@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -62,12 +61,7 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    public void fillProcessParameters(
-        OracleScriptExecuteSettings settings,
-        OracleDataSource arg,
-        List<String> cmd,
-        @NotNull DBRProgressMonitor monitor
-    ) throws IOException {
+    public void fillProcessParameters(OracleScriptExecuteSettings settings, OracleDataSource arg, List<String> cmd) throws IOException {
         String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
         File sqlPlusBinary = new File(settings.getClientHome().getPath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
         if (!sqlPlusBinary.exists()) {
@@ -81,13 +75,9 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    protected List<String> getCommandLine(
-        OracleScriptExecuteSettings settings,
-        OracleDataSource arg,
-        @NotNull DBRProgressMonitor monitor
-    ) throws IOException {
+    protected List<String> getCommandLine(OracleScriptExecuteSettings settings, OracleDataSource arg) throws IOException {
         List<String> cmd = new ArrayList<>();
-        fillProcessParameters(settings, arg, cmd, monitor);
+        fillProcessParameters(settings, arg, cmd);
         DBPConnectionConfiguration conInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
         String url;
         if ("TNS".equals(conInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -97,10 +96,9 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     public void fillProcessParameters(
         PostgreDatabaseBackupSettings settings,
         PostgreDatabaseBackupInfo arg,
-        List<String> cmd,
-        @NotNull DBRProgressMonitor monitor
+        List<String> cmd
     ) throws IOException {
-        super.fillProcessParameters(settings, arg, cmd, monitor);
+        super.fillProcessParameters(settings, arg, cmd);
 
         cmd.add("--format=" + settings.getFormat().getId());
         if (!CommonUtils.isEmpty(settings.getCompression())) {
@@ -137,53 +135,25 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             log.debug("Can't find specific schemas/tables for the backup");
             return;
         }
-        if (!CommonUtils.isEmpty(arg.getSchemas())) {
-            arg.getSchemas().forEach(schema -> addObjectToCLI(cmd, "-n", DBUtils.getQuotedIdentifier(schema)));
-        }
         if (!CommonUtils.isEmpty(arg.getTables())) {
-            Map<PostgreSchema, List<PostgreTableBase>> mapToExclude = arg.getMapToExclude();
-            if (!CommonUtils.isEmpty(mapToExclude)) {
-                // We can't use -n and -t together in one command line. Only tables from -t list will be dumped.
-                // Let's unwrap schemas list then, create list to exclude tables with -T param
-                Set<PostgreTableBase> excludeTables = new HashSet<>();
-                for (Map.Entry<PostgreSchema, List<PostgreTableBase>> entry : mapToExclude.entrySet()) {
-                    PostgreSchema schema = entry.getKey();
-                    List<PostgreTableBase> values = entry.getValue();
-                    try {
-                        List<PostgreTableBase> tablesAndViews = schema.getTableCache().getAllObjects(monitor, schema);
-                        for (PostgreTableBase object : tablesAndViews) {
-                            if (!values.contains(object) && (object instanceof PostgreTableRegular || object instanceof PostgreView)) {
-                                excludeTables.add(object);
-                            }
-                        }
-                    } catch (DBException e) {
-                        log.debug("Can't read tables from schema " + schema.getName());
-                    }
-                }
-                if (!CommonUtils.isEmpty(excludeTables)) {
-                    excludeTables.forEach(table -> addObjectToCLI(cmd, "-T", table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
-                }
-            } else {
-                // Backward compatibility
-                arg.getTables().forEach(table -> addObjectToCLI(cmd, "-t", table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+            for (PostgreTableBase table : arg.getTables()) {
+                cmd.add("-t");
+                // Use explicit quotes in case of quoted identifiers (#5950)
+                cmd.add(escapeCLIIdentifier(table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+            }
+        } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
+            for (PostgreSchema schema : arg.getSchemas()) {
+                cmd.add("-n");
+                // Use explicit quotes in case of quoted identifiers (#5950)
+                cmd.add(escapeCLIIdentifier(DBUtils.getQuotedIdentifier(schema)));
             }
         }
     }
 
-    private void addObjectToCLI(@NotNull List<String> cmd, @NotNull String argument, @NotNull String objectName) {
-        cmd.add(argument);
-        // Use explicit quotes in case of quoted identifiers (#5950)
-        cmd.add(escapeCLIIdentifier(objectName));
-    }
-
     @Override
-    protected List<String> getCommandLine(
-        PostgreDatabaseBackupSettings settings,
-        PostgreDatabaseBackupInfo arg,
-        @NotNull DBRProgressMonitor monitor
-    ) throws IOException {
+    protected List<String> getCommandLine(PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg) throws IOException {
         List<String> cmd = new ArrayList<>();
-        fillProcessParameters(settings, arg, cmd, monitor);
+        fillProcessParameters(settings, arg, cmd);
         cmd.add(arg.getDatabase().getName());
 
         return cmd;

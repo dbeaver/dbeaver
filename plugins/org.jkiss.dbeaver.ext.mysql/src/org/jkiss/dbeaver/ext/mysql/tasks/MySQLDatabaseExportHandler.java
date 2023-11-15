@@ -79,12 +79,8 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    protected List<String> getCommandLine(
-        MySQLExportSettings settings,
-        MySQLDatabaseExportInfo arg,
-        @NotNull DBRProgressMonitor monitor
-    ) throws IOException {
-        List<String> cmd = super.getCommandLine(settings, arg, monitor);
+    protected List<String> getCommandLine(MySQLExportSettings settings, MySQLDatabaseExportInfo arg) throws IOException {
+        List<String> cmd = super.getCommandLine(settings, arg);
         if (!CommonUtils.isEmpty(arg.getTables())) {
             cmd.add(arg.getDatabase().getName());
             for (MySQLTableBase table : arg.getTables()) {
@@ -98,12 +94,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    public void fillProcessParameters(
-        MySQLExportSettings settings,
-        MySQLDatabaseExportInfo arg,
-        List<String> cmd,
-        @NotNull DBRProgressMonitor monitor
-    ) throws IOException {
+    public void fillProcessParameters(MySQLExportSettings settings, MySQLDatabaseExportInfo arg, List<String> cmd) throws IOException {
         DBPNativeClientLocation nativeClientLocation = settings.getClientHome();
         if (nativeClientLocation == null) {
             throw new IllegalArgumentException("Client home can not be null!");

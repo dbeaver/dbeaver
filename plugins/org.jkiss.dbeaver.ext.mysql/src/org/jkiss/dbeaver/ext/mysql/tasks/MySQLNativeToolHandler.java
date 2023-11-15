@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -72,9 +71,9 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
     }
 
     @Override
-    protected List<String> getCommandLine(SETTINGS settings, PROCESS_ARG arg, @NotNull DBRProgressMonitor monitor) throws IOException {
+    protected List<String> getCommandLine(SETTINGS settings, PROCESS_ARG arg) throws IOException {
         List<String> cmd = new ArrayList<>();
-        fillProcessParameters(settings, arg, cmd, monitor);
+        fillProcessParameters(settings, arg, cmd);
 
         String toolUserName = settings.getToolUserName();
         String toolUserPassword = settings.getToolUserPassword();
