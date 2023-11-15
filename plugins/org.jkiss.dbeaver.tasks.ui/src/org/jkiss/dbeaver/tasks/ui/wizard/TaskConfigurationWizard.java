@@ -70,6 +70,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     private boolean promptVariables;
     private DBTTaskContext taskContext;
     @Nullable private DBTTaskFolder currentSelectedTaskFolder;
+    private ActiveWizardPage wizardWithError;
 
     protected TaskConfigurationWizard() {
     }
@@ -212,6 +213,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean canFinish() {
+        boolean noErrors = getContainer().getCurrentPage() == null
+            || getContainer().getCurrentPage().getErrorMessage() == null;
         for (IWizardPage page : getPages()) {
             // We need to make sure that change at the current page didn't break any other loaded pages
             if (
@@ -224,11 +227,15 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 if (activeWizardPage.getErrorMessage() != null && getContainer().getErrorMessage() == null) {
                     getContainer().setErrorMessage(
                         activeWizardPage.getTitle() + ": " + activeWizardPage.getErrorMessage());
+                    noErrors = false;
                 }
             }
             if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
                 return false;
             }
+        }
+        if (noErrors) {
+            getContainer().setErrorMessage(null);
         }
         TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
         if (taskPage != null && !taskPage.isPageComplete()) {
@@ -236,6 +243,15 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         }
 
         return true;
+    }
+
+    private void checkErrorStatus() {
+        if (wizardWithError != null && !getContainer().getCurrentPage().equals(wizardWithError)) {
+            wizardWithError.updatePageCompletion();
+            if (wizardWithError.getErrorMessage() == null) {
+                getContainer().setErrorMessage(null);
+            }
+        }
     }
 
     protected boolean isPageNeedsCompletion(IWizardPage page) {
