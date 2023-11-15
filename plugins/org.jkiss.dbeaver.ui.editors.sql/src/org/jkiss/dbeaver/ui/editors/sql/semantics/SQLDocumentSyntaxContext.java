@@ -189,19 +189,28 @@ public class SQLDocumentSyntaxContext {
     }
 
     public void dropLinesOfRange(int offset, int length) {
+        if (length == 0) {
+            return;
+        }
         try {
             int firstLine = document.getLineOfOffset(offset);
-            int lastLine = document.getLineOfOffset(offset + length);
-            if (firstLine == lastLine) {
-                this.dropLine(firstLine);
-            } else {
-                for (SQLDocumentLineSyntaxContext ctx : lines.subMap(firstLine, lastLine).values()) {
-                    ctx.reset();
-                }
+            int end = offset + length;
+            if (document.getLength() <= end) {
+                lines.subMap(firstLine, Integer.MAX_VALUE).clear();
                 this.resetLastAccessCache();
+            } else {
+                int lastLine = document.getLineOfOffset(offset + length);
+                if (firstLine == lastLine) {
+                    this.dropLine(firstLine);
+                } else {
+                    for (SQLDocumentLineSyntaxContext ctx : lines.subMap(firstLine, lastLine).values()) {
+                        ctx.reset();
+                    }
+                    this.resetLastAccessCache();
+                }
             }
         } catch (BadLocationException e) {
-            log.debug(e);
+             log.debug(e);
         }
     }
 //    
