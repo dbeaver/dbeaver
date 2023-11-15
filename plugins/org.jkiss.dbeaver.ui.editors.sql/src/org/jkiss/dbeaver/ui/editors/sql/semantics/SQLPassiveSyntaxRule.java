@@ -60,15 +60,19 @@ public class SQLPassiveSyntaxRule implements IPredicateRule {
     public IToken evaluate(@NotNull ICharacterScanner scanner) {
         if (scanner instanceof TPCharacterScanner s) {
             int offset = s.getOffset();
-            SQLDocumentSyntaxTokenEntry entry = this.backgroundParsingJob.getCurrentContext().findToken(offset);
-            if (entry != null && entry.symbolEntry.getSymbolClass().getTokenType().equals(this.tokenType) && s.getOffset() < entry.end) {
-//                StringBuilder sb = new StringBuilder();
-//                while (s.getOffset() < entry.end) {
-//                    sb.append((char)s.read());
-//                }
-//                System.out.println("found @" + offset + " " + entry + " = " + sb.toString());
-                while (s.getOffset() < entry.end) {
-                    s.read();
+            SQLQuerySymbolEntry entry = this.backgroundParsingJob.getCurrentContext().findToken(offset);
+            if (entry != null && entry.getSymbolClass().getTokenType().equals(this.tokenType)) {
+                int end = this.backgroundParsingJob.getCurrentContext().getLastAccessedScriptElementOffset() + entry.getInterval().b + 1;
+                if (false) {
+                    StringBuilder sb = new StringBuilder();
+                    while (s.getOffset() < end) {
+                        sb.append((char)s.read());
+                    }
+                    System.out.println("found @" + offset + "-" + end + " " + entry + " = " + sb.toString());
+                } else {
+                    while (s.getOffset() < end) {
+                        s.read();
+                    }
                 }
                 return this.token;
             } else {
