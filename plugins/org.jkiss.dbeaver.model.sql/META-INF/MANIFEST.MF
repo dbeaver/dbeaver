@@ -3,12 +3,13 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver SQL Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.sql;singleton:=true
-Bundle-Version: 1.0.107.qualifier
-Bundle-Release-Date: 20231023
+Bundle-Version: 1.0.109.qualifier
+Bundle-Release-Date: 20231120
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.model.sql.internal.SQLModelActivator
 Export-Package: org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.model.sql.analyzer,
  org.jkiss.dbeaver.model.sql.commands,
  org.jkiss.dbeaver.model.sql.completion,
  org.jkiss.dbeaver.model.sql.data,

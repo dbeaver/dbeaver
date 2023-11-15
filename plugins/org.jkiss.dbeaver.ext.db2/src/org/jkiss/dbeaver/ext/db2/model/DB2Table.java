@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPartitionContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,7 +66,7 @@ import java.util.Map;
  * @author Denis Forveille
  */
 public class DB2Table extends DB2TableBase
-    implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
+    implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer, DBSPartitionContainer {
 
     protected static final Log log = Log.getLog(DB2Table.class);
 

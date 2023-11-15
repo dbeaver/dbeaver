@@ -427,7 +427,8 @@ public class NavigatorUtils {
                             {
                                 String fileName = node.getNodeName();
                                 try {
-                                    Path tmpFile = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files").resolve(fileName);
+                                    Path tmpFile = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files")
+                                        .resolve(CommonUtils.escapeFileName(fileName));
                                     if (!Files.exists(tmpFile)) {
                                         try {
                                             Files.createFile(tmpFile);
@@ -455,7 +456,7 @@ public class NavigatorUtils {
                                     }
                                     nodeName = tmpFile.toAbsolutePath().toString();
                                 } catch (Exception e) {
-                                    log.error(e);
+                                    log.error(e.getMessage());
                                     continue;
                                 }
                             } else {

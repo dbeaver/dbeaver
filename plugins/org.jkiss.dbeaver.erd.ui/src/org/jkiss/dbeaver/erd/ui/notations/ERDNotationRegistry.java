@@ -23,6 +23,9 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,11 +34,12 @@ import java.util.stream.Collectors;
 
 public class ERDNotationRegistry {
 
-    private Log log = Log.getLog(ERDNotationRegistry.class);
-    private Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
-    private ERDNotationDescriptor defaultNotation;
-    private static ERDNotationRegistry instance;
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.erd.ui.notation.style";
+    private static ERDNotationRegistry instance;
+    private Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
+    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+    private Log log = Log.getLog(ERDNotationRegistry.class);
+    private ERDNotationDescriptor activeDescriptor;
 
     private ERDNotationRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] cfgElements = registry.getConfigurationElementsFor(EXTENSION_ID);
@@ -61,7 +65,7 @@ public class ERDNotationRegistry {
     }
 
     @NotNull
-    public List<ERDNotationDescriptor> getERDNotations() {
+    public List<ERDNotationDescriptor> getNotations() {
         return notations.values().stream().collect(Collectors.toList());
     }
 
@@ -76,33 +80,21 @@ public class ERDNotationRegistry {
             return;
         }
         notations.put(descriptor.getId(), descriptor);
-        if (descriptor.isDefault()) {
-            if (defaultNotation == null) {
-                defaultNotation = descriptor;
-            } else {
-                log.error("The default ERD Notation already defined for id:" + defaultNotation.getId());
-            }
-        }
     }
 
     /**
      * Get notation by identifier
      *
-     *@param id - notation descriptor identifier
-     *@return - ERDNotationDescriptor
+     * @param id - notation descriptor identifier
+     * @return - ERDNotationDescriptor
      */
     @Nullable
-    public ERDNotationDescriptor getNotation(@NotNull String id) {
+    public ERDNotationDescriptor getDescriptor(@NotNull String id) {
         if (!notations.containsKey(id)) {
             log.error("ERD Notation not defined for key:" + id);
             return null;
         }
         return notations.get(id);
-    }
-
-    @Nullable
-    public ERDNotationDescriptor getDefaultNotation() {
-        return this.defaultNotation;
     }
 
     /**
@@ -112,12 +104,49 @@ public class ERDNotationRegistry {
      * @return - ERDNotationDescriptor
      */
     @Nullable
-    public ERDNotationDescriptor getERDNotationByName(String name) {
+    public ERDNotationDescriptor getDescriptorByName(String name) {
         for (ERDNotationDescriptor descriptor : notations.values()) {
             if (descriptor.getName().equals(name)) {
                 return descriptor;
             }
         }
         return null;
+    }
+
+    /**
+     * The method designed to retrieve stored value of notation from configuration
+     * scope
+     *
+     * @return - descriptor
+     */
+    public ERDNotationDescriptor getActiveDescriptor() {
+        if (activeDescriptor != null) {
+            return activeDescriptor;
+        }
+        activeDescriptor = getDescriptor(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+        if (activeDescriptor != null) {
+            return activeDescriptor;
+        }
+        activeDescriptor = getDefaultDescriptor();
+        return activeDescriptor;
+    }
+
+    /**
+     * The method designed to set and store current descriptor 
+     *
+     * @param erdNotation
+     */
+    public void setActiveDescriptor(ERDNotationDescriptor erdNotation) {
+        activeDescriptor = erdNotation;
+        store.setValue(ERDUIConstants.PREF_NOTATION_TYPE, activeDescriptor.getId());
+    }
+    
+    /**
+     * Gets default 
+     *
+     * @return - default descriptor
+     */
+    public ERDNotationDescriptor getDefaultDescriptor() {
+        return getDescriptor(ERDUIConstants.PREF_DEFAULT_ATTR_ERD_NOTATION_ID);
     }
 }

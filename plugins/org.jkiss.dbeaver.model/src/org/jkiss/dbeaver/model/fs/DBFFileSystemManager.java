@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
@@ -27,13 +28,19 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class DBFFileSystemManager implements DBFEventListener {
+    public static final String QUERY_PARAM_FS_ID = "fs";
+    public static final Pattern URI_SCHEME_PREFIX = Pattern.compile("[a-z\\d]+:/.+", Pattern.CASE_INSENSITIVE);
+
+    private static final Log log = Log.getLog(DBFFileSystemManager.class);
     private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
     @NotNull
     private final DBPProject project;
@@ -44,6 +51,15 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
+        if (dbfFileSystems != null) {
+            for (DBFVirtualFileSystem fs : dbfFileSystems.values()) {
+                try {
+                    fs.close();
+                } catch (IOException e) {
+                    log.debug("Error closing virtual FS", e);
+                }
+            }
+        }
         this.dbfFileSystems = new LinkedHashMap<>();
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
@@ -56,7 +72,7 @@ public class DBFFileSystemManager implements DBFEventListener {
 
     @NotNull
     public Path getPathFromString(DBRProgressMonitor monitor, String pathOrUri) throws DBException {
-        if (pathOrUri.contains("://")) {
+        if (URI_SCHEME_PREFIX.matcher(pathOrUri).matches()) {
             return getPathFromURI(monitor, URI.create(pathOrUri));
         } else {
             return Path.of(pathOrUri);
@@ -72,21 +88,20 @@ public class DBFFileSystemManager implements DBFEventListener {
         if (CommonUtils.isEmpty(fsType)) {
             throw new DBException("File system type not present in the file uri: " + uri);
         }
-        String fsId = uri.getAuthority();
-        if (CommonUtils.isEmpty(fsId)) {
-            throw new DBException("File system id not present in the file uri: " + uri);
-        }
-        DBFVirtualFileSystem fileSystem = getVirtualFileSystems()
-            .stream()
-            .filter(fs -> fs.getType().equals(fsType) && fs.getId().equals(fsId))
-            .findFirst()
-            .orElseThrow(() -> new DBException("Cannot find file system provider for the uri '" + uri + "'"));
 
-        try {
-            return fileSystem.getPathByURI(monitor, uri);
-        } catch (Throwable e) {
-            throw new DBException("Failed to get path from uri '" + uri + "': " + e.getMessage(), e);
+        DBFFileSystemDescriptor fsProvider = DBWorkbench.getPlatform().getFileSystemRegistry()
+            .getFileSystemProviderBySchema(fsType);
+        if (fsProvider == null) {
+            throw new DBException("File system schema '" + fsType + "' not recognized");
         }
+
+        if (dbfFileSystems == null) {
+            reloadFileSystems(monitor);
+        }
+        DBFVirtualFileSystem[] fsCandidates = dbfFileSystems.values().stream()
+            .filter(fs -> fs.getProviderId().equals(fsProvider.getId())).toArray(DBFVirtualFileSystem[]::new);
+
+        return fsProvider.getInstance().getPathByURI(monitor, uri, fsCandidates);
     }
 
     @NotNull

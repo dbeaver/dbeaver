@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -66,6 +67,11 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
+    public String getNodeTypeLabel() {
+        return ModelMessages.fs_folder;
+    }
+
+    @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
         return root.getName();
@@ -87,7 +93,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
-    public Path getPath() {
+    public synchronized Path getPath() {
         if (path == null) {
             try {
                 path = root.getRootPath(new VoidProgressMonitor());
@@ -97,6 +103,11 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
             }
         }
         return path;
+    }
+
+    @Override
+    protected synchronized void setPath(Path path) {
+        this.path = path;
     }
 
 }

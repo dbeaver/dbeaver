@@ -52,8 +52,8 @@ public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareB
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
 sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
 
-directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
-selectStatement: withClause? queryExpression;
+directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
+selectStatement: queryExpression;
 
 // data type literals
 sign: PlusSign|MinusSign;
@@ -179,8 +179,8 @@ nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
 setQuantifier: (DISTINCT|ALL);
-selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
-selectSublist: (derivedColumn|qualifier Period Asterisk)? anyUnexpected??; // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
+selectList: selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
+selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk)? anyUnexpected??; // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
 tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
@@ -253,7 +253,7 @@ intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign 
 
 valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |anyWordsWithProperty|columnReference;
+    |anyWordsWithProperty2|columnReference|anyWordsWithProperty;
 
 
 numericPrimary: (valueExpressionPrimary|extractExpression|anyWordsWithProperty);
@@ -337,15 +337,19 @@ sqlDataStatement: (selectStatementSingleRow|sqlDataChangeStatement);
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
-deleteStatement: DELETE FROM tableName (WHERE searchCondition)?;
+deleteStatement: DELETE FROM tableName whereClause?;
 insertStatement: INSERT INTO tableName insertColumnsAndSource;
 insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
 insertColumnList: columnNameList;
-updateStatement: UPDATE tableName SET setClauseList (WHERE searchCondition)?;
+
+// UPDATE
+updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
-setClause: objectColumn EqualsOperator updateSource;
-objectColumn: columnName;
-updateSource: (valueExpression|nullSpecification|DEFAULT);
+setClause: ((setTarget | setTargetList) (EqualsOperator updateSource)?)|anyUnexpected??;
+setTarget: columnReference;
+setTargetList: LeftParen columnReference? (Comma columnReference)* RightParen?;
+updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
+updateValue: valueExpression|nullSpecification|DEFAULT;
 
 // transactions
 sqlTransactionStatement: (setTransactionStatement|setConstraintsModeStatement|commitStatement|rollbackStatement);
@@ -375,6 +379,7 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
+anyWordsWithProperty2: anyWord+ anyProperty;
 
 /*
 All the logical boundary terms between query construct levels should be explicitly mentioned here for the anyUnexpected to NOT cross them

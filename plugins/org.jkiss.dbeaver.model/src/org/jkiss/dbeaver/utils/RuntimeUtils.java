@@ -20,6 +20,7 @@ import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.internal.runtime.CommonMessages;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobGroup;
 import org.eclipse.osgi.service.localization.BundleLocalization;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -28,10 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -43,6 +41,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -190,6 +189,18 @@ public final class RuntimeUtils {
         long min = sec / 60;
         sec -= min * 60;
         return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
+    }
+
+    @NotNull
+    public static String formatExecutionTimeShort(@NotNull Duration duration) {
+        final long min = duration.toMinutes();
+        final long sec = duration.toSecondsPart();
+
+        if (min > 0) {
+            return "%dm %ds".formatted(min, sec);
+        } else {
+            return "%ds".formatted(sec);
+        }
     }
 
     public static File getPlatformFile(String platformURL) throws IOException {
@@ -533,6 +544,38 @@ public final class RuntimeUtils {
         if (result == null)
             throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), ""); //$NON-NLS-1$
         return result;
+    }
+
+    public static <T> void executeJobsForEach(List<T> objects, DBRRunnableParametrizedWithProgress<T> task) {
+        JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
+        for (T object : objects) {
+            AbstractJob job = new AbstractJob("Execute for " + object) {
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    if (!monitor.isCanceled()) {
+                        try {
+                            task.run(monitor, object);
+                        } catch (InvocationTargetException e) {
+                            log.debug(e.getTargetException());
+                        } catch (InterruptedException e) {
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            job.setJobGroup(jobGroup);
+            job.schedule();
+        }
+        try {
+            jobGroup.join(0, new NullProgressMonitor());
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
     private enum CommandLineState {

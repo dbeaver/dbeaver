@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+package org.jkiss.dbeaver.model.struct.rdb;
+
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Collection;
 
 /**
- * Task initializer.
+ * Table which contains partitions.
  */
-public interface DBTTaskInitializer {
+public interface DBSPartitionContainer {
 
-    void initializeTaskSettings(DBTTask task);
-
+    Collection<? extends DBSTablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException;
 }

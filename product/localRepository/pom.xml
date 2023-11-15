@@ -42,35 +42,36 @@
 								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id></artifact>
 
 								<!-- ANTLR -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-antlr4 -->
 
 								<!-- POI and dependencies -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-poi -->
 
 								<!-- GIS -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-gis -->
 
 								<!-- JFreeChart -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jfreechart -->
 
 								<!-- SSH and BouncyCastle -->
-								<artifact><id>com.jcraft:jsch:0.2.8</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>com.jcraft:jsch:0.2.8</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:jsch -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-sshj -->
 								<!-- Ant minimized -->
-								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
-
+								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact> <!-- repo:eclipse-bundle-apache-ant -->
+								<!-- Jackson -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jackson:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<!-- Batik -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-batik -->
 								<!-- GraphQL -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-graphql-java -->
 								<!-- DBCP -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-dbcp -->
 
 								<!-- Jetty -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jetty-server -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jetty-websocket -->
 								<!-- GPT -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-gpt3 -->
 
 								<!-- Tests. Mockito-all is kept for old version build support. -->
 <!--								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>-->

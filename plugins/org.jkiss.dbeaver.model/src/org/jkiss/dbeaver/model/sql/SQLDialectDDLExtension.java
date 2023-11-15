@@ -87,5 +87,6 @@ public interface SQLDialectDDLExtension extends SQLDialect {
     @NotNull
     String getBooleanDataType();
 
+    boolean supportsNoActionIndex();
 
 }

@@ -43,9 +43,10 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
+import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -103,29 +104,27 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn = new PolylineConnection();
-
+        PolylineConnection conn;
+        ERDConnectionRouter router = getDiagramPart().getRouter();
+        if (router != null) {
+            conn = router.getConnectionInstance();
+        } else {
+            conn = new PolylineConnection();
+        }
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
-
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
             ERDAssociation association = getAssociation();
             if (association != null && association.getObject() != null && !CommonUtils.isEmpty(association.getObject().getDescription())) {
                 ConnectionLocator descLabelLocator = new ConnectionLocator(conn, ConnectionLocator.MIDDLE);
-                //descLabelLocator.setRelativePosition(50);
-                //descLabelLocator.setGap(50);
                 Label descLabel = new Label(association.getObject().getDescription());
                 descLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
-//                Border border = new MarginBorder(20, 0, 0, 0);
-//                descLabel.setBorder(border);
                 conn.add(descLabel, descLabelLocator);
             }
         }
-
         setConnectionStyles(conn);
         setConnectionRouting(conn);
         setConnectionToolTip(conn);
-
         return conn;
     }
 
@@ -145,10 +144,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             if (entityPart == null) {
                 entityPart = getTarget();
             }
-            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
             if (entityPart instanceof GraphicalEditPart
-                && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-                    || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
+                && (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+                    || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences()))) {
                 // Self link
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
                 final Dimension figureSize = entityFigure.getMinimumSize();
@@ -176,9 +174,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 conn.setRoutingConstraint(bends);
             }
         }
-        if (cLayer.getConnectionRouter() instanceof OrthogonalShortPathRouting) {
+        if (cLayer.getConnectionRouter() instanceof ShortPathRouting) {
             ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getDiagram().getDiagramNotation();
-            ((OrthogonalShortPathRouting) cLayer.getConnectionRouter())
+            ((ShortPathRouting) cLayer.getConnectionRouter())
                 .setIndentation(diagramNotationDescriptor.getNotation().getIndentation());
         }
     }

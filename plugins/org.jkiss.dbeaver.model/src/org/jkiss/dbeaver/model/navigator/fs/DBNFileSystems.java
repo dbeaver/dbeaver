@@ -20,13 +20,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOListener;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOMonitor;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -56,6 +60,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     @Override
     protected void dispose(boolean reflect) {
         super.dispose(reflect);
+        this.disposeFileSystems();
 
         EFSNIOMonitor.removeListener(this);
     }
@@ -63,6 +68,11 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name();
+    }
+
+    @Override
+    public String getNodeTypeLabel() {
+        return ModelMessages.fs_root;
     }
 
     @Override
@@ -119,12 +129,15 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     @Override
     public DBNFileSystem[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
-            this.children = readChildNodes(monitor);
+            this.children = readChildNodes(monitor, children);
         }
         return children;
     }
 
-    protected DBNFileSystem[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+    protected DBNFileSystem[] readChildNodes(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBNFileSystem[] mergeWith
+    ) throws DBException {
         monitor.beginTask("Read available file systems", 1);
         List<DBNFileSystem> result = new ArrayList<>();
         var project = getOwnerProject();
@@ -134,13 +147,28 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
         DBFFileSystemManager fileSystemManager = project.getFileSystemManager();
 
         for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems()) {
-            DBNFileSystem newChild = new DBNFileSystem(this, fs);
+            DBNFileSystem newChild = null;
+            if (mergeWith != null) {
+                for (DBNFileSystem oldFS : mergeWith) {
+                    if (equalsFS(fs, oldFS.getFileSystem())) {
+                        newChild = oldFS;
+                        break;
+                    }
+                }
+            }
+            if (newChild == null) {
+                newChild = new DBNFileSystem(this, fs);
+            }
             result.add(newChild);
         }
 
-        result.sort(DBUtils.nameComparatorIgnoreCase());
+        result.sort((o1, o2) -> o1.getNodeName().compareToIgnoreCase(o2.getNodeName()));
         monitor.done();
         return result.toArray(new DBNFileSystem[0]);
+    }
+
+    private boolean equalsFS(DBFVirtualFileSystem fs1, DBFVirtualFileSystem fs2) {
+        return fs1.getType().equals(fs2.getType()) && fs1.getId().equals(fs2.getId());
     }
 
     public DBNPathBase findNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
@@ -195,13 +223,28 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) {
-        children = null;
+        refreshFileSystems(monitor);
         return this;
     }
 
-    public void resetFileSystems() {
-        children = null;
-        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+    private void refreshFileSystems(DBRProgressMonitor monitor) {
+        if (children != null) {
+            try {
+                children = readChildNodes(monitor, children);
+            } catch (DBException e) {
+                log.error(e);
+            }
+            getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+        }
+    }
+
+    private void disposeFileSystems() {
+        if (children != null) {
+            for (DBNFileSystem fs : children) {
+                fs.dispose(false);
+            }
+            children = null;
+        }
     }
 
     @Override
@@ -228,9 +271,12 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
             if (CommonUtils.equalObjects(fs.getFileSystem(), dbfRoot.getFileSystem())) {
                 DBNFileSystemRoot rootNode = fs.getRoot(dbfRoot);
                 if (rootNode != null) {
-                    String[] pathSegments = resource.getFullPath().segments();
+                    String[] pathSegments = fs.getFileSystem().getURISegments(resource.getFileStore().getPath().toUri());
+                    //String[] pathSegments = getPathSegments(resource);
+
                     DBNPathBase parentNode = rootNode;
-                    for (int i = 2; i < pathSegments.length - 1; i++) {
+                    // NIO path format /[config-id]/root-id/folder1/file1
+                    for (int i = 1; i < pathSegments.length - 1; i++) {
                         String itemName = pathSegments[i];
                         DBNPathBase childNode = parentNode.getChild(itemName);
                         if (childNode == null) {
@@ -241,14 +287,10 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
                     }
 
                     switch (action) {
-                        case CREATE:
-                            parentNode.addChildResource(resource.getNioPath());
-                            break;
-                        case DELETE:
-                            parentNode.removeChildResource(resource.getNioPath());
-                            break;
-                        default:
-                            break;
+                        case CREATE -> parentNode.addChildResource(resource.getNioPath());
+                        case DELETE -> parentNode.removeChildResource(resource.getNioPath());
+                        default -> {
+                        }
                     }
                 }
                 break;
