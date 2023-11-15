@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
@@ -60,7 +57,7 @@ public class SQLDocumentSyntaxContext {
         } else if (offset >= this.lastAccessedItemOffset && this.lastAccessedScriptItem != null &&
             offset < this.lastAccessedItemOffset + this.lastAccessedScriptItem.length()) {
             this.lastItemAccessOffset = offset;
-       } else {
+        } else {
             NodesIterator<SQLDocumentScriptItemSyntaxContext> it = scriptItems.nodesIteratorAt(offset);
             SQLDocumentScriptItemSyntaxContext scriptItem = it.getCurrValue();
             int itemOffset = it.getCurrOffset();
