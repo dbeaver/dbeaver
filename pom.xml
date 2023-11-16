@@ -20,7 +20,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/</local-p2-repo.url>
+        <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
+        <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/${local-p2-repo.version}</local-p2-repo.url>
         <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
         <!-- Orbit deps. We need it for CB at least -->
         <orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20221123021534/repository/</orbit-repo.url>
