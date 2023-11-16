@@ -536,9 +536,8 @@
                     dialect="postgresql">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
-                    <!-- Drivers after 1.2.45 seems to be broken -->
-<!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>-->
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.3]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.22]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.redshift"/>
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 

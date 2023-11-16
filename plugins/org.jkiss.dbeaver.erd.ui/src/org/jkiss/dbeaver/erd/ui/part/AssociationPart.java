@@ -175,14 +175,14 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             }
         }
         if (cLayer.getConnectionRouter() instanceof ShortPathRouting) {
-            ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getDiagram().getDiagramNotation();
+            ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
             ((ShortPathRouting) cLayer.getConnectionRouter())
                 .setIndentation(diagramNotationDescriptor.getNotation().getIndentation());
         }
     }
 
     protected void setConnectionStyles(PolylineConnection conn) {
-        ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getDiagram().getDiagramNotation();
+        ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
         if (diagramNotationDescriptor == null) {
             log.error("ERD notation descriptor is not defined");
         }

@@ -485,30 +485,29 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (fileExists && !Files.isDirectory(outputFile)) {
             DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getFileName().toString());
             switch (behavior) {
-                case APPEND:
-                    truncate = false;
-                    break;
-                case PATCHNAME:
-                    truncate = false;
+                case APPEND -> truncate = false;
+                case PATCHNAME -> {
                     outputFile = makeOutputFile(monitor, "-" + System.currentTimeMillis());
-                    break;
-                case OVERWRITE:
-                    truncate = true;
-                    break;
-                default:
-                    throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
+                    truncate = false;
+                    fileExists = false;
+                }
+                case OVERWRITE -> truncate = true;
+                default -> throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
             }
         } else {
             truncate = true;
         }
 
-        this.outputStream = new BufferedOutputStream(
-            Files.newOutputStream(
+        OutputStream stream;
+        if (!fileExists) {
+            stream = Files.newOutputStream(outputFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+        } else {
+            stream = Files.newOutputStream(
                 outputFile,
-                !fileExists ?
-                    StandardOpenOption.CREATE_NEW :
-                    (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND)),
-            OUT_FILE_BUFFER_SIZE);
+                StandardOpenOption.WRITE,
+                (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND));
+        }
+        this.outputStream = new BufferedOutputStream(stream, OUT_FILE_BUFFER_SIZE);
         this.outputStream = this.statStream = new StatOutputStream(outputStream);
 
         if (settings.isCompressResults()) {

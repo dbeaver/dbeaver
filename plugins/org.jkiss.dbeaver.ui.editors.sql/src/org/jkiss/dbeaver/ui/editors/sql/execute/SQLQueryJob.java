@@ -237,6 +237,12 @@ public class SQLQueryJob extends DataSourceJob
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
+                    if (txnManager != null && txnManager.isSupportsTransactions()
+                        && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT
+                        && query instanceof SQLQuery sqlQuery
+                    ) {
+                        handleTransactionStatements(txnManager, session, sqlQuery);
+                    }
                     if (!runNext) {
                         if (lastError == null) {
                             // Execution cancel
@@ -334,6 +340,18 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+        }
+    }
+
+    protected void handleTransactionStatements(
+        @NotNull DBCTransactionManager txnManager,
+        @NotNull DBCSession session,
+        @NotNull SQLQuery query
+    ) throws DBCException {
+        if (query.getType().equals(SQLQueryType.COMMIT)) {
+            txnManager.commit(session);
+        } else if (query.getType().equals(SQLQueryType.ROLLBACK)) {
+            txnManager.rollback(session, null);
         }
     }
 
@@ -503,6 +521,12 @@ public class SQLQueryJob extends DataSourceJob
                 } catch (InvocationTargetException e) {
                     throw e.getTargetException();
                 }
+            }
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+            if (txnManager != null && txnManager.isSupportsTransactions()
+                && !txnManager.isAutoCommit() && commitType != SQLScriptCommitType.AUTOCOMMIT
+            ) {
+                handleTransactionStatements(txnManager, session, sqlQuery);
             }
         }
         catch (Throwable ex) {

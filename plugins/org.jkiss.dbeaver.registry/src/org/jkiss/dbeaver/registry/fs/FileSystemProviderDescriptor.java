@@ -36,6 +36,7 @@ public class FileSystemProviderDescriptor extends AbstractDescriptor implements 
     private final String label;
     private final String description;
     private final DBPImage icon;
+    private final String schema;
     private final ObjectType implClass;
     private final String requiredAuth;
 
@@ -49,6 +50,7 @@ public class FileSystemProviderDescriptor extends AbstractDescriptor implements 
         this.description = config.getAttribute("description");
         this.requiredAuth = CommonUtils.nullIfEmpty(config.getAttribute("requiredAuth"));
         this.icon = iconToImage(config.getAttribute("icon"));
+        this.schema = config.getAttribute("schema");
         this.implClass = new ObjectType(config.getAttribute("class"));
     }
 
@@ -70,6 +72,11 @@ public class FileSystemProviderDescriptor extends AbstractDescriptor implements 
     @Override
     public DBPImage getIcon() {
         return icon;
+    }
+
+    @Override
+    public String getSchema() {
+        return schema;
     }
 
     @NotNull
