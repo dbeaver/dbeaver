@@ -85,7 +85,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
     @Override
     public boolean isSystemSchema(GenericSchema schema) {
-        return schema.getName().equals("SYSTEM_");
+        return AltibaseConstants.USER_SYSTEM_.equals(schema.getName());
     }
 
     @Override
