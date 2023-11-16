@@ -236,7 +236,7 @@
             </propertyGroup>
         </transformer>
 
-        <transformer id="expression" label="Expression" description="Set column value to a result of expression" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression">
+        <transformer id="expression" label="Expression" description="Set column value to a result of expression&#10;Language references and examples can be found here:&#10;http://commons.apache.org/proper/commons-jexl/reference/syntax.html" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression">
             <propertyGroup label="Settings">
                 <property id="expression" label="Expression" type="string" description="Expression to evaluate" defaultValue="" required="true"/>
             </propertyGroup>
@@ -267,7 +267,7 @@
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </task>
         <task id="dataImport" name="%task.name.import" description="%task.description.import" icon="icons/import.png" type="common"
-              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport" supportsDistributedMode="false">
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
@@ -286,7 +286,10 @@
         <serializer id="databaseTransferConsumer"
                     class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
         <serializer id="streamTransferConsumer"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"
-                    supportsDistributedMode="false"/>
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.tools.transfer.internal.DataTransferPreferencesInitializer"/>
     </extension>
 </plugin>

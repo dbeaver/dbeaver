@@ -20,6 +20,7 @@ public interface SMConstants {
     String SESSION_PARAM_LAST_REMOTE_ADDRESS = "lastRemoteAddr";
     String SESSION_PARAM_LAST_REMOTE_USER_AGENT = "lastRemoteUserAgent";
     String SESSION_PARAM_TRUSTED_USER_TEAMS = "trustedUserTeams";
+    String SESSION_PARAM_TRUSTED_USER_ROLE = "trustedUserRole";
 
     String SUBJECT_PERMISSION_SCOPE = "subject";
     String PROJECT_PERMISSION_SCOPE = "project";

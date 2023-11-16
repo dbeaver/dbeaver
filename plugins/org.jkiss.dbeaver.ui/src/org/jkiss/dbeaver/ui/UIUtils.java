@@ -31,7 +31,9 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -56,7 +58,9 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -92,6 +96,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.SortedMap;
+import java.util.function.Consumer;
 
 /**
  * UI Utils
@@ -103,6 +108,8 @@ public class UIUtils {
     private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
     public static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
     public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
+    public static final Color COLOR_VALIDATION_ERROR = new Color(255, 220, 220);
+    
     private static final Color COLOR_WHITE_DARK = new Color(null, 208, 208, 208);
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
@@ -934,6 +941,39 @@ public class UIUtils {
         return ph;
     }
 
+    /**
+     * Creates {@link ScrolledComposite} from the {@link Composite}
+     *
+     * @param parent composite parent
+     * @return ScrolledComposite
+     */
+    @NotNull
+    public static ScrolledComposite createScrolledComposite(@NotNull Composite parent) {
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(1, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        return scrolledComposite;
+    }
+
+    /**
+     * Configures created composite to detect resize and be appropriately sized with its contents
+     *
+     * @param scrolledComposite composite to configure
+     * @param content it's contents
+     */
+    public static void configureScrolledComposite(@NotNull ScrolledComposite scrolledComposite, @NotNull Control content) {
+        scrolledComposite.setContent(content);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                scrolledComposite.setMinHeight(content.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+            }
+        });
+        scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+    }
+
     public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
@@ -1107,6 +1147,18 @@ public class UIUtils {
 
     @NotNull
     public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable DBPImage icon, @Nullable String toolTip, @Nullable SelectionListener selectionListener) {
+        return createDialogButton(parent, label, toolTip, icon, GridData.HORIZONTAL_ALIGN_FILL, selectionListener);
+    }
+
+    @NotNull
+    public static Button createDialogButton(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String toolTip,
+        @Nullable DBPImage icon,
+        int style,
+        @Nullable SelectionListener selectionListener
+    ) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText(label);
         button.setFont(JFaceResources.getDialogFont());
@@ -1118,7 +1170,7 @@ public class UIUtils {
         }
 
         // Dialog settings
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData gd = new GridData(style);
         GC gc = new GC(button);
         int widthHint;
         try {
@@ -1209,6 +1261,49 @@ public class UIUtils {
         if (propDialog != null) {
             propDialog.open();
         }
+    }
+
+    /**
+     * Creates a new link that opens the given preference page either in the current
+     * preference container, is present, or in a new modal dialog.
+     */
+    @NotNull
+    public static Link createPreferenceLink(
+        @NotNull Composite parent,
+        @NotNull String message,
+        @NotNull String pageId,
+        @Nullable IWorkbenchPreferenceContainer pageContainer,
+        @Nullable Object pageData
+    ) {
+        final IPreferenceNode node = PlatformUI.getWorkbench().getPreferenceManager().getElements(PreferenceManager.PRE_ORDER).stream()
+            .filter(next -> next.getId().equals(pageId))
+            .findFirst()
+            .orElse(null);
+
+        final Link link = new Link(parent, 0);
+
+        if (node == null) {
+            link.setText(NLS.bind(WorkbenchMessages.PreferenceNode_NotFound, pageId));
+        } else {
+            link.setText(NLS.bind(message, node.getLabelText()));
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (pageContainer != null) {
+                    // Open in the same dialog
+                    pageContainer.openPage(pageId, pageData);
+                } else {
+                    // Open in a new dialog
+                    PreferencesUtil.createPreferenceDialogOn(
+                        link.getShell(),
+                        pageId,
+                        new String[]{pageId},
+                        pageData,
+                        PreferencesUtil.OPTION_NONE
+                    ).open();
+                }
+            }));
+        }
+
+        return link;
     }
 
     public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
@@ -1908,25 +2003,17 @@ public class UIUtils {
         }
     }
 
+    /**
+     * Create centralized shell from default display
+     *
+     */
     public static Shell createCenteredShell(Shell parent) {
-
         final Rectangle bounds = parent.getBounds();
         final int x = bounds.x + bounds.width / 2 - 120;
         final int y = bounds.y + bounds.height / 2 - 170;
-
-        final Shell shell = new Shell( parent );
-
-        shell.setBounds( x, y, 0, 0 );
-
+        final Shell shell = new Shell(parent);
+        shell.setLocation(x, y);
         return shell;
-    }
-
-    public static void disposeCenteredShell(Shell shell) {
-        Composite parentShell = shell.getParent();
-        shell.dispose();
-        if (parentShell instanceof Shell) {
-            ((Shell) parentShell).setActive();
-        }
     }
 
     public static void centerShell(Shell parent, Shell shell) {
@@ -2334,6 +2421,7 @@ public class UIUtils {
     }
 
     public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
+        // used for accessibility automation, see dbeaver-qa-auto
         for (ToolItem item : toolbarManager.getControl().getItems()) {
             Object data = item.getData();
             if (data instanceof CommandContributionItem) {
@@ -2343,7 +2431,7 @@ public class UIUtils {
                 }
             } else if (data instanceof HandledContributionItem) {
                 MHandledItem model = ((HandledContributionItem) data).getModel();
-                if (model != null ) {
+                if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null) {
                         item.setData("commandId", cmd.getId());

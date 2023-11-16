@@ -60,7 +60,6 @@ public interface SQLDialect {
         PLAIN,
         INSERT_ALL
     }
-
     @NotNull
     SQLDialectQueryGenerator getQueryGenerator();
 
@@ -123,6 +122,7 @@ public interface SQLDialect {
      */
     @NotNull
     Collection<String> getReservedWords();
+
     @NotNull
     Collection<String> getFunctions();
     @NotNull
@@ -282,6 +282,11 @@ public interface SQLDialect {
     String getDefaultGroupAttribute();
 
     boolean supportsAliasInConditions();
+
+    /**
+     * Returns offset and limit query parts. Limit syntax is different for databases.
+     */
+    String getOffsetLimitQueryPart(int offset, int limit);
 
     /**
      * Checks whether dialect supports alias for queries with HAVING syntax.
@@ -483,6 +488,8 @@ public interface SQLDialect {
     boolean supportsIndexCreateAndDrop();
 
     boolean supportsInsertAllDefaultValuesStatement();
+
+    boolean supportsUuid();
 
     /**
      * Generates a set of connection-specific dialect features which require special handling during SQL parsing

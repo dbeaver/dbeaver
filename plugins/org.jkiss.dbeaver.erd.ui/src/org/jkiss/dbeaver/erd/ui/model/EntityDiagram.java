@@ -53,7 +53,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
 
     private ERDAttributeVisibility attributeVisibility;
     private ERDViewStyle[] attributeStyles;
-
+    
     public EntityDiagram(DBSObject container, String name, ERDContentProvider contentProvider, ERDDecorator decorator) {
         super(container, name, contentProvider);
         // Get model adapter (force adapter plugin activation if needed)

@@ -23,10 +23,10 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -45,7 +45,7 @@ public interface IStreamDataExporterSite {
     OutputStream getOutputStream();
 
     @Nullable
-    File getOutputFile();
+    Path getOutputFile();
 
     PrintWriter getWriter();
 

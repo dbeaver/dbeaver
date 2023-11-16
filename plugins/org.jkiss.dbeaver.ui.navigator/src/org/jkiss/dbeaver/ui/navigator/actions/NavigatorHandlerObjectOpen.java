@@ -156,7 +156,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         try {
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
                 if (defaultFolderId == null) {
-                    defaultFolderId = selectedNode.getNodeType();
+                    defaultFolderId = selectedNode.getNodeTypeLabel();
                 }
                 selectedNode = selectedNode.getParentNode();
             }
@@ -340,12 +340,18 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         //actionName = objectManager == null || !objectManager.canEditObject(object) ? UINavigatorMessages.actions_navigator_view : UINavigatorMessages.actions_navigator_edit;
                         actionName = UINavigatorMessages.actions_navigator_view;
                     }
+                } else if (node instanceof DBNNodeWithResource) {
+                    actionName = UINavigatorMessages.actions_navigator_error_dialog_open_resource_title;
                 }
                 String label;
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
                     label = NLS.bind(actionName, UINavigatorMessages.actions_navigator__objects);
                 } else {
-                    label = NLS.bind(actionName, node.getNodeType()); //$NON-NLS-1$
+                    if (node instanceof DBNNodeWithResource) {
+                        label = actionName + " '" +  node.getNodeName() + "'"; //$NON-NLS-1$
+                    } else {
+                        label = NLS.bind(actionName, node.getNodeTypeLabel()); //$NON-NLS-1$
+                    }
                 }
                 element.setText(label);
             }

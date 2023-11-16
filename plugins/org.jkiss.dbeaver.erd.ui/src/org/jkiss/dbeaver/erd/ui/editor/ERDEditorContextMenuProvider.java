@@ -70,6 +70,8 @@ public class ERDEditorContextMenuProvider extends MenuManager implements IMenuLi
 
             menu.add(new Separator());
             editor.fillAttributeVisibilityMenu(menu);
+            editor.fillNotationsMenu(menu);
+            editor.fillRoutersMenu(menu);
             menu.add(new DiagramLayoutAction(editor));
             menu.add(new DiagramToggleGridAction());
             if (editor instanceof ERDEditorEmbedded) {

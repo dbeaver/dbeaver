@@ -169,6 +169,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_type_label;
     public static String dialog_edit_driver_embedded_label;
     public static String dialog_edit_driver_embedded_tip;
+    public static String dialog_edit_driver_propagate_driver_properties_label;
+    public static String dialog_edit_driver_propagate_driver_properties_tip;
     public static String dialog_edit_driver_anonymous_label;
     public static String dialog_edit_driver_anonymous_tip;
     public static String dialog_edit_driver_allows_empty_password_label;
@@ -298,6 +300,26 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_select_viewer_order_by_name_description;
     public static String dialog_driver_select_viewer_order_by_score_label;
     public static String dialog_driver_select_viewer_order_by_score_description;
+
+    public static String pref_page_network_profiles_tool_create_title;
+    public static String pref_page_network_profiles_tool_create_text;
+    public static String pref_page_network_profiles_tool_create_dialog_profile_name;
+    public static String pref_page_network_profiles_tool_create_dialog_error_title;
+    public static String pref_page_network_profiles_tool_create_dialog_error_info;
+    public static String pref_page_network_profiles_tool_delete_title;
+    public static String pref_page_network_profiles_tool_delete_text;
+    public static String pref_page_network_profiles_tool_copy_title;
+    public static String pref_page_network_profiles_tool_copy_text;
+    public static String pref_page_network_profiles_tool_delete_dialog_error_title;
+    public static String pref_page_network_profiles_tool_delete_dialog_error_info;
+    public static String pref_page_network_profiles_tool_delete_confirmation_title;
+    public static String pref_page_network_profiles_tool_delete_confirmation_question;
+    public static String pref_page_network_profiles_tool_no_profile_error_title;
+    public static String pref_page_network_profiles_tool_no_profile_error_info;
+    public static String pref_page_network_profiles_tool_no_profile_error_information;
+    public static String dialog_tunnel_checkbox_use_handler;
+    public static String dialog_tunnel_title;
+
 
     static {
         // initialize resource bundle

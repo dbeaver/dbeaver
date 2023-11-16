@@ -87,6 +87,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
 //              "width: 50%;" +
             "padding: 5px;" +
             "background-color: #D0E3FA;}" +
+            "th{text-align: left;}" +
             "td{font-family: sans-serif;" +
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +

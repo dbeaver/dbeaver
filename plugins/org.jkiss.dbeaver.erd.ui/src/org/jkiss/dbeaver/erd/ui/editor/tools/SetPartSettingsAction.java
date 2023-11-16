@@ -86,47 +86,42 @@ public class SetPartSettingsAction extends SelectionAction {
         return new Command() {
             private ViewSettings newSettings;
             private final Map<ICustomizablePart, ViewSettings> oldSettings = new HashMap<>();
+
             @Override
             public void execute() {
                 final Shell shell = UIUtils.createCenteredShell(getWorkbenchPart().getSite().getShell());
-                try {
-                    NodePart nodePart = null;
-                    boolean hasNotes = false, hasEntities = false;
-                    for (Object item : objects) {
-                        if (item instanceof NodePart) {
-                            if (nodePart == null) {
-                                nodePart = (NodePart) item;
-                            }
-                            if (item instanceof NotePart) {
-                                hasNotes = true;
-                            } else if (item instanceof EntityPart) {
-                                hasEntities = true;
-                            }
+                NodePart nodePart = null;
+                boolean hasNotes = false;
+                boolean hasEntities = false;
+                for (Object item : objects) {
+                    if (item instanceof NodePart) {
+                        if (nodePart == null) {
+                            nodePart = (NodePart) item;
+                        }
+                        if (item instanceof NotePart) {
+                            hasNotes = true;
+                        } else if (item instanceof EntityPart) {
+                            hasEntities = true;
                         }
                     }
-
-                    PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart, hasNotes, hasEntities);
-                    if (settingsDialog.open() != IDialogConstants.OK_ID) {
-                        return;
+                }
+                PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart, hasNotes, hasEntities);
+                if (settingsDialog.open() != IDialogConstants.OK_ID) {
+                    return;
+                }
+                newSettings = settingsDialog.newSettings;
+                for (Object item : objects) {
+                    if (item instanceof ICustomizablePart) {
+                        ICustomizablePart part = (ICustomizablePart) item;
+                        ViewSettings oldSettings = new ViewSettings();
+                        oldSettings.transparency = part.getCustomTransparency();
+                        oldSettings.background = part.getCustomBackgroundColor();
+                        oldSettings.foreground = part.getCustomForegroundColor();
+                        oldSettings.borderWidth = part.getCustomBorderWidth();
+                        oldSettings.fontInfo = SharedFonts.toString(part.getCustomFont());
+                        this.oldSettings.put(part, oldSettings);
+                        setNodeSettings(part, newSettings);
                     }
-                    newSettings = settingsDialog.newSettings;
-
-                    for (Object item : objects) {
-                        if (item instanceof ICustomizablePart) {
-                            ICustomizablePart part = (ICustomizablePart) item;
-                            ViewSettings oldSettings = new ViewSettings();
-                            oldSettings.transparency = part.getCustomTransparency();
-                            oldSettings.background = part.getCustomBackgroundColor();
-                            oldSettings.foreground = part.getCustomForegroundColor();
-                            oldSettings.borderWidth = part.getCustomBorderWidth();
-                            oldSettings.fontInfo = SharedFonts.toString(part.getCustomFont());
-                            this.oldSettings.put(part, oldSettings);
-
-                            setNodeSettings(part, newSettings);
-                        }
-                    }
-                } finally {
-                    UIUtils.disposeCenteredShell(shell);
                 }
             }
 

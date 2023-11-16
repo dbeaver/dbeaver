@@ -102,6 +102,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public final JobClassCache jobClassCache = new JobClassCache();
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
+    private final EnumValueCache enumValueCache = new EnumValueCache();
 
     protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
         throws DBException {
@@ -171,6 +172,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
             roleCache.setCache(Collections.emptyList());
         }
 */
+    }
+
+    private void initEnumTypesCache(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (((PostgreDataSource) dataSource).isSupportsEnumTable()) {
+            enumValueCache.getAllObjects(monitor, this);
+        }
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -568,6 +575,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return PostgreUtils.getDefaultDataTypeName(dataKind);
     }
 
+    /**
+     * @return enum values cache. Do not use is if database do not support enams. Check {@code PostgreDatasource#isSupportsEnumTable}
+     */
+    EnumValueCache getEnumValueCache() {
+        return enumValueCache;
+    }
+
     ///////////////////////////////////////////////
     // Tablespaces
 
@@ -663,6 +677,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (!hasDataTypes || forceRefresh) {
             synchronized (dataTypeCache) {
                 dataTypeCache.clear();
+                enumValueCache.clearCache();
             }
             // Cache data types
 
@@ -719,6 +734,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             } catch (SQLException e) {
                 throw new DBException(e, postgreDataSource);
             }
+            initEnumTypesCache(monitor);
         }
     }
 
@@ -858,6 +874,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         jobClassCache.clearCache();
         schemaCache.clearCache();
         cacheDataTypes(monitor, true);
+        enumValueCache.clearCache();
 
         return this;
     }
@@ -1182,7 +1199,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             throws SQLException {
             return session.prepareStatement(
                 "SELECT t.oid,t.*" +
-                    (owner.getDataSource().getServerType().supportsTeblespaceLocation() ? ",pg_tablespace_location(t.oid) loc" : "") +
+                    (owner.getDataSource().getServerType().supportsTablespaceLocation() ? ",pg_tablespace_location(t.oid) loc" : "") +
                     "\nFROM pg_catalog.pg_tablespace t " +
                     "\nORDER BY t.oid"
             );
@@ -1371,6 +1388,32 @@ public class PostgreDatabase extends JDBCRemoteInstance
         @Override
         protected PostgreJobClass fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) {
             return new PostgreJobClass(database, dbResult);
+        }
+    }
+
+    public static class EnumValueCache extends PostgreDatabaseJDBCObjectCache<PostgreEnumValue> {
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreDatabase database
+        ) throws SQLException {
+            if (!database.getDataSource().isSupportsEnumTable()) {
+                // For those who missed previous warnings
+                return session.prepareStatement("SELECT 1");
+            }
+            return session.prepareStatement("SELECT * FROM pg_catalog.pg_enum");
+        }
+
+        @Nullable
+        @Override
+        protected PostgreEnumValue fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreDatabase database,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
+            return new PostgreEnumValue(database.getDataSource(), database, resultSet);
         }
     }
 

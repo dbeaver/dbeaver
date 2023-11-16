@@ -568,7 +568,6 @@
                         anonymous="true"
                         description="DuckDB JDBC driver"
                         supportedConfigurationTypes="MANUAL,URL"
-                        promoted="1"
                         categories="sql,embedded">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
                     <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
@@ -671,6 +670,23 @@
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="repo:/drivers/dbf/dans-dbf-lib-1.0.0-beta-10.jar" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
+                </driver>
+                <driver
+                    id="jdbcx"
+                    label="JDBCX"
+                    class="io.github.jdbcx.WrappedDriver"
+                    sampleURL="jdbcx:[extension:][vendor://{host}[:{port}][/{database}]]"
+                    defaultPort=""
+                    icon="icons/jdbcx_icon.png"
+                    iconBig="icons/jdbcx_icon_big.png"
+                    description="Extended JDBC driver for dynamic multi-language queries with optional bridge server for federated datasource connectivity."
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/jdbcx/jdbcx"
+                    categories="codeql,graphql,prompt,prql,rest,script,shell,sql"
+                    singleConnection="true"
+                    propagateDriverProperties="true">
+                    <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -1169,6 +1185,7 @@
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
 <!--                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>-->
+                    <parameter name="omit-single-catalog" value="true"/>
                 </driver>
 
                 <!-- MonetDB -->

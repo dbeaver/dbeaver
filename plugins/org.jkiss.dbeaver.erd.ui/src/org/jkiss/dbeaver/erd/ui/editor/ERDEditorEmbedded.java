@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IRevertableEditor;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -61,7 +62,8 @@ import java.util.Map;
 /**
  * Embedded ERD editor
  */
-public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor, IEntityStructureEditor, IActiveWorkbenchPart {
+public class ERDEditorEmbedded extends ERDEditorPart
+    implements IDatabaseEditor, IEntityStructureEditor, IActiveWorkbenchPart, IRevertableEditor {
 
     private static final Log log = Log.getLog(ERDEditorEmbedded.class);
 
@@ -70,6 +72,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     private static final String GROUP_SAVE = "save";
 
     private Composite parent;
+    
 
     /**
      * No-arg constructor
@@ -284,6 +287,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             log.error("Error saving diagram", e);
         }
         updateToolbarActions();
+    }
+
+    @Override
+    public void doRevertToSaved() {
+        getCommandStack().markSaveLocation();
     }
 
     public boolean isStateSaved() {

@@ -55,7 +55,8 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         "LOGIN",
         "TOP",
         "SYNONYM",
-        "PERSISTED"
+        "PERSISTED",
+        "NOLOCK"
     };
 
     private static final String[][] SQLSERVER_QUOTE_STRINGS = {
@@ -370,6 +371,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return false;
     }
 
+    @Override
+    public String getOffsetLimitQueryPart(int offset, int limit) {
+        return String.format("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit);
+    }
+
     @Nullable
     @Override
     public String getAutoIncrementKeyword() {
@@ -415,6 +421,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     @Override
     public String getBooleanDataType() {
         return SQLServerConstants.TYPE_BIT;
+    }
+
+    @Override
+    public boolean supportsNoActionIndex() {
+        return true;
     }
 
     @Override

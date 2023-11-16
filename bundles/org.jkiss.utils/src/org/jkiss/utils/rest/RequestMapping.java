@@ -28,4 +28,9 @@ public @interface RequestMapping {
      * Mapping for the annotated method.
      */
     String value() default "";
+
+    /**
+     * Timeout (in seconds) for this mapping.
+     */
+    int timeout() default 0;
 }

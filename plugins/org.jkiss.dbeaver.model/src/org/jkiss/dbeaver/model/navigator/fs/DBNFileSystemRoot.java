@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -37,7 +38,6 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     private static final Log log = Log.getLog(DBNFileSystemRoot.class);
 
     private DBFVirtualFileSystemRoot root;
-    private DBNPath[] children;
     private Path path;
 
     public DBNFileSystemRoot(DBNFileSystem parentNode, DBFVirtualFileSystemRoot root) {
@@ -57,14 +57,18 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
 
     @Override
     protected void dispose(boolean reflect) {
-        children = null;
         this.root = null;
         super.dispose(reflect);
     }
 
     @Override
     public String getNodeType() {
-        return "FileSystemRoot";
+        return NodePathType.dbvfs.name() + ".folder";
+    }
+
+    @Override
+    public String getNodeTypeLabel() {
+        return ModelMessages.fs_folder;
     }
 
     @Override
@@ -89,16 +93,21 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
-    public Path getPath() {
+    public synchronized Path getPath() {
         if (path == null) {
             try {
                 path = root.getRootPath(new VoidProgressMonitor());
             } catch (DBException e) {
-                log.error(e);
+                log.error("Error resolving file system root", e);
                 return Path.of(".nonexistentfolder");
             }
         }
         return path;
+    }
+
+    @Override
+    protected synchronized void setPath(Path path) {
+        this.path = path;
     }
 
 }

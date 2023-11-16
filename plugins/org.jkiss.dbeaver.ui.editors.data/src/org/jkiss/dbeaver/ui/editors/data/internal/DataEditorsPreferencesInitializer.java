@@ -41,7 +41,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
 
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING, false);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE, 100);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_LONG_AS_LOB, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
@@ -70,6 +70,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
 
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.name());
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, false);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME, false);

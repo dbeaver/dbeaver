@@ -90,6 +90,7 @@ public class PostgreSchema implements
     private final ProceduresCache proceduresCache;
     private final IndexCache indexCache;
     private final PostgreDataTypeCache dataTypeCache;
+    private ArrayList<PostgrePrivilege> defaultPrivileges;
     protected volatile boolean hasStatistics;
 
     PostgreSchema(PostgreDatabase database, String name) {
@@ -171,9 +172,25 @@ public class PostgreSchema implements
         return database.getDataSource().getServerType().supportsRoles() ? database.getRoleById(monitor, ownerId) : null;
     }
 
+    void addDefaultPrivileges(List<PostgrePrivilege> resultPrivileges) {
+        if (defaultPrivileges == null) {
+            defaultPrivileges = new ArrayList<>();
+        }
+        defaultPrivileges.addAll(resultPrivileges);
+    }
+
     @Override
     public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(monitor, this, schemaAcl);
+        List<PostgrePrivilege> postgrePrivileges = new ArrayList<>(
+            PostgreUtils.extractPermissionsFromACL(monitor, this, schemaAcl, false));
+        if (defaultPrivileges == null) {
+            defaultPrivileges = new ArrayList<>();
+            if (getDataSource().getServerType().supportsDefaultPrivileges()) {
+                readDefaultPrivileges(monitor);
+            }
+        }
+        postgrePrivileges.addAll(defaultPrivileges);
+        return postgrePrivileges;
     }
 
     @Override
@@ -286,6 +303,19 @@ public class PostgreSchema implements
         throws DBException {
         final ArrayList<? extends PostgreTable> tables = getTableCache().getTypedObjects(monitor, this, PostgreTable.class)
             .stream()
+            .filter(table -> !table.isPartition() && !(table instanceof PostgreTableForeign))
+            .collect(Collectors.toCollection(ArrayList::new));
+        if (getDataSource().supportsReadingKeysWithColumns()) {
+            // Read constraints with columns
+            constraintCache.getAllObjects(monitor, this);
+        }
+        return tables;
+    }
+
+    @Association
+    public List<? extends PostgreTable> getForeignTables(DBRProgressMonitor monitor) throws DBException {
+        final ArrayList<? extends PostgreTable> tables = getTableCache().getTypedObjects(monitor, this, PostgreTableForeign.class)
+            .stream()
             .filter(table -> !table.isPartition())
             .collect(Collectors.toCollection(ArrayList::new));
         if (getDataSource().supportsReadingKeysWithColumns()) {
@@ -394,7 +424,7 @@ public class PostgreSchema implements
         for (PostgreTable table : this.getTables(monitor)) {
             table.resetSuperInheritance();
         }
-
+        resetPartitionsInheritance(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT i.inhrelid relid, pc.relnamespace parent_ns, pc.oid parent_oid, i.inhseqno\n" +
@@ -435,6 +465,14 @@ public class PostgreSchema implements
         }
     }
 
+    private void resetPartitionsInheritance(DBRProgressMonitor monitor) throws DBException {
+        for (PostgreTable table : getTableCache().getTypedObjects(monitor, this, PostgreTable.class)) {
+            if (table.isPartition()) {
+                table.resetSuperInheritance();
+            }
+        }
+    }
+
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
@@ -443,6 +481,7 @@ public class PostgreSchema implements
         constraintCache.clearCache();
         proceduresCache.clearCache();
         indexCache.clearCache();
+        defaultPrivileges = null;
         hasStatistics = false;
 
         PostgreSchema schema = database.schemaCache.refreshObject(monitor, database, this);
@@ -552,7 +591,7 @@ public class PostgreSchema implements
                         allTables.add(tableOrView);
                     }
                 }
-                DBStructUtils.generateTableListDDL(new SubTaskProgressMonitor(monitor), sql, allTables, options, false);
+                DBStructUtils.generateTableListDDL(new SubTaskProgressMonitor(monitor), sql, allTables, new HashMap<>(options), false);
                 monitor.done();
             }
             if (!monitor.isCanceled()) {
@@ -671,6 +710,40 @@ public class PostgreSchema implements
     @Override
     public DBSNamespace[] getAllNamespaces() {
         return new DBSNamespace[] { new PostgreNamespace(this) };
+    }
+
+    private void readDefaultPrivileges(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read default schema privileges")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM pg_default_acl WHERE defaclnamespace = ?")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.nextRow()) {
+                        Object acl = JDBCUtils.safeGetObject(dbResult, "defaclacl");
+                        if (acl == null) {
+                            log.debug("Can't read schema default permissions for " + getName());
+                            continue;
+                        }
+                        String objectType = JDBCUtils.safeGetString(dbResult, "defaclobjtype");
+                        if (CommonUtils.isEmpty(objectType)) {
+                            log.debug("Can't read default permissions object type for " + getName());
+                            continue;
+                        }
+                        List<PostgrePrivilege> privileges =
+                            PostgreUtils.extractPermissionsFromACL(session.getProgressMonitor(), this, acl, true);
+                        for (PostgrePrivilege privilege : privileges) {
+                            if (privilege instanceof PostgreDefaultPrivilege) {
+                                PostgreDefaultPrivilege defaultPrivilege = (PostgreDefaultPrivilege) privilege;
+                                defaultPrivilege.setUnderKind(objectType);
+                                defaultPrivileges.add(defaultPrivilege);
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                log.error("Can't read default privileges for schema " + getName());
+            }
+        }
     }
 
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {

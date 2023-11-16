@@ -74,8 +74,8 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablePartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.isPartitioned()">
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
-                                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablePartition" label="%tree.subpartitions.node.name" icon="#partitions" description="tree.subpartitions.node.name">
-                                            <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions">
+                                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablePartition" label="%tree.subpartitions.node.name" icon="#partitions" description="%tree.subpartitions.node.name">
+                                            <items label="%tree.subpartition.node.name" path="subpartition" property="subPartitions">
                                             </items>
                                         </folder>
                                     </items>
@@ -131,6 +131,22 @@
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="View constraints">
                                     <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
                                         <items label="%tree.constraint.node.name columns" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Materialized View indexes">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivTable" label="%tree.table_privileges.node.name" icon="#permissions" description="Materialized View Privileges" navigable="false">
+                                    <items label="%tree.privilege.node.name" path="tablePrivs" property="tablePrivs" icon="#privilege">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Materialized View dependency/dependent objects">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                        <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>

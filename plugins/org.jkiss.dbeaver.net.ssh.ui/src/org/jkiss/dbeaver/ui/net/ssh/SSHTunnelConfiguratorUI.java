@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ui.net.ssh;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -72,7 +73,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
     private CredentialsPanel credentialsPanel;
     private CredentialsPanel jumpServerCredentialsPanel;
+    private ExpandableCompositeEx jumpServerExpandableGroup;
     private Button jumpServerEnabledCheck;
+    private ToolTip jumpServerErrorToolTip;
 
     private Combo tunnelImplCombo;
     private Button fingerprintVerificationCheck;
@@ -86,42 +89,32 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     private VariablesHintLabel variablesHintLabel;
 
     @Override
-    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
-    {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
-        scrolledComposite.setLayout(new GridLayout(1, false));
-        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        final Composite composite = new Composite(scrolledComposite, SWT.NONE);
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
+        final Composite composite = new Composite(parent, SWT.NONE);
         final GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
+        //gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
         composite.setLayoutData(gridData);
         composite.setLayout(new GridLayout(1, false));
-
-        scrolledComposite.setContent(composite);
-        scrolledComposite.setExpandHorizontal(true);
-        scrolledComposite.setExpandVertical(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
         }
 
         {
-            final ExpandableComposite group = new ExpandableComposite(composite, SWT.CHECK);
-            group.addExpansionListener(new ExpansionAdapter() {
+            jumpServerExpandableGroup = new ExpandableCompositeEx(composite, SWT.CHECK);
+            jumpServerExpandableGroup.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
-            group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-            group.setText(SSHUIMessages.model_ssh_configurator_group_jump_server_settings_text);
+            jumpServerExpandableGroup.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            jumpServerExpandableGroup.setText(SSHUIMessages.model_ssh_configurator_group_jump_server_settings_text);
 
-            final Composite client = new Composite(group, SWT.BORDER);
+            final Composite client = new Composite(jumpServerExpandableGroup, SWT.BORDER);
             client.setLayout(new GridLayout(2, false));
             client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-            group.setClient(client);
+            jumpServerExpandableGroup.setClient(client);
 
             jumpServerEnabledCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_group_jump_server_checkbox_label, false);
             jumpServerEnabledCheck.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 2, 1));
@@ -131,14 +124,33 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
+                    validateJumpServerHost();
                 }
             });
             if (jumpServerCredentialsPanel != null && credentialsPanel.savePasswordCheckbox != null) {
                 credentialsPanel.savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection()
-                                                                           && jumpServerEnabledCheck.getSelection());
+                        jumpServerCredentialsPanel.passwordText.setEnabled(
+                            credentialsPanel.savePasswordCheckbox.getSelection() &&
+                                jumpServerEnabledCheck.getSelection()
+                        );
+                    }
+                });
+            }
+            if (jumpServerCredentialsPanel != null) {
+                jumpServerErrorToolTip = new ToolTip(jumpServerCredentialsPanel.hostNameText.getShell(), SWT.BALLOON);
+                jumpServerErrorToolTip.setAutoHide(false);
+                jumpServerCredentialsPanel.hostNameText.addModifyListener(e -> validateJumpServerHost());
+                jumpServerCredentialsPanel.hostNameText.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        showJumpServerErrorToolTipIfNeeded(false);
+                    }
+
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        showJumpServerErrorToolTipIfNeeded(true);
                     }
                 });
             }
@@ -149,7 +161,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -228,6 +239,46 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
+    }
+
+    private void validateJumpServerHost() {
+        if (jumpServerEnabledCheck.getSelection() && jumpServerCredentialsPanel.hostNameText.getText().isEmpty()) {
+            jumpServerCredentialsPanel.hostNameText.setToolTipText(
+                SSHUIMessages.model_ssh_configurator_group_jump_server_host_not_specified_label
+            );
+            jumpServerCredentialsPanel.hostNameText.setBackground(UIUtils.COLOR_VALIDATION_ERROR);
+        } else {
+            jumpServerCredentialsPanel.hostNameText.setToolTipText(null);
+            jumpServerCredentialsPanel.hostNameText.setBackground(null);
+        }
+        showJumpServerErrorToolTipIfNeeded(true);
+        if (jumpServerExpandableGroup.isExpanded()) {
+            jumpServerExpandableGroup.setExpansionTogglerEnabled(
+                CommonUtils.isEmpty(jumpServerCredentialsPanel.hostNameText.getToolTipText())
+            );
+        }
+        jumpServerCredentialsPanel.hostNameText.redraw();
+    }
+
+    private void showJumpServerErrorToolTipIfNeeded(boolean show) {
+        if (show && jumpServerEnabledCheck.getSelection() && credentialsPanel.getParent().isEnabled() &&
+            jumpServerCredentialsPanel.hostNameText.getToolTipText() != null && jumpServerExpandableGroup.isExpanded()
+        ) {
+            UIUtils.asyncExec(() -> {
+                jumpServerErrorToolTip.setMessage(jumpServerCredentialsPanel.hostNameText.getToolTipText());
+                jumpServerErrorToolTip.setLocation(jumpServerCredentialsPanel.hostNameText.getShell().toDisplay(
+                    jumpServerCredentialsPanel.hostNameText.getShell().getDisplay().map(
+                        jumpServerCredentialsPanel.hostNameText,
+                        jumpServerCredentialsPanel.hostNameText.getShell(),
+                        0,
+                        jumpServerCredentialsPanel.hostNameText.getSize().y
+                    )
+                ));
+                jumpServerErrorToolTip.setVisible(true);
+            });
+        } else {
+            jumpServerErrorToolTip.setVisible(false);
+        }
     }
 
     private static void setNumberEditStyles(Text text) {
@@ -371,13 +422,17 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void loadSettings(@NotNull DBWHandlerConfiguration configuration)
-    {
+    public void loadSettings(@NotNull DBWHandlerConfiguration configuration) {
         credentialsPanel.loadSettings(configuration, "");
 
         final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
         jumpServerCredentialsPanel.loadSettings(configuration, jumpServerSettingsPrefix);
         jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED));
+        if (jumpServerEnabledCheck.getSelection() && credentialsPanel.getParent().isEnabled() &&
+            jumpServerCredentialsPanel.hostNameText.getText().isEmpty()
+        ) {
+            jumpServerExpandableGroup.setExpanded(true, true);
+        }
         if (credentialsPanel.savePasswordCheckbox != null) {
             jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection());
             if (!credentialsPanel.savePasswordCheckbox.getSelection()) {
@@ -385,7 +440,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             }
         }
         UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
-
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implType)) {
             // Try SSHJ by default
@@ -704,4 +758,14 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
     }
 
+    private static class ExpandableCompositeEx extends ExpandableComposite {
+        public ExpandableCompositeEx(Composite composite, int style) {
+            super(composite, style);
+        }
+
+        public void setExpansionTogglerEnabled(boolean enabled) {
+            super.toggle.setEnabled(enabled);
+            super.textLabel.setEnabled(enabled);
+        }
+    }
 }

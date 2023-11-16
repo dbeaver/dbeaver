@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 
 import java.io.*;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -416,6 +417,28 @@ public final class IOUtils {
             return fileName.substring(divPos + 1);
         }
         return null;
+    }
+
+    @NotNull
+    public static Path getPathFromString(@NotNull String pathOrUri) {
+        if (pathOrUri.contains("://")) {
+            return Path.of(URI.create(pathOrUri));
+        } else {
+            return Path.of(pathOrUri);
+        }
+    }
+
+
+    public static boolean isLocalFile(String filePath) {
+        return !filePath.contains("://") || filePath.startsWith("file:");
+    }
+
+    public static boolean isLocalURI(URI uri) {
+        return uri.getScheme().equals("file");
+    }
+
+    public static boolean isLocalPath(Path filePath) {
+        return isLocalURI(filePath.toUri());
     }
 
 }

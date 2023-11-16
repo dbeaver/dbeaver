@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
 * MySQLDatabaseExportInfo
@@ -51,5 +52,13 @@ public class MySQLDatabaseExportInfo {
     @Override
     public String toString() {
         return database.getName() + " " + tables;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof MySQLDatabaseExportInfo ei) {
+            return Objects.equals(database, ei.database) && Objects.equals(tables, ei.tables);
+        }
+        return false;
     }
 }

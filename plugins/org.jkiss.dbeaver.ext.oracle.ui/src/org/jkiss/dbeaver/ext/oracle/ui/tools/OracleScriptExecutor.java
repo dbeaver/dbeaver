@@ -19,16 +19,16 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeSQLScriptExecutor;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class OracleScriptExecutor extends NativeSQLScriptExecutor<OracleDataSource> {
     @NotNull
     protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull OracleDataSource oracleDataSource,
-        @Nullable File file
+        @Nullable Path file
     ) {
         return new OracleScriptExecuteWizard(oracleDataSource, file);
     }

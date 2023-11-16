@@ -416,10 +416,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return getTypeName();
         }
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        String typeName = dataType.getFullyQualifiedName(DBPEvaluationContext.DDL);
         if (handler != null) {
-            return dataType.getTypeName() + handler.getTypeModifiersString(dataType, typeMod);
+            return typeName + handler.getTypeModifiersString(dataType, typeMod);
         }
-        return dataType.getTypeName();
+        return typeName;
     }
 
     @Override

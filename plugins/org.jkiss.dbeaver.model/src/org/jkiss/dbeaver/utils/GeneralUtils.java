@@ -35,6 +35,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -62,9 +63,9 @@ public class GeneralUtils {
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
 
-    public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
+    public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
-    public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
+    public static final Charset ASCII_CHARSET = StandardCharsets.US_ASCII;
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
@@ -81,6 +82,7 @@ public class GeneralUtils {
     public static final String PROP_TRUST_STORE = "javax.net.ssl.trustStore"; //$NON-NLS-1$
     public static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
     public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+    public static final String EMPTY_ENV_VARIABLE_VALUE = "''";
 
     static {
         // Compose byte to hex map
@@ -89,7 +91,7 @@ public class GeneralUtils {
         }
     }
 
-    private static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)(\\:[^\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)(\\:[^\\$\\{\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
 
     /**
      * Default encoding (UTF-8)
@@ -528,6 +530,9 @@ public class GeneralUtils {
                 if (varValue != null) {
                     if (resolvedVars == null) {
                         resolvedVars = new HashMap<>();
+                        if (EMPTY_ENV_VARIABLE_VALUE.equals(varValue)) {
+                            varValue = "";
+                        }
                         resolvedVars.put(varName, varValue);
                     }
                     string = substituteVariable(string, matcher, varValue);
@@ -560,6 +565,9 @@ public class GeneralUtils {
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
+        if (ex instanceof InvocationTargetException) {
+            ex = ((InvocationTargetException) ex).getTargetException();
+        }
         if (ex instanceof CoreException) {
             return ((CoreException) ex).getStatus();
         }

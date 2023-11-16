@@ -110,6 +110,7 @@ public class UIMessages extends NLS {
     public static String text_with_open_dialog_set_text;
     public static String text_with_open_dialog_edit_text;
     public static String text_with_open_dialog_browse;
+    public static String text_with_open_dialog_browse_remote;
     public static String text_with_open_dialog_edit_file;
 
     static {

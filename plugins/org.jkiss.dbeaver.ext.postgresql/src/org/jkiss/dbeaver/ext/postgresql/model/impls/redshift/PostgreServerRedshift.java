@@ -476,4 +476,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public boolean supportsAlterTableForViewRename() {
         return true;
     }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return false;
+    }
 }

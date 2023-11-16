@@ -23,6 +23,7 @@ public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
 
     public static String dialog_view_sql_button_copy;
+    public static String dialog_view_sql_button_refresh;
     public static String dialog_view_sql_button_persist;
 
     public static String dialog_sql_param_title;
@@ -233,6 +234,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_show_values_tip;
     public static String pref_page_sql_completion_group_folding;
     public static String pref_page_sql_completion_group_misc;
+    public static String pref_page_code_editor_group_analysis;
     public static String pref_page_sql_completion_label_folding_enabled;
     public static String pref_page_sql_completion_label_folding_enabled_tip;
     public static String pref_page_sql_completion_label_smart_word_iterator;
@@ -243,6 +245,10 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_mark_occurrences_tip;
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections;
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections_tip;
+    public static String pref_page_code_editor_label_advanced_highlighting_enabled;
+    public static String pref_page_code_editor_label_advanced_highlighting_enabled_tip;
+    public static String pref_page_code_editor_label_read_metadata_enabled;
+    public static String pref_page_code_editor_label_read_metadata_enabled_tip;
 
     public static String pref_page_sql_editor_checkbox_fetch_resultsets;
     public static String pref_page_sql_editor_text_statement_delimiter;
@@ -258,11 +264,15 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_file_name_pattern_tip;
     public static String pref_page_sql_editor_checkbox_delete_empty_scripts;
     public static String pref_page_sql_editor_checkbox_put_new_scripts;
+    public static String pref_page_sql_editor_checkbox_put_new_scripts_tip;
     public static String pref_page_sql_editor_checkbox_create_script_folders;
+    public static String pref_page_sql_editor_checkbox_create_script_folders_tip;
     public static String pref_page_sql_editor_checkbox_reset_cursor;
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
+    public static String pref_page_sql_editor_checkbox_select_statistics_tab;
+    public static String pref_page_sql_editor_checkbox_select_statistics_tab_tip;
     public static String pref_page_sql_editor_checkbox_close_included_script_after_execution;
     public static String pref_page_sql_editor_checkbox_close_included_script_after_execution_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
@@ -370,6 +380,8 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_nonsql_text;
 
     public static String sql_editor_separate_connection_no_editor_or_ds_selected;
+    public static String sql_editor_prefs_save_as_script_text;
+    public static String sql_editor_prefs_save_as_script_tip;
     public static String sql_editor_prefs_disable_services_text;
     public static String sql_editor_prefs_disable_services_tip;
     public static String sql_editor_prefs_script_advanced_settings;
@@ -386,7 +398,9 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_panel_output_filter_message;
     public static String sql_editor_panel_output_filter_hint;
     public static String sql_generator_dialog_title;
-    
+
+    public static String sql_editor_status_bar_rollback_label;
+    public static String sql_editor_status_bar_disconnect_label;
 
     static {
         // initialize resource bundle

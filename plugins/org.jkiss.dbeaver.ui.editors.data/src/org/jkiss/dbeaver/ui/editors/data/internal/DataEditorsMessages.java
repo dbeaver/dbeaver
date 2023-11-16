@@ -29,6 +29,7 @@ public class DataEditorsMessages extends NLS {
     // ResultSetPresentation
     public static String pref_page_database_resultsets_group_common;
     public static String pref_page_database_resultsets_label_switch_mode_on_rows;
+    public static String pref_page_database_resultsets_label_filters_panel_in_singletab_mode;
     public static String pref_page_database_resultsets_label_show_column_description;
     public static String pref_page_database_resultsets_label_show_connection_name;
     public static String pref_page_database_resultsets_label_calc_column_width_by_values;
@@ -96,6 +97,7 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_extra_spaces;
     public static String pref_page_database_resultsets_label_text_show_line_numbers;
     public static String pref_page_database_resultsets_label_text_show_line_numbers_tip;
+    public static String pref_page_editor_representation_content;
 
 	public static String virtual_structure_editor_abstract_job_load_entity;
 	public static String virtual_structure_editor_info_label_entity_structure;

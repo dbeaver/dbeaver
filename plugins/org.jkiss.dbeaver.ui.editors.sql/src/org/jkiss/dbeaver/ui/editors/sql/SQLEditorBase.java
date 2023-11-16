@@ -75,6 +75,8 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLBackgroundParsingJob;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
@@ -123,6 +125,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Nullable
     private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
+    private SQLBackgroundParsingJob backgroundParsingJob;
 
     //private Map<Annotation, Position> curAnnotations;
 
@@ -176,6 +179,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
     }
+    
+    public SQLDocumentSyntaxContext getSyntaxContext() {
+        return backgroundParsingJob == null ? null : backgroundParsingJob.getCurrentContext();
+    }
 
     @Override
     protected void setDocumentProvider(IEditorInput input) {
@@ -213,6 +220,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static boolean isWriteEmbeddedBinding() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
+    }
+
+    public boolean isAdvancedHighlightingEnabled() {
+        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
+    }
+
+    public boolean isReadMetadataForQueryAnalysisEnabled() {
+        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
     }
 
     private void handleInputChange(IEditorInput input) {
@@ -492,6 +507,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
+        if (getDocumentProvider() instanceof NonFileDocumentProvider) {
+            setDocumentProvider((IDocumentProvider) null);
+        }
+
         handleInputChange(input);
 
         final IFile file = GeneralUtils.adapt(input, IFile.class);
@@ -623,6 +642,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
+        if (backgroundParsingJob != null) {
+            this.backgroundParsingJob.dispose();
+        }
         this.occurrencesHighlighter.dispose();
 /*
         if (this.activationListener != null) {
@@ -732,13 +754,24 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public void reloadSyntaxRules() {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) && isAdvancedHighlightingEnabled()) {
+            if (backgroundParsingJob == null) {
+                backgroundParsingJob = new SQLBackgroundParsingJob(this);
+            }
+        } else {
+            if (backgroundParsingJob != null) {
+                backgroundParsingJob.dispose();
+                backgroundParsingJob = null;
+            }
+        }
+
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(getDataSource(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
-        ruleScanner.refreshRules(getDataSource(), ruleManager);
+        ruleScanner.refreshRules(getDataSource(), ruleManager, backgroundParsingJob);
         parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
 
         if (document instanceof IDocumentExtension3) {
@@ -747,7 +780,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 SQLParserPartitions.SQL_CONTENT_TYPES);
             partitioner.connect(document);
             try {
-                ((IDocumentExtension3)document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
+                ((IDocumentExtension3) document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
             } catch (Throwable e) {
                 log.warn("Error setting SQL partitioner", e); //$NON-NLS-1$
             }
@@ -786,6 +819,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
         if (verticalRuler != null) {
             verticalRuler.update();
+        }
+
+        if (backgroundParsingJob != null) {
+            backgroundParsingJob.setup();
         }
     }
 
@@ -1142,6 +1179,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
             case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
             case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
+            case SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE:
+            case SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS:
             case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
             case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:
             case ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET:
@@ -1151,7 +1190,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 reloadSyntaxRules();
         }
     }
-
+    
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {
         this.lastQueryErrorPosition = lastQueryErrorPosition;
     }

@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -50,6 +49,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -57,13 +57,12 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,8 +93,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     private String serverVersion;
-
     private volatile boolean hasStatistics;
+    private boolean supportsEnumTable;
+
+    private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
+    private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -304,7 +306,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } else {
             getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
-        PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+        PostgreServerType serverType = getType();
         if (serverType.turnOffPreparedStatements()
             && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
@@ -322,7 +324,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (!isMultiUserOrDistributed()) {
             // Local FS mode
             final String rootCertProp;
             final String clientCertProp;
@@ -358,8 +360,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 if (!CommonUtils.isEmpty(clientCertProp)) {
                     props.put("sslcert", saveCertificateToFile(clientCertProp));
                 }
+                String keyCertDer = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
                 String keyCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE);
-                if (!CommonUtils.isEmpty(keyCertProp)) {
+                if (CommonUtils.isNotEmpty(keyCertDer)) { // may be after exception
+                    props.put("sslkey", keyCertDer);
+                } else if (CommonUtils.isNotEmpty(keyCertProp)) {
                     props.put("sslkey", saveCertificateToFile(keyCertProp));
                 }
             } catch (IOException e) {
@@ -377,6 +382,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    private boolean isMultiUserOrDistributed() {
+        return DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser();
     }
 
     private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
@@ -442,6 +451,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             serverVersion = "";
         }
 
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pg_enum table availability")) {
+            supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
+        } catch (Exception e) {
+            log.debug("Error reading pg_enum " + e.getMessage());
+            supportsEnumTable = false;
+        }
+
         // Read databases
         getDefaultInstance().cacheDataTypes(monitor, true);
     }
@@ -497,7 +513,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
+        boolean timezoneOverridden = false;
+
         try {
+            // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
+            // new timezone, which will lead to the error while connecting, there is no way to know before connecting
+            // so to be sure we will use the old name
+            if (NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
+                timezoneOverridden = true;
+                TimezoneRegistry.setDefaultZone(ZoneId.of(LEGACY_UA_TIMEZONE)); //$NON-NLS-1$
+            }
             if (conConfig.getConfigurationType() != DBPDriverConfigurationType.URL &&
                 instance instanceof PostgreDatabase &&
                 !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())
@@ -531,7 +556,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             if ("sun.security.util.DerValue".equals(element.getClassName())) { //$NON-NLS-1$
                 final DBWHandlerConfiguration handler = Objects.requireNonNull(conConfig.getHandler(PostgreConstants.HANDLER_SSL));
-                final String key = handler.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
                 final Path dst;
 
                 try {
@@ -541,9 +565,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     throw e;
                 }
 
-                try (Reader reader = Files.newBufferedReader(Path.of(key))) {
-                    Files.write(dst, DefaultCertificateStorage.loadDerFromPem(reader));
-                    handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, dst.toAbsolutePath().toString());
+                try {
+                    SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst);
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
                     throw e;
@@ -557,6 +580,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
 
             throw e;
+        } finally {
+            if (timezoneOverridden && LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
+                TimezoneRegistry.setDefaultZone(ZoneId.of(NEW_UA_TIMEZONE)); //$NON-NLS-1$
+            }
         }
 
         if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
@@ -718,7 +745,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public PostgreServerExtension getServerType() {
         if (serverExtension == null) {
-            PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+            PostgreServerType serverType = getType();
 
             try {
                 serverExtension = serverType.createServerExtension(this);
@@ -728,6 +755,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
         return serverExtension;
+    }
+
+    public PostgreServerType getType() {
+        return PostgreUtils.getServerType(getContainer().getDriver());
     }
 
     public String getServerVersion() {
@@ -891,5 +922,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public boolean supportsReadingKeysWithColumns() {
         return CommonUtils.toBoolean(
             getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+    }
+
+    public boolean isSupportsEnumTable() {
+        return supportsEnumTable;
     }
 }

@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.materialize;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 
-import java.util.*;
-
 /**
  * PostgreServerMaterialize
  */
@@ -136,7 +134,7 @@ public class PostgreServerMaterialize extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportsTeblespaceLocation() {
+    public boolean supportsTablespaceLocation() {
         return false;
     }
 
@@ -199,4 +197,10 @@ public class PostgreServerMaterialize extends PostgreServerExtensionBase {
     public boolean supportsShowingOfExtraComments() {
         return false;
     }
+
+    @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+        return new MaterializeSchemaCache();
+    }
+
 }

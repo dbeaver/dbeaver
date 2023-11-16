@@ -22,13 +22,13 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -131,10 +131,13 @@ public class PrefPageTransactions extends TargetPrefPage
             settingsTipString = CoreMessages.action_menu_transaction_pref_page_link;
         }
 
-        new PreferenceLinkArea(txnNameGroup, SWT.NONE,
-            PrefPageConnectionTypes.PAGE_ID,
+        UIUtils.createPreferenceLink(
+            txnNameGroup,
             settingsTipString,
-            (IWorkbenchPreferenceContainer) getContainer(), null);
+            PrefPageConnectionTypes.PAGE_ID,
+            (IWorkbenchPreferenceContainer) getContainer(),
+            null
+        );
 
         {
             Group notifyNameGroup = UIUtils.createControlGroup(
@@ -217,6 +220,13 @@ public class PrefPageTransactions extends TargetPrefPage
         store.setToDefault(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
 
         store.setToDefault(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS);
+    }
+
+    @Override
+    protected void performDefaults() {
+        showTransactionNotificationsCheck.setSelection(
+            DBWorkbench.getPlatform().getPreferenceStore().getDefaultBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS));
+        super.performDefaults();
     }
 
     @Override

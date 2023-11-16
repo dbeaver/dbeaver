@@ -27,4 +27,7 @@ public interface RMControllerProvider {
     @NotNull
     RMController getResourceController();
 
+    @NotNull
+    RMProject getRMProject();
+
 }

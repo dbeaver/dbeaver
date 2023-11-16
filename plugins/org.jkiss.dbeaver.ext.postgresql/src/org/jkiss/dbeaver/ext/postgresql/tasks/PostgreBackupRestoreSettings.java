@@ -33,7 +33,7 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
         TAR("t", "Tar", "tar");
 
         private final String id;
-        private String title;
+        private final String title;
         @NotNull
         private final String ext;
 
@@ -69,9 +69,8 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
-
         this.format = CommonUtils.valueOf(ExportFormat.class, store.getString("pg.format"), ExportFormat.CUSTOM);
+        super.loadSettings(runnableContext, store);
     }
 
     @Override

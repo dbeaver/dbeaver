@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -133,7 +132,7 @@ public class DBNUtils {
         // and if children are not folders
         if (children.length > 0) {
             DBNNode firstChild = children[0];
-            boolean isResources = firstChild instanceof DBNResource || firstChild instanceof DBNPath;
+            boolean isResources = firstChild instanceof DBNNodeWithResource;
             {
                 if (isResources) {
                     Arrays.sort(children, NodeFolderComparator.INSTANCE);

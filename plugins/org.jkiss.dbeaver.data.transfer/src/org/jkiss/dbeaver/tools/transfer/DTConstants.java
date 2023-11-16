@@ -32,6 +32,14 @@ public class DTConstants {
     public static final String DEFAULT_FALLBACK_OUTPUT_DIRECTORY = System.getProperty(StandardConstants.ENV_TMP_DIR);
     public static final String PREF_RECONNECT_TO_LAST_DATABASE = "reconnectToLastDatabase";
 
+    public static final String PREF_NAME_CASE_MAPPING = "nameCaseMapping";
+    public static final String PREF_REPLACE_MAPPING = "replaceMapping";
+    public static final String PREF_MAX_TYPE_LENGTH = "maxTypeLengthMapping";
+    public static final String PREF_SAVE_LOCAL_SETTINGS = "saveLocalSettings";
+
     public static final String PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER = "database/data/transfer/advanced";
 
+    public static final int DEFAULT_MAX_TYPE_LENGTH = 32767; // Max Oracle VARCHAR data type length
+
+    public static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
 }

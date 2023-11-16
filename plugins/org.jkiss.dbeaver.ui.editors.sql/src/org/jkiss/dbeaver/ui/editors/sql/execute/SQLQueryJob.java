@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnExecutionBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -236,6 +237,12 @@ public class SQLQueryJob extends DataSourceJob
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
+                    if (txnManager != null && txnManager.isSupportsTransactions()
+                        && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT
+                        && query instanceof SQLQuery sqlQuery
+                    ) {
+                        handleTransactionStatements(txnManager, session, sqlQuery);
+                    }
                     if (!runNext) {
                         if (lastError == null) {
                             // Execution cancel
@@ -333,6 +340,18 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+        }
+    }
+
+    protected void handleTransactionStatements(
+        @NotNull DBCTransactionManager txnManager,
+        @NotNull DBCSession session,
+        @NotNull SQLQuery query
+    ) throws DBCException {
+        if (query.getType().equals(SQLQueryType.COMMIT)) {
+            txnManager.commit(session);
+        } else if (query.getType().equals(SQLQueryType.ROLLBACK)) {
+            txnManager.rollback(session, null);
         }
     }
 
@@ -502,6 +521,12 @@ public class SQLQueryJob extends DataSourceJob
                 } catch (InvocationTargetException e) {
                     throw e.getTargetException();
                 }
+            }
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+            if (txnManager != null && txnManager.isSupportsTransactions()
+                && !txnManager.isAutoCommit() && commitType != SQLScriptCommitType.AUTOCOMMIT
+            ) {
+                handleTransactionStatements(txnManager, session, sqlQuery);
             }
         }
         catch (Throwable ex) {
@@ -726,14 +751,26 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private boolean isShowExecutionResult() {
-        if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
-            // If there are no results or we have updated some rows, always display statistics
-            return true;
-        } else {
-            // Otherwise, display statistics if the option is set
-            final DBPPreferenceStore store = getDataSourceContainer().getPreferenceStore();
-            return statistics.getStatementsCount() > 1 && store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS);
+        final DBPPreferenceStore store = getDataSourceContainer().getPreferenceStore();
+        StatisticsTabOnExecutionBehavior statisticsTabOnExecutionBehavior = StatisticsTabOnExecutionBehavior.getByName(
+            store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION));
+        switch (statisticsTabOnExecutionBehavior) {
+            case ALWAYS:
+                return true;
+            case NEVER:
+                return resultSetNumber <= 0 || statistics.getRowsFetched() <= 0;
+            case FOR_MULTIPLE_QUERIES:
+                if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
+                    // If there are no results or we have updated some rows, always display statistics
+                    return true;
+                } else {
+                    // Otherwise, display statistics if the option is set
+                    return statistics.getStatementsCount() > 1;
+                }
+            default:
+                return false;
         }
+        
     }
 
     private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException

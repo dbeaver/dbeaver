@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -359,14 +360,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             // Read plugins
             {
                 plugins = new ArrayList<>();
-                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PLUGINS")) {
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        while (dbResult.next()) {
-                            plugins.add(new MySQLPlugin(this, dbResult));
+                if (supportsPlugins()) {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PLUGINS")) {
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                            while (dbResult.next()) {
+                                plugins.add(new MySQLPlugin(this, dbResult));
+                            }
                         }
+                    } catch (SQLException e) {
+                        log.debug("Error reading plugins information", e);
                     }
-                } catch (SQLException e) {
-                    log.debug("Error reading plugins information", e);
                 }
             }
 
@@ -774,14 +777,24 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
-    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
+    public class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true, owner);
+                boolean supportsCondition = owner.supportsConditionForShowDatabasesStatement();
+                if (!supportsCondition) {
+                    catalogQuery.setLength(0);
+                    catalogQuery.append("SELECT SCHEMA_NAME FROM ").append(MySQLConstants.META_TABLE_SCHEMATA);
+                }
+                JDBCUtils.appendFilterClause(
+                    catalogQuery,
+                    catalogFilters,
+                    supportsCondition ? MySQLConstants.COL_DATABASE_NAME : MySQLConstants.COL_SCHEMA_NAME,
+                    true,
+                    owner);
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
@@ -792,9 +805,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
         @Override
         protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new MySQLCatalog(owner, resultSet);
+            return createCatalogInstance(owner, resultSet);
         }
 
+    }
+
+    @NotNull
+    public MySQLCatalog createCatalogInstance(@NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) {
+        return new MySQLCatalog(owner, resultSet);
     }
 
     public boolean isMariaDB() {
@@ -878,6 +896,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-alter-view"), false);
     }
 
+    /**
+     * Checks plugins list reading is supported.
+     *
+     * @return {@code true} if plugins list reading is supported
+     */
+    @Association
+    public boolean supportsPlugins() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-plugins"), true);
+    }
+
 
     /**
      * Checks if table partitioning is supported.
@@ -910,6 +938,34 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
      */
     public boolean supportsFetchTransform() {
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-mysql-fetch-transform"), true);
+    }
+
+    public boolean supportsSysSchema() {
+        return isMariaDB() ? isServerVersionAtLeast(10, 6) : isServerVersionAtLeast(5, 7);
+    }
+
+    /**
+     * Returns list of supported index types
+     */
+    public List<DBSIndexType> supportedIndexTypes() {
+        return Arrays.asList(MySQLConstants.INDEX_TYPE_BTREE,
+            MySQLConstants.INDEX_TYPE_FULLTEXT,
+            MySQLConstants.INDEX_TYPE_HASH,
+            MySQLConstants.INDEX_TYPE_RTREE);
+    }
+
+    /**
+     * Returns true if different rename table syntax is used
+     */
+    public boolean supportsAlterTableRenameSyntax() {
+        return false;
+    }
+
+    /**
+     * Return true if WHERE condition can be added for SHOW DATABASES statement
+     */
+    public boolean supportsConditionForShowDatabasesStatement() {
+        return true;
     }
 
 }

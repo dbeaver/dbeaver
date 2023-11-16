@@ -73,6 +73,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     public static final String ATTR_ID = "id"; //NON-NLS-1
     public static final String ATTR_LABEL = "label"; //NON-NLS-1
     public static final String ATTR_DESCRIPTION = "description"; //NON-NLS-1
+    public static final String ATTR_HINT = "hint"; //NON-NLS-1
     public static final String ATTR_TYPE = "type"; //NON-NLS-1
     private static final String ATTR_REQUIRED = "required"; //NON-NLS-1
     private static final String ATTR_DEFAULT_VALUE = "defaultValue"; //NON-NLS-1
@@ -87,6 +88,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private final String id;
     private String name;
     private final String description;
+    private final String hint;
     private final String category;
     private transient Class<?> type;
     private PropertyType propertyType;
@@ -149,6 +151,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.validValues = validValues;
         this.editable = true;
         this.length = PropertyLength.LONG;
+        this.hint = null;
     }
 
     public PropertyDescriptor(String category, IConfigurationElement config) {
@@ -159,6 +162,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
             this.name = CommonUtils.toString(this.id);
         }
         this.description = config.getAttribute(ATTR_DESCRIPTION);
+        this.hint = config.getAttribute(ATTR_HINT);
         this.required = CommonUtils.getBoolean(config.getAttribute(ATTR_REQUIRED));
         String typeString = config.getAttribute(ATTR_TYPE);
         if (typeString == null) {
@@ -213,6 +217,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.validValues = validValues;
         this.editable = editable;
         this.length = PropertyLength.LONG;
+        this.hint = null;
     }
 
     @NotNull
@@ -247,6 +252,11 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getHint() {
+        return hint;
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
@@ -645,7 +646,11 @@ public class PostgreUtils {
         return grantees.toArray(new String[0]);
     }
 
-    public static List<PostgrePrivilege> extractPermissionsFromACL(@NotNull PostgrePrivilegeOwner owner, @NotNull String[] acl) {
+    public static List<PostgrePrivilege> extractPermissionsFromACL(
+        @NotNull PostgrePrivilegeOwner owner,
+        @NotNull String[] acl,
+        boolean isDefault
+    ) {
         List<PostgrePrivilege> permissions = new ArrayList<>();
         for (String aclValue : acl) {
             if (CommonUtils.isEmpty(aclValue)) {
@@ -687,12 +692,21 @@ public class PostgreUtils {
                     false
                 ));
             }
-            permissions.add(new PostgreObjectPrivilege(owner, grantee, privileges));
+            if (isDefault) {
+                permissions.add(new PostgreDefaultPrivilege(owner, grantee, privileges));
+            } else {
+                permissions.add(new PostgreObjectPrivilege(owner, grantee, privileges));
+            }
         }
         return permissions;
     }
 
-    public static List<PostgrePrivilege> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePrivilegeOwner owner, @Nullable Object acl) throws DBException {
+    public static List<PostgrePrivilege> extractPermissionsFromACL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgrePrivilegeOwner owner,
+        @Nullable Object acl,
+        boolean isDefault
+    ) throws DBException {
         if (!(acl instanceof java.sql.Array)) {
             if (acl == null) {
                 // Special case. Means ALL permissions are granted to table owner
@@ -731,7 +745,7 @@ public class PostgreUtils {
             aclValue = aclValue.replace("\\\"", "\"");
             aclValues[i] = aclValue;
         }
-        return extractPermissionsFromACL(owner, aclValues);
+        return extractPermissionsFromACL(owner, aclValues, isDefault);
     }
 
     public static String getOptionsString(String[] options) {
@@ -778,7 +792,9 @@ public class PostgreUtils {
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePrivilegeOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (object.isPersisted() && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(object, true);
-            actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
+            if (object.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
+                actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
+            }
 
             // Owner
             PostgreRole owner = object.getOwner(monitor);

@@ -18,11 +18,14 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
@@ -65,8 +68,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         super();
     }
 
-    public DBNModel getModel()
-    {
+    @NotNull
+    public static DBNModel getGlobalNavigatorModel() {
         return DBWorkbench.getPlatform().getNavigatorModel();
     }
 
@@ -96,8 +99,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
      * it.
      */
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         this.tree = createNavigatorTree(parent, null);
         this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer(this));
 
@@ -110,8 +112,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         UIExecutionQueue.queueExec(() -> tree.setInput(getRootNode()));
     }
 
-    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
-    {
+    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode) {
         // Create tree
         final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle(), false, getNavigatorFilter());
 
@@ -137,6 +138,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             @Override
             public void mouseUp(MouseEvent e) {
                 super.mouseUp(e);
+                Point point = new Point(e.x, e.y);
+                TreeItem item = navigatorTree.getViewer().getTree().getItem(point);
+                if (item == null) {
+                    navigatorTree.getViewer().setSelection(new StructuredSelection());
+                } 
             }
         });
         navigatorTree.getViewer().addDoubleClickListener(event -> {

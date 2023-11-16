@@ -110,14 +110,14 @@
 
     <extension point="org.eclipse.ui.editors">
         <editor
-                name="Session Manager"
+                name="%editor.session_manager.name"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor"
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor"
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
-                name="Lock Manager"
+                name="%editor.session_manager.name"
                 icon="#locked"
                 class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor"
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor">
@@ -269,68 +269,59 @@
             <toolGroup id="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics" label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.statistics.label"/>
             <toolGroup id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance" label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.label"/>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript.label">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+                <task id="oracleScriptExecute"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
+                <task id="oracleToolValidateStructure"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
+                <task id="oracleToolMViewRefresh"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
-                <!--<objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>-->
+                <task id="oracleToolTableGatherStatistics"/>
+                <task id="oracleToolIndexGatherStatistics"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
+                <task id="oracleToolTableTruncate"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" if="object.status == 'ENABLED'"/>
+                <task id="OracleToolTriggerDisable"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" if="object.status == 'DISABLED'"/>
+                <task id="oracleToolTriggerEnable"/>
             </tool>
         </tools>
     </extension>
@@ -339,6 +330,10 @@
     </extension>
     <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="oracleScriptExecute" class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleTaskConfigurator"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.oracle.ui.internal.OraclePreferencesInitializer"/>
     </extension>
 
 </plugin>

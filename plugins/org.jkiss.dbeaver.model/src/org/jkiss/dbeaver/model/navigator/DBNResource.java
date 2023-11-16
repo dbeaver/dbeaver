@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,14 +29,14 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
-import org.jkiss.dbeaver.model.fs.nio.NIOResource;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
+import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,10 +46,7 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNResource
@@ -60,6 +59,23 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private static final NumberFormat numberFormat = new DecimalFormat();
+    private static final Comparator<DBNNode> COMPARATOR = (o1, o2) -> {
+        if (o1 instanceof DBNProjectDatabases) {
+            return -1;
+        } else if (o2 instanceof DBNProjectDatabases) {
+            return 1;
+        } else if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
+            IResource res1 = ((DBNResource) o1).getResource();
+            IResource res2 = ((DBNResource) o2).getResource();
+            if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
+                return -1;
+            } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
+                return 1;
+            }
+        }
+
+        return AlphanumericComparator.getInstance().compare(o1.getSortName(), o2.getSortName());
+    };
 
     private IResource resource;
     private DBPResourceHandler handler;
@@ -122,19 +138,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         return resource.getName();
     }
 
-/*
     @Override
-    protected String getSortName() {
-        if (resource == null || handler == null) {
-            return null;
-        }
-        return resource.getFullPath().removeFileExtension().lastSegment();
-    }
-*/
-
-
-    @Override
-//    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
         if (getOwnerProject().isVirtual()) {
             // Do not read descriptions for virtual (remote) projects
@@ -376,7 +380,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
                 }
             }
         } catch (CoreException e) {
-            throw new DBException("Can't rename resource", e);
+            throw new DBException("Cannot rename resource : " + e.getMessage(), e);
         }
     }
 
@@ -397,58 +401,49 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
-
-        new AbstractJob("Drop files to workspace") {
-            {
-                setUser(true);
-            }
-
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                monitor.beginTask("Copy files", nodes.size());
-                try {
-                    if (!resource.exists()) {
-                        if (resource instanceof IFolder) {
-                            ((IFolder) resource).create(true, true, new NullProgressMonitor());
-                        }
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
+        monitor.beginTask("Copy files", nodes.size());
+        try {
+            if (!resource.exists()) {
+                if (resource instanceof IFolder) {
+                    try {
+                        ((IFolder) resource).create(true, true, new NullProgressMonitor());
+                    } catch (CoreException e) {
+                        throw new DBException("Error creating folder " + resource.getName(), e);
                     }
-                    for (DBNNode node : nodes) {
-                        IResource otherResource = node.getAdapter(IResource.class);
-                        if (otherResource != null) {
-                            try {
-                                if (otherResource instanceof NIOResource) {
-                                    otherResource.copy(
-                                        resource.getRawLocation().append(otherResource.getName()),
-                                        true,
-                                        monitor.getNestedMonitor());
-                                } else {
-                                    if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
-                                        throw new DBException("Cross-project resource move is not supported in distributed workspaces");
-                                    }
-                                    otherResource.move(
-                                        resource.getFullPath().append(otherResource.getName()),
-                                        true,
-                                        monitor.getNestedMonitor());
-                                }
-                                refreshFileStore(monitor);
-                                resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
-                            } catch (CoreException e) {
-                                throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
-                            }
-                        } else {
-                            throw new DBException("Can't get resource from node " + node.getName());
-                        }
-                        monitor.worked(1);
-                    }
-                } catch (Exception e) {
-                    return GeneralUtils.makeExceptionStatus(e);
-                } finally {
-                    monitor.done();
                 }
-                return Status.OK_STATUS;
             }
-        }.schedule();
+            for (DBNNode node : nodes) {
+                IResource otherResource = node.getAdapter(IResource.class);
+                if (otherResource != null) {
+                    try {
+                        if (otherResource instanceof EFSNIOResource) {
+                            otherResource.copy(
+                                resource.getRawLocation().append(otherResource.getName()),
+                                true,
+                                monitor.getNestedMonitor());
+                        } else {
+                            if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
+                                throw new DBException("Cross-project resource move is not supported in distributed workspaces");
+                            }
+                            otherResource.move(
+                                resource.getFullPath().append(otherResource.getName()),
+                                true,
+                                monitor.getNestedMonitor());
+                        }
+                        refreshFileStore(monitor);
+                        resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
+                    } catch (CoreException e) {
+                        throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
+                    }
+                } else {
+                    throw new DBException("Can't get resource from node " + node.getName());
+                }
+                monitor.worked(1);
+            }
+        } finally {
+            monitor.done();
+        }
     }
 
     public boolean supportsPaste(@NotNull DBNNode other) {
@@ -470,24 +465,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     protected void sortChildren(DBNNode[] list) {
-        Arrays.sort(list, (o1, o2) -> {
-            if (o1 instanceof DBNProjectDatabases) {
-                return -1;
-            } else if (o2 instanceof DBNProjectDatabases) {
-                return 1;
-            } else {
-                if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
-                    IResource res1 = ((DBNResource) o1).getResource();
-                    IResource res2 = ((DBNResource) o2).getResource();
-                    if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
-                        return -1;
-                    } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
-                        return 1;
-                    }
-                }
-                return o1.getSortName().compareToIgnoreCase(o2.getSortName());
-            }
-        });
+        Arrays.sort(list, COMPARATOR);
     }
 
     @Override

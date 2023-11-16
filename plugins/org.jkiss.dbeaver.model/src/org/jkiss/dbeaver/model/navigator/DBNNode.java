@@ -106,8 +106,21 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return getName();
     }
 
+    /**
+     * Node type. May be used internally.
+     */
     public abstract String getNodeType();
 
+    /**
+     * Node type in display format.
+     */
+    public String getNodeTypeLabel() {
+        return getNodeType();
+    }
+
+    /**
+     * Internal node name. Usually it is the same as getName.
+     */
     public abstract String getNodeName();
 
     @Nullable
@@ -186,7 +199,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return false;
     }
 
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
         throw new DBException("Drop is not supported");
     }
 
@@ -252,6 +265,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return null;
     }
 
+    @Nullable
     public DBPProject getOwnerProject() {
         for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBNProject) {
