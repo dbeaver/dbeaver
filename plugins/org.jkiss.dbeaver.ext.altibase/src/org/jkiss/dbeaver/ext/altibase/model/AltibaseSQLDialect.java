@@ -494,6 +494,8 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
                  * Grammar conflict between PSM and Typeset
                  * PSM: CREATE...[AS|IS] ... BEGIN ... END
                  * TYPESET: CREATE...[AS|IS] ... END
+                 * 
+                 * https://github.com/ALTIBASE/Documents/blob/master/Manuals/Altibase_7.3/eng/Stored%20Procedures%20Manual.md#create-typeset
                  */
                 new TokenPredicatesCondition(
                         SQLParserActionKind.BEGIN_BLOCK,
@@ -507,7 +509,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
                 new TokenPredicatesCondition(
                         SQLParserActionKind.SKIP_SUFFIX_TERM,
                         tt.token("END"),
-                        tt.sequence(";", "/")
+                        tt.sequence(";")
                 )
         );
 
