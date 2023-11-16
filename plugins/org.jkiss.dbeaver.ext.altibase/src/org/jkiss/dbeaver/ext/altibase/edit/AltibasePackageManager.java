@@ -56,7 +56,7 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP PACKAGE" + " " + procedureName)
+                "DROP PACKAGE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
         );
     }
 
