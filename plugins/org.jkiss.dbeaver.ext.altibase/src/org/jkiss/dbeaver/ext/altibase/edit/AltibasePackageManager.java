@@ -56,7 +56,7 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP PACKAGE" + " " + procedureName)
+                "DROP PACKAGE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
         );
     }
 
@@ -73,7 +73,7 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
     @Override
     protected GenericPackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
             Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return null;
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

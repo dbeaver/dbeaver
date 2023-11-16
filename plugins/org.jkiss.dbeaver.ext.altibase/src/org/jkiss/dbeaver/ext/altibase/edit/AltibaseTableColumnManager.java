@@ -50,7 +50,7 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
         
         sql
         .append("ALTER TABLE ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL))
-        .append(" ADD ").append("COLUMN ")
+        .append(" ADD COLUMN (")
         .append("( ").append(getNestedDeclaration(monitor, table, command, options)).append(" )");
         
         actions.add(
