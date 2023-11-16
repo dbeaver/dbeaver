@@ -73,7 +73,7 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
     @Override
     protected GenericPackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
             Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return null;
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
