@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -52,16 +53,17 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
             List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         AltibaseSynonym object = (AltibaseSynonym) command.getObject();
         boolean isPublic = object.isPublicSynonym();
-        StringBuilder ddl = new StringBuilder("DROP");
+        StringBuilder ddl = new StringBuilder("DROP ");
         String objName;
         
         if (isPublic) {
             objName = object.getName();
-            ddl.append(" ").append("PUBLIC SYNONYM").append(" ").append(objName);
+            ddl.append("PUBLIC ");
         } else {
             objName = object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-            ddl.append(" ").append("SYNONYM").append(" ").append(objName);
         }
+
+        ddl.append("SYNONYM ").append(objName);
 
         actions.add(
             new SQLDatabasePersistAction(
@@ -83,7 +85,7 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
     @Override
     protected GenericSynonym createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
             Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return null;
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
