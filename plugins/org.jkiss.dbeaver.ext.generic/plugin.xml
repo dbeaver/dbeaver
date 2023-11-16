@@ -891,7 +891,7 @@
                     category="Hadoop"
                     categories="hadoop"
                     singleConnection="true">
-                    <file type="jar" path="maven:/org.apache.flink:flink-sql-jdbc-driver-bundle:RELEASE" bundle="!drivers.apache_flink"/>
+                    <file type="jar" path="maven:/org.apache.flink:flink-sql-jdbc-driver-bundle:RELEASE"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_flink"/>
                     <file type="jar" path="drivers/apache_flink" bundle="drivers.apache_flink"/>
                     <parameter name="supports-truncate" value="false"/>
