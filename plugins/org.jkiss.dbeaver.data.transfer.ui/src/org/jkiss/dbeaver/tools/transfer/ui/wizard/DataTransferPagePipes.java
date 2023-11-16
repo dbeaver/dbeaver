@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -68,9 +69,16 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         }
     }
 
-    DataTransferPagePipes() {
+    DataTransferPagePipes(@NotNull DataTransferSettings settings) {
         super(DTMessages.data_transfer_wizard_init_title);
-        setTitle(DTMessages.data_transfer_wizard_init_title);
+
+        if (settings.isConsumerOptional()) {
+            setTitle(DTMessages.data_transfer_wizard_init_title);
+            setDescription(DTMessages.data_transfer_wizard_init_description);
+        } else {
+            setTitle(DTMessages.data_transfer_wizard_producers_title);
+            setDescription(DTMessages.data_transfer_wizard_producers_description);
+        }
     }
 
     @Override
@@ -254,14 +262,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     private void loadNodeSettings() {
         if (getWizard().getSettings().isConsumerOptional()) {
-            setTitle(DTMessages.data_transfer_wizard_init_title);
-            setDescription(DTMessages.data_transfer_wizard_init_description);
-
             loadConsumers();
         } else {
-            setTitle(DTMessages.data_transfer_wizard_producers_title);
-            setDescription(DTMessages.data_transfer_wizard_producers_description);
-
             loadProducers();
         }
 

@@ -210,7 +210,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public void addPages() {
         super.addPages();
         if (includePipesConfigurationPage()) {
-            addPage(new DataTransferPagePipes());
+            addPage(new DataTransferPagePipes(settings));
         }
         addWizardPages(this);
         addPage(new DataTransferPageFinal());
