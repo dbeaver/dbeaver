@@ -25,8 +25,8 @@ public class AltibaseUIMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, AltibaseUIMessages.class);
     }
     
-    public static String editors_altibase_session_editor_action_disconnect;
-    public static String editors_altibase_session_editor_action__session;
+    public static String editors_altibase_session_editor_action_force_disconnect;
+    public static String editors_altibase_session_editor_action_session;
     public static String editors_altibase_session_editor_confirm_action;
     public static String editors_altibase_session_editor_title_disconnect_session;
     

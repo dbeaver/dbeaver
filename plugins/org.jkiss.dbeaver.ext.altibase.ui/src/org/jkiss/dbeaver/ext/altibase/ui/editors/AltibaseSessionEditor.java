@@ -83,8 +83,7 @@ public class AltibaseSessionEditor extends AbstractSessionEditor {
         @Override
         public void run() {
             final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
-            final String action = AltibaseUIMessages.editors_altibase_session_editor_action_disconnect 
-                    + AltibaseUIMessages.editors_altibase_session_editor_action__session;
+            final String action = AltibaseUIMessages.editors_altibase_session_editor_action_force_disconnect;
             ConfirmationDialog dialog = new ConfirmationDialog(
                     getSite().getShell(),
                     action,

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
@@ -45,5 +46,12 @@ public class AltibaseTableIndex extends GenericTableIndex implements DBPScriptOb
             source = ((AltibaseMetaModel) getDataSource().getMetaModel()).getIndexDDL(monitor, this, options);
         }
         return source;
+    }
+    
+    @Override
+    @Property(hidden = true)
+    public String getQualifier()
+    {
+        return "";
     }
 }
