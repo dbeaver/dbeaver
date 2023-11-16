@@ -50,12 +50,24 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
         
         sql
         .append("ALTER TABLE ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL))
-        .append(" ADD COLUMN (")
-        .append("( ").append(getNestedDeclaration(monitor, table, command, options)).append(" )");
+        .append(" ADD COLUMN ( ").append(getNestedDeclaration(monitor, table, command, options)).append(" )");
         
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
                 sql.toString()));
+    }
+    
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    {
+        final GenericTableColumn column = command.getObject();
+
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Rename column",
+                "ALTER TABLE " + DBUtils.getQuotedIdentifier(column.getTable()) + " RENAME COLUMN " +
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) +
+                    " TO " + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }
 }
