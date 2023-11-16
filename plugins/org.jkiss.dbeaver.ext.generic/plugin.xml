@@ -893,7 +893,6 @@
                     singleConnection="true">
                     <file type="jar" path="maven:/org.apache.flink:flink-sql-jdbc-driver-bundle:RELEASE"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
-                    <file type="jar" path="drivers/apache_flink" bundle="drivers.apache_flink"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
