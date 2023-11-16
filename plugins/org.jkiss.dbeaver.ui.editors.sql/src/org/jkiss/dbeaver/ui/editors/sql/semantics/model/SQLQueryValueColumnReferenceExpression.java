@@ -36,7 +36,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
         this.columnName = columnName;
     }
 
-    public SQLQueryValueColumnReferenceExpression(@Nullable SQLQueryQualifiedName tableName, @NotNull SQLQuerySymbolEntry columnName) {
+    public SQLQueryValueColumnReferenceExpression(@NotNull SQLQueryQualifiedName tableName, @NotNull SQLQuerySymbolEntry columnName) {
         this.tableName = tableName;
         this.columnName = columnName;
     }

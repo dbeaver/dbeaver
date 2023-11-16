@@ -105,7 +105,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
 
         {
             Group stringGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_string, 2, SWT.NONE, 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             stringGroup.setLayoutData(gd);
 
@@ -117,7 +117,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
 
         {
             Group binaryGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             binaryGroup.setLayoutData(gd);
 
@@ -155,7 +155,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
         // Content
         {
             Group contentGroup = UIUtils.createControlGroup(composite,
-                ResultSetMessages.pref_page_content_editor_group_content, 2, GridData.FILL_HORIZONTAL, 0);
+                ResultSetMessages.pref_page_content_editor_group_content, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             maxTextContentSize = UIUtils.createLabelSpinner(contentGroup, ResultSetMessages.pref_page_content_editor_label_max_text_length,
                 1000, 1, Integer.MAX_VALUE);
             maxTextContentSize.setDigits(0);

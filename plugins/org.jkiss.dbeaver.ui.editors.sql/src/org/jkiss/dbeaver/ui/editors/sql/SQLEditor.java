@@ -109,6 +109,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -147,8 +148,8 @@ import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2502,17 +2503,18 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         List<SQLScriptElement> elements;
-        if (script) {
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        if (script ||
+            selection.getLength() > 1 // if we selected several queries - they should not be inside one SQLQuery instance
+        ) {
             if (executeFromPosition) {
                 // Get all queries from the current position
-                ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
                 elements = extractScriptQueries(selection.getOffset(), document.getLength(), true, false, true);
                 // Replace first query with query under cursor for case if the cursor is in the middle of the query
                 elements.remove(0);
                 elements.add(0, extractActiveQuery());
             } else {
                 // Execute all SQL statements consequently
-                ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
                 if (selection.getLength() > 1) {
                     elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
                 } else {
@@ -2589,12 +2591,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (queries.isEmpty()) {
             // Nothing to process
             return false;
-        }
-
-        // Single-tabbed mode always uses new tab
-        boolean useSingleTab = !useTabPerQuery(queries.size() == 1);
-        if (useSingleTab) {
-            newTab = true;
         }
         
         final DBPDataSourceContainer container = getDataSourceContainer();
@@ -2725,7 +2721,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Just create a new query processor
                 if (!foundSuitableTab) {
                     // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
-                    if (useSingleTab && curQueryProcessor instanceof MultiTabsQueryProcessor 
+                    if (curQueryProcessor instanceof MultiTabsQueryProcessor 
                         && curQueryProcessor.getResultContainers().size() == 1
                         && !curQueryProcessor.getFirstResults().viewer.hasData()
                     ) {
@@ -3825,6 +3821,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     class SingleTabQueryProcessor extends QueryProcessor {
+        private static final int SCROLL_SPEED = 10;
         private boolean tabCreated;
         private CTabItem resultsTab;
         private ScrolledComposite tabContentScroller;
@@ -3896,6 +3893,28 @@ public class SQLEditor extends SQLEditorBase implements
             sectionsContainer.setLayout(new GridLayout(1, false));
             sectionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             tabContentScroller.setContent(sectionsContainer);
+
+            Listener scrollListener = event -> {
+                Control underScroll = (Control) event.widget;
+                if (underScroll.getShell() == tabContentScroller.getShell() && tabContentScroller.isVisible()) {
+                    Point clickedPoint = underScroll.toDisplay(event.x, event.y);
+                    if (tabContentScroller.getClientArea().contains(tabContentScroller.toControl(clickedPoint))) {
+                        for (Control c = underScroll; c != null; c = c.getParent()) {
+                            if (c == tabContentScroller) {
+                                Point offset = tabContentScroller.getOrigin();
+                                offset.y -= event.count * SCROLL_SPEED;
+                                if (offset.y < 0) {
+                                    offset.y = 0;
+                                }
+                                tabContentScroller.setOrigin(offset);
+                                event.doit = false;
+                            }
+                        }
+                    }
+                }
+            };
+            tabContentScroller.getDisplay().addFilter(SWT.MouseVerticalWheel, scrollListener);
+            tabContentScroller.addDisposeListener(e -> tabContentScroller.getDisplay().removeFilter(SWT.MouseVerticalWheel, scrollListener));
         }
         
         @Override
@@ -4424,9 +4443,13 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     class SingleTabQueryResultsContainer extends QueryResultsContainer {
+        private static final Integer MIN_VIEWER_HEIGHT = 150;
+        
         private final SingleTabQueryProcessor queryProcessor;
         private final Section section;
 
+        private GridData rsvConstrainedLayout;
+        
         SingleTabQueryResultsContainer(
             @NotNull Pair<Section, Composite> sectionAndContents,
             @NotNull SingleTabQueryProcessor queryProcessor,
@@ -4452,14 +4475,28 @@ public class SQLEditor extends SQLEditorBase implements
             this.section = sectionAndContents.getFirst();
             this.setupSection(sectionAndContents.getSecond());
         }
+
+        @Override
+        public IResultSetDecorator createResultSetDecorator() {
+            if (getActivePreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE)) {
+                return super.createResultSetDecorator();
+            } else {
+                return new QueryResultsDecorator() {
+                    @Override
+                    public long getDecoratorFeatures() {
+                        return FEATURE_STATUS_BAR | FEATURE_PANELS | FEATURE_PRESENTATIONS | FEATURE_EDIT | FEATURE_LINKS;
+                    }
+                };
+            }
+        }
         
         private void setupSection(@NotNull Composite sectionContents) {
             Composite control = this.viewer.getControl();
             sectionContents.setData(ResultSetViewer.CONTROL_ID, this.viewer);
 
-            GridData constrainedLayout = GridDataFactory.swtDefaults()
+            rsvConstrainedLayout = GridDataFactory.swtDefaults()
                 .align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 300).create();
-            control.setLayoutData(constrainedLayout);
+            control.setLayoutData(rsvConstrainedLayout);
             GridData freeLayout = GridDataFactory.swtDefaults()
                 .align(GridData.FILL, GridData.FILL).grab(true, false).create();
 
@@ -4469,7 +4506,7 @@ public class SQLEditor extends SQLEditorBase implements
             line.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseDoubleClick(MouseEvent e) {
-                    control.setLayoutData(control.getLayoutData() == constrainedLayout ? freeLayout : constrainedLayout);
+                    control.setLayoutData(control.getLayoutData() == rsvConstrainedLayout ? freeLayout : rsvConstrainedLayout);
                     queryProcessor.relayoutContents();
                 }
             });
@@ -4484,9 +4521,9 @@ public class SQLEditor extends SQLEditorBase implements
                     if (tracker.open()) {
                         Rectangle after = tracker.getRectangles()[0];
                         int newHeight = after.height - line.getSize().y / 2;
-                        if (newHeight != constrainedLayout.heightHint) {
-                            constrainedLayout.heightHint = newHeight;
-                            control.setLayoutData(constrainedLayout);
+                        if (newHeight != rsvConstrainedLayout.heightHint) {
+                            rsvConstrainedLayout.heightHint = newHeight;
+                            control.setLayoutData(rsvConstrainedLayout);
                             queryProcessor.relayoutContents();
                         }
                     }
@@ -4547,6 +4584,24 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void setPinned(boolean pinned) {
             setTabPinned(queryProcessor.resultsTab, pinned);
+        }
+        
+        @Override
+        public void handleExecuteResult(DBCExecutionResult result) {
+            super.handleExecuteResult(result);
+            
+            if (this.viewer.getActivePresentation().getControl() instanceof Spreadsheet s) {
+                Point spreadsheetPreferredSize = s.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+                Point spreadsheetSize = s.getSize();
+                int desiredViewerHeight = rsvConstrainedLayout.heightHint - spreadsheetSize.y + spreadsheetPreferredSize.y;
+                if (desiredViewerHeight < rsvConstrainedLayout.heightHint) {
+                    if (desiredViewerHeight < MIN_VIEWER_HEIGHT) {
+                        desiredViewerHeight = MIN_VIEWER_HEIGHT;
+                    }
+                    rsvConstrainedLayout.heightHint = desiredViewerHeight;  
+                    queryProcessor.relayoutContents();
+                }
+            }
         }
 
         @Override
@@ -4724,7 +4779,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void processQueryResult(DBRProgressMonitor monitor, SQLQueryResult result, DBCStatistics statistics) {
-            dumpQueryServerOutput(result);
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
@@ -4800,9 +4854,12 @@ public class SQLEditor extends SQLEditorBase implements
                             if (resultSetViewer != null) {
                                 resultSetViewer.getModel().setStatistics(statistics);
                             }
+                            results.handleExecuteResult(result);
                         }
                         resultsIndex++;
                     }
+                } else {
+                    dumpQueryServerOutput(result);
                 }
             }
             // Close tab on error
