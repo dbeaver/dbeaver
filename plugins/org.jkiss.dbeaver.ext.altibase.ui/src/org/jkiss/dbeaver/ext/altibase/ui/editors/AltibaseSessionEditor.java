@@ -76,14 +76,14 @@ public class AltibaseSessionEditor extends AbstractSessionEditor {
 
     private class DisconnectSessionAction extends Action {
         DisconnectSessionAction() {
-            super(AltibaseUIMessages.editors_altibase_session_editor_title_disconnect_session, 
+            super(AltibaseUIMessages.editors_altibase_session_editor_action_disconnect_session, 
                  DBeaverIcons.getImageDescriptor(UIIcon.SQL_DISCONNECT));
         }
 
         @Override
         public void run() {
             final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
-            final String action = AltibaseUIMessages.editors_altibase_session_editor_action_force_disconnect;
+            final String action = AltibaseUIMessages.editors_altibase_session_editor_action_disconnect_session;
             ConfirmationDialog dialog = new ConfirmationDialog(
                     getSite().getShell(),
                     action,
