@@ -192,11 +192,6 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
-                    <provider-properties>
-                        <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                        </propertyGroup>
-                    </provider-properties>
                 </driver>
                 <driver
                     id="mysql_ndb"
@@ -220,11 +215,6 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
-                    <provider-properties>
-                        <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                        </propertyGroup>
-                    </provider-properties>
                 </driver>
 
                 <driver
@@ -250,12 +240,12 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
-                    <provider-properties>
-                        <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                        </propertyGroup>
-                    </provider-properties>
                 </driver>
+                <provider-properties drivers="*">
+                    <propertyGroup label="Advanced">
+                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
 
             <nativeClients>
