@@ -28,7 +28,7 @@ public class FunctionMedian implements IAggregateFunction {
 
     private static final Log log = Log.getLog(FunctionMedian.class);
 
-    private final List<Comparable> cache = new ArrayList<>();
+    private final List<Comparable<?>> cache = new ArrayList<>();
 
     @Override
     public boolean accumulate(Object value, boolean aggregateAsStrings) {
@@ -45,7 +45,7 @@ public class FunctionMedian implements IAggregateFunction {
         try {
             cache.sort(AggregateUtils::compareValues);
         } catch (Exception e) {
-            log.debug("Can't sort value collection", e);
+            log.debug("Can't sort value collection: " + e.getMessage());
             return null;
         }
 
