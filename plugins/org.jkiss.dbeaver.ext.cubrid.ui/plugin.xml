@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+            class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+            id="org.jkiss.dbeaver.ext.cubrid.dataSourceWizardView"
+            targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"                
+            dataSource="cubrid"
+            label="%dialog.connection.header"
+            icon="icons/cubrid_icon.png">
+        </view>
+        <view
+	        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+	        id="org.jkiss.dbeaver.ext.cubrid.dataSourceEditorView"
+	        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+	        dataSource="cubrid"
+	        label="%dialog.connection.header"
+	        icon="icons/cubrid_icon.png">
+        </view>
+    </extension>
+
+</plugin>
