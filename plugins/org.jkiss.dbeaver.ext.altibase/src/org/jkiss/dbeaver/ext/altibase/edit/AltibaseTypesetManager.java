@@ -70,14 +70,11 @@ public class AltibaseTypesetManager extends GenericProcedureManager {
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
             List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        GenericProcedure object = command.getObject();
-        String procedureName;
-        procedureName = object.getFullyQualifiedName(DBPEvaluationContext.DDL);
 
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP TYPESET " + procedureName)
+                "DROP TYPESET " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
         );
     }
     

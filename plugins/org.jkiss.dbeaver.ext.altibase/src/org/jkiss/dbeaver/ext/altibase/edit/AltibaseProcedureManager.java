@@ -72,10 +72,9 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
             List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         
         final AltibaseProcedureStandAlone object = (AltibaseProcedureStandAlone) command.getObject();
-        String procTypeName = object.getProcedureTypeName();
 
         actions.add(new SQLDatabasePersistAction(
-                "Drop procedure", "DROP " + procTypeName + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                "Drop procedure", "DROP " + object.getProcedureTypeName() + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)));
     }
     
     @Override
