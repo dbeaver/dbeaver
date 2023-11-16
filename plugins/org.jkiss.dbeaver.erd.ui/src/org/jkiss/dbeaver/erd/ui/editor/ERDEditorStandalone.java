@@ -201,7 +201,6 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         IStorage storage = EditorUtils.getStorageFromInput(getEditorInput());
 
         final DiagramPart diagramPart = getDiagramPart();
-
         EntityDiagram entityDiagram = new EntityDiagram(
             null,
             storage == null ? CommonUtils.toString(getEditorInput()) : storage.getName(),

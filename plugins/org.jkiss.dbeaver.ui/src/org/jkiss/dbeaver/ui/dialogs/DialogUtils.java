@@ -196,7 +196,8 @@ public class DialogUtils {
                     DBNPath pathNode = DBWorkbench.getPlatformUI().openFileSystemSelector(
                         CommonUtils.toString(label, "Output folder"),
                         true, SWT.SAVE, false, null, value);
-                    fileName = pathNode == null ? null : pathNode.getPath().toString();
+                    fileName = pathNode == null ? null :
+                        DBFUtils.getUriFromPath(pathNode.getPath()).toString();
                     if (fileName != null) {
                         setText(fileName);
                     }

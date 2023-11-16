@@ -28,5 +28,7 @@ public enum SQLQueryType {
     UPDATE,
     MERGE,
     DDL,
-    USE
+    USE,
+    COMMIT,
+    ROLLBACK
 }

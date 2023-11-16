@@ -33,4 +33,6 @@ public interface InternalDatabaseConfig {
 
     String getPassword();
 
+    String getSchema();
+
 }

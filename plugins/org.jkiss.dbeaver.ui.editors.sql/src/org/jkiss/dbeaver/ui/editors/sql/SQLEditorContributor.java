@@ -43,7 +43,10 @@ public class SQLEditorContributor extends TextEditorActionContributor
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
 
     // It cannot be static! Otherwise item state cache become corrupted (I guess)
-    private final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE = new StatusLineContributionItem("SelectionState", true, 12);
+    private final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE
+        = new StatusLineContributionItem(SQLEditorBase.STATS_CATEGORY_SELECTION_STATE, true, 12);
+    private final StatusLineContributionItem STATUS_FIELD_TRANSACTION_TIMEOUT
+        = new StatusLineContributionItem(SQLEditor.STATS_CATEGORY_TRANSACTION_TIMEOUT, true, 25);
 
     private SQLEditorBase activeEditorPart;
 
@@ -121,6 +124,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
 
             {
                 activeEditorPart.setStatusField(STATUS_FIELD_SELECTION_STATE, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
+                activeEditorPart.setStatusField(STATUS_FIELD_TRANSACTION_TIMEOUT, SQLEditor.STATS_CATEGORY_TRANSACTION_TIMEOUT);
             }
 
         }
@@ -197,6 +201,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
         }
 
         statusLineManager.add(STATUS_FIELD_SELECTION_STATE);
+        statusLineManager.add(STATUS_FIELD_TRANSACTION_TIMEOUT);
     }
 
 }

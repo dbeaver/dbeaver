@@ -24,9 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -47,22 +45,16 @@ import java.util.Map;
  */
 public class DBFUtils {
 
+    public static final String PRODUCT_FEATURE_MULTI_FS = "multi-fs";
     private static final Log log = Log.getLog(DBFUtils.class);
 
     private static volatile Boolean SUPPORT_MULTI_FS = null;
 
-    private static Map<FileSystem, String> fileSystemIdCache = new IdentityHashMap<>();
+    private static final Map<FileSystem, String> fileSystemIdCache = new IdentityHashMap<>();
 
     public static boolean supportsMultiFileSystems(@NotNull DBPProject project) {
         if (SUPPORT_MULTI_FS == null) {
-            for (DBFFileSystemDescriptor fsProvider : DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders()) {
-                DBFVirtualFileSystem[] fsList = fsProvider.getInstance().getAvailableFileSystems(
-                    new VoidProgressMonitor(), project);
-                if (!ArrayUtils.isEmpty(fsList)) {
-                    SUPPORT_MULTI_FS = true;
-                    break;
-                }
-            }
+            SUPPORT_MULTI_FS = DBWorkbench.getPlatform().getApplication().hasProductFeature(PRODUCT_FEATURE_MULTI_FS);
             if (SUPPORT_MULTI_FS == null) {
                 SUPPORT_MULTI_FS = false;
             }
@@ -148,7 +140,8 @@ public class DBFUtils {
                         uri.getScheme(),
                         uri.getHost(),
                         uri.getPath(),
-                        DBFFileSystemManager.QUERY_PARAM_FS_ID + "=" + fileSystemId
+                        DBFFileSystemManager.QUERY_PARAM_FS_ID + "=" + fileSystemId,
+                        null
                     );
                 }
             } catch (URISyntaxException e) {

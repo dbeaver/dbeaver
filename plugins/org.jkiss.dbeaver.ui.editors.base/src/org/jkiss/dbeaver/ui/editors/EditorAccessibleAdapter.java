@@ -16,72 +16,37 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.swt.accessibility.*;
+import org.eclipse.swt.accessibility.AccessibleControlAdapter;
+import org.eclipse.swt.accessibility.AccessibleControlEvent;
+import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 public class EditorAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
-    private static final String DATA_KEY = EditorAccessibleAdapter.class.getName();
 
-    private final WeakReference<Composite> composite;
-    private boolean active;
+    private static final String ACTIVE_NAME_EDITOR = "editor %s %s"; // $NON-NLS-0$
+    private static final String ACTIVE_NAME_TAB = "active tab %s %s of %s"; // $NON-NLS-0$
+    private static final String ACTIVE_NAME_TAB_NO_TITLE = "active tab %s of %s"; // $NON-NLS-0$
+    private final Control composite;
 
-    private EditorAccessibleAdapter(@NotNull Composite composite) {
-        this.composite = new WeakReference<>(composite);
-    }
-
-    /**
-     * Checks if any control in the hierarchy has this accessible adapter installed and it's active.
-     * <p>
-     * In other words, if any method of this adapter was called at least once, it will be treated as "active".
-     */
-    public static boolean isActive(@NotNull Composite composite) {
-        for (Composite c = composite; c != null; c = c.getParent()) {
-            final Object data = c.getData(DATA_KEY);
-            if (data instanceof EditorAccessibleAdapter && ((EditorAccessibleAdapter) data).active) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Installs this accessible adapter on the given control.
-     */
-    public static void install(@NotNull Composite composite) {
-        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(composite);
-
-        final Accessible accessible = composite.getAccessible();
-        accessible.addAccessibleListener(adapter);
-        accessible.addAccessibleControlListener(adapter);
-
-        composite.setData(DATA_KEY, adapter);
+    EditorAccessibleAdapter(@NotNull Control composite) {
+        this.composite = composite;
     }
 
     @Override
     public void getName(AccessibleEvent e) {
-        final Composite composite = this.composite.get();
-
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
-            active = true;
+        if (this.composite != null) {
+            e.result = composeActiveEditorTabName(this.composite);
         }
     }
 
     @Override
     public void getValue(AccessibleControlEvent e) {
-        final Composite composite = this.composite.get();
-
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
-            active = true;
+        if (this.composite != null) {
+            e.result = composeActiveEditorTabName(this.composite);
         }
     }
 
@@ -100,33 +65,47 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
         // not implemented
     }
 
+    /**
+     * The method designed to combine name of editor-tab by selection context
+     *
+     * @param context - initial selection
+     * @return - string message
+     */
     @NotNull
-    private static String getWorkbenchLocation(@NotNull Composite composite) {
-        final Deque<String> path = new ArrayDeque<>();
-
-        for (Composite c = composite; c != null; c = c.getParent()) {
-            if (c instanceof TabFolder) {
-                final TabFolder folder = (TabFolder) c;
-                final int index = folder.getSelectionIndex();
-
-                if (index >= 0) {
-                    path.offerFirst(getTabName(folder.getItem(index).getText(), index, folder.getItemCount()));
-                }
-            } else if (c instanceof CTabFolder) {
-                final CTabFolder folder = (CTabFolder) c;
-                final int index = folder.getSelectionIndex();
-
-                if (index >= 0) {
-                    path.offerFirst(getTabName(folder.getItem(index).getText(), index, folder.getItemCount()));
+    private static String composeActiveEditorTabName(@NotNull Control context) {
+        String msg = "";
+        Composite parentTab = context.getParent();
+        if (parentTab instanceof CTabFolder) {
+            CTabFolder tabFoler = (CTabFolder) parentTab;
+            if (tabFoler.getSelection() == null) {
+                return msg;
+            }
+            String text = tabFoler.getSelection().getText();
+            if (text != null) {
+                msg = String.format(ACTIVE_NAME_TAB,
+                    text,
+                    tabFoler.getSelectionIndex() + 1,
+                    tabFoler.getItemCount());
+            } else {
+                msg = String.format(ACTIVE_NAME_TAB_NO_TITLE,
+                    tabFoler.getSelectionIndex() + 1,
+                    tabFoler.getItemCount());
+            }
+            // level 3
+            Composite parentEditor = parentTab.getParent();
+            if (parentEditor != null && !parentEditor.isDisposed()) {
+                // level 2
+                parentEditor = parentEditor.getParent();
+                if (parentEditor != null && !parentEditor.isDisposed()) {
+                    // level 1
+                    parentEditor = parentEditor.getParent();
+                    if (parentEditor != null && !parentEditor.isDisposed() && parentEditor instanceof CTabFolder) {
+                        CTabFolder parentEditorFolder = (CTabFolder) parentEditor;
+                        msg = String.format(ACTIVE_NAME_EDITOR, parentEditorFolder.getSelection().getText(), msg);
+                    }
                 }
             }
         }
-
-        return String.join(", ", path);
-    }
-
-    @NotNull
-    private static String getTabName(@NotNull String text, int index, int count) {
-        return String.format("%s tab, %d out of %d", text, index + 1, count);
+        return msg;
     }
 }

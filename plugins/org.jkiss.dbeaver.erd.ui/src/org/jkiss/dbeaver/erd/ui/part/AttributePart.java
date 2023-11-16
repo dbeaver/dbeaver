@@ -80,7 +80,7 @@ public class AttributePart extends NodePart {
 
     @Override
     protected void addSourceConnection(ConnectionEditPart connection, int index) {
-        if (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+        if (!getEditor().getDiagramRouter().supportedAttributeAssociation()
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return;
         }
@@ -91,7 +91,7 @@ public class AttributePart extends NodePart {
 
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
-        if (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+        if (!getEditor().getDiagramRouter().supportedAttributeAssociation()
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return Collections.emptyList();
         }
@@ -106,7 +106,7 @@ public class AttributePart extends NodePart {
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        if (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+        if (!getEditor().getDiagramRouter().supportedAttributeAssociation()
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return Collections.emptyList();
         }
@@ -121,7 +121,7 @@ public class AttributePart extends NodePart {
 
     @Override
     protected void addTargetConnection(ConnectionEditPart connection, int index) {
-        if (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+        if (!getEditor().getDiagramRouter().supportedAttributeAssociation()
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return;
         }

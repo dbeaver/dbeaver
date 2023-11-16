@@ -101,6 +101,10 @@ public class SMAuthProviderCustomConfiguration {
         return (T) parameters.get(name);
     }
 
+    public <T> T getParameterOrDefault(String name, T defaultValue) {
+        return (T) parameters.getOrDefault(name, defaultValue);
+    }
+
     public Map<String, Object> getParameters() {
         return parameters;
     }

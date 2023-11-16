@@ -23,6 +23,7 @@ public enum WSEventTopic {
     SESSION_LOG("cb_session_log"),
     DB_OUTPUT_LOG("cb_database_output_log"),
     SESSION("cb_session"),
+    USER("cb_user"),
     DATASOURCE("cb_datasource"),
     DATASOURCE_FOLDER("cb_datasource_folder"),
     TEMP_FOLDER("cb_delete_temp_folder"),
