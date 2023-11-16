@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -583,6 +584,11 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     }
     
     private static void filter(String[] dbProvideNames, String[] sqlProvidedNames) {
+        
+        if (!AltibaseConstants.DEBUG) {
+            return;
+        }
+        
         String[] sqlDistinctNames = null;
         String[] dbDistinctNames = null;
         
