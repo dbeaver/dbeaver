@@ -47,7 +47,6 @@
                      label="Altibase"
                      sampleURL="jdbc:Altibase://{host}:{port}/{database}">
                      
-                    <replace provider="generic" driver="altibase"/>
                     <file type="jar" path="maven:/com.altibase:altibase-jdbc:RELEASE[7.1.0.9.0]" bundle="!drivers.altibase"/>
                     <file type="jar" path="drivers/altibase" bundle="drivers.altibase"/>
                     
@@ -66,7 +65,7 @@
                   icon="icons/altibase_icon.png"
                   iconBig="icons/altibase_icon_big.png"
                   label="Altibase data source"
-                  path="generic"
+                  path="altibase"
                   supportsEntityMerge="true">
                   <folder
                         description="Database schemas"
