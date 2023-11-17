@@ -38,8 +38,9 @@ import java.util.Map;
 
 public abstract class AltibaseProcedureBase extends GenericProcedure implements DBSObjectWithScript {
 
-    protected List<GenericProcedureParameter> columns;
     protected static final Log log = Log.getLog(AltibaseProcedureBase.class);
+    
+    protected List<GenericProcedureParameter> columns;
     private DBSProcedureType procedureType;
 
     /**

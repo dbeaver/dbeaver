@@ -31,7 +31,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 /**
- * FireBirdDataSource
+ * AltibaseSequence
  */
 public class AltibaseSequence extends GenericSequence implements DBPScriptObject {
 

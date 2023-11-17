@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.ext.altibase.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseConstraint;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
-import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,7 +30,7 @@ public class AltibaseTableManager extends GenericTableManager {
             AltibaseTableColumn.class,
             AltibaseConstraint.class,
             GenericTableForeignKey.class,
-            GenericTableIndex.class
+            AltibaseTableIndex.class
             );
 
     @NotNull

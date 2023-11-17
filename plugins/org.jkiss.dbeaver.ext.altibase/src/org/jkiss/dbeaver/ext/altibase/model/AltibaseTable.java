@@ -159,7 +159,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
                 }
             }
         } catch (Exception e) {
-            throw new DBCException("Error reading tablespace naame", e);
+            throw new DBCException("Error reading tablespace name", e);
         }
         
         return tablespace;

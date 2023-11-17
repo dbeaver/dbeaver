@@ -220,7 +220,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     @NotNull
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
-        return AltibaseTable.class;
+        return AltibaseSchema.class;
     }
 
     /**
