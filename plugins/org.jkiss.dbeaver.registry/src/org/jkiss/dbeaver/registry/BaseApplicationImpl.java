@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -127,9 +128,12 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     @Override
     public boolean hasProductFeature(@NotNull String featureName) {
-        // By default, product includes all possible features
+        // By default, product includes almost all possible features
         // Feature set can be customized by particular implementation
-        return true;
+        return switch (featureName) {
+            case DBFUtils.PRODUCT_FEATURE_MULTI_FS -> false;
+            default -> true;
+        };
     }
 
     /////////////////////////////////////////
