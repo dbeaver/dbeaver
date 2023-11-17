@@ -1423,7 +1423,7 @@
                         webURL="https://www.mysql.com/products/connector/"
                         supportedConfigurationTypes="MANUAL,URL"
                         description="Driver for MySQL (4.x and earlier)">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                 </driver>
 
