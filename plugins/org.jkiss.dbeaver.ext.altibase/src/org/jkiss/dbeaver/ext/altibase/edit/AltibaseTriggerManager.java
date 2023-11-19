@@ -41,6 +41,6 @@ public class AltibaseTriggerManager extends GenericTriggerManager {
         GenericTrigger trigger,
         boolean create) {
         actions.add(new SQLDatabasePersistAction(
-                "Alter sequence", ((AltibaseTrigger) trigger).getSource()));
+                "Alter Trigger", ((AltibaseTrigger) trigger).getSource()));
     }
 }
