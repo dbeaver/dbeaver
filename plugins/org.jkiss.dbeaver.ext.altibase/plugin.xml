@@ -277,7 +277,7 @@
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTableManager"               objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTable"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseQueueManager"               objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseQueue"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseMaterializedViewManager"    objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView"/>
-        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTableColumnManager"         objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTableColumnManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseSequenceManager"            objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseProcedureManager"           objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibasePackageManager"             objectType="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
