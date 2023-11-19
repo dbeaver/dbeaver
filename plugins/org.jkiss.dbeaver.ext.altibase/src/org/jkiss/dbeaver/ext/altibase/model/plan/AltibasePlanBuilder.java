@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.List;
 
 public class AltibasePlanBuilder {
 
+    private static final Log log = Log.getLog(AltibasePlanBuilder.class);
     /**
      * Return plans tree structure based on the result from Altibase.
      */
@@ -118,11 +121,16 @@ public class AltibasePlanBuilder {
                 + "* SIMPLE QUERY PLAN";
 
         try {
+            
+            if (!AltibaseConstants.DEBUG) {
+                return;
+            }
+            
             List<AltibasePlanNode> rootNodes  = AltibasePlanBuilder.build(null, plan);
 
-            System.out.println(rootNodes.get(0).toString4Debug());
+            log.debug(rootNodes.get(0).toString4Debug());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn(e.getMessage());
         }
     }
 }
