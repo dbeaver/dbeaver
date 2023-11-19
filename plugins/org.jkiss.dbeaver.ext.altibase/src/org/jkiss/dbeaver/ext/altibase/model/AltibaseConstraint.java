@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
@@ -57,9 +56,5 @@ public class AltibaseConstraint extends GenericUniqueKey {
     @Property(viewable = true, order = 10)
     public boolean isValidated() {
         return validated;
-    }
-    
-    public boolean isSystemGenerated() {
-        return this.getName().startsWith(AltibaseConstants.SYSTEM_GENERATED_PREFIX);
     }
 }
