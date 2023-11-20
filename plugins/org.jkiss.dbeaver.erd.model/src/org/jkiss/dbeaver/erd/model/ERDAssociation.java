@@ -74,7 +74,10 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
      * @param targetEntity pk table
      * @param reflect      reflect flag
      */
-    public ERDAssociation(DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity,
+    public ERDAssociation(
+        DBSEntityAssociation association,
+        @NotNull ERDEntity sourceEntity,
+        @NotNull ERDEntity targetEntity,
         boolean reflect) {
         super(association);
         this.targetEntity = targetEntity;
