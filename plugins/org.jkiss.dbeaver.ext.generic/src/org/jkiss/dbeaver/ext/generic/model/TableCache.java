@@ -102,7 +102,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
             log.warn("Error getting column scale", e);
         }
         Integer precision = null;
-        if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
+        if (valueType == Types.NUMERIC || valueType == Types.DECIMAL || valueType == Types.BIGINT) {
             precision = (int) columnSize;
         }
         int radix = 10;
