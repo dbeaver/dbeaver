@@ -71,10 +71,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         "AS", "IS"
     };
 
-    private static final String[] DDL_KEYWORDS = new String[] {
-        "CREATE", "ALTER", "DROP"
-    };
-
     public static final String[] OTHER_TYPES_FUNCTIONS = {
         //functions without parentheses
         "SYSDATE"
@@ -363,7 +359,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     @NotNull
     @Override
     public String[] getDDLKeywords() {
-        return DDL_KEYWORDS;
+        return super.getDDLKeywords();
     }
 
     @Override
