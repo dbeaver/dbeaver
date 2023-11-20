@@ -352,14 +352,9 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return roleCache.getObject(monitor, this, name);
     }
     
-    /**
-     * Get Replication Cache
-     */
     
-    public ReplicationCache getReplicationCache() {
-        return replCache;
-    }
-    
+    ///////////////////////////////////////////////
+    // Replications
     static class ReplicationCache extends JDBCStructLookupCache<GenericStructContainer, AltibaseReplication, AltibaseReplicationItem> {
         
         final AltibaseDataSource dataSource;
@@ -378,29 +373,93 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @Nullable AltibaseReplication object, @Nullable String objectName) throws SQLException {
-            return dataSource.getMetaModel().prepareReplicationLoadStatement(session, owner, object, objectName);
+            String replName = (object != null) ? object.getName() : "";
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT"
+                            + " r.replication_name,"
+                            + " DECODE( r.is_started,"
+                                + " 0, 'Stop', "
+                                + " 1,'Start', "
+                                + " 'Unknown') AS status,"
+                            + " DECODE( r.conflict_resolution,"
+                                + " 0, 'Default', "
+                                + " 1, 'Master', "
+                                + " 2, 'Slave', "
+                                + " 'Unknown') AS conflict_resolution,"
+                            + " DECODE( r.repl_mode, "
+                                + " 0, 'Lazy', "
+                                + " 2,'Eager', "
+                                + " 'Unknown') AS repl_mode, "
+                            + " DECODE( r.role,"
+                                + " 0, 'General',"
+                                + " 1, 'Log Analyzer',"
+                                + " 2, 'Propagable Logging',"
+                                + " 3, 'Propagation',"
+                                + " 4, 'Propagation for Log Analyzer ',"
+                                + " 'Unknown') AS role,"
+                            + " r.options,"
+                            + " DECODE( r.invalid_recovery,"
+                                + " 0, 'Valid',"
+                                + " 1, 'Invalid',"
+                                + " 'Unknown') AS recoverable,"
+                            + " parallel_applier_count,"
+                            + " rh.host_ip || ':' || rh.port_no AS remote_addr,"
+                            + " rh.conn_type AS remote_conn_type,"
+                            + " r.xsn,"
+                            + " r.remote_last_ddl_xsn,"
+                            + " r.remote_fault_detect_time,"
+                            + " r.give_up_time,"
+                            + " r.give_up_xsn,"
+                            + " r.remote_xsn,"
+                            + " r.applier_init_buffer_size,"
+                            + " r.peer_replication_name"
+                        + " FROM system_.sys_replications_ r, system_.sys_repl_hosts_ rh"
+                        + " WHERE"
+                            + " r.replication_name = rh.replication_name"
+                            + (CommonUtils.isEmpty(replName) ? "" : " AND r.replication_name = ?")
+                        + " ORDER BY r.replication_name"
+                    );
+            
+            if (CommonUtils.isNotEmpty(replName)) {
+                dbStat.setString(1, replName);
+            }
+            return dbStat;
         }
         
         @Nullable
         @Override
         protected AltibaseReplication fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
-            return getDataSource().getMetaModel().createReplicationImpl(session, owner, dbResult);
+            return new AltibaseReplication(owner, dbResult);
         }
         
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @NotNull AltibaseReplication forTable) throws SQLException {
-            return dataSource.getMetaModel().prepareReplicationItemLoadStatement(session, owner, forTable);
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT * FROM system_.sys_repl_items_"
+                    + " WHERE replication_name = ?"
+                    + " ORDER BY local_user_name, local_table_name, local_partition_name, "
+                    + " remote_user_name, remote_table_name, remote_partition_name");
+            dbStat.setString(1, forTable.getName());
+            return dbStat;
         }
         
         @Override
         protected AltibaseReplicationItem fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @NotNull AltibaseReplication replication, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
-            return getDataSource().getMetaModel().createReplicationItemImpl(session, replication, dbResult);
+            return new AltibaseReplicationItem(replication, dbResult);
         }
     }
 
+    /**
+     * Get Replication Cache
+     */
+    
+    public ReplicationCache getReplicationCache() {
+        return replCache;
+    }
+    
     /**
      * Return all cached replications.
      */
@@ -416,7 +475,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public AltibaseReplication getReplication(DBRProgressMonitor monitor, String name) throws DBException {
         return replCache.getObject(monitor, this, name);
     }
-
+    
     
     ///////////////////////////////////////////////
     // Statistics
