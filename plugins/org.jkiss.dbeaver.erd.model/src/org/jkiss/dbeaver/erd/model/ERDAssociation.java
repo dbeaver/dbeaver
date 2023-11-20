@@ -68,25 +68,24 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 
     /**
      * Constructor for physical association
-     * @param association physical FK
+     *
+     * @param association  physical FK
      * @param sourceEntity fk table
      * @param targetEntity pk table
-     * @param reflect reflect flag
+     * @param reflect      reflect flag
      */
-	public ERDAssociation(DBSEntityAssociation association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect)
-	{
-		super(association);
-		this.targetEntity = targetEntity;
-		this.sourceEntity = sourceEntity;
-
-		// Resolve association attributes
+    public ERDAssociation(DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity,
+        boolean reflect) {
+        super(association);
+        this.targetEntity = targetEntity;
+        this.sourceEntity = sourceEntity;
+        // Resolve association attributes
         if (association instanceof DBSEntityReferrer) {
             resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity);
         }
-
         this.targetEntity.addReferenceAssociation(this, reflect);
         this.sourceEntity.addAssociation(this, reflect);
-	}
+    }
 
     /**
      */
