@@ -79,7 +79,7 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
 
     @Override
     public DBSObjectCache<? extends DBSObject, GenericSynonym> getObjectsCache(GenericSynonym object) {
-        return null;
+        return object.getDataSource().getSynonymCache();
     }
 
     @Override
