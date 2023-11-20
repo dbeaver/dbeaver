@@ -144,6 +144,11 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     // Tablespace
     @Property(viewable = true, order = 15, editable = false)
     public String getTablespace(DBRProgressMonitor monitor) throws DBException {
+        
+        if (tablespace != null) {
+            return tablespace;
+        }
+        
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT tbs_name, is_partitioned FROM system_.sys_tables_ t, system_.sys_users_ u "
