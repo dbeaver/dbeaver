@@ -298,7 +298,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
         }
         
-        return (ddl.length() < 5) ? "-- View definition not available" : ddl;
+        return (ddl.length() < 1) ? "-- View definition not available" : ddl;
     }
 
     @Override
