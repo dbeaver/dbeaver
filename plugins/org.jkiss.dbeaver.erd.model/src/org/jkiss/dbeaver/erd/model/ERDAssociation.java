@@ -78,7 +78,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         DBSEntityAssociation association,
         @NotNull ERDEntity sourceEntity,
         @NotNull ERDEntity targetEntity,
-        boolean reflect) {
+        boolean reflect
+    ) {
         super(association);
         this.targetEntity = targetEntity;
         this.sourceEntity = sourceEntity;
