@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -72,7 +73,7 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
 
         if (isPublicSynonym) {
             ddl = String.format("CREATE PUBLIC SYNONYM %s FOR %s;", 
-                    AltibaseUtils.getQuotedName(null, getName()), 
+                    DBUtils.getQuotedIdentifier(getDataSource(), getName(), true, true), 
                     getReferencedObjectName());
         } else {
             ddl = String.format("CREATE SYNONYM %s FOR %s", 
