@@ -1106,6 +1106,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             getDiagram().setAttributeStyle(style, !isChecked());
             refreshEntityAndAttributes();
+            refreshDiagram(true, true);
         }
     }
     
@@ -1215,6 +1216,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     }
                 }
             }
+            refreshDiagram(true, true);
         }
     }
 
