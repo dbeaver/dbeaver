@@ -465,7 +465,7 @@
                     
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
 
-                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.7.0]" bundle="!drivers.db2"/>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.9.0]" bundle="!drivers.db2"/>
 
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
