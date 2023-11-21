@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPInheritedObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -41,7 +38,12 @@ import java.util.Map;
 /**
  * PostgreTableConstraintBase
  */
-public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject,PostgreScriptObject,DBPInheritedObject {
+public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements
+    PostgreObject,
+    PostgreScriptObject,
+    DBPInheritedObject,
+    DBPNamedObject2
+{
     private static final Log log = Log.getLog(PostgreTableConstraintBase.class);
 
     private long oid;
