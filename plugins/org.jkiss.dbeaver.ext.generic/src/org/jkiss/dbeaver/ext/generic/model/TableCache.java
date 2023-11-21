@@ -33,7 +33,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Locale;
 
 /**
@@ -101,7 +100,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         } catch (Throwable e) {
             log.warn("Error getting column scale", e);
         }
-        Integer precision = getDataSource().getMetaModel().setPrecisionForNumericColumnTypes(valueType, columnSize);
+        Integer precision = getDataSource().getMetaModel().extractPrecisionOfNumericColumn(valueType, columnSize);
         int radix = 10;
         try {
             radix = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NUM_PREC_RADIX);

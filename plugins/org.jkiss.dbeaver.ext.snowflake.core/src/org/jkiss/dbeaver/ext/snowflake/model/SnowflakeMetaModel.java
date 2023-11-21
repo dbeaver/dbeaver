@@ -100,7 +100,7 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Nullable
     @Override
-    public Integer setPrecisionForNumericColumnTypes(int valueType, long columnSize) {
+    public Integer extractPrecisionOfNumericColumn(int valueType, long columnSize) {
         // Sometimes for some reason Snowflake returns NUMBER as BIGINT
         if (valueType == Types.NUMERIC || valueType == Types.DECIMAL || valueType == Types.BIGINT) {
             return Math.toIntExact(columnSize);

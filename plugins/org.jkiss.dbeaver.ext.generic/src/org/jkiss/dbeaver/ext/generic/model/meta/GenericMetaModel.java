@@ -733,7 +733,7 @@ public class GenericMetaModel {
      * @return precision of the numeric column or null
      */
     @Nullable
-    public Integer setPrecisionForNumericColumnTypes(int valueType, long columnSize) {
+    public Integer extractPrecisionOfNumericColumn(int valueType, long columnSize) {
         if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
             return Math.toIntExact(columnSize);
         }
