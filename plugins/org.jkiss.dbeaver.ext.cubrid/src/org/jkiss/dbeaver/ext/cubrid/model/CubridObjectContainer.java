@@ -32,6 +32,7 @@ public class CubridObjectContainer extends GenericObjectContainer{
 	private final CubridUserCache cubridUserCache;
 	private final CubridTableCache cubridTableCache;
 	private final CubridSystemTableCache cubridSystemTableCache;
+	private final CubridSystemViewCache cubridSystemViewCache;
 
 	protected CubridObjectContainer(CubridDataSource dataSource) {
 		super(dataSource);
@@ -39,6 +40,7 @@ public class CubridObjectContainer extends GenericObjectContainer{
 		this.cubridUserCache = new CubridUserCache();
 		this.cubridTableCache = new CubridTableCache(dataSource);
 		this.cubridSystemTableCache = new CubridSystemTableCache(dataSource);
+		this.cubridSystemViewCache = new CubridSystemViewCache(dataSource);
 	}
 	
 	@NotNull
@@ -97,7 +99,7 @@ public class CubridObjectContainer extends GenericObjectContainer{
 	public List<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor, String name) throws DBException {
 		List<CubridTable> tables = new ArrayList<>();
 		for(CubridTable table : this.cubridTableCache.getAllObjects(monitor, this)) {
-			if(table.getOwner().getName().equals(name)) {
+			if(table.isPhysicalTable() && table.getOwner().getName().equals(name)) {
 				tables.add(table);
 			}
 		}
@@ -107,11 +109,31 @@ public class CubridObjectContainer extends GenericObjectContainer{
 	public List<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor, String name) throws DBException {
 		List<CubridTable> tables = new ArrayList<>();
 		for(CubridTable table : this.cubridSystemTableCache.getAllObjects(monitor, this)) {
-			if(table.getOwner().getName().equals(name)) {
+			if(table.isPhysicalTable() && table.getOwner().getName().equals(name)) {
 				tables.add(table);
 			}
 		}
 		return tables;
+	}
+
+	public List<? extends CubridView> getViews(DBRProgressMonitor monitor, String name) throws DBException {
+		List<CubridView> tables = new ArrayList<>();
+		for(CubridTable table : this.cubridTableCache.getAllObjects(monitor, this)) {
+			if(table.isView() && table.getOwner().getName().equals(name)) {
+				tables.add((CubridView) table);
+			}
+		}
+		return tables;
+	}
+
+	public List<? extends CubridView> getSystemViews(DBRProgressMonitor monitor, String name) throws DBException {
+		List<CubridView> views = new ArrayList<>();
+		for(CubridTable table : this.cubridSystemViewCache.getAllObjects(monitor, this)) {
+			if(table.getOwner().getName().equals(name)) {
+				views.add((CubridView) table);
+			}
+		}
+		return views;
 	}
 
 	public class CubridUserCache extends JDBCObjectCache<CubridObjectContainer, CubridUser> {
@@ -185,6 +207,20 @@ public class CubridObjectContainer extends GenericObjectContainer{
 		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
 			@Nullable CubridTable object, @Nullable String objectName) throws SQLException {
 			return dataSource.getMetaModel().prepareSystemTableLoadStatement(session, owner, object, objectName);
+		}
+
+	}
+
+	public class CubridSystemViewCache extends CubridTableCache {
+
+		protected CubridSystemViewCache(CubridDataSource dataSource) {
+			super(dataSource);
+		}
+
+		@Override
+		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
+			@Nullable CubridTable object, @Nullable String objectName) throws SQLException {
+			return dataSource.getMetaModel().prepareSystemViewLoadStatement(session, owner, object, objectName);
 		}
 
 	}

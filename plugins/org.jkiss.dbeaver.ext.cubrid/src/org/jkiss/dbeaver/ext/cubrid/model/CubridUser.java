@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -61,4 +63,21 @@ public class CubridUser implements DBSObject{
 	public Collection<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getPhysicalSystemTables(monitor, name);
 	}
+
+	public Collection<? extends CubridView> getViews(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getViews(monitor, name);
+    }
+
+	public Collection<? extends CubridView> getSystemViews(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getSystemViews(monitor, name);
+    }
+
+	public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getIndexes(monitor);
+    }
+
+	public Collection<? extends GenericProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
+		return this.container.getProcedures(monitor);
+    }
+
 }

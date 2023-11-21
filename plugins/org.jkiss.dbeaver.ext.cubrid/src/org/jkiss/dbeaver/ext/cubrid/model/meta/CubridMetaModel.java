@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -59,6 +60,19 @@ public class CubridMetaModel extends GenericMetaModel {
 		return dbStat;
 	}
 
+	public JDBCStatement prepareSystemViewLoadStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner, @Nullable CubridTable object, @Nullable String objectName)
+		throws SQLException
+	    {
+	       String sql= "select *, case when class_type = 'VCLASS' \r\n"
+	       		+ "then 'VIEW' end as TABLE_TYPE,\r\n"
+	       		+ "class_name as TABLE_NAME from db_class\r\n"
+	       		+ "where class_type='VCLASS'\r\n"
+	       		+ "and is_system_class='YES'";
+	       final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+
+	       return dbStat;
+	    }
+
 	public CubridTable createTableImpl(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
 
 		String tableName = GenericUtils.safeGetString(tableObject, dbResult, CubridConstants.CLASS_NAME);
@@ -72,6 +86,9 @@ public class CubridMetaModel extends GenericMetaModel {
 	}
 
 	public CubridTable createTableImpl(CubridObjectContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+		if (tableType != null && isView(tableType)) {
+			return new CubridView(container, tableName, tableType, dbResult);
+		}
 		return new CubridTable(container, tableName, tableType, dbResult);
 	}
 
