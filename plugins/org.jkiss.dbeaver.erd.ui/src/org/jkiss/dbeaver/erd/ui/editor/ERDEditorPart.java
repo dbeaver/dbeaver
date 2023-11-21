@@ -1106,7 +1106,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             getDiagram().setAttributeStyle(style, !isChecked());
             refreshEntityAndAttributes();
-            refreshDiagram(true, true);
+            refreshDiagram(true, false);
         }
     }
     
@@ -1129,7 +1129,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void run() {
             setDiagramNotation(notation);
-            refreshDiagram(true, true);
+            refreshDiagram(true, false);
         }
     }
 
@@ -1152,7 +1152,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void run() {
             setDiagramRouter(router);
-            refreshDiagram(true, true);
+            refreshDiagram(true, false);
         }
     }
     
@@ -1216,7 +1216,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     }
                 }
             }
-            refreshDiagram(true, true);
+            refreshDiagram(true, false);
         }
     }
 
@@ -1247,17 +1247,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) ||
                 ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
                 doSave(new NullProgressMonitor());
-                refreshDiagram(true, true);
+                refreshDiagram(true, false);
             } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
                 ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getActiveDescriptor();
                 setDiagramNotation(defaultNotation);
                 doSave(new NullProgressMonitor());
-                refreshDiagram(true, true);
+                refreshDiagram(true, false);
             } else if (ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
                 ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
                 setDiagramRouter(defaultRouter);
                 doSave(new NullProgressMonitor());
-                refreshDiagram(true, true);
+                refreshDiagram(true, false);
             }
         }
     }
