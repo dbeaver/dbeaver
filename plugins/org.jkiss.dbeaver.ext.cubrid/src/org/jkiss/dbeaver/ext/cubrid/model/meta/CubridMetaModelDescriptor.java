@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
@@ -22,7 +23,7 @@ public class CubridMetaModelDescriptor extends AbstractDescriptor {
 	private CubridMetaModel instance;
 	
 	private String id;
-	private final Map<String, CubridMetaObject> objects = new HashMap<>();
+	private final Map<String, GenericMetaObject> objects = new HashMap<>();
 	private String[] driverClass;
 	private final String dialectId;
 	private List<String> modelReplacements;
@@ -43,7 +44,7 @@ public class CubridMetaModelDescriptor extends AbstractDescriptor {
 		IConfigurationElement[] objectList = cfg.getChildren("object");
 		if (!ArrayUtils.isEmpty(objectList)) {
 			for (IConfigurationElement childConfig : objectList) {
-				CubridMetaObject metaObject = new CubridMetaObject(childConfig);
+				GenericMetaObject metaObject = new GenericMetaObject(childConfig);
 				objects.put(metaObject.getType(), metaObject);
 			}
 		}
@@ -76,7 +77,7 @@ public class CubridMetaModelDescriptor extends AbstractDescriptor {
 		return driverClass;
 	}
 	
-	public CubridMetaObject getObject(String id) {
+	public GenericMetaObject getObject(String id) {
 		return objects.get(id);
 	}
 	
