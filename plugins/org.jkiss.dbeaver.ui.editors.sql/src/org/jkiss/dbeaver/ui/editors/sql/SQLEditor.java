@@ -2504,7 +2504,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         List<SQLScriptElement> elements;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        // if we selected several queries and press Run, they're intentionally goes into one SQLQuery
+        // if we select several queries and press Run, they're intentionally goes into one SQLQuery
         // it's a workaround for cases where we can't correctly parse whole query
         // like in package declarations with multiple statements in body
         if (script) {
