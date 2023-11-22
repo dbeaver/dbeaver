@@ -933,13 +933,11 @@ public class CommonUtils {
         }
         return text
             .replace("&", "&amp;")
-            .replace(" ", "&nbsp")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
             .replace("\r\n", "<br>")
             .replace("\r", "<br>")
-            .replace("\n", "<br>")
-            .replace("\t", "&emsp;");
+            .replace("\n", "<br>");
     }
 
     /**
