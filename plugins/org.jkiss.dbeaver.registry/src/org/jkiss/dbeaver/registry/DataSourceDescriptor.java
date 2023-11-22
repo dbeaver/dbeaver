@@ -2100,12 +2100,11 @@ public class DataSourceDescriptor
             || props.containsKey(RegistryConstants.TAG_PROPERTIES)
             || emptyDatabaseCredsSaved;
 
-        if (this.secretsContainsDatabaseCreds) {
-            if (DBWorkbench.isDistributed()) {
-                // In distributed mode we detect saved password dynamically
-                this.savePassword = emptyDatabaseCredsSaved || props.containsKey(RegistryConstants.ATTR_PASSWORD);
-            }
+        if (DBWorkbench.isDistributed()) {
+            // In distributed mode we detect saved password dynamically
+            this.savePassword = secretsContainsDatabaseCreds;
         }
+
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
