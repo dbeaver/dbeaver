@@ -35,10 +35,10 @@
                         categories="sql,analytic,columns"
                         singleConnection="true">
                     <replace provider="generic" driver="yandex_clickhouse"/>
-                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]" bundle="!drivers.clickhouse"/>
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2-patch11]" bundle="!drivers.clickhouse"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
-                    <file type="license" path="drivers/clickhouse/LICENSE.txt" bundle="drivers.clickhouse"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.clickhouse"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
