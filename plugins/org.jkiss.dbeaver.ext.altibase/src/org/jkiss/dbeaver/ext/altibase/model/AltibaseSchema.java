@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -35,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class AltibaseSchema extends GenericSchema implements DBPObjectStatisticsCollector {
@@ -130,6 +133,33 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         super.refreshObject(monitor);
         hasStatistics = false;
         return this;
+    }
+
+    public GenericTableIndex getIndex(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+        for (GenericTableIndex index : CommonUtils.safeCollection(getIndexes(monitor))) {
+            if (uniqueName.equals(index.getName())) {
+                return index;
+            }
+        }
+        return null;
+    }
+    
+    public GenericTrigger getTableTrigger(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+        for (GenericTrigger tableTrigger : CommonUtils.safeCollection(getTableTriggers(monitor))) {
+            if (uniqueName.equals(tableTrigger.getName())) {
+                return tableTrigger;
+            }
+        }
+        return null;
+    }
+    
+    public GenericProcedure getProcedureByName(DBRProgressMonitor monitor, String name) throws DBException {
+        for (GenericProcedure procedure : CommonUtils.safeCollection(getProcedures(monitor))) {
+            if (name.equals(procedure.getName())) {
+                return procedure;
+            }
+        }
+        return null;
     }
 
     ///////////////////////////////////

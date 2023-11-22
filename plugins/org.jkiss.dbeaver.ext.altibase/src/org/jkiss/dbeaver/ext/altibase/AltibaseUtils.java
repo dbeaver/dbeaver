@@ -34,23 +34,6 @@ public class AltibaseUtils {
 
         return objTypeName.replaceAll(" ", "_");
     }
-
-    /**
-     * Get double quoted schema.objName
-     */
-    public static String getQuotedName(String schemaName, String objName) {
-        StringBuilder quotedName = new StringBuilder();
-
-        if (CommonUtils.isNotEmpty(schemaName)) {
-            quotedName.append("\"").append(schemaName).append("\".");
-        }
-
-        if (CommonUtils.isNotEmpty(objName)) {
-            quotedName.append("\"").append(objName).append("\"");
-        }
-
-        return quotedName.toString();
-    }
     
     /**
      * Get the first index of SQL that is not start with comment and has value

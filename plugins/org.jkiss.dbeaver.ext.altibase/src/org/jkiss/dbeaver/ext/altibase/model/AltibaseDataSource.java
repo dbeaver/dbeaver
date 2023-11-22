@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseQueryPlanner;
 import org.jkiss.dbeaver.ext.altibase.model.session.AltibaseServerSessionManager;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
@@ -223,6 +224,50 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return AltibaseSchema.class;
     }
 
+    public DBSObject findSynonynTargetObject(DBRProgressMonitor monitor, @Nullable String refSchemaName, @NotNull String refObjName)
+            throws DBException {
+        DBSObject refObj = null;
+        AltibaseSchema refSchema = (AltibaseSchema) this.getSchema(refSchemaName);
+        
+        // No object type from database metadata, so need to find it one by one.
+        if (refObj == null) {
+            refObj = refSchema.getTable(monitor, refObjName);
+        } 
+        if (refObj == null) {
+            refObj = refSchema.getSequence(monitor, refObjName);
+        }
+        if (refObj == null) {
+            refObj = refSchema.getSynonym(monitor, refObjName);
+        }
+        if (refObj == null) {
+            refObj = refSchema.getProcedureByName(monitor, refObjName);
+        }
+        if (refObj == null) {
+            refObj = refSchema.getPackage(monitor, refObjName);
+        }
+        if (refObj == null) {
+            refObj = refSchema.getIndex(monitor, refObjName);
+        }
+        if (refObj == null) {
+            refObj = refSchema.getTableTrigger(monitor, refObjName);
+        }
+        
+        /**
+         *  Though Public synonym does not have its own schema, but SYSTEM_.SYS_SYONYMS_.OBJECT_OWNER_NAME returns 
+         *  the object creator as owner like Oracle.
+         *  So, first look for it in the owner's private schema, and if it is not found, then try to find it at public schema.
+         *  If found, judge it as a public schema.
+         */
+        if (refObj == null) {
+            refObj = publicSchema.getSynonym(monitor, refObjName);
+            if (refObj != null) {
+                ((AltibaseSynonym) refObj).setPublicSynonym();
+            }
+        }
+        
+        return refObj;
+    }
+    
     /**
      * Returns public synonym as a collection.
      */

@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -73,7 +72,7 @@ public class AltibaseTypesetManager extends GenericProcedureManager {
 
         actions.add(
             new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table,
+                "Drop typeset",
                 "DROP TYPESET " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
         );
     }

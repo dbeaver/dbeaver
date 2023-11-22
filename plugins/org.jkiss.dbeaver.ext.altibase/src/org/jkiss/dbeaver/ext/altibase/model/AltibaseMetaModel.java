@@ -244,17 +244,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
      */
     public String getSynonymDDL(DBRProgressMonitor monitor, AltibaseSynonym sourceObject, 
             Map<String, Object> options) throws DBException {
-        String ddl = null;
-
-        ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchemaName(), "SYNONYM");
-        
-        if (CommonUtils.isEmpty(ddl)) {
-            ddl = AltibaseConstants.NO_DBMS_METADATA + sourceObject.getBuiltDdlLocaly();
-        } else {
-            ddl += ";";
-        }
-
-        return ddl;
+        return getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getParentObject().getName(), "SYNONYM");
     }
 
 
@@ -428,15 +418,17 @@ public class AltibaseMetaModel extends GenericMetaModel {
     public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session, 
             @NotNull GenericStructContainer container) throws SQLException {
         boolean isPublic = container.getName().equalsIgnoreCase(AltibaseConstants.USER_PUBLIC);
-
+        
         final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT "
-                        + " SYNONYM_OWNER_ID, SYNONYM_NAME, OBJECT_OWNER_NAME, OBJECT_NAME"
-                        + " FROM "
+                "SELECT"
+                        + " NVL2(SYNONYM_OWNER_ID, SYNONYM_OWNER_ID, -1) AS SYNONYM_OWNER_ID,"
+                        + " SYNONYM_NAME, OBJECT_OWNER_NAME, OBJECT_NAME"
+                        + " FROM"
                         + " SYSTEM_.SYS_SYNONYMS_ S " + ((isPublic) ? "" : ", SYSTEM_.SYS_USERS_ U")
-                        + " WHERE "
+                        + " WHERE"
                         + ((isPublic) ? 
-                                " SYNONYM_OWNER_ID IS NULL" : 
+                                " SYNONYM_OWNER_ID IS NULL" 
+                                : 
                                 " U.USER_NAME = ? AND U.USER_ID = S.SYNONYM_OWNER_ID")
                         + " ORDER BY SYNONYM_NAME");
 

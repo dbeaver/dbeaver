@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -33,77 +33,116 @@ import java.util.Map;
 
 public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
 
+    private static final Log log = Log.getLog(AltibaseSynonym.class);
+    
     protected boolean isPublicSynonym;
     protected String refObjectSchema;
     protected String refObjectName;
 
     protected String ddl;
+    protected DBSObject refObj = null;
 
     protected AltibaseSynonym(GenericStructContainer container, int ownerId, 
             String name, String description, String refObjectSchema, String refObjectName) {
         super(container, name, description);
 
-        isPublicSynonym = (ownerId < 1);
+        isPublicSynonym = (ownerId < 0);
         this.refObjectSchema = refObjectSchema;
         this.refObjectName = refObjectName;
     }
 
-    @Nullable
-    @Property(id = "Reference", viewable = true, order = 3)
-    public String getReferencedObjectName() {
-        return AltibaseUtils.getQuotedName(refObjectSchema, refObjectName);
-    }
-
-    @Override
-    public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    public String getSchemaName() {
-        return getParentObject().getName();
-    }
-
-    /**
-     * Create Synonym DDL 
-     * 1. Public synonym DDL.
-     * 2. Schema synonym DDL in case of unable to use DBMS_METADATA.
-     */
-    public String getBuiltDdlLocaly() {
-        String ddl;
-
-        if (isPublicSynonym) {
-            ddl = String.format("CREATE PUBLIC SYNONYM %s FOR %s;", 
-                    DBUtils.getQuotedIdentifier(getDataSource(), getName(), true, true), 
-                    getReferencedObjectName());
-        } else {
-            ddl = String.format("CREATE SYNONYM %s FOR %s", 
-                    getFullyQualifiedName(DBPEvaluationContext.DDL), 
-                    getReferencedObjectName());
+    @Property(viewable = true, linkPossible = true, order = 4)
+    public DBSObject getObject(DBRProgressMonitor monitor) throws DBException
+    {
+        if (refObj == null) {
+            refObj = getTargetObject(monitor);
         }
-
-        return ddl;
+        
+        return refObj;
     }
-
+    
+    /**
+     * There are three cases unable to access reference object.
+     * 1. Show system object set as false and PUBLIC SYNONYM pointing to a SystemObject. e.g. SYSTEM_'s objects
+     *    -> Resolve: Set Show system object as true
+     * 2. Altibase SYSTEM_.SYS_SYNONYMS_ meta table says 
+     */
+    @Override
+    public DBSObject getTargetObject(DBRProgressMonitor monitor) {
+        if (refObj == null) {
+            try {
+                refObj = ((AltibaseDataSource)getDataSource()).findSynonynTargetObject(monitor, refObjectSchema, refObjectName);
+            } catch (DBException e) {
+                log.warn("Failed to get a synonym's target object: " 
+                        + getFullyQualifiedName(DBPEvaluationContext.DDL)
+                        + " for " + refObjectSchema + "." + refObjectName + ": "
+                        + e.getMessage());
+            }
+        }
+        
+        return refObj;
+    }
+    
+    /**
+     * Create Synonym DDL in case of unable to use DBMS_METADATA.
+     */
+    public String getBuiltDdlLocaly(DBRProgressMonitor monitor) {
+        DBSObject refObject = getTargetObject(monitor);
+        String refObjFullName = "";
+        
+        if (refObject != null) {
+            // Public synonym doesn't need schema name
+            if ((refObject instanceof AltibaseSynonym) && ((AltibaseSynonym) refObject).isPublicSynonym()) {
+                refObjFullName = DBUtils.getFullQualifiedName(getDataSource(), refObject);
+            // Otherwise, schema name required. 
+            } else {
+                refObjFullName = DBUtils.getFullQualifiedName(getDataSource(), refObject.getParentObject(), refObject);
+            }
+        }
+    
+        return new StringBuilder("CREATE ").append(getSynonymBody()).append(" FOR ").append(refObjFullName).toString();
+    }
+    
+    // BODY = "[PUBLIC] SYNONYM synonym_name"
+    public String getSynonymBody() {
+        StringBuilder ddl = new StringBuilder();
+        String name;
+        
+        if (isPublicSynonym) {
+            name = getName();
+            ddl.append("PUBLIC ");
+        } else {
+            name = getFullyQualifiedName(DBPEvaluationContext.DDL);
+        }
+        
+        ddl.append("SYNONYM ").append(name);
+        
+        return ddl.toString();
+    }
+    
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
             ddl = null;
         }
-
-        if (ddl == null) {
-            if (isPublicSynonym) {
-                ddl = getBuiltDdlLocaly();
-            } else {
-                ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getSynonymDDL(monitor, this, options);
-            }
+        
+        // Try to get from DBMS_METADATA
+        if (CommonUtils.isEmpty(ddl)) {
+            ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getSynonymDDL(monitor, this, options);
         }
-        return ddl;
+
+        if (CommonUtils.isEmpty(ddl)) {
+            ddl = AltibaseConstants.NO_DBMS_METADATA + getBuiltDdlLocaly(monitor);
+        }
+        
+        return (CommonUtils.isEmpty(ddl)) ? "" : ddl + ";";
     }
     
-    /**
-     * Public synonym or not
-     */
     public boolean isPublicSynonym() {
-        return isPublicSynonym; 
+        return isPublicSynonym;
+    }
+    
+    public void setPublicSynonym() {
+        isPublicSynonym = true;
     }
 }

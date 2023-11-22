@@ -21,14 +21,12 @@ import org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -52,23 +50,11 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
             List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         AltibaseSynonym object = (AltibaseSynonym) command.getObject();
-        boolean isPublic = object.isPublicSynonym();
-        StringBuilder ddl = new StringBuilder("DROP ");
-        String objName;
         
-        if (isPublic) {
-            objName = object.getName();
-            ddl.append("PUBLIC ");
-        } else {
-            objName = object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-        }
-
-        ddl.append("SYNONYM ").append(objName);
-
         actions.add(
             new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table,
-                ddl.toString())
+                "Drop synonym",
+                new StringBuilder("DROP ").append(object.getSynonymBody()).toString())
         );
     }
 
@@ -79,7 +65,11 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
 
     @Override
     public DBSObjectCache<? extends DBSObject, GenericSynonym> getObjectsCache(GenericSynonym object) {
-        return object.getDataSource().getSynonymCache();
+        DBSObject parentObject = object.getParentObject();
+        if (parentObject instanceof GenericStructContainer) {
+            return ((GenericStructContainer) parentObject).getSynonymCache();
+        }
+        return null;
     }
 
     @Override
