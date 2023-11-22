@@ -889,9 +889,19 @@ public class UIUtils {
     }
 
     @Nullable
-    public static Shell getActiveShell()
-    {
-        return getActiveWorkbenchShell();
+    public static Shell getActiveShell() {
+        final Display display = Display.getCurrent();
+        final Shell activeShell = display.getActiveShell();
+        if (activeShell != null) {
+            return activeShell;
+        }
+        final Shell[] shells = display.getShells();
+        for (Shell shell : shells) {
+            if (shell.isVisible()) {
+                return shell;
+            }
+        }
+        return shells.length > 0 ? shells[0] : null;
     }
 
     @Nullable
@@ -1830,18 +1840,7 @@ public class UIUtils {
                 }
             }
         }
-        Display display = Display.getCurrent();
-        Shell activeShell = display.getActiveShell();
-        if (activeShell != null) {
-            return activeShell;
-        }
-        Shell[] shells = display.getShells();
-        for (Shell shell : shells) {
-            if (shell.isVisible()) {
-                return shell;
-            }
-        }
-        return shells.length > 0 ? shells[0] : null;
+        return getActiveShell();
     }
 
     public static DBRRunnableContext getDefaultRunnableContext() {
