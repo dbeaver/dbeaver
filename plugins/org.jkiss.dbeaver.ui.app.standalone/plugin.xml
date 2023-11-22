@@ -408,6 +408,14 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.misc" class="org.jkiss.dbeaver.ui.preferences.PrefPageMiscellaneous" name="%pref.page.name.miscellaneous">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.keyword.pref.ui.misc"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="holiday decoration christmas snow"/>
     </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">
@@ -463,6 +471,15 @@
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.natures"/>
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.linkedResourcesPage"/>
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.debug.ui/org.eclipse.debug.ui.properties.defaultLaunchConfigurations"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <editorOnboardingCommand id="org.jkiss.dbeaver.core.new.connection"/>
+            <editorOnboardingCommand id="org.jkiss.dbeaver.core.sql.editor.recent"/>
+            <editorOnboardingCommand id="org.eclipse.ui.window.showKeyAssist"/>
+            <editorOnboardingCommand id="org.eclipse.ui.window.quickAccess"/>
+        </perspectiveExtension>
     </extension>
 
 </plugin>

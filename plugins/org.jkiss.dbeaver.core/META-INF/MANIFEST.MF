@@ -30,7 +30,9 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.views.qm
 Bundle-ClassPath: .,
  lib/awt.injector-1.0.0.jar
-Require-Bundle: org.eclipse.core.runtime,
+Import-Package: javax.inject
+Require-Bundle: org.osgi.service.event,
+ org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
