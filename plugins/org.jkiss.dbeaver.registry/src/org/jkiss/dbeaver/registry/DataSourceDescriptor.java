@@ -2108,7 +2108,7 @@ public class DataSourceDescriptor
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
-        Set<String> updatedNetworkHandlers = new HashSet<>(); // we don't have saved password info if handler is not in handlerList
+        Set<String> handlersFromSecret = new HashSet<>(); // secrets do not store all handler configs
         if (!CommonUtils.isEmpty(handlerList)) {
             for (Map<String, Object> handlerMap : handlerList) {
                 String handlerId = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_ID);
@@ -2117,7 +2117,7 @@ public class DataSourceDescriptor
                     log.warn("Handler '" + handlerId + "' not found in datasource '" + getId() + "'. Secret configuration will be lost.");
                     continue;
                 }
-                updatedNetworkHandlers.add(handlerId);
+                handlersFromSecret.add(handlerId);
                 var hcUsername = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_USER);
                 var hcPassword = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_PASSWORD);
                 var hcProperties = JSONUtils.deserializeStringMap(handlerMap, RegistryConstants.TAG_PROPERTIES);
@@ -2131,7 +2131,7 @@ public class DataSourceDescriptor
         }
         connectionInfo.getHandlers().forEach(
             handler -> {
-                if (!updatedNetworkHandlers.contains(handler.getId())) {
+                if (!handlersFromSecret.contains(handler.getId())) {
                     handler.setSavePassword(false);
                 }
             }
