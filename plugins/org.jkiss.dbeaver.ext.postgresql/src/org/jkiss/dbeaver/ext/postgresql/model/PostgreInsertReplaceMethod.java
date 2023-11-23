@@ -67,7 +67,7 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
                 }
             }
             if (constraintAttrNames.isEmpty()) {
-                // Let's search for an unique index
+                // Let's search for a unique index
                 Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     Optional<? extends DBSTableIndex> optional = indexes.stream().filter(DBSTableIndex::isUnique).findFirst();
@@ -104,9 +104,13 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
     ) {
         boolean hasKey = false;
         for (DBSEntityAttributeRef column : attributeReferences) {
-            if (hasKey) constraintAttrNames.append(",");
             DBSEntityAttribute attribute = column.getAttribute();
-            if (attribute == null) continue;
+            if (attribute == null) {
+                continue;
+            }
+            if (hasKey) {
+                constraintAttrNames.append(",");
+            }
             constraintAttrNames.append(DBUtils.getQuotedIdentifier(attribute));
             hasKey = true;
         }
