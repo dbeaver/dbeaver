@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.fs.nio.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
@@ -247,7 +248,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Override
     public boolean supportsDrop(DBNNode otherNode) {
         if (otherNode == null) {
-            return false;
+            return true;
         }
 
         if (Files.isRegularFile(getPath())) {
@@ -273,6 +274,23 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (!(folder instanceof IFolder)) {
             throw new DBException("Can't drop files into non-folder");
         }
+        if (nodes.isEmpty()) {
+            return;
+        }
+
+        // Confirm\
+        {
+            boolean doCopy = !isTheSameFileSystem(nodes.iterator().next());
+            String action = (doCopy ? "Copy" : "Move") + " resource(s)";
+            String message =
+                action + "\n" +
+                nodes.stream().map(DBNNode::getNodeName).collect(Collectors.joining(",")) +
+                "\ninto folder " + folder.getFullPath() + "?";
+            if (!DBWorkbench.getPlatformUI().confirmAction(action, message)) {
+                return;
+            }
+        }
+
         monitor.beginTask("Drop files", nodes.size());
         try {
             for (DBNNode node : nodes) {
@@ -294,7 +312,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
                 }
                 boolean doCopy = !isTheSameFileSystem(node);
                 boolean doDelete = false;
-                monitor.subTask("Copy file " + resource.getName());
+                monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource.getName());
                 try {
 
                     IFile targetFile = ((IFolder) folder).getFile(resource.getName());
