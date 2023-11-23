@@ -22,11 +22,17 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCTemporalAccessorValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.sql.Types;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 
 /**
  * Object type support
@@ -38,9 +44,45 @@ public class OracleTemporalAccessorValueHandler extends JDBCTemporalAccessorValu
     private static final DateTimeFormatter DEFAULT_DATE_FORMAT = DateTimeFormatter.ofPattern("'DATE '''yyyy-MM-dd''");
     private static final DateTimeFormatter DEFAULT_TIME_FORMAT = DateTimeFormatter.ofPattern("'TIME '''HH:mm:ss.SSS''");
 
+    private static Object getTimestampReadMethod(Class<?> aClass, Connection connection, Object object) throws Exception {
+        switch (aClass.getName()) {
+            case OracleConstants.TIMESTAMP_CLASS_NAME:
+                return getNativeMethod(aClass, "timestampValue")
+                        .invoke(object);
+            case OracleConstants.TIMESTAMPTZ_CLASS_NAME:
+                return getNativeMethod(aClass, "timestampValue", Connection.class)
+                        .invoke(object, connection);
+            case OracleConstants.TIMESTAMPLTZ_CLASS_NAME:
+                return getNativeMethod(aClass, "timestampValue", Connection.class, Calendar.class)
+                        .invoke(object, connection, Calendar.getInstance());
+        }
+        throw new org.jkiss.dbeaver.DBException("Unsupported Oracle TIMESTAMP type: " + aClass.getName());
+    }
+
+    private static Method getNativeMethod(Class<?> aClass, String name, Class<?> ... args) throws NoSuchMethodException {
+        Method method = aClass.getMethod(name, args);
+        method.setAccessible(true);
+        return method;
+    }
+
     public OracleTemporalAccessorValueHandler(DBDFormatSettings formatSettings)
     {
         super(formatSettings);
+    }
+
+    @Override
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
+        if (object != null) {
+            String className = object.getClass().getName();
+            if (className.startsWith(OracleConstants.TIMESTAMP_CLASS_NAME)) {
+                try {
+                    return getTimestampReadMethod(object.getClass(), ((JDBCSession)session).getOriginal(), object);
+                } catch (Exception e) {
+                    throw new org.jkiss.dbeaver.model.exec.DBCException("Error extracting Oracle TIMESTAMP value", e);
+                }
+            }
+        }
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     @NotNull
