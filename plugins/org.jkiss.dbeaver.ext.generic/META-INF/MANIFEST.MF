@@ -7,7 +7,12 @@ Bundle-Release-Date: 20231120
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.jkiss.dbeaver.model.sql;visibility:=reexport
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
+ com.google.guava;visibility:=reexport,
+ com.google.gson;visibility:=reexport,
+ org.apache.commons.commons-codec;visibility:=reexport,
+ org.apache.commons.logging;visibility:=reexport,
+ slf4j.api;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

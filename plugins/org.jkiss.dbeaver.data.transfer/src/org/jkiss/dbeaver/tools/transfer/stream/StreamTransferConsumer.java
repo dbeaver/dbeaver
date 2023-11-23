@@ -95,9 +95,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_PROJECT = "project";
     public static final String VARIABLE_CONN_TYPE = "connectionType";
-    public static final String VARIABLE_FILE = "file";
     public static final String VARIABLE_SCRIPT_FILE = "scriptFilename";
-
     public static final String VARIABLE_YEAR = "year";
     public static final String VARIABLE_MONTH = "month";
     public static final String VARIABLE_DAY = "day";
@@ -112,7 +110,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         {VARIABLE_INDEX, "index of current file (if split is used)"},
         {VARIABLE_PROJECT, "source database project"},
         {VARIABLE_CONN_TYPE, "source database connection type"},
-        {VARIABLE_FILE, "output file path"},
         {VARIABLE_SCRIPT_FILE, "source script filename"},
         {VARIABLE_TIMESTAMP, "current timestamp"},
         {VARIABLE_DATE, "current date"},
@@ -881,8 +878,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     DBPProject project = DBUtils.getObjectOwnerProject(dataContainer);
                     return project == null ? "" : project.getName();
                 }
-                case VARIABLE_FILE:
-                    return targetFile == null ? "" : targetFile.toAbsolutePath().toString();
                 case VARIABLE_SCRIPT_FILE: {
                     final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, dataContainer);
                     if (container != null) {
