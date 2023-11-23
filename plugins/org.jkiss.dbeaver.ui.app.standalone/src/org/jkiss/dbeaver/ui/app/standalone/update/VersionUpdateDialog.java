@@ -307,7 +307,6 @@ public class VersionUpdateDialog extends Dialog {
                 }
 
                 final IWorkbench workbench = PlatformUI.getWorkbench();
-                final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
 
                 // Arm shutdown listener now because later will be too late
                 final IWorkbenchListener listener = new IWorkbenchListener() {
@@ -331,7 +330,7 @@ public class VersionUpdateDialog extends Dialog {
                 };
 
                 UIUtils.asyncExec(() -> {
-                    ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_EXIT, workbenchWindow);
+                    workbench.close();
 
                     if (!workbench.isClosing()) {
                         workbench.removeWorkbenchListener(listener);
