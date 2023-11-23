@@ -26,17 +26,28 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collection;
 
 /**
  * @author Shengkai Bai
  */
 public class DamengDataSource extends GenericDataSource {
+
+    private final TablespaceCache tablespaceCache = new TablespaceCache();
+
     public DamengDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel, new DamengSQLDialect());
     }
@@ -66,6 +77,13 @@ public class DamengDataSource extends GenericDataSource {
     }
 
     @Override
+    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        super.refreshObject(monitor);
+        tablespaceCache.clearCache();
+        return this;
+    }
+
+    @Override
     public DBPDataKind resolveDataKind(String typeName, int valueType) {
         return getDataKind(typeName, valueType);
     }
@@ -77,5 +95,27 @@ public class DamengDataSource extends GenericDataSource {
         }
         return GenericDataSource.getDataKind(typeName, valueType);
 
+    }
+
+    @Association
+    public Collection<DamengTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
+        return tablespaceCache.getAllObjects(monitor, this);
+    }
+
+    public TablespaceCache getTablespaceCache() {
+        return tablespaceCache;
+    }
+
+    public static class TablespaceCache extends JDBCObjectCache<DamengDataSource, DamengTablespace> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengDataSource dataSource) throws SQLException {
+            return session.prepareStatement("SELECT * FROM V$TABLESPACE");
+        }
+
+        @Override
+        protected DamengTablespace fetchObject(JDBCSession session, DamengDataSource dataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new DamengTablespace(dataSource, resultSet);
+        }
     }
 }
