@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -33,6 +34,11 @@ import java.nio.file.Path;
  * NIOFolder
  */
 public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
+
+    private final String EMPTY_FOLDER_FAKE_FILE_NAME = ".dbeaver";
+    private final byte[] FAKE_FILE_CONTENT =
+        "This file is created by DBeaver to guarantee support of folders instantiation and deletion."
+        .getBytes(StandardCharsets.UTF_8);
 
     public EFSNIOFolder(EFSNIOFileSystemRoot root, Path backendFolder) {
         super(root, backendFolder);
@@ -49,7 +55,8 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void create(int updateFlags, boolean local, IProgressMonitor monitor) throws CoreException {
         try {
-            Files.createDirectory(getNioPath());
+            Path result = Files.createFile(getNioPath().resolve(EMPTY_FOLDER_FAKE_FILE_NAME));
+            Files.write(result, FAKE_FILE_CONTENT);
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
@@ -66,7 +73,7 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
         try {
-            Files.delete(getNioPath());
+            Files.delete(getNioPath().resolve(EMPTY_FOLDER_FAKE_FILE_NAME));
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
