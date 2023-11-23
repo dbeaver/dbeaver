@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ import java.util.stream.Collectors;
 public class NavigatorHandlerSaveResource extends AbstractHandler implements IElementUpdater {
 
     public static final int DIRECTORY_FILE_SIZE = 1000;
-    public static final int FILES_SIZE_MONITOR_DIV = 100;
+    public static final int FILES_SIZE_MONITOR_DIV = 1;
 
     private static class PathInfo {
         Path path;
@@ -177,14 +178,14 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                 if (monitor.isCanceled()) {
                     return;
                 }
-                monitor.worked((int) (itemPath.size / FILES_SIZE_MONITOR_DIV));
 
                 String srcFilePath = URLDecoder.decode(itemPath.path.toAbsolutePath().toString(), StandardCharsets.UTF_8);
-                monitor.subTask(srcFilePath);
+                monitor.subTask(srcFilePath + (itemPath.directory ? "" : " (" + ByteNumberFormat.getInstance().format(itemPath.size) + ")"));
 
                 if (srcFilePath.startsWith(basePath)) {
                     srcFilePath = srcFilePath.substring(basePath.length());
                 }
+                srcFilePath = CommonUtils.removeLeadingSlash(srcFilePath);
 
                 Path targetPath = targetFolder.resolve(srcFilePath);
                 try {
@@ -194,10 +195,25 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                         }
                         monitor.worked(DIRECTORY_FILE_SIZE / FILES_SIZE_MONITOR_DIV);
                     } else {
-                        Files.copy(itemPath.path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        byte[] buffer = new byte[10000];
+                        try (InputStream is = Files.newInputStream(itemPath.path)) {
+                            try (OutputStream os = Files.newOutputStream(targetPath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                                for (;;) {
+                                    if (monitor.isCanceled()) {
+                                        break;
+                                    }
+                                    int count = is.read(buffer);
+                                    if (count <= 0) {
+                                        break;
+                                    }
+                                    monitor.worked(count / FILES_SIZE_MONITOR_DIV);
+                                    os.write(buffer, 0, count);
+                                }
+                            }
+                        }
                     }
                 } catch (IOException e) {
-                    UIUtils.showMessageBox(shell, "IO error", CommonUtils.notEmpty(e.getMessage()), SWT.ICON_ERROR);
+                    DBWorkbench.getPlatformUI().showError("IO error", null, e);
                 }
             }
 
@@ -213,7 +229,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
         for (DBNPathBase node : nodes) {
             monitor.subTask(node.getNodeName());
             Path path = node.getPath();
-            //sourceResources.add(path);
+
             if (Files.isDirectory(path)) {
                 // Collect contents recursively
                 Files.walkFileTree(path, new SimpleFileVisitor<>() {
@@ -235,6 +251,8 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                         return FileVisitResult.CONTINUE;
                     }
                 });
+            } else {
+                sourceResources.computeIfAbsent(node, p -> new ArrayList<>()).add(makePathInfo(path, false));
             }
             monitor.worked(1);
         }
