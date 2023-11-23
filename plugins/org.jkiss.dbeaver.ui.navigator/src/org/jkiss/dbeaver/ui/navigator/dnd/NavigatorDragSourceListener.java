@@ -157,7 +157,7 @@ public class NavigatorDragSourceListener implements DragSourceListener {
     }
 
     @Nullable
-    private Path copyStreamToTempFile(DBNStreamData streamData, String fileName) throws InvocationTargetException {
+    private Path copyStreamToTempFile(DBNStreamData streamData, String fileName) throws InvocationTargetException, InterruptedException {
         Path tmpFile = tempFolder.resolve(CommonUtils.escapeFileName(fileName));
         if (!Files.exists(tmpFile)) {
             try {
@@ -167,7 +167,7 @@ public class NavigatorDragSourceListener implements DragSourceListener {
                 return null;
             }
             // Start writing to stream and lock it
-            UIUtils.runInProgressDialog(monitor -> {
+            UIUtils.runInProgressService(monitor -> {
                 try {
                     long streamSize = streamData.getStreamSize();
                     try (InputStream is = streamData.openInputStream()) {

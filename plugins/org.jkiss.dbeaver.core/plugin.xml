@@ -727,6 +727,9 @@
             <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <command commandId="org.jkiss.dbeaver.core.edit.save.resource">
+                <visibleWhen checkEnabled="true"/>
+            </command>
 
             <separator name="connection-tools" visible="true"/>
 
