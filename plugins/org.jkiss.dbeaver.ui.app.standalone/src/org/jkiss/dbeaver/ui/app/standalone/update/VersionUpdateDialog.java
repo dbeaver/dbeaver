@@ -329,14 +329,6 @@ public class VersionUpdateDialog extends Dialog {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
                 ShellUtils.launchProgram(earlyAccessURL);
             }
-        } else if (buttonId == IDialogConstants.PROCEED_ID) {
-            final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-            CheckForUpdateAction.activateStandardHandler(window);
-            try {
-                ActionUtils.runCommand(CheckForUpdateAction.P2_UPDATE_COMMAND, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-            } finally {
-                CheckForUpdateAction.deactivateStandardHandler(window);
-            }
         }
         close();
     }
