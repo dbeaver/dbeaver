@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.navigator;
+package org.jkiss.dbeaver.ui.navigator.dnd;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.ui.navigator.INavigatorNodeContainer;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -53,7 +54,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class NavigatorDropTargetListener implements DropTargetListener {
+public class NavigatorDropTargetListener implements DropTargetListener {
     private final Viewer viewer;
 
     public NavigatorDropTargetListener(Viewer viewer) {
@@ -222,7 +223,7 @@ class NavigatorDropTargetListener implements DropTargetListener {
             return event.item.getData();
         } else {
             Object input = viewer.getInput();
-            if (input instanceof DatabaseNavigatorContent dnc) {
+            if (input instanceof INavigatorNodeContainer dnc) {
                 return dnc.getRootNode();
             } else if (input instanceof List list) {
                 if (!list.isEmpty())

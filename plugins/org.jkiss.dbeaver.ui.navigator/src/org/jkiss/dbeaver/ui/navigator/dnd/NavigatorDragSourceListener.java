@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.navigator;
+package org.jkiss.dbeaver.ui.navigator.dnd;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -24,6 +24,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -35,18 +36,26 @@ import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-class NavigatorDragSourceListener implements DragSourceListener {
+public class NavigatorDragSourceListener implements DragSourceListener {
     private static final Log log = Log.getLog(NavigatorDragSourceListener.class);
 
     private final Viewer viewer;
@@ -128,33 +137,9 @@ class NavigatorDragSourceListener implements DragSourceListener {
                     || FileTransfer.getInstance().isSupportedType(event.dataType))) {
                 String fileName = node.getNodeName();
                 try {
-                    Path tmpFile = tempFolder.resolve(CommonUtils.escapeFileName(fileName));
-                    if (!Files.exists(tmpFile)) {
-                        try {
-                            Files.createFile(tmpFile);
-                        } catch (IOException e) {
-                            log.error("Can't create new file" + tmpFile.toAbsolutePath(), e);
-                            continue;
-                        }
-/*
-                        UIUtils.runInProgressService(monitor -> {
-                            try {
-                                long streamSize = ((DBNStreamData) nextSelected).getStreamSize();
-                                try (InputStream is = ((DBNStreamData) nextSelected).openInputStream()) {
-                                    try (OutputStream out = Files.newOutputStream(tmpFile)) {
-                                        ContentUtils.copyStreams(is, streamSize, out, monitor);
-                                    }
-                                }
-                            } catch (Exception e) {
-                                try {
-                                    Files.delete(tmpFile);
-                                } catch (IOException ex) {
-                                    log.error("Error deleting temp file " + tmpFile.toAbsolutePath(), e);
-                                }
-                                throw new InvocationTargetException(e);
-                            }
-                        });
-*/
+                    Path tmpFile = copyStreamToTempFile(streamData, fileName);
+                    if (tmpFile == null) {
+                        continue;
                     }
                     nodeObject = tmpFile;
                     nodeName = tmpFile.toAbsolutePath().toString();
@@ -169,6 +154,38 @@ class NavigatorDragSourceListener implements DragSourceListener {
             info.put(node, new NavigatorTransferInfo(nodeName, node, nodeObject));
         }
         return info;
+    }
+
+    @Nullable
+    private Path copyStreamToTempFile(DBNStreamData streamData, String fileName) throws InvocationTargetException {
+        Path tmpFile = tempFolder.resolve(CommonUtils.escapeFileName(fileName));
+        if (!Files.exists(tmpFile)) {
+            try {
+                Files.createFile(tmpFile);
+            } catch (IOException e) {
+                log.error("Can't create new file" + tmpFile.toAbsolutePath(), e);
+                return null;
+            }
+            // Start writing to stream and lock it
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    long streamSize = streamData.getStreamSize();
+                    try (InputStream is = streamData.openInputStream()) {
+                        try (OutputStream out = Files.newOutputStream(tmpFile)) {
+                            ContentUtils.copyStreams(is, streamSize, out, monitor);
+                        }
+                    }
+                } catch (Exception e) {
+                    try {
+                        Files.delete(tmpFile);
+                    } catch (IOException ex) {
+                        log.error("Error deleting temp file " + tmpFile.toAbsolutePath(), e);
+                    }
+                    throw new InvocationTargetException(e);
+                }
+            });
+        }
+        return tmpFile;
     }
 
     private void setEmptyData(DragSourceEvent event) {
@@ -188,17 +205,7 @@ class NavigatorDragSourceListener implements DragSourceListener {
     @Override
     public void dragFinished(DragSourceEvent event) {
         // Delete temporary files if needed
-        if (event.data instanceof List<?> list) {
-            for (Object object : list) {
-                if (object instanceof Path path) {
-                    try {
-                        Files.delete(path);
-                    } catch (Exception e) {
-                        log.debug("Error deleting temporary DnD file '" + path + "'");
-                    }
-                }
-            }
-        }
+        selection = null;
     }
 
 }

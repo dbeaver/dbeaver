@@ -247,8 +247,11 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Override
     public boolean supportsDrop(DBNNode otherNode) {
         if (otherNode == null) {
-            // Potentially any other node could be dropped in the folder
-            return true;
+            return false;
+        }
+
+        if (Files.isRegularFile(getPath())) {
+            return getParentNode().supportsDrop(otherNode);
         }
 
         // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
@@ -385,7 +388,14 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Property(viewable = true, order = 11)
     public String getResourceSize() throws IOException {
         if (size == null) {
-            size = getPath() == null ? 0 : Files.size(getPath());
+            try {
+                size = getPath() == null ? 0 : Files.size(getPath());
+            } catch (IOException e) {
+                log.debug("Error reading file '" + getPath() + "' size", e);
+            }
+            if (size == null) {
+                size = 0L;
+            }
         }
         return numberFormat.format(size);
     }
