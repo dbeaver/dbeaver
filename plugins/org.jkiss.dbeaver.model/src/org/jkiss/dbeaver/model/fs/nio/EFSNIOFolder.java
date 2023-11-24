@@ -35,7 +35,7 @@ import java.nio.file.Path;
  */
 public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
-    private final String FOLDER_EMULATION_FILE_NAME = ".dbeaver";
+    private final String FOLDER_EMULATION_FILE_NAME = ".dbeaver-placeholder";
     private final byte[] FOLDER_EMULATION_FILE_CONTENT =
         "This file is created by DBeaver to guarantee support of folders instantiation and deletion."
         .getBytes(StandardCharsets.UTF_8);
