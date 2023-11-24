@@ -298,8 +298,8 @@ public class VersionUpdateDialog extends Dialog {
                 }
 
                 final boolean confirmed = UIUtils.confirmAction(
-                        CoreMessages.dialog_version_update_downloader_title,
-                        NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName())
+                    CoreMessages.dialog_version_update_downloader_title,
+                    NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName())
                 );
                 if (!confirmed) {
                     ShellUtils.showInSystemExplorer(file.toAbsolutePath().toString());
