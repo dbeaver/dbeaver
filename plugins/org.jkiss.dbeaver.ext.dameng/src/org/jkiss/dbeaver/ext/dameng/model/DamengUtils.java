@@ -35,10 +35,15 @@ public class DamengUtils {
     public static String getDDL(DBRProgressMonitor monitor, DBSObject object, DamengConstants.ObjectType objectType, String schema) throws DBException {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + object.getName() + "'")) {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?,?)");
+            JDBCPreparedStatement dbStat;
+            if (schema != null) {
+                dbStat = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?,?)");
+                dbStat.setString(3, schema);
+            } else {
+                dbStat = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?)");
+            }
             dbStat.setString(1, objectType.name());
             dbStat.setString(2, object.getName());
-            dbStat.setString(3, schema);
 
             JDBCResultSet dbResult = dbStat.executeQuery();
             if (dbResult.next()) {

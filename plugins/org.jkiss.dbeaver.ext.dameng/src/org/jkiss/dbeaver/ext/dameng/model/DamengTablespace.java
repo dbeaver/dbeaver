@@ -18,8 +18,10 @@
 package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -35,11 +37,12 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Shengkai Bai
  */
-public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatistics {
+public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject {
 
     private final DamengDataSource dataSource;
 
@@ -205,13 +208,18 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
         return usedSize;
     }
 
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return DamengUtils.getDDL(monitor, this, DamengConstants.ObjectType.TABLESPACE, null);
+    }
+
     static class FileCache extends JDBCObjectCache<DamengTablespace, DamengDataFile> {
 
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengTablespace damengTablespace) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT df.* " +
-                    "FROM V$TABLESPACE AS ts, V$DATAFILE AS df WHERE ts.ID\n" +
-                    "= df.GROUP_ID AND ts.NAME = ?");
+                    "FROM V$TABLESPACE AS ts, V$DATAFILE AS df " +
+                    "WHERE ts.ID = df.GROUP_ID AND ts.NAME = ?");
             dbStat.setString(1, damengTablespace.getName());
             return dbStat;
         }
