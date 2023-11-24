@@ -55,7 +55,7 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void create(int updateFlags, boolean local, IProgressMonitor monitor) throws CoreException {
         try {
-            if (getRoot().getRoot().getFileSystem().isFoldersExists()) {
+            if (getRoot().getRoot().getFileSystem().supportsEmptyFolders()) {
                 Files.createDirectory(getNioPath());
             } else {
                 // This is the workaround for file systems where folders are emulated,
@@ -79,7 +79,7 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
         try {
-            if (getRoot().getRoot().getFileSystem().isFoldersExists()) {
+            if (getRoot().getRoot().getFileSystem().supportsEmptyFolders()) {
                 Files.delete(getNioPath());
             } else {
                 // We can't delete pseudo-folder, so this is a workaround
