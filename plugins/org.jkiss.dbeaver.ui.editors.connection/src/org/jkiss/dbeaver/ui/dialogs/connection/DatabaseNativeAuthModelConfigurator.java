@@ -96,7 +96,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
         if (this.passwordText != null) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
-            this.savePasswordCheck.setSelection(dataSource.isSavePassword());
+            this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
             this.passwordText.setEnabled(dataSource.isSavePassword());
         }
     }
@@ -128,6 +128,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     @Override
     public boolean isComplete() {
         return true;
+    }
+
+    protected boolean isForceSaveCredentials() {
+        return false;
     }
 
     protected Text createPasswordText(Composite parent, String label) {
@@ -163,7 +167,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
         savePasswordCheck = UIUtils.createCheckbox(panel,
             UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
-            dataSource == null || dataSource.isSavePassword());
+            dataSource == null || dataSource.isSavePassword() || isForceSaveCredentials());
         savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password);
         savePasswordCheck.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -171,6 +175,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                 passwordText.setEnabled(savePasswordCheck.getSelection());
             }
         });
+        if (isForceSaveCredentials()) {
+            this.savePasswordCheck.setEnabled(false);
+        }
 
         if (supportsPasswordView) {
             userManagementToolbar = new ToolBar(panel, SWT.HORIZONTAL);
