@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.fs.nio;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -87,7 +86,7 @@ public class EFSNIOFileSystem extends FileSystem {
                             } else {
                                 log.debug("File system '" + fsType + ":" + fsId + "' not found");
                             }
-                        } catch (DBException e) {
+                        } catch (Exception e) {
                             log.debug("Error reading file systems", e);
                         }
                     }
