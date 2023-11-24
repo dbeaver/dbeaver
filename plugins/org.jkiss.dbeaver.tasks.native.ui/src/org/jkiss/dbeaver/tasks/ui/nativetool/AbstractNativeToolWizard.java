@@ -192,8 +192,8 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
-            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
+            DBWorkbench.getPlatformUI().showError("Download local client file(s)", "Error downloading client file(s)", e.getTargetException());
+            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading local client file(s)");
             getContainer().updateMessage();
             return false;
         } catch (InterruptedException e) {
