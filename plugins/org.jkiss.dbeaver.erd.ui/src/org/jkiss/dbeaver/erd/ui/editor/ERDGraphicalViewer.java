@@ -397,8 +397,9 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                     UIUtils.asyncExec(() -> {
                         if (erdEntity != null &&
                             erdEntity.getAssociation(addedAssociation) == null &&
-                            erdEntity.getReferenceAssociation(addedAssociation) == null)
-                        {
+                            erdEntity.getReferenceAssociation(addedAssociation) == null &&
+                            erdEntity != null &&
+                            targetEntity != null) {
                             new ERDAssociation(addedAssociation, erdEntity, targetEntity, true);
                         }
                     });

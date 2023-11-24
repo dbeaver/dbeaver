@@ -132,10 +132,11 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (value == null) {
             return null;
         }
-        if (nativeSpecialValues && (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value))) {
-            return value.toString();
-        }
-        if (value instanceof Float || value instanceof Double) {
+        if (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value)) {
+            if (nativeSpecialValues) {
+                return value.toString();
+            }
+        } else if (value instanceof Float || value instanceof Double) {
             // Convert to BigDecimal so we don't have rounding issues with high minimum fraction digits set
             value = new BigDecimal(value.toString());
         }
