@@ -105,7 +105,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                 try {
                     Path sourcePath = pathNode.getPath();
                     try (InputStream is = Files.newInputStream(sourcePath)) {
-                        try (OutputStream os = Files.newOutputStream(targetFile, StandardOpenOption.TRUNCATE_EXISTING)) {
+                        try (OutputStream os = Files.newOutputStream(targetFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                             ContentUtils.copyStreams(is, Files.size(sourcePath), os, monitor);
                         }
                     }
