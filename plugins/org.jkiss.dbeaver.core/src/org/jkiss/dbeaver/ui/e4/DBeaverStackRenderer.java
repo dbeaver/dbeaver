@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.e4;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
@@ -65,7 +64,6 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.lang.reflect.Field;
 
@@ -74,33 +72,12 @@ public class DBeaverStackRenderer extends StackRenderer {
 
     private static final Log log = Log.getLog(DBeaverStackRenderer.class);
 
-    @Inject
-    @Optional
-    void subscribePerspectiveSwitched(@NotNull IEventBroker broker) {
-        final EventHandler handler = new EventHandler() {
-            @Override
-            public void handleEvent(Event event) {
-                final Object element = event.getProperty(UIEvents.EventTags.ELEMENT);
-
-                if (element instanceof MPerspective) {
-                    try {
-                        final Field field = StackRenderer.class.getDeclaredField("onboardingComposite");
-                        if (!field.canAccess(DBeaverStackRenderer.this)) {
-                            field.setAccessible(true);
-                        }
-                        final Composite composite = (Composite) field.get(DBeaverStackRenderer.this);
-                        if (composite != null) {
-                            HolidayDecorations.install(composite.getParent());
-                        }
-                    } catch (Exception e) {
-                        log.error("Can't access onboarding composite", e);
-                        broker.unsubscribe(this);
-                    }
-                }
-            }
-        };
-
-        broker.subscribe(UIEvents.UILifeCycle.PERSPECTIVE_SWITCHED, handler);
+    public DBeaverStackRenderer() {
+        try {
+            subscribePerspectiveSwitched();
+        } catch (Throwable e) {
+            log.error("Error setting perspective switch listener", e);
+        }
     }
 
     @Override
@@ -340,5 +317,34 @@ public class DBeaverStackRenderer extends StackRenderer {
         } else {
             return new Point(0, 0);
         }
+    }
+
+    private void subscribePerspectiveSwitched() {
+        final IWorkbench workbench = PlatformUI.getWorkbench();
+        final IEventBroker broker = workbench.getService(IEventBroker.class);
+        final EventHandler handler = new EventHandler() {
+            @Override
+            public void handleEvent(Event event) {
+                final Object element = event.getProperty(UIEvents.EventTags.ELEMENT);
+
+                if (element instanceof MPerspective) {
+                    try {
+                        final Field field = StackRenderer.class.getDeclaredField("onboardingComposite");
+                        if (!field.canAccess(DBeaverStackRenderer.this)) {
+                            field.setAccessible(true);
+                        }
+                        final Composite composite = (Composite) field.get(DBeaverStackRenderer.this);
+                        if (composite != null) {
+                            HolidayDecorations.install(composite.getParent());
+                        }
+                    } catch (Exception e) {
+                        log.error("Can't access onboarding composite", e);
+                        broker.unsubscribe(this);
+                    }
+                }
+            }
+        };
+
+        broker.subscribe(UIEvents.UILifeCycle.PERSPECTIVE_SWITCHED, handler);
     }
 }
