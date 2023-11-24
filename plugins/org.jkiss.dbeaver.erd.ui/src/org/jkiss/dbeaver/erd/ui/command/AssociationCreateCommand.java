@@ -141,6 +141,7 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected ERDAssociation createAssociation(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, boolean reflect) {
+        ERDAssociation association = null;
         if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity) {
             DBSEntity srcEntityObject = ((ERDEntity)sourceEntity).getObject();
             DBSEntity targetEntityObject = ((ERDEntity)targetEntity).getObject();
@@ -179,10 +180,15 @@ public class AssociationCreateCommand extends Command {
                 return null;
             }
             vEntity.persistConfiguration();
-            return new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
+            if (sourceEntity != null && targetEntity != null) {
+                association = new ERDAssociation(vfk, (ERDEntity) sourceEntity, (ERDEntity) targetEntity, true);
+            }
         } else {
-            return new ERDAssociation(sourceEntity, targetEntity, true);
+            if (sourceEntity != null && targetEntity != null) {
+                association = new ERDAssociation(sourceEntity, targetEntity, true);
+            }
         }
+        return association;
     }
 
     public ERDEditorPart getEditor() {
