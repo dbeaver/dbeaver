@@ -35,8 +35,8 @@ import java.nio.file.Path;
  */
 public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
-    private final String EMPTY_FOLDER_FAKE_FILE_NAME = ".dbeaver";
-    private final byte[] FAKE_FILE_CONTENT =
+    private final String FOLDER_EMULATION_FILE_NAME = ".dbeaver";
+    private final byte[] FOLDER_EMULATION_FILE_CONTENT =
         "This file is created by DBeaver to guarantee support of folders instantiation and deletion."
         .getBytes(StandardCharsets.UTF_8);
 
@@ -55,8 +55,14 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void create(int updateFlags, boolean local, IProgressMonitor monitor) throws CoreException {
         try {
-            Path result = Files.createFile(getNioPath().resolve(EMPTY_FOLDER_FAKE_FILE_NAME));
-            Files.write(result, FAKE_FILE_CONTENT);
+            if (getRoot().getRoot().getFileSystem().isFoldersExists()) {
+                Files.createDirectory(getNioPath());
+            } else {
+                // This is the workaround for file systems where folders are emulated,
+                // and it's not possible to delete a folder or create an empty folder
+                Path fileForEmulation = Files.createFile(getNioPath().resolve(FOLDER_EMULATION_FILE_NAME));
+                Files.write(fileForEmulation, FOLDER_EMULATION_FILE_CONTENT);
+            }
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
@@ -73,7 +79,14 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
         try {
-            Files.delete(getNioPath().resolve(EMPTY_FOLDER_FAKE_FILE_NAME));
+            if (getRoot().getRoot().getFileSystem().isFoldersExists()) {
+                Files.delete(getNioPath());
+            } else {
+                // We can't delete pseudo-folder, so this is a workaround
+                for (IResource resource : members()) {
+                    resource.delete(force, monitor);
+                }
+            }
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
