@@ -64,7 +64,7 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
                 Files.write(fileForEmulation, FOLDER_EMULATION_FILE_CONTENT);
             }
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
