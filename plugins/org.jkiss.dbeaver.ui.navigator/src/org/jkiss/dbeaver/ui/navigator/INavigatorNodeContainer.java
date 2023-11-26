@@ -15,25 +15,15 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.navigator.database;
+package org.jkiss.dbeaver.ui.navigator;
 
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.navigator.INavigatorNodeContainer;
 
 /**
- * Tree content
+ * INavigatorNodeContainer
  */
-public class DatabaseNavigatorContent implements INavigatorNodeContainer {
+public interface INavigatorNodeContainer {
 
-    private final DBNNode rootNode;
+    DBNNode getRootNode();
 
-    DatabaseNavigatorContent(DBNNode rootNode)
-    {
-        this.rootNode = rootNode;
-    }
-
-    public DBNNode getRootNode()
-    {
-        return rootNode;
-    }
 }

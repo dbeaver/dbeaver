@@ -975,6 +975,8 @@ public class SQLQueryJob extends DataSourceJob
             } else {
                 throw new DBCException(lastError, getExecutionContext());
             }
+        } else if (result && statistics.getStatementsCount() > 0) {
+            showExecutionResult(session);
         }
     }
 
