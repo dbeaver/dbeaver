@@ -87,7 +87,7 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
                 if (content.length == 2) {
 
                     // get srid
-                    content[0] = content[0].replaceAll("SRID=", "");
+                    content[0] = content[0].replaceAll(AltibaseConstants.SRID_EQ, "");
                     try {
                         srid = Integer.parseInt(content[0]);
                     } catch (NumberFormatException e) {
@@ -106,7 +106,7 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
                 dbGeometry.setSRID(srid);
             }
         } catch (ParseException e) {
-            log.warn("Failed to parse objedt: " 
+            log.warn("Failed to parse object: " 
                     + ((object != null) ? object.toString() : "NULL") 
                     + AltibaseConstants.NEW_LINE 
                     + e.getLocalizedMessage());
@@ -151,8 +151,8 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
 
         } else {
             String strValue = rawValue.toString();
-            if (srid != 0 && !strValue.startsWith("SRID=")) {
-                strValue = "SRID=" + srid + ";" + strValue;
+            if (srid != 0 && !strValue.startsWith(AltibaseConstants.SRID_EQ)) {
+                strValue = AltibaseConstants.SRID_EQ + srid + ";" + strValue;
             }
             statement.setObject(paramIndex, strValue, AltibaseConstants.TYPE_GEOMETRY);
         }
@@ -164,8 +164,8 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
         if (value instanceof DBGeometry) {             
             int valueSRID = ((DBGeometry) value).getSRID();
             String strValue = value.toString();
-            if (valueSRID != 0 && !strValue.startsWith("SRID=")) {
-                strValue = "SRID=" + valueSRID + ";" + strValue;
+            if (valueSRID != 0 && !strValue.startsWith(AltibaseConstants.SRID_EQ)) {
+                strValue = AltibaseConstants.SRID_EQ + valueSRID + ";" + strValue;
             }
             return strValue;
         }

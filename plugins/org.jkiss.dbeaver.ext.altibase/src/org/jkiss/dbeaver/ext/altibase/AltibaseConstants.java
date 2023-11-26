@@ -42,6 +42,8 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NAME_DATE = "DATE";
     
+    public static final String SRID_EQ = "SRID=";
+    
     public static final String OBJ_TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW";
     public static final String OBJ_TYPE_TYPESET = "TYPESET";
     

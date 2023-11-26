@@ -54,7 +54,7 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop synonym",
-                new StringBuilder("DROP ").append(object.getSynonymBody()).toString())
+                "DROP " + object.getSynonymBody())
         );
     }
 

@@ -138,7 +138,6 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         setQry4Size();
     }
 
-    /* Reference: https://docs.altibase.com/x/j4KZ */
     private void setQry4Size() {
         switch (this.tbsType) {
             case MEMORY_SYSTEM_DICTIONARY:

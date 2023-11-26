@@ -224,7 +224,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return AltibaseSchema.class;
     }
 
-    public DBSObject findSynonynTargetObject(DBRProgressMonitor monitor, @Nullable String refSchemaName, @NotNull String refObjName)
+    public DBSObject findSynonymTargetObject(DBRProgressMonitor monitor, @Nullable String refSchemaName, @NotNull String refObjName)
             throws DBException {
         DBSObject refObj = null;
         AltibaseSchema refSchema = (AltibaseSchema) this.getSchema(refSchemaName);
