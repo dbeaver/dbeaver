@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URI;
@@ -63,7 +62,7 @@ public final class EFSNIOFile extends EFSNIOResource implements IFile {
             Files.copy(source, getNioPath(), StandardCopyOption.REPLACE_EXISTING);
 
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
@@ -156,7 +155,7 @@ public final class EFSNIOFile extends EFSNIOResource implements IFile {
             Files.copy(source, getNioPath(), StandardCopyOption.REPLACE_EXISTING);
 
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CHANGE);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }

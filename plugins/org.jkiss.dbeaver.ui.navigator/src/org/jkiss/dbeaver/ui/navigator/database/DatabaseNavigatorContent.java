@@ -18,11 +18,12 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.navigator.INavigatorNodeContainer;
 
 /**
  * Tree content
  */
-public class DatabaseNavigatorContent {
+public class DatabaseNavigatorContent implements INavigatorNodeContainer {
 
     private final DBNNode rootNode;
 
