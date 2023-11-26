@@ -418,7 +418,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
                 @Nullable AltibaseReplication object, @Nullable String objectName) throws SQLException {
-            String replName = (object != null) ? object.getName() : "";
+            String replName = (object != null) ? object.getName() : objectName;
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT"
                             + " r.replication_name,"
