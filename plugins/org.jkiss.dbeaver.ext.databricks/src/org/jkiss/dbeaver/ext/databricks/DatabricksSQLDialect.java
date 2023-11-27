@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Arrays;
@@ -139,5 +140,15 @@ public class DatabricksSQLDialect extends GenericSQLDialect {
                 return null;
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
+    }
+
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return SQLUtils.isLatinLetter(c) || c == '_';
+    }
+
+    @Override
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1);
     }
 }

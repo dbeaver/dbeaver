@@ -88,6 +88,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
@@ -96,7 +97,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.SortedMap;
-import java.util.function.Consumer;
 
 /**
  * UI Utils
@@ -637,17 +637,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            final Composite composite = new Composite(parent, SWT.NONE);
-            composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
-            control = composite;
-
-            final Label imageLabel = new Label(composite, SWT.NONE);
-            imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-
-            final Link link = new Link(composite, SWT.NONE);
-            link.setText("<a href=\"#\">" + text + "</a>");
-            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
-            link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+            control = createInfoLink(parent, text, callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {
@@ -657,6 +647,23 @@ public class UIUtils {
         }
 
         return control;
+    }
+
+    @NotNull
+    public static Link createInfoLink(@NotNull Composite parent, @NotNull String text, @NotNull Runnable callback) {
+        final Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+
+        final Label imageLabel = new Label(composite, SWT.NONE);
+        imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
+
+        final Link link = new Link(composite, SWT.NONE);
+        link.setText(text);
+        link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
+        link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+
+        return link;
     }
 
     public static Text createLabelText(Composite parent, String label, String value) {
@@ -2438,6 +2445,22 @@ public class UIUtils {
                     }
                 }
             }
+        }
+    }
+
+    public static void enableDoubleBuffering(@NotNull Control control) {
+        if ((control.getStyle() & SWT.DOUBLE_BUFFERED) != 0) {
+            // Already enabled - no op
+            return;
+        }
+        try {
+            final Field styleField = Widget.class.getDeclaredField("style");
+            if (!styleField.canAccess(control)) {
+                styleField.setAccessible(true);
+            }
+            styleField.set(control, styleField.getInt(control) | SWT.DOUBLE_BUFFERED);
+        } catch (Exception e) {
+            log.error("Unable to enable double buffering", e.getCause());
         }
     }
 }
