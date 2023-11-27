@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -125,11 +122,13 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         PostgreTableConstraintBase constraint = command.getObject();
+        PostgreDataSource dataSource = constraint.getDataSource();
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename constraint",
                         "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                                " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) + " TO " + DBUtils.getQuotedIdentifier(constraint.getDataSource(), command.getNewName())) //$NON-NLS-1$
+                                " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + //$NON-NLS-1$
+                                " TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }
 }
