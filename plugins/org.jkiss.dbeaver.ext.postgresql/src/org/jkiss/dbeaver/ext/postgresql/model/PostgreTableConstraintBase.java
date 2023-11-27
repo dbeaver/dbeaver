@@ -38,12 +38,8 @@ import java.util.Map;
 /**
  * PostgreTableConstraintBase
  */
-public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements
-    PostgreObject,
-    PostgreScriptObject,
-    DBPInheritedObject,
-    DBPNamedObject2
-{
+public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase>
+        implements PostgreObject, PostgreScriptObject, DBPInheritedObject, DBPNamedObject2 {
     private static final Log log = Log.getLog(PostgreTableConstraintBase.class);
 
     private long oid;
