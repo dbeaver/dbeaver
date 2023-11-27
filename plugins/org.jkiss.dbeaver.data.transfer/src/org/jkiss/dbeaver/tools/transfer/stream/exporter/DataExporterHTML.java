@@ -162,9 +162,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private void writeTableTitle(String value, int columns) {
         PrintWriter out = getWriter();
-        out.write(String.format("<th colspan=\"%d\">", columns));
+        out.write(String.format("<th colspan=\"%d\"><pre><code>", columns));
         out.write(CommonUtils.escapeHtml(value));
-        out.write("</th>");
+        out.write("</code></pre></th>");
     }
 
     private void writeTextCell(String value, boolean header) {

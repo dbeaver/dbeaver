@@ -37,6 +37,11 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     public STMTreeRuleNode(@NotNull ParserRuleContext parent, int invokingStateNumber) {
         super(parent, invokingStateNumber);
     }
+    
+    @Override
+    public int getNodeKindId() {
+        return super.getRuleContext().getRuleIndex();
+    }
 
     @Override
     public void fixup(@NotNull STMParserOverrides parserCtx) {
@@ -106,5 +111,10 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         } else {
             return super.addErrorNode(errorNode);
         }
+    }
+    
+    @Override
+    public STMTreeNode getStmChild(int index) {
+        return (STMTreeNode) super.getChild(index);
     }
 }

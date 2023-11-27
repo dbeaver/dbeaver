@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI Editors - SQL
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.sql;singleton:=true
-Bundle-Version: 1.0.119.qualifier
-Bundle-Release-Date: 20231120
+Bundle-Version: 1.0.120.qualifier
+Bundle-Release-Date: 20231204
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator
@@ -30,7 +30,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.console,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.ui.forms,
- org.eclipse.e4.ui.workbench.renderers.swt
+ org.eclipse.e4.ui.workbench.renderers.swt,
+ org.jkiss.dbeaver.model.lsm,
+ org.jkiss.bundle.antlr4
 Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.controls.querylog,
  org.jkiss.dbeaver.ui.editors.sql,

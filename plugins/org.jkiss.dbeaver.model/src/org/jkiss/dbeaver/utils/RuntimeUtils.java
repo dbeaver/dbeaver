@@ -41,6 +41,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -188,6 +189,18 @@ public final class RuntimeUtils {
         long min = sec / 60;
         sec -= min * 60;
         return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
+    }
+
+    @NotNull
+    public static String formatExecutionTimeShort(@NotNull Duration duration) {
+        final long min = duration.toMinutes();
+        final long sec = duration.toSecondsPart();
+
+        if (min > 0) {
+            return "%dm %ds".formatted(min, sec);
+        } else {
+            return "%ds".formatted(sec);
+        }
     }
 
     public static File getPlatformFile(String platformURL) throws IOException {
@@ -563,6 +576,32 @@ public final class RuntimeUtils {
         } catch (InterruptedException e) {
             // ignore
         }
+    }
+
+    @Nullable
+    public static String getSystemPropertyIgnoreCase(@NotNull String key) {
+        final Properties props = System.getProperties();
+
+        for (String name : props.stringPropertyNames()) {
+            if (name.equalsIgnoreCase(key)) {
+                return props.getProperty(key);
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static String getSystemEnvIgnoreCase(@NotNull String key) {
+        final Map<String, String> env = System.getenv();
+
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
     }
 
     private enum CommandLineState {

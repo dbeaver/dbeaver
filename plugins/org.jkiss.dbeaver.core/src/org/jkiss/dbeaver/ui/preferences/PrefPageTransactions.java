@@ -22,7 +22,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -132,10 +131,13 @@ public class PrefPageTransactions extends TargetPrefPage
             settingsTipString = CoreMessages.action_menu_transaction_pref_page_link;
         }
 
-        new PreferenceLinkArea(txnNameGroup, SWT.NONE,
-            PrefPageConnectionTypes.PAGE_ID,
+        UIUtils.createPreferenceLink(
+            txnNameGroup,
             settingsTipString,
-            (IWorkbenchPreferenceContainer) getContainer(), null);
+            PrefPageConnectionTypes.PAGE_ID,
+            (IWorkbenchPreferenceContainer) getContainer(),
+            null
+        );
 
         {
             Group notifyNameGroup = UIUtils.createControlGroup(

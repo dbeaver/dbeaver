@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
@@ -1933,26 +1934,26 @@ public final class DBUtils {
     }
 
     public static boolean isHiddenObject(Object object) {
-        return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
+        return object instanceof DBPHiddenObject ho && ho.isHidden();
     }
 
     public static boolean isSystemObject(Object object) {
-        return object instanceof DBPSystemObject && ((DBPSystemObject) object).isSystem();
+        return object instanceof DBPSystemObject so && so.isSystem();
     }
 
     public static boolean isVirtualObject(Object object) {
-        return object instanceof DBPVirtualObject && ((DBPVirtualObject) object).isVirtual();
+        return object instanceof DBPVirtualObject vo && vo.isVirtual();
     }
 
     public static boolean isInheritedObject(Object object) {
-        return object instanceof DBPInheritedObject && ((DBPInheritedObject) object).isInherited();
+        return object instanceof DBPInheritedObject io && io.isInherited();
     }
 
     public static DBDPseudoAttribute getRowIdAttribute(DBSEntity entity) {
-        if (entity instanceof DBDPseudoAttributeContainer) {
+        if (entity instanceof DBDPseudoAttributeContainer pac) {
             try {
                 return DBDPseudoAttribute.getAttribute(
-                    ((DBDPseudoAttributeContainer) entity).getPseudoAttributes(),
+                    pac.getPseudoAttributes(),
                     DBDPseudoAttributeType.ROWID);
             } catch (DBException e) {
                 log.warn("Can't get pseudo attributes for '" + entity.getName() + "'", e);
@@ -1962,7 +1963,7 @@ public final class DBUtils {
     }
 
     public static boolean isDynamicAttribute(DBSAttributeBase attr) {
-        return attr instanceof DBSAttributeDynamic && ((DBSAttributeDynamic) attr).isDynamicAttribute();
+        return attr instanceof DBSAttributeDynamic da && da.isDynamicAttribute();
     }
 
     public static boolean isRowIdAttribute(DBSEntityAttribute attr) {
@@ -1971,9 +1972,9 @@ public final class DBUtils {
     }
 
     public static DBDPseudoAttribute getPseudoAttribute(DBSEntity entity, String attrName) {
-        if (entity instanceof DBDPseudoAttributeContainer) {
+        if (entity instanceof DBDPseudoAttributeContainer pac) {
             try {
-                DBDPseudoAttribute[] pseudoAttributes = ((DBDPseudoAttributeContainer) entity).getPseudoAttributes();
+                DBDPseudoAttribute[] pseudoAttributes = pac.getPseudoAttributes();
                 if (pseudoAttributes != null && pseudoAttributes.length > 0) {
                     for (DBDPseudoAttribute pa : pseudoAttributes) {
                         String attrId = pa.getAlias();
@@ -1993,7 +1994,7 @@ public final class DBUtils {
     }
 
     public static boolean isPseudoAttribute(DBSAttributeBase attr) {
-        return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
+        return attr instanceof DBDAttributeBinding ab && ab.isPseudoAttribute();
     }
 
     public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator() {
@@ -2095,7 +2096,7 @@ public final class DBUtils {
         }
         DBSInstance instance = getObjectOwnerInstance(object);
         return instance == null ||
-            (instance instanceof DBSInstanceLazy && !((DBSInstanceLazy) instance).isInstanceConnected())/* ||
+            (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())/* ||
             !instance.getDataSource().getContainer().isConnected()*/ ?
             null :
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
@@ -2106,10 +2107,10 @@ public final class DBUtils {
         if (context == null) {
             // Not connected - try to connect
             DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(object);
-            if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy) ownerInstance).isInstanceConnected()) {
+            if (ownerInstance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected()) {
                 if (!RuntimeUtils.runTask(monitor -> {
                         try {
-                            ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
+                            instanceLazy.checkInstanceConnection(monitor);
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -2490,6 +2491,80 @@ public final class DBUtils {
             }
         }
         return dataSource.isConnected();
+    }
+
+    public static long readRowCount(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
+        @Nullable DBSDataContainer dataContainer,
+        @Nullable DBDDataFilter dataFilter,
+        @NotNull Object controller
+    ) throws DBException {
+        if (executionContext == null || dataContainer == null) {
+            throw new DBException(ModelMessages.error_not_connected_to_database);
+        }
+        long[] result = new long[1];
+        DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+            try (DBCSession session = executionContext.openSession(
+                monitor,
+                DBCExecutionPurpose.USER,
+                "Read total row count")) {
+                long rowCount = dataContainer.countData(
+                    new AbstractExecutionSource(dataContainer, executionContext, controller),
+                    session,
+                    dataFilter,
+                    DBSDataContainer.FLAG_NONE);
+                result[0] = rowCount;
+            } catch (DBCException e) {
+                throw new InvocationTargetException(e);
+            }
+        });
+        return result[0];
+    }
+
+    public static long countDataFromQuery(
+        @NotNull DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull SQLQuery query
+    ) throws DBCException {
+        try (DBCStatement dbStatement = makeStatement(source, session, DBCStatementType.SCRIPT, query, 0, 0)) {
+            if (dbStatement.executeStatement()) {
+                try (DBCResultSet rs = dbStatement.openResultSet()) {
+                    if (rs.nextRow()) {
+                        List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
+                        Object countValue = null;
+                        if (resultAttrs.size() == 1) {
+                            countValue = rs.getAttributeValue(0);
+                        } else {
+                            // In some databases (Influx?) SELECT count(*) produces multiple columns. Try to find first one with 'count' in its name.
+                            for (int i = 0; i < resultAttrs.size(); i++) {
+                                DBCAttributeMetaData ma = resultAttrs.get(i);
+                                if (ma.getName().toLowerCase(Locale.ENGLISH).contains("count")) {
+                                    countValue = rs.getAttributeValue(i);
+                                    break;
+                                }
+                            }
+                        }
+                        if (countValue instanceof Map && ((Map<?, ?>) countValue).size() == 1) {
+                            // For document-based DBs
+                            Object singleValue = ((Map<?, ?>) countValue).values().iterator().next();
+                            if (singleValue instanceof Number) {
+                                countValue = singleValue;
+                            }
+                        }
+                        if (countValue instanceof Number) {
+                            return ((Number) countValue).longValue();
+                        } else {
+                            throw new DBCException("Unexpected row count value: " + countValue);
+                        }
+                    } else {
+                        throw new DBCException("Row count result is empty");
+                    }
+                }
+            } else {
+                throw new DBCException("Row count query didn't return any value");
+            }
+        }
     }
 
     public interface ChildExtractor<PARENT, CHILD> {

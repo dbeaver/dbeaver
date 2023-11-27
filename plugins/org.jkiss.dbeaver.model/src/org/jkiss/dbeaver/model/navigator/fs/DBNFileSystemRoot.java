@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.nio.file.Path;
@@ -93,16 +95,27 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
-    public Path getPath() {
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+        this.path = null;
+        return super.refreshNode(monitor, source);
+    }
+
+    @Override
+    public synchronized Path getPath() {
         if (path == null) {
             try {
                 path = root.getRootPath(new VoidProgressMonitor());
             } catch (DBException e) {
                 log.error("Error resolving file system root", e);
-                return Path.of(".nonexistentfolder");
+                path = Path.of(".nonexistentfolder");
             }
         }
         return path;
+    }
+
+    @Override
+    protected synchronized void setPath(Path path) {
+        this.path = path;
     }
 
 }

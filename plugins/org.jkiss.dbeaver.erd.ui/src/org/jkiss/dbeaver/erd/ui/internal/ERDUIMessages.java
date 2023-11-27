@@ -102,6 +102,7 @@ public class ERDUIMessages extends NLS {
     public static String erd_view_style_selection_item_alphabetical_order_action;
     public static String menu_view_style;
     public static String menu_notation_style;
+    public static String menu_router_style;
     public static String menu_attribute_visibility;
     public static String menu_attribute_visibility_default;
     public static String menu_attribute_visibility_entity;
