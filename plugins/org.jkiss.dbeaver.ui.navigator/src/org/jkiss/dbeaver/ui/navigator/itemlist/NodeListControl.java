@@ -156,7 +156,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
-    protected List<DBNNode> createViewerInput(List<DBNNode> objectList) {
+    protected List<DBNNode> createViewerInput(Collection<DBNNode> objectList) {
         return new NodeListInput(objectList);
     }
 
@@ -497,7 +497,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     private class NodeListInput extends ArrayList<DBNNode> implements INavigatorNodeContainer {
-        public NodeListInput(List<DBNNode> objectList) {
+        public NodeListInput(Collection<DBNNode> objectList) {
             super(objectList);
         }
 

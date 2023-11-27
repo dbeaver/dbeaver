@@ -492,7 +492,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             if (reload || objectList.isEmpty()) {
                 // Set viewer content
-                objectList = CommonUtils.isEmpty(items) ? new ArrayList<>() : new ArrayList<>(items);
+                objectList = createViewerInput(items);
 
                 // Pack columns
                 sampleItems = true;
@@ -515,7 +515,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     sampleItems = false;
                 }
                 // Set real content
-                itemsViewer.setInput(createViewerInput(objectList));
+                itemsViewer.setInput(objectList);
             } else if (items != null) {
                 if (append) {
                     // Simply append new list to the tail
@@ -556,8 +556,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         setInfo(getItemsLoadMessage(objectList.size()));
     }
 
-    protected List<OBJECT_TYPE> createViewerInput(List<OBJECT_TYPE> objectList) {
-        return objectList;
+    protected List<OBJECT_TYPE> createViewerInput(Collection<OBJECT_TYPE> objectList) {
+        return new ArrayList<>(objectList);
     }
 
     protected void addExtraColumns(ViewerColumnController<ObjectColumn, Object> columnController, Collection<OBJECT_TYPE> items) {
