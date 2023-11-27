@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * AI engine settings
@@ -63,6 +60,10 @@ public class AIEngineRegistry {
 
         String getReplaces() {
             return contributorConfig.getAttribute("replaces");
+        }
+
+        boolean isDefault() {
+            return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
         }
 
         public List<DBPPropertyDescriptor> getProperties() {
@@ -116,10 +117,19 @@ public class AIEngineRegistry {
         return list;
     }
 
+    public Optional<EngineDescriptor> getDefaultCompletionEngineDescriptor() {
+        return getCompletionEngines().stream().filter(EngineDescriptor::isDefault).findFirst();
+    }
+
     public DAICompletionEngine<?> getCompletionEngine(String id) throws DBException {
         EngineDescriptor descriptor = getEngineDescriptor(id);
         if (descriptor == null) {
-            throw new DBException("AI engine '" + id + "' not found");
+            log.warn("Active engine is not present in the configuration, switching to default active engine");
+            Optional<EngineDescriptor> defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
+            if (defaultCompletionEngineDescriptor.isEmpty()) {
+                throw new DBException("AI engine '" + id + "' not found");
+            }
+            descriptor = defaultCompletionEngineDescriptor.get();
         }
         return descriptor.createInstance();
     }
