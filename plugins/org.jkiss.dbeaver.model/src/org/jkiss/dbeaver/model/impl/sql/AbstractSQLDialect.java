@@ -143,6 +143,10 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         reservedWords.remove(ciWord);
         allKeywords.remove(ciWord);
     }
+    
+    protected void clearAllKeywords() {
+        allKeywords.clear();
+    }
 
     protected void addSQLKeywords(Collection<String> allKeywords) {
         for (String kw : allKeywords) {
@@ -226,10 +230,18 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return reservedWords.values();
     }
 
+    protected void clearReservedWords() {
+        reservedWords.clear();
+    }
+
     @NotNull
     @Override
     public Collection<String> getFunctions() {
         return functions.values();
+    }
+
+    protected void clearFunctions() {
+        functions.clear();
     }
 
     @NotNull
