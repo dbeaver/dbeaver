@@ -88,6 +88,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
@@ -2444,6 +2445,22 @@ public class UIUtils {
                     }
                 }
             }
+        }
+    }
+
+    public static void enableDoubleBuffering(@NotNull Control control) {
+        if ((control.getStyle() & SWT.DOUBLE_BUFFERED) != 0) {
+            // Already enabled - no op
+            return;
+        }
+        try {
+            final Field styleField = Widget.class.getDeclaredField("style");
+            if (!styleField.canAccess(control)) {
+                styleField.setAccessible(true);
+            }
+            styleField.set(control, styleField.getInt(control) | SWT.DOUBLE_BUFFERED);
+        } catch (Exception e) {
+            log.error("Unable to enable double buffering", e.getCause());
         }
     }
 }
