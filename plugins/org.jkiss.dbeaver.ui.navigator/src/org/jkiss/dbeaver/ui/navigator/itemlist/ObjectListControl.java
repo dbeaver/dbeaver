@@ -492,7 +492,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             if (reload || objectList.isEmpty()) {
                 // Set viewer content
-                objectList = CommonUtils.isEmpty(items) ? new ArrayList<>() : new ArrayList<>(items);
+                objectList = createViewerInput(items);
 
                 // Pack columns
                 sampleItems = true;
@@ -503,7 +503,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     } else {
                         sampleList = objectList;
                     }
-                    itemsViewer.setInput(sampleList);
+                    itemsViewer.setInput(createViewerInput(sampleList));
 
                     if (isTree) {
                         ((TreeViewer) itemsViewer).expandToLevel(4);
@@ -556,6 +556,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         setInfo(getItemsLoadMessage(objectList.size()));
     }
 
+    protected List<OBJECT_TYPE> createViewerInput(Collection<OBJECT_TYPE> objectList) {
+        return new ArrayList<>(objectList);
+    }
+
     protected void addExtraColumns(ViewerColumnController<ObjectColumn, Object> columnController, Collection<OBJECT_TYPE> items) {
 
     }
@@ -581,7 +585,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         if (!itemsViewer.getControl().isDisposed()) {
-            itemsViewer.setInput(Collections.emptyList());
+            itemsViewer.setInput(createViewerInput(Collections.emptyList()));
         }
         if (listPropertySource != null) {
             listPropertySource.clearProperties();
