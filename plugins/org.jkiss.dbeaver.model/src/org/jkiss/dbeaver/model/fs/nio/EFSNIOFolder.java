@@ -51,7 +51,7 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
         try {
             Files.createDirectory(getNioPath());
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }

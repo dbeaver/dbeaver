@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Map;
 
 /**
@@ -95,6 +96,16 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public Integer extractPrecisionOfNumericColumn(int valueType, long columnSize) {
+        // Sometimes for some reason Snowflake returns NUMBER as BIGINT
+        if (valueType == Types.NUMERIC || valueType == Types.DECIMAL || valueType == Types.BIGINT) {
+            return Math.toIntExact(columnSize);
+        }
+        return null;
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
