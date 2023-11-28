@@ -60,14 +60,15 @@ public class DBFFileSystemManager implements DBFEventListener {
                 }
             }
         }
-        this.dbfFileSystems = new LinkedHashMap<>();
+        Map<String, DBFVirtualFileSystem> fsList = new LinkedHashMap<>();
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
             var fsProvider = fileSystemProviderDescriptor.getInstance();
             for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, project)) {
-                dbfFileSystems.put(dbfFileSystem.getId(), dbfFileSystem);
+                fsList.put(dbfFileSystem.getId(), dbfFileSystem);
             }
         }
+        dbfFileSystems = fsList;
     }
 
     @NotNull
