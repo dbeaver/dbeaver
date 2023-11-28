@@ -88,6 +88,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
@@ -889,9 +890,19 @@ public class UIUtils {
     }
 
     @Nullable
-    public static Shell getActiveShell()
-    {
-        return getActiveWorkbenchShell();
+    public static Shell getActiveShell() {
+        final Display display = Display.getCurrent();
+        final Shell activeShell = display.getActiveShell();
+        if (activeShell != null) {
+            return activeShell;
+        }
+        final Shell[] shells = display.getShells();
+        for (Shell shell : shells) {
+            if (shell.isVisible()) {
+                return shell;
+            }
+        }
+        return shells.length > 0 ? shells[0] : null;
     }
 
     @Nullable
@@ -1830,18 +1841,7 @@ public class UIUtils {
                 }
             }
         }
-        Display display = Display.getCurrent();
-        Shell activeShell = display.getActiveShell();
-        if (activeShell != null) {
-            return activeShell;
-        }
-        Shell[] shells = display.getShells();
-        for (Shell shell : shells) {
-            if (shell.isVisible()) {
-                return shell;
-            }
-        }
-        return shells.length > 0 ? shells[0] : null;
+        return getActiveShell();
     }
 
     public static DBRRunnableContext getDefaultRunnableContext() {
@@ -2444,6 +2444,22 @@ public class UIUtils {
                     }
                 }
             }
+        }
+    }
+
+    public static void enableDoubleBuffering(@NotNull Control control) {
+        if ((control.getStyle() & SWT.DOUBLE_BUFFERED) != 0) {
+            // Already enabled - no op
+            return;
+        }
+        try {
+            final Field styleField = Widget.class.getDeclaredField("style");
+            if (!styleField.canAccess(control)) {
+                styleField.setAccessible(true);
+            }
+            styleField.set(control, styleField.getInt(control) | SWT.DOUBLE_BUFFERED);
+        } catch (Exception e) {
+            log.error("Unable to enable double buffering", e.getCause());
         }
     }
 }

@@ -44,7 +44,11 @@
                     <parameter name="supports-ddl-transactions" value="false"/>
                     <parameter name="supports-schema-selection" value="false"/>
                 </driver>
-
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="AdditionalProjects" label="Additional project(s)" type="string" description="Comma-separated list of projects (optional)"/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
 
         </datasource>

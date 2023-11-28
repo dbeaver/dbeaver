@@ -148,8 +148,8 @@ import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -4836,6 +4836,7 @@ public class SQLEditor extends SQLEditorBase implements
                             // see #16605
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
+                            results.handleExecuteResult(result);
                             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
                                 query.getType() != SQLQueryType.SELECT
                             ) {
@@ -5499,7 +5500,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         final long currentTime = System.currentTimeMillis();
         final long elapsedSeconds = (currentTime - lastUserActivityTime) / 1000;
-        if (elapsedSeconds < 1) {
+        if (elapsedSeconds < 60) {
             return null;
         }
 
