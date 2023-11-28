@@ -140,8 +140,8 @@ public class AttributePart extends NodePart {
         AssociationPart associationPart = (AssociationPart) connection;
         ERDAssociation association = associationPart.getAssociation();
         ERDEntityAttribute attribute = getAttribute();
-        for (ERDEntityAttribute attr: association.getTargetAttributes()) {
-            if(attr.getObject().equals(attribute.getObject())){
+        for (ERDEntityAttribute attr : association.getTargetAttributes()) {
+            if (attr.getObject().equals(attribute.getObject())) {
                 super.addTargetConnection(connection, index);
             }
         }
