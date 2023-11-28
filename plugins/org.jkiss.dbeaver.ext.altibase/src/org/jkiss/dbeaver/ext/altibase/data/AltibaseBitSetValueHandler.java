@@ -69,7 +69,6 @@ public class AltibaseBitSetValueHandler extends JDBCObjectValueHandler {
         } else {
             try {
                 statement.setObject(paramIndex, value.toString(), Types.BIT);
-                //statement.setObject(paramIndex, "BIT'" + value.toString() + "'");
             } catch (SQLException e) {
                 statement.setObject(paramIndex, value);
             }

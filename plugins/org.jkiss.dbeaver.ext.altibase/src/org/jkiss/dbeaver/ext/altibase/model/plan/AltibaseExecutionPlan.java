@@ -115,12 +115,17 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             clazz = conn.getClass();
             
             /* 
-             * There are two setExplain methods in Connction class: 
+             * There are two setExplain methods in Connection class: 
              * The first one's argument is boolean, the second one's argument is byte.
              * Here, the second method is required.
-             */
-            method = getMethod2SetExplainWithByteArgType(clazz, 
-                    setExplainPlan, AltibaseDataTypeDomain.BYTE.getTypeName().toLowerCase());
+            */
+            method = clazz.getMethod(setExplainPlan, byte.class);
+            
+            if (method == null) {
+                throw new NoSuchMethodException(String.format(
+                        "Unable to find the target method: [class] %s, [method] %s, [argument type] %s", 
+                        clazz.getName(), setExplainPlan,  AltibaseDataTypeDomain.BYTE.getTypeName().toLowerCase()));
+            }
 
             expPlan = AltibaseConstants.ExplainPlan.getByIndex(
                     dataSource.getContainer().getPreferenceStore().getInt(
@@ -140,8 +145,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             
             planQuery = (String) stmt.getClass().getMethod("getExplainPlan").invoke(stmt);
 
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-                | SecurityException | SQLException | ArrayIndexOutOfBoundsException e) {
+        } catch (Exception e) {
             log.error("Failed to execute explain plan: " + e.getMessage());
         } finally {
             if (stmt != null) {
@@ -152,27 +156,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
                 }
             }
         }
-
+        
         return planQuery;
-    }
-
-
-    /**
-     * Returns a method (BYTE xxxx): BYTE data type argument of method with the given name. 
-     */
-    @SuppressWarnings("rawtypes")
-    private Method getMethod2SetExplainWithByteArgType(Class class1, String methodName, String argName) throws NoSuchMethodException {
-        for (Method method : class1.getMethods()) {
-            if (method.getName().equals(methodName)) {
-                for (Class paramType : method.getParameterTypes()) {
-                    if (paramType.toString().equals(argName)) {
-                        return method;
-                    }
-                }
-            }
-        }
-
-        throw new NoSuchMethodException(String.format("Unable to find the target method: [class] %s, [method] %s, [argument type] %s", 
-                        class1.getName(), setExplainPlan,  AltibaseDataTypeDomain.BYTE.getTypeName().toLowerCase()));
     }
 }
