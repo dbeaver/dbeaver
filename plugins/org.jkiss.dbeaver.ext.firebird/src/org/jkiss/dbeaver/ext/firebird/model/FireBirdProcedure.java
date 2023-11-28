@@ -111,7 +111,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
                         "PP.RDB$PARAMETER_NUMBER + 1 AS ORDINAL_POSITION,\n" +
                         "F.RDB$CHARACTER_SET_ID,\n" +
-                        "F.RDB$DEFAULT_SOURCE AS DEFAULT_VALUE\n" +
+                        "COALESCE(PP.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE\n" +
                         "FROM\n" +
                         "   RDB$PROCEDURE_PARAMETERS PP,\n" +
                         "   RDB$FIELDS F\n" +

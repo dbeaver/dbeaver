@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -33,6 +34,11 @@ import java.nio.file.Path;
  * NIOFolder
  */
 public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
+
+    private final String FOLDER_EMULATION_FILE_NAME = ".dbeaver-placeholder";
+    private final byte[] FOLDER_EMULATION_FILE_CONTENT =
+        "This file is created by DBeaver to guarantee support of folders instantiation and deletion."
+        .getBytes(StandardCharsets.UTF_8);
 
     public EFSNIOFolder(EFSNIOFileSystemRoot root, Path backendFolder) {
         super(root, backendFolder);
@@ -49,7 +55,14 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void create(int updateFlags, boolean local, IProgressMonitor monitor) throws CoreException {
         try {
-            Files.createDirectory(getNioPath());
+            if (getRoot().getRoot().getFileSystem().supportsEmptyFolders()) {
+                Files.createDirectory(getNioPath());
+            } else {
+                // This is the workaround for file systems where folders are emulated,
+                // and it's not possible to delete a folder or create an empty folder
+                Path fileForEmulation = Files.createFile(getNioPath().resolve(FOLDER_EMULATION_FILE_NAME));
+                Files.write(fileForEmulation, FOLDER_EMULATION_FILE_CONTENT);
+            }
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
         } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
@@ -66,7 +79,14 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
         try {
-            Files.delete(getNioPath());
+            if (getRoot().getRoot().getFileSystem().supportsEmptyFolders()) {
+                Files.delete(getNioPath());
+            } else {
+                // We can't delete pseudo-folder, so this is a workaround
+                for (IResource resource : members()) {
+                    resource.delete(force, monitor);
+                }
+            }
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));

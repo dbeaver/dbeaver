@@ -62,6 +62,10 @@ public interface DBFVirtualFileSystem extends Closeable {
 
     default void refreshRoots(DBRProgressMonitor monitor) throws DBException {}
 
+    default boolean supportsEmptyFolders() {
+        return true;
+    }
+
     @Override
     default void close() throws IOException {}
 
