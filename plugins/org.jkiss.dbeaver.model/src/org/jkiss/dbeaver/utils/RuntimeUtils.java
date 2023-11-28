@@ -405,12 +405,7 @@ public final class RuntimeUtils {
     }
 
     public static byte[] getLocalMacAddress() throws IOException {
-        InetAddress localHost;
-        try {
-            localHost = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            localHost = InetAddress.getLoopbackAddress();
-        }
+        InetAddress localHost = getLocalHostOrLoopback();
         NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
         if (ni == null) {
             Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
@@ -419,6 +414,17 @@ public final class RuntimeUtils {
             }
         }
         return ni == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
+    }
+
+    @NotNull
+    public static InetAddress getLocalHostOrLoopback() {
+        try {
+            return InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            // dbeaver/pro#2157
+            log.debug("Error resolving localhost address: " + e.getMessage());
+            return InetAddress.getLoopbackAddress();
+        }
     }
 
     /**
