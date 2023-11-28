@@ -143,8 +143,11 @@ public class ClientHomesPanel extends Composite {
         productNameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_name, null, SWT.BORDER | SWT.READ_ONLY);
         productVersionText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_version, null, SWT.BORDER | SWT.READ_ONLY);
 
-        Link urlHelpLabel = UIUtils.createLink(
-                parent,
+        {
+            Composite infoPanel = new Composite(parent, SWT.NONE);
+            infoPanel.setLayout(new GridLayout(1, false));
+            UIUtils.createLink(
+                infoPanel,
                 UIConnectionMessages.controls_client_homes_panel_link_message,
                 new SelectionAdapter() {
                     @Override
@@ -152,9 +155,10 @@ public class ClientHomesPanel extends Composite {
                         ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(WIKI_CONFIGURE_CLIENT));
                     }
                 });
-        GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
-        gridData.horizontalSpan = 2;
-        urlHelpLabel.setLayoutData(gridData);
+            GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
+            gridData.horizontalSpan = 2;
+            infoPanel.setLayoutData(gridData);
+        }
     }
 
     private void removeClientHome() {
