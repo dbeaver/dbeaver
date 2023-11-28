@@ -183,7 +183,7 @@ public class SQLScriptProcessor {
             }
         }
         SQLQuery sqlQuery = (SQLQuery) element;
-        scriptContext.fillQueryParameters(sqlQuery, true);
+        scriptContext.fillQueryParameters(sqlQuery, () -> dataReceiver, true);
         lastError = null;
 
         try {
