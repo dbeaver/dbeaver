@@ -62,7 +62,7 @@ public class AIEngineRegistry {
             return contributorConfig.getAttribute("replaces");
         }
 
-        boolean isDefault() {
+        public boolean isDefault() {
             return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
         }
 
@@ -117,19 +117,19 @@ public class AIEngineRegistry {
         return list;
     }
 
-    public Optional<EngineDescriptor> getDefaultCompletionEngineDescriptor() {
-        return getCompletionEngines().stream().filter(EngineDescriptor::isDefault).findFirst();
+    public EngineDescriptor getDefaultCompletionEngineDescriptor() {
+        return getCompletionEngines().stream().filter(EngineDescriptor::isDefault).findFirst().orElse(null);
     }
 
     public DAICompletionEngine<?> getCompletionEngine(String id) throws DBException {
         EngineDescriptor descriptor = getEngineDescriptor(id);
         if (descriptor == null) {
             log.warn("Active engine is not present in the configuration, switching to default active engine");
-            Optional<EngineDescriptor> defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
-            if (defaultCompletionEngineDescriptor.isEmpty()) {
+            EngineDescriptor defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
+            if (defaultCompletionEngineDescriptor == null) {
                 throw new DBException("AI engine '" + id + "' not found");
             }
-            descriptor = defaultCompletionEngineDescriptor.get();
+            descriptor = defaultCompletionEngineDescriptor;
         }
         return descriptor.createInstance();
     }
