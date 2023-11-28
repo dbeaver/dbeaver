@@ -84,8 +84,14 @@ public class AttributePart extends NodePart {
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return;
         }
-        if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
-            super.addSourceConnection(connection, index);
+        AssociationPart associationPart = (AssociationPart) connection;
+        ERDAssociation association = associationPart.getAssociation();
+        ERDEntityAttribute attribute = getAttribute();
+
+        for (ERDEntityAttribute attr : association.getSourceAttributes()) {
+            if (attr.getObject().equals(attribute.getObject())) {
+                super.addSourceConnection(connection, index);
+            }
         }
     }
 
@@ -95,10 +101,15 @@ public class AttributePart extends NodePart {
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return Collections.emptyList();
         }
+        ERDEntityAttribute attribute = getAttribute();
         List<ERDAssociation> list = new ArrayList<>();
         for (ERDAssociation erdAssociation : super.getModelSourceConnections()) {
-            if (erdAssociation.getSourceAttributes().contains(getAttribute()) && erdAssociation.getSourceEntity() != null) {
-                list.add(erdAssociation);
+            for (ERDEntityAttribute attr :erdAssociation.getSourceAttributes()) {
+                if(attr.getObject().equals(attribute.getObject())) {
+                    System.out.println("SourceConnections added to list: " + erdAssociation);
+                    list.add(erdAssociation);
+                    
+                }
             }
         }
         return list;
@@ -110,10 +121,13 @@ public class AttributePart extends NodePart {
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return Collections.emptyList();
         }
+        ERDEntityAttribute attribute = getAttribute();
         List<ERDAssociation> list = new ArrayList<>();
         for (ERDAssociation erdAssociation : super.getModelTargetConnections()) {
-            if (erdAssociation.getTargetAttributes().contains(getAttribute()) && erdAssociation.getTargetEntity() != null) {
-                list.add(erdAssociation);
+            for (ERDEntityAttribute attr : erdAssociation.getTargetAttributes()) {
+                if (attr.getObject().equals(attribute.getObject())) {
+                    list.add(erdAssociation);
+                }
             }
         }
         return list;
@@ -125,8 +139,13 @@ public class AttributePart extends NodePart {
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return;
         }
-        if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
-            super.addTargetConnection(connection, index);
+        AssociationPart associationPart = (AssociationPart) connection;
+        ERDAssociation association = associationPart.getAssociation();
+        ERDEntityAttribute attribute = getAttribute();
+        for (ERDEntityAttribute attr: association.getTargetAttributes()) {
+            if(attr.getObject().equals(attribute.getObject())){
+                super.addTargetConnection(connection, index);
+            }
         }
     }
 

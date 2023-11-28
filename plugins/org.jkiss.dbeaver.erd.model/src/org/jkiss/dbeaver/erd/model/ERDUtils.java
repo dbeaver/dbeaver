@@ -117,6 +117,22 @@ public class ERDUtils
         return null;
     }
 
+    public static ERDEntityAttribute findModelAttribute(ERDEntity entity, DBSEntityAttribute attr) {
+        if (entity == null) {
+            return null;
+        }
+        for (ERDEntityAttribute erdAttr : entity.getAttributes()) {
+            // if parents and attribute names equal
+            DBSEntity parentObjectFromEntity = erdAttr.getObject().getParentObject();
+            DBSEntity parentObjectFromAttribute = attr.getParentObject();
+            if (parentObjectFromEntity.equals(parentObjectFromAttribute) &&
+                erdAttr.getObject().getName().equals(attr.getName())) {
+                return erdAttr;
+            }
+        }
+        return null;
+    }
+
     public static <T> List<T> getObjectsFromERD(List<? extends ERDObject<T>> erdObjects) {
         List<T> result = null;
         if (erdObjects != null) {
