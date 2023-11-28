@@ -321,7 +321,7 @@ class GenericFilterValueEdit {
                     return enumConstraint.getDictionaryEnumeration(
                         monitor,
                         refColumn,
-                        filterPattern,
+                        null,
                         filterPattern,
                         null,
                         true,
