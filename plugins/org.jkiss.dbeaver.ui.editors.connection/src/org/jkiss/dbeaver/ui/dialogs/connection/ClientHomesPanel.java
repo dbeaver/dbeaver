@@ -37,9 +37,11 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.RemoteNativeClientLocation;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,6 +54,7 @@ import java.util.*;
  */
 public class ClientHomesPanel extends Composite {
     private static final Log log = Log.getLog(ClientHomesPanel.class);
+    public static final String WIKI_CONFIGURE_CLIENT = "https://dbeaver.com/docs/dbeaver/Local-Client-Configuration/";
 
     private static String lastHomeDirectory;
 
@@ -139,6 +142,19 @@ public class ClientHomesPanel extends Composite {
         nameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
         productNameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_name, null, SWT.BORDER | SWT.READ_ONLY);
         productVersionText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_version, null, SWT.BORDER | SWT.READ_ONLY);
+
+        Link urlHelpLabel = UIUtils.createLink(
+                parent,
+                UIConnectionMessages.controls_client_homes_panel_link_message,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(WIKI_CONFIGURE_CLIENT));
+                    }
+                });
+        GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
+        gridData.horizontalSpan = 2;
+        urlHelpLabel.setLayoutData(gridData);
     }
 
     private void removeClientHome() {
