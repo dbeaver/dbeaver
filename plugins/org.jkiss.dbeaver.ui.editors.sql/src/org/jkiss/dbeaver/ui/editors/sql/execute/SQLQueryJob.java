@@ -738,9 +738,6 @@ public class SQLQueryJob extends DataSourceJob
                     log.error("Error generating execution result stats", e);
                 }
             }
-        } else if (!CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH)) {
-            // resultsConsumer.releaseDataReceiver(resultSetNumber);
-            log.debug("Close statistics");
         }
     }
 
