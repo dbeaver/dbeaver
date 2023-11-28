@@ -104,11 +104,9 @@ public class AttributePart extends NodePart {
         ERDEntityAttribute attribute = getAttribute();
         List<ERDAssociation> list = new ArrayList<>();
         for (ERDAssociation erdAssociation : super.getModelSourceConnections()) {
-            for (ERDEntityAttribute attr :erdAssociation.getSourceAttributes()) {
-                if(attr.getObject().equals(attribute.getObject())) {
-                    System.out.println("SourceConnections added to list: " + erdAssociation);
+            for (ERDEntityAttribute attr : erdAssociation.getSourceAttributes()) {
+                if (attr.getObject().equals(attribute.getObject())) {
                     list.add(erdAssociation);
-                    
                 }
             }
         }
