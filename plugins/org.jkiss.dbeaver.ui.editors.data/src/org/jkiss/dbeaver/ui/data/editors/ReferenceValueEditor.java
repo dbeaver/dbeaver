@@ -420,36 +420,7 @@ public class ReferenceValueEditor {
         }
 
         Control control = valueEditor.getControl();
-        ModifyListener modifyListener = e -> {
-            Object curEditorValue;
-            try {
-                curEditorValue = valueEditor.extractEditorValue();
-            } catch (DBException e1) {
-                log.error(e1);
-                return;
-            }
-            // Try to select current value in the table
-            final String curTextValue = valueController.getValueHandler().getValueDisplayString(
-                ((IAttributeController) valueController).getBinding(),
-                curEditorValue,
-                DBDDisplayFormat.EDIT);
-            boolean newValueFound = false;
-            TableItem[] items = editorSelector.getItems();
-            for (TableItem item : items) {
-                if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
-                    editorSelector.deselectAll();
-                    item.setFont(boldFont);
-                    editorSelector.showItem(item);
-                    newValueFound = true;
-                } else {
-                    item.setFont(null);
-                }
-            }
-
-            if (!newValueFound) {
-                controller.reset(curEditorValue);
-            }
-        };
+        ModifyListener modifyListener = e -> showCurrentValue();
         if (control instanceof Text) {
             ((Text)control).addModifyListener(modifyListener);
         } else if (control instanceof StyledText) {
@@ -461,6 +432,37 @@ public class ReferenceValueEditor {
         controller.reset(curValue);
 
         return true;
+    }
+
+    private void showCurrentValue() {
+        Object curEditorValue;
+        try {
+            curEditorValue = valueEditor.extractEditorValue();
+        } catch (DBException e1) {
+            log.error(e1);
+            return;
+        }
+        // Try to select current value in the table
+        final String curTextValue = valueController.getValueHandler().getValueDisplayString(
+            ((IAttributeController) valueController).getBinding(),
+            curEditorValue,
+            DBDDisplayFormat.EDIT);
+        boolean newValueFound = false;
+        TableItem[] items = editorSelector.getItems();
+        for (TableItem item : items) {
+            if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
+                editorSelector.deselectAll();
+                item.setFont(boldFont);
+                editorSelector.showItem(item);
+                newValueFound = true;
+            } else {
+                item.setFont(null);
+            }
+        }
+
+        if (!newValueFound) {
+            controller.reset(curEditorValue);
+        }
     }
 
     private void updateDictionarySelector(EnumValuesData valuesData) {
