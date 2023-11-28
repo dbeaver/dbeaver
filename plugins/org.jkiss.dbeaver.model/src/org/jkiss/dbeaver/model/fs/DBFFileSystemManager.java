@@ -50,7 +50,7 @@ public class DBFFileSystemManager implements DBFEventListener {
         DBFEventManager.getInstance().addListener(this);
     }
 
-    public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
+    public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (dbfFileSystems != null) {
             for (DBFVirtualFileSystem fs : dbfFileSystems.values()) {
                 try {
@@ -105,7 +105,7 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     @NotNull
-    public synchronized Collection<DBFVirtualFileSystem> getVirtualFileSystems() {
+    public synchronized Collection<DBFVirtualFileSystem> getVirtualFileSystems() throws DBException {
         if (dbfFileSystems == null) {
             reloadFileSystems(new LoggingProgressMonitor());
         }
@@ -114,7 +114,11 @@ public class DBFFileSystemManager implements DBFEventListener {
 
     @Override
     public void handleFSEvent() {
-        reloadFileSystems(new LoggingProgressMonitor());
+        try {
+            reloadFileSystems(new LoggingProgressMonitor());
+        } catch (DBException e) {
+            log.error(e);
+        }
     }
 
     public void close() {
