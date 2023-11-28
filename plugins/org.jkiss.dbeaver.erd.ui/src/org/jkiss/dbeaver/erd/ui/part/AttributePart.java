@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -89,7 +88,7 @@ public class AttributePart extends NodePart {
         ERDEntityAttribute attribute = getAttribute();
 
         for (ERDEntityAttribute attr : association.getSourceAttributes()) {
-            if (attr.getObject().equals(attribute.getObject())) {
+            if (attr.getObject() == attribute.getObject()) {
                 super.addSourceConnection(connection, index);
             }
         }
@@ -105,7 +104,7 @@ public class AttributePart extends NodePart {
         List<ERDAssociation> list = new ArrayList<>();
         for (ERDAssociation erdAssociation : super.getModelSourceConnections()) {
             for (ERDEntityAttribute attr : erdAssociation.getSourceAttributes()) {
-                if (attr.getObject().equals(attribute.getObject())) {
+                if (attr.getObject() == attribute.getObject()) {
                     list.add(erdAssociation);
                 }
             }
@@ -123,7 +122,7 @@ public class AttributePart extends NodePart {
         List<ERDAssociation> list = new ArrayList<>();
         for (ERDAssociation erdAssociation : super.getModelTargetConnections()) {
             for (ERDEntityAttribute attr : erdAssociation.getTargetAttributes()) {
-                if (attr.getObject().equals(attribute.getObject())) {
+                if (attr.getObject() == attribute.getObject()) {
                     list.add(erdAssociation);
                 }
             }
@@ -141,7 +140,7 @@ public class AttributePart extends NodePart {
         ERDAssociation association = associationPart.getAssociation();
         ERDEntityAttribute attribute = getAttribute();
         for (ERDEntityAttribute attr : association.getTargetAttributes()) {
-            if (attr.getObject().equals(attribute.getObject())) {
+            if (attr.getObject() == attribute.getObject()) {
                 super.addTargetConnection(connection, index);
             }
         }
