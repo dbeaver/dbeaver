@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
@@ -76,7 +75,7 @@ public class EFSNIOFileStore extends FileStore {
     public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
         try {
             return Files.newInputStream(path);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
@@ -85,7 +84,7 @@ public class EFSNIOFileStore extends FileStore {
     public OutputStream openOutputStream(int options, IProgressMonitor monitor) throws CoreException {
         try {
             return Files.newOutputStream(path);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }

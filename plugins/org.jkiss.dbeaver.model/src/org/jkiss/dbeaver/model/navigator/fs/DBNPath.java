@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -96,6 +98,12 @@ public class DBNPath extends DBNPathBase implements DBNStreamData {
             isDirectory = Files.isDirectory(path);
         }
         return isDirectory;
+    }
+
+    @Override
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+
+        return super.refreshNode(monitor, source);
     }
 
     @Override

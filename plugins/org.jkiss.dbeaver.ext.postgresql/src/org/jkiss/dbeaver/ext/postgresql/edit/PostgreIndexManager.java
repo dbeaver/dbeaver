@@ -139,11 +139,13 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         PostgreIndex index = command.getObject();
+        PostgreDataSource dataSource = index.getDataSource();
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename index",
-                        "ALTER INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                                " RENAME TO " + DBUtils.getQuotedIdentifier(index.getDataSource(), command.getNewName())) //$NON-NLS-1$
+                        "ALTER INDEX " + DBUtils.getQuotedIdentifier(index.getTable().getContainer()) + "." + //$NON-NLS-1$
+                                DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +
+                                " RENAME TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }
 }

@@ -148,8 +148,8 @@ import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2504,9 +2504,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         List<SQLScriptElement> elements;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        if (script ||
-            selection.getLength() > 1 // if we selected several queries - they should not be inside one SQLQuery instance
-        ) {
+        // if we select several queries and press Run, they're intentionally goes into one SQLQuery
+        // it's a workaround for cases where we can't correctly parse whole query
+        // like in package declarations with multiple statements in body
+        if (script) {
             if (executeFromPosition) {
                 // Get all queries from the current position
                 elements = extractScriptQueries(selection.getOffset(), document.getLength(), true, false, true);
@@ -4835,6 +4836,7 @@ public class SQLEditor extends SQLEditorBase implements
                             // see #16605
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
+                            results.handleExecuteResult(result);
                             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
                                 query.getType() != SQLQueryType.SELECT
                             ) {
@@ -5498,7 +5500,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         final long currentTime = System.currentTimeMillis();
         final long elapsedSeconds = (currentTime - lastUserActivityTime) / 1000;
-        if (elapsedSeconds < 1) {
+        if (elapsedSeconds < 60) {
             return null;
         }
 

@@ -48,6 +48,7 @@ public class UIConnectionMessages extends NLS {
     public static String controls_client_homes_panel_label_path;
     public static String controls_client_homes_panel_label_product_name;
     public static String controls_client_homes_panel_label_product_version;
+    public static String controls_client_homes_panel_link_message;
 
     public static String dialog_setting_connection_driver_properties_title;
     public static String dialog_setting_connection_driver_properties_description;

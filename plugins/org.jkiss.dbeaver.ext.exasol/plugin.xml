@@ -439,6 +439,14 @@
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="@dbeaver-backupHostList" label="Use backup host list" type="boolean"/>
+                        <property id="@dbeaver-encrypt" label="Encrypt Communication" type="boolean"/>
+                        <property id="exasol.useLegacyEncryption" label="Use Legacy Encryption" type="boolean"
+                                  description="All connections created using Exasol-provided 7.1 drivers will try to establish TLS connections to Exasol first, regardless of the database version."/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
         </datasource>
     </extension>

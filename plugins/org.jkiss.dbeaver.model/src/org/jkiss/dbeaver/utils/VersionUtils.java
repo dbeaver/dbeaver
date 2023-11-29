@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.utils;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -54,6 +54,11 @@ public class VersionUtils {
             }
         }
         return latest;
+    }
+
+    public static boolean isVersionLessThan(@NotNull String v1, @NotNull String v2) {
+        int compareResult = compareVersions(v1, v2);
+        return compareResult < 0;
     }
 
     public static int compareVersions(@NotNull String v1, @NotNull String v2) {
