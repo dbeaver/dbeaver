@@ -342,6 +342,8 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                 return;
             }
             resetEditorInput();
+            int maxContentLength = valueController.getExecutionContext().getDataSource().getContainer()
+                .getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
             if (value.getContentLength() > maxContentLength) {
                 showLimitedContent(value, maxContentLength);
             } else {
