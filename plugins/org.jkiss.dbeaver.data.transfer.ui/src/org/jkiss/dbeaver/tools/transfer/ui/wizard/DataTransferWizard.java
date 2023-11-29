@@ -217,7 +217,18 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     protected boolean includePipesConfigurationPage() {
-        return settings.isConsumerOptional() || settings.isProducerOptional();
+        if (!settings.isConsumerOptional() && !settings.isProducerOptional()) {
+            return false;
+        }
+
+        // If it's an editor for existing task, show the page only if the user have multiple choices for consumer/producer
+        if (isTaskEditor() && !isNewTaskEditor()) {
+            return settings.isConsumerOptional()
+                ? settings.getConsumer().getProcessors().length > 1
+                : settings.getProducer().getProcessors().length > 1;
+        }
+
+        return true;
     }
 
     @Override
