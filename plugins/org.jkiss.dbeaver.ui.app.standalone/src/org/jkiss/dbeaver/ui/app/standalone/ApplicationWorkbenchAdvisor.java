@@ -339,13 +339,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         try {
             IWorkbenchWindow window = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
-                if (!MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
-                    // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
-                    if (ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT, ConfirmationDialog.QUESTION)
-                        != IDialogConstants.YES_ID)
-                    {
-                        return false;
-                    }
+                if (!closeConfirmed(window)) {
+                    return false;
                 }
                 // Close al content editors
                 // They are locks resources which are shared between other editors
@@ -387,6 +382,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             e.printStackTrace();
             return true;
         }
+    }
+    
+    private boolean closeConfirmed(IWorkbenchWindow window) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.CONFIRM_EXIT_TEMPORARY)) {
+            return true;
+        }
+        if (MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
+            // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
+            return true;
+        }
+        int confirmCode = ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT, ConfirmationDialog.QUESTION);
+        return confirmCode == IDialogConstants.YES_ID;
     }
 
     private boolean closeActiveTransactions() {

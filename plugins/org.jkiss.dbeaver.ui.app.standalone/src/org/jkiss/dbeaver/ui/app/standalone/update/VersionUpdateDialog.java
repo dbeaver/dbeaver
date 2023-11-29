@@ -31,6 +31,7 @@ import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
@@ -38,8 +39,8 @@ import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
@@ -330,8 +331,10 @@ public class VersionUpdateDialog extends Dialog {
                 };
 
                 UIUtils.asyncExec(() -> {
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.CONFIRM_EXIT_TEMPORARY, true);
                     workbench.close();
-
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.CONFIRM_EXIT_TEMPORARY, false);
+                    
                     if (!workbench.isClosing()) {
                         workbench.removeWorkbenchListener(listener);
                         ShellUtils.launchProgram(folder.toString());
