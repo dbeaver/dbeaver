@@ -301,7 +301,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     }
 
     private void loadConsumers() {
-        DataTransferSettings settings = getWizard().getSettings();
+        final DataTransferWizard wizard = getWizard();
+        DataTransferSettings settings = wizard.getSettings();
         Collection<DBSObject> objects = settings.getSourceObjects();
 
         List<TransferTarget> transferTargets = new ArrayList<>();
@@ -311,6 +312,9 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             }
             if (DATABASE_CONSUMER_ID.equals(consumer.getId())
                 && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+                continue;
+            }
+            if (wizard.isTaskEditor() && settings.getConsumer() != null && !settings.getConsumer().getId().equals(consumer.getId())) {
                 continue;
             }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
