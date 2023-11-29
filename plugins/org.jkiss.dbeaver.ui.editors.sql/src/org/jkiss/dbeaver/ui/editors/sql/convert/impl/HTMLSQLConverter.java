@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.convert.ISQLTextConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -82,7 +83,7 @@ public class HTMLSQLConverter implements ISQLTextConverter {
                     result.append("'>");
                     hasSpan = true;
                 }
-                result.append(document.get(tokenOffset, tokenLength));
+                result.append(CommonUtils.escapeHtml(document.get(tokenOffset, tokenLength)));
                 if (hasSpan) {
                     result.append("</span>");
                 }
