@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.runtime.DBSecurityException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -59,7 +60,10 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
             return getNodeByPath(keyPath.getParent())
                 .get(keyPath.getFileName().toString(), null);
         } catch (StorageException e) {
-            throw new DBException("Error getting preference value '" + secretId + "'", e);
+            if (e.getErrorCode() == StorageException.NO_PASSWORD) {
+                throw new DBSecurityException("Can not load secure settings - master password is not provided");
+            }
+            throw new DBSecurityException("Error getting preference value '" + secretId + "'", e);
         }
     }
 
@@ -71,7 +75,10 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
             getNodeByPath(keyPath.getParent())
                 .put(keyPath.getFileName().toString(), secretValue, true);
         } catch (StorageException e) {
-            throw new DBException("Error setting preference value '" + secretId + "'", e);
+            if (e.getErrorCode() == StorageException.NO_PASSWORD) {
+                throw new DBSecurityException("Can not save secure settings - master password is not provided");
+            }
+            throw new DBSecurityException("Error setting preference value '" + secretId + "'", e);
         }
     }
 
@@ -115,7 +122,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
             }
             return new DBSSecret(keyPath.toString(), keyId);
         } catch (StorageException e) {
-            throw new DBException("Error getting secret info '" + secretId + "'", e);
+            throw new DBSecurityException("Error getting secret info '" + secretId + "'", e);
         }
     }
 

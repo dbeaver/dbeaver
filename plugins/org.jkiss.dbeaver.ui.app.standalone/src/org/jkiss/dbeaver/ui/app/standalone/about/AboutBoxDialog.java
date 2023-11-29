@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -167,15 +168,6 @@ public class AboutBoxDialog extends InformationDialog
                 });
             }
         });
-        
-        Label imageLabel = new Label(group, SWT.NONE);
-        imageLabel.setBackground(background);
-
-        gd = new GridData();
-        gd.verticalAlignment = GridData.BEGINNING;
-        gd.horizontalAlignment = GridData.CENTER;
-        gd.grabExcessHorizontalSpace = false;
-        imageLabel.setLayoutData(gd);
 
         if (splashImage == null) {
             try {
@@ -199,10 +191,19 @@ public class AboutBoxDialog extends InformationDialog
                 log.debug(e);
             }
         }
-        if (splashImage != null) {
-            imageLabel.setImage(splashImage);
-        } else {
-            imageLabel.setImage(ABOUT_IMAGE);
+
+        {
+            final Image image = splashImage != null ? splashImage : ABOUT_IMAGE;
+            final Canvas canvas = new Canvas(group, SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND) {
+                @Override
+                public Point computeSize(int wHint, int hHint, boolean changed) {
+                    final Rectangle bounds = image.getBounds();
+                    return new Point(bounds.width, bounds.height);
+                }
+            };
+            canvas.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, true, true));
+            canvas.addPaintListener(e -> e.gc.drawImage(image, 0, 0));
+            HolidayDecorations.install(canvas);
         }
 
         Text versionLabel = new Text(group, SWT.NONE);

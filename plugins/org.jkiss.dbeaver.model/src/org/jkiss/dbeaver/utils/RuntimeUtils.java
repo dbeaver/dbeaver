@@ -405,7 +405,12 @@ public final class RuntimeUtils {
     }
 
     public static byte[] getLocalMacAddress() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
+        InetAddress localHost;
+        try {
+            localHost = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            localHost = InetAddress.getLoopbackAddress();
+        }
         NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
         if (ni == null) {
             Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
@@ -576,6 +581,32 @@ public final class RuntimeUtils {
         } catch (InterruptedException e) {
             // ignore
         }
+    }
+
+    @Nullable
+    public static String getSystemPropertyIgnoreCase(@NotNull String key) {
+        final Properties props = System.getProperties();
+
+        for (String name : props.stringPropertyNames()) {
+            if (name.equalsIgnoreCase(key)) {
+                return props.getProperty(key);
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static String getSystemEnvIgnoreCase(@NotNull String key) {
+        final Map<String, String> env = System.getenv();
+
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
     }
 
     private enum CommandLineState {

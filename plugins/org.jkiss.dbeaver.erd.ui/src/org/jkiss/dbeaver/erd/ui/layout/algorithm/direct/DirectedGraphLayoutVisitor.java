@@ -205,12 +205,26 @@ public class DirectedGraphLayoutVisitor {
 
         tableFigure.setBounds(bounds);
 
-        for (int i = 0; i < entityPart.getSourceConnections().size(); i++) {
-            applyConnectionResults((AbstractConnectionEditPart) entityPart.getSourceConnections().get(i));
+        List<?> sourceConnections = entityPart.getSourceConnections();
+        for (int i = 0; i < sourceConnections.size(); i++) {
+            Object srcObject = sourceConnections.get(i);
+            if (srcObject instanceof AbstractConnectionEditPart) {
+                AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) srcObject;
+                applyConnectionResults(connectionPart);
+            } else {
+                log.info("Object: " + srcObject.toString() + " is not an instance of AbstractConnectionEditPart.");
+            }
         }
         for (Object child : entityPart.getChildren()) {
-            for (Object sourceConnection : ((AttributePart) child).getSourceConnections()) {
-                applyConnectionResults((AbstractConnectionEditPart) sourceConnection);
+            if (child instanceof AttributePart) {
+                for (Object srcObject : ((AttributePart) child).getSourceConnections()) {
+                    if (srcObject instanceof AbstractConnectionEditPart) {
+                        AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) srcObject;
+                        applyConnectionResults(connectionPart);
+                    } else {
+                        log.info("Object: " + srcObject.toString() + " is not an instance of AbstractConnectionEditPart.");
+                    }
+                }
             }
         }
     }
@@ -219,7 +233,10 @@ public class DirectedGraphLayoutVisitor {
 
     protected void applyConnectionResults(AbstractConnectionEditPart connectionPart)
     {
-
+        if (!partToNodesMap.containsKey(connectionPart)) {
+            log.info("Can't find associated edge for connection.");
+            return;
+        }
         Edge connEdge = (Edge) partToNodesMap.get(connectionPart);
 
         NodeList edgeNodes = connEdge.vNodes;
