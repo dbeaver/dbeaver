@@ -471,11 +471,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // Set initial (empty) contents
         viewer.setContents(new EntityDiagram(null, "empty", getContentProvider(), getDecorator()));
+        ERDEditorContextMenuProvider provider = createContextProvider();
+        viewer.setContextMenu(provider);
 
         // Set context menu
         IWorkbenchPartSite site = getSite();
-        ERDEditorContextMenuProvider provider = createContextProvider(site);
-        viewer.setContextMenu(provider);
         if (site instanceof IEditorSite) {
             ((IEditorSite)site).registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer, false);
         } else {
@@ -484,7 +484,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     @NotNull
-    protected ERDEditorContextMenuProvider createContextProvider(IWorkbenchPartSite site) {
+    protected ERDEditorContextMenuProvider createContextProvider() {
         return new ERDEditorContextMenuProvider(this, true);
     }
 
