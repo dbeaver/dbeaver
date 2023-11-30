@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.meta.ComponentReference;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -41,7 +42,10 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -612,18 +616,58 @@ public final class RuntimeUtils {
         return null;
     }
 
-    public static <T> T getBundleService(Class<T> theClass) throws IllegalStateException {
+    public static <T> T getBundleService(Class<T> theClass, boolean required) throws IllegalStateException {
         Bundle bundle = FrameworkUtil.getBundle(theClass);
         BundleContext bundleContext = bundle.getBundleContext();
         ServiceReference<T> serviceReference = bundleContext.getServiceReference(theClass);
         if (serviceReference == null) {
-            throw new IllegalStateException("Service '" + theClass.getName() + "' is not registered");
+            if (required) {
+                throw new IllegalStateException("Service '" + theClass.getName() + "' is not registered");
+            }
+            return null;
         }
         T service = bundleContext.getService(serviceReference);
         if (service == null) {
-            throw new IllegalStateException("Service '" + theClass.getName() + "' implementation not found");
+            if (required) {
+                throw new IllegalStateException("Service '" + theClass.getName() + "' implementation not found");
+            }
+        } else {
+            RuntimeUtils.injectComponentReferences(service);
         }
+
         return service;
+    }
+
+    public static void injectComponentReferences(Object object) {
+        Class<?> aClass = object.getClass();
+        for (Field field : aClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            ComponentReference refAnno = field.getAnnotation(ComponentReference.class);
+            if (refAnno != null) {
+                Class<?> serviceClass = refAnno.service();
+                if (serviceClass == Object.class) {
+                    serviceClass = field.getType();
+                }
+                try {
+                    Object fieldValue = field.get(object);
+                    if (fieldValue == null) {
+                        Object bundleService = getBundleService(serviceClass, refAnno.required());
+                        field.setAccessible(true);
+                        field.set(object, bundleService);
+
+                        if (bundleService != null && !CommonUtils.isEmpty(refAnno.postProcessMethod())) {
+                            Method postProcessMethod = bundleService.getClass().getDeclaredMethod(refAnno.postProcessMethod());
+                            postProcessMethod.setAccessible(true);
+                            postProcessMethod.invoke(bundleService);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error injecting field '" + field.getName() + "' in '" + object + "'", e);
+                }
+            }
+        }
     }
 
     private enum CommandLineState {

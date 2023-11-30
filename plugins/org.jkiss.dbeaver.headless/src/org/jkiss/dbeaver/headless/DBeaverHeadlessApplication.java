@@ -17,12 +17,15 @@
 package org.jkiss.dbeaver.headless;
 
 import org.eclipse.equinox.app.IApplicationContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -37,6 +40,8 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
+        initializeApplicationServices(context);
+
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         if (RuntimeUtils.isWindows() && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
@@ -55,6 +60,17 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
     @Override
     public @Nullable Path getDefaultWorkingFolder() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public Class<? extends DBPPlatform> getPlatformClass() {
+        return DBeaverTestPlatform.class;
+    }
+
+    @Override
+    public Class<? extends DBPPlatformUI> getPlatformUIClass() {
+        return DBeaverTestPlatformUI.class;
     }
 
     @Override

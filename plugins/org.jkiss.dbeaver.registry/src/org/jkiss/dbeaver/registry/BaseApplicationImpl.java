@@ -23,11 +23,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.osgi.framework.BundleContext;
 
+import java.lang.reflect.Constructor;
 import java.util.UUID;
 
 /**
@@ -147,6 +151,27 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @Override
     public void stop() {
 
+    }
+
+    protected void initializeApplicationServices(IApplicationContext context) {
+        // Initialize platform
+        BundleContext bundleContext = context.getBrandingBundle().getBundleContext();
+        registerService(bundleContext, DBPPlatform.class, getPlatformClass());
+        registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
+    }
+
+    private <T> void registerService(BundleContext bundleContext, Class<T> serviceInt, Class<? extends T> serviceImplClass) {
+        if (serviceImplClass == null) {
+            return;
+        }
+        try {
+            Constructor<? extends T> constructor = serviceImplClass.getConstructor();
+            constructor.setAccessible(true);
+            T serviceImpl = constructor.newInstance();
+            bundleContext.registerService(serviceInt, serviceImpl, null);
+        } catch (Throwable e) {
+            log.error("Error instantiating service '" + serviceInt.getName() + "'", e);
+        }
     }
 
 }

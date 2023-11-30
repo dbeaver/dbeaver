@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.equinox.app.IApplicationContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.nio.file.Path;
 
@@ -64,6 +67,17 @@ public class EclipsePluginApplicationImpl extends DesktopApplicationImpl {
     @Override
     public Path getDefaultWorkingFolder() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public Class<? extends DBPPlatform> getPlatformClass() {
+        return null;
+    }
+
+    @Override
+    public Class<? extends DBPPlatformUI> getPlatformUIClass() {
+        return super.getPlatformUIClass();
     }
 
     @Override

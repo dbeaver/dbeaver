@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,8 +82,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
 
     private SQLDialectMetadataRegistry sqlDialectRegistry;
-    @Reference
-    private SQLDialectMetadataRegistry sqlDialectRegistry2;
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -164,7 +161,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public SQLDialectMetadataRegistry getSQLDialectRegistry() {
         if (sqlDialectRegistry == null) {
-            sqlDialectRegistry = RuntimeUtils.getBundleService(SQLDialectMetadataRegistry.class);
+            sqlDialectRegistry = RuntimeUtils.getBundleService(SQLDialectMetadataRegistry.class, true);
         }
         return sqlDialectRegistry;
     }

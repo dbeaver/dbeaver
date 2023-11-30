@@ -19,12 +19,11 @@ package org.jkiss.dbeaver.runtime;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPApplicationWorkbench;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * Workbench
@@ -33,24 +32,34 @@ public class DBWorkbench {
 
     private static final Log log = Log.getLog(DBWorkbench.class);
 
-    private static final DBWorkbench instance = new DBWorkbench();
-    private static final ConsoleUserInterface CONSOLE_USER_INTERFACE = new ConsoleUserInterface();
+    private static DBPApplicationWorkbench applicationWorkbench;
 
-    private static volatile DBPPlatform platformInstance = null;
-    private static volatile DBPPlatformUI platformUIInstance = null;
+//    private static final DBWorkbench instance = new DBWorkbench();
+//    private static final ConsoleUserInterface CONSOLE_USER_INTERFACE = new ConsoleUserInterface();
+//
+//    private static volatile DBPPlatform platformInstance = null;
+//    private static volatile DBPPlatformUI platformUIInstance = null;
+
+    private static DBPApplicationWorkbench getApplicationWorkbench() {
+        if (applicationWorkbench == null) {
+            applicationWorkbench = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
+        }
+        return applicationWorkbench;
+    }
 
     public static DBPPlatform getPlatform() {
-        if (platformInstance == null) {
-            synchronized (DBWorkbench.class) {
-                if (platformInstance == null) {
-                    platformInstance = GeneralUtils.adapt(instance, DBPPlatform.class);
-                    if (platformInstance == null) {
-                        throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
-                    }
-                }
-            }
-        }
-        return platformInstance;
+        return getApplicationWorkbench().getPlatform();
+//        if (platformInstance == null) {
+//            synchronized (DBWorkbench.class) {
+//                if (platformInstance == null) {
+//                    platformInstance = GeneralUtils.adapt(instance, DBPPlatform.class);
+//                    if (platformInstance == null) {
+//                        throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
+//                    }
+//                }
+//            }
+//        }
+//        return platformInstance;
     }
 
     public static <T extends DBPPlatform> T getPlatform(Class<T> pc) {
@@ -58,22 +67,23 @@ public class DBWorkbench {
     }
 
     public static DBPPlatformUI getPlatformUI() {
-        if (platformUIInstance == null) {
-            synchronized (DBWorkbench.class) {
-                if (platformUIInstance == null) {
-                    if (getPlatform().getApplication().isHeadlessMode()) {
-                        return CONSOLE_USER_INTERFACE;
-                    }
-                    platformUIInstance = GeneralUtils.adapt(instance, DBPPlatformUI.class);
-                    if (platformUIInstance == null) {
-                        // Use console UI
-                        log.debug(new DBException("No platform UI installed. Use console interface"));
-                        platformUIInstance = CONSOLE_USER_INTERFACE;
-                    }
-                }
-            }
-        }
-        return platformUIInstance;
+        return getApplicationWorkbench().getPlatformUI();
+//        if (platformUIInstance == null) {
+//            synchronized (DBWorkbench.class) {
+//                if (platformUIInstance == null) {
+//                    if (getPlatform().getApplication().isHeadlessMode()) {
+//                        return CONSOLE_USER_INTERFACE;
+//                    }
+//                    platformUIInstance = GeneralUtils.adapt(instance, DBPPlatformUI.class);
+//                    if (platformUIInstance == null) {
+//                        // Use console UI
+//                        log.debug(new DBException("No platform UI installed. Use console interface"));
+//                        platformUIInstance = CONSOLE_USER_INTERFACE;
+//                    }
+//                }
+//            }
+//        }
+//        return platformUIInstance;
     }
 
     /**

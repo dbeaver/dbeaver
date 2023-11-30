@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.IOException;
@@ -58,21 +57,21 @@ public class DPIPlatform extends BasePlatformImpl {
     private QMRegistryImpl qmController;
     private DefaultCertificateStorage defaultCertificateStorage;
 
-    public static DPIPlatform getInstance() {
-        return instance;
-    }
-
-    static DPIPlatform createInstance() {
-        log.debug("Initializing " + GeneralUtils.getProductTitle());
-        try {
-            instance = new DPIPlatform();
-            instance.initialize();
-            return instance;
-        } catch (Throwable e) {
-            log.error("Error initializing DPI platform", e);
-            throw new IllegalStateException("Error initializing DPI platform", e);
-        }
-    }
+//    public static DPIPlatform getInstance() {
+//        return instance;
+//    }
+//
+//    static DPIPlatform createInstance() {
+//        log.debug("Initializing " + GeneralUtils.getProductTitle());
+//        try {
+//            instance = new DPIPlatform();
+//            instance.initialize();
+//            return instance;
+//        } catch (Throwable e) {
+//            log.error("Error initializing DPI platform", e);
+//            throw new IllegalStateException("Error initializing DPI platform", e);
+//        }
+//    }
 
     public static boolean isClosing() {
         return isClosing;
@@ -82,7 +81,7 @@ public class DPIPlatform extends BasePlatformImpl {
         isClosing = closing;
     }
 
-    private DPIPlatform() {
+    DPIPlatform() {
     }
 
     protected void initialize() {
