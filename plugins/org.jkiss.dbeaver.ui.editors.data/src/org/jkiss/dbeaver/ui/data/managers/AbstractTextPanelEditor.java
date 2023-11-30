@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -310,8 +311,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                 return;
             }
             resetEditorInput();
-            int maxContentLength = valueController.getExecutionContext().getDataSource().getContainer()
-                .getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
+            final DBPPreferenceStore store = valueController.getExecutionContext() != null
+                ? valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore()
+                : DBWorkbench.getPlatform().getPreferenceStore();
+            final int maxContentLength = store.getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
             if (value.getContentLength() > maxContentLength) {
                 showLimitedContent(value, maxContentLength);
             } else {
