@@ -44,3 +44,4 @@ Require-Bundle: org.eclipse.equinox.security,
  org.jkiss.dbeaver.model.jdbc
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.sql
+Service-Component: META-INF/sql-dialect-registry.xml

@@ -30,14 +30,13 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
@@ -46,6 +45,8 @@ import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,6 +61,7 @@ import java.util.Map;
  *
  * Base implementation of DBeaver platform
  */
+@Component
 public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
@@ -79,6 +81,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     
     private DBConfigurationController defaultConfigurationController;
     private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
+
+    private SQLDialectMetadataRegistry sqlDialectRegistry;
+    @Reference
+    private SQLDialectMetadataRegistry sqlDialectRegistry2;
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -156,6 +162,15 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public SQLDialectMetadataRegistry getSQLDialectRegistry() {
+        if (sqlDialectRegistry == null) {
+            sqlDialectRegistry = RuntimeUtils.getBundleService(SQLDialectMetadataRegistry.class);
+        }
+        return sqlDialectRegistry;
+    }
+
+    @NotNull
+    @Override
     public DBWHandlerRegistry getNetworkHandlerRegistry() {
         return NetworkHandlerRegistry.getInstance();
     }
@@ -174,8 +189,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     
     @NotNull
     @Override
-    public DBConfigurationController getPluginConfigurationController(@NotNull String pluginId) {
-        return getConfigurationController(Platform.getBundle(pluginId));
+    public DBConfigurationController getPluginConfigurationController(@Nullable String pluginId) {
+        return getConfigurationController(pluginId == null ? null : Platform.getBundle(pluginId));
     }
     
     private DBConfigurationController getConfigurationController(Bundle bundle) {
@@ -304,4 +319,5 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
     }
+
 }

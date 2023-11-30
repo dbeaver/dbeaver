@@ -36,6 +36,9 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -607,6 +610,20 @@ public final class RuntimeUtils {
         }
 
         return null;
+    }
+
+    public static <T> T getBundleService(Class<T> theClass) throws IllegalStateException {
+        Bundle bundle = FrameworkUtil.getBundle(theClass);
+        BundleContext bundleContext = bundle.getBundleContext();
+        ServiceReference<T> serviceReference = bundleContext.getServiceReference(theClass);
+        if (serviceReference == null) {
+            throw new IllegalStateException("Service '" + theClass.getName() + "' is not registered");
+        }
+        T service = bundleContext.getService(serviceReference);
+        if (service == null) {
+            throw new IllegalStateException("Service '" + theClass.getName() + "' implementation not found");
+        }
+        return service;
     }
 
     private enum CommandLineState {

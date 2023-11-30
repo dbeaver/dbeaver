@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 
 import java.io.IOException;
@@ -71,6 +72,9 @@ public interface DBPPlatform {
 
     @NotNull
     DBFRegistry getFileSystemRegistry();
+
+    @NotNull
+    SQLDialectMetadataRegistry getSQLDialectRegistry();
 
     @NotNull
     DBWHandlerRegistry getNetworkHandlerRegistry();
