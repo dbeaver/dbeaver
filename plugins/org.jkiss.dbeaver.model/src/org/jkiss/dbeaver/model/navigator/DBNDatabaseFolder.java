@@ -84,6 +84,13 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     @NotNull
     @Override
+    public String getNodeId() {
+        var idOrType = meta.getIdOrType();
+        return CommonUtils.isEmpty(idOrType) ? getName() : idOrType;
+    }
+
+    @NotNull
+    @Override
     @Property(viewable = true)
     public String getName() {
         return meta.getChildrenTypeLabel(getDataSource(), null);

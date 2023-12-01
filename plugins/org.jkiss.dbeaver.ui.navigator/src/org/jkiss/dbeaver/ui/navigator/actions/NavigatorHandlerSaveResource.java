@@ -227,7 +227,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
         monitor.beginTask("Collect statistics", nodes.size());
         Map<DBNPathBase, List<PathInfo>> sourceResources = new LinkedHashMap<>();
         for (DBNPathBase node : nodes) {
-            monitor.subTask(node.getNodeName());
+            monitor.subTask(node.getNodeDisplayName());
             Path path = node.getPath();
 
             if (Files.isDirectory(path)) {

@@ -101,7 +101,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return getFileName();
     }
 
@@ -225,6 +225,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         return this;
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         return getParentNode().getNodeItemPath() + "/" + getName();
@@ -284,7 +285,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             String action = (doCopy ? "Copy" : "Move") + " resource(s)";
             String message =
                 action + "\n" +
-                nodes.stream().map(DBNNode::getNodeName).collect(Collectors.joining(",")) +
+                    nodes.stream().map(DBNNode::getNodeDisplayName).collect(Collectors.joining(",")) +
                 "\ninto folder " + folder.getFullPath() + "?";
             if (!DBWorkbench.getPlatformUI().confirmAction(action, message)) {
                 return;
@@ -380,7 +381,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
                     return 1;
                 }
             }
-            return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
+            return o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName());
         });
     }
 

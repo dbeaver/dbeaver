@@ -70,6 +70,12 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
         return NodePathType.dbvfs.name();
     }
 
+    @NotNull
+    @Override
+    public String getNodeId() {
+        return NodePathType.dbvfs.name();
+    }
+
     @Override
     public String getNodeTypeLabel() {
         return ModelMessages.fs_root;
@@ -77,7 +83,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return "Remote file systems";
     }
 
@@ -162,7 +168,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
             result.add(newChild);
         }
 
-        result.sort((o1, o2) -> o1.getNodeName().compareToIgnoreCase(o2.getNodeName()));
+        result.sort((o1, o2) -> o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName()));
         monitor.done();
         return result.toArray(new DBNFileSystem[0]);
     }
@@ -247,6 +253,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
         }
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         return NodePathType.ext.getPrefix() + ((DBNProject) getParentNode()).getProject().getId() + "/" + getName();
@@ -280,7 +287,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
                         String itemName = pathSegments[i];
                         DBNPathBase childNode = parentNode.getChild(itemName);
                         if (childNode == null) {
-                            log.debug("Cannot find child node '" + itemName + "' in '" + parentNode.getNodeItemPath() + "'");
+                            log.debug("Cannot find child node '" + itemName + "' in '" + parentNode.getNodeUri() + "'");
                             return;
                         }
                         parentNode = childNode;

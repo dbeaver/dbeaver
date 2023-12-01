@@ -75,9 +75,14 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public String getNodeType()
-    {
-        return "connections";
+    public String getNodeType() {
+        return "datasources";
+    }
+
+    @NotNull
+    @Override
+    public String getNodeId() {
+        return "datasources";
     }
 
     public DBPDataSourceRegistry getDataSourceRegistry()
@@ -107,11 +112,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Property(viewable = true, order = 1)
     public String getName()
     {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
     @Override
-    public String getNodeName()
+    public String getNodeDisplayName()
     {
         return "Connections";
     }
@@ -230,9 +235,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return true;
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getNodeName();
+        return getParentNode().getNodeItemPath() + "/" + getNodeDisplayName();
     }
 
     public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)

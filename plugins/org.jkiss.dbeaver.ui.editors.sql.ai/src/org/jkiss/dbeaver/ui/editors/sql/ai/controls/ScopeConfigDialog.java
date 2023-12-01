@@ -160,7 +160,7 @@ public class ScopeConfigDialog extends BaseDialog {
                     new TreeItem(objectTree, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
                 item.setData(child);
                 item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
-                item.setText(node.getNodeName());
+                item.setText(node.getNodeDisplayName());
                 String objectId = DBUtils.getObjectFullId(child);
                 if (checkedObjectIds.contains(objectId)) {
                     item.setChecked(true);

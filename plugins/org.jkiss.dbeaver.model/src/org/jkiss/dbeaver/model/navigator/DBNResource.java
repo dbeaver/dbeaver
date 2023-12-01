@@ -131,7 +131,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         if (resource == null || handler == null) {
             return null;
         }
@@ -333,6 +333,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         }
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         String projectPath = getRawNodeItemPath();

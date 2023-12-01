@@ -224,7 +224,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             return permissionMap.get(fqProcName);
         } else if (object instanceof DBNDatabaseFolder) {
             DBNDatabaseFolder folder = (DBNDatabaseFolder) object;
-            String parentNodeName = folder.getParentNode().getNodeName();
+            String parentNodeName = folder.getParentNode().getNodeDisplayName();
             Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
             String permissionKey = parentNodeName + ".";
             if (DBSSequence.class.isAssignableFrom(childrenClass)) {

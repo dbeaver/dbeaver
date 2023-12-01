@@ -38,6 +38,7 @@ import java.util.List;
 public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable
 {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
+    public static final String DATASOURCE_NODE_TYPE = "datasource";
 
     private final DBPDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
@@ -107,8 +108,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public String getNodeName()
-    {
+    public String getNodeDisplayName() {
         return dataSource.getName();
     }
 
@@ -121,9 +121,10 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     @Override
     public String getNodeFullName()
     {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         return makeDataSourceItemPath(dataSource);
@@ -133,6 +134,17 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     public boolean isManagable()
     {
         return true;
+    }
+
+    @Override
+    public String getNodeType() {
+        return DATASOURCE_NODE_TYPE;
+    }
+
+    @NotNull
+    @Override
+    public String getNodeId() {
+        return dataSource.getId();
     }
 
     @Override
