@@ -392,24 +392,20 @@ public class ReferenceValueEditor {
         editorSelector.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                if (valueEditor.isReadOnly()) {
-                    return;
-                }
-                TableItem[] selection = editorSelector.getSelection();
-                if (selection != null && selection.length > 0) {
-                    Object value = selection[0].getData();
-                    //editorControl.setText(selection[0].getText());
-                    try {
-                        valueEditor.primeEditorValue(value);
-                    } catch (DBException e1) {
-                        log.error(e1);
-                    }
-                }
+                primeValueToSelection();
             }
         });
         {
             MenuManager menuMgr = new MenuManager();
             menuMgr.addMenuListener(manager -> {
+                if (!valueEditor.isReadOnly()) {
+                    manager.add(new Action(ResultSetMessages.reference_value_editor_value_label) {
+                        @Override
+                        public void run() {
+                            primeValueToSelection();
+                        }
+                    });
+                }
                 manager.add(new CopyAction());
                 manager.add(new Separator());
             });
@@ -434,6 +430,22 @@ public class ReferenceValueEditor {
         return true;
     }
 
+    private void primeValueToSelection() {
+        if (valueEditor.isReadOnly()) {
+            return;
+        }
+        TableItem[] selection = editorSelector.getSelection();
+        if (selection != null && selection.length > 0) {
+            Object value = selection[0].getData();
+            //editorControl.setText(selection[0].getText());
+            try {
+                valueEditor.primeEditorValue(value);
+            } catch (DBException e1) {
+                log.error(e1);
+            }
+        }
+    }
+
     private void showCurrentValue() {
         Object curEditorValue;
         try {
@@ -453,6 +465,7 @@ public class ReferenceValueEditor {
             if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                 editorSelector.deselectAll();
                 item.setFont(boldFont);
+                editorSelector.setSelection(item);
                 editorSelector.showItem(item);
                 newValueFound = true;
             } else {
@@ -541,6 +554,7 @@ public class ReferenceValueEditor {
                 editorSelector.deselectAll();
                 if (curItem != null) {
                     curItem.setFont(boldFont);
+                    editorSelector.setSelection(curItem);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
                     editorSelector.setTopIndex(curItemIndex);
