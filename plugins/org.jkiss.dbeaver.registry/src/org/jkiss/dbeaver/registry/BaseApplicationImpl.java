@@ -47,7 +47,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     private final long applicationStartTime = System.currentTimeMillis();
 
     protected BaseApplicationImpl() {
-        if (INSTANCE != null && !(INSTANCE instanceof EclipsePluginApplicationImpl)) {
+        if (INSTANCE != null) {
             log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
         }
         INSTANCE = this;
@@ -65,7 +65,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
                 }
             }
             if (instance == null) {
-                instance = new EclipsePluginApplicationImpl();
+                throw new IllegalStateException("No DBeaver application found");
             }
             INSTANCE = instance;
         }
