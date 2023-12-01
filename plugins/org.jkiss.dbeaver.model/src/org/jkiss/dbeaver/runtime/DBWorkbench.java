@@ -34,12 +34,6 @@ public class DBWorkbench {
 
     private static DBPApplicationWorkbench applicationWorkbench;
 
-//    private static final DBWorkbench instance = new DBWorkbench();
-//    private static final ConsoleUserInterface CONSOLE_USER_INTERFACE = new ConsoleUserInterface();
-//
-//    private static volatile DBPPlatform platformInstance = null;
-//    private static volatile DBPPlatformUI platformUIInstance = null;
-
     private static DBPApplicationWorkbench getApplicationWorkbench() {
         if (applicationWorkbench == null) {
             applicationWorkbench = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
@@ -49,17 +43,6 @@ public class DBWorkbench {
 
     public static DBPPlatform getPlatform() {
         return getApplicationWorkbench().getPlatform();
-//        if (platformInstance == null) {
-//            synchronized (DBWorkbench.class) {
-//                if (platformInstance == null) {
-//                    platformInstance = GeneralUtils.adapt(instance, DBPPlatform.class);
-//                    if (platformInstance == null) {
-//                        throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
-//                    }
-//                }
-//            }
-//        }
-//        return platformInstance;
     }
 
     public static <T extends DBPPlatform> T getPlatform(Class<T> pc) {
@@ -68,22 +51,6 @@ public class DBWorkbench {
 
     public static DBPPlatformUI getPlatformUI() {
         return getApplicationWorkbench().getPlatformUI();
-//        if (platformUIInstance == null) {
-//            synchronized (DBWorkbench.class) {
-//                if (platformUIInstance == null) {
-//                    if (getPlatform().getApplication().isHeadlessMode()) {
-//                        return CONSOLE_USER_INTERFACE;
-//                    }
-//                    platformUIInstance = GeneralUtils.adapt(instance, DBPPlatformUI.class);
-//                    if (platformUIInstance == null) {
-//                        // Use console UI
-//                        log.debug(new DBException("No platform UI installed. Use console interface"));
-//                        platformUIInstance = CONSOLE_USER_INTERFACE;
-//                    }
-//                }
-//            }
-//        }
-//        return platformUIInstance;
     }
 
     /**
