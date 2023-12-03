@@ -441,4 +441,18 @@ public final class IOUtils {
         return isLocalURI(filePath.toUri());
     }
 
+    /**
+     * Returns the <em>grandparent path</em>, or {@code null} if this path does not have a grandparent.
+     *
+     * @param path a path
+     * @return a path representing the path's grandparent
+     */
+    @Nullable
+    public static Path getGrandparent(@NotNull Path path) {
+        Path parent = path.getParent();
+        if (parent == null) {
+            return null;
+        }
+        return parent.getParent();
+    }
 }

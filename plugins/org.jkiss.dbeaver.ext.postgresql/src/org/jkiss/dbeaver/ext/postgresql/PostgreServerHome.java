@@ -30,6 +30,10 @@ public class PostgreServerHome extends LocalNativeClientLocation {
         this.branding = branding;
     }
 
+    PostgreServerHome(String path) {
+        this(path, path, path);
+    }
+
     @NotNull
     @Override
     public String getDisplayName() {

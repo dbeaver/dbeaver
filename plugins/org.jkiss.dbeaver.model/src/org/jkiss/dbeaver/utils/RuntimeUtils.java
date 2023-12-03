@@ -57,13 +57,26 @@ import java.util.*;
 public final class RuntimeUtils {
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
-    private static final boolean IS_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
-    private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
-    private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
+    private static final boolean IS_OS_ARCH_AARCH64;
+    private static final boolean IS_OS_ARCH_AMD64;
+    private static final boolean IS_LINUX;
+    private static final boolean IS_MACOS;
+    private static final boolean IS_WINDOWS;
 
     private static final boolean IS_GTK = Platform.getWS().equals(Platform.WS_GTK);
 
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
+
+    static {
+        String arch = Platform.getOSArch();
+        IS_OS_ARCH_AARCH64 = Platform.ARCH_AARCH64.equals(arch);
+        IS_OS_ARCH_AMD64 = Platform.ARCH_X86_64.equals(arch);
+
+        String os = Platform.getOS();
+        IS_LINUX = Platform.OS_LINUX.equals(os);
+        IS_MACOS = Platform.OS_MACOSX.equals(os);
+        IS_WINDOWS = Platform.OS_WIN32.equals(os);
+    }
 
     private RuntimeUtils() {
         //intentionally left blank
@@ -386,6 +399,28 @@ public final class RuntimeUtils {
 
     public static boolean isGtk() {
         return IS_GTK;
+    }
+
+    /**
+     * Determines whether the <i>OS</i> ISA is AArch64.
+     *
+     * <p>Note that this method is designed to tell the <i>OS</i> ISA, not <i>JVM</i> ISA.
+     *
+     * @return {@code true} if the OS ISA is AArch64
+     */
+    public static boolean isOSArchAArch64() {
+        return IS_OS_ARCH_AARCH64;
+    }
+
+    /**
+     * Determines whether the <i>OS</i> ISA is AMD64.
+     *
+     * <p>Note that this method is designed to tell the <i>OS</i> ISA, not <i>JVM</i> ISA.
+     *
+     * @return {@code true} if the OS ISA is AMD64
+     */
+    public static boolean isOSArchAMD64() {
+        return IS_OS_ARCH_AMD64;
     }
 
     public static void setThreadName(String name) {

@@ -40,11 +40,19 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
     private static Map<String, String> connectionsProps;
+    @Nullable
+    private static Collection<DBPNativeClientLocation> localClients;
 
     static {
         connectionsProps = new HashMap<>();
@@ -128,18 +136,16 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     ////////////////////////////////////////////////////////////////
     // Local client
 
-    private static Map<String, PostgreServerHome> localServers = null;
-
     @Override
     public List<DBPNativeClientLocation> findLocalClientLocations() {
         findLocalClients();
-        return new ArrayList<>(localServers.values());
+        return new ArrayList<>(localClients);
     }
 
     @Override
     public DBPNativeClientLocation getDefaultLocalClientLocation() {
         findLocalClients();
-        return localServers.isEmpty() ? null : localServers.values().iterator().next();
+        return localClients.isEmpty() ? null : localClients.iterator().next();
     }
 
     @Override
@@ -156,10 +162,10 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     }
 
     public synchronized static void findLocalClients() {
-        if (localServers != null) {
+        if (localClients != null) {
             return;
         }
-        localServers = new LinkedHashMap<>();
+        localClients = new HashSet<>();
 
         // find homes in Windows registry
         if (RuntimeUtils.isWindows()) {
@@ -173,7 +179,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
                                 if (PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY.equalsIgnoreCase(key)) {
                                     String baseDir = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY)));
                                     String branding = CommonUtils.toString(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BRANDING));
-                                    localServers.put(homeKey, new PostgreServerHome(homeKey, baseDir, branding));
+                                    localClients.add(new PostgreServerHome(homeKey, baseDir, branding));
                                     break;
                                 }
                             }
@@ -183,60 +189,51 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
             } catch (Throwable e) {
                 log.warn("Error reading Windows registry", e);
             }
+        }
+
+        // Unix
+        Collection<String> foldersToExamine = new ArrayList<>();
+        foldersToExamine.add("/usr/bin");
+        foldersToExamine.add("/usr/local/bin");
+        if (RuntimeUtils.isLinux()) {
+            foldersToExamine.add("/etc/alternatives");
         } else if (RuntimeUtils.isMacOS()) {
-            Collection<File> postgresDirs = new ArrayList<>();
-            Collections.addAll(
-                postgresDirs,
-                NativeClientLocationUtils.getSubdirectories(NativeClientLocationUtils.getSubdirectoriesWithNamesStartingWith("postgresql", new File(NativeClientLocationUtils.HOMEBREW_FORMULAE_LOCATION)))
-            );
-            Collections.addAll(
-                postgresDirs,
-                NativeClientLocationUtils.getSubdirectories(new File("/Library/PostgreSQL/")) //standard location for EDB installer
-            );
-            Collections.addAll(
-                postgresDirs,
-                NativeClientLocationUtils.getSubdirectories(new File("/Applications/Postgres.app/Contents/versions/"))
-            );
-            for (File dir: postgresDirs) {
-                File bin = new File(dir, NativeClientLocationUtils.BIN);
-                File psql = new File(bin, "psql");
-                if (!bin.exists() || !bin.isDirectory() || !psql.exists() || !psql.canExecute()) {
-                    continue;
-                }
-                String branding = getBranding(dir);
-                if (branding.isEmpty()) {
-                    continue;
-                }
-                String canonicalPath = NativeClientLocationUtils.getCanonicalPath(dir);
-                if (canonicalPath.isEmpty()) {
-                    continue;
-                }
-                PostgreServerHome home = new PostgreServerHome(branding, canonicalPath, branding);
-                PostgreServerHome duplicate = localServers.putIfAbsent(branding, home);
-                if (duplicate == null) {
-                    continue;
-                }
-                localServers.remove(branding);
-                home = new PostgreServerHome(canonicalPath, canonicalPath, canonicalPath);
-                String duplicatePath = duplicate.getPath().getAbsolutePath();
-                duplicate = new PostgreServerHome(duplicatePath, duplicatePath, duplicatePath);
-                localServers.put(canonicalPath, home);
-                localServers.put(duplicatePath, duplicate);
-                //there is a possibility that there will be more that two duplicates. the code above does not account for that
+            foldersToExamine.add("/Library/PostgreSQL"); //standard location for EDB installer
+            foldersToExamine.add("/Applications/Postgres.app/Contents/versions");
+            if (RuntimeUtils.isOSArchAMD64()) {
+                foldersToExamine.add(NativeClientLocationUtils.HOMEBREW_FORMULAE_LOCATION);
+            } else if (RuntimeUtils.isOSArchAArch64()) {
+                foldersToExamine.add("/opt/homebrew/bin");
+                foldersToExamine.add("/opt/homebrew/Cellar");
+                foldersToExamine.add("/opt/homebrew/opt");
             }
         }
-    }
 
-    private static String getBranding(File path) {
-        String fullVersion = getFullServerVersion(path);
-        if (fullVersion == null) {
-            return "";
+        for (String folder : foldersToExamine) {
+            Path folderPath = Path.of(folder);
+            if (Files.notExists(folderPath)) {
+                continue;
+            }
+            try {
+                Files.walkFileTree(folderPath, new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                        if (!file.endsWith("bin/psql")) {
+                            return FileVisitResult.CONTINUE;
+                        }
+                        if (file.toFile().canExecute()) {
+                            Path grandparent = IOUtils.getGrandparent(file);
+                            if (grandparent != null) {
+                                localClients.add(new PostgreServerHome(grandparent.toAbsolutePath().toString()));
+                            }
+                        }
+                        return FileVisitResult.SKIP_SIBLINGS;
+                    }
+                });
+            } catch (IOException e) {
+                log.warn(String.format("Unable to examine folder %s while looking for a PostgreSQL client home", folder), e);
+            }
         }
-        if (fullVersion.length() < 7) {
-            log.warn("Unable to figure out PostgreSQL server branding from psql output!");
-            return "";
-        }
-        return fullVersion.substring(6).replace(")", "").trim();
     }
 
     @Nullable
