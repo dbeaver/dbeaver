@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -253,8 +253,8 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             return null;
         }
         DBPProject project = getParentObject().getProject();
-        DBNDataSource dsNode = project.getNavigatorModel().getDataSourceByPath(project, refEntityId);
-        return dsNode == null ? null : dsNode.getDataSourceContainer();
+        String refDataSourceID = DBNModel.getDataSourceIdFromNodePath(refEntityId);
+        return project.getDataSourceRegistry().getDataSource(refDataSourceID);
     }
 
     @Override
