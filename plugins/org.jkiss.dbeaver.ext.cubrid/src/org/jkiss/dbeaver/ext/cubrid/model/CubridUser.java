@@ -47,6 +47,14 @@ public class CubridUser implements DBSObject{
 		return true;
 	}
 
+	public boolean supportsSystemTable() {
+		return name.equals("DBA") ? true : false;
+	}
+
+	public boolean supportsSystemView() {
+		return name.equals("DBA") ? true : false;
+	}
+
 	@Override
 	public CubridObjectContainer getParentObject() {
 		return this.container;
@@ -56,11 +64,11 @@ public class CubridUser implements DBSObject{
 		return this.container.getDataSource();
 	}
 
-	public Collection<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+	public Collection<? extends CubridTableBase> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getPhysicalTables(monitor, name);
 	}
 
-	public Collection<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor) throws DBException {
+	public Collection<? extends CubridTableBase> getPhysicalSystemTables(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getPhysicalSystemTables(monitor, name);
 	}
 
@@ -74,10 +82,6 @@ public class CubridUser implements DBSObject{
 
 	public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getIndexes(monitor);
-    }
-
-	public Collection<? extends GenericProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
-		return this.container.getProcedures(monitor);
     }
 
 }

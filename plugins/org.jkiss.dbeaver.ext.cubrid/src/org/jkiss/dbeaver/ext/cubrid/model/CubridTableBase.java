@@ -2,7 +2,6 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 
 import java.util.Collection;
 import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -30,6 +29,7 @@ public abstract class CubridTableBase extends GenericTableBase {
 			isSystemTable = GenericUtils.safeGetString(container.getCubridTableCache().tableObject, dbResult, CubridConstants.IS_SYSTEM_CLASS);
 		} else {
 			owner_name = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+			isSystemTable = "";
 		}
 
 		for(CubridUser cbOwner : getUsers()){
@@ -42,6 +42,10 @@ public abstract class CubridTableBase extends GenericTableBase {
 
 	public boolean isPhysicalTable() {
 		return !isView();
+	}
+
+	public CubridObjectContainer getContainer() {
+		return this.container;
 	}
 
 	public Collection<? extends CubridUser> getUsers() {
@@ -68,6 +72,10 @@ public abstract class CubridTableBase extends GenericTableBase {
 
 	public void setOwner(CubridUser owner) {
 		this.owner = owner;
+	}
+
+	public String getUniqueName() {
+		return this.owner.getName() + "." + this.getName();
 	}
 
 	@NotNull
