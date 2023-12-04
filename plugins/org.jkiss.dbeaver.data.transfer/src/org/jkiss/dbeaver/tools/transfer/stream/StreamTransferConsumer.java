@@ -95,9 +95,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_PROJECT = "project";
     public static final String VARIABLE_CONN_TYPE = "connectionType";
-    public static final String VARIABLE_FILE = "file";
     public static final String VARIABLE_SCRIPT_FILE = "scriptFilename";
-
     public static final String VARIABLE_YEAR = "year";
     public static final String VARIABLE_MONTH = "month";
     public static final String VARIABLE_DAY = "day";
@@ -112,7 +110,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         {VARIABLE_INDEX, "index of current file (if split is used)"},
         {VARIABLE_PROJECT, "source database project"},
         {VARIABLE_CONN_TYPE, "source database connection type"},
-        {VARIABLE_FILE, "output file path"},
         {VARIABLE_SCRIPT_FILE, "source script filename"},
         {VARIABLE_TIMESTAMP, "current timestamp"},
         {VARIABLE_DATE, "current date"},
@@ -485,31 +482,29 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (fileExists && !Files.isDirectory(outputFile)) {
             DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getFileName().toString());
             switch (behavior) {
-                case APPEND:
-                    truncate = false;
-                    break;
-                case PATCHNAME:
-                    truncate = false;
+                case APPEND -> truncate = false;
+                case PATCHNAME -> {
                     outputFile = makeOutputFile(monitor, "-" + System.currentTimeMillis());
-                    break;
-                case OVERWRITE:
-                    truncate = true;
-                    break;
-                default:
-                    throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
+                    truncate = false;
+                    fileExists = false;
+                }
+                case OVERWRITE -> truncate = true;
+                default -> throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
             }
         } else {
             truncate = true;
         }
 
-        this.outputStream = new BufferedOutputStream(
-            Files.newOutputStream(
+        OutputStream stream;
+        if (!fileExists) {
+            stream = Files.newOutputStream(outputFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+        } else {
+            stream = Files.newOutputStream(
                 outputFile,
                 StandardOpenOption.WRITE,
-                !fileExists ?
-                    StandardOpenOption.CREATE_NEW :
-                    (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND)),
-            OUT_FILE_BUFFER_SIZE);
+                (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND));
+        }
+        this.outputStream = new BufferedOutputStream(stream, OUT_FILE_BUFFER_SIZE);
         this.outputStream = this.statStream = new StatOutputStream(outputStream);
 
         if (settings.isCompressResults()) {
@@ -883,8 +878,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     DBPProject project = DBUtils.getObjectOwnerProject(dataContainer);
                     return project == null ? "" : project.getName();
                 }
-                case VARIABLE_FILE:
-                    return targetFile == null ? "" : targetFile.toAbsolutePath().toString();
                 case VARIABLE_SCRIPT_FILE: {
                     final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, dataContainer);
                     if (container != null) {

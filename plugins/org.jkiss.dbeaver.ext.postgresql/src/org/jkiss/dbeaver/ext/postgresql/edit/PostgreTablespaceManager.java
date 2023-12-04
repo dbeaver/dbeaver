@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -95,7 +96,8 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
         ObjectDeleteCommand command,
         Map<String, Object> options) {
         actions.add(
-            new SQLDatabasePersistActionAtomic("Drop tablespace", "DROP TABLESPACE " + command.getObject().getName()) //$NON-NLS-2$
+            new SQLDatabasePersistActionAtomic("Drop tablespace", "DROP TABLESPACE " //$NON-NLS-2$
+                + DBUtils.getQuotedIdentifier(command.getObject()))
         );
 
     }

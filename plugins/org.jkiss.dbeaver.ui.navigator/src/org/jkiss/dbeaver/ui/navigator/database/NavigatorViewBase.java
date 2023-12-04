@@ -219,12 +219,16 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
         // Hook context menu
         NavigatorUtils.addContextMenu(this.getSite(), navigatorTree.getViewer());
-        // Add drag and drop support
-        NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
+        installDragAndDropSupport(navigatorTree);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
 
         return navigatorTree;
+    }
+
+    protected void installDragAndDropSupport(DatabaseNavigatorTree navigatorTree) {
+        // Add drag and drop support
+        NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
     }
 
     protected void createTreeColumns(DatabaseNavigatorTree tree) {

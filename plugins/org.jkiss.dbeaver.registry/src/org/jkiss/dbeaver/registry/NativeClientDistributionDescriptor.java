@@ -146,7 +146,7 @@ public class NativeClientDistributionDescriptor {
                     primarySource += '/';
                 }
                 String externalURL = primarySource + fileRemotePath;
-                String taskName = "Download native client file '" + fileName + "'" + " (" + (i + 1) + "/" + filesToDownload.size() + ")";
+                String taskName = "Download local client file '" + fileName + "'" + " (" + (i + 1) + "/" + filesToDownload.size() + ")";
                 monitor.beginTask(taskName, 1);
                 try {
                     WebUtils.downloadRemoteFile(monitor,

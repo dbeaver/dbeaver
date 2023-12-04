@@ -145,7 +145,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 settings.setClientHome(clientHome);
             }
             if (settings.getClientHome() == null) {
-                throw new DBCException("Native client home '" + clientHomeId + "' not found");
+                throw new DBCException("Local client home '" + clientHomeId + "' not found");
             }
         }
 
