@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product"
-    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="23.3.0.qualifier" useFeatures="true"
-    includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product" application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="23.3.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
-    <configIni use="default">
-    </configIni>
 
-    <launcherArgs>
-        <programArgs></programArgs>
-        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
+   <configIni use="default">
+   </configIni>
 
-        <vmArgs>
-            -XX:+IgnoreUnrecognizedVMOptions
+   <launcherArgs>
+      <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java
+      </programArgsMac>
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions
             -Dosgi.requiredJavaVersion=17
             -Dfile.encoding=UTF-8
             --add-modules=ALL-SYSTEM
@@ -41,59 +38,73 @@
             --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED
             --add-opens=java.sql/java.sql=ALL-UNNAMED
             -Xms64m
-            -Xmx1024m</vmArgs>
-        <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
-    </launcherArgs>
+            -Xmx1024m
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread
+      </vmArgsMac>
+   </launcherArgs>
 
-    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
+   <windowImages/>
 
-    <launcher name="dbeaver">
-        <linux icon="/icons/dbeaver.xpm"/>
-        <macosx icon="/icons/dbeaver.icns"/>
-        <solaris/>
-        <win useIco="true">
-            <ico path="icons/dbeaver.ico"/>
-        </win>
-    </launcher>
+   <splash
+      location="org.jkiss.dbeaver.ui.app.standalone" />
+   <launcher name="dbeaver">
+      <linux icon="/icons/dbeaver.xpm"/>
+      <macosx icon="/icons/dbeaver.icns"/>
+      <win useIco="true">
+         <ico path="icons/dbeaver.ico"/>
+         <bmp/>
+      </win>
+   </launcher>
 
-    <vm>
-    </vm>
 
-    <license>
+   <vm>
+   </vm>
+
+   <license>
         <url>https://dbeaver.io/about/</url>
         <text>
-            DBeaver - Universal Database Manager
+   DBeaver - Universal Database Manager
             Copyright (C) 2010-2023 DBeaver Corp and others
 
-            Licensed under the Apache License, Version 2.0 (the "License");
+            Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
             you may not use this file except in compliance with the License.
             You may obtain a copy of the License at
 
             http://www.apache.org/licenses/LICENSE-2.0
 
             Unless required by applicable law or agreed to in writing, software
-            distributed under the License is distributed on an "AS IS" BASIS,
+            distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
             See the License for the specific language governing permissions and
             limitations under the License.
-        </text>
-    </license>
+         </text>
+   </license>
 
-    <plugins>
-    </plugins>
+   <plugins>
+   </plugins>
 
-    <features>
-        <feature id="org.jkiss.dbeaver.ce.feature"/>
-    </features>
+   <features>
+      <feature id="org.jkiss.dbeaver.ce.feature"/>
+   </features>
 
-    <configurations>
-        <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1"/>
-        <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
-        <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
-        <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
-        <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
-        <!-- This is important because simpleconfigurator conflicts with update.configurator -->
-        <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10"/>
-    </configurations>
+   <configurations>
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1" />
+      <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10" />
+      <property name="osgi.configuration.area" value="@user.home/AppData/Roaming/DBeaverData/conf" os="win32" />
+      <property name="osgi.configuration.area" value="@user.home/.config/DBeaverData/conf" os="linux" />
+      <property name="osgi.configuration.area" value="@user.home/Library/DBeaverData/conf" os="macosx" />
+   </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>
