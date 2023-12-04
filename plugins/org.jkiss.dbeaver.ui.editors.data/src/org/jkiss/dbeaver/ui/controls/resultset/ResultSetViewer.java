@@ -4441,20 +4441,11 @@ public class ResultSetViewer extends Viewer
                 final int partitionLength = partitionEnd - partitionStart + 1;
 
                 int srcRowIndex = partitionOffset + partitionStart;
-                int newRowIndex = partitionOffset + partitionStart;
-
-                switch (placement) {
-                    case BEFORE_SELECTION -> {
-                        // do nothing
-                    }
-                    case AFTER_SELECTION -> {
-                        // If we insert to the end of current partition then we need to account its length
-                        newRowIndex += partitionLength;
-                    }
-                    case AT_END -> {
-                        newRowIndex = model.getRowCount();
-                    }
-                }
+                int newRowIndex = switch (placement) {
+                    case BEFORE_SELECTION -> partitionOffset + partitionStart;
+                    case AFTER_SELECTION -> partitionOffset + partitionStart + partitionLength;
+                    case AT_END -> model.getRowCount();
+                };
 
                 if (newRowIndex > model.getRowCount()) {
                     // May happen if we insert "after" current row and there are no rows at all
