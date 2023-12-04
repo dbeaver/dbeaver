@@ -94,9 +94,9 @@
         <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
         <!-- This is important because simpleconfigurator conflicts with update.configurator -->
         <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10"/>
-        <property name="osgi.configuration.area" value="@user.home/AppData/Roaming/DBeaverData/conf" os="win32" />
-        <property name="osgi.configuration.area" value="@user.home/.config/DBeaverData/conf" os="linux" />
-        <property name="osgi.configuration.area" value="@user.home/Library/DBeaverData/conf" os="macosx" />
+        <property name="osgi.configuration.area" value="@user.home/AppData/Roaming/DBeaverData/install-data" os="win32" />
+        <property name="osgi.configuration.area" value="@user.home/.config/DBeaverData/install-data" os="linux" />
+        <property name="osgi.configuration.area" value="@user.home/Library/DBeaverData/install-data" os="macosx" />
     </configurations>
 
 </product>
