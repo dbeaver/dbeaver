@@ -91,6 +91,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 import org.jkiss.utils.xml.XMLUtils;
 
 import java.net.MalformedURLException;
@@ -626,14 +627,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (CommonUtils.isEmpty(strValue)) {
                     return;
                 }
-                GridPos focusPos = spreadsheet.getFocusPos();
-                int rowNum = focusPos.row;
-                if (rowNum < 0) {
-                    if (!settings.isInsertMultipleRows()) {
-                        return;
-                    }
-                    rowNum = 0;
+                final ArrayList<GridPos> selection = new ArrayList<>(spreadsheet.getSelection());
+                final Pair<GridPos, GridPos> targetRange = getContinuousRange(selection);
+                if (targetRange == null) {
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(
+                        "Advanced paste",
+                        "You can't perform this operation on a multiple range selection.\n\nPlease select a single range and try again."
+                    );
+                    return;
                 }
+                final GridPos rangeStart = targetRange.getFirst();
+                final GridPos rangeEnd = targetRange.getSecond();
+                int rowNum = rangeStart.row;
                 //boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
@@ -648,6 +653,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     } else {*/
                     while (rowNum + newLines.length > spreadsheet.getItemCount()) {
                         controller.addNewRow(false, true, false);
+                    while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
                         spreadsheet.refreshRowsData();
                     }
                     //}
@@ -656,12 +662,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
 
                     for (String[] line : newLines) {
-                        int colNum = focusPos.col;
+                        int colNum = rangeStart.col;
                         IGridRow gridRow = spreadsheet.getRow(rowNum);
                         for (String value : line) {
-                            if (colNum >= spreadsheet.getColumnCount()) {
-                                break;
-                            }
                             IGridColumn colElement = spreadsheet.getColumn(colNum);
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
@@ -680,10 +683,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
                                 IValueController.EditType.NONE, null).updateValue(newValue, false);
 
                             colNum++;
+                            if (colNum >= spreadsheet.getColumnCount()) {
+                                break;
+                            }
+                            if (rangeEnd != null && rangeStart.col != rangeEnd.col && colNum > rangeEnd.col) {
+                                // If we have the range end and it spans more than one column, then limit insertion to that range
+                                break;
+                            }
                         }
                         rowNum++;
                         if (rowNum >= spreadsheet.getItemCount()) {
-                            // Shouldn't be here
+                            break;
+                        }
+                        if (rangeEnd != null && rowNum > rangeEnd.row) {
                             break;
                         }
                     }
@@ -745,6 +757,43 @@ public class SpreadsheetPresentation extends AbstractPresentation
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
         }
+    }
+
+    /**
+     * Retrieves a continuous range from a set of grid coordinates.
+     * <p>
+     * A continuous range is a range in which all grid coordinates are selected.
+     *
+     * @param selection a list of positions to retrieve a continuous range from
+     * @return a pair containing either:
+     * <ul>
+     *     <li>{@code null} if no selection is present or selected range is not continuous</li>
+     *     <li>{@code (GridPos, null)} if only one cell is selected</li>
+     *     <li>{@code (GridPos, GridPos)} if selected range is continuous</li>
+     * </ul>
+     */
+    @Nullable
+    private Pair<GridPos, GridPos> getContinuousRange(@NotNull List<GridPos> selection) {
+        return switch (selection.size()) {
+            case 0 -> null;
+            case 1 -> new Pair<>(selection.get(0), null);
+            default -> {
+                GridPos min = selection.get(0);
+                GridPos max = new GridPos(min);
+
+                for (int i = 0; i < selection.size(); i++) {
+                    final GridPos cur = selection.get(i);
+
+                    if (i > 0 && (cur.row - max.row > 1 || cur.col - max.col > 1)) {
+                        yield null;
+                    }
+
+                    max = cur;
+                }
+
+                yield new Pair<>(min, max);
+            }
+        };
     }
 
     private String[][] parseGridLines(String strValue, boolean splitRows) {
