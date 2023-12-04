@@ -74,6 +74,7 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -651,9 +652,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                         spreadsheet.refreshRowsData();
                     } else {*/
-                    while (rowNum + newLines.length > spreadsheet.getItemCount()) {
-                        controller.addNewRow(false, true, false);
                     while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
+                        controller.addNewRow(RowPlacement.AT_END, false, false);
                         spreadsheet.refreshRowsData();
                     }
                     //}

@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -4407,8 +4406,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @NotNull
-    public ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation)
-    {
+    public ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
             throw new IllegalStateException("Can't add/copy rows in disconnected results");
@@ -4445,9 +4443,17 @@ public class ResultSetViewer extends Viewer
                 int srcRowIndex = partitionOffset + partitionStart;
                 int newRowIndex = partitionOffset + partitionStart;
 
-                if (afterCurrent) {
-                    // If we insert to the end of current partition then we need to account its length
-                    newRowIndex += partitionLength;
+                switch (placement) {
+                    case BEFORE_SELECTION -> {
+                        // do nothing
+                    }
+                    case AFTER_SELECTION -> {
+                        // If we insert to the end of current partition then we need to account its length
+                        newRowIndex += partitionLength;
+                    }
+                    case AT_END -> {
+                        newRowIndex = model.getRowCount();
+                    }
                 }
 
                 if (newRowIndex > model.getRowCount()) {
@@ -4523,7 +4529,7 @@ public class ResultSetViewer extends Viewer
                     newRowIndex++;
                     srcRowIndex++;
 
-                    if (!afterCurrent) {
+                    if (placement == RowPlacement.BEFORE_SELECTION) {
                         // Need to account currently inserted row
                         srcRowIndex++;
                     }
