@@ -25,6 +25,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -63,7 +64,7 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
             UIUtils.runInProgressDialog(monitor -> {
                 try {
                     Path targetPath = pathNode.getPath();
-                    if (!Files.isDirectory(targetPath)) {
+                    if (!(pathNode instanceof DBNFileSystemRoot) && !Files.isDirectory(targetPath)) {
                         targetPath = targetPath.getParent();
                     }
 
@@ -98,7 +99,7 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
             try {
                 byte[] buffer = new byte[10000];
                 try (InputStream is = Files.newInputStream(srcFile.toPath())) {
-                    try (OutputStream os = Files.newOutputStream(targetFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                    try (OutputStream os = Files.newOutputStream(targetFilePath, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                         for (;;) {
                             if (monitor.isCanceled()) {
                                 break;

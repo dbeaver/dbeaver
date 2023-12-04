@@ -405,7 +405,12 @@ public final class RuntimeUtils {
     }
 
     public static byte[] getLocalMacAddress() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
+        InetAddress localHost;
+        try {
+            localHost = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            localHost = InetAddress.getLoopbackAddress();
+        }
         NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
         if (ni == null) {
             Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();

@@ -30,9 +30,9 @@
                         description="Google BigQuery driver"
                         webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
                         propertiesURL="https://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
-                        categories="bigdata"
+                        categories="bigdata,gcp"
                         singleConnection="true">
-                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.3.3.1004.zip" bundle="!drivers.bigquery"/>
+                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.5.0.1001.zip" bundle="!drivers.bigquery"/>
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.bigquery"/>
 
                     <file type="jar" path="drivers/bigquery" bundle="drivers.bigquery"/>
