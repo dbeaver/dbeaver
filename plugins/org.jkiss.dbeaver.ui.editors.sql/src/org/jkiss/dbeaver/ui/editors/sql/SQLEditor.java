@@ -2179,17 +2179,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException {
-        // Check for file existence
-        try {
-            if (editorInput instanceof IFileEditorInput) {
-                final IFile file = ((IFileEditorInput) editorInput).getFile();
-                if (!file.exists()) {
-                    file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error checking SQL file", e);
-        }
+        checkInputFileExistence(editorInput);
         try {
             super.doSetInput(editorInput);
         } catch (Throwable e) {
@@ -2234,6 +2224,28 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+    }
+
+    private void checkInputFileExistence(IEditorInput editorInput) {
+        // Check for file existence
+        try {
+            if (editorInput instanceof IFileEditorInput fei) {
+                final IFile file = fei.getFile();
+                if (!file.exists()) {
+                    // First try to refresh
+                    try {
+                        file.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
+                    } catch (CoreException e) {
+                        log.debug("Error refreshing resource: " + e.getMessage());
+                    }
+                    if (!file.exists()) {
+                        file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error checking SQL file existence: " + e.getMessage());
+        }
     }
 
     protected boolean isDetectTitleImageFromInput() {
