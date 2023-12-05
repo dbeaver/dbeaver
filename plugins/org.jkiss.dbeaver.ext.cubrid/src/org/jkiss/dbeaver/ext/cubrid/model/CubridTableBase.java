@@ -64,6 +64,13 @@ public abstract class CubridTableBase extends GenericTableBase {
 		return null;
 	}
 
+	public Collection<? extends CubridTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+		if (getDataSource().getInfo().supportsIndexes()) {
+			return this.getContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);
+		}
+		return null;
+	}
+
 	@Nullable
 	@Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
 	public CubridUser getOwner() {

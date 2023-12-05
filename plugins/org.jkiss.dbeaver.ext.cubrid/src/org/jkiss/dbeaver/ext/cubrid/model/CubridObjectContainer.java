@@ -1,18 +1,23 @@
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -20,10 +25,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.utils.CommonUtils;
 
 public class CubridObjectContainer extends GenericObjectContainer implements GenericStructContainer{
 
@@ -32,6 +41,7 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 	private final CubridTableCache cubridTableCache;
 	private final CubridSystemTableCache cubridSystemTableCache;
 	private final CubridSystemViewCache cubridSystemViewCache;
+	private final CubridIndexCache cubridIndexCache;
 
 	protected CubridObjectContainer(CubridDataSource dataSource) {
 		super(dataSource);
@@ -40,6 +50,7 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		this.cubridTableCache = new CubridTableCache(dataSource);
 		this.cubridSystemTableCache = new CubridSystemTableCache(dataSource);
 		this.cubridSystemViewCache = new CubridSystemViewCache(dataSource);
+		this.cubridIndexCache = new CubridIndexCache(cubridTableCache);
 	}
 	
 	@NotNull
@@ -54,6 +65,10 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 	public CubridSystemTableCache getCubridSystemTableCache() {
 		return this.cubridSystemTableCache;
+    }
+
+	public CubridIndexCache getCubridIndexCache() {
+		return this.cubridIndexCache;
     }
 
 	@Override
@@ -220,6 +235,88 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
 			@Nullable CubridTableBase object, @Nullable String objectName) throws SQLException {
 			return dataSource.getMetaModel().prepareSystemViewLoadStatement(session, owner, object, objectName);
+		}
+
+	}
+
+	public class CubridIndexCache extends JDBCCompositeCache<CubridObjectContainer, CubridTableBase, CubridTableIndex, GenericTableIndexColumn>{
+
+		CubridIndexCache(CubridTableCache tableCache) {
+			super(tableCache, CubridTableBase.class,
+				GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.TABLE_NAME),
+				GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.INDEX_NAME));
+		}
+
+		@Override
+		protected JDBCStatement prepareObjectsStatement(JDBCSession session, CubridObjectContainer owner,
+			CubridTableBase forParent) throws SQLException {
+			return dataSource.getMetaModel().prepareIndexLoadStatement(session, forParent);
+		}
+
+		@Override
+		protected CubridTableIndex fetchObject(JDBCSession session, CubridObjectContainer owner, CubridTableBase parent,
+			String indexName, JDBCResultSet dbResult) throws SQLException, DBException {
+
+			boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
+			String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
+			long cardinality = JDBCUtils.safeGetLong(dbResult, JDBCConstants.INDEX_CARDINALITY);
+			int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
+
+			DBSIndexType indexType;
+			switch (indexTypeNum) {
+				case DatabaseMetaData.tableIndexStatistic:
+					return null;
+				case DatabaseMetaData.tableIndexClustered:
+					indexType = DBSIndexType.CLUSTERED;
+					break;
+				case DatabaseMetaData.tableIndexHashed:
+					indexType = DBSIndexType.HASHED;
+					break;
+				case DatabaseMetaData.tableIndexOther:
+					indexType = DBSIndexType.OTHER;
+					break;
+				default:
+					indexType = DBSIndexType.UNKNOWN;
+					break;
+			}
+			if (CommonUtils.isEmpty(indexName)) {
+				// [JDBC] Some drivers return empty index names
+				indexName = parent.getName().toUpperCase(Locale.ENGLISH) + "_INDEX";
+			}
+
+			return new CubridTableIndex(parent, isNonUnique, indexQualifier, cardinality, indexName, indexType, true);
+		}
+
+		@Override
+		protected GenericTableIndexColumn[] fetchObjectRow(JDBCSession session, CubridTableBase parent,
+			CubridTableIndex object, JDBCResultSet dbResult) throws SQLException, DBException {
+			int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+			boolean trimName = parent.getDataSource().getMetaModel().isTrimObjectNames();
+			String columnName = trimName ? JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME)
+					: JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+			String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.ASC_OR_DESC);
+
+			if (CommonUtils.isEmpty(columnName)) {
+				// Maybe a statistics index without column
+				return null;
+			}
+			GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
+			if (tableColumn == null) {
+				log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
+				return null;
+			}
+
+			return new GenericTableIndexColumn[] { new GenericTableIndexColumn(
+				object,
+				tableColumn,
+				ordinalPosition,
+				!"D".equalsIgnoreCase(ascOrDesc)) };
+		}
+
+		@Override
+		protected void cacheChildren(DBRProgressMonitor monitor, CubridTableIndex object,
+			List<GenericTableIndexColumn> children) {
+			object.setColumns(children);
 		}
 
 	}

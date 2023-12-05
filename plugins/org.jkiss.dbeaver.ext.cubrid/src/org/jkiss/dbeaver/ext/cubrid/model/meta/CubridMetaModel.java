@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
@@ -16,6 +17,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -77,15 +79,60 @@ public class CubridMetaModel extends GenericMetaModel {
 		return dbStat;
 	}
 
+	public boolean isNewVersion(JDBCSession session) {
+		try {
+			int major = session.getMetaData().getDatabaseMajorVersion();
+			int minor = session.getMetaData().getDatabaseMinorVersion();
+			if(major == 11) {
+				if(minor >= 2) {
+					return true;
+				}
+			}else if(major > 11) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 
 	@Override
 	public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
-	    if(forTable instanceof CubridTable) {
-			CubridTableBase tablebase = (CubridTableBase) forTable;
-		    return session.getMetaData().getColumns(null, null, tablebase!=null?tablebase.getUniqueName():null, null).getSourceStatement();
-	    }
-	   return super.prepareTableColumnLoadStatement(session, owner, forTable);
-	   }
+		if(isNewVersion(session)) {
+			if(forTable instanceof CubridTable) {
+				CubridTableBase tablebase = (CubridTableBase) forTable;
+				return session.getMetaData().getColumns(null, null, tablebase!=null?tablebase.getUniqueName():null, null).getSourceStatement();
+			}
+		}
+		return super.prepareTableColumnLoadStatement(session, owner, forTable);
+	}
+
+	@Override
+	public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException, DBException {
+		if(isNewVersion(session)) {
+			if(forTable instanceof CubridTable) {
+				CubridTableBase tablebase = (CubridTableBase) forTable;
+				return session.getMetaData().getPrimaryKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
+			}
+		}
+		return super.prepareUniqueConstraintsLoadStatement(session, owner, forTable);
+    }
+
+	@Override
+	public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
+		if(isNewVersion(session)) {
+			if(forTable instanceof CubridTable) {
+				CubridTableBase tablebase = (CubridTableBase) forTable;
+				return session.getMetaData().getImportedKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
+			}
+		}
+		return super.prepareForeignKeysLoadStatement(session, owner, forTable);
+	}
+
+	public JDBCStatement prepareIndexLoadStatement(@NotNull JDBCSession session, CubridTableBase tableBase) throws SQLException {
+		String tableName = isNewVersion(session)? tableBase.getUniqueName():tableBase.getName();
+		return session.getMetaData().getIndexInfo(null, null, tableName, false, true).getSourceStatement();
+	}
 
 	public CubridTableBase createTableImpl(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
 
