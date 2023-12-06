@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableValueModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,5 +104,10 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Override
     public SQLDialect getDialect() {
         return this.dialect;
+    }
+
+    @Override
+    public SQLQueryRowsSourceModel getDefaultTable() {
+        return new SQLQueryRowsTableValueModel();
     }
 }

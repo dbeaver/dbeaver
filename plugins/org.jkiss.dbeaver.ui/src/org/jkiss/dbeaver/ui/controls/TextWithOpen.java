@@ -73,7 +73,8 @@ public class TextWithOpen extends Composite {
         }
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
         if (useTextEditor) {
-            gd.heightHint = text.getLineHeight();
+            gd.heightHint = text.getLineHeight() * (secured ? 1 : 2);
+            gd.widthHint = 300;
         }
         text.setLayoutData(gd);
 

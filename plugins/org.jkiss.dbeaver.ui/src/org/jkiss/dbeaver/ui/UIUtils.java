@@ -31,7 +31,9 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -56,7 +58,9 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -84,6 +88,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
@@ -92,7 +97,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.SortedMap;
-import java.util.function.Consumer;
 
 /**
  * UI Utils
@@ -633,17 +637,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            final Composite composite = new Composite(parent, SWT.NONE);
-            composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
-            control = composite;
-
-            final Label imageLabel = new Label(composite, SWT.NONE);
-            imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-
-            final Link link = new Link(composite, SWT.NONE);
-            link.setText("<a href=\"#\">" + text + "</a>");
-            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
-            link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+            control = createInfoLink(parent, text, callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {
@@ -653,6 +647,23 @@ public class UIUtils {
         }
 
         return control;
+    }
+
+    @NotNull
+    public static Link createInfoLink(@NotNull Composite parent, @NotNull String text, @NotNull Runnable callback) {
+        final Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+
+        final Label imageLabel = new Label(composite, SWT.NONE);
+        imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
+
+        final Link link = new Link(composite, SWT.NONE);
+        link.setText(text);
+        link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
+        link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+
+        return link;
     }
 
     public static Text createLabelText(Composite parent, String label, String value) {
@@ -879,9 +890,19 @@ public class UIUtils {
     }
 
     @Nullable
-    public static Shell getActiveShell()
-    {
-        return getActiveWorkbenchShell();
+    public static Shell getActiveShell() {
+        final Display display = Display.getCurrent();
+        final Shell activeShell = display.getActiveShell();
+        if (activeShell != null) {
+            return activeShell;
+        }
+        final Shell[] shells = display.getShells();
+        for (Shell shell : shells) {
+            if (shell.isVisible()) {
+                return shell;
+            }
+        }
+        return shells.length > 0 ? shells[0] : null;
     }
 
     @Nullable
@@ -1257,6 +1278,49 @@ public class UIUtils {
         if (propDialog != null) {
             propDialog.open();
         }
+    }
+
+    /**
+     * Creates a new link that opens the given preference page either in the current
+     * preference container, is present, or in a new modal dialog.
+     */
+    @NotNull
+    public static Link createPreferenceLink(
+        @NotNull Composite parent,
+        @NotNull String message,
+        @NotNull String pageId,
+        @Nullable IWorkbenchPreferenceContainer pageContainer,
+        @Nullable Object pageData
+    ) {
+        final IPreferenceNode node = PlatformUI.getWorkbench().getPreferenceManager().getElements(PreferenceManager.PRE_ORDER).stream()
+            .filter(next -> next.getId().equals(pageId))
+            .findFirst()
+            .orElse(null);
+
+        final Link link = new Link(parent, 0);
+
+        if (node == null) {
+            link.setText(NLS.bind(WorkbenchMessages.PreferenceNode_NotFound, pageId));
+        } else {
+            link.setText(NLS.bind(message, node.getLabelText()));
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (pageContainer != null) {
+                    // Open in the same dialog
+                    pageContainer.openPage(pageId, pageData);
+                } else {
+                    // Open in a new dialog
+                    PreferencesUtil.createPreferenceDialogOn(
+                        link.getShell(),
+                        pageId,
+                        new String[]{pageId},
+                        pageData,
+                        PreferencesUtil.OPTION_NONE
+                    ).open();
+                }
+            }));
+        }
+
+        return link;
     }
 
     public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
@@ -1777,18 +1841,7 @@ public class UIUtils {
                 }
             }
         }
-        Display display = Display.getCurrent();
-        Shell activeShell = display.getActiveShell();
-        if (activeShell != null) {
-            return activeShell;
-        }
-        Shell[] shells = display.getShells();
-        for (Shell shell : shells) {
-            if (shell.isVisible()) {
-                return shell;
-            }
-        }
-        return shells.length > 0 ? shells[0] : null;
+        return getActiveShell();
     }
 
     public static DBRRunnableContext getDefaultRunnableContext() {
@@ -2391,6 +2444,22 @@ public class UIUtils {
                     }
                 }
             }
+        }
+    }
+
+    public static void enableDoubleBuffering(@NotNull Control control) {
+        if ((control.getStyle() & SWT.DOUBLE_BUFFERED) != 0) {
+            // Already enabled - no op
+            return;
+        }
+        try {
+            final Field styleField = Widget.class.getDeclaredField("style");
+            if (!styleField.canAccess(control)) {
+                styleField.setAccessible(true);
+            }
+            styleField.set(control, styleField.getInt(control) | SWT.DOUBLE_BUFFERED);
+        } catch (Exception e) {
+            log.error("Unable to enable double buffering", e.getCause());
         }
     }
 }

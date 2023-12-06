@@ -116,7 +116,7 @@ public class SQLQuerySelectionResultModel {
         this.sublists.add(new ColumnSpec(valueExpression, alias));
     }
 
-    public void addTupleSpec(SQLQueryQualifiedName tableName) {
+    public void addTupleSpec(@NotNull SQLQueryQualifiedName tableName) {
         this.sublists.add(new TupleSpec(tableName));
     }
 

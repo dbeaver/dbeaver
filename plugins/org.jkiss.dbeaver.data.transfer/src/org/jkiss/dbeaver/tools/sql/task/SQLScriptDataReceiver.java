@@ -47,6 +47,7 @@ public class SQLScriptDataReceiver implements DBDDataReceiver {
                 for (DBCAttributeMetaData attribute : attributes) {
                     dumpWriter.append(attribute.getLabel() + "\t");
                 }
+                dumpWriter.append("\n");
             } catch (IOException e1) {
                 throw new DBCException("IOException writing to dumpWriter", e1);
             }

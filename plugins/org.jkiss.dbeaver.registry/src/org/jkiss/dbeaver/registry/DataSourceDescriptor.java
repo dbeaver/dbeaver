@@ -2100,15 +2100,15 @@ public class DataSourceDescriptor
             || props.containsKey(RegistryConstants.TAG_PROPERTIES)
             || emptyDatabaseCredsSaved;
 
-        if (this.secretsContainsDatabaseCreds) {
-            if (DBWorkbench.isDistributed()) {
-                // In distributed mode we detect saved password dynamically
-                this.savePassword = emptyDatabaseCredsSaved || props.containsKey(RegistryConstants.ATTR_PASSWORD);
-            }
+        if (DBWorkbench.isDistributed()) {
+            // In distributed mode we detect saved password dynamically
+            this.savePassword = secretsContainsDatabaseCreds;
         }
+
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
+        Set<String> handlersFromSecret = new HashSet<>(); // secrets do not store all handler configs
         if (!CommonUtils.isEmpty(handlerList)) {
             for (Map<String, Object> handlerMap : handlerList) {
                 String handlerId = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_ID);
@@ -2117,6 +2117,7 @@ public class DataSourceDescriptor
                     log.warn("Handler '" + handlerId + "' not found in datasource '" + getId() + "'. Secret configuration will be lost.");
                     continue;
                 }
+                handlersFromSecret.add(handlerId);
                 var hcUsername = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_USER);
                 var hcPassword = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_PASSWORD);
                 var hcProperties = JSONUtils.deserializeStringMap(handlerMap, RegistryConstants.TAG_PROPERTIES);
@@ -2128,6 +2129,13 @@ public class DataSourceDescriptor
                 );
             }
         }
+        connectionInfo.getHandlers().forEach(
+            handler -> {
+                if (!handlersFromSecret.contains(handler.getId())) {
+                    handler.setSavePassword(false);
+                }
+            }
+        );
     }
 
     private void loadFromLegacySecret(DBSSecretController secretController) {

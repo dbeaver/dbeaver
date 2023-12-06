@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -47,6 +48,8 @@ public class DialogUtils {
     private static final Log log = Log.getLog(DialogUtils.class);
 
     private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
+    
+    public static final String APPLY_AND_CLOSE_BUTTON_LABEL = JFaceResources.getString("PreferencesDialog.okButtonLabel");
 
     public static String curDialogFolder;
 

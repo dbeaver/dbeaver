@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
@@ -71,6 +72,10 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     public Image getImage() {
         final DBPDriver driver = site.getDriver();
 
+        DBPImage logoImage = driver.getLogoImage();
+        if (logoImage != null) {
+            return DBeaverIcons.getImage(logoImage);
+        }
         PostgreServerType serverType = getServerType(driver);
         return DBeaverIcons.getImage(serverType.getIcon());
     }
