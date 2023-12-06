@@ -6,14 +6,9 @@
 
    <extension point="org.eclipse.core.expressions.definitions">
       <definition id="DBeaverPerspectiveActive">
-          <or>
-              <with variable="selection">
-                  <test property="org.jkiss.dbeaver.core.global.standalone"/>
-              </with>
-              <with variable="activeWorkbenchWindow.activePerspective">
-                  <equals value="org.jkiss.dbeaver.core.perspective"/>
-              </with>
-          </or>
+          <with variable="activeWorkbenchWindow.activePerspective">
+              <equals value="org.jkiss.dbeaver.core.perspective"/>
+          </with>
       </definition>
        <definition id="LocalWorkspace">
            <not>
