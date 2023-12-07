@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -4472,7 +4471,7 @@ public class ResultSetViewer extends Viewer
                         }
                         if (cells[0] == null) {
                             try {
-                                cells[0] = DBUtils.makeNullValue(session, docAttribute.getValueHandler(), docAttribute.getAttribute());
+                                cells[0] = docAttribute.getValueHandler().createNewValueObject(session, docAttribute.getAttribute());
                             } catch (DBCException e) {
                                 log.warn(e);
                             }
