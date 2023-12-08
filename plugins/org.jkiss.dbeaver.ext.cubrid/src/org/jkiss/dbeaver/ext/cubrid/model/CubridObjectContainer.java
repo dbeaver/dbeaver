@@ -1,3 +1,19 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
 import java.sql.DatabaseMetaData;
@@ -10,6 +26,7 @@ import java.util.Locale;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
@@ -21,6 +38,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -34,7 +52,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
-public class CubridObjectContainer extends GenericObjectContainer implements GenericStructContainer{
+public class CubridObjectContainer extends GenericObjectContainer implements GenericStructContainer {
 
 	private final CubridDataSource dataSource;
 	private final CubridUserCache cubridUserCache;
@@ -155,14 +173,16 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		@NotNull
 		@Override
 		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer container) throws SQLException {
-			return container.getDataSource().getMetaModel().prepareCubridUserLoadStatement(session, container);
+			String sql= "select * from db_user";
+			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+			return dbStat;
 		}
 
 		@Override
 		protected CubridUser fetchObject(JDBCSession session, CubridObjectContainer container, JDBCResultSet resultSet) throws SQLException, DBException {
 			String name = resultSet.getString("name");
 			String comment = resultSet.getString("comment");
-			return container.getDataSource().getMetaModel().createCubridUserImpl(container, name, comment);
+			return new CubridUser(container, name, comment);
 		}
 
 	}
@@ -188,7 +208,12 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		@Override
 		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
 			@Nullable CubridTableBase object, @Nullable String objectName) throws SQLException {
-			return dataSource.getMetaModel().prepareTableLoadStatement(session);
+			String sql= "select a.*, case when class_type = 'CLASS' then 'TABLE' \r\n"
+				+ "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
+				+ "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
+				+ "a.class_name = b.class_name where a.is_system_class='NO'";
+			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+			return dbStat;
 		}
 
 		@Override
@@ -220,7 +245,12 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		@Override
 		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
 			@Nullable CubridTableBase object, @Nullable String objectName) throws SQLException {
-			return dataSource.getMetaModel().prepareSystemTableLoadStatement(session, owner, object, objectName);
+			String sql= "select *, class_name as TABLE_NAME, case when class_type = 'CLASS' \r\n"
+				+ "then 'TABLE' end as TABLE_TYPE from db_class\r\n"
+				+ "where class_type = 'CLASS' \r\n"
+				+ "and is_system_class = 'YES'";
+			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+			return dbStat;
 		}
 
 	}
@@ -234,7 +264,13 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		@Override
 		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
 			@Nullable CubridTableBase object, @Nullable String objectName) throws SQLException {
-			return dataSource.getMetaModel().prepareSystemViewLoadStatement(session, owner, object, objectName);
+			String sql= "select *, case when class_type = 'VCLASS' \r\n"
+				+ "then 'VIEW' end as TABLE_TYPE,\r\n"
+				+ "class_name as TABLE_NAME from db_class\r\n"
+				+ "where class_type='VCLASS'\r\n"
+				+ "and is_system_class='YES'";
+			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+			return dbStat;
 		}
 
 	}
@@ -302,7 +338,6 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 			}
 			GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
 			if (tableColumn == null) {
-				log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
 				return null;
 			}
 

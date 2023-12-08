@@ -1,3 +1,19 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
 import java.util.Collection;
@@ -5,33 +21,39 @@ import java.util.Map;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public abstract class CubridTableBase extends GenericTableBase {
+public abstract class CubridTableBase extends GenericTableBase{
 	
+    private static final Log log = Log.getLog(CubridTableBase.class);
+
 	private CubridUser owner;
 	private CubridObjectContainer container;
-	private String isSystemTable;
+	private boolean isSystemTable;
+
 	public CubridTableBase(CubridObjectContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
 		super(container, tableName, tableType, dbResult);
 		this.container = container;
 		String owner_name;
 
 		if (dbResult != null) {
-			owner_name = GenericUtils.safeGetString(container.getCubridTableCache().tableObject, dbResult, CubridConstants.OWNER_NAME);
-			isSystemTable = GenericUtils.safeGetString(container.getCubridTableCache().tableObject, dbResult, CubridConstants.IS_SYSTEM_CLASS);
+			owner_name = JDBCUtils.safeGetString( dbResult, CubridConstants.OWNER_NAME);
+			isSystemTable = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS).equals("YES");
 		} else {
 			owner_name = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
-			isSystemTable = "";
+			isSystemTable = false;
 		}
-
+		
 		for(CubridUser cbOwner : getUsers()){
 			if(cbOwner.getName().equals(owner_name)) {
 				this.owner = cbOwner;
@@ -43,7 +65,7 @@ public abstract class CubridTableBase extends GenericTableBase {
 	public boolean isPhysicalTable() {
 		return !isView();
 	}
-
+	
 	public CubridObjectContainer getContainer() {
 		return this.container;
 	}
@@ -52,23 +74,18 @@ public abstract class CubridTableBase extends GenericTableBase {
 		try {
 			return container.getDataSource().getCubridUsers(null);
 		} catch (DBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Cannot get user.");
 		}
 		return null;
 	}
 
 	@Override
 	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public Collection<? extends CubridTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-		if (getDataSource().getInfo().supportsIndexes()) {
-			return this.getContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);
-		}
-		return null;
+		return this.getContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);
 	}
 
 	@Nullable
@@ -85,13 +102,19 @@ public abstract class CubridTableBase extends GenericTableBase {
 		return this.owner.getName() + "." + this.getName();
 	}
 
+	@Override
+	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+		super.refreshObject(monitor);
+		return this.getContainer().getCubridTableCache().refreshObject(monitor, container, this);
+	}
+
 	@NotNull
 	@Override
 	public String getFullyQualifiedName(DBPEvaluationContext context) {
-		if(isSystemTable.equals("YES")) {
-			return this.getName();
+		if(isSystemTable) {
+			return DBUtils.getFullQualifiedName(getDataSource(), this);
 		} else {
-			return this.getOwner().getName() + "." + this.getName();
+			return DBUtils.getFullQualifiedName(getDataSource(), getOwner(), this);
 		}
 	}
 

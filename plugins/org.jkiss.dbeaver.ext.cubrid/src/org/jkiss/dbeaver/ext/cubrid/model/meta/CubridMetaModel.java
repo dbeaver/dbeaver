@@ -1,3 +1,19 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.cubrid.model.meta;
 
 import java.sql.SQLException;
@@ -5,20 +21,17 @@ import java.sql.SQLException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableBase;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -27,59 +40,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class CubridMetaModel extends GenericMetaModel {
-	
-	CubridMetaModelDescriptor descriptor;
+	private static final Log log = Log.getLog(CubridMetaModel.class);
 
 	public CubridMetaModel()
 	{
 	}
 
-	public GenericMetaObject getMetaObject(String id) {
-		return descriptor == null ? null : descriptor.getObject(id);
-	}
-
-	public CubridUser createCubridUserImpl(CubridObjectContainer container, String name, String comment) {
-		return new CubridUser(container, name, comment);
-	}
-
-	public JDBCStatement prepareCubridUserLoadStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer container) throws SQLException {
-		String sql= "select * from db_user";
-		final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-		return dbStat;
-	}
-
-	public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session)
-		throws SQLException {
-		String sql= "select a.*, case when class_type = 'CLASS' then 'TABLE' \r\n"
-				+ "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
-				+ "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
-				+ "a.class_name = b.class_name where a.is_system_class='NO'";
-		final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-		return dbStat;
-	}
-
-	public JDBCStatement prepareSystemTableLoadStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner, @Nullable CubridTableBase object, @Nullable String objectName)
-		throws SQLException {
-		String sql= "select *, class_name as TABLE_NAME, case when class_type = 'CLASS' \r\n"
-	    		+ "then 'TABLE' end as TABLE_TYPE from db_class\r\n"
-	       		+ "where class_type = 'CLASS' \r\n"
-	       		+ "and is_system_class = 'YES'";
-		final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-		return dbStat;
-	}
-
-	public JDBCStatement prepareSystemViewLoadStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner, @Nullable CubridTableBase object, @Nullable String objectName)
-		throws SQLException {
-		String sql= "select *, case when class_type = 'VCLASS' \r\n"
-				+ "then 'VIEW' end as TABLE_TYPE,\r\n"
-				+ "class_name as TABLE_NAME from db_class\r\n"
-				+ "where class_type='VCLASS'\r\n"
-				+ "and is_system_class='YES'";
-		final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-		return dbStat;
-	}
-
-	public boolean isNewVersion(JDBCSession session) {
+	public boolean isSupportMultiSchema(JDBCSession session) {
 		try {
 			int major = session.getMetaData().getDatabaseMajorVersion();
 			int minor = session.getMetaData().getDatabaseMinorVersion();
@@ -91,14 +58,14 @@ public class CubridMetaModel extends GenericMetaModel {
 				return true;
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.error("can't get database version");
 		}
 		return false;
 	}
 
 	@Override
 	public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
-		if(isNewVersion(session)) {
+		if(isSupportMultiSchema(session)) {
 			if(forTable instanceof CubridTable) {
 				CubridTableBase tablebase = (CubridTableBase) forTable;
 				return session.getMetaData().getColumns(null, null, tablebase!=null?tablebase.getUniqueName():null, null).getSourceStatement();
@@ -109,7 +76,7 @@ public class CubridMetaModel extends GenericMetaModel {
 
 	@Override
 	public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException, DBException {
-		if(isNewVersion(session)) {
+		if(isSupportMultiSchema(session)) {
 			if(forTable instanceof CubridTable) {
 				CubridTableBase tablebase = (CubridTableBase) forTable;
 				return session.getMetaData().getPrimaryKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
@@ -120,7 +87,7 @@ public class CubridMetaModel extends GenericMetaModel {
 
 	@Override
 	public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
-		if(isNewVersion(session)) {
+		if(isSupportMultiSchema(session)) {
 			if(forTable instanceof CubridTable) {
 				CubridTableBase tablebase = (CubridTableBase) forTable;
 				return session.getMetaData().getImportedKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
@@ -130,7 +97,7 @@ public class CubridMetaModel extends GenericMetaModel {
 	}
 
 	public JDBCStatement prepareIndexLoadStatement(@NotNull JDBCSession session, CubridTableBase tableBase) throws SQLException {
-		String tableName = isNewVersion(session)? tableBase.getUniqueName():tableBase.getName();
+		String tableName = isSupportMultiSchema(session)? tableBase.getUniqueName():tableBase.getName();
 		return session.getMetaData().getIndexInfo(null, null, tableName, false, true).getSourceStatement();
 	}
 
