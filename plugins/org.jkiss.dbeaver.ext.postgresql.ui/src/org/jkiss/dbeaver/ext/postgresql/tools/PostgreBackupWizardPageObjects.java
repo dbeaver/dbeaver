@@ -308,24 +308,28 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
 
         List<PostgreDatabaseBackupInfo> objects = wizard.getSettings().getExportObjects();
         objects.clear();
-        List<PostgreSchema> schemas = new ArrayList<>();
-        List<PostgreTableBase> tables = new ArrayList<>();
+        List<PostgreSchema> entireSchemas = new ArrayList<>();
         for (TableItem item : schemasTable.getItems()) {
             if (item.getChecked()) {
                 PostgreSchema schema = (PostgreSchema) item.getData();
                 Set<PostgreTableBase> checkedTables = checkedObjects.get(schema);
-                // All tables checked
-                if (!schemas.contains(schema)) {
-                    schemas.add(schema);
+                if (checkedTables == null) {
+                    // All tables checked, we can add this schema in the full dump
+                    entireSchemas.add(schema);
+                    continue;
                 }
-                if (checkedTables != null) {
-                    // Only a few tables checked
-                    tables.addAll(checkedTables);
-                }
+                // Only a few tables checked, we need to use separate file for this case, because -n and -t arguments can be used together
+                PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(
+                    dataBase,
+                    Collections.singletonList(schema),
+                    new ArrayList<>(checkedTables));
+                objects.add(info);
             }
         }
-        PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, schemas, tables);
-        objects.add(info);
+        if (!entireSchemas.isEmpty()) {
+            PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, entireSchemas, null);
+            objects.add(info);
+        }
     }
 
     @Override
