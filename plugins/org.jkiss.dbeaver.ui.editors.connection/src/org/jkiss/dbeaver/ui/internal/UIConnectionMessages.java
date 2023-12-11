@@ -163,8 +163,10 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_auto_page_download_rate;
     public static String dialog_driver_download_auto_page_download_failed_msg;
     public static String dialog_driver_download_auto_page_download_failed_cert_msg;
+    public static String dialog_driver_download_auto_page_download_failed_cert_msg_advanced;
     public static String dialog_driver_download_network_unavailable_msg;
     public static String dialog_driver_download_network_unavailable_cert_msg;
+    public static String dialog_driver_download_network_unavailable_cert_msg_advanced;
     // Driver edit
 	public static String dialog_edit_driver_setting;
     public static String dialog_edit_driver_type_label;
