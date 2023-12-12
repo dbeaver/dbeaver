@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 16, 2004
- */
 package org.jkiss.dbeaver.erd.ui.layout.algorithm.direct;
 
 import org.eclipse.draw2d.graph.DirectedGraph;
