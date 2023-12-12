@@ -105,7 +105,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     @Override
     protected IFigure createFigure() {
         PolylineConnection conn;
-        ERDConnectionRouter router = getDiagramPart().getRouter();
+        ERDConnectionRouter router = getDiagramPart().getActiveRouter();
         if (router != null) {
             conn = router.getConnectionInstance();
         } else {
