@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * Annotates methods which return container object.
- * In object hierarchy it is immediate parent object or some higher level parent.
- *
- * It is needed to avoid redundant remote calls.
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface DPIContainer {
+public interface DPIClientObject {
 
-    boolean root() default false;
+    String dpiObjectId();
+
+    String dpiObjectType();
+
+    ClassLoader dpiClassLoader();
+
+    Object dpiPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String propertyName)
+        throws DBException;
+
+    Object dpiObjectMethod(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull String methodName,
+        @Nullable Object[] arguments)
+        throws DBException;
 
 }

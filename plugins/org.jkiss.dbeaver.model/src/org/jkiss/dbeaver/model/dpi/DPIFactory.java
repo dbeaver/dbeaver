@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.dpi;
 
-package org.jkiss.dbeaver.ext.postgresql.model;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * PostgreTableContainer.
- * Can be a schema or regular table
+ * Object's factory.
+ *
+ * Method return is cached for each unique parameter
  */
-public interface PostgreTableContainer extends PostgreObject {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD,ElementType.TYPE})
+public @interface DPIFactory {
 
-    @DPIContainer
-    @NotNull
-    PostgreDataSource getDataSource();
-
-    @DPIContainer
-    PostgreSchema getSchema();
+    String parameter() default "";
 
 }
