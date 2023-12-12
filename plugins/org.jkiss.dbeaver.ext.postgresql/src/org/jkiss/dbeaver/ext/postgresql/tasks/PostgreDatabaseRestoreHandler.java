@@ -85,7 +85,11 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    public void fillProcessParameters(PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(
+        PostgreDatabaseRestoreSettings settings,
+        PostgreDatabaseRestoreInfo arg,
+        List<String> cmd
+    ) throws IOException {
         super.fillProcessParameters(settings, arg, cmd);
 
         if (settings.isCleanFirst()) {
