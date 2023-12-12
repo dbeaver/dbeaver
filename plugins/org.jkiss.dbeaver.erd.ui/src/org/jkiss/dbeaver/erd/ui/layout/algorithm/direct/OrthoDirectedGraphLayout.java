@@ -45,7 +45,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private AbstractGraphicalEditPart diagram;
     private TreeMap<String, List<Node>> nodeByLevels = new TreeMap<>();
     private List<Node> isolatedNodes = new LinkedList<>();
-    private List<Node> nodeMissed = new LinkedList<>();
     private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 20;
     private static final int DEFAULT_ISO_OFFSET_HORZ = 100;
     private static final int DEFAULT_OFFSET_BY_X = 250;
@@ -56,21 +55,20 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     }
 
     /**
-     * @param graph public method called to handle layout task
+     * The visitor method
      */
     @Override
     public void visit(DirectedGraph graph) {
         computeRootNodes(graph, nodeByLevels);
-        isolatedNodes = computeIsolatedNodes(graph, nodeByLevels);
+        isolatedNodes = computeIsolatedNodes(graph);
         nodeByLevels = balanceRoots(isolatedNodes, nodeByLevels);
         nodeByLevels = computeGraph(nodeByLevels);
         nodeByLevels = verifyDirectedGraph(graph, nodeByLevels);
         nodeByLevels = rebalanceGraph(nodeByLevels);
         drawGraphNodes(nodeByLevels);
         drawIsolatedNodes(isolatedNodes, nodeByLevels);
-        nodeMissed = findMissedGraphNodes(graph, nodeByLevels);
+        List<Node> nodeMissed = findMissedGraphNodes(graph, nodeByLevels);
         drawMissedNodes(isolatedNodes, nodeMissed, nodeByLevels);
-
     }
 
     private TreeMap<String, List<Node>> verifyDirectedGraph(DirectedGraph graph, TreeMap<String, List<Node>> nodeByLevels) {
@@ -101,7 +99,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             Node lastNode = nodeByLevels.lastEntry().getValue().get(0);
             currentX = lastNode.x + lastNode.width + DEFAULT_ISO_OFFSET_HORZ;
         }
-        
+
         int currentY = DEFAUL_OFFSET_FROM_TOP_LINE;
         for (Node nodeSource : islands) {
             nodeSource.x = currentX;
@@ -139,7 +137,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         }
     }
 
-    private boolean isRebalanceRequire(TreeMap<String, List<Node>> nodeByLevels, Map<String, Integer> heightByLevels) {
+    private boolean isRebalanceRequire(Map<String, Integer> heightByLevels) {
         Rectangle size = getMonitorSize();
         for (Entry<String, Integer> entry : heightByLevels.entrySet()) {
             if (entry.getValue() > size.height) {
@@ -152,7 +150,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private TreeMap<String, List<Node>> rebalanceGraph(TreeMap<String, List<Node>> nodeByLevels) {
         Rectangle size = getMonitorSize();
         Map<String, Integer> heightByLevels = computeHeight(nodeByLevels);
-        while (isRebalanceRequire(nodeByLevels, heightByLevels)) {
+        while (isRebalanceRequire(heightByLevels)) {
             for (Entry<String, Integer> entry : heightByLevels.entrySet()) {
                 if (entry.getValue() > size.height) {
                     int index = Integer.valueOf(entry.getKey());
@@ -189,7 +187,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             if (integer != null) {
                 int offset = middle - integer / 2;
                 if (offset <= DEFAULT_OFFSET_BY_Y) {
-                    offset = DEFAULT_OFFSET_BY_Y*2;
+                    offset = DEFAULT_OFFSET_BY_Y * 2;
                 }
                 currentY = offset;
             } else {
@@ -210,7 +208,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         }
     }
 
-    private List<Node> computeIsolatedNodes(DirectedGraph graph, TreeMap<String, List<Node>> nodeByEdges) {
+    private List<Node> computeIsolatedNodes(DirectedGraph graph) {
         List<Node> isolated = new LinkedList<>();
         for (int i = 0; i < graph.nodes.size(); i++) {
             Node node = graph.nodes.get(i);
@@ -222,7 +220,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                     nodeTarget = edge.target;
                     if (nodeTarget != null &&
                         nodeTarget.outgoing.size() == 0 &&
-                        nodeTarget.incoming.size() == 1 ) {
+                        nodeTarget.incoming.size() == 1) {
                         // further connection exists
                         hasNoFurtherConnections = true;
                     } else {
@@ -338,7 +336,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     /**
      * The method to return diagram edit part
      *
-     * @return
+     * @return - return a diagram editor part
      */
     public AbstractGraphicalEditPart getDiagram() {
         return diagram;
