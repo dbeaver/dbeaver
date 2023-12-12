@@ -69,6 +69,10 @@ public class CubridUser implements DBSObject{
 		return name.equals("DBA") ? true : false;
 	}
 
+	public boolean showSystemTableFolder() {
+		return this.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
+	}
+
 	@Override
 	public CubridObjectContainer getParentObject() {
 		return this.container;

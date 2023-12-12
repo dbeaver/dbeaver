@@ -50,10 +50,8 @@ public class CubridMetaModel extends GenericMetaModel {
 		try {
 			int major = session.getMetaData().getDatabaseMajorVersion();
 			int minor = session.getMetaData().getDatabaseMinorVersion();
-			if(major == 11) {
-				if(minor >= 2) {
-					return true;
-				}
+			if(major == 11 && minor >= 2) {
+				return true;
 			}else if(major > 11) {
 				return true;
 			}
@@ -65,33 +63,27 @@ public class CubridMetaModel extends GenericMetaModel {
 
 	@Override
 	public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
-		if(isSupportMultiSchema(session)) {
-			if(forTable instanceof CubridTable) {
-				CubridTableBase tablebase = (CubridTableBase) forTable;
-				return session.getMetaData().getColumns(null, null, tablebase!=null?tablebase.getUniqueName():null, null).getSourceStatement();
-			}
+		if(isSupportMultiSchema(session) && forTable instanceof CubridTable) {
+			CubridTableBase tablebase = (CubridTableBase) forTable;
+			return session.getMetaData().getColumns(null, null, tablebase!=null?tablebase.getUniqueName():null, null).getSourceStatement();
 		}
 		return super.prepareTableColumnLoadStatement(session, owner, forTable);
 	}
 
 	@Override
 	public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException, DBException {
-		if(isSupportMultiSchema(session)) {
-			if(forTable instanceof CubridTable) {
-				CubridTableBase tablebase = (CubridTableBase) forTable;
-				return session.getMetaData().getPrimaryKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
-			}
+		if(isSupportMultiSchema(session) && forTable instanceof CubridTable) {
+			CubridTableBase tablebase = (CubridTableBase) forTable;
+			return session.getMetaData().getPrimaryKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
 		}
 		return super.prepareUniqueConstraintsLoadStatement(session, owner, forTable);
     }
 
 	@Override
 	public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
-		if(isSupportMultiSchema(session)) {
-			if(forTable instanceof CubridTable) {
-				CubridTableBase tablebase = (CubridTableBase) forTable;
-				return session.getMetaData().getImportedKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
-			}
+		if(isSupportMultiSchema(session) && forTable instanceof CubridTable) {
+			CubridTableBase tablebase = (CubridTableBase) forTable;
+			return session.getMetaData().getImportedKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
 		}
 		return super.prepareForeignKeysLoadStatement(session, owner, forTable);
 	}

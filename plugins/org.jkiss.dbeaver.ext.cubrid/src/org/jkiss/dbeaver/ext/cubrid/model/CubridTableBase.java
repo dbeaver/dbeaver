@@ -53,7 +53,7 @@ public abstract class CubridTableBase extends GenericTableBase{
 			owner_name = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
 			isSystemTable = false;
 		}
-		
+
 		for(CubridUser cbOwner : getUsers()){
 			if(cbOwner.getName().equals(owner_name)) {
 				this.owner = cbOwner;
@@ -65,7 +65,11 @@ public abstract class CubridTableBase extends GenericTableBase{
 	public boolean isPhysicalTable() {
 		return !isView();
 	}
-	
+
+	@Override
+	public boolean isSystem() {
+		return isSystemTable;
+	}
 	public CubridObjectContainer getContainer() {
 		return this.container;
 	}

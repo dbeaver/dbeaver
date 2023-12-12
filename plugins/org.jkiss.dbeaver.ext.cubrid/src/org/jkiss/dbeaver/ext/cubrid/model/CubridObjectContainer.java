@@ -26,7 +26,6 @@ import java.util.Locale;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
@@ -297,6 +296,7 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 			String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
 			long cardinality = JDBCUtils.safeGetLong(dbResult, JDBCConstants.INDEX_CARDINALITY);
 			int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
+			String name = indexName;
 
 			DBSIndexType indexType;
 			switch (indexTypeNum) {
@@ -315,12 +315,12 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 					indexType = DBSIndexType.UNKNOWN;
 					break;
 			}
-			if (CommonUtils.isEmpty(indexName)) {
+			if (CommonUtils.isEmpty(name)) {
 				// [JDBC] Some drivers return empty index names
-				indexName = parent.getName().toUpperCase(Locale.ENGLISH) + "_INDEX";
+				name = parent.getName().toUpperCase(Locale.ENGLISH) + "_INDEX";
 			}
 
-			return new CubridTableIndex(parent, isNonUnique, indexQualifier, cardinality, indexName, indexType, true);
+			return new CubridTableIndex(parent, isNonUnique, indexQualifier, cardinality, name, indexType, true);
 		}
 
 		@Override

@@ -59,7 +59,7 @@
 	                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
 	                                </items>
 	                            </items>
-	                            <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.system_table.node.name" icon="#folder_table" description="%tree.system_table.node.tip" visibleIf="object.supportsSystemTable()">
+	                            <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.system_table.node.name" icon="#folder_table" description="%tree.system_table.node.tip" visibleIf="object.supportsSystemTable() &amp;&amp; object.showSystemTableFolder()">
                                 	<items label="%tree.table.node.name" path="table" property="physicalSystemTables" icon="#table">
                                 		<folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
 		                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
@@ -101,7 +101,7 @@
 	                                    </items>
 	                                </folder>
 	                            </items>
-	                            <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridView" label="%tree.systemViews.node.name" icon="#folder_view" description="%tree.systemViews.node.tip" visibleIf="object.supportsSystemView()">
+	                            <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridView" label="%tree.systemViews.node.name" icon="#folder_view" description="%tree.systemViews.node.tip" visibleIf="object.supportsSystemView() &amp;&amp; object.showSystemTableFolder()">
 		                            <items label="%tree.tview.node.name" path="view" property="systemViews" icon="#view">
 		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
 		                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
