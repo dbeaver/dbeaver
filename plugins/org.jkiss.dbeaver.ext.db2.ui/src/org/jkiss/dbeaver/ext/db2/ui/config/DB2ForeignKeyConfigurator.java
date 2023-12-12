@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -74,6 +75,7 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
                     }
 
                     foreignKey.setColumns(columns);
+                    SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
 
                     return foreignKey;
             }
