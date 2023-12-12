@@ -21,10 +21,10 @@ import org.eclipse.osgi.container.ModuleWire;
 import org.eclipse.osgi.container.ModuleWiring;
 import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader;
-import org.jkiss.dbeaver.dpi.model.DPIController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.dpi.DPIController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.osgi.framework.Bundle;
 

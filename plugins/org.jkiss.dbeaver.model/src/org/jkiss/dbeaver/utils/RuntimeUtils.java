@@ -105,23 +105,10 @@ public final class RuntimeUtils {
 
     public static String getCurrentDate() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
-/*
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        final int month = c.get(Calendar.MONTH) + 1;
-        final int day = c.get(Calendar.DAY_OF_MONTH);
-        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + (day < 10 ? "0" + day : day);
-*/
     }
 
     public static String getCurrentTimeStamp() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
-/*
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        final int month = c.get(Calendar.MONTH) + 1;
-        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE);
-*/
     }
 
     public static boolean isTypeSupported(Class<?> type, Class<?>[] supportedTypes) {
@@ -157,10 +144,8 @@ public final class RuntimeUtils {
     public static IStatus stripStack(@NotNull IStatus status) {
         if (status instanceof MultiStatus) {
             IStatus[] children = status.getChildren();
-            if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    children[i] = stripStack(children[i]);
-                }
+            for (int i = 0; i < children.length; i++) {
+                children[i] = stripStack(children[i]);
             }
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
@@ -186,16 +171,16 @@ public final class RuntimeUtils {
     public static String formatExecutionTime(long ms) {
         if (ms < 1000) {
             // Less than a second, show just ms
-            return String.valueOf(ms) + "ms";
+            return ms + "ms";
         }
         if (ms < 60000) {
             // Less than a minute, show sec and ms
-            return String.valueOf(ms / 1000) + "." + String.valueOf(ms % 1000) + "s";
+            return ms / 1000 + "." + ms % 1000 + "s";
         }
         long sec = ms / 1000;
         long min = sec / 60;
         sec -= min * 60;
-        return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
+        return min + "m " + sec + "s";
     }
 
     @NotNull
@@ -290,20 +275,15 @@ public final class RuntimeUtils {
             if (waitTime > 0 && System.currentTimeMillis() - startTime > waitTime) {
                 break;
             }
-            try {
-                if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
-                    Thread.sleep(50);
-                }
-            } catch (InterruptedException e) {
-                log.debug("Task '" + taskName + "' was interrupted");
-                break;
+            if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                pause(50);
             }
         }
 
         return monitoringTask.finished;
     }
 
-    public static String executeProcess(String binPath, String ... args) throws DBException {
+    public static String executeProcess(String binPath, String... args) throws DBException {
         try {
             String[] cmdBin = {binPath};
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
@@ -322,20 +302,18 @@ public final class RuntimeUtils {
             } finally {
                 p.destroy();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new DBException("Error executing process " + binPath, ex);
         }
     }
 
-    public static String executeProcessAndCheckResult(String binPath, String ... args) throws DBException {
+    public static String executeProcessAndCheckResult(String binPath, String... args) throws DBException {
         try {
             String[] cmdBin = {binPath};
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
             Process p = Runtime.getRuntime().exec(cmd);
             return getProcessResults(p);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (ex instanceof DBException dbe) {
                 throw dbe;
             }
@@ -365,7 +343,7 @@ public final class RuntimeUtils {
 
     private static void readStringToBuffer(InputStream is, StringBuilder out) throws IOException {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(is))) {
-            for (;;) {
+            for (; ; ) {
                 String line = input.readLine();
                 if (line == null) {
                     break;
@@ -385,6 +363,7 @@ public final class RuntimeUtils {
 
     /**
      * Checks if current application is shipped from Windows store
+     *
      * @return true if shipped from Windows store, false if not.
      */
     public static boolean isWindowsStoreApplication() {
@@ -402,7 +381,7 @@ public final class RuntimeUtils {
     public static boolean isLinux() {
         return IS_LINUX;
     }
-    
+
     public static boolean isGtk() {
         return IS_GTK;
     }
@@ -566,6 +545,7 @@ public final class RuntimeUtils {
                     setSystem(true);
                     setUser(false);
                 }
+
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     if (!monitor.isCanceled()) {
@@ -679,7 +659,6 @@ public final class RuntimeUtils {
 
     private static class MonitoringTask implements DBRRunnableWithProgress {
         private final DBRRunnableWithProgress task;
-        private DBRProgressMonitor monitor;
         volatile boolean finished;
 
         private MonitoringTask(DBRRunnableWithProgress task) {
@@ -692,7 +671,6 @@ public final class RuntimeUtils {
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            this.monitor = monitor;
             try {
                 task.run(monitor);
             } finally {

@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.service.component.annotations.Component;
 
@@ -187,10 +188,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @NotNull
     @Override
     public DBConfigurationController getPluginConfigurationController(@Nullable String pluginId) {
-        return getConfigurationController(pluginId == null ? null : Platform.getBundle(pluginId));
+        return getConfigurationController(CommonUtils.isEmpty(pluginId) ? null : Platform.getBundle(pluginId));
     }
     
-    private DBConfigurationController getConfigurationController(Bundle bundle) {
+    private DBConfigurationController getConfigurationController(@Nullable Bundle bundle) {
         DBConfigurationController controller = bundle == null ? defaultConfigurationController : configurationControllerByPlugin.get(bundle);
         if (controller == null) {
             controller = createConfigurationController(bundle);

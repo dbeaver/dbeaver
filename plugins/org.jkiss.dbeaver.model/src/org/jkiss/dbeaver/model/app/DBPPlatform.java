@@ -107,7 +107,7 @@ public interface DBPPlatform {
      * which keeps plugin configuration which can be shared with other users.
      */
     @NotNull
-    DBConfigurationController getPluginConfigurationController(@NotNull String pluginId);
+    DBConfigurationController getPluginConfigurationController(@Nullable String pluginId);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.
