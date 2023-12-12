@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKeyColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -49,7 +50,7 @@ public class SQLServerForeignKeyConfigurator implements DBEObjectConfigurator<SQ
                     return null;
                 }
 
-                foreignKey.setReferencedKey(editPage.getUniqueConstraint());
+                foreignKey.setReferencedConstraint(editPage.getUniqueConstraint());
                 //foreignKey.setName(getNewConstraintName(monitor, foreignKey));
                 foreignKey.setDeleteRule(editPage.getOnDeleteRule());
                 foreignKey.setUpdateRule(editPage.getOnUpdateRule());
@@ -62,6 +63,7 @@ public class SQLServerForeignKeyConfigurator implements DBEObjectConfigurator<SQ
                             colIndex++,
                             (SQLServerTableColumn) tableColumn.getRefColumn()));
                 }
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
                 return foreignKey;
             }
         }.execute();
