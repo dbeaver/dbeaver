@@ -767,7 +767,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
                 try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT\n" +
                     "    TABSCHEMA,\n" +
                     "    SUM(DATA_OBJECT_P_SIZE + INDEX_OBJECT_P_SIZE + LONG_OBJECT_P_SIZE + LOB_OBJECT_P_SIZE + XML_OBJECT_P_SIZE) AS TOTAL_SIZE_IN_KB\n" +
-                    "FROM SYSIBMADM.ADMINTABINFO\n" +
+                    "FROM TABLE(ADMIN_GET_TAB_INFO('',''))\n" +
                     "GROUP BY TABSCHEMA")) {
                     while (dbResult.next()) {
                         String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
