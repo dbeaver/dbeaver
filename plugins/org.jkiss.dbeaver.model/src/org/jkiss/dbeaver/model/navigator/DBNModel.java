@@ -260,7 +260,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @NotNull
-    private NodePath getNodePath(@NotNull String path) {
+    private static NodePath getNodePath(@NotNull String path) {
         DBNNode.NodePathType nodeType = DBNNode.NodePathType.other;
         for (DBNNode.NodePathType type : DBNNode.NodePathType.values()) {
             final String prefix = type.getPrefix();
@@ -275,7 +275,7 @@ public class DBNModel implements IResourceChangeListener {
 
     @Nullable
     public DBNDataSource getDataSourceByPath(DBPProject project, String path) {
-        String dsId = getNodePath(path).first();
+        String dsId = getDataSourceIdFromNodePath(path);
         DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode != null) {
             DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
@@ -284,6 +284,11 @@ public class DBNModel implements IResourceChangeListener {
             }
         }
         return null;
+    }
+
+    @Nullable
+    public static String getDataSourceIdFromNodePath(String path) {
+        return getNodePath(path).first();
     }
 
     /**

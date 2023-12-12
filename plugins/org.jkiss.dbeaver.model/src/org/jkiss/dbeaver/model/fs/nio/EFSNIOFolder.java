@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -89,6 +90,10 @@ public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
             }
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
         } catch (IOException e) {
+            if (e instanceof DirectoryNotEmptyException) {
+                throw new CoreException(GeneralUtils.makeExceptionStatus(
+                    "Cannot delete directory '" + getNioPath() + "': it is not empty", e));
+            }
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
