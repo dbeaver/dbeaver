@@ -227,6 +227,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 spreadsheet.cancelInlineEditor();
             }
         });
+        spreadsheet.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                if (controller.isPanelsVisible()) {
+                    controller.getVisiblePanel().setFocus();
+                    e.doit = false;
+                }
+            }
+        });
 
         activateTextKeyBindings(controller, spreadsheet);
 
