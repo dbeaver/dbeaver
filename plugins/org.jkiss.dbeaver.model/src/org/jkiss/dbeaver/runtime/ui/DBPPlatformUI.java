@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -175,7 +175,7 @@ public interface DBPPlatformUI {
 
     void showInSystemExplorer(@NotNull String path);
 
-    DBNPath openFileSystemSelector(
+    DBNPathBase openFileSystemSelector(
         @NotNull String title,
         boolean folder,
         int style,

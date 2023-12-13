@@ -14,21 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model.dpi;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Detached session
+ * Annotates methods which return container object.
+ * In object hierarchy it is immediate parent object or some higher level parent.
+ *
+ * It is needed to avoid redundant remote calls.
  */
-public class DPISession {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface DPIContainer {
 
-    private final String sessionId;
-
-    public DPISession(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
+    boolean root() default false;
 
 }
