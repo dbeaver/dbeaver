@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndex;
@@ -37,8 +38,8 @@ import java.util.stream.Collectors;
  * JDBC abstract index
  */
 public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE extends JDBCTable>
-    extends AbstractTableIndex
-    implements DBPSaveableObject {
+    extends AbstractTableIndex implements DBPNamedObject2, DBPSaveableObject
+{
     private final CONTAINER container;
     private final TABLE table;
     protected String name;
