@@ -35,7 +35,6 @@ import java.util.Objects;
 
 public class SVGImageDescriptor extends ImageDescriptor {
     private static final Log log = Log.getLog(SVGImageDescriptor.class);
-    private static final SVGLoader LOADER = new SVGLoader();
 
     private final URL url;
 
@@ -59,11 +58,8 @@ public class SVGImageDescriptor extends ImageDescriptor {
                 return null;
             }
 
-            final SVGDocument document;
-
-            synchronized (LOADER) {
-                document = LOADER.load(is);
-            }
+            final SVGLoader loader = new SVGLoader();
+            final SVGDocument document = loader.load(is);
 
             if (document == null) {
                 return null;

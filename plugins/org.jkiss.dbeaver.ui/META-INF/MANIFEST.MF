@@ -8,8 +8,6 @@ Bundle-Release-Date: 20231204
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .,
- lib/jsvg-1.3.0.jar
 Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.ui,
@@ -45,6 +43,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
  org.jkiss.dbeaver.model,
+ org.jkiss.bundle.jsvg,
  org.eclipse.ui.forms,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.e4.ui.model.workbench
