@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.apache.commons.jexl3.*;
+import org.apache.commons.jexl3.introspection.JexlPropertyGet;
+import org.apache.commons.jexl3.introspection.JexlPropertySet;
+import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.eclipse.core.expressions.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -28,12 +31,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * EntityEditorDescriptor
@@ -47,11 +51,87 @@ public abstract class AbstractDescriptor {
 
     private static JexlEngine jexlEngine;
 
-    public static JexlExpression parseExpression(String exprString) throws DBException
-    {
+    private static class DPIPropertyGetter implements JexlPropertyGet {
+        private final String propertyName;
+
+        private DPIPropertyGetter(String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+        @Override
+        public Object invoke(Object obj) throws Exception {
+            if (obj instanceof DPIClientObject) {
+                return ((DPIClientObject) obj).dpiPropertyValue(new LoggingProgressMonitor(log), propertyName);
+            }
+            return null;
+        }
+
+        @Override
+        public Object tryInvoke(Object obj, Object key) {
+            try {
+                return invoke(obj);
+            } catch (Exception e) {
+                log.debug(e);
+            }
+            return null;
+        }
+
+        @Override
+        public boolean tryFailed(Object rval) {
+            return false;
+        }
+
+        @Override
+        public boolean isCacheable() {
+            return true;
+        }
+    }
+
+    ;
+    private static final JexlUberspect.PropertyResolver DPI_RESOLVER = new JexlUberspect.PropertyResolver() {
+        @Override
+        public JexlPropertyGet getPropertyGet(JexlUberspect uber, Object obj, Object identifier) {
+            if (identifier instanceof String && obj instanceof DPIClientObject) {
+                return new DPIPropertyGetter((String) identifier);
+            }
+            return null;
+        }
+
+        @Override
+        public JexlPropertySet getPropertySet(JexlUberspect uber, Object obj, Object identifier, Object arg) {
+            return null;
+        }
+    };
+    private static List<JexlUberspect.PropertyResolver> POJO = Collections.unmodifiableList(Arrays.asList(
+        JexlUberspect.JexlResolver.PROPERTY,
+        JexlUberspect.JexlResolver.MAP,
+        JexlUberspect.JexlResolver.LIST,
+        JexlUberspect.JexlResolver.DUCK,
+        JexlUberspect.JexlResolver.FIELD,
+        JexlUberspect.JexlResolver.CONTAINER,
+        DPI_RESOLVER
+    ));
+
+    private static final JexlUberspect.ResolverStrategy JEXL_STRATEGY = (op, obj) -> {
+        if (op == JexlOperator.ARRAY_GET) {
+            return JexlUberspect.MAP;
+        }
+        if (op == JexlOperator.ARRAY_SET) {
+            return JexlUberspect.MAP;
+        }
+        if (op == null && obj instanceof Map) {
+            return JexlUberspect.MAP;
+        }
+        return POJO;
+    };
+
+    public static JexlExpression parseExpression(String exprString) throws DBException {
         synchronized (AbstractDescriptor.class) {
             if (jexlEngine == null) {
-                jexlEngine = new JexlBuilder().cache(100).create();
+                jexlEngine = new JexlBuilder()
+                    .cache(100)
+                    .strategy(JEXL_STRATEGY)
+                    .create();
             }
         }
         try {
@@ -61,28 +141,23 @@ public abstract class AbstractDescriptor {
         }
     }
 
-    public static JexlContext makeContext(final Object object, final Object context)
-    {
+    public static JexlContext makeContext(final Object object, final Object context) {
         return new JexlContext() {
             @Override
-            public Object get(String name)
-            {
+            public Object get(String name) {
                 return name.equals(VAR_OBJECT) ? object :
-                        (name.equals(VAR_CONTEXT) ? context : null); //$NON-NLS-1$
+                    (name.equals(VAR_CONTEXT) ? context : null); //$NON-NLS-1$
             }
 
             @Override
-            public void set(String name, Object value)
-            {
+            public void set(String name, Object value) {
                 log.warn("Set is not implemented"); //$NON-NLS-1$
             }
 
             @Override
-            public boolean has(String name)
-            {
-                return
-                        name.equals(VAR_OBJECT) && object != null || //$NON-NLS-1$
-                                name.equals(VAR_CONTEXT) && context != null; //$NON-NLS-1$
+            public boolean has(String name) {
+                return name.equals(VAR_OBJECT) && object != null ||
+                    name.equals(VAR_CONTEXT) && context != null;
             }
         };
     }
@@ -107,18 +182,15 @@ public abstract class AbstractDescriptor {
         private JexlExpression expression;
         private boolean forceCheck;
 
-        public ObjectType(String implName)
-        {
+        public ObjectType(String implName) {
             this.implName = implName;
         }
 
-        public ObjectType(IConfigurationElement cfg)
-        {
+        public ObjectType(IConfigurationElement cfg) {
             this(cfg, ATTR_NAME);
         }
 
-        public ObjectType(IConfigurationElement cfg, String typeAttr)
-        {
+        public ObjectType(IConfigurationElement cfg, String typeAttr) {
             this.implName = cfg.getAttribute(typeAttr);
             String condition = cfg.getAttribute(ATTR_IF);
             if (!CommonUtils.isEmpty(condition)) {
@@ -134,18 +206,15 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public String getImplName()
-        {
+        public String getImplName() {
             return implName;
         }
 
-        public Class<?> getObjectClass()
-        {
+        public Class<?> getObjectClass() {
             return getObjectClass(Object.class);
         }
 
-        public <T> Class<? extends T> getObjectClass(Class<T> type)
-        {
+        public <T> Class<? extends T> getObjectClass(Class<T> type) {
             if (implName == null) {
                 return null;
             }
@@ -156,8 +225,7 @@ public abstract class AbstractDescriptor {
         }
 
         public <T> void checkObjectClass(Class<T> type)
-            throws DBException
-        {
+            throws DBException {
             Class<? extends T> objectClass = getObjectClass(type);
             if (objectClass == null) {
                 throw new DBException("Class '" + implName + "' not found");
@@ -167,8 +235,7 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public boolean appliesTo(Object object, Object context)
-        {
+        public boolean appliesTo(Object object, Object context) {
             if (!matchesType(object.getClass())) {
                 return false;
             }
@@ -177,7 +244,7 @@ public abstract class AbstractDescriptor {
                     Object result = expression.evaluate(makeContext(object, context));
                     return Boolean.TRUE.equals(result);
                 } catch (Exception e) {
-                    log.debug("Error evaluating expression '" + expression + "'", e);
+                    log.debug("Error evaluating EL expression '" + expression + "'", e);
                     return false;
                 }
             }
@@ -185,8 +252,7 @@ public abstract class AbstractDescriptor {
         }
 
         public <T> T createInstance(Class<T> type)
-            throws DBException
-        {
+            throws DBException {
             if (implName == null) {
                 throw new DBException("No implementation class name set for '" + type.getName() + "'");
             }
@@ -196,13 +262,13 @@ public abstract class AbstractDescriptor {
             }
             try {
                 return objectClass.getDeclaredConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                     InvocationTargetException e) {
                 throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
             }
         }
 
-        public boolean matchesType(Class<?> clazz)
-        {
+        public boolean matchesType(Class<?> clazz) {
             // Check class only if bundle was loaded or forceCheck is set. Otherwise we'll load ALL bundles which have some
             // data type mappings (no matter which type they refer)
 
@@ -247,23 +313,19 @@ public abstract class AbstractDescriptor {
     private String pluginId;
     private Bundle originBundle;
 
-    protected AbstractDescriptor(IConfigurationElement contributorConfig)
-    {
+    protected AbstractDescriptor(IConfigurationElement contributorConfig) {
         this.pluginId = contributorConfig.getContributor().getName();
     }
 
-    protected AbstractDescriptor(String pluginId)
-    {
+    protected AbstractDescriptor(String pluginId) {
         this.pluginId = pluginId;
     }
 
-    public String getPluginId()
-    {
+    public String getPluginId() {
         return pluginId;
     }
 
-    public Bundle getContributorBundle()
-    {
+    public Bundle getContributorBundle() {
         if (originBundle == null) {
             originBundle = Platform.getBundle(pluginId);
         }
@@ -276,8 +338,7 @@ public abstract class AbstractDescriptor {
     }
 
     @NotNull
-    protected DBPImage iconToImage(String icon, @NotNull DBPImage defIcon)
-    {
+    protected DBPImage iconToImage(String icon, @NotNull DBPImage defIcon) {
         DBPImage result = iconToImage(icon);
         if (result == null) {
             return defIcon;
@@ -287,8 +348,7 @@ public abstract class AbstractDescriptor {
     }
 
     @Nullable
-    public DBPImage iconToImage(String icon)
-    {
+    public DBPImage iconToImage(String icon) {
         if (CommonUtils.isEmpty(icon)) {
             return null;
         } else if (icon.startsWith("#")) {
@@ -302,13 +362,11 @@ public abstract class AbstractDescriptor {
         }
     }
 
-    public Class<?> getObjectClass(@NotNull String className)
-    {
+    public Class<?> getObjectClass(@NotNull String className) {
         return getObjectClass(className, null);
     }
 
-    public <T> Class<T> getObjectClass(@NotNull String className, Class<T> type)
-    {
+    public <T> Class<T> getObjectClass(@NotNull String className, Class<T> type) {
         return getObjectClass(getContributorBundle(), className, type);
     }
 
@@ -328,8 +386,7 @@ public abstract class AbstractDescriptor {
         return true;
     }
 
-    public static <T> Class<T> getObjectClass(@NotNull Bundle fromBundle, @NotNull String className, Class<T> type)
-    {
+    public static <T> Class<T> getObjectClass(@NotNull Bundle fromBundle, @NotNull String className, Class<T> type) {
         Class<?> objectClass;
         try {
             objectClass = fromBundle.loadClass(className);

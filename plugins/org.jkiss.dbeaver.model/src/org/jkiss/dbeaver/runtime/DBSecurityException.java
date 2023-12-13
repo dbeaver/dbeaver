@@ -14,20 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.jkiss.dbeaver.runtime;
+
+import org.jkiss.dbeaver.DBException;
 
 /**
- * Object's element.
- *
- * Elements are cached on client side
+ * DBSecurityException
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface DPIElement {
+public class DBSecurityException extends DBException {
+
+    public DBSecurityException(String message) {
+        super(message);
+    }
+
+    public DBSecurityException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

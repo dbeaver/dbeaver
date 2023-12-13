@@ -32,7 +32,7 @@ public class DPIPlatformAdapterFactory implements IAdapterFactory {
             // Not in DPI mode
             return null;
         }
-        if (adaptableObject instanceof DBWorkbench && adapterType == DBPPlatform.class) {
+        if (adaptableObject instanceof DBWorkbench.UtilityWorkbench && adapterType == DBPPlatform.class) {
             return adapterType.cast(DPIPlatform.getInstance());
         }
         return null;

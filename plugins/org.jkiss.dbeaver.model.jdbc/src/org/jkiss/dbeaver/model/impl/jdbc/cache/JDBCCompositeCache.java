@@ -384,7 +384,7 @@ public abstract class JDBCCompositeCache<
         }
         catch (SQLException ex) {
             if (ex instanceof SQLFeatureNotSupportedException) {
-                log.debug("Error reading cache: feature not supported", ex);
+                log.debug("Error reading cache " + getClass().getSimpleName() + ", feature not supported: " + ex.getMessage());
             } else {
                 throw new DBException(ex, dataSource);
             }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -105,12 +106,20 @@ public class ERDUtils
         }
     }
 
+    /**
+     * The method designed to find attributes by name comparison for one entity
+     *
+     * @param entity - database entity (table)
+     * @param attr - attribute 
+     * @return - existing attribute or null
+     */
+    @Nullable
     public static ERDEntityAttribute getAttributeByModel(ERDEntity entity, DBSEntityAttribute attr) {
         if (entity == null) {
             return null;
         }
         for (ERDEntityAttribute erdAttr : entity.getAttributes()) {
-            if (erdAttr.getObject() == attr) {
+            if (erdAttr.getObject().getName().equals(attr.getName())) {
                 return erdAttr;
             }
         }

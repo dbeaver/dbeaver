@@ -14,12 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
-public interface DPIClientObject {
+/**
+ * Detached session
+ */
+public class DPISession {
 
-    String dpiObjectId();
+    private final String sessionId;
 
-    String dpiObjectType();
+    public DPISession(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
 
 }

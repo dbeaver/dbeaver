@@ -14,21 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model.dpi;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Detached session
+ * Object's element.
+ *
+ * Elements are cached on client side
  */
-public class DPISession {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface DPIElement {
 
-    private final String sessionId;
+    /**
+     * Reads value and return as property on first object info read
+     */
+    boolean cache() default false;
 
-    public DPISession(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
+    /**
+     * Property shows object state. State may change after other functions invocation.
+     */
+    boolean objectState() default false;
 
 }

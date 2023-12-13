@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKeyColumnTable;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
@@ -53,7 +54,7 @@ public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator
 
                 foreignKey.setDeleteRule(editPage.getOnDeleteRule());
                 foreignKey.setUpdateRule(editPage.getOnUpdateRule());
-                foreignKey.setReferencedKey((DBSEntityReferrer) editPage.getUniqueConstraint());
+                foreignKey.setReferencedConstraint((DBSEntityReferrer) editPage.getUniqueConstraint());
                 foreignKey.setDeferability(DBSForeignKeyDeferability.NOT_DEFERRABLE);
 
                 int colIndex = 1;
@@ -65,6 +66,7 @@ public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator
                             colIndex++,
                             (GenericTableColumn) tableColumn.getRefColumn()));
                 }
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
                 return foreignKey;
             }
         }.execute();
