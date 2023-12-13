@@ -1257,7 +1257,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 setDiagramRouter(defaultRouter);
                 doSave(new NullProgressMonitor());
                 refreshDiagram(true, false);
-                
             }
         }
     }

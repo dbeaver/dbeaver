@@ -70,8 +70,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
 
     private TreeMap<String, List<Node>> verifyDirectedGraph(DirectedGraph graph, TreeMap<String, List<Node>> nodeByLevels) {
         if (nodeByLevels.isEmpty() && !graph.nodes.isEmpty()) {
-            // not roots but elements exists in graph
-            // add all elements
+            // still no roots but elements exists in graph add all elements as possible roots.
             nodeByLevels.put(String.valueOf(0), graph.nodes);
         }
         return nodeByLevels;
@@ -111,7 +110,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     }
 
     private void drawMissedNodes(List<Node> islands, List<Node> missedNodes, TreeMap<String, List<Node>> nodeByLevels) {
-        // considered to have a islands one - to -one
         Entry<String, List<Node>> lastEntry = nodeByLevels.lastEntry();
         int currentX = 0;
         if (lastEntry.getValue() == null || lastEntry.getValue().isEmpty()) {
@@ -173,11 +171,9 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private void drawGraphNodes(TreeMap<String, List<Node>> nodeByEdges) {
         int currentX = DEFAUL_OFFSET_FROM_TOP_LINE;
         int currentY = DEFAUL_OFFSET_FROM_TOP_LINE;
-        // middle line
-        // find max value
+        // here we place all elements from middle line
         Map<String, Integer> height2Level = computeHeight(nodeByLevels);
         int middle = Collections.max(height2Level.values()) / 2;
-        // columns
         int index = 0;
         for (Entry<String, List<Node>> entry : nodeByEdges.entrySet()) {
             Integer integer = height2Level.get(String.valueOf(index));
@@ -191,7 +187,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 currentY = DEFAULT_OFFSET_BY_Y;
             }
             List<Node> nodes = entry.getValue();
-            // nodes places in a column, X is constant
             for (Node n : nodes) {
                 n.x = currentX;
                 n.y = currentY;
@@ -209,7 +204,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         List<Node> isolated = new LinkedList<>();
         for (int i = 0; i < graph.nodes.size(); i++) {
             Node node = graph.nodes.get(i);
-            // 1 - 1
             if (node.outgoing.size() == 1 && node.incoming.size() == 0) {
                 boolean hasNoFurtherConnections = false;
                 Node nodeTarget = null;
@@ -218,7 +212,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                     if (nodeTarget != null &&
                         nodeTarget.outgoing.size() == 0 &&
                         nodeTarget.incoming.size() == 1) {
-                        // further connection exists
                         hasNoFurtherConnections = true;
                     } else {
                         hasNoFurtherConnections = false;

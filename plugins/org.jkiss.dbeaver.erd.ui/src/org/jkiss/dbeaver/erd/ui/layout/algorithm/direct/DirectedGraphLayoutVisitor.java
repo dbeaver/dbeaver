@@ -77,16 +77,16 @@ public class DirectedGraphLayoutVisitor {
                 if (diagram instanceof DiagramPart) {
                     DiagramPart diagramPart = (DiagramPart) diagram;
                     ERDConnectionRouterDescriptor diagramRouter = diagramPart.getEditor().getDiagramRouter();
+                    DirectedGraphLayout layout = null;
                     if (diagramRouter.supportedAttributeAssociation()) {
-                        OrthoDirectedGraphLayout orthoDirectedGraphLayout = new OrthoDirectedGraphLayout(diagram);
-                        orthoDirectedGraphLayout.visit(graph);
+                        layout = new OrthoDirectedGraphLayout(diagram);
                     } else {
-                        NodeJoiningDirectedGraphLayout directedGraphLayout = new NodeJoiningDirectedGraphLayout(diagram);
-                        directedGraphLayout.visit(graph);
+                        layout = new NodeJoiningDirectedGraphLayout(diagram);
                     }
+                    layout.visit(graph);
                 }
             } catch (Exception e) {
-                log.error("Diagram layout error", e);
+                log.error("Error during layoting elements:" + e.getMessage(), e);
             }
            
             applyDiagramResults(diagram);
