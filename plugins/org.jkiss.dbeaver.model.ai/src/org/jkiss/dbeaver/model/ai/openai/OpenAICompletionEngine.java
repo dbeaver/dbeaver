@@ -61,7 +61,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
 
     //How many retries may be done if code 429 happens
-    private static final int MAX_REQUEST_ATTEMPTS = 3;
+    protected static final int MAX_REQUEST_ATTEMPTS = 3;
 
     private static final Map<String, GPTCompletionAdapter> clientInstances = new HashMap<>();
 
