@@ -54,6 +54,11 @@ import java.util.*;
 public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStreamData {
     private static final Log log = Log.getLog(DBNResource.class);
 
+    //TODO: create real resource root node
+    //this 'node' exist to avoid collision between resource folders and other root nodes
+    //example: you can create 'datasources' folder, and nodeUri will be the same as for DBNProjectDatabases
+    public static final String FAKE_RESOURCE_ROOT_NODE = "resources";
+
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);

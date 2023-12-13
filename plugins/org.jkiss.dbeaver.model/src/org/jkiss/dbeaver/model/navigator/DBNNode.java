@@ -273,7 +273,12 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             if (!pathBuilder.isEmpty()) {
                 pathBuilder.insert(0, '/');
             }
-            pathBuilder.insert(0, currentNode.getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
+            String nodeId = currentNode.getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
+            if (currentNode instanceof DBNResource && currentNode.getParentNode() instanceof DBNProject) {
+                //FIXME: remove after migration to the real resource root node
+                nodeId = DBNResource.FAKE_RESOURCE_ROOT_NODE + "/" + nodeId;
+            }
+            pathBuilder.insert(0, nodeId);
         }
 
         return NodePathType.node.getPrefix() + pathBuilder;

@@ -347,7 +347,15 @@ public class DBNModel implements IResourceChangeListener {
         if (CommonUtils.isEmpty(nodePath.pathItems)) {
             return currentNode;
         }
+        if (currentLevel >= nodePath.pathItems.size()) {
+            throw new DBException("Node level " + currentLevel + " out of range: " + (nodePath.pathItems.size() - 1));
+        }
         String expectedNodePathName = nodePath.pathItems.get(currentLevel);
+        //skip fake root resource node
+        //2 because project node is 1, fake resource node must be 2 in the path
+        if (currentLevel == 2 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
+            currentLevel++;
+        }
         DBNNode[] children = currentNode.getChildren(monitor);
         if (children == null) {
             return null;
