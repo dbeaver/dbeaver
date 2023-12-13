@@ -160,12 +160,12 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
         registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
     }
 
-    private <T> void registerService(BundleContext bundleContext, Class<T> serviceInt, Class<? extends T> serviceImplClass) {
+    protected <T> void registerService(BundleContext bundleContext, Class<T> serviceInt, Class<? extends T> serviceImplClass) {
         if (serviceImplClass == null) {
             return;
         }
         try {
-            Constructor<? extends T> constructor = serviceImplClass.getConstructor();
+            Constructor<? extends T> constructor = serviceImplClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             T serviceImpl = constructor.newInstance();
             bundleContext.registerService(serviceInt, serviceImpl, null);

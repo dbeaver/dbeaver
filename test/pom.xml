@@ -76,8 +76,14 @@
                             <level>2</level>
                             <autoStart>true</autoStart>
                         </bundle>
+                        <!-- Auto activate headless bundle to instantiate test application -->
+                        <bundle>
+                            <id>org.jkiss.dbeaver.headless</id>
+                            <level>4</level>
+                            <autoStart>true</autoStart>
+                        </bundle>
                     </bundleStartLevel>
-<!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5006,suspend=y</argLine>-->
+<!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:15001,suspend=y</argLine>-->
                 </configuration>
             </plugin>
         </plugins>

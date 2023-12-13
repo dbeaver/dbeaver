@@ -33,7 +33,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.application">
-        <application id="headless-test-app" family="DB" name="DBeaver Headless Test Application" description="DBeaver Headless Test Application"/>
+        <application
+                id="headless-test-app" family="DB" name="DBeaver Headless Test Application" description="DBeaver Headless Test Application"
+                class="org.jkiss.dbeaver.headless.DBeaverHeadlessApplication"/>
     </extension>
 
 </plugin>

@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
 
 import java.nio.file.Path;
 
@@ -37,6 +39,16 @@ import java.nio.file.Path;
 public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
 
     private static final Log log = Log.getLog(DBeaverHeadlessApplication.class);
+
+    public DBeaverHeadlessApplication() {
+        // Initialize platform
+        ClassLoader classLoader = getClass().getClassLoader();
+        if (classLoader instanceof BundleReference br) {
+            BundleContext bundleContext = br.getBundle().getBundleContext();
+            registerService(bundleContext, DBPPlatform.class, getPlatformClass());
+            registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
+        }
+    }
 
     @Override
     public Object start(IApplicationContext context) {
