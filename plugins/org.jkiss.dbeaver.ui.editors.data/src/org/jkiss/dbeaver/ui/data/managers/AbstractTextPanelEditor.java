@@ -27,20 +27,15 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -55,11 +50,11 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -71,6 +66,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
+import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -99,7 +95,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private IEditorSite subSite;
     private EDITOR editor;
     private Path tempFile;
-    private CLabel messageBar;
+    private MessageBar messageBar;
 
     @Override
     public StyledText createControl(IValueController valueController) {
@@ -132,40 +128,14 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         assert editorControl != null;
         initEditorSettings(editorControl);
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
-        messageBar = createMessageBar(cmpsBase);
+        messageBar = new MessageBar(cmpsBase);
+        messageBar.hideMessage();
         return editorControl;
     }
 
     private void reasignLayout(Composite cmpsInternalBase) {
         Control[] children = cmpsInternalBase.getChildren();
         Stream.of(children).forEach(c -> c.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1)));
-    }
-
-    private CLabel createMessageBar(Composite cmpsBase) {
-        UIUtils.createHorizontalLine(cmpsBase);
-        messageBar = new CLabel(cmpsBase, SWT.RIGHT);
-        messageBar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-        messageBar.setFont(UIUtils.getMonospaceFont());
-        return messageBar;
-    }
-
-    private void hideMessageBar() {
-        Object layoutData = messageBar.getLayoutData();
-        if (layoutData instanceof GridData) {
-            ((GridData) layoutData).exclude = true;
-        }
-        messageBar.getParent().layout();
-    }
-
-    private void showMessageBar(String msg) {
-        Object layoutData = messageBar.getLayoutData();
-        if (layoutData instanceof GridData) {
-            ((GridData) layoutData).exclude = false;
-        }
-        messageBar.setForeground(UIStyles.getErrorTextForeground());
-        messageBar.setText(msg);
-        messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        messageBar.getParent().layout();
     }
 
     protected abstract EDITOR createEditorParty(IValueController valueController);
@@ -336,12 +306,15 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             return;
         }
         try {
-            int maxContentLength = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
             if (editor == null) {
                 log.error("Editor is null or undefined");
                 return;
             }
             resetEditorInput();
+            final DBPPreferenceStore store = valueController.getExecutionContext() != null
+                ? valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore()
+                : DBWorkbench.getPlatform().getPreferenceStore();
+            final int maxContentLength = store.getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
             if (value.getContentLength() > maxContentLength) {
                 showLimitedContent(value, maxContentLength);
             } else {
@@ -359,8 +332,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         // strange bug in StyledText in E4.13 (#6701)
         UIUtils.asyncExec(() -> {
             if (editor != null) {
-                messageBar.setText("");
-                messageBar.setImage(null);
+                messageBar.hideMessage();
                 editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
             }
         });
@@ -383,7 +355,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                             UIUtils.drawMessageOverControl(textWidget, gc,
                                 NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
                             editor.setInput(textInput);
-                            hideMessageBar();
+                            messageBar.hideMessage();
                         } finally {
                             gc.dispose();
                         }
@@ -398,20 +370,15 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
 
     private void showLimitedContent(@NotNull DBDContent value, int lengthInBytes) throws DBCException, IOException {
         DBDContentStorage contents = value.getContents(new VoidProgressMonitor());
-        byte[] displaingContentBytes = new byte[lengthInBytes];
         try (final InputStream stream = contents.getContentStream()) {
-            displaingContentBytes = stream.readNBytes(lengthInBytes);
-            if (displaingContentBytes != null && displaingContentBytes.length > 0) {
-                final String content = new String(displaingContentBytes);
-                UIUtils.asyncExec(() -> {
-                    if (editor != null) {
-                        String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000);
-                        editor.setInput(new StringEditorInput("Limited Content ", content, true,
-                            StandardCharsets.UTF_8.name()));
-                        showMessageBar(msg);
-                    }
-                });
-            }
+            byte[] displayingContentBytes = stream.readNBytes(lengthInBytes);
+            final String content = new String(displayingContentBytes);
+            UIUtils.asyncExec(() -> {
+                if (editor != null) {
+                    editor.setInput(new StringEditorInput("Limited Content ", content, true, StandardCharsets.UTF_8.name()));
+                    messageBar.showMessage(NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000));
+                }
+            });
         }
     }
 
@@ -557,6 +524,40 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         @NotNull
         public String getEncoding() {
             return encoding;
+        }
+    }
+
+    private static class MessageBar extends Composite {
+        private final Link message;
+
+        public MessageBar(@NotNull Composite parent) {
+            super(parent, SWT.NONE);
+
+            final GridLayout layout = new GridLayout();
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+
+            setLayout(layout);
+            setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+            UIUtils.createLabelSeparator(this, SWT.HORIZONTAL);
+
+            message = UIUtils.createInfoLink(
+                this,
+                "",
+                () -> UIUtils.showPreferencesFor(getShell(), null, PrefPageResultSetEditors.PAGE_ID)
+            );
+        }
+
+        public void showMessage(@NotNull String text) {
+            message.setText(text);
+            UIUtils.setControlVisible(this, true);
+            getParent().layout(true, true);
+        }
+
+        public void hideMessage() {
+            UIUtils.setControlVisible(this, false);
+            getParent().layout(true, true);
         }
     }
 }

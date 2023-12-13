@@ -14,23 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ext.postgresql.model;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.dpi.DPIContainer;
+package org.jkiss.dbeaver.model.dpi;
 
 /**
- * PostgreTableContainer.
- * Can be a schema or regular table
+ * Detached process controller
  */
-public interface PostgreTableContainer extends PostgreObject {
+public interface DPIProcessController extends AutoCloseable {
 
-    @DPIContainer
-    @NotNull
-    PostgreDataSource getDataSource();
+    DPIController getClient();
 
-    @DPIContainer
-    PostgreSchema getSchema();
+    void close();
 
 }
