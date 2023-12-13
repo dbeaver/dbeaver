@@ -30,13 +30,11 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
@@ -45,6 +43,7 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;
@@ -174,11 +173,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     
     @NotNull
     @Override
-    public DBConfigurationController getPluginConfigurationController(@NotNull String pluginId) {
-        return getConfigurationController(Platform.getBundle(pluginId));
+    public DBConfigurationController getPluginConfigurationController(@Nullable String pluginId) {
+        return getConfigurationController(CommonUtils.isEmpty(pluginId) ? null : Platform.getBundle(pluginId));
     }
     
-    private DBConfigurationController getConfigurationController(Bundle bundle) {
+    private DBConfigurationController getConfigurationController(@Nullable Bundle bundle) {
         DBConfigurationController controller = bundle == null ? defaultConfigurationController : configurationControllerByPlugin.get(bundle);
         if (controller == null) {
             controller = createConfigurationController(bundle);

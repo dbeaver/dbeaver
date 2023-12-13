@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.model.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DPIContainer;
-import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**

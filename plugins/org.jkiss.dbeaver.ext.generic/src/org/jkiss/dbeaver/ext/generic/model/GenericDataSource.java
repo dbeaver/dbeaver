@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -43,7 +44,10 @@ import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
@@ -172,12 +176,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     while (ciList.next()) {
                         final String name = JDBCUtils.safeGetString(ciList, "NAME");
                         int maxLength = JDBCUtils.safeGetInt(ciList, "MAX_LEN");
-                        if (JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY.equals(name)) {
+                        if (JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY.equalsIgnoreCase(name)) {
                             String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
                             if (maxLength <= 0) {
                                 maxLength = 48;
                             }
-                            jdbcConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, CommonUtils.truncateString(appName, maxLength));
+                            jdbcConnection.setClientInfo(name, CommonUtils.truncateString(appName, maxLength));
                             wasPopulated = true;
                             break;
                         }

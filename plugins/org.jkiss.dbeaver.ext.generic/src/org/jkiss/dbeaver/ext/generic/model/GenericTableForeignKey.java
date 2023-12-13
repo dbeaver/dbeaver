@@ -87,7 +87,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase
         this.columns = columns;
         final List<? extends DBSEntityAttributeRef> refColumns;
         try {
-            refColumns = referencedKey.getAttributeReferences(monitor);
+            refColumns = referencedConstraint.getAttributeReferences(monitor);
         } catch (DBException e) {
             log.error("Error getting referenced key columns", e);
             return;
