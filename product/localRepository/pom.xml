@@ -50,6 +50,9 @@
 								<!-- GIS -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-gis -->
 
+								<!-- JSVG -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jsvg:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jsvg -->
+
 								<!-- JFreeChart -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jfreechart -->
 
