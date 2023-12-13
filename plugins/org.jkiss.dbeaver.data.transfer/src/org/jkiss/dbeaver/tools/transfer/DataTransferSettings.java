@@ -634,6 +634,11 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     }
 
     public void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor, boolean rewrite) {
+        if (Objects.equals(this.consumer, consumer) && Objects.equals(this.processor, processor)) {
+            // No change - no op
+            return;
+        }
+
         this.consumer = consumer;
         this.processor = processor;
         if (consumer != null && processor != null) {
@@ -661,6 +666,11 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     }
 
     public void selectProducer(DataTransferNodeDescriptor producer, DataTransferProcessorDescriptor processor, boolean rewrite) {
+        if (Objects.equals(this.producer, producer) && Objects.equals(this.processor, processor)) {
+            // No change - no op
+            return;
+        }
+
         this.producer = producer;
         this.processor = processor;
         if (producer != null && processor != null) {
