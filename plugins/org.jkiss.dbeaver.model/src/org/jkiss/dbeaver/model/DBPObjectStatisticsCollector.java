@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBPObjectStatisticsCollector {
 
+    @DPIElement(objectState = true)
     boolean isStatisticsCollected();
 
     /**

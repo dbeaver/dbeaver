@@ -14,12 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
 
-public interface DPIClientObject {
+package org.jkiss.dbeaver.runtime;
 
-    String dpiObjectId();
+import org.jkiss.dbeaver.DBException;
 
-    String dpiObjectType();
+/**
+ * DBSecurityException
+ */
+public class DBSecurityException extends DBException {
+
+    public DBSecurityException(String message) {
+        super(message);
+    }
+
+    public DBSecurityException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

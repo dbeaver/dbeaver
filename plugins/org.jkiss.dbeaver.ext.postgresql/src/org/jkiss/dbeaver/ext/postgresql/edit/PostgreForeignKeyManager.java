@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
@@ -130,11 +131,13 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         PostgreTableForeignKey foreignKey = command.getObject();
+        PostgreDataSource dataSource = foreignKey.getDataSource();
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename constraint",
                         "ALTER TABLE " + foreignKey.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                                " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(foreignKey) + " TO " + DBUtils.getQuotedIdentifier(foreignKey.getDataSource(), command.getNewName())) //$NON-NLS-1$
+                                " RENAME CONSTRAINT " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + //$NON-NLS-1$
+                                " TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }
 

@@ -41,6 +41,7 @@
                     icon="icons/ob_icon.png"
                     iconBig="icons/ob_icon_big.png"
                     description="Driver for OceanBase-MySQL"
+                    supportedPageFields="host,port,database,server"
                     categories="sql">
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>

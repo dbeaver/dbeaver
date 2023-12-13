@@ -220,6 +220,11 @@
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.core.navigator" name="%category.dbnavigator.name" description="%category.dbnavigator.description"/>
 
+        <command id="org.jkiss.dbeaver.core.edit.save.resource" name="%command.org.jkiss.dbeaver.core.edit.save.resource.name" description="%command.org.jkiss.dbeaver.core.edit.save.resource.description" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.edit.load.resource" name="%command.org.jkiss.dbeaver.core.edit.load.resource.name" description="%command.org.jkiss.dbeaver.core.edit.load.resource.description" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.edit.copy.special" name="%command.org.jkiss.dbeaver.core.edit.copy.special.name" description="%command.org.jkiss.dbeaver.core.edit.copy.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.edit.paste.special" name="%command.org.jkiss.dbeaver.core.edit.paste.special.name" description="%command.org.jkiss.dbeaver.core.edit.paste.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
+
         <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database">
             <commandParameter id="activePage" name="Active page" optional="true"/>
             <commandParameter id="activeFolder" name="Active folder" optional="true"/>
@@ -303,6 +308,9 @@
         <image commandId="org.jkiss.dbeaver.core.object.filter.config" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
+
+        <image commandId="org.jkiss.dbeaver.core.edit.save.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.png"/>
+        <image commandId="org.jkiss.dbeaver.core.edit.load.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/load.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.project.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.png"/>
@@ -649,6 +657,27 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.edit.save.resource" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerSaveResource">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.fs.DBNPathBase"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.edit.load.resource" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerLoadResource">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.fs.DBNPathBase"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
 
         <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh">
             <activeWhen>
@@ -917,7 +946,6 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-
             <separator name="object" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
                 <visibleWhen checkEnabled="true"/>

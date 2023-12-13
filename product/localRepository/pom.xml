@@ -39,7 +39,7 @@
 
 								<artifact><id>org.apache.commons:commons-jexl3:3.1</id></artifact>
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
-								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id></artifact>
+								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- ANTLR -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-antlr4 -->
@@ -50,6 +50,9 @@
 								<!-- GIS -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-gis -->
 
+								<!-- JSVG -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jsvg:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jsvg -->
+
 								<!-- JFreeChart -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jfreechart -->
 
@@ -58,8 +61,11 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-sshj -->
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact> <!-- repo:eclipse-bundle-apache-ant -->
+
 								<!-- Jackson -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jackson:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<!-- repo:eclipse-bundle-jackson -->
+
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-batik -->
 								<!-- GraphQL -->

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,14 +22,22 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Object's factory.
+ * Object's element.
  *
- * Method return is cached for each unique parameter
+ * Elements are cached on client side
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD,ElementType.TYPE})
-public @interface DPIFactory {
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface DPIElement {
 
-    String parameter() default "";
+    /**
+     * Reads value and return as property on first object info read
+     */
+    boolean cache() default false;
+
+    /**
+     * Property shows object state. State may change after other functions invocation.
+     */
+    boolean objectState() default false;
 
 }
