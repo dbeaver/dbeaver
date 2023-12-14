@@ -25,4 +25,11 @@ public class DBeaverTestPlatformUI extends ConsoleUserInterface {
 
     public static final DBeaverTestPlatformUI INSTANCE = new DBeaverTestPlatformUI();
 
+    /**
+     * Dummy method for injection
+     */
+    private void initialize() {
+
+    }
+
 }
