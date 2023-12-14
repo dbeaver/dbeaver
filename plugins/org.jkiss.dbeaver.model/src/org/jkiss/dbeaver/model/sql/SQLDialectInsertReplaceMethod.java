@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model.sql;
 
-/**
- * Detached session
- */
-public class DPISession {
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 
-    private final String sessionId;
+public interface SQLDialectInsertReplaceMethod {
 
-    public DPISession(String sessionId) {
-        this.sessionId = sessionId;
-    }
+    String getId();
 
-    public String getSessionId() {
-        return sessionId;
-    }
+    String getLabel();
+
+    String getDescription();
+
+    DBDInsertReplaceMethod createInsertMethod() throws DBException;
 
 }

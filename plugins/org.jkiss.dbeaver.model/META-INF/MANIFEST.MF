@@ -22,6 +22,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.data.document,
  org.jkiss.dbeaver.model.data.json,
  org.jkiss.dbeaver.model.data.storage,
+ org.jkiss.dbeaver.model.dpi,
  org.jkiss.dbeaver.model.edit,
  org.jkiss.dbeaver.model.edit.prop,
  org.jkiss.dbeaver.model.exec,
@@ -107,4 +108,4 @@ Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  com.google.gson
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model
-
+Service-Component: META-INF/component-db-workbench.xml
