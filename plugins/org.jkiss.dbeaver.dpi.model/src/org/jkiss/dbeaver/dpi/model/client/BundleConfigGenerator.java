@@ -67,6 +67,7 @@ public class BundleConfigGenerator {
         addBundleFromClass(authModel.getClass(), processConfig);
 
         addBundleByName("org.jkiss.dbeaver.dpi.app", processConfig);
+        addBundleByName("org.jkiss.dbeaver.slf4j", processConfig);
         addBundleByName("com.dbeaver.resources.drivers.jdbc", processConfig);
 
         processConfig.generateApplicationConfiguration();
