@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -99,7 +99,7 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
     }
 
     public SQLDialectMetadata getDialect() {
-        return SQLDialectRegistry.getInstance().getDialect(dialectId);
+        return DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect(dialectId);
     }
 
     public List<String> getModelReplacements() {

@@ -637,7 +637,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            control = createInfoLink(parent, text, callback).getParent();
+            control = createInfoLink(parent, "<a href=\"#\">" + text + "</a>", callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {

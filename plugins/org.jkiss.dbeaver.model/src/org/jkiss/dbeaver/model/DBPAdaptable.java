@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.dbeaver.model.dpi.DPIFactory;
 
 /**
  * Adaptable object

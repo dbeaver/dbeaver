@@ -22,9 +22,7 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Properties;
 
 /**
@@ -64,11 +62,7 @@ public class SystemVariablesResolver implements IVariableResolver {
             case VAR_APP_PATH:
                 return getInstallPath();
             case VAR_LOCAL_IP:
-                try {
-                    return InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    return "127.0.0.1";
-                }
+                return RuntimeUtils.getLocalHostOrLoopback().getHostAddress();
             default:
                 if (configuration != null) {
                     final Object o = configuration.get(name);

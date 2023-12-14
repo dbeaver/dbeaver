@@ -24,11 +24,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.DPIController;
-import org.jkiss.dbeaver.dpi.model.DPISession;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPISession;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -136,14 +137,32 @@ public class DPIControllerImpl implements DPIController {
         throw new DBException("Method '" + method + "' not found in DPI object '" + objectId + "'");
     }
 
+    @Override
+    public Object readProperty(@NotNull String objectId, @NotNull String propertyName) throws DBException {
+        Object object = context.getObject(objectId);
+        if (object == null) {
+            throw new DBException("DPI object '" + objectId + "' not found");
+        }
+        Method method = DBXTreeItem.findPropertyReadMethod(object.getClass(), propertyName);
+        if (method == null) {
+            throw new DBException("Property '" + propertyName + "' not found in object '" + object.getClass() + "'");
+        }
+        return invokeObjectMethod(object, method, null);
+    }
+
     private Object invokeObjectMethod(Object object, Method method, Object[] args) throws DBException {
         try {
             log.debug("DPI Server: invoke DPI method " + method + " on " + object.getClass());
+            Class<?>[] parameterTypes = method.getParameterTypes();
             if (args == null) {
-                return method.invoke(object);
+                // Simple method or property read
+                if (parameterTypes.length == 1 && parameterTypes[0] == DBRProgressMonitor.class) {
+                    // Lazy property read
+                    args = new Object[] { context.getProgressMonitor() };
+                }
+                return method.invoke(object, args);
             }
             // Deserialize arguments
-            Class<?>[] parameterTypes = method.getParameterTypes();
             Object[] realArgs = new Object[args.length];
             Gson gson = context.getGson();
             for (int i = 0; i < parameterTypes.length; i++) {

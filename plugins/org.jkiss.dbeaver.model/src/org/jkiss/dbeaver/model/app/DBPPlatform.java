@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 
 import java.io.IOException;
@@ -73,6 +74,9 @@ public interface DBPPlatform {
     DBFRegistry getFileSystemRegistry();
 
     @NotNull
+    SQLDialectMetadataRegistry getSQLDialectRegistry();
+
+    @NotNull
     DBWHandlerRegistry getNetworkHandlerRegistry();
 
     @NotNull
@@ -103,7 +107,7 @@ public interface DBPPlatform {
      * which keeps plugin configuration which can be shared with other users.
      */
     @NotNull
-    DBConfigurationController getPluginConfigurationController(@NotNull String pluginId);
+    DBConfigurationController getPluginConfigurationController(@Nullable String pluginId);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.
