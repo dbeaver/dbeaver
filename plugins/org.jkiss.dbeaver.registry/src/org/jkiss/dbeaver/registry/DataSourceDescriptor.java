@@ -26,9 +26,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.dpi.model.DPIController;
-import org.jkiss.dbeaver.dpi.model.DPISession;
-import org.jkiss.dbeaver.dpi.model.client.DPIProcessController;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
@@ -39,6 +36,10 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPIProcessController;
+import org.jkiss.dbeaver.model.dpi.DPIProvider;
+import org.jkiss.dbeaver.model.dpi.DPISession;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -949,10 +950,13 @@ public class DataSourceDescriptor
                 // Open local connection
                 succeeded = connect0(monitor, initialize, reflect);
             }
-            if (!succeeded) {
-                // Notify about the error
-                updateDataSourceObject(this);
+            if (reflect) {
+                getRegistry().notifyDataSourceListeners(new DBPEvent(
+                    DBPEvent.Action.OBJECT_UPDATE,
+                    DataSourceDescriptor.this,
+                    true));
             }
+
             return succeeded;
         }
         finally {
@@ -971,7 +975,12 @@ public class DataSourceDescriptor
 
     private boolean openDetachedConnection(DBRProgressMonitor monitor) {
         try {
-            dpiController = DPIProcessController.detachDatabaseProcess(monitor, this);
+            DPIProvider provider = GeneralUtils.adapt(this, DPIProvider.class);
+            if (provider == null) {
+                log.debug("DPI provider not available");
+                return false;
+            }
+            dpiController = provider.detachDatabaseProcess(monitor, this);
             Map<String, String> credentials = new LinkedHashMap<>();
             DPIController dpiClient = dpiController.getClient();
             DPISession session = dpiClient.openSession(getProject().getId());
@@ -1124,6 +1133,12 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
+                try {
+                    log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
+                } catch (Throwable e) {
+                    log.debug("Connected (" + getId() + ", driver unknown)");
+                }
+
                 this.connectFailed = false;
             } finally {
                 exclusiveLock.releaseExclusiveLock(dsLock);
@@ -1131,17 +1146,6 @@ public class DataSourceDescriptor
 
             processEvents(monitor, DBPConnectionEventType.AFTER_CONNECT);
 
-            if (reflect) {
-                getRegistry().notifyDataSourceListeners(new DBPEvent(
-                    DBPEvent.Action.OBJECT_UPDATE,
-                    DataSourceDescriptor.this,
-                    true));
-            }
-            try {
-                log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
-            } catch (Throwable e) {
-                log.debug("Connected (" + getId() + ", driver unknown)");
-            }
             return true;
         } catch (Throwable e) {
             lastConnectionError = e.getMessage();
@@ -1168,12 +1172,6 @@ public class DataSourceDescriptor
             proxyHandler = null;
             // Failed
             connectFailed = true;
-            //if (reflect) {
-            getRegistry().notifyDataSourceListeners(new DBPEvent(
-                DBPEvent.Action.OBJECT_UPDATE,
-                DataSourceDescriptor.this,
-                false));
-            //}
             if (e instanceof DBException) {
                 throw (DBException) e;
             } else {
@@ -1617,7 +1615,7 @@ public class DataSourceDescriptor
         connectionInfo.setUserPassword(null);
         ObjectPropertyDescriptor.extractAnnotations(
                 null,
-                connectionInfo.getAuthModel().createCredentials().getClass(),
+                ObjectPropertyDescriptor.getObjectClass(connectionInfo.getAuthModel().createCredentials()),
                 (o, p) -> true,
                 null
             ).stream()
