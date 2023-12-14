@@ -6,6 +6,7 @@ Bundle-Version: 2.0.150.qualifier
 Bundle-Release-Date: 20231204
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17

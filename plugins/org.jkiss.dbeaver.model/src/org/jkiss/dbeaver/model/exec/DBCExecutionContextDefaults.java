@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DPIElement;
-import org.jkiss.dbeaver.model.DPIObject;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;

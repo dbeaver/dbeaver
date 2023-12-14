@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.nio.file.Path;
 
@@ -102,5 +104,21 @@ public interface DBPApplication {
      */
     long getApplicationStartTime();
 
+    /**
+     * Platform implementation class.
+     * Platform instance can be obtained thru {@link DBWorkbench#getPlatform()}.
+     * Platform is initialized in a lazy way during application startup.
+     */
+    @NotNull
+    Class<? extends DBPPlatform> getPlatformClass();
+
+    /**
+     * Platform UI implementation class.
+     * If not specified then base console UI is used.
+     */
+    @Nullable
+    default Class<? extends DBPPlatformUI> getPlatformUIClass() {
+        return null;
+    }
 
 }

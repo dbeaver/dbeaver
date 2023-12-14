@@ -221,7 +221,7 @@ public class CompareObjectsExecutor {
         DBNDatabaseNode firstNode = nodes.get(0);
         List<ObjectPropertyDescriptor> properties = ObjectPropertyDescriptor.extractAnnotations(
             null,
-            firstNode.getObject().getClass(),
+            ObjectPropertyDescriptor.getObjectClass(firstNode.getObject()),
             getDataSourceFilter(firstNode), null);
         for (ObjectPropertyDescriptor prop : properties) {
             if (prop.isLazy()) {

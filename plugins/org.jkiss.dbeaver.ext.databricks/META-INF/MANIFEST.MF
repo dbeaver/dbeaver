@@ -8,6 +8,7 @@ Bundle-Release-Date: 20231204
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic
 Export-Package: org.jkiss.dbeaver.ext.databricks,
  org.jkiss.dbeaver.ext.databricks.model
