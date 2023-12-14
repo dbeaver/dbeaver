@@ -84,7 +84,7 @@
 								<artifact><id>org.mockito:mockito-core:4.6.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- Logback -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.logback:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.logback:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-logback -->
 							</artifacts>
 
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
