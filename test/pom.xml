@@ -43,14 +43,9 @@
                     <application>org.jkiss.dbeaver.headless.application</application>
                     <product>org.jkiss.dbeaver.headless.product</product>
                     <testRuntime>default</testRuntime>
-                    <!-- Auto start bundles -->
+                    <!-- Auto activate headless bundle to instantiate test application -->
                     <bundleStartLevel>
-                        <!-- Auto activate headless bundle to instantiate test application -->
-                        <bundle>
-                            <id>org.jkiss.dbeaver.headless</id>
-                            <level>4</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
+                        <bundle><id>org.jkiss.dbeaver.headless</id><level>4</level><autoStart>true</autoStart></bundle>
                     </bundleStartLevel>
 <!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:15001,suspend=y</argLine>-->
                 </configuration>
