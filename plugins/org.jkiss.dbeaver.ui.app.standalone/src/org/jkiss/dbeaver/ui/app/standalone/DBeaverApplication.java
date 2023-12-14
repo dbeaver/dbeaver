@@ -175,7 +175,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         instance = this;
 
         // Register core components
-        initializeApplicationServices(context);
+        initializeApplicationServices();
 
         Location instanceLoc = Platform.getInstanceLocation();
 

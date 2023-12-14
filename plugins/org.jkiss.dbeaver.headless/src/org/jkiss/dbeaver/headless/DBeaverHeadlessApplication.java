@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleReference;
 
 import java.nio.file.Path;
 
@@ -42,18 +40,11 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
 
     public DBeaverHeadlessApplication() {
         // Initialize platform
-        ClassLoader classLoader = getClass().getClassLoader();
-        if (classLoader instanceof BundleReference br) {
-            BundleContext bundleContext = br.getBundle().getBundleContext();
-            registerService(bundleContext, DBPPlatform.class, getPlatformClass());
-            registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
-        }
+        initializeApplicationServices();
     }
 
     @Override
     public Object start(IApplicationContext context) {
-        initializeApplicationServices(context);
-
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         if (RuntimeUtils.isWindows() && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);

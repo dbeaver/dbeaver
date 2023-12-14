@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
 
 import java.lang.reflect.Constructor;
 import java.util.UUID;
@@ -153,11 +154,14 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     }
 
-    protected void initializeApplicationServices(IApplicationContext context) {
-        // Initialize platform
-        BundleContext bundleContext = context.getBrandingBundle().getBundleContext();
-        registerService(bundleContext, DBPPlatform.class, getPlatformClass());
-        registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
+    protected void initializeApplicationServices() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        if (classLoader instanceof BundleReference br) {
+            // Initialize platform
+            BundleContext bundleContext = br.getBundle().getBundleContext();
+            registerService(bundleContext, DBPPlatform.class, getPlatformClass());
+            registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
+        }
     }
 
     protected <T> void registerService(BundleContext bundleContext, Class<T> serviceInt, Class<? extends T> serviceImplClass) {
