@@ -34,6 +34,7 @@ public class DBWorkbench {
     private static final Log log = Log.getLog(DBWorkbench.class);
 
     private static final DBWorkbench instance = new DBWorkbench();
+
     private static final ConsoleUserInterface CONSOLE_USER_INTERFACE = new ConsoleUserInterface();
 
     private static volatile DBPPlatform platformInstance = null;
@@ -44,6 +45,9 @@ public class DBWorkbench {
             synchronized (DBWorkbench.class) {
                 if (platformInstance == null) {
                     platformInstance = GeneralUtils.adapt(instance, DBPPlatform.class);
+                    if (platformInstance == null) {
+                        platformInstance = GeneralUtils.adapt(new UtilityWorkbench(), DBPPlatform.class);
+                    }
                     if (platformInstance == null) {
                         throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
                     }
@@ -98,6 +102,14 @@ public class DBWorkbench {
 
     public static boolean hasFeature(@NotNull String feature) {
         return getPlatform().getApplication().hasProductFeature(feature);
+    }
+
+    public DBWorkbench() {
+    }
+
+    // Dummy utility class to allow non-primary workbench adapters to work
+    public static class UtilityWorkbench {
+
     }
 
 }

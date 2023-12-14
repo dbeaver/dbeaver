@@ -61,6 +61,12 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         NONE
     }
 
+    enum RowPlacement {
+        BEFORE_SELECTION,
+        AFTER_SELECTION,
+        AT_END
+    }
+
     @NotNull
     IResultSetContainer getContainer();
 
@@ -153,7 +159,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     void setCurrentRow(@Nullable ResultSetRow row);
 
     @NotNull
-    ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation);
+    ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation);
 
     /**
      * Fills rows in current selection with values from row above/below it.
