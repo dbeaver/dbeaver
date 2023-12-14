@@ -2843,7 +2843,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean transformQueryWithParameters(SQLQuery query) {
-        return createScriptContext().fillQueryParameters(query, false);
+        return createScriptContext().fillQueryParameters(query, () -> null, false);
     }
 
     private boolean checkSession(DBRProgressListener onFinish)
@@ -3635,7 +3635,7 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         } else {
                             SQLQuery query = (SQLQuery) element;
-                            scriptContext.fillQueryParameters(query, false);
+                            scriptContext.fillQueryParameters(query, () -> null, false);
 
                             SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);
                             producers.add(new DatabaseTransferProducer(dataContainer, null));
@@ -3812,13 +3812,6 @@ public class SQLEditor extends SQLEditorBase implements
         ) {
             return new MultiTabsQueryResultsContainer(this, resultSetNumber, resultSetIndex, dataContainer);
         }
-
-        @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            if (resultContainers.size() > resultSetNumber) {
-                resultContainers.get(resultSetNumber).dispose();
-            }
-        }
     }
     
     class SingleTabQueryProcessor extends QueryProcessor {
@@ -3916,11 +3909,6 @@ public class SQLEditor extends SQLEditorBase implements
             };
             tabContentScroller.getDisplay().addFilter(SWT.MouseVerticalWheel, scrollListener);
             tabContentScroller.addDisposeListener(e -> tabContentScroller.getDisplay().removeFilter(SWT.MouseVerticalWheel, scrollListener));
-        }
-        
-        @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            // don't know why it is needed in multitab case during history commands, but here we are just ignoring it
         }
     }
     
