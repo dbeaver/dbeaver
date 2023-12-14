@@ -108,4 +108,4 @@ Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  com.google.gson
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model
-
+Service-Component: META-INF/component-db-workbench.xml

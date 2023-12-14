@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.headless;
+package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 
-/**
- * DBeaverTestPlatformUI
- */
-public class DBeaverTestPlatformUI extends ConsoleUserInterface {
+public interface SQLDialectInsertReplaceMethod {
 
-    public static final DBeaverTestPlatformUI INSTANCE = new DBeaverTestPlatformUI();
+    String getId();
 
-    /**
-     * Dummy method for injection
-     */
-    private void initialize() {
+    String getLabel();
 
-    }
+    String getDescription();
+
+    DBDInsertReplaceMethod createInsertMethod() throws DBException;
 
 }

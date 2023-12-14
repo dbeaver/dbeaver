@@ -17,9 +17,12 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.event,
  org.eclipse.equinox.launcher,
  org.apache.felix.scr,
+ org.apache.aries.spifly.dynamic.bundle,
+ slf4j.api,
  org.eclipse.equinox.simpleconfigurator,
  org.eclipse.update.configurator,
  org.jkiss.dbeaver.dpi.model,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry
 Automatic-Module-Name: org.jkiss.dbeaver.dpi.app

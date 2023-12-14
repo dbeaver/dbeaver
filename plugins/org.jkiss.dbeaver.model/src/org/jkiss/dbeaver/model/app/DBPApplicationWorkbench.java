@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.headless;
 
-import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+package org.jkiss.dbeaver.model.app;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 /**
- * DBeaverTestPlatformUI
+ * DBPApplicationWorkbench
  */
-public class DBeaverTestPlatformUI extends ConsoleUserInterface {
+public interface DBPApplicationWorkbench {
 
-    public static final DBeaverTestPlatformUI INSTANCE = new DBeaverTestPlatformUI();
+    @NotNull
+    DBPPlatform getPlatform();
 
-    /**
-     * Dummy method for injection
-     */
-    private void initialize() {
-
-    }
+    @NotNull
+    DBPPlatformUI getPlatformUI();
 
 }

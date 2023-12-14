@@ -7,7 +7,6 @@ Bundle-Release-Date: 20231204
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.jkiss.dbeaver.model.sql;visibility:=reexport,
  com.google.guava;visibility:=reexport,
  com.google.gson;visibility:=reexport,
  org.apache.commons.commons-codec;visibility:=reexport,
