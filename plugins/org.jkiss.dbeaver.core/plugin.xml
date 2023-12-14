@@ -1016,13 +1016,6 @@
         </page>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.runtime.DBWorkbench" class="org.jkiss.dbeaver.core.DesktopAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
-            <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
-        </factory>
-    </extension>
-
     <extension point="org.eclipse.ui.themes">
 
         <!-- Colors for transactions -->
