@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.dpi.DPIController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;
@@ -67,7 +68,10 @@ public class BundleConfigGenerator {
         addBundleFromClass(authModel.getClass(), processConfig);
 
         addBundleByName("org.jkiss.dbeaver.dpi.app", processConfig);
-        addBundleByName("org.jkiss.dbeaver.slf4j", processConfig);
+        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            // Add slf4j adapter for desktop applications
+            addBundleByName("org.jkiss.dbeaver.slf4j", processConfig);
+        }
         addBundleByName("com.dbeaver.resources.drivers.jdbc", processConfig);
 
         processConfig.generateApplicationConfiguration();
