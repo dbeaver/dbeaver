@@ -14,22 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.headless;
 
-import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+package org.jkiss.dbeaver.model.meta;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * DBeaverTestPlatformUI
+ * Property
  */
-public class DBeaverTestPlatformUI extends ConsoleUserInterface {
+@Target(value = {ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ComponentReference {
 
-    public static final DBeaverTestPlatformUI INSTANCE = new DBeaverTestPlatformUI();
+    Class<?> service() default Object.class;
 
-    /**
-     * Dummy method for injection
-     */
-    private void initialize() {
+    boolean required() default false;
 
-    }
+    String postProcessMethod() default "";
 
 }

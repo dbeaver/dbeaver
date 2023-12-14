@@ -17,15 +17,20 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.equinox.app.IApplicationContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DesktopPlatform;
+import org.jkiss.dbeaver.core.DesktopUI;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.nio.file.Path;
 
 /**
  * EclipseApplicationImpl
  */
-public class EclipsePluginApplicationImpl extends DesktopApplicationImpl {
+public abstract class EclipsePluginApplicationImpl extends DesktopApplicationImpl {
 
     public EclipsePluginApplicationImpl() {
     }
@@ -70,4 +75,17 @@ public class EclipsePluginApplicationImpl extends DesktopApplicationImpl {
     public void stop() {
 
     }
+
+    @NotNull
+    @Override
+    public Class<? extends DBPPlatform> getPlatformClass() {
+        return DesktopPlatform.class;
+    }
+
+    @Nullable
+    @Override
+    public Class<? extends DBPPlatformUI> getPlatformUIClass() {
+        return DesktopUI.class;
+    }
+
 }

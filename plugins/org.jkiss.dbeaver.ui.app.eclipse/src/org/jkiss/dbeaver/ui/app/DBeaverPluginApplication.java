@@ -14,22 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.headless;
+package org.jkiss.dbeaver.ui.app;
 
-import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.registry.EclipsePluginApplicationImpl;
 
 /**
- * DBeaverTestPlatformUI
+ * DBeaver IDE activities
  */
-public class DBeaverTestPlatformUI extends ConsoleUserInterface {
-
-    public static final DBeaverTestPlatformUI INSTANCE = new DBeaverTestPlatformUI();
-
-    /**
-     * Dummy method for injection
-     */
-    private void initialize() {
-
-    }
+public class DBeaverPluginApplication extends EclipsePluginApplicationImpl {
 
 }
