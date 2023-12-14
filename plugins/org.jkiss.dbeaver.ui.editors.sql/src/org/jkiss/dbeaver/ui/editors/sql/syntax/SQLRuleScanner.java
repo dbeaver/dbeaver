@@ -192,30 +192,34 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
     @Override
     public IToken nextToken() {
         super.fTokenOffset = fOffset;
-        super.fColumn= UNDEFINED;
+        super.fColumn = UNDEFINED;
 
         if (super.fRules != null) {
             {
                 IToken token = this.tryResolveExtraToken();
-                if (!token.isUndefined())
+                if (!token.isUndefined()) {
                     return token;
+                }
             }
             
             for (IRule fRule : super.fRules) {
-                IToken token= (fRule.evaluate(this));
-                if (!token.isUndefined())
+                IToken token = (fRule.evaluate(this));
+                if (!token.isUndefined()) {
                     return token;
+                }
             }
         }
 
-        if (read() == RuleBasedScanner.EOF)
+        if (read() == RuleBasedScanner.EOF) {
             return Token.EOF;
+        }
 
         return super.fDefaultReturnToken;
     }
 
     private class SimpleRuleAdapter<RULE extends TPRule> implements IRule {
         protected final RULE rule;
+
         SimpleRuleAdapter(RULE rule) {
             this.rule = rule;
         }
