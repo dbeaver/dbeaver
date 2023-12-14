@@ -155,12 +155,13 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     }
 
     protected void initializeApplicationServices() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        if (classLoader instanceof BundleReference br) {
+        if (getClass().getClassLoader() instanceof BundleReference br) {
             // Initialize platform
             BundleContext bundleContext = br.getBundle().getBundleContext();
             registerService(bundleContext, DBPPlatform.class, getPlatformClass());
             registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
+        } else {
+            log.error("Cannot initialize application services in non-OSGI context");
         }
     }
 
