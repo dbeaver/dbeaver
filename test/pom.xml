@@ -44,38 +44,7 @@
                     <product>org.jkiss.dbeaver.headless.product</product>
                     <testRuntime>default</testRuntime>
                     <!-- Auto start bundles -->
-<!--
-                    <defaultStartLevel>
-                        <level>7</level>
-                        <autoStart>true</autoStart>
-                    </defaultStartLevel>
--->
                     <bundleStartLevel>
-                        <bundle>
-                            <id>org.eclipse.osgi</id>
-                            <level>-1</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.apache.felix.scr</id>
-                            <level>2</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.eclipse.core.runtime</id>
-                            <level>4</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.eclipse.equinox.common</id>
-                            <level>2</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.eclipse.equinox.event</id>
-                            <level>2</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
                         <!-- Auto activate headless bundle to instantiate test application -->
                         <bundle>
                             <id>org.jkiss.dbeaver.headless</id>
