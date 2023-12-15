@@ -52,7 +52,15 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             // Do not transform structs to avoid double transformation
             return;
         }
-        resolveMapsFromData(session, attribute, rows);
+        if (rows.isEmpty()) {
+            // Make a fake row with empty document in it
+            int attrIndex = attribute.getOrdinalPosition();
+            Object[] fakeRow = new Object[attrIndex + 1];
+            fakeRow[attrIndex] = attribute.getValueHandler().createNewValueObject(session, attribute);
+            resolveMapsFromData(session, attribute, Collections.singletonList(fakeRow));
+        } else {
+            resolveMapsFromData(session, attribute, rows);
+        }
     }
 
     static void resolveMapsFromData(DBCSession session, DBDAttributeBinding attribute, List<Object[]> rows) throws DBException {

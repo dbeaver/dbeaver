@@ -14,33 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.dpi.app;
+package org.jkiss.dbeaver.dpi.model.client;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.dpi.DPIProvider;
 
-public class DPIPlatformAdapterFactory implements IAdapterFactory {
-
-    private static final Class<?>[] CLASSES = new Class[] { DBPPlatform.class, DBPPlatformUI.class };
+public class DPIProviderAdapterFactory implements IAdapterFactory {
+    private static final Class<?>[] CLASSES = {DPIProvider.class};
 
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-        if (DPIPlatform.getInstance() == null) {
-            // Not in DPI mode
+        if (adaptableObject instanceof DBPDataSourceContainer && adapterType == DPIProvider.class) {
+            return adapterType.cast(new DPIProviderImpl());
+        } else {
             return null;
         }
-        if (adaptableObject instanceof DBWorkbench && adapterType == DBPPlatform.class) {
-            return adapterType.cast(DPIPlatform.getInstance());
-        }
-        return null;
     }
 
     @Override
     public Class<?>[] getAdapterList() {
         return CLASSES;
     }
-
 }

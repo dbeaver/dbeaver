@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 
 /**
  * Object with description
@@ -29,6 +30,7 @@ public interface DBPObjectWithDescription extends DBPObject {
      *
      * @return object description or null
      */
+    @DPIElement
     @Nullable
     String getDescription();
 
