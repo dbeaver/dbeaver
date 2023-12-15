@@ -50,6 +50,8 @@ public class SQLModelActivator extends Plugin
         super.start(context);
         instance = this;
         preferences = new BundlePreferenceStore(getBundle());
+
+        //context.registerService(SQLDialectMetadataRegistry.class, SQLDialectRegistry.getInstance(), null);
     }
 
     @Override

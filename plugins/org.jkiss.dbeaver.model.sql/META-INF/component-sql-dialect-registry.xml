@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name="sql-dialect-registry">
+  <service>
+    <provide interface="org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry"/>
+  </service>
+  <implementation class="org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry"/>
+</scr:component>
