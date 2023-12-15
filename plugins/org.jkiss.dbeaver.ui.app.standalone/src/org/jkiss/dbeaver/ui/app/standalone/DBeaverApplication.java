@@ -174,9 +174,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public Object start(IApplicationContext context) {
         instance = this;
 
-        // Register core components
-        initializeApplicationServices();
-
         Location instanceLoc = Platform.getInstanceLocation();
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
@@ -216,6 +213,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 e.printStackTrace();
             }
         }
+
+        // Register core components
+        initializeApplicationServices();
 
         // Custom parameters
         try {
