@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.*;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.stm.STMSource;
@@ -28,7 +29,7 @@ public class TestEngine {
     public static void main(String[] args) throws Exception {
         STMSource source = STMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
         
-        LSMAnalyzer dd = new SQLStandardAnalyzer();
+        LSMAnalyzer dd = new SQLStandardAnalyzer(BasicSQLDialect.INSTANCE);
         
         LSMElement model = dd.parseSqlQueryModel(source);
         

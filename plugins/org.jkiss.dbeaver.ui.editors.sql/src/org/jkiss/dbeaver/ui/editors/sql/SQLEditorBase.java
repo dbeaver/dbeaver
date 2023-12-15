@@ -776,7 +776,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
-                new SQLPartitionScanner(getDataSource(), dialect, ruleManager),
+                new SQLPartitionScanner(getDataSource(), dialect, ruleManager, this),
                 SQLParserPartitions.SQL_CONTENT_TYPES);
             partitioner.connect(document);
             try {

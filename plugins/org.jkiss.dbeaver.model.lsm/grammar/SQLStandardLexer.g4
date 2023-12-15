@@ -36,6 +36,107 @@ lexer grammar SQLStandardLexer;
     package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 }
 
+@lexer::members {
+    private java.util.Map<String, String> knownIdentifierQuotes = java.util.Collections.emptyMap();
+    private int knownIdentifierLongestHead = 0;
+
+    public SQLStandardLexer(CharStream input, java.util.Map<String, String> knownIdentifierQuotes) {
+        this(input);
+        this.knownIdentifierQuotes = knownIdentifierQuotes;
+        this.knownIdentifierLongestHead = knownIdentifierQuotes.size() < 1 ? 0 : knownIdentifierQuotes.keySet().stream().mapToInt(k -> k.length()).max().getAsInt();
+    }
+
+    private class QuottedIdentifierConsumer {
+        private final CharStream input;
+        private int pos;
+        private StringBuilder captured = new StringBuilder();
+        private String expectedTail;
+
+        public QuottedIdentifierConsumer(final CharStream input) {
+            this.input = input;
+            this.pos = 0;
+        }
+
+        public String captured() {
+            return this.captured.toString();
+        }
+
+        public boolean isEscapeable() {
+            return captured.equals(expectedTail);
+        }
+
+        public boolean tryConsumeHead() {
+            do {
+                int c = input.LA(++pos);
+                if (c == EOF) {
+                    return false;
+                }
+                captured.append((char) c);
+                if (pos > knownIdentifierLongestHead) {
+                    // System.out.println(">>>>>>>> " + pos + " > " + knownIdentifierLongestHead + " captured: " + captured.toString());
+                    return false;
+                }
+                expectedTail = knownIdentifierQuotes.get(captured.toString());
+            } while (expectedTail == null);
+            // System.out.println(">>>>>>>>head: " + captured.toString());
+            return true;
+        }
+
+        public boolean tryConsumeEscapedEntry() {
+            StringBuilder follow = new StringBuilder();
+            while (follow.length() < expectedTail.length()) {
+                int c = input.LA(++pos);
+                if (c == EOF) {
+                    return false;
+                }
+                follow.append((char) c);
+            }
+            if (follow.toString().equals(expectedTail)) {
+                captured.append(follow);
+                // System.out.println(">>>>>>>>escaped: " + captured.toString());
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public boolean tryConsumeBody() {
+            do {
+                int c = input.LA(++pos);
+                if (c == EOF) {
+                    return false;
+                }
+                captured.append((char) c);
+            } while (!captured.toString().endsWith(expectedTail));
+            // System.out.println(">>>>>>>>body: " + captured.toString());
+            return true;
+        }
+    }
+
+    private boolean tryConsumeQuottedIdentifier(final CharStream input) {
+        var c = new QuottedIdentifierConsumer(input);
+        if (!c.tryConsumeHead()) {
+            // System.out.println("@@@@@@@@@@@@@@@@@ head don't match");
+            return false;
+        }
+        if (!c.tryConsumeBody()) {
+            // System.out.println("@@@@@@@@@@@@@@@@@ body don't match");
+            return false;
+        }
+        if (c.isEscapeable()) {
+            while (c.tryConsumeEscapedEntry()) {
+                if (!c.tryConsumeBody()) {
+                    // System.out.println("@@@@@@@@@@@@@@@@@ escaped don't match");
+                    return false;
+                }
+            }
+        }
+        input.seek(input.index() + c.captured().length() - 1);
+        System.out.println("@@@@@@@@@@@@@@@@@ captured quotted identifier: " + c.captured());
+        return true;
+    }
+}
+
 // letters to support case-insensitivity for keywords
 fragment A:[aA];
 fragment B:[bB];
@@ -270,12 +371,13 @@ Space: [ \t]+;
 
 
 // identifiers
-DelimitedIdentifier: IdentifierQuote DelimitedIdentifierBody IdentifierQuote;
-fragment IdentifierQuote: (DoubleQuote|BackQuote);
-fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
-fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
-fragment NondoublequoteCharacter: ~[`"];
-fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
+//DelimitedIdentifier: IdentifierQuote DelimitedIdentifierBody IdentifierQuote; // TODO split it into three separate quotation cases, consider by-dialect activation
+//fragment IdentifierQuote: (DoubleQuote|BackQuote|SingleQuote);
+//fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
+//fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
+//fragment NondoublequoteCharacter: ~[`"'];
+//fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
+DelimitedIdentifier: ({ tryConsumeQuottedIdentifier(_input) }? .);
 
 Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;

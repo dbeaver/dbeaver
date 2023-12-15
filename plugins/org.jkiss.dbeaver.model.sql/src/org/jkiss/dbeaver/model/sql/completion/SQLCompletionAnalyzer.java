@@ -980,7 +980,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (name != null && CommonUtils.isNotEmpty(name.getKey())) {
                 final String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
                 final String[] allNames = SQLUtils.splitFullIdentifier(name.getKey(), catalogSeparator, quoteStrings, false);
-                objects.add(SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames)));
+                DBSObject obj = SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames));
+                if (obj != null) {
+                    objects.add(obj);
+                }
             }
         }
         return objects;

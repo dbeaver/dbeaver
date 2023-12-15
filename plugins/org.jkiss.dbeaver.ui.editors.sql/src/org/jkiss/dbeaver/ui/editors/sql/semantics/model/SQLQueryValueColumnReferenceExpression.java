@@ -70,7 +70,19 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 statistics.appendError(this.tableName.entityName, "Table or subquery not found");
             }
         } else {
-            this.propagateColumnDefinition(context.resolveColumn(this.columnName.getName()), statistics);
+        	SQLQuerySymbolDefinition columnDef = context.resolveColumn(this.columnName.getName());
+        	
+        	boolean isQuotedIdentifier = context.getDialect().isQuotedIdentifier(this.columnName.getRawName());
+        	char quoteChar = this.columnName.getRawName().charAt(0);
+        	if ((!isQuotedIdentifier && (quoteChar == '"' || quoteChar == '`' || quoteChar == '\''))
+    			|| (isQuotedIdentifier && columnDef == null)) {
+        		switch (quoteChar) {
+        		case '\'' -> this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.STRING);
+        		case '"', '`' -> this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.QUOTED);
+        		}
+        	} else {
+        		this.propagateColumnDefinition(columnDef, statistics);        		
+        	}
         }
         // System.out.println(this.tableName + "." + this.columnName + " --> " + this.columnName.getDefinition());
     }

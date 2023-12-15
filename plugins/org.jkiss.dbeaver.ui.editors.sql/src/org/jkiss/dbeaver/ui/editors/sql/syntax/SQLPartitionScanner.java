@@ -30,6 +30,9 @@ import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLMultilineCommentToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.ArrayList;
@@ -54,7 +57,10 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
     private final IToken sqlStringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
     private final IToken sqlQuotedToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
     private final IToken controlToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
-
+    private final IToken otherSqlToken = new Token(IDocument.DEFAULT_CONTENT_TYPE);
+    
+    private final SQLEditorBase editor;
+    
     private void setupRules() {
         IPredicateRule[] result = new IPredicateRule[rules.size()];
         rules.toArray(result);
@@ -88,10 +94,11 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         }
     }
 
-    public SQLPartitionScanner(DBPDataSource dataSource, SQLDialect dialect, SQLRuleManager ruleManager) {
+    public SQLPartitionScanner(DBPDataSource dataSource, SQLDialect dialect, SQLRuleManager ruleManager, SQLEditorBase editor) {
         this.dataSource = dataSource;
         initRules(dialect, ruleManager);
         setupRules();
+        this.editor = editor;
     }
 
     /**
@@ -132,6 +139,70 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
     @Override
     public int getOffset() {
         return fOffset;
+    }
+    
+    private IToken tryResolveExtraToken() {
+        SQLDocumentSyntaxContext syntaxContext = this.editor == null ? null : this.editor.getSyntaxContext();
+        if (syntaxContext == null) {
+            return Token.UNDEFINED;
+        }
+        
+        int offset = this.getOffset();
+        SQLQuerySymbolEntry entry = syntaxContext.findToken(offset);
+        if (entry != null) {
+            int end = syntaxContext.getLastAccessedTokenOffset() + entry.getInterval().length();
+            if (end > offset) {
+                if (true) {
+                    StringBuilder sb = new StringBuilder();
+                    while (this.getOffset() < end) {
+                        sb.append((char)super.read());
+                    }
+                    System.out.println("found @" + offset + "-" + end + " " + entry + " = " + sb.toString());
+                } else {
+                    while (this.getOffset() < end) {
+                        super.read();
+                    }
+                }
+                return otherSqlToken;
+            } else {
+                return Token.UNDEFINED;
+            }
+        } else {
+            return Token.UNDEFINED;
+        }
+    }
+    
+    @Override
+    public IToken nextToken() {
+
+//        if (fContentType == null || fRules == null) {
+//            //don't try to resume
+//            
+//            fTokenOffset = fOffset;
+//            fColumn = UNDEFINED;
+//
+//            IToken token = this.tryResolveExtraToken();
+//            if (!token.isUndefined()) {
+//                return token;
+//            }
+//            
+//            return super.nextToken();
+//        }
+//        // inside a partition
+//        if (fContentType.equals(otherSqlToken.getData())) {
+//            IToken token = this.tryResolveExtraToken();
+//            if (!token.isUndefined()) {
+//                
+//                fColumn = UNDEFINED;
+//                boolean resume = (fPartitionOffset > -1 && fPartitionOffset < fOffset);
+//                fTokenOffset = resume ? fPartitionOffset : fOffset;
+//
+//                fContentType = null;
+//                return token;
+//            }
+//        }
+        
+        return super.nextToken();
     }
 
     private class PredicateRuleAdapter implements IPredicateRule {

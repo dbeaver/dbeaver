@@ -666,7 +666,7 @@ public class SQLQueryModelRecognizer {
         SQLDialect dialect = this.obtainSqlDialect();
         String actualIdentifierString = dialect.isQuotedIdentifier(rawIdentifierString) ? rawIdentifierString 
             : (dialect.mustBeQuoted(rawIdentifierString, false) ? dialect.getQuotedIdentifier(rawIdentifierString, false, false) : rawIdentifierString.toLowerCase());
-        SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actual.getRealInterval(), actualIdentifierString);
+        SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actual.getRealInterval(), actualIdentifierString, rawIdentifierString);
         symbolEntries.add(entry);
         return entry;
     }

@@ -431,7 +431,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         if (jumpServerEnabledCheck.getSelection() && credentialsPanel.getParent().isEnabled() &&
             jumpServerCredentialsPanel.hostNameText.getText().isEmpty()
         ) {
-            jumpServerExpandableGroup.setExpanded(true, true);
+            //jumpServerExpandableGroup.setExpanded(true, true);
         }
         if (credentialsPanel.savePasswordCheckbox != null) {
             jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection());

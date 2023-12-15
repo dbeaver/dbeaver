@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMParserOverrides;
 import org.jkiss.dbeaver.model.stm.STMSource;
@@ -36,23 +37,25 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
 
     private static final Log log = Log.getLog(LSMAnalyzerImpl.class);
     
+    private final SQLDialect dialect;
     private final SyntaxModel syntaxModel;
     
-    public LSMAnalyzerImpl() {
-        Pair<TLexer, TParser> pair = this.createParser(STMSource.fromString(""));
+    public LSMAnalyzerImpl(@NotNull SQLDialect dialect) {
+    	this.dialect = dialect;
+        Pair<TLexer, TParser> pair = this.createParser(STMSource.fromString(""), dialect);
         syntaxModel = new SyntaxModel(pair.getSecond());
         syntaxModel.introduce(SelectStatement.class);
     }
 
     @NotNull
-    protected abstract Pair<TLexer, TParser> createParser(@NotNull STMSource source);
+    protected abstract Pair<TLexer, TParser> createParser(@NotNull STMSource source, @NotNull SQLDialect dialect);
 
     @NotNull
     protected abstract STMTreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
 
     @NotNull
     protected TParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        Pair<TLexer, TParser> pair = this.createParser(source);
+        Pair<TLexer, TParser> pair = this.createParser(source, this.dialect);
         TLexer lexer = pair.getFirst();
         TParser parser = pair.getSecond();
         

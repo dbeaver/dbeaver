@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 
 public enum SQLQuerySymbolClass {
     UNKNOWN(SQLTokenType.T_OTHER),
+    QUOTED(SQLTokenType.T_QUOTED),
+	STRING(SQLTokenType.T_STRING),
     CATALOG(SQLTokenType.T_SCHEMA),
     SCHEMA(SQLTokenType.T_SCHEMA),
     TABLE(SQLTokenType.T_TABLE),
