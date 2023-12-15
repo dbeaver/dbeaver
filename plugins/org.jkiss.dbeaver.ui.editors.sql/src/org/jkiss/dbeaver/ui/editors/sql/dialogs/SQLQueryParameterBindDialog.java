@@ -232,7 +232,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
             if (!parameters.isEmpty()) {
                 UIUtils.asyncExec(() -> {
-                    if (paramTable.getItemCount() > 0) {
+                    if (!paramTable.isDisposed() && paramTable.getItemCount() > 0) {
                         paramTable.select(0);
                         tableEditor.showEditor(paramTable.getItem(0), 2);
                     }

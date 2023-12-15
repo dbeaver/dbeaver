@@ -17,12 +17,15 @@
 package org.jkiss.dbeaver.headless;
 
 import org.eclipse.equinox.app.IApplicationContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -34,6 +37,11 @@ import java.nio.file.Path;
 public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
 
     private static final Log log = Log.getLog(DBeaverHeadlessApplication.class);
+
+    public DBeaverHeadlessApplication() {
+        // Initialize platform
+        initializeApplicationServices();
+    }
 
     @Override
     public Object start(IApplicationContext context) {
@@ -55,6 +63,17 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
     @Override
     public @Nullable Path getDefaultWorkingFolder() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public Class<? extends DBPPlatform> getPlatformClass() {
+        return DBeaverTestPlatform.class;
+    }
+
+    @Override
+    public Class<? extends DBPPlatformUI> getPlatformUIClass() {
+        return DBeaverTestPlatformUI.class;
     }
 
     @Override

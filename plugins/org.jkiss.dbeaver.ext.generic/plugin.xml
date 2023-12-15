@@ -361,12 +361,12 @@
                     supportsDistributedMode="false"
                     categories="sql,embedded">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
 
-                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
 
                     <parameter name="create-url-param" value=";create=true"/>
@@ -392,13 +392,13 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
