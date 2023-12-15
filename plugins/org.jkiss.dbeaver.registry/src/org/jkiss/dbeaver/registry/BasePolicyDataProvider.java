@@ -53,8 +53,8 @@ public class BasePolicyDataProvider {
     }
 
     @Nullable
-    public Integer getPolicyIntValue(@NotNull String propertyName) {
-        return getPolicyValue(propertyName, Integer::valueOf);
+    public String getPolicyValue(@NotNull String propertyName) {
+        return getPolicyValue(propertyName, Function.identity());
     }
 
     /**
