@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -46,6 +46,11 @@ import java.util.concurrent.Future;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
+
+
+    protected void initialize() {
+        // just a placeholder for injection
+    }
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
@@ -270,7 +275,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public DBNPath openFileSystemSelector(
+    public DBNPathBase openFileSystemSelector(
         @NotNull String title,
         boolean folder,
         int style,

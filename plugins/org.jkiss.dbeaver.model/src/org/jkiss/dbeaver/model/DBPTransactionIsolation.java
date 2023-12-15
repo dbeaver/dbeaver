@@ -17,12 +17,15 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
+
 /**
  * DBPTransactionIsolation
  */
 @DPIObject
-public interface DBPTransactionIsolation
-{
+@DPIElement
+public interface DBPTransactionIsolation {
     int getCode();
 
     boolean isEnabled();

@@ -4406,8 +4406,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @NotNull
-    public ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation)
-    {
+    public ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
             throw new IllegalStateException("Can't add/copy rows in disconnected results");
@@ -4442,12 +4441,11 @@ public class ResultSetViewer extends Viewer
                 final int partitionLength = partitionEnd - partitionStart + 1;
 
                 int srcRowIndex = partitionOffset + partitionStart;
-                int newRowIndex = partitionOffset + partitionStart;
-
-                if (afterCurrent) {
-                    // If we insert to the end of current partition then we need to account its length
-                    newRowIndex += partitionLength;
-                }
+                int newRowIndex = switch (placement) {
+                    case BEFORE_SELECTION -> partitionOffset + partitionStart;
+                    case AFTER_SELECTION -> partitionOffset + partitionStart + partitionLength;
+                    case AT_END -> model.getRowCount();
+                };
 
                 if (newRowIndex > model.getRowCount()) {
                     // May happen if we insert "after" current row and there are no rows at all
@@ -4522,7 +4520,7 @@ public class ResultSetViewer extends Viewer
                     newRowIndex++;
                     srcRowIndex++;
 
-                    if (!afterCurrent) {
+                    if (placement == RowPlacement.BEFORE_SELECTION) {
                         // Need to account currently inserted row
                         srcRowIndex++;
                     }

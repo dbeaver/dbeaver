@@ -16,5 +16,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.apache.felix.scr,
  org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ext.greenplum

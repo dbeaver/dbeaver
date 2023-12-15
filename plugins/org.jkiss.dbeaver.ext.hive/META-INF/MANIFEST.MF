@@ -5,6 +5,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.hive;singleton:=true
 Bundle-Version: 1.0.126.qualifier
 Bundle-Release-Date: 20231204
 Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17

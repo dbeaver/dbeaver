@@ -30,7 +30,6 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.gson,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.dpi.model,
- org.jkiss.dbeaver.model.sql;visibility:=reexport,
  com.sun.jna.platform
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.registry

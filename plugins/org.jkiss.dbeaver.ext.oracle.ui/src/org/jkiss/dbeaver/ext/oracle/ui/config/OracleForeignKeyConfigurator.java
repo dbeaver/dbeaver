@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -61,6 +62,7 @@ public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<Oracl
                         (OracleTableColumn) tableColumn.getOwnColumn(),
                         colIndex++));
             }
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
             return foreignKey;
         });
     }
