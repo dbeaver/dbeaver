@@ -47,6 +47,11 @@ import java.util.concurrent.Future;
 public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
 
+
+    protected void initialize() {
+        // just a placeholder for injection
+    }
+
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
         System.out.println(title + (message == null ? "" : ": " + message));
