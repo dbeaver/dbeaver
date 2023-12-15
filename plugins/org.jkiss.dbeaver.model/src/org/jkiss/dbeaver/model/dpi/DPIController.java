@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model.dpi;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -57,4 +57,10 @@ public interface DPIController extends AutoCloseable {
         @RequestParameter("object") @NotNull String objectId,
         @RequestParameter("method") @NotNull String method,
         @RequestParameter("args") @Nullable Object[] args) throws DBException;
+
+    @RequestMapping
+    Object readProperty(
+        @RequestParameter("object") @NotNull String objectId,
+        @RequestParameter("property") @NotNull String propertyName) throws DBException;
+
 }

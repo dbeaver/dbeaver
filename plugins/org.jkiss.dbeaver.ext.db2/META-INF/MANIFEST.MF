@@ -10,6 +10,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.ext.db2,
  org.jkiss.dbeaver.ext.db2.data,

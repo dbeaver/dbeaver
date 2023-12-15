@@ -17,12 +17,14 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+
 /**
  * Objects with system flag
  */
-public interface DBPSystemObject
-{
+public interface DBPSystemObject {
 
+    @DPIElement(cache = true)
     boolean isSystem();
 
 }
