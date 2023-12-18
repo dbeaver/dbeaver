@@ -684,12 +684,16 @@ public class SQLQueryModelRecognizer {
             return entry;
         } else {
             SQLDialect dialect = this.obtainSqlDialect();
-            String unquottedIdentifier = dialect.isQuotedIdentifier(rawIdentifierString) ? dialect.getUnquotedIdentifier(rawIdentifierString) : rawIdentifierString;
+            String unquottedIdentifier = dialect.isQuotedIdentifier(rawIdentifierString)
+                ? dialect.getUnquotedIdentifier(rawIdentifierString)
+                : rawIdentifierString;
             String actualIdentifierString;
             if (forceUnquotted) {
                 actualIdentifierString = unquottedIdentifier;
             } else {
-                actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, false) ? dialect.getQuotedIdentifier(unquottedIdentifier, false, false) : unquottedIdentifier.toLowerCase(); 
+                actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, false)
+                    ? dialect.getQuotedIdentifier(unquottedIdentifier, false, false)
+                    : unquottedIdentifier.toLowerCase();
             }
             SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody.getRealInterval(), actualIdentifierString, rawIdentifierString);
             this.symbolEntries.add(entry);
@@ -734,8 +738,8 @@ public class SQLQueryModelRecognizer {
             case 0 -> null;
             case 1 -> {
                 node = actual.get(0);
-                yield node.getNodeName().equals(STMKnownRuleNames.tableName) ? collectQualifiedName(node, true)
-                        : new SQLQueryQualifiedName(collectIdentifier(node, true));
+                yield node.getNodeName().equals(STMKnownRuleNames.tableName) ? collectQualifiedName(node, forceUnquotted)
+                        : new SQLQueryQualifiedName(collectIdentifier(node, forceUnquotted));
             }
             default -> throw new UnsupportedOperationException("Ambiguous tableName collection at " + node.getNodeName());
         };
@@ -745,10 +749,6 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.tableName,
         STMKnownRuleNames.constraintName
     );
-
-    private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node) {
-        return collectQualifiedName(node, false);
-    }
     
     @NotNull
     private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node, boolean forceUnquotted) { // qualifiedName
@@ -762,12 +762,18 @@ public class SQLQueryModelRecognizer {
             return new SQLQueryQualifiedName(entityName);
         } else {
             STMTreeNode schemaNameNode = entityNameNode.getStmChild(0);
-            SQLQuerySymbolEntry schemaName = collectIdentifier(schemaNameNode.getStmChild(schemaNameNode.getChildCount() - 1), forceUnquotted);
+            SQLQuerySymbolEntry schemaName = collectIdentifier(
+                schemaNameNode.getStmChild(schemaNameNode.getChildCount() - 1),
+                forceUnquotted
+            );
             if (schemaNameNode.getChildCount() == 1) {
                 return new SQLQueryQualifiedName(schemaName, entityName);
             } else {
                 STMTreeNode catalogNameNode = schemaNameNode.getStmChild(0);
-                SQLQuerySymbolEntry catalogName = collectIdentifier(catalogNameNode.getStmChild(catalogNameNode.getChildCount() - 1), forceUnquotted);
+                SQLQuerySymbolEntry catalogName = collectIdentifier(
+                    catalogNameNode.getStmChild(catalogNameNode.getChildCount() - 1),
+                    forceUnquotted
+                );
                 return new SQLQueryQualifiedName(catalogName, schemaName, entityName);
             }    
         }

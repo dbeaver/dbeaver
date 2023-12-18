@@ -93,7 +93,7 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
-    	return super.getIdentifierQuoteStrings();
+        return super.getIdentifierQuoteStrings();
     }
 
     @Override

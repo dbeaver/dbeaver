@@ -82,7 +82,8 @@ public class SQLQuerySelectionResultModel {
         @Override
         protected Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
             if (this.tableName.isNotClassified()) {
-                SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings()); // TODO consider multiple joins of one table
+                // TODO consider multiple joins of one table
+                SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
                 if (rr != null) {
                     this.tableName.setDefinition(rr);
                     return rr.source.getDataContext().getColumnsList().stream();

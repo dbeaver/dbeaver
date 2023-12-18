@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.swt.SWT;
@@ -66,6 +65,8 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
 
     private boolean evalMode;
     private int keywordStyle = SWT.NORMAL;
+
+    private final boolean DEBUG = false;
 
     public SQLRuleScanner() {
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
@@ -175,7 +176,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         if (entry != null) {
             int end = syntaxContext.getLastAccessedTokenOffset() + entry.getInterval().length();
             if (end > offset) {
-                if (false) {
+                if (DEBUG) {
                     StringBuilder sb = new StringBuilder();
                     while (this.getOffset() < end) {
                         int c = super.read();

@@ -49,6 +49,17 @@ import java.util.stream.Collectors;
 
 public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
+    private final SQLDialect dialect;
+
+    private final DummyDbObject dummyDataSource;
+    private final DummyDbObject defaultDummyCatalog;
+    private final DummyDbObject defaultDummySchema;
+    private final Set<String> knownColumnNames;
+    private final Set<String> knownTableNames;
+    private final Set<String> knownSchemaNames;
+    private final Set<String> knownCatalogNames;
+
+
     @FunctionalInterface
     private static interface DummyObjectCtor {
         DummyDbObject apply(DummyDbObject parent, String name, int index);
@@ -312,18 +323,12 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return Collections.emptyList();
         }
     }
-    
-    private final SQLDialect dialect;
-    
-    private final DummyDbObject dummyDataSource;
-    private final DummyDbObject defaultDummyCatalog;
-    private final DummyDbObject defaultDummySchema;
-    private final Set<String> knownColumnNames;
-    private final Set<String> knownTableNames;
-    private final Set<String> knownSchemaNames;
-    private final Set<String> knownCatalogNames;
 
-    public SQLQueryDummyDataSourceContext(@NotNull SQLDialect dialect, @NotNull Set<String> knownColumnNames, @NotNull Set<List<String>> knownTableNames) {
+    public SQLQueryDummyDataSourceContext(
+        @NotNull SQLDialect dialect,
+        @NotNull Set<String> knownColumnNames,
+        @NotNull Set<List<String>> knownTableNames
+    ) {
         this.dialect = dialect;
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();

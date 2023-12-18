@@ -39,6 +39,8 @@ public class LSMDialectRegistry {
     private static final Log log = Log.getLog(LSMDialectRegistry.class);
 
     private static LSMDialectRegistry instance = null;
+    
+    private final Map<Class<? extends SQLDialect>, LSMAnalyzerFabric> knownLsmAnalyzerByDialects = new HashMap<>();
 
     /**
      * Returns an instance of this singleton
@@ -50,8 +52,6 @@ public class LSMDialectRegistry {
         }
         return instance;
     }
-
-    private final Map<Class<? extends SQLDialect>, LSMAnalyzerFabric> knownLsmAnalyzerByDialects = new HashMap<>();
 
     private LSMDialectRegistry() {
     }
@@ -86,7 +86,7 @@ public class LSMDialectRegistry {
         
         if (analyzerFabric == null) {
             throw new IllegalStateException(
-                "Failed to resolve LSMAnalyzer for " + dialect.getDialectName() + " dialect. Illegal database driver configuation."
+                "Failed to resolve LSMAnalyzer for " + dialect.getDialectName() + " dialect. Illegal database driver configuration."
             );
         } else {
             return analyzerFabric.createAnalyzer(dialect);
