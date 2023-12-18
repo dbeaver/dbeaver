@@ -63,7 +63,10 @@ public class BigQueryDataSource extends GenericDataSource {
         } else {
             props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, "");
         }
-
+        String additionalProjects = connectionInfo.getProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS);
+        if (CommonUtils.isNotEmpty(additionalProjects)) {
+            props.put(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, additionalProjects);
+        }
         return props;
     }
 

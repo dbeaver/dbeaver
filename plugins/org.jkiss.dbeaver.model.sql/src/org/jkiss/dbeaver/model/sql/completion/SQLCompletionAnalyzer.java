@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -50,26 +49,15 @@ import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Completion analyzer
@@ -80,7 +68,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private static final String ALL_COLUMNS_PATTERN = "*";
     private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
-    private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
     private static final String MATCH_ANY_PATTERN = "%";
     private static final String TABLE_TO_ATTRIBUTE_PATTERN = "%s%s%s";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
@@ -104,7 +91,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         }
 
-        if (prefStore.getBoolean(ENABLE_EXPERIMENTAL_FEATURES)) {
+        if (prefStore.getBoolean(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE)) {
             tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
         } else {
             tableRefsAnalyzer = new TableReferencesAnalyzerOld(request);
@@ -271,7 +258,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
                     DBSObject selectedObject = getActiveInstanceObject();
-                    DBSObject rootObject = null;
+                    DBSObject rootObject;
                     if (selectedObject != null) {
                         makeProposalsFromChildren(selectedObject, null, false, parameters);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
@@ -1287,14 +1274,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             SQLConstants.KEYWORD_AND.equals(prevWord)) {
             String tableName = "";
             DBSEntity parentObject = null;
-            if (object instanceof JDBCTableColumn<?>) {
+            if (object instanceof DBSTableColumn tableColumn) {
                 aliasMode = SQLTableAliasInsertMode
-                    .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
-                JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
+                    .fromPreferences(tableColumn.getDataSource().getContainer().getPreferenceStore());
                 parentObject = tableColumn.getParentObject();
-                tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
-            } else if (object instanceof DBSEntityAttribute) {
-                DBSEntityAttribute tableColumn = (DBSEntityAttribute) object;
+                tableName = parentObject.getName();
+            } else if (object instanceof DBSEntityAttribute tableColumn) {
                 aliasMode = SQLTableAliasInsertMode
                     .fromPreferences(tableColumn.getDataSource().getContainer().getPreferenceStore());
                 parentObject = tableColumn.getParentObject();

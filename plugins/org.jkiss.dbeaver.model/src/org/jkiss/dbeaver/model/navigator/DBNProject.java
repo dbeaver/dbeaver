@@ -108,11 +108,13 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return getNodeName();
     }
 
+    @NotNull
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = DBIcon.PROJECT;
-
-        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+        if (getProject().isPrivateProject()) {
+            image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LAMP);
+        } else if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);
         }
 
@@ -152,9 +154,13 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         project.ensureOpen();
 
         try {
-            final IProjectDescription description = project.getEclipseProject().getDescription();
+            IProject eclipseProject = project.getEclipseProject();
+            if (eclipseProject == null) {
+                throw new DBException("Eclipse project is null");
+            }
+            final IProjectDescription description = eclipseProject.getDescription();
             description.setName(newName);
-            project.getEclipseProject().move(description, true, monitor.getNestedMonitor());
+            eclipseProject.move(description, true, monitor.getNestedMonitor());
         } catch (CoreException e) {
             throw new DBException("Can't rename project", e);
         }

@@ -29,19 +29,23 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.client.DPIClientProxy;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DPIClientObject;
-import org.jkiss.dbeaver.model.DPIContainer;
-import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.utils.BeanUtils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -93,9 +97,11 @@ public class DPISerializer {
                         return new DPIObjectTypeAdapter<>(context, typeToken.getType());
                     }
                 }
-            }
-            if (typeToken.getType() == Class.class) {
+            } else if (typeToken.getType() == Class.class) {
                 return (TypeAdapter<T>) new DPIClassAdapter(context);
+            } else if (typeToken.getType() instanceof Class<?> &&
+                Throwable.class.isAssignableFrom((Class<?>) typeToken.getType())) {
+                return (TypeAdapter<T>) new DPIThrowableAdapter(context);
             }
             return null;
         }
@@ -199,6 +205,69 @@ public class DPISerializer {
         }
     }
 
+    static class DPIThrowableAdapter extends AbstractTypeAdapter<Throwable> {
+        public DPIThrowableAdapter(DPIContext context) {
+            super(context);
+        }
+
+        @Override
+        public void write(JsonWriter jsonWriter, Throwable error) throws IOException {
+            jsonWriter.name("class");
+            jsonWriter.value(error.getClass().getName());
+            if (error.getMessage() != null) {
+                jsonWriter.name("message");
+                jsonWriter.value(error.getMessage());
+            }
+            jsonWriter.name("stacktrace");
+            jsonWriter.value(Arrays.toString(error.getStackTrace()));
+            if (error instanceof SQLException) {
+                SQLException sqlError = (SQLException) error;
+                jsonWriter.name("errorCode");
+                jsonWriter.value(sqlError.getErrorCode());
+                if (sqlError.getSQLState() != null) {
+                    jsonWriter.name("sqlState");
+                    jsonWriter.value(sqlError.getSQLState());
+                }
+            }
+        }
+
+        @Override
+        public Throwable read(JsonReader jsonReader) throws IOException {
+            String className = null;
+            String message = null;
+            String stacktrace = null;
+            int errorCode = -1;
+            String sqlState = null;
+            while (jsonReader.peek() == JsonToken.NAME) {
+                String attrName = jsonReader.nextName();
+                switch (attrName) {
+                    case "class":
+                        className = jsonReader.nextString();
+                        break;
+                    case "message":
+                        message = jsonReader.nextString();
+                        break;
+                    case "stacktrace":
+                        stacktrace = jsonReader.nextString();
+                        break;
+                    case "errorCode":
+                        errorCode = jsonReader.nextInt();
+                        break;
+                    case "sqlState":
+                        sqlState = jsonReader.nextString();
+                        break;
+                }
+            }
+            try {
+                Class<?> errorClass = Class.forName(className, true, context.getClassLoader());
+                return new Exception();
+                //errorClass.getConstructor()
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
     static class DPIProgressMonitorAdapter extends AbstractTypeAdapter<DBRProgressMonitor> {
         public DPIProgressMonitorAdapter(DPIContext context) {
             super(context);
@@ -271,11 +340,26 @@ public class DPISerializer {
             // Serialize properties
             PropertyCollector pc = new PropertyCollector(t, false);
             pc.collectProperties();
+            Map<String, Object> props = new LinkedHashMap<>();
             if (pc.getProperties().length > 0) {
-                Map<String, Object> props = new LinkedHashMap<>();
                 for (DBPPropertyDescriptor prop : pc.getProperties()) {
                     props.put(prop.getId(), pc.getPropertyValue(null, prop.getId()));
                 }
+            }
+            for (Method m : t.getClass().getMethods()) {
+                if (m.getParameterTypes().length == 0 && !m.isAnnotationPresent(Property.class)) {
+                    DPIElement elemAnno = DPISerializer.getMethodAnno(m, DPIElement.class);
+                    if (elemAnno != null && elemAnno.cache()) {
+                        try {
+                            Object propValue = m.invoke(t);
+                            props.put(BeanUtils.getPropertyNameFromGetter(m.getName()), propValue);
+                        } catch (Throwable e) {
+                            log.debug("Error reading object element " + m);
+                        }
+                    }
+                }
+            }
+            if (!props.isEmpty()) {
                 JSONUtils.serializeProperties(jsonWriter, ATTR_PROPS, props);
             }
         }
@@ -426,8 +510,10 @@ public class DPISerializer {
             } else {
                 throw new IOException("Non class result, deserialization not supported (" + type + ")");
             }
-            allInterfaces.add(theClass);
-            Collections.addAll(allInterfaces, (theClass).getInterfaces());
+            if (theClass.isInterface()) {
+                allInterfaces.add(theClass);
+            }
+            Collections.addAll(allInterfaces, theClass.getInterfaces());
             allInterfaces.add(DPIClientObject.class);
             DPIClientProxy objectHandler = new DPIClientProxy(
                 context,

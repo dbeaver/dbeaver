@@ -48,6 +48,9 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_group_model_advanced;
     public static String gpt_preference_page_text_temperature;
 
+    public static String confirm_meta_transfer_usage_title;
+    public static String confirm_meta_transfer_usage_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, AIUIMessages.class);

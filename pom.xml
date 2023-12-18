@@ -9,20 +9,23 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>23.2.3</dbeaver-version>
+        <dbeaver-version>23.3.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>3.0.1</tycho-version>
-        <eclipse-version>2023-09</eclipse-version>
+        <tycho-version>4.0.4</tycho-version>
+        <eclipse-version>2023-12</eclipse-version>
+        <eclipse-repo-url>https://download.eclipse.org/releases</eclipse-repo-url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/</local-p2-repo.url>
-        <eclipse-p2-repo.url>https://download.eclipse.org/releases/${eclipse-version}/</eclipse-p2-repo.url>
+        <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
+        <!-- <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/${local-p2-repo.version}</local-p2-repo.url> -->
+        <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo</local-p2-repo.url>
+        <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
         <!-- Orbit deps. We need it for CB at least -->
-        <orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20221123021534/repository/</orbit-repo.url>
+        <orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository</orbit-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>

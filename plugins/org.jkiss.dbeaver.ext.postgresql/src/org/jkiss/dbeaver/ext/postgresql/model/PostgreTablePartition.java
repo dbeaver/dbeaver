@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
@@ -50,6 +52,18 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
     }
 
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return partitionOf;
+    }
+
+    @Override
+    public boolean needFullPath() {
+        // Postgres tables can be queried directly without a parent table.
+        return false;
+    }
+
     @Property(viewable = true, editable = true, updatable = true, order = 60)
     @Nullable
     public String getPartitionExpression() {
@@ -67,8 +81,6 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         options.put(OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, false);
         options.put(OPTION_INCLUDE_NESTED_OBJECTS, false);
         options.put(OPTION_INCLUDE_PERMISSIONS, false);
-        options.put(OPTION_SKIP_INDEXES, true);
-        options.put(DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS, true);
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 

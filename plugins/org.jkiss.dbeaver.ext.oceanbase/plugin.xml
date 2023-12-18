@@ -41,11 +41,12 @@
                     icon="icons/ob_icon.png"
                     iconBig="icons/ob_icon_big.png"
                     description="Driver for OceanBase-MySQL"
+                    supportedPageFields="host,port,database,server"
                     categories="sql">
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <parameter name="supports-events" value="false"/>
                     <parameter name="supports-plugins" value="false"/>
                     <parameter name="supports-triggers" value="false"/>

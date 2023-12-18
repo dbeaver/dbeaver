@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
@@ -28,7 +29,6 @@ public class ERDNotationDescriptor extends AbstractDescriptor {
     private String id;
     private String name;
     private String description;
-    private boolean isDefault = false;
     private ERDNotation notation;
     private ObjectType lazyWrapper;
 
@@ -39,8 +39,7 @@ public class ERDNotationDescriptor extends AbstractDescriptor {
         this.id = cf.getAttribute(RegistryConstants.ATTR_ID);
         this.name = cf.getAttribute(RegistryConstants.ATTR_NAME);
         this.description = cf.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.isDefault = Boolean.valueOf(cf.getAttribute(RegistryConstants.ATTR_IS_DEFAULT));
-        this.lazyWrapper = new ObjectType(cf.getAttribute(RegistryConstants.ATTR_NOTATION));
+        this.lazyWrapper = new ObjectType(cf.getAttribute(ERDUIConstants.ATTR_ERD_NOTATION));
     }
 
     public String getId() {
@@ -69,10 +68,6 @@ public class ERDNotationDescriptor extends AbstractDescriptor {
             }
         }
         return notation;
-    }
-
-    public boolean isDefault() {
-        return isDefault;
     }
 
 }

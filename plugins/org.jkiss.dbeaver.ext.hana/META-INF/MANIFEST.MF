@@ -2,9 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SAP HANA Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.hana;singleton:=true
-Bundle-Version: 1.2.95.qualifier
-Bundle-Release-Date: 20231023
+Bundle-Version: 1.2.99.qualifier
+Bundle-Release-Date: 20231225
 Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
  org.jkiss.bundle.gis;visibility:=reexport

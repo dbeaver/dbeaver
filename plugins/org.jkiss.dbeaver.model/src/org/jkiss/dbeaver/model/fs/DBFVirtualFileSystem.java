@@ -54,8 +54,19 @@ public interface DBFVirtualFileSystem extends Closeable {
     @NotNull
     Path getPathByURI(@NotNull DBRProgressMonitor monitor, @NotNull URI uri) throws DBException;
 
+    /**
+     * Splits URI to path segments corresponding to file hierarchy.
+     * Typical case: /root/folder/folder/file
+     */
+    String[] getURISegments(URI uri);
+
     default void refreshRoots(DBRProgressMonitor monitor) throws DBException {}
+
+    default boolean supportsEmptyFolders() {
+        return true;
+    }
 
     @Override
     default void close() throws IOException {}
+
 }

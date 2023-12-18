@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.format;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,14 +32,13 @@ public interface IAIFormatter {
         String completionText
     );
 
-    String postProcessPrompt(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer mainObject,
-        DBCExecutionContext executionContext,
-        String promptText
-    );
+    @Nullable
+    String getExtraInstructions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer mainObject,
+        @NotNull DBCExecutionContext executionContext);
 
-    void addPromptExtra(
+    void addExtraDescription(
         DBRProgressMonitor monitor,
         DBSEntity object,
         StringBuilder description,

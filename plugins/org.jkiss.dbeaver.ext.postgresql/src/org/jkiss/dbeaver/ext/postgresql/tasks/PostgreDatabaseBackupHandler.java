@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
@@ -34,11 +33,12 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<PostgreDatabaseBackupSettings, DBSObject, PostgreDatabaseBackupInfo> {
+
+    private static final Log log = Log.getLog(PostgreDatabaseBackupHandler.class);
+
     @Override
     public Collection<PostgreDatabaseBackupInfo> getRunInfo(PostgreDatabaseBackupSettings settings) {
         return settings.getExportObjects();
@@ -93,7 +93,11 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    public void fillProcessParameters(PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(
+        PostgreDatabaseBackupSettings settings,
+        PostgreDatabaseBackupInfo arg,
+        List<String> cmd
+    ) throws IOException {
         super.fillProcessParameters(settings, arg, cmd);
 
         cmd.add("--format=" + settings.getFormat().getId());
@@ -128,8 +132,10 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
 
         // Objects
         if (settings.getExportObjects().isEmpty()) {
-            // no dump
-        } else if (!CommonUtils.isEmpty(arg.getTables())) {
+            log.debug("Can't find specific schemas/tables for the backup");
+            return;
+        }
+        if (!CommonUtils.isEmpty(arg.getTables())) {
             for (PostgreTableBase table : arg.getTables()) {
                 cmd.add("-t");
                 // Use explicit quotes in case of quoted identifiers (#5950)

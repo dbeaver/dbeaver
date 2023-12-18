@@ -43,9 +43,10 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -103,29 +104,27 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn = new PolylineConnection();
-
+        PolylineConnection conn;
+        ERDConnectionRouter router = getDiagramPart().getRouter();
+        if (router != null) {
+            conn = router.getConnectionInstance();
+        } else {
+            conn = new PolylineConnection();
+        }
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
-
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
             ERDAssociation association = getAssociation();
             if (association != null && association.getObject() != null && !CommonUtils.isEmpty(association.getObject().getDescription())) {
                 ConnectionLocator descLabelLocator = new ConnectionLocator(conn, ConnectionLocator.MIDDLE);
-                //descLabelLocator.setRelativePosition(50);
-                //descLabelLocator.setGap(50);
                 Label descLabel = new Label(association.getObject().getDescription());
                 descLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
-//                Border border = new MarginBorder(20, 0, 0, 0);
-//                descLabel.setBorder(border);
                 conn.add(descLabel, descLabelLocator);
             }
         }
-
         setConnectionStyles(conn);
         setConnectionRouting(conn);
         setConnectionToolTip(conn);
-
         return conn;
     }
 
@@ -133,6 +132,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         ERDAssociation association = getAssociation();
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
+        ERDConnectionRouterDescriptor router = getDiagramPart().getEditor().getDiagramRouter();
         conn.setConnectionRouter(cLayer.getConnectionRouter());
         if (!CommonUtils.isEmpty(association.getInitBends())) {
             List<AbsoluteBendpoint> connBends = new ArrayList<>();
@@ -145,46 +145,39 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             if (entityPart == null) {
                 entityPart = getTarget();
             }
-            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
             if (entityPart instanceof GraphicalEditPart
-                && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-                    || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
-                // Self link
+                && !router.supportedAttributeAssociation()) {
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
                 final Dimension figureSize = entityFigure.getMinimumSize();
                 int entityWidth = figureSize.width;
                 int entityHeight = figureSize.height;
-
                 List<RelativeBendpoint> bends = new ArrayList<>();
                 int w2 = entityWidth / 2;
                 int h2 = entityHeight / 2;
                 RelativeBendpoint bp1 = new RelativeBendpoint(conn);
-                bp1.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2 + w2));
+                bp1.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth / 2, -h2 + w2));
                 bends.add(bp1);
-
                 RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                bp2.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth + 50, -h2 + w2 / 2));
+                bp2.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2 + w2 / 2));
                 bends.add(bp2);
-
                 RelativeBendpoint bp3 = new RelativeBendpoint(conn);
-                bp3.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth + 50, -h2 - w2 / 2));
+                bp3.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2 - w2 / 2));
                 bends.add(bp3);
-
                 RelativeBendpoint bp4 = new RelativeBendpoint(conn);
-                bp4.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2 - w2));
+                bp4.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth / 2, -h2 - w2));
                 bends.add(bp4);
                 conn.setRoutingConstraint(bends);
             }
         }
-        if (cLayer.getConnectionRouter() instanceof OrthogonalShortPathRouting) {
-            ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getDiagram().getDiagramNotation();
-            ((OrthogonalShortPathRouting) cLayer.getConnectionRouter())
+        if (cLayer.getConnectionRouter() instanceof ShortPathRouting) {
+            ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
+            ((ShortPathRouting) cLayer.getConnectionRouter())
                 .setIndentation(diagramNotationDescriptor.getNotation().getIndentation());
         }
     }
 
     protected void setConnectionStyles(PolylineConnection conn) {
-        ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getDiagram().getDiagramNotation();
+        ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
         if (diagramNotationDescriptor == null) {
             log.error("ERD notation descriptor is not defined");
         }

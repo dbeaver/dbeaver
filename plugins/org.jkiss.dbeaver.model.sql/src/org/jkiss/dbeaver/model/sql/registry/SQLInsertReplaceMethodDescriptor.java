@@ -21,8 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectInsertReplaceMethod;
 
-public class SQLInsertReplaceMethodDescriptor extends AbstractContextDescriptor {
+public class SQLInsertReplaceMethodDescriptor extends AbstractContextDescriptor implements SQLDialectInsertReplaceMethod {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sqlInsertMethod"; //$NON-NLS-1$
 

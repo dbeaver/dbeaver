@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeOwner;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -28,6 +29,7 @@ import java.util.Collection;
  */
 public interface PostgrePrivilegeOwner extends PostgreObject, DBAPrivilegeOwner {
 
+    @DPIContainer
     PostgreSchema getSchema();
 
     PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException;

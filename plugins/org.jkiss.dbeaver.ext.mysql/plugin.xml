@@ -161,14 +161,7 @@
 
             </tree>
             <drivers managable="true">
-                <driver
-                    id="mysql3"
-                    label="MySQL 3.x"
-                    class="com.mysql.jdbc.Driver"
-                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                    defaultPort="3306"
-                    categories="sql">
-                </driver>
+                <driver id="mysql3"/>
                 <driver
                         id="mysql5"
                         label="MySQL 5"
@@ -183,15 +176,13 @@
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 5.x+"
                         categories="sql">
-                    <replace provider="mysql" driver="mysql3"/>
 
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
+
                     <property name="connectTimeout" value="20000"/>
                     <property name="rewriteBatchedStatements" value="true"/>
-                    <!-- https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html -->
                     <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
@@ -201,8 +192,8 @@
                             <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
                         </propertyGroup>
                     </provider-properties>
-
                 </driver>
+
                 <driver
                         id="mysql8"
                         label="MySQL"
@@ -218,7 +209,9 @@
                         description="Driver for MySQL 8 and later"
                         promoted="1"
                         categories="sql">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.29]" bundle="!drivers.mysql"/>
+                    <replace provider="mysql" driver="mysql3"/>
+
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
@@ -229,11 +222,6 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
-                    <provider-properties>
-                        <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                        </propertyGroup>
-                    </provider-properties>
                 </driver>
                 <driver
                     id="mysql_ndb"
@@ -249,7 +237,7 @@
                     propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                     description="Driver for MySQL NDB cluster"
                     categories="sql">
-                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
@@ -257,11 +245,6 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
-                    <provider-properties>
-                        <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                        </propertyGroup>
-                    </provider-properties>
                 </driver>
 
                 <driver
@@ -287,12 +270,12 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
-                    <provider-properties>
-                        <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                        </propertyGroup>
-                    </provider-properties>
                 </driver>
+                <provider-properties drivers="*">
+                    <propertyGroup label="Advanced">
+                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
 
             <nativeClients>
@@ -376,8 +359,8 @@
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <propertyGroup label="SSL Settings">
-                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,password" length="MULTILINE"/>
-                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
                 <property id="ssl.cipher.suites" label="Cipher suites (optional)" type="string" features="secured,password"/>
             </propertyGroup>

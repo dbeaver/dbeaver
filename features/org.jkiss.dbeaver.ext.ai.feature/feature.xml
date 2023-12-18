@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.ai.feature"
       label="%featureName"
-      version="1.0.19.qualifier"
+      version="1.0.23.qualifier"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ui.editors.sql.ai">
 
@@ -22,9 +22,8 @@
       <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
    </requires>
 
-   <plugin id="org.jkiss.dbeaver.model.ai" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="org.jkiss.dbeaver.ui.editors.sql.ai" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-   <plugin id="org.jkiss.bundle.gpt3" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
+   <plugin id="org.jkiss.dbeaver.model.ai" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.editors.sql.ai" version="0.0.0" />
+   <plugin id="org.jkiss.bundle.jackson" version="0.0.0" />
+   <plugin id="org.jkiss.bundle.gpt3" version="0.0.0" />
 </feature>

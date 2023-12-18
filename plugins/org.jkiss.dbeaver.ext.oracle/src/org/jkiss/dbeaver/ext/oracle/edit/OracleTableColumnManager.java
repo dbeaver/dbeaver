@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
 import java.util.List;
@@ -81,9 +82,8 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
-    protected ColumnModifier[] getSupportedModifiers(OracleTableColumn column, Map<String, Object> options)
-    {
-        return new ColumnModifier[] {OracleDataTypeModifier, DefaultModifier, NullNotNullModifier};
+    protected ColumnModifier[] getSupportedModifiers(OracleTableColumn column, Map<String, Object> options) {
+        return new ColumnModifier[]{OracleDataTypeModifier, DefaultModifier, NullNotNullModifierConditional};
     }
 
     @Override
@@ -111,7 +111,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
-        if (command.getProperty("comment") != null) {
+        if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject(), command.getObject().getParentObject());
         }
     }

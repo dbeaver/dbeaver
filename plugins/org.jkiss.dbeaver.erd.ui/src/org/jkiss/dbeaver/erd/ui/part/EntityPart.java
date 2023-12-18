@@ -28,7 +28,6 @@ import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.jkiss.dbeaver.erd.model.*;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
@@ -40,9 +39,9 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.beans.PropertyChangeEvent;
@@ -59,7 +58,7 @@ import java.util.Map;
 public class EntityPart extends NodePart {
     protected DirectEditManager manager;
     private AccessibleGraphicalEditPart accPart;
-
+    
     public EntityPart() {
     }
 
@@ -304,16 +303,14 @@ public class EntityPart extends NodePart {
     }
 
     private boolean supportsAttributeAssociations() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        return store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-               && !ERDAttributeVisibility.isHideAttributeAssociations(store);
+        return getEditor().getDiagramRouter().supportedAttributeAssociation()
+            && !ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences());
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-            || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!getEditor().getDiagramRouter().supportedAttributeAssociation() 
+            || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return super.getModelTargetConnections();
         }
         List<ERDAssociation> list = new ArrayList<>();

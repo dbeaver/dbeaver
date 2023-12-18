@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ui.feature"
       label="%featureName"
-      version="23.2.3.qualifier"
+      version="23.3.1.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -36,153 +36,153 @@
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.net.ssh.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.acl"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.base"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.connection"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.data"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.entity"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.hex"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.image"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.json"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.sql"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
     <plugin
          id="org.jkiss.dbeaver.ui.editors.sql.terminal"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.session"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.xml"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.navigator"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.search"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.erd.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.data.transfer.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.data.gis.view"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.bundle.jfreechart"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
    <plugin
          id="org.jkiss.dbeaver.ui.charts"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         />
 
 </feature>

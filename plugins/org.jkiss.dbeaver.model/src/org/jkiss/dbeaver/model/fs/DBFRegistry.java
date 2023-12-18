@@ -28,4 +28,5 @@ public interface DBFRegistry {
 
     DBFFileSystemDescriptor getFileSystemProvider(@NotNull String id);
 
+    DBFFileSystemDescriptor getFileSystemProviderBySchema(@NotNull String schema);
 }

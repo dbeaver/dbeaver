@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.meta.ComponentReference;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -36,11 +37,18 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.*;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -97,23 +105,10 @@ public final class RuntimeUtils {
 
     public static String getCurrentDate() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
-/*
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        final int month = c.get(Calendar.MONTH) + 1;
-        final int day = c.get(Calendar.DAY_OF_MONTH);
-        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + (day < 10 ? "0" + day : day);
-*/
     }
 
     public static String getCurrentTimeStamp() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
-/*
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        final int month = c.get(Calendar.MONTH) + 1;
-        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE);
-*/
     }
 
     public static boolean isTypeSupported(Class<?> type, Class<?>[] supportedTypes) {
@@ -149,10 +144,8 @@ public final class RuntimeUtils {
     public static IStatus stripStack(@NotNull IStatus status) {
         if (status instanceof MultiStatus) {
             IStatus[] children = status.getChildren();
-            if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    children[i] = stripStack(children[i]);
-                }
+            for (int i = 0; i < children.length; i++) {
+                children[i] = stripStack(children[i]);
             }
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
@@ -178,16 +171,28 @@ public final class RuntimeUtils {
     public static String formatExecutionTime(long ms) {
         if (ms < 1000) {
             // Less than a second, show just ms
-            return String.valueOf(ms) + "ms";
+            return ms + "ms";
         }
         if (ms < 60000) {
             // Less than a minute, show sec and ms
-            return String.valueOf(ms / 1000) + "." + String.valueOf(ms % 1000) + "s";
+            return ms / 1000 + "." + ms % 1000 + "s";
         }
         long sec = ms / 1000;
         long min = sec / 60;
         sec -= min * 60;
-        return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
+        return min + "m " + sec + "s";
+    }
+
+    @NotNull
+    public static String formatExecutionTimeShort(@NotNull Duration duration) {
+        final long min = duration.toMinutes();
+        final long sec = duration.toSecondsPart();
+
+        if (min > 0) {
+            return "%dm %ds".formatted(min, sec);
+        } else {
+            return "%ds".formatted(sec);
+        }
     }
 
     public static File getPlatformFile(String platformURL) throws IOException {
@@ -270,20 +275,15 @@ public final class RuntimeUtils {
             if (waitTime > 0 && System.currentTimeMillis() - startTime > waitTime) {
                 break;
             }
-            try {
-                if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
-                    Thread.sleep(50);
-                }
-            } catch (InterruptedException e) {
-                log.debug("Task '" + taskName + "' was interrupted");
-                break;
+            if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                pause(50);
             }
         }
 
         return monitoringTask.finished;
     }
 
-    public static String executeProcess(String binPath, String ... args) throws DBException {
+    public static String executeProcess(String binPath, String... args) throws DBException {
         try {
             String[] cmdBin = {binPath};
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
@@ -302,20 +302,18 @@ public final class RuntimeUtils {
             } finally {
                 p.destroy();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new DBException("Error executing process " + binPath, ex);
         }
     }
 
-    public static String executeProcessAndCheckResult(String binPath, String ... args) throws DBException {
+    public static String executeProcessAndCheckResult(String binPath, String... args) throws DBException {
         try {
             String[] cmdBin = {binPath};
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
             Process p = Runtime.getRuntime().exec(cmd);
             return getProcessResults(p);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (ex instanceof DBException dbe) {
                 throw dbe;
             }
@@ -345,7 +343,7 @@ public final class RuntimeUtils {
 
     private static void readStringToBuffer(InputStream is, StringBuilder out) throws IOException {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(is))) {
-            for (;;) {
+            for (; ; ) {
                 String line = input.readLine();
                 if (line == null) {
                     break;
@@ -365,6 +363,7 @@ public final class RuntimeUtils {
 
     /**
      * Checks if current application is shipped from Windows store
+     *
      * @return true if shipped from Windows store, false if not.
      */
     public static boolean isWindowsStoreApplication() {
@@ -382,7 +381,7 @@ public final class RuntimeUtils {
     public static boolean isLinux() {
         return IS_LINUX;
     }
-    
+
     public static boolean isGtk() {
         return IS_GTK;
     }
@@ -392,7 +391,7 @@ public final class RuntimeUtils {
     }
 
     public static byte[] getLocalMacAddress() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
+        InetAddress localHost = getLocalHostOrLoopback();
         NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
         if (ni == null) {
             Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
@@ -401,6 +400,17 @@ public final class RuntimeUtils {
             }
         }
         return ni == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
+    }
+
+    @NotNull
+    public static InetAddress getLocalHostOrLoopback() {
+        try {
+            return InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            // dbeaver/pro#2157
+            log.debug("Error resolving localhost address: " + e.getMessage());
+            return InetAddress.getLoopbackAddress();
+        }
     }
 
     /**
@@ -541,6 +551,7 @@ public final class RuntimeUtils {
                     setSystem(true);
                     setUser(false);
                 }
+
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     if (!monitor.isCanceled()) {
@@ -565,6 +576,86 @@ public final class RuntimeUtils {
         }
     }
 
+    @Nullable
+    public static String getSystemPropertyIgnoreCase(@NotNull String key) {
+        final Properties props = System.getProperties();
+
+        for (String name : props.stringPropertyNames()) {
+            if (name.equalsIgnoreCase(key)) {
+                return props.getProperty(key);
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static String getSystemEnvIgnoreCase(@NotNull String key) {
+        final Map<String, String> env = System.getenv();
+
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    public static <T> T getBundleService(Class<T> theClass, boolean required) throws IllegalStateException {
+        Bundle bundle = FrameworkUtil.getBundle(theClass);
+        BundleContext bundleContext = bundle.getBundleContext();
+        ServiceReference<T> serviceReference = bundleContext.getServiceReference(theClass);
+        if (serviceReference == null) {
+            if (required) {
+                throw new IllegalStateException("Service '" + theClass.getName() + "' is not registered");
+            }
+            return null;
+        }
+        T service = bundleContext.getService(serviceReference);
+        if (service == null) {
+            if (required) {
+                throw new IllegalStateException("Service '" + theClass.getName() + "' implementation not found");
+            }
+        } else {
+            RuntimeUtils.injectComponentReferences(service);
+        }
+
+        return service;
+    }
+
+    public static void injectComponentReferences(Object object) {
+        Class<?> aClass = object.getClass();
+        for (Field field : aClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            ComponentReference refAnno = field.getAnnotation(ComponentReference.class);
+            if (refAnno != null) {
+                Class<?> serviceClass = refAnno.service();
+                if (serviceClass == Object.class) {
+                    serviceClass = field.getType();
+                }
+                try {
+                    Object fieldValue = field.get(object);
+                    if (fieldValue == null) {
+                        Object bundleService = getBundleService(serviceClass, refAnno.required());
+                        field.setAccessible(true);
+                        field.set(object, bundleService);
+
+                        if (bundleService != null && !CommonUtils.isEmpty(refAnno.postProcessMethod())) {
+                            Method postProcessMethod = bundleService.getClass().getDeclaredMethod(refAnno.postProcessMethod());
+                            postProcessMethod.setAccessible(true);
+                            postProcessMethod.invoke(bundleService);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error injecting field '" + field.getName() + "' in '" + object + "'", e);
+                }
+            }
+        }
+    }
+
     private enum CommandLineState {
         NONE,
         NORMAL,
@@ -574,7 +665,6 @@ public final class RuntimeUtils {
 
     private static class MonitoringTask implements DBRRunnableWithProgress {
         private final DBRRunnableWithProgress task;
-        private DBRProgressMonitor monitor;
         volatile boolean finished;
 
         private MonitoringTask(DBRRunnableWithProgress task) {
@@ -587,7 +677,6 @@ public final class RuntimeUtils {
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            this.monitor = monitor;
             try {
                 task.run(monitor);
             } finally {

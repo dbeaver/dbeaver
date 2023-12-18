@@ -333,11 +333,6 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
-        return new PostgreTableColumn(monitor, table, dbResult);
-    }
-
-    @Override
     public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
         if (connectionInfo.getProperty(PostgreConstants.PROP_SSL) == null) {
             // We need to disable SSL explicitly (see #4928)
@@ -406,7 +401,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean supportsTeblespaceLocation() {
+    public boolean supportsTablespaceLocation() {
         return dataSource.isServerVersionAtLeast(9, 2);
     }
 

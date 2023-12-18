@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -61,6 +60,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         instance = this;
 
         Bundle bundle = getBundle();
+
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
 

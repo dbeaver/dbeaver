@@ -208,8 +208,10 @@
                         defaultUser="SYSDBA"
                         webURL="https://eco.dameng.com/document/dm/zh-cn/pm/jdbc-rogramming-guide.html"
                         description="%driver.dameng.description">
-                    <file type="jar" path="maven:/com.dameng:DmJdbcDriver18:RELEASE[8.1.2.192]"/>
-                    <file type="license" path="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="jar" path="maven:/com.dameng:DmJdbcDriver18:RELEASE[8.1.2.192]" bundle="!drivers.dameng"/>
+                    <file type="license" path="http://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.dameng"/>
+                    <file type="jar" path="drivers/dameng" bundle="drivers.dameng"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.dameng"/>
                 </driver>
             </drivers>
 

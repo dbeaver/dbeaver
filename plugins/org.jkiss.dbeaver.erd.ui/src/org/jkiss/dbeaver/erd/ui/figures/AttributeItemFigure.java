@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.erd.ui.figures;
 
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.ToolbarLayout;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
@@ -54,10 +54,11 @@ public class AttributeItemFigure extends Figure
         this.part = part;
 
         ERDEntityAttribute attribute = part.getAttribute();
-
-        ToolbarLayout layout = new ToolbarLayout(true);
-        layout.setSpacing(3);
-
+        GridLayout layout = new GridLayout(3, false);
+        layout.marginHeight = 2;
+        layout.marginWidth = 5;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 3;
         setLayoutManager(layout);
 
         EntityDiagram diagram = part.getDiagramPart().getDiagram();

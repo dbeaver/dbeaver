@@ -207,8 +207,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
         String prefix = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
             " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
-        final PostgreDataType type = column.getDataType();
-        final String fullTypeName = type != null ? DBUtils.getObjectFullName(type, DBPEvaluationContext.DDL) : column.getFullTypeName();
+        final String fullTypeName = column.getFullTypeName();
         String typeClause = fullTypeName;
         if (column.getDataSource().getServerType().supportsAlterTableColumnWithUSING()) {
             typeClause += " USING ";

@@ -55,7 +55,8 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         "LOGIN",
         "TOP",
         "SYNONYM",
-        "PERSISTED"
+        "PERSISTED",
+        "NOLOCK"
     };
 
     private static final String[][] SQLSERVER_QUOTE_STRINGS = {

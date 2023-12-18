@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -28,7 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -47,6 +48,8 @@ public class DialogUtils {
     private static final Log log = Log.getLog(DialogUtils.class);
 
     private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
+    
+    public static final String APPLY_AND_CLOSE_BUTTON_LABEL = JFaceResources.getString("PreferencesDialog.okButtonLabel");
 
     public static String curDialogFolder;
 
@@ -193,10 +196,11 @@ public class DialogUtils {
             protected void openBrowser(boolean remoteFS) {
                 String fileName;
                 if (remoteFS && project != null) {
-                    DBNPath pathNode = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                    DBNPathBase pathNode = DBWorkbench.getPlatformUI().openFileSystemSelector(
                         CommonUtils.toString(label, "Output folder"),
                         true, SWT.SAVE, false, null, value);
-                    fileName = pathNode == null ? null : pathNode.getPath().toString();
+                    fileName = pathNode == null ? null :
+                        DBFUtils.getUriFromPath(pathNode.getPath()).toString();
                     if (fileName != null) {
                         setText(fileName);
                     }
