@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 public class PropertyObjectEditPage extends BaseObjectEditPage {
 
@@ -66,12 +68,34 @@ public class PropertyObjectEditPage extends BaseObjectEditPage {
         }
     }
 
+    protected String getPropertiesGroupTitle() {
+        return null;
+    }
+
     @Override
     protected Control createPageContents(Composite parent) {
-        final Composite composite = new Composite(parent, SWT.NONE);
+        final Composite composite;
+        String groupTitle = getPropertiesGroupTitle();
+        if (CommonUtils.isEmpty(groupTitle)) {
+            composite = new Composite(parent, SWT.NONE);
+        } else {
+            composite = new Group(parent, SWT.NONE);
+            ((Group)composite).setText(groupTitle);
+        }
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        createDefaultEditControls(composite);
+        createAdditionalEditControls(parent);
+
+        return composite;
+    }
+
+    protected void createAdditionalEditControls(Composite composite) {
+
+    }
+
+    private void createDefaultEditControls(Composite composite) {
         final Text nameText = UIUtils.createLabelText(composite, EditorsMessages.dialog_struct_label_text_name, object.getName());
         nameText.selectAll();
         nameText.addModifyListener(e -> {
@@ -88,8 +112,6 @@ public class PropertyObjectEditPage extends BaseObjectEditPage {
         propertyViewer = new PropertyTreeViewer(composite, SWT.BORDER);
         propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
         propertyViewer.loadProperties(propertySource);
-
-        return composite;
     }
 
     @Override
