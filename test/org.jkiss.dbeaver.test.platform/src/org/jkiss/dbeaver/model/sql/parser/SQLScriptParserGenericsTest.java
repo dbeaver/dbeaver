@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
@@ -327,7 +326,7 @@ public class SQLScriptParserGenericsTest {
     }
 
     private SQLDialect setDialect(String name) throws DBException {
-        SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
+        SQLDialectMetadataRegistry registry = DBWorkbench.getPlatform().getSQLDialectRegistry();
         SQLDialect dialect = registry.getDialect(name).createInstance();
         try {
             Mockito.when(databaseMetaData.getIdentifierQuoteString()).thenReturn("\"");

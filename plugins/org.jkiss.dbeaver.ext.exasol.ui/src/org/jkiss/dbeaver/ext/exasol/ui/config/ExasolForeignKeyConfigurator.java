@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 
@@ -66,6 +67,7 @@ public class ExasolForeignKeyConfigurator implements DBEObjectConfigurator<Exaso
                 }
 
                 foreignKey.setColumns(columns);
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
 
                 return foreignKey;
             }

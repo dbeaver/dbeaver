@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 
 /**
  * Object with unique name.
@@ -26,14 +27,14 @@ import org.jkiss.code.NotNull;
  * Such objects may implements this interface to provide really unique name.
  * Unique name used in some operations like object tree refresh.
  */
-public interface DBPUniqueObject extends DBPObject
-{
+public interface DBPUniqueObject extends DBPObject {
 
     /**
      * Object's unique name
      *
      * @return object unique name
      */
+    @DPIElement
     @NotNull
     String getUniqueName();
 

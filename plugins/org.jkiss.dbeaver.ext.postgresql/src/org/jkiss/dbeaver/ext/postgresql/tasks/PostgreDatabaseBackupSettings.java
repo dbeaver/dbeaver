@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings implements ExportSettingsExtension<PostgreDatabaseBackupInfo> {
 
