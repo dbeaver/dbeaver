@@ -27,8 +27,6 @@ import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Locale;
-
 /**
  * Control command handler
  */
@@ -69,7 +67,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         if (sqlDialect.isQuotedIdentifier(rawName)) {
             return sqlDialect.getUnquotedIdentifier(rawName, true);
         } else {
-            return rawName.toUpperCase(Locale.ENGLISH);
+            return rawName;
         }
     }
 }

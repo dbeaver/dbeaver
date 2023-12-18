@@ -27,8 +27,8 @@ public class SQLQueryParameter {
 
     public static final String VARIABLE_NAME_GROUP_NAME = "pn";
 
-    private static final Pattern VARIABLE_PATTERN_SIMPLE = Pattern.compile("\\$\\{(?<pn>[a-z0-9_]+)\\}", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VARIABLE_PATTERN_FULL = Pattern.compile("\\$P?!?\\{(?<pn>[a-z0-9_]+)\\}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VARIABLE_PATTERN_SIMPLE = Pattern.compile("\\$\\{(?<pn>[a-z0-9_.]+)\\}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VARIABLE_PATTERN_FULL = Pattern.compile("\\$P?!?\\{(?<pn>[a-z0-9_.]+)\\}", Pattern.CASE_INSENSITIVE);
 
 
     private final SQLSyntaxManager syntaxManager;

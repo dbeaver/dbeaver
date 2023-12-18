@@ -797,7 +797,7 @@ public class SQLScriptParser {
                         if (paramMark.equals("$")) {
                             String variableName = SQLQueryParameter.stripVariablePattern(paramName);
                             if (!variableName.equals(paramName)) {
-                                preparedParamName = variableName.toUpperCase(Locale.ENGLISH);
+                                preparedParamName = variableName;
                             }
                         } 
                         if (preparedParamName == null) {
@@ -806,7 +806,7 @@ public class SQLScriptParser {
                                 if (sqlDialect.isQuotedIdentifier(rawParamName)) {
                                     preparedParamName = sqlDialect.getUnquotedIdentifier(rawParamName);
                                 } else {
-                                    preparedParamName = rawParamName.toUpperCase(Locale.ENGLISH);
+                                    preparedParamName = rawParamName;
                                 }
                             } else {
                                 preparedParamName = paramName;
@@ -860,7 +860,7 @@ public class SQLScriptParser {
                             param = new SQLQueryParameter(
                                 syntaxManager,
                                 orderPos,
-                                paramName.toUpperCase(Locale.ENGLISH),
+                                paramName,
                                 paramName,
                                 start,
                                 matcher.end() - matcher.start()

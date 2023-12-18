@@ -119,8 +119,8 @@ public class ScriptParameterRule implements TPRule {
         return TPTokenAbstract.UNDEFINED;
     }
 
-    private static boolean isValidParameterChar(char c1) {
-        return Character.isJavaIdentifierPart(c1);
+    private static boolean isValidParameterChar(char c) {
+        return Character.isJavaIdentifierPart(c) || c == '.';
     }
 
     /**
