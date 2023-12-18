@@ -178,9 +178,9 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
                 if (false) {
                     StringBuilder sb = new StringBuilder();
                     while (this.getOffset() < end) {
-                    	int c = super.read();
-                    	if (c == RuleBasedScanner.EOF) {
-                        	return Token.UNDEFINED;
+                        int c = super.read();
+                        if (c == RuleBasedScanner.EOF) {
+                            return Token.UNDEFINED;
                         }
                         sb.append((char) c);
                     }
@@ -188,7 +188,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
                 } else {
                     while (this.getOffset() < end) {
                         if (super.read() == RuleBasedScanner.EOF) {
-                        	return Token.UNDEFINED;
+                            return Token.UNDEFINED;
                         }
                     }
                 }
@@ -206,7 +206,6 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
     
     @Override
     public void setRange(IDocument document, int offset, int length) {
-//      System.out.println(this.toString() + ": " + offset + "+" + length);
         super.setRange(document, offset, length);
     }
     

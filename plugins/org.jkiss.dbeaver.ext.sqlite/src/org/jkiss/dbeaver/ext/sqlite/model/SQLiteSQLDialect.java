@@ -93,7 +93,6 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
-        // return BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
     	return super.getIdentifierQuoteStrings();
     }
 

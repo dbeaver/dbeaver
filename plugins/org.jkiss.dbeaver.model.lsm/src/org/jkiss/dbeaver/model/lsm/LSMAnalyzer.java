@@ -27,7 +27,5 @@ public interface LSMAnalyzer {
     @Nullable
     STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener);
 
-//    @Nullable
-//    LSMElement parseSqlQueryModel(@NotNull STMSource source);
     
 }

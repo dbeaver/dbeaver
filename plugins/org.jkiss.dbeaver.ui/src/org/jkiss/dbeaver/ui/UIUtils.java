@@ -2273,7 +2273,6 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        // return JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MONOSPACE);
         return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
     }
 

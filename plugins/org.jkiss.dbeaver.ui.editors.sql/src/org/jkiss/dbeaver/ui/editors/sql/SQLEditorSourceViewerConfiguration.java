@@ -311,9 +311,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // Add a "damager-repairer" for changes within one-line SQL comments.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within string literals.
-        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING); //, SQLConstants.CONFIG_COLOR_STRING);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
         // Add a "damager-repairer" for changes within quoted literals.
-        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED); //, SQLConstants.CONFIG_COLOR_DATATYPE);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
         // Add a "damager-repairer" for changes within control commands.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
 

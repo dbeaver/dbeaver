@@ -385,14 +385,6 @@ Separator: (NewLine|Space)+ -> channel(HIDDEN);
 Space: [ \t]+;
 
 
-// identifiers
-//DelimitedIdentifier: IdentifierQuote DelimitedIdentifierBody IdentifierQuote; // TODO split it into three separate quotation cases, consider by-dialect activation
-//fragment IdentifierQuote: (DoubleQuote|BackQuote|SingleQuote);
-//fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
-//fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
-//fragment NondoublequoteCharacter: ~[`"'];
-//fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
-
 Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
 fragment IdentifierStart: SimpleLatinLetter;
@@ -409,7 +401,7 @@ StringLiteralContent: SingleQuote CharacterRepresentation* SingleQuote ((Separat
 WS: Separator;
 
 
-// quotted somethimh
+// quotted something
 Quotted: Quotted1|Quotted2;
 fragment Quotted1: DoubleQuote ((~["])|(DoubleQuote DoubleQuote))+ DoubleQuote;
 fragment Quotted2: BackQuote ((~[`])|(BackQuote BackQuote))+ BackQuote;

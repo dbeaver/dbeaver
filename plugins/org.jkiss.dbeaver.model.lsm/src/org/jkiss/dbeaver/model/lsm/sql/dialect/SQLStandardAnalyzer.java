@@ -17,15 +17,9 @@
 package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerImpl;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
@@ -33,6 +27,11 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLStandardParser> {
 
@@ -43,7 +42,8 @@ public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLSt
     @NotNull
     @Override
     protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source, @NotNull SQLDialect dialect) {
-        Map<String, String> identifierQuotPairs = Stream.of(dialect.getIdentifierQuoteStrings()).collect(Collectors.toUnmodifiableMap(q -> q[0], q -> q[1]));
+        Map<String, String> identifierQuotPairs = Stream.of(Objects.requireNonNull(dialect.getIdentifierQuoteStrings()))
+            .collect(Collectors.toUnmodifiableMap(q -> q[0], q -> q[1]));
         SQLStandardLexer lexer = new SQLStandardLexer(source.getStream(), identifierQuotPairs);
         SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer));
         return new Pair<>(lexer, parser);

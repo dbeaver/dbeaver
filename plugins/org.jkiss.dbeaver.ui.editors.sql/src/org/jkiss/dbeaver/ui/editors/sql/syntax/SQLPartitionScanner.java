@@ -171,39 +171,6 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
             return Token.UNDEFINED;
         }
     }
-    
-    @Override
-    public IToken nextToken() {
-
-//        if (fContentType == null || fRules == null) {
-//            //don't try to resume
-//            
-//            fTokenOffset = fOffset;
-//            fColumn = UNDEFINED;
-//
-//            IToken token = this.tryResolveExtraToken();
-//            if (!token.isUndefined()) {
-//                return token;
-//            }
-//            
-//            return super.nextToken();
-//        }
-//        // inside a partition
-//        if (fContentType.equals(otherSqlToken.getData())) {
-//            IToken token = this.tryResolveExtraToken();
-//            if (!token.isUndefined()) {
-//                
-//                fColumn = UNDEFINED;
-//                boolean resume = (fPartitionOffset > -1 && fPartitionOffset < fOffset);
-//                fTokenOffset = resume ? fPartitionOffset : fOffset;
-//
-//                fContentType = null;
-//                return token;
-//            }
-//        }
-        
-        return super.nextToken();
-    }
 
     private class PredicateRuleAdapter implements IPredicateRule {
         private final TPPredicateRule rule;

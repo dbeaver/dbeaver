@@ -405,7 +405,6 @@ public class SQLBackgroundParsingJob {
                         SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(element.getOffset(), element.getLength());
                         itemContext.clear();
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
-                            // System.out.println("registering " + (element.getOffset() + entry.getInterval().a) + "+" + entry.getInterval().length() + " " + entry);
                             itemContext.registerToken(entry.getInterval().a, entry);
                         }
                     }

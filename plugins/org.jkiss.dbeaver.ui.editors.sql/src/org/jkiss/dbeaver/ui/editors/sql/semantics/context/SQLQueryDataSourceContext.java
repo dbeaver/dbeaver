@@ -61,7 +61,6 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull List<String> tableName) {
-        // System.out.println("looking for " + tableName);
         if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(

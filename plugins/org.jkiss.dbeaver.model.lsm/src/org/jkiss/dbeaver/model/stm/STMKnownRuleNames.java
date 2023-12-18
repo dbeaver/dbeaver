@@ -345,5 +345,5 @@ public class STMKnownRuleNames {
 
     public static final String tableHintKeywords = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableHintKeywords];
 
-    //public static final String nonReserved = SQLStandardParser.ruleNames[SQLStandardParser.RULE_nonReserved];
+    public static final String nonReserved = SQLStandardParser.ruleNames[SQLStandardParser.RULE_nonReserved];
 }

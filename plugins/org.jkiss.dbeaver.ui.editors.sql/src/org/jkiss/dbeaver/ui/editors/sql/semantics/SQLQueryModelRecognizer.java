@@ -21,8 +21,6 @@ import org.antlr.v4.runtime.Token;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
@@ -101,10 +99,7 @@ public class SQLQueryModelRecognizer {
                 }
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
                     if (transparentNodeNames.contains(node.getNodeName())) {
-                        // System.out.println("\t\tenqueued " + ((STMTreeNode)node.getChild(i)).getNodeName());
                         stack.push(new MapperQueuedNodeFrame((STMTreeNode) node.getChild(i), aggregator));
-                    } else {
-                        // System.out.println("\t\tdropped " + ((STMTreeNode)node.getChild(i)).getNodeName());
                     }
                 }
             }
@@ -175,13 +170,9 @@ public class SQLQueryModelRecognizer {
         public T translate(@NotNull STMTreeNode root) {
             MapperRootFrame rootFrame = new MapperRootFrame(root);
             stack.push(rootFrame);
-
-            // System.out.println("TreeMapper started");
             while (stack.size() > 0) {
                 stack.pop().doWork();
             }
-            // System.out.println("TreeMapper finished");
-            
             return rootFrame.result;
         }
     }
@@ -378,25 +369,6 @@ public class SQLQueryModelRecognizer {
             super(SQLQueryRowsSourceModel.class, queryExpressionSubtreeNodeNames, translations, recognizer);
         }
     }
-    
-    private final SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext() {
-        
-        @Override
-        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
-            // System.out.println(symbol.getName() + ": " + error + ": " + ex.toString());
-        }
-        
-        @Override
-        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
-            // System.out.println(symbol.getName() + ": " + error);
-        }
-        
-        @Override
-        public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error) {
-            // TODO Auto-generated method stub
-            
-        }
-    };
 
     public SQLQueryModelRecognizer(@Nullable DBCExecutionContext executionContext, boolean isReadMetadataForSemanticAnalysis) {
         this.isReadMetadataForSemanticAnalysis = isReadMetadataForSemanticAnalysis;
@@ -462,6 +434,26 @@ public class SQLQueryModelRecognizer {
     /**
      * A debugging facility
      */
+
+    private final SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext() {
+
+        @Override
+        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
+            // System.out.println(symbol.getName() + ": " + error + ": " + ex.toString());
+        }
+
+        @Override
+        public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error) {
+            // System.out.println(symbol.getName() + ": " + error);
+        }
+
+        @Override
+        public void appendError(@NotNull STMTreeNode treeNode, @NotNull String error) {
+            // TODO Auto-generated method stub
+
+        }
+    };
+
     private static class DebugGraphBuilder {
         private final DirectedGraph graph = new DirectedGraph();
         private final LinkedList<Pair<Object, Object>> stack = new LinkedList<>();
@@ -471,7 +463,7 @@ public class SQLQueryModelRecognizer {
         private void expandObject(Object prev, Object o) {
             String propName = prev == null ? null : (String) ((Pair) prev).getFirst();
             Object src = prev == null ? null : ((Pair) prev).getSecond();
-            if (o instanceof SQLQueryDataContext || o instanceof SQLQueryRowsSourceModel || o instanceof SQLQueryValueExpression ) {                
+            if (o instanceof SQLQueryDataContext || o instanceof SQLQueryRowsSourceModel || o instanceof SQLQueryValueExpression) {
                 DirectedGraph.Node node = objs.get(o);
                 DirectedGraph.Node prevNode = objs.get(src);
                 if (node == null) {
@@ -484,9 +476,6 @@ public class SQLQueryModelRecognizer {
                 }
                 if (prevNode != null) {
                     graph.createEdge(prevNode, node, propName, null);
-                    
-//                    System.out.println(src.toString().substring(src.getClass().getPackageName().length()));
-//                    System.out.println("\t\t\t --> " + o.toString().substring(o.getClass().getPackageName().length()));
                 }
                 src = o;
                 propName = "";
@@ -757,7 +746,7 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.constraintName
     );
 
-    private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node) {    	
+    private SQLQueryQualifiedName collectQualifiedName(@NotNull STMTreeNode node) {
         return collectQualifiedName(node, false);
     }
     

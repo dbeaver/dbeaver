@@ -62,17 +62,17 @@ public class LSMDialectRegistry {
         Stream.of(extConfigs).filter(e -> "lsmDialect".equals(e.getName())).forEach(this::registerLsmDialect);
     }
     
-    private void registerLsmDialect(IConfigurationElement dialectElt) {
-        Bundle bundle = Platform.getBundle(dialectElt.getContributor().getName());
+    private void registerLsmDialect(IConfigurationElement dialectElement) {
+        Bundle bundle = Platform.getBundle(dialectElement.getContributor().getName());
         try {
-            LSMAnalyzerFabric analyzerFabric = (LSMAnalyzerFabric)dialectElt.createExecutableExtension("analyzerFabricClass");
-            for (IConfigurationElement sqlDialectRef: dialectElt.getChildren("appliesTo")) {
+            LSMAnalyzerFabric analyzerFabric = (LSMAnalyzerFabric) dialectElement.createExecutableExtension("analyzerFabricClass");
+            for (IConfigurationElement sqlDialectRef : dialectElement.getChildren("appliesTo")) {
                 String dialectClassName = sqlDialectRef.getAttribute("dialectClass");
                 Class<? extends SQLDialect> dialectType = AbstractDescriptor.getObjectClass(bundle, dialectClassName, SQLDialect.class);
                 knownLsmAnalyzerByDialects.put(dialectType, analyzerFabric);
             }
         } catch (CoreException e) {
-            log.error("Failed to register LSM dialect " + dialectElt.getAttribute("analyzerFabricClass"), e);
+            log.error("Failed to register LSM dialect " + dialectElement.getAttribute("analyzerFabricClass"), e);
         }
     }
 
@@ -85,7 +85,9 @@ public class LSMDialectRegistry {
         } while (analyzerFabric == null && dialectClass != null);
         
         if (analyzerFabric == null) {
-            throw new IllegalStateException("Failed to resolve LSMAnalyzer for " + dialect.getDialectName() + " dialect. Illegal database driver configuation.");
+            throw new IllegalStateException(
+                "Failed to resolve LSMAnalyzer for " + dialect.getDialectName() + " dialect. Illegal database driver configuation."
+            );
         } else {
             return analyzerFabric.createAnalyzer(dialect);
         }

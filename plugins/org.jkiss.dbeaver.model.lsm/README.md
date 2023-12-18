@@ -22,11 +22,11 @@ The second argument is of type `STMErrorListener` and used to define the behavio
 Use `STMLoggingErrorListener` to log errors and `STMSkippingErrorListener` to just skip them and do nothing.
 
 The concrete implementation of `LSMAnalyzer` used according to `SQLDialect` implementation with `LSMDialectRegistry`. `LSMDialectRegistry` contains a map with analyzer to dialect correspondence, which comes from extension point declared in `plugin.xml`.
-`SQLStandardAnalyzer` is a common analyzer with parser and lexer by the common grammar for most SQL databases without any specific settings. It's declared via extension point in `org.jkiss.dbeaver.model.sql.plugin.xml`.
+`SQLStandardAnalyzer` is a common analyzer with parser and lexer by the common grammar for most SQL databases without any specific settings. It's being instantiated with the `SQLStandardAnalyzerFabric` implementation of the `SQLAnalyzerFabric` interface via extension point in `org.jkiss.dbeaver.model.sql.plugin.xml`.
 
 ```xml
     <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
-        <lsmDialect analyzerClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer">
+        <lsmDialect analyzerFabricClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzerFabric">
             <appliesTo dialectClass="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect"/>
         </lsmDialect>
     </extension>
@@ -36,6 +36,9 @@ then we need to describe it accordingly using extension point.
 The following listing gives an example of configuring parser for specific dialect to use square brackets quotation for identifiers.
 ```java
 public class SQLiteSQLAnalyzer extends SQLStandardAnalyzer {
+    public SQLStandardAnalyzer(@NotNull SQLDialect dialect) {
+        super(dialect); 
+    }
     @NotNull
     @Override
     protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
@@ -45,7 +48,16 @@ public class SQLiteSQLAnalyzer extends SQLStandardAnalyzer {
     }
 }
 ```
-Usage of corresponding extension point for this case is the following:
+Analyzer accepts SQLDialect carrying non-syntax and non-semantic information about certain SQL language context with respect to the connection session, so it is required to create analyzer fabric and associate it with corresponding dialect's family.  
+```java
+public class SQLiteAnalyzerFabric implements LSMAnalyzerFabric {
+    @Override
+    public LSMAnalyzer createAnalyzer(SQLDialect dialect) {
+        return new SQLiteSQLAnalyzer(dialect);
+    }
+}
+```
+Usage of the corresponding extension point for this case is the following:
 ```xml
     <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
         <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLAnalyzer">
