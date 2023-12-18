@@ -15,44 +15,21 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.secret;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPObject;
-
-import java.time.LocalDateTime;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.auth.SMCredentialsProvider;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 
 /**
- * Access session.
+ * Secret controller associated with authorized principal
  */
-public interface SMSession extends DBPObject {
+public interface DBSSecretControllerAuthorized extends DBSSecretController {
 
     /**
-     * Session space
+     * Initialize authorized secret controller
      */
-    @NotNull
-    SMAuthSpace getSessionSpace();
+    void authorize(@Nullable SMCredentialsProvider credentialsProvider, @Nullable SMSessionContext smSessionContext) throws DBException;
 
-    @NotNull
-    SMSessionContext getSessionContext();
-
-    SMSessionPrincipal getSessionPrincipal();
-
-    /**
-     * Session unique ID
-     */
-    @NotNull
-    String getSessionId();
-
-    /**
-     * Session start datetime
-     */
-    @NotNull
-    LocalDateTime getSessionStart();
-
-    /**
-     * Closes session.
-     * It mustn't throw any errors.
-     */
-    void close();
 }
