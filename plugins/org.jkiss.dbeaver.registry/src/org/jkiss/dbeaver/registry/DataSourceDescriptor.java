@@ -901,10 +901,6 @@ public class DataSourceDescriptor
 
     void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
         if (!isSharedCredentials()) {
-            if (isNewDataSource && !isSavePassword()) {
-                // Do not save secrets for new datasources if credentials are not saved
-                return;
-            }
             var secret = saveToSecret();
             // Do not persist empty secrets for new datasources
             // If secret controller is external then it may take quite a time + may cause errors because of missing secret
