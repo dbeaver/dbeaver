@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.MissingDataSourceProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -96,10 +96,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             log.debug("No SQL dialect specified for data source provider '" + this.id + "'. Use default.");
             dialectId = BasicSQLDialect.ID;
         }
-        this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(dialectId);
+        SQLDialectMetadataRegistry dialectRegistry = DBWorkbench.getPlatform().getSQLDialectRegistry();
+        this.scriptDialect = dialectRegistry.getDialect(dialectId);
         if (this.scriptDialect == null) {
             log.debug("Script dialect '" + dialectId + "' not found in registry (for data source provider " + id + "). Use default.");
-            this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
+            this.scriptDialect = dialectRegistry.getDialect(BasicSQLDialect.ID);
         }
 
         // Load tree structure
@@ -207,19 +208,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.description = "Missing datasource provider " + id;
         this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
-        this.treeDescriptor = new DBXTreeDescriptor(this,
-            null,
-            null,
-            id,
-            id,
-            false,
-            true,
-            false,
-            false,
-            true,
-            null,
-            null);
-        this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
+        this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, null, null);
+        this.scriptDialect = DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect(BasicSQLDialect.ID);
     }
 
     void patchConfigurationFrom(IConfigurationElement config) {
