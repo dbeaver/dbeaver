@@ -434,7 +434,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             Button deselectAllButton = UIUtils.createDialogButton(panel, DTUIMessages.data_transfer_task_configurator_dialog_button_deselect_all, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                	for (StreamMappingContainer container : mappings) {
+                    for (StreamMappingContainer container : mappings) {
                         List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
                         attrs.forEach(x -> x.setMappingType(StreamMappingType.skip));
                     }
@@ -480,18 +480,18 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         
         
         @Override
-		protected void cancelPressed() {
-        	refreshMappings(new VoidProgressMonitor());
-			super.cancelPressed();
-		}
+        protected void cancelPressed() {
+            refreshMappings(new VoidProgressMonitor());
+            super.cancelPressed();
+        }
 
-		@Override
-		public boolean close() {
-			refreshMappings(new VoidProgressMonitor());
-			return super.close();
-		}
+        @Override
+        public boolean close() {
+            refreshMappings(new VoidProgressMonitor());
+            return super.close();
+        }
 
-		private void updateCompletion() {
+        private void updateCompletion() {
             final boolean isComplete = mappings.stream().allMatch(StreamMappingContainer::isComplete);
             final Button okButton = getButton(IDialogConstants.OK_ID);
             errorLabel.setVisible(!isComplete);
