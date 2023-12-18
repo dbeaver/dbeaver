@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.dpi.app;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.internal.location.EquinoxLocations;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
 import org.jkiss.dbeaver.dpi.model.client.ConfigUtils;
 import org.jkiss.dbeaver.dpi.server.DPIRestServer;
@@ -28,6 +30,8 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedWriter;
@@ -45,6 +49,11 @@ import java.util.Map;
 public class DPIApplication extends DesktopApplicationImpl {
 
     private static final Log log = Log.getLog(DPIApplication.class);
+    private final boolean multiUser;
+
+    public DPIApplication() {
+        this.multiUser = Boolean.parseBoolean(getCommandLineArgument(DPIConstants.SERVER_PARAM_MULTIUSER));
+    }
 
     @Override
     public boolean isHeadlessMode() {
@@ -57,10 +66,20 @@ public class DPIApplication extends DesktopApplicationImpl {
     }
 
     @Override
+    public boolean isMultiuser() {
+        return multiUser;
+    }
+
+    @Override
     public Object start(IApplicationContext context) {
         initializeApplicationServices();
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-
+        String customDriversLocation = getCommandLineArgument(DPIConstants.SERVER_PARAM_DRIVERS_LOCATION);
+        if (CommonUtils.isNotEmpty(customDriversLocation)) {
+            PrefUtils.setDefaultPreferenceValue(DBWorkbench.getPlatform().getPreferenceStore(),
+                ModelPreferences.UI_DRIVERS_HOME,
+                customDriversLocation);
+        }
         try {
             runServer(context, application);
         } catch (IOException e) {
@@ -148,6 +167,17 @@ public class DPIApplication extends DesktopApplicationImpl {
     @Override
     public String getDefaultProjectName() {
         return "default";
+    }
+
+    @Nullable
+    private String getCommandLineArgument(@NotNull String argName) {
+        String[] args = Platform.getCommandLineArgs();
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals(argName) && args.length > i + 1) {
+                return args[i + 1];
+            }
+        }
+        return null;
     }
 
 }

@@ -22,10 +22,11 @@ import org.eclipse.osgi.storage.BundleInfo;
 import org.eclipse.osgi.storage.bundlefile.BundleFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
+import org.jkiss.dbeaver.model.DBPDriverLocationProvider;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -50,7 +51,7 @@ class BundleProcessConfig {
         "org.eclipse.equinox.event", 2,
         "org.eclipse.equinox.simpleconfigurator", 1,
         "org.eclipse.update.configurator", 10
-        );
+    );
 
     private final Map<String, ModuleWiring> dependencies = new LinkedHashMap<>();
     private final Path dataPath;
@@ -135,7 +136,8 @@ class BundleProcessConfig {
         result.put("osgi.install.area", getNormalizeFileReference(installPathURL.toString()));
         result.put("osgi.bundles.defaultStartLevel", "4");
         result.put("osgi.configuration.cascaded", Boolean.FALSE.toString());
-        result.put("osgi.bundles", dependencies.values().stream().map(this::getBundleReference).collect(Collectors.joining(",")));
+        result.put("osgi.bundles",
+            dependencies.values().stream().map(this::getBundleReference).collect(Collectors.joining(",")));
 
         ModuleWiring osgiWiring = dependencies.get("org.eclipse.osgi");
         if (osgiWiring != null) {
@@ -203,16 +205,15 @@ class BundleProcessConfig {
     public Process startProcess() throws IOException {
         List<String> cmd = new ArrayList<>();
 
-        String javaExePath = System.getProperty("sun.boot.library.path");
-        Path exePath = Path.of(javaExePath).resolve("java");
-        cmd.add(exePath.toString());
+        String javaExePath = resolveJavaExePath();
+        cmd.add(javaExePath);
 
         ModuleWiring launcherWiring = dependencies.get("org.eclipse.equinox.launcher");
         if (launcherWiring != null) {
             cmd.add("-cp");
             cmd.add(getBundleReference(launcherWiring, false));
         }
-        cmd.add("-agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=localhost:15005");
+        cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:15005");
         cmd.add("org.eclipse.equinox.launcher.Main");
 
         cmd.add("-launcher");
@@ -224,18 +225,46 @@ class BundleProcessConfig {
         if (devPropsFile != null) {
             // Dev mode
             cmd.add("-dev");
-            cmd.add("file:" + devPropsFile.toString());
+            cmd.add("file:" + devPropsFile);
         }
         cmd.add("-data");
         cmd.add(workspaceDir.toString());
-        serverPort = IOUtils.findFreePort(20000, 65000);
-        cmd.add(DPIConstants.PARAM_SERVER_PORT);
-        cmd.add(String.valueOf(serverPort));
+
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        cmd.add(DPIConstants.SERVER_PARAM_MULTIUSER);
+        cmd.add(String.valueOf(application.isMultiuser()));
+
+        if (application instanceof DBPDriverLocationProvider driverLocationProvider) {
+            cmd.add(DPIConstants.SERVER_PARAM_DRIVERS_LOCATION);
+            cmd.add(driverLocationProvider.getDriversLocationPath().toAbsolutePath().toString());
+        }
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.directory(dataPath.toFile());
         pb.command(cmd);
         pb.inheritIO();
         return pb.start();
+    }
+
+    private String resolveJavaExePath() throws IOException {
+        String javaExePath = System.getProperty("sun.boot.library.path");
+        Path exePath = Path.of(javaExePath).resolve("java");
+        if (Files.exists(exePath)) {
+            return exePath.toString();
+        }
+
+        String javaHome = System.getProperty("java.home");
+        Path javaHomeExePath = Path.of(javaHome).resolve("bin/java");
+        if (Files.exists(javaHomeExePath)) {
+            return javaHomeExePath.toString();
+        }
+
+        String javaHomeEnv = System.getenv("JAVA_HOME");
+        Path javaHomeEnvExePath = Path.of(javaHomeEnv).resolve("bin/java");
+        if (Files.exists(javaHomeEnvExePath)) {
+            return javaHomeEnvExePath.toString();
+        }
+
+        throw new IOException("Java exe not found");
     }
 }

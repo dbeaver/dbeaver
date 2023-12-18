@@ -1326,6 +1326,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(new LoggingProgressMonitor(log), true);
     }
 
+    public void downloadRequiredDependencies(@NotNull DBRProgressMonitor monitor) {
+        validateFilesPresence(monitor, false);
+    }
+
     @Override
     public boolean needsExternalDependencies() {
         for (DBPDriverLibrary library : libraries) {

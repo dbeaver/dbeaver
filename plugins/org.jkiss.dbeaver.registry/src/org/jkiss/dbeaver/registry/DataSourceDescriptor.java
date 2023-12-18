@@ -52,10 +52,7 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -80,6 +77,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -955,6 +953,7 @@ public class DataSourceDescriptor
         connecting = true;
         try {
             boolean succeeded = false;
+            getDriver().downloadRequiredDependencies(monitor);
             if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
@@ -994,12 +993,26 @@ public class DataSourceDescriptor
             dpiController = provider.detachDatabaseProcess(monitor, this);
             Map<String, String> credentials = new LinkedHashMap<>();
             DPIController dpiClient = dpiController.getClient();
-            DPISession session = dpiClient.openSession(getProject().getId());
+            DPISession session = dpiClient.openSession();
             if (session == null) {
                 throw new IllegalStateException("No session");
             }
             log.debug("New DPI session: " + session.getSessionId());
-            this.dataSource = dpiClient.openDataSource(session.getSessionId(), getProject().getId(), getId(), credentials);
+            if (!(getRegistry() instanceof DataSourcePersistentRegistry persistentRegistry)) {
+                throw new IllegalStateException("Illegal registry " + getRegistry().getClass());
+            }
+            DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
+            persistentRegistry.saveConfigurationToManager(new VoidProgressMonitor(),
+                buffer,
+                dsc -> dsc.equals(this)
+            );
+
+            this.dataSource = dpiClient.openDataSource(
+                session.getSessionId(),
+                new String(buffer.getData(), StandardCharsets.UTF_8),
+                new String[]{},
+                credentials
+            );
             log.debug("Opened data source: " + dataSource);
         } catch (Exception e) {
             log.debug("Error starting DPI child process", e);
@@ -1273,7 +1286,7 @@ public class DataSourceDescriptor
         return true;
     }
 
-    private void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
+    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
         final DBPDataSourceProvider provider = driver.getDataSourceProvider();
         final DBPDataSourceProviderSynchronizable providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
 

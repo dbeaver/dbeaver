@@ -14,17 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model;
 
-/**
- * DPI constants
- */
-public class DPIConstants {
+import org.jkiss.code.NotNull;
 
+import java.nio.file.Path;
 
-    public static final String PARAM_SERVER_PORT = "serverPort";
-
-    public static final String SERVER_PARAM_MULTIUSER = "-multiUser";
-    public static final String SERVER_PARAM_DRIVERS_LOCATION = "-driversLocation";
-    public static final String SERVER_INI_FILE = "server.ini";
+public interface DBPDriverLocationProvider {
+    @NotNull
+    Path getDriversLocationPath();
 }
