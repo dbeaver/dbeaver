@@ -66,6 +66,8 @@ public interface SQLDialectMetadata {
     @NotNull
     List<String> getTransactionKeywords();
 
+    List<SQLDialectInsertReplaceMethod> getSupportedInsertReplaceMethodsDescriptors();
+
     @NotNull
     String getScriptDelimiter();
 

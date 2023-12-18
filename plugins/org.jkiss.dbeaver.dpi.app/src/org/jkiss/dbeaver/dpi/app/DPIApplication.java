@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.dpi.model.DPIConstants;
 import org.jkiss.dbeaver.dpi.model.client.ConfigUtils;
 import org.jkiss.dbeaver.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.IOUtils;
@@ -57,8 +58,7 @@ public class DPIApplication extends DesktopApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
-        DPIPlatform.createInstance();
-
+        initializeApplicationServices();
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
 
         try {
@@ -137,6 +137,12 @@ public class DPIApplication extends DesktopApplicationImpl {
     @Override
     public @Nullable Path getDefaultWorkingFolder() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public Class<? extends DBPPlatform> getPlatformClass() {
+        return DPIPlatform.class;
     }
 
     @Override

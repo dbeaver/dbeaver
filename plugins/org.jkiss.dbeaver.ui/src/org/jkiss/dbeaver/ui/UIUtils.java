@@ -637,7 +637,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            control = createInfoLink(parent, text, callback).getParent();
+            control = createInfoLink(parent, "<a href=\"#\">" + text + "</a>", callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {
@@ -2273,7 +2273,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MONOSPACE);
+        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {

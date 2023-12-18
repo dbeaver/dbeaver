@@ -12,6 +12,7 @@ Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.rpc,
  org.jkiss.dbeaver.ui.app.standalone.update
 Bundle-ClassPath: .
+Import-Package: org.w3c.css.sac
 Require-Bundle: org.eclipse.osgi,
  org.eclipse.equinox.app,
  org.eclipse.core.filesystem,
@@ -31,7 +32,6 @@ Require-Bundle: org.eclipse.osgi,
  org.eclipse.ui.ide,
  org.eclipse.ui.ide.application,
  org.apache.commons.cli,
- org.w3c.css.sac,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,

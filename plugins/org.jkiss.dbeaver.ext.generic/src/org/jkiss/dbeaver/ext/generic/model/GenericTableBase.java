@@ -512,7 +512,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
             return fkList;
         } catch (SQLException ex) {
             if (ex instanceof SQLFeatureNotSupportedException) {
-                log.debug("Error reading references", ex);
+                log.debug("Error reading references: " + ex.getMessage());
                 return Collections.emptyList();
             } else {
                 throw new DBException(ex, getDataSource());
