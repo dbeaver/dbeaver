@@ -6,13 +6,13 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    IBM Corporation - initial API and implementation 
+ *    IBM Corporation - initial API and implementation
  *    SAP AG - copied class from GMF runtime  since Graphiti can not have a dependency to GMF
- *    		   uses GraphitiUiInternal.getWorkbenchService() instead of 
- *    		   GMF's DisplayUtils			
+ *    		   uses GraphitiUiInternal.getWorkbenchService() instead of
+ *    		   GMF's DisplayUtils
  ****************************************************************************/
 
-package org.jkiss.dbeaver.ext.ui.svg;
+package org.jkiss.dbeaver.ui.svg;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
