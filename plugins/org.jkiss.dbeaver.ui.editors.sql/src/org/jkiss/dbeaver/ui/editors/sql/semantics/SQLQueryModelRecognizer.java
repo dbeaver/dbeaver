@@ -125,7 +125,6 @@ public class SQLQueryModelRecognizer {
             
             @Override
             public void doWork() {
-                // System.out.println("\ttranslating " + this.node.getNodeName() + " and collecting " + childrenData.size() + " children");
                 this.parent.aggregate(this.translation.apply(this.node, this.childrenData, TreeMapper.this.context));
             }
         }
@@ -684,17 +683,11 @@ public class SQLQueryModelRecognizer {
             return entry;
         } else {
             SQLDialect dialect = this.obtainSqlDialect();
-            String unquottedIdentifier = dialect.isQuotedIdentifier(rawIdentifierString)
-                ? dialect.getUnquotedIdentifier(rawIdentifierString)
-                : rawIdentifierString;
-            String actualIdentifierString;
-            if (forceUnquotted) {
-                actualIdentifierString = unquottedIdentifier;
-            } else {
-                actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, false)
-                    ? dialect.getQuotedIdentifier(unquottedIdentifier, false, false)
-                    : unquottedIdentifier.toLowerCase();
-            }
+            boolean isQuotted = dialect.isQuotedIdentifier(rawIdentifierString);
+            String unquottedIdentifier = isQuotted ? dialect.getUnquotedIdentifier(rawIdentifierString) : rawIdentifierString;
+            String actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, false) 
+                ? (forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, false, false)) 
+                : unquottedIdentifier.toLowerCase();
             SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody.getRealInterval(), actualIdentifierString, rawIdentifierString);
             this.symbolEntries.add(entry);
             return entry;
