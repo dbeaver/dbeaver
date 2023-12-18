@@ -129,7 +129,12 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     @Override
     public DBNFileSystem[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
-            this.children = readChildNodes(monitor, children);
+            try {
+                this.children = readChildNodes(monitor, children);
+            } catch (DBException e) {
+                this.children = new DBNFileSystem[0];
+                throw e;
+            }
         }
         return children;
     }
@@ -222,18 +227,14 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     }
 
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) {
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
         refreshFileSystems(monitor);
         return this;
     }
 
-    private void refreshFileSystems(DBRProgressMonitor monitor) {
+    private void refreshFileSystems(DBRProgressMonitor monitor) throws DBException {
         if (children != null) {
-            try {
-                children = readChildNodes(monitor, children);
-            } catch (DBException e) {
-                log.error(e);
-            }
+            children = readChildNodes(monitor, children);
             getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         }
     }
