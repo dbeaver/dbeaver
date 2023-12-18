@@ -98,7 +98,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.net.NetPreferences/org.eclipse.jsch.ui.SSHPreferences"
+        "org.eclipse.jsch.ui.SSHPreferences"
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
