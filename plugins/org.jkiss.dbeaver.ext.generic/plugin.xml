@@ -552,7 +552,7 @@
                     <parameter name="supports-indexes" value="true"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="identifier-quotes" value="&quot;:&quot;,':',`:`"/>
+                    <parameter name="identifier-quotes" value="&quot;:&quot;,':',`:`,[:]"/>
                 </driver>
 
                 <!-- DuckDB -->

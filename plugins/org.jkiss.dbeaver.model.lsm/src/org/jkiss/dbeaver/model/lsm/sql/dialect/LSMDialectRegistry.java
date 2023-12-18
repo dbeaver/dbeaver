@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFabric;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.osgi.framework.Bundle;
 
@@ -50,7 +51,7 @@ public class LSMDialectRegistry {
         return instance;
     }
 
-    private final Map<Class<? extends SQLDialect>, LSMAnalyzer> knownLsmAnalyzerByDialects = new HashMap<>();
+    private final Map<Class<? extends SQLDialect>, LSMAnalyzerFabric> knownLsmAnalyzerByDialects = new HashMap<>();
 
     private LSMDialectRegistry() {
     }
@@ -64,24 +65,29 @@ public class LSMDialectRegistry {
     private void registerLsmDialect(IConfigurationElement dialectElt) {
         Bundle bundle = Platform.getBundle(dialectElt.getContributor().getName());
         try {
-            LSMAnalyzer analyzer = (LSMAnalyzer)dialectElt.createExecutableExtension("analyzerClass");
+            LSMAnalyzerFabric analyzerFabric = (LSMAnalyzerFabric)dialectElt.createExecutableExtension("analyzerFabricClass");
             for (IConfigurationElement sqlDialectRef: dialectElt.getChildren("appliesTo")) {
                 String dialectClassName = sqlDialectRef.getAttribute("dialectClass");
                 Class<? extends SQLDialect> dialectType = AbstractDescriptor.getObjectClass(bundle, dialectClassName, SQLDialect.class);
-                knownLsmAnalyzerByDialects.put(dialectType, analyzer);
+                knownLsmAnalyzerByDialects.put(dialectType, analyzerFabric);
             }
         } catch (CoreException e) {
-            log.error("Failed to register LSM dialect " + dialectElt.getAttribute("analyzerClass"), e);
+            log.error("Failed to register LSM dialect " + dialectElt.getAttribute("analyzerFabricClass"), e);
         }
     }
 
     public LSMAnalyzer getAnalyzerForDialect(SQLDialect dialect) {
         Class<?> dialectClass = dialect.getClass();
-        LSMAnalyzer analyzer;
+        LSMAnalyzerFabric analyzerFabric;
         do {
-            analyzer = knownLsmAnalyzerByDialects.get(dialectClass);
+            analyzerFabric = knownLsmAnalyzerByDialects.get(dialectClass);
             dialectClass = dialectClass.getSuperclass();
-        } while (analyzer == null && dialectClass != null);
-        return analyzer;
+        } while (analyzerFabric == null && dialectClass != null);
+        
+        if (analyzerFabric == null) {
+            throw new IllegalStateException("Failed to resolve LSMAnalyzer for " + dialect.getDialectName() + " dialect. Illegal database driver configuation.");
+        } else {
+            return analyzerFabric.createAnalyzer(dialect);
+        }
     }
 }

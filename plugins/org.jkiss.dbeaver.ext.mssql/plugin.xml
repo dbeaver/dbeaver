@@ -666,9 +666,9 @@
     </extension>
 
 
-    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
-        <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSQLAnalyzer">
-            <appliesTo dialectClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect"/>
-        </lsmDialect>
-    </extension>
+<!--    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">-->
+<!--        <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSQLAnalyzer">-->
+<!--            <appliesTo dialectClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect"/>-->
+<!--        </lsmDialect>-->
+<!--    </extension>-->
 </plugin>

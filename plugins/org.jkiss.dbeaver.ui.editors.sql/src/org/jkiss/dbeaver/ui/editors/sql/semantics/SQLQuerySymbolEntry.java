@@ -32,7 +32,6 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
         this.region = region;
         this.name = name;
         this.rawName = rawName;
-        System.out.println("SQLQuerySymbolEntry(" + rawName + ")");
     }
 
     @NotNull
@@ -121,5 +120,9 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
     @Override
     public String toString() {
         return super.toString() + "[" + this.name + ", " + this.getSymbolClass() + "]";
+    }
+
+    public boolean isNotClassified() {
+        return this.symbol == null || this.symbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN;
     }
 }

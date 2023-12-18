@@ -38,12 +38,17 @@ lexer grammar SQLStandardLexer;
 
 @lexer::members {
     private java.util.Map<String, String> knownIdentifierQuotes = java.util.Collections.emptyMap();
+    private int[] knownIdentifierQuoteHeads = new int[0];
     private int knownIdentifierLongestHead = 0;
+    private int lastIdentifierStart = 0;
+    private int lastIdentifierEnd = 0;
+    private int lastIdentifierLength = 0;
 
     public SQLStandardLexer(CharStream input, java.util.Map<String, String> knownIdentifierQuotes) {
         this(input);
         this.knownIdentifierQuotes = knownIdentifierQuotes;
         this.knownIdentifierLongestHead = knownIdentifierQuotes.size() < 1 ? 0 : knownIdentifierQuotes.keySet().stream().mapToInt(k -> k.length()).max().getAsInt();
+        this.knownIdentifierQuoteHeads = knownIdentifierQuotes.keySet().stream().mapToInt(s -> s.charAt(0)).toArray();
     }
 
     private class QuottedIdentifierConsumer {
@@ -73,12 +78,10 @@ lexer grammar SQLStandardLexer;
                 }
                 captured.append((char) c);
                 if (pos > knownIdentifierLongestHead) {
-                    // System.out.println(">>>>>>>> " + pos + " > " + knownIdentifierLongestHead + " captured: " + captured.toString());
                     return false;
                 }
                 expectedTail = knownIdentifierQuotes.get(captured.toString());
             } while (expectedTail == null);
-            // System.out.println(">>>>>>>>head: " + captured.toString());
             return true;
         }
 
@@ -93,7 +96,6 @@ lexer grammar SQLStandardLexer;
             }
             if (follow.toString().equals(expectedTail)) {
                 captured.append(follow);
-                // System.out.println(">>>>>>>>escaped: " + captured.toString());
                 return true;
             } else {
                 return false;
@@ -108,34 +110,47 @@ lexer grammar SQLStandardLexer;
                 }
                 captured.append((char) c);
             } while (!captured.toString().endsWith(expectedTail));
-            // System.out.println(">>>>>>>>body: " + captured.toString());
             return true;
         }
     }
 
     private boolean tryConsumeQuottedIdentifier(final CharStream input) {
+        if (input.index() < 1) {
+            return false;
+        }
+        if (!org.jkiss.utils.ArrayUtils.contains(knownIdentifierQuoteHeads, input.LA(1))) {
+            return false;
+        }
+
         var c = new QuottedIdentifierConsumer(input);
         if (!c.tryConsumeHead()) {
-            // System.out.println("@@@@@@@@@@@@@@@@@ head don't match");
             return false;
         }
         if (!c.tryConsumeBody()) {
-            // System.out.println("@@@@@@@@@@@@@@@@@ body don't match");
             return false;
         }
         if (c.isEscapeable()) {
             while (c.tryConsumeEscapedEntry()) {
                 if (!c.tryConsumeBody()) {
-                    // System.out.println("@@@@@@@@@@@@@@@@@ escaped don't match");
                     return false;
                 }
             }
         }
-        input.seek(input.index() + c.captured().length() - 1);
-        System.out.println("@@@@@@@@@@@@@@@@@ captured quotted identifier: " + c.captured());
+
+        lastIdentifierStart = input.index();
+        lastIdentifierLength = c.captured().length();
+        lastIdentifierEnd = input.index() + c.captured().length();
         return true;
     }
+
+    private boolean isIdentifierEndReached(final CharStream input) {
+        return _input.index() < lastIdentifierEnd;
+    }
+
+    int cnt;
 }
+
+DelimitedIdentifier: { tryConsumeQuottedIdentifier(_input) }? ({isIdentifierEndReached(_input)}? .)+;
 
 // letters to support case-insensitivity for keywords
 fragment A:[aA];
@@ -377,7 +392,6 @@ Space: [ \t]+;
 //fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
 //fragment NondoublequoteCharacter: ~[`"'];
 //fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
-DelimitedIdentifier: ({ tryConsumeQuottedIdentifier(_input) }? .);
 
 Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
@@ -393,3 +407,11 @@ HexStringLiteral: 'X' SingleQuote Hexit* SingleQuote ((Separator)+ SingleQuote H
 StringLiteralContent: SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
 
 WS: Separator;
+
+
+// quotted somethimh
+Quotted: Quotted1|Quotted2;
+fragment Quotted1: DoubleQuote ((~["])|(DoubleQuote DoubleQuote))+ DoubleQuote;
+fragment Quotted2: BackQuote ((~[`])|(BackQuote BackQuote))+ BackQuote;
+
+

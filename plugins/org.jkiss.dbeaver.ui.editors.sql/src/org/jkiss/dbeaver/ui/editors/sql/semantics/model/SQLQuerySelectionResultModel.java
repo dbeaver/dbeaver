@@ -53,9 +53,13 @@ public class SQLQuerySelectionResultModel {
 
             SQLQuerySymbol columnName;
             if (this.alias != null) {
-                columnName = this.alias.getSymbol();
-                columnName.setDefinition(this.alias);
-                columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
+                if (this.alias.isNotClassified()) {
+                    columnName = this.alias.getSymbol();
+                    columnName.setDefinition(this.alias);
+                    columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
+                } else {
+                    return Stream.empty();
+                }
             } else {
                 columnName = this.valueExpression.getColumnNameIfTrivialExpression();
                 if (columnName == null) {
@@ -77,13 +81,17 @@ public class SQLQuerySelectionResultModel {
         @NotNull
         @Override
         protected Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-            SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings()); // TODO consider multiple joins of one table
-            if (rr != null) {
-                this.tableName.setDefinition(rr);
-                return rr.source.getDataContext().getColumnsList().stream();
+            if (this.tableName.isNotClassified()) {
+                SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings()); // TODO consider multiple joins of one table
+                if (rr != null) {
+                    this.tableName.setDefinition(rr);
+                    return rr.source.getDataContext().getColumnsList().stream();
+                } else {
+                    this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
+                    statistics.appendError(this.tableName.entityName, "The table doesn't participate in this subquery context");
+                    return Stream.empty();
+                }
             } else {
-                this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                statistics.appendError(this.tableName.entityName, "The table doesn't participate in this subquery context");
                 return Stream.empty();
             }
         }

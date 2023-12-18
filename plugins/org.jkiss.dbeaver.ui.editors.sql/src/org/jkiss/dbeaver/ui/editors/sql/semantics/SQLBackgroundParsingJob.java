@@ -132,7 +132,9 @@ public class SQLBackgroundParsingJob {
     private void beforeDocumentModification(DocumentEvent event) {
         this.cancel();
         
-        IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), event.getText().length());
+        int insertedLength = event.getText() == null ? 0 : event.getText().length();
+        
+        IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), insertedLength);
         int reparseStart = regionToReparse.getOffset();
         int reparseLength = regionToReparse.getLength() < Integer.MAX_VALUE ? regionToReparse.getLength() 
                 : this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
@@ -141,8 +143,8 @@ public class SQLBackgroundParsingJob {
         }
 
         // TODO if these further actions are heavy, maybe use background thread for them too
-        synchronized (this.syncRoot) {            
-            int delta = event.getText().length() - event.getLength();
+        synchronized (this.syncRoot) {
+            int delta = insertedLength - event.getLength();
             if (delta > 0) { // just expand the region to reparse
                 this.queuedForReparse.applyOffset(event.getOffset(), delta);
                 this.enqueueToReparse(reparseStart, reparseLength);
@@ -156,7 +158,7 @@ public class SQLBackgroundParsingJob {
                 if (it.getCurrValue() != null || it.prev()) {
                     firstAffectedReparseOffset = it.getCurrOffset();
                     if (firstAffectedReparseOffset < reparseStart &&
-                        firstAffectedReparseOffset + it.getCurrValue().length > event.getText().length()
+                        firstAffectedReparseOffset + it.getCurrValue().length > insertedLength
                     ) {
                         return; // modified region is a subrange of already queued for reparse 
                     }
@@ -371,6 +373,9 @@ public class SQLBackgroundParsingJob {
             
             {
                 SQLScriptElement lastElement = elements.get(elements.size() - 1);
+                if (lastElement == null) {
+                    return;
+                }
                 workOffset = elements.get(0).getOffset();
                 workLength = lastElement.getOffset() + lastElement.getLength() - workOffset;
                 if (DEBUG) {

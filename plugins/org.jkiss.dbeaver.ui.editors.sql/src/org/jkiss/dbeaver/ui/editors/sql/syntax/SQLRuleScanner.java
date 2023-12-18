@@ -175,7 +175,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         if (entry != null) {
             int end = syntaxContext.getLastAccessedTokenOffset() + entry.getInterval().length();
             if (end > offset) {
-                if (true) {
+                if (false) {
                     StringBuilder sb = new StringBuilder();
                     while (this.getOffset() < end) {
                     	int c = super.read();

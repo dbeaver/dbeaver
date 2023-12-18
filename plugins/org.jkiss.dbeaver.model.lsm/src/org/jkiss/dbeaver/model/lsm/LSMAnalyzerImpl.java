@@ -33,18 +33,19 @@ import org.jkiss.dbeaver.model.stm.STMParserOverrides;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
+
 public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMParserOverrides> implements LSMAnalyzer {
 
     private static final Log log = Log.getLog(LSMAnalyzerImpl.class);
     
     private final SQLDialect dialect;
-    private final SyntaxModel syntaxModel;
+//    private final SyntaxModel syntaxModel;
     
     public LSMAnalyzerImpl(@NotNull SQLDialect dialect) {
     	this.dialect = dialect;
-        Pair<TLexer, TParser> pair = this.createParser(STMSource.fromString(""), dialect);
-        syntaxModel = new SyntaxModel(pair.getSecond());
-        syntaxModel.introduce(SelectStatement.class);
+//        Pair<TLexer, TParser> pair = this.createParser(STMSource.fromString(""), dialect);
+//        syntaxModel = new SyntaxModel(pair.getSecond());
+//        syntaxModel.introduce(SelectStatement.class);
     }
 
     @NotNull
@@ -85,17 +86,17 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
         }
     }
 
-    @Nullable
-    @Override
-    public LSMElement parseSqlQueryModel(@NotNull STMSource source) {
-        STMTreeRuleNode root = parseSqlQueryTree(source, null);
-        if (root != null) {
-            SyntaxModelMappingResult<SelectStatement> result = this.syntaxModel.map(root, SelectStatement.class);
-            if (!result.isNoErrors()) {
-                result.getErrors().printToStderr();
-            }
-            return result.getModel();
-        }
-        return null;
-    }
+//    @Nullable
+//    @Override
+//    public LSMElement parseSqlQueryModel(@NotNull STMSource source) {
+//        STMTreeRuleNode root = parseSqlQueryTree(source, null);
+//        if (root != null) {
+//            SyntaxModelMappingResult<SelectStatement> result = this.syntaxModel.map(root, SelectStatement.class);
+//            if (!result.isNoErrors()) {
+//                result.getErrors().printToStderr();
+//            }
+//            return result.getModel();
+//        }
+//        return null;
+//    }
 }

@@ -152,7 +152,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         if (entry != null) {
             int end = syntaxContext.getLastAccessedTokenOffset() + entry.getInterval().length();
             if (end > offset) {
-                if (true) {
+                if (false) {
                     StringBuilder sb = new StringBuilder();
                     while (this.getOffset() < end) {
                         sb.append((char)super.read());

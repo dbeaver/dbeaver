@@ -23,12 +23,12 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 
-public class SQLServerSQLAnalyzer extends SQLStandardAnalyzer {
-    @NotNull
-    @Override
-    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        SQLStandardParser parser = super.prepareParser(source, errorListener);
-        parser.setIsSupportSquareBracketQuotation(true);
-        return parser;
-    }
-}
+//public class SQLServerSQLAnalyzer extends SQLStandardAnalyzer {
+//    @NotNull
+//    @Override
+//    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
+//        SQLStandardParser parser = super.prepareParser(source, errorListener);
+//        parser.setIsSupportSquareBracketQuotation(true);
+//        return parser;
+//    }
+//}

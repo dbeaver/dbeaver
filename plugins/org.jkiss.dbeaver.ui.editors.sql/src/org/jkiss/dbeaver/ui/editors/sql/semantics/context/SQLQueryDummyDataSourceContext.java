@@ -23,12 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -41,13 +37,11 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -215,7 +209,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         public String getFullyQualifiedName(DBPEvaluationContext context) {
             StringBuilder sb = new StringBuilder();
             for (DBSObject o = this; o != null; o = o.getParentObject()) {
-                sb.append(BasicSQLDialect.INSTANCE.getQuotedIdentifier(o.getName(), false, false));
+                sb.append(dialect.getQuotedIdentifier(o.getName(), false, false));
             }
             return sb.toString();
         }
@@ -291,7 +285,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @Override
         public SQLDialect getSQLDialect() {
-            return BasicSQLDialect.INSTANCE;
+            return dialect;
         }
 
         @Override
@@ -319,6 +313,8 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
     }
     
+    private final SQLDialect dialect;
+    
     private final DummyDbObject dummyDataSource;
     private final DummyDbObject defaultDummyCatalog;
     private final DummyDbObject defaultDummySchema;
@@ -327,7 +323,8 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private final Set<String> knownSchemaNames;
     private final Set<String> knownCatalogNames;
 
-    public SQLQueryDummyDataSourceContext(@NotNull Set<String> knownColumnNames, @NotNull Set<List<String>> knownTableNames) {
+    public SQLQueryDummyDataSourceContext(@NotNull SQLDialect dialect, @NotNull Set<String> knownColumnNames, @NotNull Set<List<String>> knownTableNames) {
+        this.dialect = dialect;
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();
         this.knownSchemaNames = new HashSet<>();
@@ -402,7 +399,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     
     @Override
     public SQLDialect getDialect() {
-        return BasicSQLDialect.INSTANCE;
+        return this.dialect;
     }
     
     @Override

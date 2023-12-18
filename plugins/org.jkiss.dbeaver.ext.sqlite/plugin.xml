@@ -48,7 +48,7 @@
                     <parameter name="supports-indexes" value="true"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="identifier-quotes" value="&quot;:&quot;,':',`:`"/>
+                    <parameter name="identifier-quotes" value="&quot;:&quot;,':',`:`,[:]"/>
                 </driver>
             </drivers>
         </datasource>
@@ -84,9 +84,9 @@
         </dialect>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
-        <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLAnalyzer">
-            <appliesTo dialectClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect"/>
-        </lsmDialect>
-    </extension>
+<!--    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">-->
+<!--        <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLAnalyzer">-->
+<!--            <appliesTo dialectClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect"/>-->
+<!--        </lsmDialect>-->
+<!--    </extension>-->
 </plugin>

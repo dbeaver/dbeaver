@@ -119,7 +119,9 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
                     alias = part.getText();
                 }
             }
-            result.put(tableName, alias);
+            if (tableName != null) {
+                result.put(tableName, alias);
+            }
         }
         return result;
     }

@@ -38,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * SQL Dialect JDBC API implementation

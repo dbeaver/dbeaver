@@ -45,7 +45,7 @@
             <sequence>
                 <element ref="appliesTo" minOccurs="0" maxOccurs="unbounded" />
             </sequence>
-            <attribute name="analyzerClass" type="string" use="required">
+            <attribute name="analyzerFabricClass" type="string" use="required">
                 <annotation>
                     <documentation>
 

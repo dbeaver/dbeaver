@@ -43,9 +43,9 @@ options {
 }
 
 @members {
-private boolean isSupportSquareBracketQuotation;
-public boolean isSupportSquareBracketQuotation() { return isSupportSquareBracketQuotation; }
-public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareBracketQuotation = value; }
+    //private boolean isSupportSquareBracketQuotation;
+    //public boolean isSupportSquareBracketQuotation() { return isSupportSquareBracketQuotation; }
+    //public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareBracketQuotation = value; }
 }
 
 // root rule for script
@@ -77,8 +77,8 @@ unqualifiedSchemaName: identifier;
 qualifiedName: (schemaName Period)? identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier|squareBracketIdentifier|nonReserved);
-squareBracketIdentifier: {isSupportSquareBracketQuotation()}? LeftBracket (~RightBracket|(RightBracket RightBracket))* RightBracket;
+actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
+//squareBracketIdentifier: {isSupportSquareBracketQuotation()}? LeftBracket (~RightBracket|(RightBracket RightBracket))* RightBracket;
 
 // data types
 dataType: (datetimeType|intervalType|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);

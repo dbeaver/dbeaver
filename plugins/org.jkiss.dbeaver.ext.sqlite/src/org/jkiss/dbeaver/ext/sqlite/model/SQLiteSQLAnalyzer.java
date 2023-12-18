@@ -24,18 +24,18 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 
-public class SQLiteSQLAnalyzer extends SQLStandardAnalyzer {
-
-	
-    public SQLiteSQLAnalyzer() {
-		super(new SQLiteSQLDialect());
-	}
-
-	@NotNull
-    @Override
-    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        SQLStandardParser parser = super.prepareParser(source, errorListener);
-        parser.setIsSupportSquareBracketQuotation(true);
-        return parser;
-    }
-}
+//public class SQLiteSQLAnalyzer extends SQLStandardAnalyzer {
+//
+//	
+//    public SQLiteSQLAnalyzer() {
+//		super(new SQLiteSQLDialect());
+//	}
+//
+//	@NotNull
+//    @Override
+//    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
+//        SQLStandardParser parser = super.prepareParser(source, errorListener);
+//        parser.setIsSupportSquareBracketQuotation(true);
+//        return parser;
+//    }
+//}

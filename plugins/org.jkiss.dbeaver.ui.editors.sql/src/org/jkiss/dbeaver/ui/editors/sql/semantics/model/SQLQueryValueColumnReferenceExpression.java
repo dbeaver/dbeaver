@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
@@ -59,7 +60,8 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        if (this.tableName != null) {
+        SQLDialect dialect = context.getDialect();
+        if (this.tableName != null && this.tableName.isNotClassified() && this.columnName.isNotClassified()) {
             SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
@@ -69,21 +71,33 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
                 statistics.appendError(this.tableName.entityName, "Table or subquery not found");
             }
-        } else {
-        	SQLQuerySymbolDefinition columnDef = context.resolveColumn(this.columnName.getName());
-        	
-        	boolean isQuotedIdentifier = context.getDialect().isQuotedIdentifier(this.columnName.getRawName());
-        	char quoteChar = this.columnName.getRawName().charAt(0);
-        	if ((!isQuotedIdentifier && (quoteChar == '"' || quoteChar == '`' || quoteChar == '\''))
-    			|| (isQuotedIdentifier && columnDef == null)) {
-        		switch (quoteChar) {
-        		case '\'' -> this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.STRING);
-        		case '"', '`' -> this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.QUOTED);
-        		}
-        	} else {
-        		this.propagateColumnDefinition(columnDef, statistics);        		
-        	}
+        } else if (this.tableName == null && this.columnName.isNotClassified()) {
+            SQLQuerySymbolDefinition columnDef = context.resolveColumn(this.columnName.getName());
+            
+            SQLQuerySymbolClass forcedClass = null;
+            if (columnDef == null) {
+                String rawString = columnName.getRawName();
+                if (dialect.isQuotedString(rawString)) {
+                    forcedClass = SQLQuerySymbolClass.STRING;
+                } else {
+                    boolean isQuotedIdentifier = dialect.isQuotedIdentifier(this.columnName.getRawName());
+                    char quoteChar = this.columnName.getRawName().charAt(0);
+                    if ((!isQuotedIdentifier && (quoteChar == '"' || quoteChar == '`' || quoteChar == '\''))
+                        || (isQuotedIdentifier && columnDef == null)) {
+                        forcedClass = switch (quoteChar) {
+                            case '\'' -> SQLQuerySymbolClass.STRING;
+                            case '"', '`' -> SQLQuerySymbolClass.QUOTED;
+                            default -> null;
+                        };
+                    }
+                }
+            }
+            
+            if (forcedClass != null) {
+                this.columnName.getSymbol().setSymbolClass(forcedClass);
+            } else {
+                this.propagateColumnDefinition(columnDef, statistics);
+            }
         }
-        // System.out.println(this.tableName + "." + this.columnName + " --> " + this.columnName.getDefinition());
     }
 }
