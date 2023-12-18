@@ -19,6 +19,8 @@
 
     <includes id="org.eclipse.rcp" version="0.0.0"/>
 
+    <plugin id="org.eclipse.ui.intro" version="0.0.0" />
+    <plugin id="org.eclipse.ui.themes" version="0.0.0"/>
     <plugin id="com.ibm.icu.base" version="0.0.0"/>
 
 </feature>
