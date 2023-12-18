@@ -48,7 +48,6 @@ public class STMKnownRuleNames {
     public static final String catalogName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_catalogName];
     public static final String identifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_identifier];
     public static final String actualIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_actualIdentifier];
-    // public static final String squareBracketIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_squareBracketIdentifier];
 
     // data types
     public static final String dataType = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dataType];

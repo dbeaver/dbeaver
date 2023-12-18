@@ -28,11 +28,9 @@ import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.Map;
-
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
-
 
 public class SyntaxParserTest {
 
