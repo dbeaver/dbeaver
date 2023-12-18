@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -73,6 +74,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private static final int LOB_ENCODING_BINARY = 2;
     private static final int LOB_ENCODING_NATIVE = 3;
 
+    private final List<StreamMappingContainer> mappings = new ArrayList<>();
     private PropertyTreeViewer propsEditor;
     private Combo lobExtractType;
     private Label lobEncodingLabel;
@@ -198,12 +200,11 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     UIUtils.createDialogButton(columnsPanel, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent event) {
-                            final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
-                            if (settings.getDataMappings().isEmpty()) {
+                            if (mappings.isEmpty()) {
                                 try {
                                     getWizard().getRunnableContext().run(true, true, monitor -> {
                                         refreshMappings(monitor);
-                                        UIUtils.asyncExec(() -> new ConfigureColumnsPopup(getShell(), settings.getDataMappings().values()).open());
+                                        UIUtils.asyncExec(() -> new ConfigureColumnsPopup(getShell()).open());
                                     });
                                 } catch (InvocationTargetException e) {
                                     DBWorkbench.getPlatformUI().showError(
@@ -215,7 +216,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                                     log.debug("Canceled by user", e);
                                 }
                             } else {
-                                new ConfigureColumnsPopup(getShell(), settings.getDataMappings().values()).open();
+                                new ConfigureColumnsPopup(getShell()).open();
                             }
                         }
                     });
@@ -317,15 +318,10 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private final class ConfigureColumnsPopup extends BaseDialog {
         private TreeViewer viewer;
         private CLabel errorLabel;
-        private List<StreamMappingContainer> mappings;
 
-        public ConfigureColumnsPopup(@NotNull Shell shell, Collection<StreamMappingContainer> mappings) {
+        public ConfigureColumnsPopup(@NotNull Shell shell) {
             super(shell, DTUIMessages.stream_consumer_page_mapping_title, null);
             this.setShellStyle(SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL);
-            this.mappings = new ArrayList<>(mappings.size());
-            for (StreamMappingContainer container : mappings) {
-                this.mappings.add(new StreamMappingContainer(container));
-            }
         }
 
         @Override
@@ -423,9 +419,8 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
             Composite panel = new Composite(group, SWT.NONE);
             panel.setLayout(new FillLayout());
-            Button selectAllButton = new Button(panel, SWT.NONE);
-            selectAllButton.setText(DTUIMessages.data_transfer_task_configurator_dialog_button_select_all);
-            selectAllButton.addSelectionListener(new SelectionAdapter() {
+            
+            Button selectAllButton = UIUtils.createDialogButton(panel, DTUIMessages.data_transfer_task_configurator_dialog_button_select_all, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     for (StreamMappingContainer container : mappings) {
@@ -436,12 +431,10 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     updateCompletion();
                 }
             });
-            Button deselectAllButton = new Button(panel, SWT.NONE);
-            deselectAllButton.setText(DTUIMessages.data_transfer_task_configurator_dialog_button_deselect_all);
-            deselectAllButton.addSelectionListener(new SelectionAdapter() {
+            Button deselectAllButton = UIUtils.createDialogButton(panel, DTUIMessages.data_transfer_task_configurator_dialog_button_deselect_all, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    for (StreamMappingContainer container : mappings) {
+                	for (StreamMappingContainer container : mappings) {
                         List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
                         attrs.forEach(x -> x.setMappingType(StreamMappingType.skip));
                     }
@@ -484,7 +477,21 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             super.okPressed();
         }
 
-        private void updateCompletion() {
+        
+        
+        @Override
+		protected void cancelPressed() {
+        	refreshMappings(new VoidProgressMonitor());
+			super.cancelPressed();
+		}
+
+		@Override
+		public boolean close() {
+			refreshMappings(new VoidProgressMonitor());
+			return super.close();
+		}
+
+		private void updateCompletion() {
             final boolean isComplete = mappings.stream().allMatch(StreamMappingContainer::isComplete);
             final Button okButton = getButton(IDialogConstants.OK_ID);
             errorLabel.setVisible(!isComplete);
@@ -495,6 +502,8 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private void refreshMappings(@NotNull DBRProgressMonitor monitor) {
         final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
         final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+
+        mappings.clear();
 
         try {
             monitor.beginTask("Load mappings", pipes.size());
@@ -512,7 +521,8 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     // Create a copy to avoid direct modifications
                     mapping = new StreamMappingContainer(mapping);
                 }
-                settings.addDataMapping(mapping);
+
+                mappings.add(mapping);
                 monitor.worked(1);
             }
         } finally {
