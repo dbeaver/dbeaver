@@ -129,21 +129,6 @@ public class SQLBackgroundParsingJob {
         return this.context;
     }
 
-    /**
-     * Prepare list of syntax rules by token types
-     */
-    @NotNull
-    public IRule[] prepareRules(@NotNull SQLRuleScanner sqlRuleScanner) {
-        return new IRule[] {
-            new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_TABLE),
-            new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_TABLE_ALIAS),
-            new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_COLUMN),
-            new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_COLUMN_DERIVED),
-            new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_SCHEMA),
-            new SQLPassiveSyntaxRule(this, sqlRuleScanner, SQLTokenType.T_SEMANTIC_ERROR)
-        };
-    }
-
     private void beforeDocumentModification(DocumentEvent event) {
         this.cancel();
         
@@ -170,13 +155,21 @@ public class SQLBackgroundParsingJob {
                 int firstAffectedReparseOffset;
                 if (it.getCurrValue() != null || it.prev()) {
                     firstAffectedReparseOffset = it.getCurrOffset();
+                    if (firstAffectedReparseOffset < reparseStart &&
+                        firstAffectedReparseOffset + it.getCurrValue().length > event.getText().length()
+                    ) {
+                        return; // modified region is a subrange of already queued for reparse 
+                    }
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, firstAffectedReparseOffset);
                 }
                 while (it.next()) {
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, it.getCurrOffset());
                 }
                 for (ListNode<Integer> kn = keyOffsetsToRemove; kn != null; kn = kn.next) {
-                    this.queuedForReparse.removeAt(kn.data);    
+                    if (DEBUG) {
+                        System.out.println("remove " + kn.data + "+" + this.queuedForReparse.find(kn.data).length);
+                    }
+                    this.queuedForReparse.removeAt(kn.data);
                 }
                 this.queuedForReparse.put(reparseStart, new QueuedRegionInfo(reparseLength));
             }
@@ -303,6 +296,9 @@ public class SQLBackgroundParsingJob {
                 int rangeEnd = Math.max(0, visibleFragment.b + visibleFragment.length() * stepsToKeep);
                 Interval actualFragment = new Interval(rangeStart, rangeEnd);
                 // drop unnecessary items
+                if (DEBUG) {
+                    System.out.println("actual region is " + actualFragment.a + "-" + actualFragment.b);
+                }
                 Interval preservedRegion = this.context.dropInvisibleScriptItems(actualFragment);
                 this.knownRegionStart = preservedRegion.a;
                 this.knownRegionEnd = preservedRegion.b; 
@@ -331,6 +327,11 @@ public class SQLBackgroundParsingJob {
                     workOffset = workInterval.a;
                     workLength = workInterval.length();
                 }
+
+                int docTailDelta = this.document.getLength() - (workOffset + workLength);
+                if (docTailDelta < 0) {
+                    workLength += docTailDelta; 
+                }
                 if (DEBUG) {
                     System.out.println("requested " + workOffset + "+" + workLength);
                     {
@@ -356,6 +357,9 @@ public class SQLBackgroundParsingJob {
             SQLParserContext parserContext = new SQLParserContext(this.editor.getDataSource(), this.editor.getSyntaxManager(), this.editor.getRuleManager(), this.document);
             List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(parserContext, workOffset, workLength, false, false, false);
             if (elements.isEmpty()) {
+                if (DEBUG) {
+                    System.out.println("No script elements to parse in range " + workOffset + "+" + workLength);
+                }
                 return;
             } else {
                 elements.set(0, SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset()));
