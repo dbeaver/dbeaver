@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
 
 /**
  * PostgreTableContainer.
@@ -25,9 +26,11 @@ import org.jkiss.code.NotNull;
  */
 public interface PostgreTableContainer extends PostgreObject {
 
+    @DPIContainer
     @NotNull
     PostgreDataSource getDataSource();
 
+    @DPIContainer
     PostgreSchema getSchema();
 
 }

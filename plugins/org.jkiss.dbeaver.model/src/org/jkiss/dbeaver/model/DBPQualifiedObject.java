@@ -17,19 +17,21 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 
 /**
  * Named object extension
  */
-public interface DBPQualifiedObject extends DBPObject
-{
+public interface DBPQualifiedObject extends DBPObject {
 
     /**
      * Entity full qualified name.
      * Should include all parent objects' names and thus uniquely identify this entity within database.
-     * @return full qualified name, never returns null.
+     *
      * @param context evaluation context
+     * @return full qualified name, never returns null.
      */
+    @DPIElement
     @NotNull
     String getFullyQualifiedName(DBPEvaluationContext context);
 

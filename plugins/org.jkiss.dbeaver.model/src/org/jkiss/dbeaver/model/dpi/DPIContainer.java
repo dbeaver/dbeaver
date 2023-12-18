@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,14 +22,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Object's factory.
+ * Annotates methods which return container object.
+ * In object hierarchy it is immediate parent object or some higher level parent.
  *
- * Method return is cached for each unique parameter
+ * It is needed to avoid redundant remote calls.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD,ElementType.TYPE})
-public @interface DPIFactory {
+@Target(ElementType.METHOD)
+public @interface DPIContainer {
 
-    String parameter() default "";
+    boolean root() default false;
 
 }

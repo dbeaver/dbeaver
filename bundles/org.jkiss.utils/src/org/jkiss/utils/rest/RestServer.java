@@ -32,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +56,8 @@ public class RestServer<T> {
         int port,
         int backlog
     ) throws IOException {
-        server = HttpServer.create(new InetSocketAddress(port), backlog);
+        InetSocketAddress listenAddr = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
+        server = HttpServer.create(listenAddr, backlog);
         server.createContext("/", createHandler(cls, object, gson, filter));
         server.setExecutor(createExecutor());
         server.start();

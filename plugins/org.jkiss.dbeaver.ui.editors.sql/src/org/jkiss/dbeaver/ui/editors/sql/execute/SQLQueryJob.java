@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDDataReceiverInteractive;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -430,19 +429,13 @@ public class SQLQueryJob extends DataSourceJob
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask("Get data receiver", 1);
         monitor.subTask("Create results view");
-        DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
-        try {
-            if (dataReceiver instanceof DBDDataReceiverInteractive) {
-                ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(true);
-            }
-            if (!scriptContext.fillQueryParameters((SQLQuery) element, CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH))) {
-                // User canceled
-                return false;
-            }
-        } finally {
-            if (dataReceiver instanceof DBDDataReceiverInteractive) {
-                ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(false);
-            }
+        if (!scriptContext.fillQueryParameters(
+            originalQuery,
+            () -> resultsConsumer.getDataReceiver(originalQuery, resultSetNumber),
+            CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH)
+        )) {
+            // User canceled
+            return false;
         }
         monitor.done();
 
@@ -745,8 +738,6 @@ public class SQLQueryJob extends DataSourceJob
                     log.error("Error generating execution result stats", e);
                 }
             }
-        } else if (!CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH)) {
-            resultsConsumer.releaseDataReceiver(resultSetNumber);
         }
     }
 
