@@ -40,7 +40,7 @@ import java.util.TreeMap;
 public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
 
     private AbstractGraphicalEditPart diagram;
-    private TreeMap<String, List<Node>> nodeByLevels = new TreeMap<>();
+    private TreeMap<String, List<Node>> nodeByLevels ;
     private List<Node> isolatedNodes = new LinkedList<>();
     private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 20;
     private static final int DEFAULT_ISO_OFFSET_HORZ = 100;
@@ -56,7 +56,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
      */
     @Override
     public void visit(DirectedGraph graph) {
-        computeRootNodes(graph, nodeByLevels);
+        nodeByLevels =  computeRootNodes(graph);
         isolatedNodes = computeIsolatedNodes(graph);
         nodeByLevels = balanceRoots(isolatedNodes, nodeByLevels);
         nodeByLevels = computeGraph(nodeByLevels);
@@ -88,12 +88,18 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private void drawIsolatedNodes(List<Node> islands, TreeMap<String, List<Node>> nodeByLevels) {
         // considered to have a islands one - to -one
         Entry<String, List<Node>> lastEntry = nodeByLevels.lastEntry();
+        int offsetX = DEFAULT_ISO_OFFSET_HORZ;
+        for (Node n : lastEntry.getValue()) {
+            if (offsetX < n.width) {
+                offsetX = n.width;
+            }
+        }
         int currentX = 0;
         if (lastEntry.getValue() == null || lastEntry.getValue().isEmpty()) {
             currentX = DEFAULT_ISO_OFFSET_HORZ;
         } else {
             Node lastNode = nodeByLevels.lastEntry().getValue().get(0);
-            currentX = lastNode.x + lastNode.width + DEFAULT_ISO_OFFSET_HORZ;
+            currentX = lastNode.x + offsetX + DEFAULT_ISO_OFFSET_HORZ;
         }
 
         int currentY = DEFAUL_OFFSET_FROM_TOP_LINE;
@@ -104,25 +110,34 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 Node nodeTarget = edge.target;
                 nodeTarget.x = currentX + DEFAULT_OFFSET_BY_X;
                 nodeTarget.y = currentY;
-                currentY += nodeTarget.height + DEFAULT_OFFSET_BY_Y;
+                if(nodeSource.height > nodeTarget.height) {
+                    currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
+                }else {
+                    currentY += nodeTarget.height + DEFAULT_OFFSET_BY_Y;
+                }
             }
         }
     }
 
     private void drawMissedNodes(List<Node> islands, List<Node> missedNodes, TreeMap<String, List<Node>> nodeByLevels) {
         Entry<String, List<Node>> lastEntry = nodeByLevels.lastEntry();
+        int offsetX = DEFAULT_ISO_OFFSET_HORZ;
+        for (Node n : lastEntry.getValue()) {
+            if (offsetX < n.width) {
+                offsetX = n.width;
+            }
+        }
         int currentX = 0;
         if (lastEntry.getValue() == null || lastEntry.getValue().isEmpty()) {
             currentX = DEFAULT_ISO_OFFSET_HORZ;
         } else {
             Node lastNode = nodeByLevels.lastEntry().getValue().get(0);
-            currentX = lastNode.x + lastNode.width + DEFAULT_ISO_OFFSET_HORZ;
+            currentX = lastNode.x + offsetX + DEFAULT_ISO_OFFSET_HORZ;
         }
         int currentY = DEFAUL_OFFSET_FROM_TOP_LINE;
         for (Node nodeSource : islands) {
             for (Edge edge : nodeSource.outgoing) {
-                Node nodeTarget = edge.target;
-                currentY += nodeTarget.height + DEFAULT_OFFSET_BY_Y;
+                currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
             }
         }
         for (Node node : missedNodes) {
@@ -187,14 +202,18 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 currentY = DEFAULT_OFFSET_BY_Y;
             }
             List<Node> nodes = entry.getValue();
+            int offsetX = DEFAULT_ISO_OFFSET_HORZ;
             for (Node n : nodes) {
                 n.x = currentX;
                 n.y = currentY;
                 currentY += n.height + DEFAULT_OFFSET_BY_Y;
+                if (offsetX < n.width  ) {
+                    offsetX = n.width;
+                }
             }
             if (!nodes.isEmpty()) {
                 // next increase X
-                currentX += DEFAULT_OFFSET_BY_X;
+                currentX += DEFAULT_ISO_OFFSET_HORZ + offsetX;
             }
             index++;
         }
@@ -225,7 +244,8 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         return isolated;
     }
 
-    private void computeRootNodes(DirectedGraph graph, TreeMap<String, List<Node>> nodeByEdges) {
+    private TreeMap<String, List<Node>> computeRootNodes(DirectedGraph graph) {
+        TreeMap<String, List<Node>> nodeByLevels = new TreeMap<>();
         List<Node> firstLineOutput = new LinkedList<>();
         for (int i = 0; i < graph.nodes.size(); i++) {
             Node node = graph.nodes.get(i);
@@ -234,8 +254,9 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             }
         }
         if (!firstLineOutput.isEmpty()) {
-            nodeByEdges.put(String.valueOf(0), firstLineOutput);
+            nodeByLevels.put(String.valueOf(0), firstLineOutput);
         }
+        return nodeByLevels;
     }
 
     private TreeMap<String, List<Node>> computeGraph(TreeMap<String, List<Node>> graph) {
@@ -290,15 +311,22 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 Node trg = edge.target;
                 if (trg != null) {
                     // a way to paste node in deepest level
-                    Map<String, Node> duplication = getDuplication(trg, nodeByEdges);
-                    duplicatedNode2Position.putAll(duplication);
-                    nodeByEdges.computeIfAbsent(String.valueOf(idx + 1), n -> new ArrayList<Node>()).add(trg);
+//                    Map<String, Node> duplication = getDuplication(trg, nodeByEdges);
+//                    duplicatedNode2Position.putAll(duplication);
+
+                    String index = String.valueOf(idx + 1);
+                    List<Node> nodes = nodeByEdges.get(index);
+                    if (nodes != null && nodes.contains(trg)) {
+                        continue;
+                    } else {
+                        nodeByEdges.computeIfAbsent(index, n -> new ArrayList<Node>()).add(trg);
+                    }
                 }
             }
         }
-        duplicatedNode2Position.entrySet().stream().forEach(c -> {
-            nodeByEdges.get(c.getKey()).remove(c.getValue());
-        });
+//        duplicatedNode2Position.entrySet().stream().forEach(c -> {
+//            nodeByEdges.get(c.getKey()).remove(c.getValue());
+//        });
     }
 
     private Map<String, Node> getDuplication(Node trg, TreeMap<String, List<Node>> nodeByEdges) {
