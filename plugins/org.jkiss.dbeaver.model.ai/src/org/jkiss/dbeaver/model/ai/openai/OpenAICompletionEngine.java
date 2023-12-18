@@ -158,6 +158,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         DBSObjectContainer mainObject = getScopeObject(context, executionContext);
 
         final GPTModel model = getModel();
+        GPTCompletionAdapter service = getServiceInstance(executionContext);
         final DAICompletionMessage metadataMessage = MetadataProcessor.INSTANCE.createMetadataMessage(
             monitor,
             context,
@@ -171,7 +172,6 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         mergedMessages.add(metadataMessage);
         mergedMessages.addAll(messages);
 
-        GPTCompletionAdapter service = getServiceInstance(executionContext);
         if (monitor.isCanceled()) {
             return "";
         }
