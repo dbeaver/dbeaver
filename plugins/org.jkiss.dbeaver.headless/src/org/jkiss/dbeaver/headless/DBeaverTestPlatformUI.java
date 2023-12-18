@@ -28,8 +28,8 @@ public class DBeaverTestPlatformUI extends ConsoleUserInterface {
     /**
      * Dummy method for injection
      */
-    private void initialize() {
-
+    protected void initialize() {
+        // just a placeholder for injection
     }
 
 }
