@@ -109,7 +109,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             nodeSource.y = currentY;
             for (Edge edge : nodeSource.outgoing) {
                 Node nodeTarget = edge.target;
-                nodeTarget.x = currentX + DEFAULT_OFFSET_BY_X;
+                nodeTarget.x = currentX + nodeSource.width+ DEFAULT_OFFSET_BY_X/2;
                 nodeTarget.y = currentY;
                 if (nodeSource.height > nodeTarget.height) {
                     currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
