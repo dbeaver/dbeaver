@@ -203,12 +203,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
             return Token.UNDEFINED;
         }
     }
-    
-    @Override
-    public void setRange(IDocument document, int offset, int length) {
-        super.setRange(document, offset, length);
-    }
-    
+
     @Override
     public IToken nextToken() {
         super.fTokenOffset = fOffset;
