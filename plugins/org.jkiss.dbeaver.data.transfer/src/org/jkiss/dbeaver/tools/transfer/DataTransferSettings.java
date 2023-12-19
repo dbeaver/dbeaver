@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -731,7 +730,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                         if (nodeClass.isInstance(node)) {
                             result.add(nodeClass.cast(node));
                         }
-                    } catch (DBCException e) {
+                    } catch (Exception e) {
                         state.addError(e);
                         taskLog.error(e);
                     } finally {

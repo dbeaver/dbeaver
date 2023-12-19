@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 
 public class OffsetKeyedTreeMap<T> {
     
@@ -59,17 +60,17 @@ public class OffsetKeyedTreeMap<T> {
         }
     }
     
-    private static class Subtree<T> {
-        public final Node<T> node;
-        public final int size;
-        
-        public Subtree(Node<T> node, int size) {
-            super();
-            this.node = node;
-            this.size = size;
-        }
-    }
-    
+//    private static class Subtree<T> {
+//        public final Node<T> node;
+//        public final int size;
+//        
+//        public Subtree(Node<T> node, int size) {
+//            super();
+//            this.node = node;
+//            this.size = size;
+//        }
+//    }
+
     public static class ValueAndOffset<T> {
         public final T value;
         public final int offset;
@@ -82,7 +83,7 @@ public class OffsetKeyedTreeMap<T> {
 
     @SuppressWarnings("unchecked")
     private static <T> Node<T> sentinel() {
-        return (Node<T>)sentinel();
+        return (Node<T>) Node.SENTINEL;
     }
 
     private static class Node<T> {
@@ -95,7 +96,7 @@ public class OffsetKeyedTreeMap<T> {
             return this != SENTINEL;
         }
 
-        public int blackHeight = 0;
+        public int blackHeight = 0; // blackHeight needed for efficient split-join operations, which we are not using at the moment  
         public boolean isRed = false;
                 
         public Node<T> left = null;
@@ -128,25 +129,32 @@ public class OffsetKeyedTreeMap<T> {
                 this.right.parent = this;
             }
         }
+        
+        @Override
+        public String toString() {
+            return this.getClass().getSimpleName() + (this.isSentinel() ? "[SENTINEL]" : ("[" + this.offset + ", '" + this.content + "']"));
+        }
     }
 
     private Node<T> root;
-    private int size;
+    private int size, tombstonesCount;
 
     public OffsetKeyedTreeMap() {
         this.root = sentinel();
         this.size = 0;
+        this.tombstonesCount = 0;
     }
 
-    private OffsetKeyedTreeMap(Node<T> root, int size) {
-        this.root = root;
-        this.size = size;
-        this.FixupRoot();
-    }
+//    private OffsetKeyedTreeMap(Node<T> root, int size) {
+//        this.root = root;
+//        this.size = size;
+//        this.FixupRoot();
+//    }
 
     public void clear() {
         this.root = sentinel();
         this.size = 0;
+        this.tombstonesCount = 0;
     }
 
     private NodeAndParentAtOffset<T> findImpl(int pos) {
@@ -169,12 +177,16 @@ public class OffsetKeyedTreeMap<T> {
             }
         }
         
-        return new NodeAndParentAtOffset<>(node, parent, isLeft, relPos);
+        return new NodeAndParentAtOffset<>(parent, node, isLeft, relPos);
     }
     
     public T find(int position) {
         NodeAndParentAtOffset<T> result = this.findImpl(position);
         return result.node.isNotSentinel() ? result.node.content : null;
+    }
+    
+    public T put(int pos, T value) {
+        return this.put(pos, value, null);
     }
     
     public T put(int pos, T value, RemappingFunction<T> remappingFunction) {
@@ -188,7 +200,10 @@ public class OffsetKeyedTreeMap<T> {
         } else {
             NodeAndParentAtOffset<T> location = this.findImpl(pos);
             if (location.node.isNotSentinel()) {
-                if (remappingFunction == null) {
+                if (location.node.content == null) {
+                    this.tombstonesCount--;
+                    result = value;
+                } else if (remappingFunction == null) {
                     result = value;
                 } else {
                     result = remappingFunction.apply(pos, value, location.node.content);
@@ -200,15 +215,13 @@ public class OffsetKeyedTreeMap<T> {
               
                 if (location.isLeft) {
                     parent.left = newNode;
-                    newNode.parent = parent;
-                    this.size++;
                 } else {
                     parent.right = newNode;
-                    newNode.parent = parent;
-                    this.size++;
                 }
+                newNode.parent = parent;
+                this.size++;
         
-                this.RestoreAfterInsert(newNode);
+                this.restoreAfterInsert(newNode);
                 
                 result = value;
             }
@@ -223,7 +236,7 @@ public class OffsetKeyedTreeMap<T> {
     /// properties. Examine the tree and restore. Rotations are normally 
     /// required to restore it
     ///</summary>
-    private void RestoreAfterInsert(Node<T> x) {
+    private void restoreAfterInsert(Node<T> x) {
         var xx = x;
 
         // x and y are used as variable names for brevity, in a more formal
@@ -238,8 +251,9 @@ public class OffsetKeyedTreeMap<T> {
             x.refreshBlackHeight();
 
             // parent node is .Colored red; 
-            if (x.parent == x.parent.parent.left) { // determine traversal path         
-                                                    // is it on the left or right subtree?
+            if (x.parent == x.parent.parent.left) {
+                // determine traversal path
+                // is it on the left or right subtree?
                 y = x.parent.parent.right;          // get uncle
                 if (y != null && y.isRed) {   // uncle is red; change x's parent and uncle to black
                     x.parent.isRed = false;
@@ -260,8 +274,9 @@ public class OffsetKeyedTreeMap<T> {
                     x.parent.parent.isRed = true;       // make grandparent black
                     this.rotateRight(x.parent.parent);                   // rotate right
                 }
-            } else {   // x's parent is on the right subtree
-                       // this code is the same as above with "left" and "right" swapped
+            } else {
+                // x's parent is on the right subtree
+                // this code is the same as above with "left" and "right" swapped
                 y = x.parent.parent.left;
                 if (y != null && y.isRed) {
                     x.parent.isRed = false;
@@ -289,10 +304,10 @@ public class OffsetKeyedTreeMap<T> {
             } while (xx != this.root);
         }
 
-        this.FixupRoot();
+        this.fixupRoot();
     }
 
-    private void FixupRoot() {
+    private void fixupRoot() {
         if (this.root.isNotSentinel()) {
             this.root.parent = null;
             this.root.isRed = false;
@@ -404,9 +419,13 @@ public class OffsetKeyedTreeMap<T> {
         return y;
     }
 
+    public int size() {
+        return this.size - this.tombstonesCount;
+    }
+
     public NodesIterator<T> nodesIteratorAt(int position) {
         NodeAndParentAtOffset<T> initialLocation = this.findImpl(position);
-        return switch(this.size) {
+        return switch (this.size) {
             case 0 -> new NodesIterator<T>() {
                 @Override
                 public T getCurrValue() {
@@ -472,23 +491,27 @@ public class OffsetKeyedTreeMap<T> {
                 boolean beforeFirst = false;
                 boolean afterLast = false;
                 boolean initial = true;
-                NodeAndOffset<T> currentLocation = new NodeAndOffset<>(initialLocation.node.isSentinel() ? null : initialLocation.node, position);
+                NodeAndOffset<T> currentLocation = new NodeAndOffset<>(
+                    initialLocation.node.isSentinel() ? null : initialLocation.node, 
+                    initialLocation.node.isSentinel() ? position : position - initialLocation.node.offset
+                );
 
                 @Override
                 public T getCurrValue() {
-                    return this.currentLocation.node != null ? this.currentLocation.node.content : null;
+                    return this.currentLocation.node == null ? null : this.currentLocation.node.content;
                 }
 
                 @Override
                 public int getCurrOffset() {
-                    return this.currentLocation.offset;
+                    return this.currentLocation.offset + (this.currentLocation.node == null ? 0 : this.currentLocation.node.offset);
                 }
 
                 @Override
                 public boolean prev() {
                     if (this.initial && initialLocation.node.isSentinel()) {
-                        // TODO validate position
-                        NodeAndOffset<T> parentLocation = new NodeAndOffset<>(initialLocation.parent, position - initialLocation.offset);
+                        NodeAndOffset<T> parentLocation = new NodeAndOffset<>(
+                            initialLocation.parent, position - initialLocation.offset - (initialLocation.isLeft ? 0 : initialLocation.parent.offset)
+                        );
                         this.currentLocation = initialLocation.isLeft ? findPrev(parentLocation) : parentLocation;
                     } else if (this.beforeFirst) {
                         return false;
@@ -496,6 +519,9 @@ public class OffsetKeyedTreeMap<T> {
                         this.currentLocation = findLast(new NodeAndOffset<>(OffsetKeyedTreeMap.this.root, 0));
                         this.afterLast = false;
                     } else {
+                        this.currentLocation = findPrev(this.currentLocation);
+                    }
+                    while (this.currentLocation.node != null && this.currentLocation.node.content == null) { // due to tombstones
                         this.currentLocation = findPrev(this.currentLocation);
                     }
                     this.initial = false;
@@ -506,7 +532,7 @@ public class OffsetKeyedTreeMap<T> {
                 @Override
                 public boolean next() {
                     if (this.initial && initialLocation.node.isSentinel()) {
-                        // TODO validate position
+                        // the exact initial position not found, so proceed with its parent
                         NodeAndOffset<T> parentLocation = new NodeAndOffset<>(initialLocation.parent, position - initialLocation.offset);
                         this.currentLocation = initialLocation.isLeft ? parentLocation : findNext(parentLocation);
                     } else if (this.afterLast) {
@@ -515,6 +541,9 @@ public class OffsetKeyedTreeMap<T> {
                         this.currentLocation = findFirst(new NodeAndOffset<>(OffsetKeyedTreeMap.this.root, 0));
                         this.beforeFirst = false;
                     } else {
+                        this.currentLocation = findNext(this.currentLocation);
+                    }
+                    while (this.currentLocation.node != null && this.currentLocation.node.content == null) { // due to tombstones
                         this.currentLocation = findNext(this.currentLocation);
                     }
                     this.initial = false;
@@ -531,7 +560,7 @@ public class OffsetKeyedTreeMap<T> {
         while (node.left.isNotSentinel()) {
             node = node.left;
         }
-        return new NodeAndOffset<>(node, offset + node.offset);
+        return new NodeAndOffset<>(node, offset);
     }
     
     private NodeAndOffset<T> findLast(NodeAndOffset<T> location) {
@@ -541,7 +570,7 @@ public class OffsetKeyedTreeMap<T> {
             offset += node.offset;
             node = node.right;
         }
-        return new NodeAndOffset<>(node, offset + node.offset);
+        return new NodeAndOffset<>(node, offset);
     }
     
     private NodeAndOffset<T> findPrev(NodeAndOffset<T> location) {
@@ -556,17 +585,12 @@ public class OffsetKeyedTreeMap<T> {
             }
         } else {
             prev = node.parent;
-            if (prev != null) {
-                if (prev.right == node) {
-                    offset -= node.offset;
-                }
-                while (prev.right != node) {
-                    node = prev;
-                    prev = node.parent;
-                    if (prev.right == node) {
-                        offset -= node.offset;
-                    }
-                }
+            while (prev != null && prev.right != node) {
+                node = prev;
+                prev = node.parent;
+            }
+            if (prev != null && prev.right == node) {
+                offset -= prev.offset;
             }
         }
         return new NodeAndOffset<>(prev, prev == null ? Integer.MIN_VALUE : offset);
@@ -577,8 +601,8 @@ public class OffsetKeyedTreeMap<T> {
         int offset = location.offset;
         Node<T> next;
         if (node.right.isNotSentinel()) {
-            offset += node.offset;
             next = node.right;
+            offset += node.offset;
             while (next.left.isNotSentinel()) {
                 next = next.left;
             }
@@ -586,13 +610,13 @@ public class OffsetKeyedTreeMap<T> {
             next = node.parent;
             if (next != null) {
                 if (next.right == node) {
-                    offset -= node.offset;
+                    offset -= next.offset;
                 }
                 while (next != null && next.left != node) {
                     node = next;
                     next = node.parent;
-                    if (next.right == node) {
-                        offset -= node.offset;
+                    if (next != null && next.right == node) {
+                        offset -= next.offset;
                     }
                 }
             }
@@ -651,11 +675,13 @@ public class OffsetKeyedTreeMap<T> {
     }
 
     public int validateBlackHeights() {
-        Set<Integer> bh = this.root.isSentinel() ? Set.<Integer>of(0) : StreamSupport.stream(flatten(
+        Set<Integer> bh = this.root.isSentinel() ? Set.<Integer>of(0) : StreamSupport.stream(
+            flatten(
                 evaluateNodeBlackHeight(this.root, 0), 
-                n -> Stream.of(n.node.left, n.node.right).filter(c -> c.isNotSentinel()).map(c -> evaluateNodeBlackHeight(c, n.offset)).toList()
+                n -> Stream.of(n.node.left, n.node.right).filter(Node::isNotSentinel)
+                    .map(c -> evaluateNodeBlackHeight(c, n.offset)).toList()
             ).spliterator(), false).filter(xn -> xn.node.left.isSentinel() && xn.node.right.isSentinel())
-                                   .map(xn -> xn.offset).collect(Collectors.toSet());
+            .map(xn -> xn.offset).collect(Collectors.toSet());
 
         if (bh.size() != 1 || !bh.stream().findFirst().get().equals(this.root.blackHeight)) {
             throw new IllegalStateException("Black height constraint violation");
@@ -670,7 +696,8 @@ public class OffsetKeyedTreeMap<T> {
         }
 
         if (this.root.isNotSentinel()) {
-            StreamSupport.stream(flatten(
+            StreamSupport.stream(
+                flatten(
                     this.root, n -> Stream.of(n.left, n.right).filter(Node::isNotSentinel).toList()
                 ).spliterator(), false).forEach(n -> {
                     if (n != this.root && n.parent == null || n.parent == sentinel()) {
@@ -923,35 +950,270 @@ public class OffsetKeyedTreeMap<T> {
     }
     
     */
-    
+
     public void applyOffset(int position, int delta) {
-    	if (delta == 0) {
-    		return;
-    	}
-    	if (delta < 0) {
-    		throw new UnsupportedOperationException("Negative delta not supported at the moment");
-    	}
-    	
-    	NodeAndParentAtOffset<T> location = this.findImpl(position);		
-    	Node<T> node = location.node.isSentinel() ? location.parent : location.node;
-    	
-    	while (node != null) {
-    		node.offset += delta;
-    		Node<T> parent = node.parent;
-    		while (parent != null) {
-    			if (node == parent.left) {
-    				parent.offset += delta;
-    				node = parent;
-    				parent = node.parent;
-    			} else {
-    				while (parent != null && node == parent.right) {
-    					node = parent;
-    					parent = node.parent;
-    				}
-    			}
-    		}
-    	}
+        if (delta == 0) {
+            return;
+        }
+        if (delta < 0) {
+            throw new UnsupportedOperationException("Negative delta not supported at the moment");
+        }
+        if (this.size == 0) {
+            return;
+        }
+
+        NodeAndParentAtOffset<T> location = this.findImpl(position);
+        if (location.node.isSentinel() && location.isLeft) {
+            location.parent.offset += delta;
+        }
+        if (location.node.isNotSentinel()) {
+            location.node.offset += delta;
+        }
+
+        Node<T> node = location.node.isSentinel() ? location.parent : location.node;
+        while (node != null && node.parent != null) {
+            Node<T> parent = node.parent;
+            while (parent != null) {
+                if (node == parent.left) {
+                    parent.offset += delta;
+                    node = parent;
+                    parent = node.parent;
+                } else {
+                    while (parent != null && node == parent.right) {
+                        node = parent;
+                        parent = node.parent;
+                    }
+                }
+            }
+        }
     }
-    
-    
+
+    public void forEach(BiConsumer<Integer, T> action) {
+        if (root.isNotSentinel()) {
+            Node<T> node = root;
+            Node<T> prev = null;
+            Node<T> next = null;
+
+            do {
+                if (prev == node.parent || prev == null) {
+                    // we've just arrived, so investigate left, then right
+
+                    if (node.left.isNotSentinel()) {
+                        // left will be created later
+                        next = node.left;
+                    } else if (node.right.isNotSentinel()) {
+                        // node's left is empty, go to the right
+                        action.accept(node.offset, node.content);
+                        next = node.right;
+                    } else {
+                        // both left and right are sentinels, so this is leaf
+                        action.accept(node.offset, node.content);
+                        next = node.parent;
+                    }
+                } else if (prev == node.left) {
+                    // left is ready, prepare right
+                    action.accept(node.offset, node.content);
+
+                    if (node.right.isNotSentinel()) {
+                        // right will be created later
+                        next = node.right;
+                    } else {
+                        // right is sentinel
+                        next = node.parent;
+                    }
+                } else if (prev == node.right) {
+                    // both subnodes are ready, rightmost was the last one
+                    next = node.parent;
+                } else {
+                    throw new IllegalStateException("RB-tree inconsistency detected");
+                }
+
+                prev = node;
+                node = next;
+            } while (node != root.parent);
+        }
+    }
+
+    private static <T> void stringigyNode(StringBuilder sb, int depth, int offset, Node<T> node, String prefix) {
+        sb.append(String.join("", "  ".repeat(depth))).append(prefix)
+            .append("[").append(offset).append(" as ").append(node.offset).append("] ")
+            .append(node.content).append("\n");
+    }
+
+    private void collectImpl(StringBuilder sb, int depth, int offCtx, Node<T> node, String prefix) {
+        stringigyNode(sb, depth, offCtx + node.offset, node, prefix);
+        if (node.left.isNotSentinel()) {
+            collectImpl(sb, depth + 1, offCtx, node.left, "L");
+        }
+        if (node.right.isNotSentinel()) {
+            collectImpl(sb, depth + 1, offCtx + node.offset, node.right, "R");
+        }
+    }
+
+    public String collect() {
+        StringBuilder sb = new StringBuilder();
+        collectImpl(sb, 0, 0, this.root, "");
+        return sb.toString();
+    }
+
+    public boolean removeAt(int position) {
+        NodeAndParentAtOffset<T> location = this.findImpl(position);
+        if (location.node.isNotSentinel()) {
+            this.deleteNode(location.node);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void deleteNode(Node<T> z) {
+        // A node to be deleted will be: 
+        //    1. a leaf with no children
+        //    2. have one child
+        //    3. have two children
+        // If the deleted node is red, the red black properties still hold.
+        // If the deleted node is black, the tree needs rebalancing
+
+        Node<T> y;                 // work node
+
+        // find the replacement node (the successor to x) - the node one with at *most* one child. 
+        if (z.left.isSentinel() || z.right.isSentinel()) {
+            y = z;                      // node has sentinel as a child
+        } else {
+            // z has two children, find replacement node which will be the leftmost node greater than z
+            y = z.right;                        // traverse right subtree
+//            while (y.left.isNotSentinel()) {    // to find next node in sequence
+//                y = y.left;
+//            }
+            if (y.left.isNotSentinel()) { // FIXME standard rb-tree removal strategy cannot be applied, just mark z as tombstone for now
+                z.content = null;
+                this.tombstonesCount++;
+                if (this.tombstonesCount > this.size / 2) {
+                    var t = new OffsetKeyedTreeMap<T>();
+                    NodesIterator<T> it = this.nodesIteratorAt(Integer.MAX_VALUE);
+                    while (it.prev()) {
+                        t.put(it.getCurrOffset(), it.getCurrValue());
+                    }
+                    this.root = t.root;
+                    this.size = t.size;
+                    this.tombstonesCount = 0;
+                }
+                return;
+            }
+        }
+
+        // at this point, y contains the replacement node. it's content will be copied to the values in the node to be deleted
+
+        // x (y's only child) is the node that will be linked to y's old parent. 
+        Node<T> x; // work node to contain the replacement node
+        int xDelta;
+        if (y.left.isNotSentinel()) {
+            x = y.left;
+            xDelta = 0;
+        } else {
+            x = y.right;
+            xDelta = y.offset;
+        }
+
+        // replace x's parent with y's parent and link x to proper subtree in parent; this removes y from the chain
+        x.parent = y.parent;
+        if (y.parent != null) {
+            if (y == y.parent.left) {
+                y.parent.left = x;
+            } else {
+                y.parent.right = x;
+            }
+        } else {
+            this.root = x;         // make x the root node
+        }
+
+        if (xDelta > 0) {
+            // y's offset was applied to x-rooted subtree, now y is gone, so apply the delta explicitly
+            // TODO consider merging with the same loop below
+            for (Node<T> t = x; t.isNotSentinel(); t = t.left) {
+                t.offset += xDelta;
+            }
+        }
+
+        // copy the values from y (the replacement node) to the node being deleted.
+        // note: this effectively deletes the node. 
+        if (y != z) {
+            z.content = y.content;
+            z.offset += y.offset; // z's global position should be the same as y's now, 
+            for (Node<T> t = z.right; t.isNotSentinel(); t = t.left) { // but it'll affect the whole right subtree, which is unwanted,
+                t.offset -= y.offset; // so fix it up
+                if (t.offset < 0) {
+                    // should never happen due to consistency rules, as we already applied xDelta
+                    throw new IllegalStateException("relative offsets invariant being positive violated during after-delete fixup");
+                    // FIXME this does happen apparently, so we need another removal strategy
+                    // FIXME take a look at AVL tree or something with rotation-based balancing, as rotations seems to be ok
+                }
+            }
+        }
+
+        if (!y.isRed) {
+            this.restoreAfterDelete(x);
+        }
+
+        this.size--;
+    }
+
+    private void restoreAfterDelete(Node<T> x) {
+        // maintain Red-Black tree balance after deleting node
+
+        Node<T> y;
+
+        while (x != this.root && !x.isRed) {
+            if (x == x.parent.left) {         // determine sub tree from parent
+                y = x.parent.right;         // y is x's sibling 
+                if (y.isRed) {   // x is black, y is red - make both black and rotate
+                    y.isRed = false;
+                    x.parent.isRed = true;
+                    this.rotateLeft(x.parent);
+                    y = x.parent.right;
+                }
+                if (!y.left.isRed && !y.right.isRed) {   // children are both black
+                    y.isRed = true;     // change parent to red
+                    x = x.parent;                   // move up the tree
+                } else {
+                    if (!y.right.isRed) {
+                        y.left.isRed = false;
+                        y.isRed = true;
+                        this.rotateRight(y);
+                        y = x.parent.right;
+                    }
+                    y.isRed = x.parent.isRed;
+                    x.parent.isRed = false;
+                    y.right.isRed = false;
+                    this.rotateLeft(x.parent);
+                    x = this.root;
+                }
+            } else {   // right subtree - same as code above with right and left swapped
+                y = x.parent.left;
+                if (y.isRed) {
+                    y.isRed = false;
+                    x.parent.isRed = true;
+                    this.rotateRight(x.parent);
+                    y = x.parent.left;
+                }
+                if (!y.right.isRed && !y.left.isRed) {
+                    y.isRed = true;
+                    x = x.parent;
+                } else {
+                    if (!y.left.isRed) {
+                        y.right.isRed = false;
+                        y.isRed = true;
+                        this.rotateLeft(y);
+                        y = x.parent.left;
+                    }
+                    y.isRed = x.parent.isRed;
+                    x.parent.isRed = false;
+                    y.left.isRed = false;
+                    this.rotateRight(x.parent);
+                    x = this.root;
+                }
+            }
+        }
+        x.isRed = false;
+    }
 }

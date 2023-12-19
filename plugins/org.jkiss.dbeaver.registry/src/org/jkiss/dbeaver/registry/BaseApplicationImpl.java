@@ -23,10 +23,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
 
+import java.lang.reflect.Constructor;
 import java.util.UUID;
 
 /**
@@ -42,7 +48,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     private final long applicationStartTime = System.currentTimeMillis();
 
     protected BaseApplicationImpl() {
-        if (INSTANCE != null && !(INSTANCE instanceof EclipsePluginApplicationImpl)) {
+        if (INSTANCE != null) {
             log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
         }
         INSTANCE = this;
@@ -60,7 +66,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
                 }
             }
             if (instance == null) {
-                instance = new EclipsePluginApplicationImpl();
+                throw new IllegalStateException("No DBeaver application found");
             }
             INSTANCE = instance;
         }
@@ -127,9 +133,12 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     @Override
     public boolean hasProductFeature(@NotNull String featureName) {
-        // By default, product includes all possible features
+        // By default, product includes almost all possible features
         // Feature set can be customized by particular implementation
-        return true;
+        return switch (featureName) {
+            case DBFUtils.PRODUCT_FEATURE_MULTI_FS -> false;
+            default -> true;
+        };
     }
 
     /////////////////////////////////////////
@@ -143,6 +152,31 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @Override
     public void stop() {
 
+    }
+
+    protected void initializeApplicationServices() {
+        if (getClass().getClassLoader() instanceof BundleReference br) {
+            // Initialize platform
+            BundleContext bundleContext = br.getBundle().getBundleContext();
+            registerService(bundleContext, DBPPlatform.class, getPlatformClass());
+            registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
+        } else {
+            log.error("Cannot initialize application services in non-OSGI context");
+        }
+    }
+
+    protected <T> void registerService(BundleContext bundleContext, Class<T> serviceInt, Class<? extends T> serviceImplClass) {
+        if (serviceImplClass == null) {
+            return;
+        }
+        try {
+            Constructor<? extends T> constructor = serviceImplClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            T serviceImpl = constructor.newInstance();
+            bundleContext.registerService(serviceInt, serviceImpl, null);
+        } catch (Throwable e) {
+            log.error("Error instantiating service '" + serviceInt.getName() + "'", e);
+        }
     }
 
 }

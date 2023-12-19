@@ -46,7 +46,7 @@ public class BrowserPopup extends AbstractPopupPanel {
         if (browser != null && !browser.isDisposed()) {
             browser.setUrl(url.toString());
         } else {
-            BrowserPopup browserPopup = new BrowserPopup(UIUtils.getActiveWorkbenchShell(), id, url);
+            BrowserPopup browserPopup = new BrowserPopup(UIUtils.getActiveShell(), id, url);
             browserPopup.open();
         }
     }

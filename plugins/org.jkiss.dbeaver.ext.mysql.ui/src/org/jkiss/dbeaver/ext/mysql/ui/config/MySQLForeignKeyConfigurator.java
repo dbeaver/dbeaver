@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -52,7 +53,7 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
                 return null;
             }
 
-            foreignKey.setReferencedKey((MySQLTableConstraint) editPage.getUniqueConstraint());
+            foreignKey.setReferencedConstraint((MySQLTableConstraint) editPage.getUniqueConstraint());
             foreignKey.setDeleteRule(editPage.getOnDeleteRule());
             foreignKey.setUpdateRule(editPage.getOnUpdateRule());
             int colIndex = 1;
@@ -64,6 +65,7 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
                         colIndex++,
                         (MySQLTableColumn) tableColumn.getRefColumn()));
             }
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
             return foreignKey;
         });
     }

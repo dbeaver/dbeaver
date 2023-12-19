@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**

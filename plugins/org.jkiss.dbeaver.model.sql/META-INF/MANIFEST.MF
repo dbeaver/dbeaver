@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver SQL Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.sql;singleton:=true
-Bundle-Version: 1.0.109.qualifier
-Bundle-Release-Date: 20231120
+Bundle-Version: 1.0.110.qualifier
+Bundle-Release-Date: 20231204
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.model.sql.internal.SQLModelActivator
@@ -44,3 +44,4 @@ Require-Bundle: org.eclipse.equinox.security,
  org.jkiss.dbeaver.model.jdbc
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.sql
+Service-Component: META-INF/component-sql-dialect-registry.xml

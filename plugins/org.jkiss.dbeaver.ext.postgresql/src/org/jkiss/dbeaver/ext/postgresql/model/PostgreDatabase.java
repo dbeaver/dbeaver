@@ -1199,7 +1199,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             throws SQLException {
             return session.prepareStatement(
                 "SELECT t.oid,t.*" +
-                    (owner.getDataSource().getServerType().supportsTeblespaceLocation() ? ",pg_tablespace_location(t.oid) loc" : "") +
+                    (owner.getDataSource().getServerType().supportsTablespaceLocation() ? ",pg_tablespace_location(t.oid) loc" : "") +
                     "\nFROM pg_catalog.pg_tablespace t " +
                     "\nORDER BY t.oid"
             );

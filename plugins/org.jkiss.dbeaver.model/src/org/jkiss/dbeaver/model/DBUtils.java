@@ -1934,26 +1934,26 @@ public final class DBUtils {
     }
 
     public static boolean isHiddenObject(Object object) {
-        return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
+        return object instanceof DBPHiddenObject ho && ho.isHidden();
     }
 
     public static boolean isSystemObject(Object object) {
-        return object instanceof DBPSystemObject && ((DBPSystemObject) object).isSystem();
+        return object instanceof DBPSystemObject so && so.isSystem();
     }
 
     public static boolean isVirtualObject(Object object) {
-        return object instanceof DBPVirtualObject && ((DBPVirtualObject) object).isVirtual();
+        return object instanceof DBPVirtualObject vo && vo.isVirtual();
     }
 
     public static boolean isInheritedObject(Object object) {
-        return object instanceof DBPInheritedObject && ((DBPInheritedObject) object).isInherited();
+        return object instanceof DBPInheritedObject io && io.isInherited();
     }
 
     public static DBDPseudoAttribute getRowIdAttribute(DBSEntity entity) {
-        if (entity instanceof DBDPseudoAttributeContainer) {
+        if (entity instanceof DBDPseudoAttributeContainer pac) {
             try {
                 return DBDPseudoAttribute.getAttribute(
-                    ((DBDPseudoAttributeContainer) entity).getPseudoAttributes(),
+                    pac.getPseudoAttributes(),
                     DBDPseudoAttributeType.ROWID);
             } catch (DBException e) {
                 log.warn("Can't get pseudo attributes for '" + entity.getName() + "'", e);
@@ -1963,7 +1963,7 @@ public final class DBUtils {
     }
 
     public static boolean isDynamicAttribute(DBSAttributeBase attr) {
-        return attr instanceof DBSAttributeDynamic && ((DBSAttributeDynamic) attr).isDynamicAttribute();
+        return attr instanceof DBSAttributeDynamic da && da.isDynamicAttribute();
     }
 
     public static boolean isRowIdAttribute(DBSEntityAttribute attr) {
@@ -1972,9 +1972,9 @@ public final class DBUtils {
     }
 
     public static DBDPseudoAttribute getPseudoAttribute(DBSEntity entity, String attrName) {
-        if (entity instanceof DBDPseudoAttributeContainer) {
+        if (entity instanceof DBDPseudoAttributeContainer pac) {
             try {
-                DBDPseudoAttribute[] pseudoAttributes = ((DBDPseudoAttributeContainer) entity).getPseudoAttributes();
+                DBDPseudoAttribute[] pseudoAttributes = pac.getPseudoAttributes();
                 if (pseudoAttributes != null && pseudoAttributes.length > 0) {
                     for (DBDPseudoAttribute pa : pseudoAttributes) {
                         String attrId = pa.getAlias();
@@ -1994,7 +1994,7 @@ public final class DBUtils {
     }
 
     public static boolean isPseudoAttribute(DBSAttributeBase attr) {
-        return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
+        return attr instanceof DBDAttributeBinding ab && ab.isPseudoAttribute();
     }
 
     public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator() {
@@ -2096,7 +2096,7 @@ public final class DBUtils {
         }
         DBSInstance instance = getObjectOwnerInstance(object);
         return instance == null ||
-            (instance instanceof DBSInstanceLazy && !((DBSInstanceLazy) instance).isInstanceConnected())/* ||
+            (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())/* ||
             !instance.getDataSource().getContainer().isConnected()*/ ?
             null :
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
@@ -2107,10 +2107,10 @@ public final class DBUtils {
         if (context == null) {
             // Not connected - try to connect
             DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(object);
-            if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy) ownerInstance).isInstanceConnected()) {
+            if (ownerInstance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected()) {
                 if (!RuntimeUtils.runTask(monitor -> {
                         try {
-                            ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
+                            instanceLazy.checkInstanceConnection(monitor);
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }

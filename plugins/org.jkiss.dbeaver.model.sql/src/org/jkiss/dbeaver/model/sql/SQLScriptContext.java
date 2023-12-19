@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
@@ -39,6 +40,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * SQL script execution context
@@ -265,7 +267,11 @@ public class SQLScriptContext implements DBCScriptContext {
         this.pragmas.putAll(context.pragmas);
     }
 
-    public boolean fillQueryParameters(SQLQuery query, boolean useDefaults) {
+    public boolean fillQueryParameters(
+        @NotNull SQLQuery query,
+        @NotNull Supplier<DBDDataReceiver> dataReceiverSupplier,
+        boolean useDefaults
+    ) {
         if (ignoreParameters) {
             return true;
         }
@@ -278,7 +284,13 @@ public class SQLScriptContext implements DBCScriptContext {
 
         if (parametersProvider != null) {
             // Resolve parameters (only if it is the first fetch)
-            Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters, useDefaults);
+            Boolean paramsResult = parametersProvider.prepareStatementParameters(
+                this,
+                query,
+                parameters,
+                dataReceiverSupplier,
+                useDefaults
+            );
             if (paramsResult == null) {
                 ignoreParameters = true;
                 return true;

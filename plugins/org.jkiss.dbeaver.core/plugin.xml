@@ -113,9 +113,6 @@
         <command id="org.jkiss.dbeaver.core.txn.log" name="%command.org.jkiss.dbeaver.core.txn.log.name" description="%command.org.jkiss.dbeaver.core.txn.log.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.pending" name="%command.org.jkiss.dbeaver.core.txn.pending.name" description="%command.org.jkiss.dbeaver.core.txn.pending.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
-        <command id="org.jkiss.dbeaver.core.edit.copy.special" name="%command.org.jkiss.dbeaver.core.edit.copy.special.name" description="%command.org.jkiss.dbeaver.core.edit.copy.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
-        <command id="org.jkiss.dbeaver.core.edit.paste.special" name="%command.org.jkiss.dbeaver.core.edit.paste.special.name" description="%command.org.jkiss.dbeaver.core.edit.paste.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
-
         <command id="org.jkiss.dbeaver.core.qm.filter" name="%command.org.jkiss.dbeaver.core.qm.filter.name" description="%command.org.jkiss.dbeaver.core.qm.filter.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.qm.clear" name="%command.org.jkiss.dbeaver.core.qm.clear.name" description="%command.org.jkiss.dbeaver.core.qm.clear.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
@@ -731,6 +728,14 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
+            <separator name="remote-files" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.save.resource">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.edit.load.resource">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
             <separator name="connection-tools" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.connect">
@@ -1009,13 +1014,6 @@
                 <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
             </enabledWhen>
         </page>
-    </extension>
-
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.runtime.DBWorkbench" class="org.jkiss.dbeaver.core.DesktopAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
-            <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
-        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.themes">

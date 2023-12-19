@@ -28,10 +28,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
@@ -641,7 +641,7 @@ public class SQLScriptParserTest {
     }
 
     private SQLDialect setDialect(String name) throws DBException {
-        SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
+        SQLDialectMetadataRegistry registry = DBWorkbench.getPlatform().getSQLDialectRegistry();
         if (name.equals("oracle")) {
             Mockito.when(dataSource.isServerVersionAtLeast(12, 1)).thenReturn(true);
         }

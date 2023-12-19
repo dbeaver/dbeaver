@@ -77,6 +77,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -87,8 +88,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -259,9 +260,15 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case CMD_ROW_COPY: {
                 boolean copy = actionId.equals(CMD_ROW_COPY);
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
-                boolean insertAfter = rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
-                if (shiftPressed) insertAfter = !insertAfter;
-                rsv.addNewRow(copy, insertAfter, true);
+                final RowPlacement placement;
+
+                if (rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ^ shiftPressed) {
+                    placement = RowPlacement.AFTER_SELECTION;
+                } else {
+                    placement = RowPlacement.BEFORE_SELECTION;
+                }
+
+                rsv.addNewRow(placement, copy, true);
                 rsv.getActivePresentation().getControl().setFocus();
                 break;
             }
