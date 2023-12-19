@@ -214,7 +214,7 @@ public class SQLScriptParserGenericsTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "AbC", "#d2"), actualParamNames);
+        Assert.assertEquals(List.of("1", "\"SYs_B_1\"", "\"MyVar8\"", "AbC", "\"#d2\""), actualParamNames);
     }
 
     @Test
