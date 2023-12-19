@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
+import org.jkiss.dbeaver.dpi.model.DPIDriverLibrariesProvider;
 import org.jkiss.dbeaver.dpi.model.client.ConfigUtils;
 import org.jkiss.dbeaver.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -39,20 +40,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * DPI application
  */
-public class DPIApplication extends DesktopApplicationImpl {
+public class DPIApplication extends DesktopApplicationImpl implements DPIDriverLibrariesProvider {
 
     private static final Log log = Log.getLog(DPIApplication.class);
-    private final boolean multiUser;
+
+    private final Map<String, String[]> driverLibsLocation = new ConcurrentHashMap<>();
 
     public DPIApplication() {
-        this.multiUser = Boolean.parseBoolean(getCommandLineArgument(DPIConstants.SERVER_PARAM_MULTIUSER));
     }
 
     @Override
@@ -63,11 +64,6 @@ public class DPIApplication extends DesktopApplicationImpl {
     @Override
     public boolean isDetachedProcess() {
         return true;
-    }
-
-    @Override
-    public boolean isMultiuser() {
-        return multiUser;
     }
 
     @Override
@@ -180,4 +176,15 @@ public class DPIApplication extends DesktopApplicationImpl {
         return null;
     }
 
+    @NotNull
+    @Override
+    public synchronized List<Path> getDriverLibsLocation(@NotNull String driverId) {
+        return Arrays.stream(driverLibsLocation.getOrDefault(driverId, new String[0]))
+            .map(Path::of)
+            .collect(Collectors.toList());
+    }
+
+    public void addDriverLibsLocation(@NotNull String driverId, @NotNull String[] driverLibsLocation) {
+        this.driverLibsLocation.put(driverId, driverLibsLocation);
+    }
 }

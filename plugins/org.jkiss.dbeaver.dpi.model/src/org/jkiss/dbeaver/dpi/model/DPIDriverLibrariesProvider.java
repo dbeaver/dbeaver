@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.dpi.model;
 
 import org.jkiss.code.NotNull;
 
 import java.nio.file.Path;
+import java.util.List;
 
-public interface DBPDriverLocationProvider {
+public interface DPIDriverLibrariesProvider {
     @NotNull
-    Path getDriversLocationPath();
+    List<Path> getDriverLibsLocation(@NotNull String driverId);
 }

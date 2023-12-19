@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
@@ -77,6 +78,7 @@ public class DPIControllerImpl implements DPIController {
     public synchronized DBPDataSource openDataSource(
         @NotNull String session,
         @NotNull String container,
+        @NotNull String[] driverLibraries,
         @Nullable Map<String, String> credentials
     ) throws DBException {
         DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
@@ -99,9 +101,13 @@ public class DPIControllerImpl implements DPIController {
         );
         DBPDataSourceContainer dataSourceContainer =
             project.getDataSourceRegistry().getDataSources().stream().findFirst().orElse(null);
+
         if (dataSourceContainer == null) {
             throw new DBException("Data source '" + container + "' not found");
         }
+        ((DPIApplication) DPIApplication.getInstance()).addDriverLibsLocation(
+            dataSourceContainer.getDriver().getId(), driverLibraries
+        );
         LoggingProgressMonitor monitor = new LoggingProgressMonitor(log);
 
         ((DataSourceDescriptor) dataSourceContainer).openDataSource(monitor, true);

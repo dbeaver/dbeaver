@@ -22,7 +22,6 @@ import org.eclipse.osgi.storage.BundleInfo;
 import org.eclipse.osgi.storage.bundlefile.BundleFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
-import org.jkiss.dbeaver.model.DBPDriverLocationProvider;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -213,7 +212,7 @@ class BundleProcessConfig {
             cmd.add("-cp");
             cmd.add(getBundleReference(launcherWiring, false));
         }
-        cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:15005");
+        cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:15005");
         cmd.add("org.eclipse.equinox.launcher.Main");
 
         cmd.add("-launcher");
@@ -233,11 +232,6 @@ class BundleProcessConfig {
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         cmd.add(DPIConstants.SERVER_PARAM_MULTIUSER);
         cmd.add(String.valueOf(application.isMultiuser()));
-
-        if (application instanceof DBPDriverLocationProvider driverLocationProvider) {
-            cmd.add(DPIConstants.SERVER_PARAM_DRIVERS_LOCATION);
-            cmd.add(driverLocationProvider.getDriversLocationPath().toAbsolutePath().toString());
-        }
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.directory(dataPath.toFile());

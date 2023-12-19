@@ -1007,10 +1007,16 @@ public class DataSourceDescriptor
                 dsc -> dsc.equals(this)
             );
 
+            String[] driverLibraries = getDriver().getDriverLibraries()
+                .stream()
+                .map(DBPDriverLibrary::getLocalFile)
+                .filter(Objects::nonNull)
+                .map(path -> path.toAbsolutePath().toString())
+                .toArray(String[]::new);
             this.dataSource = dpiClient.openDataSource(
                 session.getSessionId(),
                 new String(buffer.getData(), StandardCharsets.UTF_8),
-                new String[]{},
+                driverLibraries,
                 credentials
             );
             log.debug("Opened data source: " + dataSource);
