@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.impl.OutputWriterAdapter;
+import org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
@@ -428,8 +430,19 @@ public class SQLScriptContext implements DBCScriptContext {
         }
     }
 
-    private static String getNormalizedVarName(String name) {
-        return name.toUpperCase();
+    private String getNormalizedVarName(String name) {
+        String unquoted = null;
+        if (contextProvider.getExecutionContext() != null) {
+            unquoted = DBUtils.getUnQuotedIdentifier(contextProvider.getExecutionContext().getDataSource(), name);
+        } else {
+            unquoted = DBUtils.getUnQuotedIdentifier(name, AbstractSQLDialect.DEFAULT_IDENTIFIER_QUOTES);
+        }
+        if (!unquoted.equals(name)) {
+            return unquoted;
+        } else {
+            // Convert unquoted identifiers to uppercase
+            return name.toUpperCase();
+        }
     }
 
 }

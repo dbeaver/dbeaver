@@ -40,7 +40,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         if (varNameEnd == -1) {
             throw new DBCException("Missing variable name. Expected syntax:\n@set varName = value or expression");
         }
-        String varName = prepareVarName(sqlDialect, parameter.substring(0, varNameEnd));
+        String varName = parameter.substring(0, varNameEnd);
         int divPos = parameter.indexOf('=', varNameEnd);
         if (divPos == -1) {
             throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");

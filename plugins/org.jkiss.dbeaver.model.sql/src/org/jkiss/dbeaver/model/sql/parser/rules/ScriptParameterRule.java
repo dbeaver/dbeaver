@@ -120,7 +120,7 @@ public class ScriptParameterRule implements TPRule {
     }
 
     private static boolean isValidParameterChar(char c) {
-        return Character.isJavaIdentifierPart(c) || c == '.';
+        return Character.isJavaIdentifierPart(c) || c == '.' || c == '"';
     }
 
     /**

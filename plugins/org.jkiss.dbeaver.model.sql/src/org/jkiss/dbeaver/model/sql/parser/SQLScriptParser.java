@@ -802,12 +802,7 @@ public class SQLScriptParser {
                         } 
                         if (preparedParamName == null) {
                             if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
-                                String rawParamName = paramName.substring(1);
-                                if (sqlDialect.isQuotedIdentifier(rawParamName)) {
-                                    preparedParamName = sqlDialect.getUnquotedIdentifier(rawParamName);
-                                } else {
-                                    preparedParamName = rawParamName;
-                                }
+                                preparedParamName = paramName.substring(1);
                             } else {
                                 preparedParamName = paramName;
                             }
