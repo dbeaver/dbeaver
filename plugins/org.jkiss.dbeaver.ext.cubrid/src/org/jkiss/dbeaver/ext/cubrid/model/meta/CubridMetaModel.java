@@ -47,9 +47,7 @@ public class CubridMetaModel extends GenericMetaModel {
 		try {
 			int major = session.getMetaData().getDatabaseMajorVersion();
 			int minor = session.getMetaData().getDatabaseMinorVersion();
-			if(major == 11 && minor >= 2) {
-				return true;
-			}else if(major > 11) {
+			if (major > 11 || (major == 11 && minor >= 2)) {
 				return true;
 			}
 		} catch (SQLException e) {
