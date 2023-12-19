@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -274,7 +275,7 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 	}
 
-	public class CubridIndexCache extends JDBCCompositeCache<CubridObjectContainer, CubridTable, CubridTableIndex, GenericTableIndexColumn>{
+	public class CubridIndexCache extends JDBCCompositeCache<CubridObjectContainer, CubridTable, GenericTableIndex, GenericTableIndexColumn>{
 
 		CubridIndexCache(CubridTableCache tableCache) {
 			super(tableCache, CubridTable.class,
@@ -289,7 +290,7 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		}
 
 		@Override
-		protected CubridTableIndex fetchObject(JDBCSession session, CubridObjectContainer owner, CubridTable parent,
+		protected GenericTableIndex fetchObject(JDBCSession session, CubridObjectContainer owner, CubridTable parent,
 			String indexName, JDBCResultSet dbResult) throws SQLException, DBException {
 
 			boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
@@ -320,12 +321,12 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 				name = parent.getName().toUpperCase(Locale.ENGLISH) + "_INDEX";
 			}
 
-			return new CubridTableIndex(parent, isNonUnique, indexQualifier, cardinality, name, indexType, true);
+			return new GenericTableIndex(parent, isNonUnique, indexQualifier, cardinality, name, indexType, true);
 		}
 
 		@Override
 		protected GenericTableIndexColumn[] fetchObjectRow(JDBCSession session, CubridTable parent,
-			CubridTableIndex object, JDBCResultSet dbResult) throws SQLException, DBException {
+			GenericTableIndex object, JDBCResultSet dbResult) throws SQLException, DBException {
 			int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
 			boolean trimName = parent.getDataSource().getMetaModel().isTrimObjectNames();
 			String columnName = trimName ? JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME)
@@ -349,7 +350,7 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		}
 
 		@Override
-		protected void cacheChildren(DBRProgressMonitor monitor, CubridTableIndex object,
+		protected void cacheChildren(DBRProgressMonitor monitor, GenericTableIndex object,
 			List<GenericTableIndexColumn> children) {
 			object.setColumns(children);
 		}

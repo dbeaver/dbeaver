@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class CubridMetaModel extends GenericMetaModel {
 	private static final Log log = Log.getLog(CubridMetaModel.class);
@@ -109,24 +107,6 @@ public class CubridMetaModel extends GenericMetaModel {
 			return new CubridView(container, tableName, tableType, dbResult);
 		}
 		return new CubridTable(container, tableName, tableType, dbResult);
-	}
-
-	public CubridTableIndex createIndexImpl(
-		CubridTable table,
-		boolean nonUnique,
-		String qualifier,
-		long cardinality,
-		String indexName,
-		DBSIndexType indexType,
-		boolean persisted) {
-		return new CubridTableIndex(
-			table,
-			nonUnique,
-			qualifier,
-			cardinality,
-			indexName,
-			indexType,
-			persisted);
 	}
 
 }
