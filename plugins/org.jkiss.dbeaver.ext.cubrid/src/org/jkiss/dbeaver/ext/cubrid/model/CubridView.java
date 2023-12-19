@@ -16,10 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import java.util.Map;
+
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 
-public class CubridView extends CubridTableBase implements DBSObjectWithScript {
+public class CubridView extends CubridTable implements DBSObjectWithScript {
 
 	private String ddl;
 
@@ -33,8 +38,9 @@ public class CubridView extends CubridTableBase implements DBSObjectWithScript {
 	}
 
 	@Override
-	public String getDDL() {
-		return ddl;
+	@Property(hidden = true, editable = true, updatable = true, order = -1)
+	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+		return getDataSource().getMetaModel().getViewDDL(monitor, null, options);
 	}
 
 	@Override

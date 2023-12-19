@@ -20,7 +20,6 @@ import java.util.Map;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTableBase;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
@@ -33,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-public class CubridTableManager extends SQLTableManager<CubridTableBase, CubridObjectContainer> {
+public class CubridTableManager extends SQLTableManager<CubridTable, CubridObjectContainer> {
 
 	private static final String NEW_TABLE_NAME = "NEW_TABLE";
 	private static final String TABLE_TYPE_TABLE = "TABLE";
@@ -55,17 +54,17 @@ public class CubridTableManager extends SQLTableManager<CubridTableBase, CubridO
 	}
 
 	@Override
-	public DBSObjectCache<? extends DBSObject, CubridTableBase> getObjectsCache(CubridTableBase object) {
+	public DBSObjectCache<? extends DBSObject, CubridTable> getObjectsCache(CubridTable object) {
 		return object.getContainer().getCubridTableCache();
 	}
 
 	@Override
-	protected CubridTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
+	protected CubridTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
 		Object container, Object copyFrom, Map<String, Object> options) throws DBException {
 
 		CubridObjectContainer objectContainer = ((CubridUser) container).getParentObject();
 
-		CubridTableBase table = new CubridTable(objectContainer, NEW_TABLE_NAME, TABLE_TYPE_TABLE, null);
+		CubridTable table = new CubridTable(objectContainer, NEW_TABLE_NAME, TABLE_TYPE_TABLE, null);
 		setNewObjectName(monitor, objectContainer, table);
 		return table;
 	}

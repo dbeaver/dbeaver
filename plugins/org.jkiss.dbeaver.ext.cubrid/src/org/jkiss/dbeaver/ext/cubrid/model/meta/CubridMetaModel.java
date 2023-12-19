@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTableBase;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -64,8 +63,8 @@ public class CubridMetaModel extends GenericMetaModel {
 	@Override
 	public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
 		if(isSupportMultiSchema(session) && forTable instanceof CubridTable) {
-			CubridTableBase tablebase = (CubridTableBase) forTable;
-			return session.getMetaData().getColumns(null, null, tablebase!=null?tablebase.getUniqueName():null, null).getSourceStatement();
+			CubridTable table = (CubridTable) forTable;
+			return session.getMetaData().getColumns(null, null, table!=null?table.getUniqueName():null, null).getSourceStatement();
 		}
 		return super.prepareTableColumnLoadStatement(session, owner, forTable);
 	}
@@ -73,8 +72,8 @@ public class CubridMetaModel extends GenericMetaModel {
 	@Override
 	public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException, DBException {
 		if(isSupportMultiSchema(session) && forTable instanceof CubridTable) {
-			CubridTableBase tablebase = (CubridTableBase) forTable;
-			return session.getMetaData().getPrimaryKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
+			CubridTable table = (CubridTable) forTable;
+			return session.getMetaData().getPrimaryKeys(null, null, table!=null?table.getUniqueName():null).getSourceStatement();
 		}
 		return super.prepareUniqueConstraintsLoadStatement(session, owner, forTable);
     }
@@ -82,30 +81,30 @@ public class CubridMetaModel extends GenericMetaModel {
 	@Override
 	public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
 		if(isSupportMultiSchema(session) && forTable instanceof CubridTable) {
-			CubridTableBase tablebase = (CubridTableBase) forTable;
-			return session.getMetaData().getImportedKeys(null, null, tablebase!=null?tablebase.getUniqueName():null).getSourceStatement();
+			CubridTable table = (CubridTable) forTable;
+			return session.getMetaData().getImportedKeys(null, null, table!=null?table.getUniqueName():null).getSourceStatement();
 		}
 		return super.prepareForeignKeysLoadStatement(session, owner, forTable);
 	}
 
-	public JDBCStatement prepareIndexLoadStatement(@NotNull JDBCSession session, CubridTableBase tableBase) throws SQLException {
-		String tableName = isSupportMultiSchema(session)? tableBase.getUniqueName():tableBase.getName();
+	public JDBCStatement prepareIndexLoadStatement(@NotNull JDBCSession session, CubridTable table) throws SQLException {
+		String tableName = isSupportMultiSchema(session)? table.getUniqueName():table.getName();
 		return session.getMetaData().getIndexInfo(null, null, tableName, false, true).getSourceStatement();
 	}
 
-	public CubridTableBase createTableImpl(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
+	public CubridTable createTableImpl(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
 
 		String tableName = JDBCUtils.safeGetString( dbResult, CubridConstants.CLASS_NAME);
 		String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
 
-		CubridTableBase table = this.createTableImpl(owner, tableName, tableType, dbResult);
+		CubridTable table = this.createTableImpl(owner, tableName, tableType, dbResult);
 		if (table == null) {
 			return null;
 		}
 		return table;
 	}
 
-	public CubridTableBase createTableImpl(CubridObjectContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+	public CubridTable createTableImpl(CubridObjectContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
 		if (tableType != null && isView(tableType)) {
 			return new CubridView(container, tableName, tableType, dbResult);
 		}

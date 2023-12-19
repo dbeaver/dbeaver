@@ -82,11 +82,11 @@ public class CubridUser implements DBSObject{
 		return this.container.getDataSource();
 	}
 
-	public Collection<? extends CubridTableBase> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+	public Collection<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getPhysicalTables(monitor, name);
 	}
 
-	public Collection<? extends CubridTableBase> getPhysicalSystemTables(DBRProgressMonitor monitor) throws DBException {
+	public Collection<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getPhysicalSystemTables(monitor, name);
 	}
 

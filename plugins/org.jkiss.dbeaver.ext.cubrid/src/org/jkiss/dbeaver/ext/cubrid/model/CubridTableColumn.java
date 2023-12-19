@@ -29,11 +29,11 @@ public class CubridTableColumn extends GenericTableColumn {
 
 	private static final Log log = Log.getLog(CubridTableColumn.class);
 
-	public CubridTableColumn(CubridTableBase table) {
+	public CubridTableColumn(CubridTable table) {
 		super(table);
 	}
 
-	public CubridTableColumn(CubridTableBase table, JDBCResultSet dbResult) {
+	public CubridTableColumn(CubridTable table, JDBCResultSet dbResult) {
 		super(table);
 		this.name = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
 		this.valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
