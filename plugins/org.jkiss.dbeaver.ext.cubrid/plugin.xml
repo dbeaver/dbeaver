@@ -38,7 +38,7 @@
 	                                        </items>
 	                                    </items>
 	                                </folder>
-	                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
+	                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
 	                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
 	                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
 	                                        </items>
@@ -71,7 +71,7 @@
 		                                        </items>
 		                                    </items>
 		                                </folder>
-		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
+		                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
 		                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
 		                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
 		                                        </items>
@@ -165,7 +165,6 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridForeignKeyManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridIndexManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex"/>
     </extension>
 
