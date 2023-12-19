@@ -26,7 +26,6 @@ import java.util.Locale;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
@@ -194,10 +193,10 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		final GenericMetaObject columnObject;
 
 		protected CubridTableCache(CubridDataSource dataSource) {
-			super(GenericUtils.getColumn(dataSource, CubridConstants.OBJECT_TABLE, JDBCConstants.TABLE_NAME));
+			super(GenericUtils.getColumn(dataSource, GenericConstants.OBJECT_TABLE, JDBCConstants.TABLE_NAME));
 			this.dataSource = dataSource;
-			this.tableObject = dataSource.getMetaObject(CubridConstants.OBJECT_TABLE);
-			this.columnObject = dataSource.getMetaObject(CubridConstants.OBJECT_TABLE_COLUMN);
+			this.tableObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE);
+			this.columnObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE_COLUMN);
 			setListOrderComparator(DBUtils.<CubridTable>nameComparatorIgnoreCase());
 		}
 
