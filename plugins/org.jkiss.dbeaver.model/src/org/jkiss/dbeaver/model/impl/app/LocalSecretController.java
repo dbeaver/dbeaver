@@ -72,8 +72,12 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
         try {
             Path keyPath = root.resolve(escapeSecretKey(secretId));
 
-            getNodeByPath(keyPath.getParent())
-                .put(keyPath.getFileName().toString(), secretValue, true);
+            ISecurePreferences node = getNodeByPath(keyPath.getParent());
+            if (secretValue != null) {
+                node.put(keyPath.getFileName().toString(), secretValue, true);
+            } else {
+                node.remove(keyPath.getFileName().toString());
+            }
         } catch (StorageException e) {
             if (e.getErrorCode() == StorageException.NO_PASSWORD) {
                 throw new DBSecurityException("Cannot save secure settings - master password is not provided");
