@@ -534,7 +534,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     public void addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
-        descriptor.persistSecretIfNeeded(true);
+        descriptor.persistSecretIfNeeded(true, true);
         if (!descriptor.isDetached()) {
             persistDataSourceCreate(dataSource);
         }
@@ -589,7 +589,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 persistDataSourceUpdate(dataSource);
             }
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
-            descriptor.persistSecretIfNeeded(false);
+            descriptor.persistSecretIfNeeded(false, false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
