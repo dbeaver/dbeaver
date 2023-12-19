@@ -36,12 +36,8 @@ public class CubridTableManager extends SQLTableManager<CubridTable, CubridObjec
 
 	private static final String NEW_TABLE_NAME = "NEW_TABLE";
 	private static final String TABLE_TYPE_TABLE = "TABLE";
-	private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
-	        CubridTableColumn.class,
-	        GenericUniqueKey.class,
-	        GenericTableForeignKey.class,
-	        GenericTableIndex.class
-	    );
+	private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(CubridTableColumn.class,
+			GenericUniqueKey.class, GenericTableForeignKey.class, GenericTableIndex.class);
 
 	@Override
 	public Class<? extends DBSObject>[] getChildTypes() {
@@ -59,8 +55,8 @@ public class CubridTableManager extends SQLTableManager<CubridTable, CubridObjec
 	}
 
 	@Override
-	protected CubridTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-		Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+	protected CubridTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
+			Object copyFrom, Map<String, Object> options) throws DBException {
 
 		CubridObjectContainer objectContainer = ((CubridUser) container).getParentObject();
 

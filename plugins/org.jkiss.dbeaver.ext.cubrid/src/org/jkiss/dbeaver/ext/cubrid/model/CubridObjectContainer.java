@@ -69,24 +69,24 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		this.cubridSystemViewCache = new CubridSystemViewCache(dataSource);
 		this.cubridIndexCache = new CubridIndexCache(cubridTableCache);
 	}
-	
+
 	@NotNull
 	@Override
 	public CubridDataSource getDataSource() {
 		return dataSource;
 	}
-	
+
 	public CubridTableCache getCubridTableCache() {
 		return this.cubridTableCache;
-    }
+	}
 
 	public CubridSystemTableCache getCubridSystemTableCache() {
 		return this.cubridSystemTableCache;
-    }
+	}
 
 	public CubridIndexCache getCubridIndexCache() {
 		return this.cubridIndexCache;
-    }
+	}
 
 	@Override
 	public GenericStructContainer getObject() {
@@ -129,8 +129,8 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 	public List<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor, String name) throws DBException {
 		List<CubridTable> tables = new ArrayList<>();
-		for(CubridTable table : this.cubridTableCache.getAllObjects(monitor, this)) {
-			if(table.isPhysicalTable() && table.getOwner().getName().equals(name)) {
+		for (CubridTable table : this.cubridTableCache.getAllObjects(monitor, this)) {
+			if (table.isPhysicalTable() && table.getOwner().getName().equals(name)) {
 				tables.add(table);
 			}
 		}
@@ -139,8 +139,8 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 	public List<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor, String name) throws DBException {
 		List<CubridTable> tables = new ArrayList<>();
-		for(CubridTable table : this.cubridSystemTableCache.getAllObjects(monitor, this)) {
-			if(table.isPhysicalTable() && table.getOwner().getName().equals(name)) {
+		for (CubridTable table : this.cubridSystemTableCache.getAllObjects(monitor, this)) {
+			if (table.isPhysicalTable() && table.getOwner().getName().equals(name)) {
 				tables.add(table);
 			}
 		}
@@ -149,8 +149,8 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 	public List<? extends CubridView> getViews(DBRProgressMonitor monitor, String name) throws DBException {
 		List<CubridView> tables = new ArrayList<>();
-		for(CubridTable table : this.cubridTableCache.getAllObjects(monitor, this)) {
-			if(table.isView() && table.getOwner().getName().equals(name)) {
+		for (CubridTable table : this.cubridTableCache.getAllObjects(monitor, this)) {
+			if (table.isView() && table.getOwner().getName().equals(name)) {
 				tables.add((CubridView) table);
 			}
 		}
@@ -159,8 +159,8 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 	public List<? extends CubridView> getSystemViews(DBRProgressMonitor monitor, String name) throws DBException {
 		List<CubridView> views = new ArrayList<>();
-		for(CubridTable table : this.cubridSystemViewCache.getAllObjects(monitor, this)) {
-			if(table.getOwner().getName().equals(name)) {
+		for (CubridTable table : this.cubridSystemViewCache.getAllObjects(monitor, this)) {
+			if (table.getOwner().getName().equals(name)) {
 				views.add((CubridView) table);
 			}
 		}
@@ -171,21 +171,23 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 		@NotNull
 		@Override
-		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer container) throws SQLException {
-			String sql= "select * from db_user";
+		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session,
+				@NotNull CubridObjectContainer container) throws SQLException {
+			String sql = "select * from db_user";
 			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
 			return dbStat;
 		}
 
 		@Override
-		protected CubridUser fetchObject(JDBCSession session, CubridObjectContainer container, JDBCResultSet resultSet) throws SQLException, DBException {
+		protected CubridUser fetchObject(JDBCSession session, CubridObjectContainer container, JDBCResultSet resultSet)
+				throws SQLException, DBException {
 			String name = resultSet.getString("name");
 			String comment = resultSet.getString("comment");
 			return new CubridUser(container, name, comment);
 		}
 
 	}
-	
+
 	public class CubridTableCache extends JDBCStructLookupCache<CubridObjectContainer, CubridTable, CubridTableColumn> {
 
 		final CubridDataSource dataSource;
@@ -205,31 +207,32 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		}
 
 		@Override
-		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
-			@Nullable CubridTable object, @Nullable String objectName) throws SQLException {
-			String sql= "select a.*, case when class_type = 'CLASS' then 'TABLE' \r\n"
-				+ "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
-				+ "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
-				+ "a.class_name = b.class_name where a.is_system_class='NO'";
+		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
+				@NotNull CubridObjectContainer owner, @Nullable CubridTable object, @Nullable String objectName)
+				throws SQLException {
+			String sql = "select a.*, case when class_type = 'CLASS' then 'TABLE' \r\n"
+					+ "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
+					+ "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
+					+ "a.class_name = b.class_name where a.is_system_class='NO'";
 			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
 			return dbStat;
 		}
 
 		@Override
 		protected CubridTableColumn fetchChild(@NotNull JDBCSession arg0, @NotNull CubridObjectContainer owner,
-			@NotNull CubridTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+				@NotNull CubridTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
 			return new CubridTableColumn(table, dbResult);
 		}
 
 		@Override
-		protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
-			@Nullable CubridTable forTable) throws SQLException {
+		protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session,
+				@NotNull CubridObjectContainer owner, @Nullable CubridTable forTable) throws SQLException {
 			return dataSource.getMetaModel().prepareTableColumnLoadStatement(session, owner, forTable);
 		}
 
 		@Override
 		protected @Nullable CubridTable fetchObject(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
-			@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
 			return getDataSource().getMetaModel().createTableImpl(session, owner, tableObject, dbResult);
 		}
 
@@ -242,12 +245,12 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		}
 
 		@Override
-		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
-			@Nullable CubridTable object, @Nullable String objectName) throws SQLException {
-			String sql= "select *, class_name as TABLE_NAME, case when class_type = 'CLASS' \r\n"
-				+ "then 'TABLE' end as TABLE_TYPE from db_class\r\n"
-				+ "where class_type = 'CLASS' \r\n"
-				+ "and is_system_class = 'YES'";
+		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
+				@NotNull CubridObjectContainer owner, @Nullable CubridTable object, @Nullable String objectName)
+				throws SQLException {
+			String sql = "select *, class_name as TABLE_NAME, case when class_type = 'CLASS' \r\n"
+					+ "then 'TABLE' end as TABLE_TYPE from db_class\r\n" + "where class_type = 'CLASS' \r\n"
+					+ "and is_system_class = 'YES'";
 			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
 			return dbStat;
 		}
@@ -261,36 +264,37 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		}
 
 		@Override
-		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull CubridObjectContainer owner,
-			@Nullable CubridTable object, @Nullable String objectName) throws SQLException {
-			String sql= "select *, case when class_type = 'VCLASS' \r\n"
-				+ "then 'VIEW' end as TABLE_TYPE,\r\n"
-				+ "class_name as TABLE_NAME from db_class\r\n"
-				+ "where class_type='VCLASS'\r\n"
-				+ "and is_system_class='YES'";
+		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
+				@NotNull CubridObjectContainer owner, @Nullable CubridTable object, @Nullable String objectName)
+				throws SQLException {
+			String sql = "select *, case when class_type = 'VCLASS' \r\n" + "then 'VIEW' end as TABLE_TYPE,\r\n"
+					+ "class_name as TABLE_NAME from db_class\r\n" + "where class_type='VCLASS'\r\n"
+					+ "and is_system_class='YES'";
 			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
 			return dbStat;
 		}
 
 	}
 
-	public class CubridIndexCache extends JDBCCompositeCache<CubridObjectContainer, CubridTable, GenericTableIndex, GenericTableIndexColumn>{
+	public class CubridIndexCache extends JDBCCompositeCache<CubridObjectContainer, CubridTable, GenericTableIndex, GenericTableIndexColumn> {
 
 		CubridIndexCache(CubridTableCache tableCache) {
 			super(tableCache, CubridTable.class,
-				GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.TABLE_NAME),
-				GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.INDEX_NAME));
+					GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX,
+							JDBCConstants.TABLE_NAME),
+					GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX,
+							JDBCConstants.INDEX_NAME));
 		}
 
 		@Override
 		protected JDBCStatement prepareObjectsStatement(JDBCSession session, CubridObjectContainer owner,
-			CubridTable forParent) throws SQLException {
+				CubridTable forParent) throws SQLException {
 			return dataSource.getMetaModel().prepareIndexLoadStatement(session, forParent);
 		}
 
 		@Override
 		protected GenericTableIndex fetchObject(JDBCSession session, CubridObjectContainer owner, CubridTable parent,
-			String indexName, JDBCResultSet dbResult) throws SQLException, DBException {
+				String indexName, JDBCResultSet dbResult) throws SQLException, DBException {
 
 			boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
 			String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
@@ -300,20 +304,20 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 			DBSIndexType indexType;
 			switch (indexTypeNum) {
-				case DatabaseMetaData.tableIndexStatistic:
-					return null;
-				case DatabaseMetaData.tableIndexClustered:
-					indexType = DBSIndexType.CLUSTERED;
-					break;
-				case DatabaseMetaData.tableIndexHashed:
-					indexType = DBSIndexType.HASHED;
-					break;
-				case DatabaseMetaData.tableIndexOther:
-					indexType = DBSIndexType.OTHER;
-					break;
-				default:
-					indexType = DBSIndexType.UNKNOWN;
-					break;
+			case DatabaseMetaData.tableIndexStatistic:
+				return null;
+			case DatabaseMetaData.tableIndexClustered:
+				indexType = DBSIndexType.CLUSTERED;
+				break;
+			case DatabaseMetaData.tableIndexHashed:
+				indexType = DBSIndexType.HASHED;
+				break;
+			case DatabaseMetaData.tableIndexOther:
+				indexType = DBSIndexType.OTHER;
+				break;
+			default:
+				indexType = DBSIndexType.UNKNOWN;
+				break;
 			}
 			if (CommonUtils.isEmpty(name)) {
 				// [JDBC] Some drivers return empty index names
@@ -325,7 +329,7 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 		@Override
 		protected GenericTableIndexColumn[] fetchObjectRow(JDBCSession session, CubridTable parent,
-			GenericTableIndex object, JDBCResultSet dbResult) throws SQLException, DBException {
+				GenericTableIndex object, JDBCResultSet dbResult) throws SQLException, DBException {
 			int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
 			boolean trimName = parent.getDataSource().getMetaModel().isTrimObjectNames();
 			String columnName = trimName ? JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME)
@@ -341,16 +345,13 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 				return null;
 			}
 
-			return new GenericTableIndexColumn[] { new GenericTableIndexColumn(
-				object,
-				tableColumn,
-				ordinalPosition,
-				!"D".equalsIgnoreCase(ascOrDesc)) };
+			return new GenericTableIndexColumn[] { new GenericTableIndexColumn(object, tableColumn, ordinalPosition,
+					!"D".equalsIgnoreCase(ascOrDesc)) };
 		}
 
 		@Override
 		protected void cacheChildren(DBRProgressMonitor monitor, GenericTableIndex object,
-			List<GenericTableIndexColumn> children) {
+				List<GenericTableIndexColumn> children) {
 			object.setColumns(children);
 		}
 

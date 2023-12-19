@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.cubrid;
 
 public class CubridConstants {
-	
+
 	public static final String OWNER_NAME = "owner_name";
 	public static final String CLASS_NAME = "class_name";
 	public static final String IS_SYSTEM_CLASS = "is_system_class";

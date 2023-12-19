@@ -36,7 +36,8 @@ public class CubridTableColumnManager extends GenericTableColumnManager {
 	}
 
 	@Override
-	protected CubridTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+	protected CubridTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
+			Object container, Object copyFrom, Map<String, Object> options) throws DBException {
 		CubridTable table = (CubridTable) container;
 		DBSDataType columnType = findBestDataType(table, DBConstants.DEFAULT_DATATYPE_NAMES);
 		int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;

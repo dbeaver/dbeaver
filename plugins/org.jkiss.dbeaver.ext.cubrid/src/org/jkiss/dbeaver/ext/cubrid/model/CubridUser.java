@@ -25,7 +25,8 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class CubridUser implements DBSObject{
+public class CubridUser implements DBSObject {
+
 	private String name;
 	private String comment;
 	private CubridObjectContainer container;
@@ -92,14 +93,14 @@ public class CubridUser implements DBSObject{
 
 	public Collection<? extends CubridView> getViews(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getViews(monitor, name);
-    }
+	}
 
 	public Collection<? extends CubridView> getSystemViews(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getSystemViews(monitor, name);
-    }
+	}
 
 	public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
 		return this.container.getIndexes(monitor);
-    }
+	}
 
 }

@@ -29,12 +29,13 @@ public class CubridDataSource extends GenericDataSource {
 
 	private final CubridMetaModel metaModel;
 	private CubridObjectContainer structureContainer;
-	
-	public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel) throws DBException {
+
+	public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel)
+			throws DBException {
 		super(monitor, container, metaModel, new CubridSQLDialect());
 		this.metaModel = new CubridMetaModel();
-    }
-    
+	}
+
 	@DPIContainer
 	@NotNull
 	@Override
@@ -45,16 +46,16 @@ public class CubridDataSource extends GenericDataSource {
 	public Collection<? extends CubridUser> getCubridUsers(DBRProgressMonitor monitor) throws DBException {
 		return structureContainer == null ? null : structureContainer.getCubridUsers(monitor);
 	}
-	
+
 	@NotNull
 	public CubridMetaModel getMetaModel() {
 		return metaModel;
 	}
-    
+
 	@Override
 	public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
 		super.initialize(monitor);
-        structureContainer = new CubridObjectContainer(this);
+		structureContainer = new CubridObjectContainer(this);
 	}
 
 }
