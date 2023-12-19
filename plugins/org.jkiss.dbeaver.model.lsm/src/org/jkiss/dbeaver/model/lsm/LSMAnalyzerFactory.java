@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.model.lsm;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 /**
- * Fabric responsible for creating analyzer instances, parametrized with a given dialect
+ * Factory responsible for creating analyzer instances, parametrized with a given dialect
  */
-public interface LSMAnalyzerFabric {
+public interface LSMAnalyzerFactory {
     /**
      * Creates analyzer instance, parametrized with a given dialect
      */

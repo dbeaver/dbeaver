@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFabric;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFactory;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
-public class SQLStandardAnalyzerFabric implements LSMAnalyzerFabric {
+public class SQLStandardAnalyzerFactory implements LSMAnalyzerFactory {
 
-    public SQLStandardAnalyzerFabric() {
+    public SQLStandardAnalyzerFactory() {
         // do nothing
     }
 

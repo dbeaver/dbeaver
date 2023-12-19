@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFabric;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFactory;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.osgi.framework.Bundle;
 
@@ -40,7 +40,7 @@ public class LSMDialectRegistry {
 
     private static LSMDialectRegistry instance = null;
     
-    private final Map<Class<? extends SQLDialect>, LSMAnalyzerFabric> knownLsmAnalyzerByDialects = new HashMap<>();
+    private final Map<Class<? extends SQLDialect>, LSMAnalyzerFactory> knownLsmAnalyzerByDialects = new HashMap<>();
 
     /**
      * Returns an instance of this singleton
@@ -65,31 +65,31 @@ public class LSMDialectRegistry {
     private void registerLsmDialect(IConfigurationElement dialectElement) {
         Bundle bundle = Platform.getBundle(dialectElement.getContributor().getName());
         try {
-            LSMAnalyzerFabric analyzerFabric = (LSMAnalyzerFabric) dialectElement.createExecutableExtension("analyzerFabricClass");
+            LSMAnalyzerFactory analyzerFactory = (LSMAnalyzerFactory) dialectElement.createExecutableExtension("analyzerFactoryClass");
             for (IConfigurationElement sqlDialectRef : dialectElement.getChildren("appliesTo")) {
                 String dialectClassName = sqlDialectRef.getAttribute("dialectClass");
                 Class<? extends SQLDialect> dialectType = AbstractDescriptor.getObjectClass(bundle, dialectClassName, SQLDialect.class);
-                knownLsmAnalyzerByDialects.put(dialectType, analyzerFabric);
+                knownLsmAnalyzerByDialects.put(dialectType, analyzerFactory);
             }
         } catch (CoreException e) {
-            log.error("Failed to register LSM dialect " + dialectElement.getAttribute("analyzerFabricClass"), e);
+            log.error("Failed to register LSM dialect " + dialectElement.getAttribute("analyzerFactoryClass"), e);
         }
     }
 
     public LSMAnalyzer getAnalyzerForDialect(SQLDialect dialect) {
         Class<?> dialectClass = dialect.getClass();
-        LSMAnalyzerFabric analyzerFabric;
+        LSMAnalyzerFactory analyzerFactory;
         do {
-            analyzerFabric = knownLsmAnalyzerByDialects.get(dialectClass);
+            analyzerFactory = knownLsmAnalyzerByDialects.get(dialectClass);
             dialectClass = dialectClass.getSuperclass();
-        } while (analyzerFabric == null && dialectClass != null);
+        } while (analyzerFactory == null && dialectClass != null);
         
-        if (analyzerFabric == null) {
+        if (analyzerFactory == null) {
             throw new IllegalStateException(
                 "Failed to resolve LSMAnalyzer for " + dialect.getDialectName() + " dialect. Illegal database driver configuration."
             );
         } else {
-            return analyzerFabric.createAnalyzer(dialect);
+            return analyzerFactory.createAnalyzer(dialect);
         }
     }
 }
