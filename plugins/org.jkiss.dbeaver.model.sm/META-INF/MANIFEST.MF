@@ -3,14 +3,15 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Security Manager Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.sm;singleton:=true
-Bundle-Version: 1.0.27.qualifier
-Bundle-Release-Date: 20231204
+Bundle-Version: 1.0.28.qualifier
+Bundle-Release-Date: 20231225
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.security,
  org.jkiss.dbeaver.model.security.user,
  org.jkiss.dbeaver.model.security.exception,
- org.jkiss.dbeaver.model.auth
+ org.jkiss.dbeaver.model.auth,
+ org.jkiss.dbeaver.model.secret
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,

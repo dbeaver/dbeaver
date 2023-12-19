@@ -849,7 +849,7 @@ public class DataSourceDescriptor
     @Override
     public boolean persistConfiguration() {
         try {
-            persistSecretIfNeeded(false);
+            persistSecretIfNeeded(false, false);
 
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
@@ -871,12 +871,16 @@ public class DataSourceDescriptor
         return true;
     }
 
-    boolean persistSecretIfNeeded(boolean force) throws DBException {
+    boolean persistSecretIfNeeded(boolean force, boolean isNewDataSource) throws DBException {
+        if (isDetached()) {
+            // Do not save secrets for hidden or temporary datasources
+            return false;
+        }
         // Save only if secrets were already resolved or it is a new connection
         if (secretsResolved || (force && getProject().isUseSecretStorage())) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
 
-            persistSecrets(secretController);
+            persistSecrets(secretController, isNewDataSource);
         }
         return true;
     }
@@ -892,9 +896,17 @@ public class DataSourceDescriptor
 
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
+        persistSecrets(secretController, false);
+    }
+
+    void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
         if (!isSharedCredentials()) {
             var secret = saveToSecret();
-            secretController.setSecretValue(getSecretKeyId(), secret);
+            // Do not persist empty secrets for new datasources
+            // If secret controller is external then it may take quite a time + may cause errors because of missing secret
+            if (!isNewDataSource || secret != null) {
+                secretController.setSecretValue(getSecretKeyId(), secret);
+            }
         }
         secretsResolved = true;
     }
