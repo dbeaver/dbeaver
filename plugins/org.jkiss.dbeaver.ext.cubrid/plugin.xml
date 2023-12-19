@@ -32,7 +32,7 @@
 	                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
 	                                    </items>
 	                                </folder>
-	                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
+	                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
 	                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
 	                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
 	                                        </items>
@@ -65,7 +65,7 @@
 		                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
 		                                    </items>
 		                                </folder>
-		                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
+		                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
 		                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
 		                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
 		                                        </items>
@@ -164,7 +164,6 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridIndexManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex"/>
     </extension>
 

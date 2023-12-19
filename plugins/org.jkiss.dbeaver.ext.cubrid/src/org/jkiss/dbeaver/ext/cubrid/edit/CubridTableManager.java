@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,7 +38,7 @@ public class CubridTableManager extends SQLTableManager<CubridTable, CubridObjec
 	private static final String TABLE_TYPE_TABLE = "TABLE";
 	private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
 	        CubridTableColumn.class,
-	        CubridUniqueKey.class,
+	        GenericUniqueKey.class,
 	        GenericTableForeignKey.class,
 	        CubridTableIndex.class
 	    );
