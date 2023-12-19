@@ -22,12 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-public class CubridView extends CubridTable implements DBSObjectWithScript, DBSView {
-
-	private String ddl;
+public class CubridView extends CubridTable implements DBSView {
 
 	public CubridView(CubridObjectContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
 		super(container, tableName, tableType, dbResult);
@@ -42,11 +39,6 @@ public class CubridView extends CubridTable implements DBSObjectWithScript, DBSV
 	@Property(hidden = true, editable = true, updatable = true, order = -1)
 	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
 		return getDataSource().getMetaModel().getViewDDL(monitor, null, options);
-	}
-
-	@Override
-	public void setObjectDefinitionText(String source) {
-		this.ddl = source;
 	}
 
 }
