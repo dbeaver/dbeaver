@@ -123,7 +123,7 @@ public class CubridTable extends GenericTable {
 		try {
 			return container.getDataSource().getCubridUsers(null);
 		} catch (DBException e) {
-			log.error("Cannot get user.");
+			log.error("Cannot get user", e);
 		}
 		return null;
 	}

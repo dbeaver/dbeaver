@@ -51,7 +51,7 @@ public class CubridMetaModel extends GenericMetaModel {
 				return true;
 			}
 		} catch (SQLException e) {
-			log.error("can't get database version");
+			log.error("Can't get database version", e);
 		}
 		return false;
 	}
