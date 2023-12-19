@@ -21,8 +21,6 @@ import org.eclipse.draw2d.graph.DirectedGraphLayout;
 import org.eclipse.draw2d.graph.Edge;
 import org.eclipse.draw2d.graph.Node;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Display;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +59,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         nodeByLevels = balanceRoots(isolatedNodes, nodeByLevels);
         nodeByLevels = computeGraph(nodeByLevels);
         nodeByLevels = verifyDirectedGraph(graph, nodeByLevels);
-        // nodeByLevels = rebalanceGraph(nodeByLevels);
         drawGraphNodes(nodeByLevels);
         drawIsolatedNodes(isolatedNodes, nodeByLevels);
         List<Node> nodeMissed = findMissedGraphNodes(graph, nodeByLevels);
@@ -144,42 +141,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             node.y = currentY;
             currentY += node.height + DEFAULT_OFFSET_BY_Y;
         }
-    }
-
-    private boolean isRebalanceRequire(Map<String, Integer> heightByLevels) {
-        Rectangle size = getMonitorSize();
-        for (Entry<String, Integer> entry : heightByLevels.entrySet()) {
-            if (entry.getValue() > size.height) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private TreeMap<String, List<Node>> rebalanceGraph(TreeMap<String, List<Node>> nodeByLevels) {
-        Rectangle size = getMonitorSize();
-        Map<String, Integer> heightByLevels = computeHeight(nodeByLevels);
-        while (isRebalanceRequire(heightByLevels)) {
-            for (Entry<String, Integer> entry : heightByLevels.entrySet()) {
-                if (entry.getValue() > size.height) {
-                    int index = Integer.valueOf(entry.getKey());
-                    List<Node> list = nodeByLevels.get(entry.getKey());
-                    Node node = list.remove(0);
-                    nodeByLevels.put(String.valueOf(index), list);
-                    nodeByLevels.computeIfAbsent(String.valueOf(index + 1), n -> new ArrayList<Node>()).add(node);
-                }
-            }
-            heightByLevels = computeHeight(nodeByLevels);
-        }
-        return nodeByLevels;
-    }
-
-    private Rectangle getMonitorSize() {
-        Rectangle size = Display.getDefault().getBounds();
-        if (size == null) {
-            size = new Rectangle(0, 0, 1080, 2040); // default resolution
-        }
-        return size;
     }
 
     private void drawGraphNodes(TreeMap<String, List<Node>> nodeByEdges) {
@@ -336,25 +297,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             }
         }
         return "";
-    }
-
-    private void removeFirstOccurrenceNode(TreeMap<String, List<Node>> nodeByEdges, Node src) {
-        for (Entry<String, List<Node>> nodeOnLevel : nodeByEdges.entrySet()) {
-            if (nodeOnLevel.getValue().contains(src)) {
-                nodeOnLevel.getValue().remove(src);
-                return;
-            }
-        }
-    }
-
-    private Map<String, Node> getDuplication(Node trg, TreeMap<String, List<Node>> nodeByEdges) {
-        Map<String, Node> mapNode2Position = new HashMap<>();
-        for (Entry<String, List<Node>> entry : nodeByEdges.entrySet()) {
-            if (entry.getValue().contains(trg)) {
-                mapNode2Position.put(entry.getKey(), trg);
-            }
-        }
-        return mapNode2Position;
     }
 
     private Map<String, Integer> computeHeight(TreeMap<String, List<Node>> nodeByEdges) {
