@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
@@ -70,11 +71,15 @@ public class SystemVariablesResolver implements IVariableResolver {
                         return o.toString();
                     }
                 }
-                String var = System.getProperty(name);
-                if (var != null) {
-                    return var;
+                if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+                    // Enable system variables resolve for standalone applications only
+                    String var = System.getProperty(name);
+                    if (var != null) {
+                        return var;
+                    }
+                    return System.getenv(name);
                 }
-                return System.getenv(name);
+                return null;
         }
     }
 
