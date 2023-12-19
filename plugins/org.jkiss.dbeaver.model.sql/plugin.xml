@@ -89,7 +89,7 @@
     </extension>
     
     <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
-        <lsmDialect analyzerFabricClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzerFabric">
+        <lsmDialect analyzerFactoryClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzerFactory">
             <appliesTo dialectClass="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect"/>
         </lsmDialect>
     </extension>
