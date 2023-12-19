@@ -23,8 +23,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-public class CubridView extends CubridTable implements DBSObjectWithScript {
+public class CubridView extends CubridTable implements DBSObjectWithScript, DBSView {
 
 	private String ddl;
 

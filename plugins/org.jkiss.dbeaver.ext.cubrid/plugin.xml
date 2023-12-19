@@ -162,6 +162,7 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridForeignKeyManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey"/>
