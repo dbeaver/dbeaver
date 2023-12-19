@@ -34,8 +34,8 @@ import java.util.Set;
 public class SQLiteSQLDialect extends GenericSQLDialect {
 
     private static final String[][] SQLITE_QUOTE_STRINGS = {
-        {"[", "]"},
         {"\"", "\""},
+        {"[", "]"},
         {"'", "'"},
         {"`", "`"}
     };
