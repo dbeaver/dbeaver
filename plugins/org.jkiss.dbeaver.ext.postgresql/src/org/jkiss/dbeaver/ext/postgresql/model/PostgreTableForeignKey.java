@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * PostgreTableForeignKey
  */
-public class PostgreTableForeignKey extends PostgreTableConstraintBase implements DBSTableForeignKey
+public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTableForeignKeyColumn> implements DBSTableForeignKey
 {
     private static final Log log = Log.getLog(PostgreTableForeignKey.class);
 
@@ -67,7 +67,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     private DBSForeignKeyModifyRule deleteRule;
     private DBSEntityConstraint refConstraint;
     private PostgreTableBase refTable;
-    private final List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
+    private List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
 
 /*
     public PostgreTableForeignKey(DBRProgressMonitor monitor, PostgreTable table, PostgreTableForeignKey source) {
@@ -178,6 +178,11 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     @Override
     public List<PostgreTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
+    }
+
+    @Override
+    public void setColumns(List<PostgreTableForeignKeyColumn> columns) throws DBException {
+        this.columns = columns;
     }
 
     void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {

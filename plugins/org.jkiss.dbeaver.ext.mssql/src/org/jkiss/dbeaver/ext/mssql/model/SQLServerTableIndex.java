@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
@@ -45,7 +46,8 @@ import java.util.Map;
 /**
  * SQLServerTableIndex
  */
-public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase> implements SQLServerObject, DBPNamedObject2, DBSObjectWithScript
+public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase>
+    implements SQLServerObject, DBSTableConstraint, DBPNamedObject2, DBSObjectWithScript
 {
     private boolean unique;
     private boolean primary;

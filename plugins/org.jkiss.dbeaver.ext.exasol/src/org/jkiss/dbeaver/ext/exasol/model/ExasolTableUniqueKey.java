@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
@@ -39,7 +38,8 @@ import java.util.Map;
 /**
  * @author Karl Griesser
  */
-public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> implements DBSEntityReferrer,DBPScriptObject, DBPNamedObject2 {
+public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable, ExasolTableKeyColumn>
+    implements DBSEntityReferrer,DBPScriptObject, DBPNamedObject2 {
 
     private String owner;
     private Boolean enabled;
@@ -88,7 +88,7 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
     // -----------------
 
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 

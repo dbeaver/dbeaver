@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 /**
  * GenericTableConstraint
  */
-public abstract class GenericTableConstraint extends JDBCTableConstraint<GenericTableBase>
+public abstract class GenericTableConstraint extends JDBCTableConstraint<GenericTableBase, GenericTableConstraintColumn>
 {
     protected GenericTableConstraint(GenericTableBase table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {

@@ -41,8 +41,7 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
     private List<MySQLTableConstraintColumn> columns;
     private String checkClause;
 
-    public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
-    {
+    public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, remarks, constraintType, persisted);
     }
 
@@ -69,9 +68,12 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
     }
 
     @Override
-    public List<MySQLTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
-    {
+    public List<MySQLTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
         return columns;
+    }
+
+    public void setColumns(List<MySQLTableConstraintColumn> columns) {
+        this.columns = columns;
     }
 
     public void setCheckClause(String clause) {
@@ -83,23 +85,16 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
         return checkClause;
     }
 
-    public void addColumn(MySQLTableConstraintColumn column)
-    {
+    public void addColumn(MySQLTableConstraintColumn column) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
         this.columns.add(column);
     }
 
-    void setColumns(List<MySQLTableConstraintColumn> columns)
-    {
-        this.columns = columns;
-    }
-
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             getTable(),
@@ -108,8 +103,7 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
 
     @NotNull
     @Override
-    public MySQLDataSource getDataSource()
-    {
+    public MySQLDataSource getDataSource() {
         return getTable().getDataSource();
     }
 

@@ -114,9 +114,9 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
 
     @Override
     public boolean isInUniqueKey() {
-        final List<PostgreTableConstraintBase> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
+        final List<PostgreTableConstraintBase<?>> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
         if (!CommonUtils.isEmpty(cCache)) {
-            for (PostgreTableConstraintBase key : cCache) {
+            for (PostgreTableConstraintBase<?> key : cCache) {
                 if (key instanceof PostgreTableConstraint && key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                     List<PostgreTableConstraintColumn> cColumns = ((PostgreTableConstraint) key).getColumns();
                     if (!CommonUtils.isEmpty(cColumns)) {

@@ -27,11 +27,11 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
 {
-    private AbstractTableConstraint<MySQLTable> constraint;
-    private MySQLTableColumn tableColumn;
-    private int ordinalPosition;
+    private final AbstractTableConstraint<MySQLTable, ? extends MySQLTableConstraintColumn> constraint;
+    private final MySQLTableColumn tableColumn;
+    private final int ordinalPosition;
 
-    public MySQLTableConstraintColumn(AbstractTableConstraint<MySQLTable> constraint, MySQLTableColumn tableColumn, int ordinalPosition)
+    public MySQLTableConstraintColumn(AbstractTableConstraint<MySQLTable, ? extends MySQLTableConstraintColumn> constraint, MySQLTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -69,7 +69,7 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
     }
 
     @Override
-    public AbstractTableConstraint<MySQLTable> getParentObject()
+    public AbstractTableConstraint<MySQLTable, ? extends MySQLTableConstraintColumn> getParentObject()
     {
         return constraint;
     }

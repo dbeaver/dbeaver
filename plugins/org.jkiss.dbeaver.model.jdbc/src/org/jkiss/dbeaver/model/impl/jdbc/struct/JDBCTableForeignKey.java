@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 
 import java.util.List;
@@ -34,8 +35,9 @@ import java.util.List;
  */
 public abstract class JDBCTableForeignKey<
     TABLE extends JDBCTable,
+    COLUMN extends DBSTableConstraintColumn,
     PRIMARY_KEY extends DBSEntityConstraint>
-    extends JDBCTableConstraint<TABLE>
+    extends JDBCTableConstraint<TABLE, COLUMN>
     implements DBSTableForeignKey
 {
     @Nullable

@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,10 +40,10 @@ import java.util.List;
 
 /**
  * DB2 Table Unique Key
- * 
+ *
  * @author Denis Forveille
  */
-public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
+public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table, DB2TableKeyColumn> {
 
     private String owner;
     private DB2OwnerType ownerType;
@@ -61,8 +60,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     // -----------------
 
     public DB2TableUniqueKey(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult, DBSEntityConstraintType type)
-        throws DBException
-    {
+        throws DBException {
         super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, type, true);
 
         DB2DataSource db2DataSource = table.getDataSource();
@@ -83,8 +81,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
 
     }
 
-    public DB2TableUniqueKey(DB2Table db2Table, DBSEntityConstraintType constraintType)
-    {
+    public DB2TableUniqueKey(DB2Table db2Table, DBSEntityConstraintType constraintType) {
         super(db2Table, null, null, constraintType, false);
         this.ownerType = DB2OwnerType.U;
     }
@@ -95,15 +92,13 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource()
-    {
+    public DBPDataSource getDataSource() {
         return getTable().getDataSource();
     }
 
@@ -112,13 +107,11 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     // -----------------
 
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
-    {
+    public List<DB2TableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
-    public void setColumns(List<DB2TableKeyColumn> columns)
-    {
+    public void setColumns(List<DB2TableKeyColumn> columns) {
         this.columns = columns;
     }
 
@@ -127,60 +120,51 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     // -----------------
     @Override
     @Property(viewable = true, editable = false, order = 2)
-    public DB2Table getTable()
-    {
+    public DB2Table getTable() {
         return super.getTable();
     }
 
     @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 3)
-    public DBSEntityConstraintType getConstraintType()
-    {
+    public DBSEntityConstraintType getConstraintType() {
         return super.getConstraintType();
     }
 
     @Nullable
     @Override
     @Property(viewable = true, editable = false, length = PropertyLength.MULTILINE, order = 4)
-    public String getDescription()
-    {
+    public String getDescription() {
         return remarks;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwner()
-    {
+    public String getOwner() {
         return owner;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public DB2OwnerType getOwnerType()
-    {
+    public DB2OwnerType getOwnerType() {
         return ownerType;
     }
 
     @Property(viewable = false, editable = false)
-    public Boolean getEnforced()
-    {
+    public Boolean getEnforced() {
         return enforced;
     }
 
     @Property(viewable = false, editable = false)
-    public Boolean getTrusted()
-    {
+    public Boolean getTrusted() {
         return trusted;
     }
 
     @Property(viewable = false, editable = false)
-    public DB2ConstraintCheckData getCheckExistingData()
-    {
+    public DB2ConstraintCheckData getCheckExistingData() {
         return checkExistingData;
     }
 
     @Property(viewable = false, editable = false)
-    public Boolean getEnableQueryOpt()
-    {
+    public Boolean getEnableQueryOpt() {
         return enableQueryOpt;
     }
 

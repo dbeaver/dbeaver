@@ -44,31 +44,33 @@ import java.util.Map;
 /**
  * Postgre constraint manager
  */
-public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase, PostgreTableBase> implements DBEObjectRenamer<PostgreTableConstraintBase> {
+public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase<?>, PostgreTableBase> implements DBEObjectRenamer<PostgreTableConstraintBase<?>> {
 
     @Override
-    public boolean canRenameObject(PostgreTableConstraintBase object) {
+    public boolean canRenameObject(PostgreTableConstraintBase<?> object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreTableContainer, PostgreTableConstraintBase> getObjectsCache(PostgreTableConstraintBase object)
-    {
+    public DBSObjectCache<PostgreTableContainer, PostgreTableConstraintBase<?>> getObjectsCache(PostgreTableConstraintBase<?> object) {
         return object.getTable().getContainer().getSchema().getConstraintCache();
     }
 
     @Override
-    protected PostgreTableConstraintBase createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
+    protected PostgreTableConstraintBase<?> createDatabaseObject(
+        DBRProgressMonitor monitor,
+        DBECommandContext context,
+        final Object container,
+        Object from,
+        Map<String, Object> options)
     {
         return new PostgreTableConstraint((PostgreTableBase) container, "NewConstraint", DBSEntityConstraintType.UNIQUE_KEY);
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableConstraintBase> command, Map<String, Object> options) {
-        PostgreTableConstraintBase constr = command.getObject();
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableConstraintBase<?>> command, Map<String, Object> options) {
+        PostgreTableConstraintBase<?> constr = command.getObject();
         if (constr.isPersisted()) {
             try {
                 String constrDDL = constr.getObjectDefinitionText(
@@ -85,7 +87,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     }
 
     @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<PostgreTableConstraintBase> command) {
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<PostgreTableConstraintBase<?>> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             decl.append(" (").append(((PostgreTableConstraint) command.getObject()).getSource()).append(")");
         } else {
@@ -101,7 +103,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
         }
     }
 
-    static void addConstraintCommentAction(List<DBEPersistAction> actionList, PostgreTableConstraintBase constr) {
+    static void addConstraintCommentAction(List<DBEPersistAction> actionList, PostgreTableConstraintBase<?> constr) {
         actionList.add(new SQLDatabasePersistAction(
             "Comment sequence",
             "COMMENT ON CONSTRAINT " + DBUtils.getQuotedIdentifier(constr) + " ON " + constr.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
@@ -109,19 +111,25 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     }
 
     @Override
-    protected String getDropConstraintPattern(PostgreTableConstraintBase constraint)
+    protected String getDropConstraintPattern(PostgreTableConstraintBase<?> constraint)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreTableConstraintBase object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreTableConstraintBase<?> object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
-        PostgreTableConstraintBase constraint = command.getObject();
+    protected void addObjectRenameActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectRenameCommand command,
+        Map<String, Object> options
+    ) {
+        PostgreTableConstraintBase<?> constraint = command.getObject();
         PostgreDataSource dataSource = constraint.getDataSource();
         actions.add(
                 new SQLDatabasePersistAction(

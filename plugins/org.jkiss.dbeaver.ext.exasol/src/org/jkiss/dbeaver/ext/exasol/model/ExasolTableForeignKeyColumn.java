@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
  */
 public class ExasolTableForeignKeyColumn extends ExasolTableKeyColumn implements DBSTableForeignKeyColumn {
 
-    private ExasolTableColumn refColumn;
+    private final ExasolTableColumn refColumn;
 
     public ExasolTableForeignKeyColumn(
         ExasolTableForeignKey foreignKey,

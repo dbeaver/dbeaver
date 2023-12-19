@@ -43,7 +43,7 @@ import java.util.Map;
 /**
  * @author Karl
  */
-public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable>
+public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, ExasolTableForeignKeyColumn>
     implements DBSTableForeignKey,DBPScriptObject
 {
 

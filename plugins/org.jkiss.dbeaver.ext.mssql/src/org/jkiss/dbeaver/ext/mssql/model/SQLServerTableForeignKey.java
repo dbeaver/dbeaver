@@ -33,8 +33,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTableBase, DBSEntityConstraint>
-{
+public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTableBase, SQLServerTableForeignKeyColumn, DBSEntityConstraint> {
     private List<SQLServerTableForeignKeyColumn> columns;
 
     public SQLServerTableForeignKey(
@@ -44,8 +43,8 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
         DBSEntityConstraint referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
-        boolean persisted)
-    {
+        boolean persisted
+    ) {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
     }
 
@@ -73,13 +72,11 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
     }
 
     @Override
-    public List<SQLServerTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
-    {
+    public List<SQLServerTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) {
         return columns;
     }
 
-    public void addColumn(SQLServerTableForeignKeyColumn column)
-    {
+    public void addColumn(SQLServerTableForeignKeyColumn column) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
@@ -92,8 +89,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             getTable(),
@@ -102,8 +98,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
 
     @NotNull
     @Override
-    public SQLServerDataSource getDataSource()
-    {
+    public SQLServerDataSource getDataSource() {
         return getTable().getDataSource();
     }
 }

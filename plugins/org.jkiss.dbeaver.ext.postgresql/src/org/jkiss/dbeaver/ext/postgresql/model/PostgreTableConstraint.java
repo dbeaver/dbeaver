@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * PostgreTableConstraint
  */
-public class PostgreTableConstraint extends PostgreTableConstraintBase {
+public class PostgreTableConstraint extends PostgreTableConstraintBase<PostgreTableConstraintColumn> {
     private static final Log log = Log.getLog(PostgreTableConstraint.class);
 
     private String source;
@@ -78,6 +78,11 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
     public List<PostgreTableConstraintColumn> getColumns() {
         return columns;
+    }
+
+    @Override
+    public void setColumns(List<PostgreTableConstraintColumn> columns) throws DBException {
+        this.columns = columns;
     }
 
     public void addColumn(PostgreTableConstraintColumn column) {
