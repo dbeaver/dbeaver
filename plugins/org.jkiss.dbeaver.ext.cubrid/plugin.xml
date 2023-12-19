@@ -18,6 +18,7 @@
             class="org.jkiss.dbeaver.ext.cubrid.CubridDataSourceProvider"
             description="Cubrid JDBC connector"
             id="cubrid"
+            parent="generic"
             label="Cubrid"
             icon="icons/cubrid_icon.png"
             dialect="cubrid">
