@@ -268,6 +268,8 @@ public final class RuntimeUtils {
 
         monitorJob.schedule();
 
+        // Short pause. Eclipse 2023-12 seems to have an issue which locks readAndDispatchEvents
+        pause(10);
         // Wait for job to finish
         boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         long startTime = System.currentTimeMillis();
