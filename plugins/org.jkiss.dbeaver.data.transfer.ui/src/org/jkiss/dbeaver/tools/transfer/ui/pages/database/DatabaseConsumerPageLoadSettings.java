@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
@@ -42,7 +41,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
-import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 import org.jkiss.dbeaver.tools.transfer.ui.controls.EventProcessorComposite;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
@@ -74,7 +72,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     private Button ignoreDuplicateRows;
     private Button useBulkLoadCheck;
     private List<SQLDialectInsertReplaceMethod> availableInsertMethodsDescriptors;
-    private final Map<String, EventProcessorComposite<?>> processors = new HashMap<>();
+    private final List<EventProcessorComposite<?>> processors = new ArrayList<>();
 
     public DatabaseConsumerPageLoadSettings() {
         super(DTUIMessages.database_consumer_wizard_name);
@@ -184,9 +182,14 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
             for (DataTransferEventProcessorDescriptor descriptor : dataTransferRegistry.getEventProcessors(DatabaseTransferConsumer.NODE_ID)) {
                 try {
-                    final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
-                    final IDataTransferEventProcessorConfigurator<DatabaseConsumerSettings> configurator = configuratorDescriptor.createConfigurator();
-                    this.processors.put(descriptor.getId(), new EventProcessorComposite<>(this::updatePageCompletion, generalSettings, settings, descriptor, configurator));
+                    this.processors.add(new EventProcessorComposite<>(
+                        this::updatePageCompletion,
+                        generalSettings,
+                        getWizard().getSettings(),
+                        settings,
+                        descriptor,
+                        configuratorRegistry.getDescriptor(descriptor.getType().getImplName()).createConfigurator()
+                    ));
                 } catch (Exception e) {
                     log.error("Can't create event processor", e);
                 }
@@ -411,11 +414,8 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     @Override
     public void activatePage() {
-        final DatabaseConsumerSettings settings = getSettings();
-
-        for (Map.Entry<String, EventProcessorComposite<?>> processor : processors.entrySet()) {
-            processor.getValue().setProcessorEnabled(settings.hasEventProcessor(processor.getKey()));
-            processor.getValue().loadSettings(settings.getEventProcessorSettings(processor.getKey()));
+        for (EventProcessorComposite<?> processor : processors) {
+            processor.loadSettings();
         }
 
         updatePageCompletion();
@@ -508,21 +508,14 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     @Override
     public void deactivatePage() {
-        final DatabaseConsumerSettings settings = getSettings();
-
-        for (Map.Entry<String, EventProcessorComposite<?>> processor : processors.entrySet()) {
-            final EventProcessorComposite<?> configurator = processor.getValue();
-            if (configurator.isProcessorEnabled() && configurator.isProcessorApplicable() && configurator.isProcessorComplete()) {
-                configurator.saveSettings(settings.getEventProcessorSettings(processor.getKey()));
-            }
+        for (EventProcessorComposite<?> processor : processors) {
+            processor.saveSettings();
         }
-
-        super.deactivatePage();
     }
 
     @Override
     protected boolean determinePageCompletion() {
-        for (EventProcessorComposite<?> processor : processors.values()) {
+        for (EventProcessorComposite<?> processor : processors) {
             if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
                 setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
                 return false;
@@ -538,8 +531,8 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     }
 
     private void updateControlsEnablement() {
-        for (EventProcessorComposite<?> processor : processors.values()) {
-            processor.setProcessorAvailable(processor.isProcessorApplicable());
+        for (EventProcessorComposite<?> processor : processors) {
+            processor.updateProcessorEnablement();
         }
     }
 }

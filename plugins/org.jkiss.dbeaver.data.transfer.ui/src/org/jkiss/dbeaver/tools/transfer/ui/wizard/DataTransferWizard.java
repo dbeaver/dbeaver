@@ -575,6 +575,10 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             config.put("processors", processorsSection);
         }
 
+        if (!settings.getEventProcessors().isEmpty()) {
+            config.put("eventProcessors", settings.getEventProcessors());
+        }
+
         return config;
     }
 

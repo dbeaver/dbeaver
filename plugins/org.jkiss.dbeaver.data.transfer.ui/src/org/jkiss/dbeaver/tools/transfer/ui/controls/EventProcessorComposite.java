@@ -29,7 +29,8 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
@@ -38,21 +39,30 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.util.Map;
 
-public class EventProcessorComposite<T extends IDataTransferConsumerSettings> extends Composite {
+public class EventProcessorComposite<T extends IDataTransferSettings> extends Composite {
     private final Runnable propertyChangeListener;
     private final DataTransferEventProcessorDescriptor descriptor;
     private final IDataTransferEventProcessorConfigurator<T> configurator;
-    private final T settings;
+    private final DataTransferSettings taskSettings;
+    private final T consumerSettings;
     private final Button enabledCheckbox;
     private Link configureLink;
     private Map<String, Object> rawSettings;
 
-    public EventProcessorComposite(@NotNull Runnable propertyChangeListener, @NotNull Composite parent, @NotNull T settings, @NotNull DataTransferEventProcessorDescriptor descriptor, @Nullable IDataTransferEventProcessorConfigurator<T> configurator) {
+    public EventProcessorComposite(
+        @NotNull Runnable propertyChangeListener,
+        @NotNull Composite parent,
+        @NotNull DataTransferSettings taskSettings,
+        @NotNull T consumerSettings,
+        @NotNull DataTransferEventProcessorDescriptor descriptor,
+        @Nullable IDataTransferEventProcessorConfigurator<T> configurator
+    ) {
         super(parent, SWT.NONE);
         this.propertyChangeListener = propertyChangeListener;
         this.descriptor = descriptor;
         this.configurator = configurator;
-        this.settings = settings;
+        this.taskSettings = taskSettings;
+        this.consumerSettings = consumerSettings;
 
         final boolean hasControl = configurator != null && configurator.hasControl();
 
@@ -84,6 +94,11 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
         }
     }
 
+    public void loadSettings() {
+        setProcessorEnabled(taskSettings.hasEventProcessor(descriptor.getId()));
+        loadSettings(taskSettings.getEventProcessorSettings(descriptor.getId()));
+    }
+
     public void loadSettings(@NotNull Map<String, Object> settings) {
         if (isProcessorEnabled()) {
             configurator.loadSettings(settings);
@@ -92,8 +107,18 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
         }
     }
 
+    public void saveSettings() {
+        if (isProcessorEnabled() && isProcessorApplicable() && isProcessorComplete()) {
+            saveSettings(taskSettings.getEventProcessorSettings(descriptor.getId()));
+        }
+    }
+
     public void saveSettings(@NotNull Map<String, Object> settings) {
         configurator.saveSettings(settings);
+    }
+
+    public void updateProcessorEnablement() {
+        setProcessorAvailable(isProcessorApplicable());
     }
 
     public boolean isProcessorEnabled() {
@@ -101,7 +126,7 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
     }
 
     public boolean isProcessorApplicable() {
-        return configurator != null && configurator.isApplicable(settings);
+        return configurator != null && configurator.isApplicable(consumerSettings);
     }
 
     public boolean isProcessorComplete() {
@@ -130,9 +155,9 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
         }
 
         if (enabled && available) {
-            settings.addEventProcessor(descriptor);
+            taskSettings.addEventProcessor(descriptor);
         } else {
-            settings.removeEventProcessor(descriptor);
+            taskSettings.removeEventProcessor(descriptor);
         }
 
         propertyChangeListener.run();
@@ -147,7 +172,7 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
         @Override
         protected Composite createDialogArea(Composite parent) {
             final Composite composite = super.createDialogArea(parent);
-            configurator.createControl(composite, settings, this::updateCompletion);
+            configurator.createControl(composite, consumerSettings, this::updateCompletion);
             return composite;
         }
 

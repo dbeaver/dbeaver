@@ -26,15 +26,16 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor.Event;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * DTTaskHandlerTransfer
@@ -80,10 +81,27 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                                     @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
                                     DataTransferSettings settings) throws DBException {
         listener.taskStarted(task);
+
+        final DataTransferRegistry registry = DataTransferRegistry.getInstance();
+        final List<EventProcessorWrapper> processors = new ArrayList<>();
+
+        for (Map.Entry<String, Map<String, Object>> entry : settings.getEventProcessors().entrySet()) {
+            final DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
+            if (descriptor == null) {
+                log.debug("Can't find event processor '" + entry.getKey() + "'");
+                continue;
+            }
+            try {
+                processors.add(new EventProcessorWrapper(descriptor, descriptor.create(), entry.getValue()));
+            } catch (DBException e) {
+                log.error("Error creating event processor '" + entry.getKey() + "'", e);
+            }
+        }
+
         int indexOfLastPipeWithDisabledReferentialIntegrity = -1;
         try {
-            indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings, task);
-            Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings);
+            indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings, processors, task);
+            Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings, processors);
             listener.taskFinished(task, null, error, settings);
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
@@ -105,6 +123,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
     private int initializePipes(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DataTransferSettings settings,
+        @NotNull List<EventProcessorWrapper> processors,
         @Nullable DBTTask task
     ) throws InvocationTargetException, InterruptedException, DBException {
         int[] indexOfLastPipeWithDisabledReferentialIntegrity = new int[]{-1};
@@ -121,8 +140,16 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
                     consumer.setRuntimeParameters(consumerRuntimeParameters);
                     try {
+                        for (EventProcessorWrapper info : processors) {
+                            info.processEvent(monitor, Event.START, consumer, task);
+                        }
+
                         consumer.startTransfer(monitor);
                     } catch (DBException e) {
+                        for (EventProcessorWrapper info : processors) {
+                            info.processError(monitor, e, consumer, task);
+                        }
+
                         consumer.finishTransfer(monitor, e, task, true);
                         throw e;
                     }
@@ -151,7 +178,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull DBTTaskExecutionListener listener,
-        @NotNull DataTransferSettings settings
+        @NotNull DataTransferSettings settings,
+        @NotNull List<EventProcessorWrapper> processors
     ) {
         int totalJobs = settings.getDataPipes().size();
         if (totalJobs > settings.getMaxJobCount()) {
@@ -159,7 +187,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         }
         Throwable error = null;
         for (int i = 0; i < totalJobs; i++) {
-            DataTransferJob job = new DataTransferJob(settings, task, locale, log, listener);
+            DataTransferJob job = new DataTransferJob(settings, task, locale, log, listener, processors);
             try {
                 runnableContext.run(true, true, job);
                 totalStatistics.accumulate(job.getTotalStatistics());
@@ -229,5 +257,4 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
     public void collectTaskInfo(@NotNull DBTTask task, @NotNull TaskInformation information) {
         DataTransferSettings.collectTaskInfo(task, information);
     }
-
 }

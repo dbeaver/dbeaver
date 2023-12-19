@@ -30,15 +30,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
-import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +42,7 @@ import java.util.Map;
 /**
  * Stream transfer settings
  */
-public class StreamConsumerSettings implements IDataTransferConsumerSettings {
+public class StreamConsumerSettings implements IDataTransferSettings {
 
     private static final Log log = Log.getLog(StreamConsumerSettings.class);
 
@@ -138,8 +134,6 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
     private boolean splitOutFiles = false;
     private long maxOutFileSize = 10 * 1000 * 1000;
     private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
-    private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
-
 
     public void setDataFileConflictBehavior(@NotNull DataFileConflictBehavior dataFileConflictBehavior) {
         this.dataFileConflictBehavior = dataFileConflictBehavior;
@@ -274,30 +268,6 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
         dataMappings.put(container.getSource(), container);
     }
 
-    @NotNull
-    public Map<String, Object> getEventProcessorSettings(@NotNull String id) {
-        return eventProcessors.computeIfAbsent(id, x -> new HashMap<>());
-    }
-
-    @Override
-    public void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
-        eventProcessors.putIfAbsent(descriptor.getId(), new HashMap<>());
-    }
-
-    @Override
-    public void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
-        eventProcessors.remove(descriptor.getId());
-    }
-
-    public boolean hasEventProcessor(@NotNull String id) {
-        return eventProcessors.containsKey(id);
-    }
-
-    @NotNull
-    public Map<String, Map<String, Object>> getEventProcessors() {
-        return eventProcessors;
-    }
-
     public DBDDataFormatterProfile getFormatterProfile() {
         return formatterProfile;
     }
@@ -331,10 +301,6 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
         compressResults = CommonUtils.getBoolean(settings.get("compressResults"), compressResults);
         splitOutFiles = CommonUtils.getBoolean(settings.get("splitOutFiles"), splitOutFiles);
         maxOutFileSize = CommonUtils.toLong(settings.get("maxOutFileSize"), maxOutFileSize);
-
-        final boolean openFolderOnFinish = CommonUtils.getBoolean(settings.get("openFolderOnFinish"), false);
-        final boolean executeProcessOnFinish = CommonUtils.getBoolean(settings.get("executeProcessOnFinish"), false);
-        final String finishProcessCommand = CommonUtils.toString(settings.get("finishProcessCommand"));
 
         String formatterProfile = CommonUtils.toString(settings.get("formatterProfile"));
         if (!CommonUtils.isEmpty(formatterProfile)) {
@@ -372,22 +338,6 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
             } catch (InterruptedException e) {
                 log.debug("Canceled by user", e);
             }
-        }
-
-        final Map<String, Object> processors = JSONUtils.getObject(settings, "eventProcessors");
-        for (String processor : processors.keySet()) {
-            eventProcessors.put(processor, JSONUtils.getObject(processors, processor));
-        }
-
-        if (openFolderOnFinish && !eventProcessors.containsKey(ShowInExplorerEventProcessor.ID)) {
-            eventProcessors.put(ShowInExplorerEventProcessor.ID, new HashMap<>());
-        }
-
-        if (executeProcessOnFinish && !eventProcessors.containsKey(ExecuteCommandEventProcessor.ID)) {
-            final Map<String, Object> config = new HashMap<>();
-            config.put(ExecuteCommandEventProcessor.PROP_COMMAND, finishProcessCommand);
-            config.put(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY, null);
-            eventProcessors.put(ExecuteCommandEventProcessor.ID, config);
         }
 
         useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile)
@@ -429,10 +379,6 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
                 mappings.put(DBUtils.getObjectFullId(container.getSource()), containerSettings);
             }
             settings.put("mappings", mappings);
-        }
-
-        if (!eventProcessors.isEmpty()) {
-            settings.put("eventProcessors", eventProcessors);
         }
     }
     

@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.tools.transfer.ui;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
 import java.util.Map;
 
-public interface IDataTransferEventProcessorConfigurator<T extends IDataTransferConsumerSettings> extends IObjectPropertyConfigurator<T, Map<String, Object>> {
+public interface IDataTransferEventProcessorConfigurator<T extends IDataTransferSettings> extends IObjectPropertyConfigurator<T, Map<String, Object>> {
     boolean isApplicable(@NotNull T settings);
 
     default boolean hasControl() {

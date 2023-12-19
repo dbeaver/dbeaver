@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -74,6 +75,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     private IDataTransferProducer<?>[] initProducers;
     private @Nullable IDataTransferConsumer<?,?>[] initConsumers;
     private final List<DBSObject> initObjects = new ArrayList<>();
+
+    private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
     private boolean consumerOptional;
     private boolean producerOptional;
@@ -417,6 +420,11 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                     }
                 }
             }
+        }
+
+        final Map<String, Object> processors = JSONUtils.getObject(config, "eventProcessors");
+        for (String processor : processors.keySet()) {
+            eventProcessors.put(processor, JSONUtils.getObject(processors, processor));
         }
     }
 
@@ -835,4 +843,25 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         }
     }
 
+    public void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.putIfAbsent(descriptor.getId(), new HashMap<>());
+    }
+
+    public void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.remove(descriptor.getId());
+    }
+
+    public boolean hasEventProcessor(@NotNull String id) {
+        return eventProcessors.containsKey(id);
+    }
+
+    @NotNull
+    public Map<String, Object> getEventProcessorSettings(@NotNull String id) {
+        return eventProcessors.computeIfAbsent(id, x -> new HashMap<>());
+    }
+
+    @NotNull
+    public Map<String, Map<String, Object>> getEventProcessors() {
+        return eventProcessors;
+    }
 }

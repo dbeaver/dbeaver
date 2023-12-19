@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -45,7 +44,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.BlobFileCo
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.DataFileConflictBehavior;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.LobExtractType;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 import org.jkiss.dbeaver.tools.transfer.ui.controls.EventProcessorComposite;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
@@ -173,7 +171,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private EnumSelectionGroup<BlobFileConflictBehavior> blobFileConflictBehaviorSelector;
     private Label maximumFileSizeLabel;
     private Text maximumFileSizeText;
-    private final Map<String, EventProcessorComposite<?>> processors = new HashMap<>();
+    private final List<EventProcessorComposite<?>> processors = new ArrayList<>();
 
     public StreamConsumerPageOutput() {
         super(DTMessages.data_transfer_wizard_output_name);
@@ -358,9 +356,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
             for (DataTransferEventProcessorDescriptor descriptor : dataTransferRegistry.getEventProcessors(StreamTransferConsumer.NODE_ID)) {
                 try {
-                    final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
-                    final IDataTransferEventProcessorConfigurator<StreamConsumerSettings> configurator = configuratorDescriptor.createConfigurator();
-                    this.processors.put(descriptor.getId(), new EventProcessorComposite<>(this::updatePageCompletion, resultsSettings, settings, descriptor, configurator));
+                    this.processors.add(new EventProcessorComposite<>(
+                        this::updatePageCompletion,
+                        resultsSettings,
+                        getWizard().getSettings(),
+                        settings,
+                        descriptor,
+                        configuratorRegistry.getDescriptor(descriptor.getType().getImplName()).createConfigurator()
+                    ));
                 } catch (Exception e) {
                     log.error("Can't create event processor", e);
                 }
@@ -426,8 +429,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         timestampPattern.setEnabled(!clipboard);
 
-        for (EventProcessorComposite<?> processor : processors.values()) {
-            processor.setProcessorAvailable(processor.isProcessorApplicable());
+        for (EventProcessorComposite<?> processor : processors) {
+            processor.updateProcessorEnablement();
         }
     }
 
@@ -462,9 +465,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             settings.setOutputClipboard(false);
         }
 
-        for (Map.Entry<String, EventProcessorComposite<?>> processor : processors.entrySet()) {
-            processor.getValue().setProcessorEnabled(settings.hasEventProcessor(processor.getKey()));
-            processor.getValue().loadSettings(settings.getEventProcessorSettings(processor.getKey()));
+        for (EventProcessorComposite<?> processor : processors) {
+            processor.loadSettings();
         }
 
         updatePageCompletion();
@@ -473,13 +475,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     @Override
     public void deactivatePage() {
-        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
-
-        for (Map.Entry<String, EventProcessorComposite<?>> processor : processors.entrySet()) {
-            final EventProcessorComposite<?> configurator = processor.getValue();
-            if (configurator.isProcessorEnabled() && configurator.isProcessorApplicable() && configurator.isProcessorComplete()) {
-                configurator.saveSettings(settings.getEventProcessorSettings(processor.getKey()));
-            }
+        for (EventProcessorComposite<?> processor : processors) {
+            processor.saveSettings();
         }
     }
 
@@ -508,7 +505,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             return false;
         }
 
-        for (EventProcessorComposite<?> processor : processors.values()) {
+        for (EventProcessorComposite<?> processor : processors) {
             if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
                 setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
                 return false;

@@ -35,7 +35,7 @@ public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor
 
     @Override
     public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @Nullable DBTTask task, @NotNull Map<String, Object> processorSettings) throws DBException {
-        if (!consumer.getSettings().isOutputClipboard()) {
+        if (!consumer.getSettings().isOutputClipboard() && event == Event.FINISH) {
             final String folder = consumer.getOutputFolder();
             final String filename = consumer.getOutputFileName();
             Path finalFile = DBFUtils.resolvePathFromString(

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -43,14 +45,22 @@ public class DataTransferJob implements DBRRunnableWithProgress {
     private final Locale locale;
     private final Log log;
     private final DBTTaskExecutionListener listener;
+    private final List<EventProcessorWrapper> processors;
 
-    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener)
-    {
+    public DataTransferJob(
+        DataTransferSettings settings,
+        DBTTask task,
+        Locale locale,
+        Log log,
+        DBTTaskExecutionListener listener,
+        @NotNull List<EventProcessorWrapper> processors
+    ) {
         this.settings = settings;
         this.task = task;
         this.locale = locale;
         this.log = log;
         this.listener = listener;
+        this.processors = processors;
     }
 
     public DataTransferSettings getSettings() {
@@ -116,6 +126,11 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             totalStatistics.accumulate(consumer.getStatistics());
 
             consumer.finishTransfer(monitor, false);
+
+            for (EventProcessorWrapper ep : processors) {
+                ep.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, consumer, task);
+            }
+
             return true;
         } catch (Exception e) {
             consumer.finishTransfer(monitor, e, task, false);

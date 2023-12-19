@@ -46,10 +46,11 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferAttributeTransformer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -767,29 +768,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
 
                 DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
-            }
-        }
-
-        if (last) {
-            final DataTransferRegistry registry = DataTransferRegistry.getInstance();
-            for (Map.Entry<String, Map<String, Object>> entry : settings.getEventProcessors().entrySet()) {
-                final DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
-                if (descriptor == null) {
-                    log.debug("Can't find event processor '" + entry.getKey() + "'");
-                    continue;
-                }
-                try {
-                    final IDataTransferEventProcessor<DatabaseTransferConsumer> processor = descriptor.create();
-
-                    if (exception == null) {
-                        processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, task, entry.getValue());
-                    } else {
-                        processor.processError(monitor, exception, this, task, entry.getValue());
-                    }
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
-                    log.error("Error executing event processor '" + entry.getKey() + "'", e);
-                }
             }
         }
     }

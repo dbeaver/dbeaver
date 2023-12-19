@@ -19,9 +19,8 @@ package org.jkiss.dbeaver.tools.transfer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 
-public interface IDataTransferConsumerSettings extends IDataTransferSettings {
+public interface IDataTransferEventProcessorSettings {
     void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor);
 
     void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor);
-
 }

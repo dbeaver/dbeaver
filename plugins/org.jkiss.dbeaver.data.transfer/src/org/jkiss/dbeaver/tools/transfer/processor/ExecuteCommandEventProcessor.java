@@ -38,6 +38,10 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
 
     @Override
     public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @Nullable DBTTask task, @NotNull Map<String, Object> processorSettings) throws DBException {
+        if (event != Event.FINISH) {
+            return;
+        }
+
         Path folderPath = DBFUtils.resolvePathFromString(
             monitor, task == null ? null : task.getProject(), consumer.getOutputFolder());
         final String commandLine = consumer.translatePattern(
