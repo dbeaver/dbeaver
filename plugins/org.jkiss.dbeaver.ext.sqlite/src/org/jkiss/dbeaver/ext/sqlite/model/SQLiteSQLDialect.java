@@ -33,6 +33,13 @@ import java.util.Set;
 
 public class SQLiteSQLDialect extends GenericSQLDialect {
 
+    private static final String[][] SQLITE_QUOTE_STRINGS = {
+        {"[", "]"},
+        {"\"", "\""},
+        {"'", ","},
+        {"`", "`"}
+    };
+
     public SQLiteSQLDialect() {
         super("SQLite", "sqlite");
         addKeywords(Set.of("STRICT"), DBPKeywordType.OTHER);
@@ -93,7 +100,7 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
-        return super.getIdentifierQuoteStrings();
+        return SQLITE_QUOTE_STRINGS;
     }
 
     @Override
