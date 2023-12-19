@@ -73,7 +73,7 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
     private class EDBSchemaCache extends PostgreDatabase.SchemaCache {
 
         @Override
-        public boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
+        protected boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
             // First we need to check column existing
             if (isNspParentColumnExists == null) {
                 isNspParentColumnExists = PostgreUtils.isMetaObjectExists(session, "pg_namespace", "nspparent");

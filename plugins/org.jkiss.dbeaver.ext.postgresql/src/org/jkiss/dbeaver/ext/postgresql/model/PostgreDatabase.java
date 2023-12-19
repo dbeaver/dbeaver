@@ -1358,14 +1358,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         /**
-         *
          * Adds condition in the query and returns true if condition is added.
          *
          * @param session to check columns existing
          * @param query query text needed for additions
          * @return true if condition added
          */
-        public boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
+        protected boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
             // Do not do anything.
             return false;
         }
