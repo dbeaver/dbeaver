@@ -22,9 +22,12 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreEventTrigger;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -39,7 +42,7 @@ import java.util.Map;
 public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<PostgreEventTrigger> {
 
     @Override
-    public PostgreEventTrigger configureObject(DBRProgressMonitor monitor, Object parent, PostgreEventTrigger trigger, Map<String, Object> options) {
+    public PostgreEventTrigger configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreEventTrigger trigger, @NotNull Map<String, Object> options) {
         return new UITask<PostgreEventTrigger>() {
             @Override
             protected PostgreEventTrigger runTask() {

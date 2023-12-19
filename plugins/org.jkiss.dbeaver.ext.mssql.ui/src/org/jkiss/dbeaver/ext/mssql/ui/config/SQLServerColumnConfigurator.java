@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -26,7 +29,7 @@ import java.util.Map;
 
 public class SQLServerColumnConfigurator implements DBEObjectConfigurator<SQLServerTableColumn> {
     @Override
-    public SQLServerTableColumn configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableColumn column, Map<String, Object> options) {
+    public SQLServerTableColumn configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableColumn column, @NotNull Map<String, Object> options) {
         return new UITask<SQLServerTableColumn>() {
             @Override
             protected SQLServerTableColumn runTask() {

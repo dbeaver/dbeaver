@@ -14,27 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.struct;
 
-package org.jkiss.dbeaver.model.edit;
+import org.jkiss.utils.Pair;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Map;
+import java.util.List;
 
 /**
- * Object configurator.
- * May perform UI interactions.
+ * DBSEntityAttributeConstrainable
  */
-public interface DBEObjectConfigurator<OBJECT_TYPE extends DBPObject> {
+public interface DBSEntityAttributeConstrainable {
 
-    OBJECT_TYPE configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull OBJECT_TYPE object,
-        @NotNull Map<String, Object> options);
+    List<Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>>> getSupportedConstraints();
 
 }

@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraintColumn;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -36,7 +39,7 @@ public class OracleConstraintConfigurator implements DBEObjectConfigurator<Oracl
 
 
     @Override
-    public OracleTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, OracleTableConstraint constraint, Map<String, Object> options) {
+    public OracleTableConstraint configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull OracleTableConstraint constraint, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 OracleUIMessages.edit_oracle_constraint_manager_dialog_title,

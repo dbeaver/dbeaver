@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC object editor
+ * Database object editor
  */
 public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE extends DBSObject>
         extends AbstractObjectManager<OBJECT_TYPE>
@@ -85,7 +85,13 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     // Commands
 
     @Override
-    public final OBJECT_TYPE createNewObject(DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, Object container, @Nullable Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    public final OBJECT_TYPE createNewObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         OBJECT_TYPE newObject;
         try {
             newObject = createDatabaseObject(monitor, commandContext, container, copyFrom, options);
@@ -93,7 +99,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             throw new DBException("Can't create object here.\nWrong container type: " + container.getClass().getSimpleName());
         }
         if (!CommonUtils.getOption(options, OPTION_SKIP_CONFIGURATION)) {
-            newObject = configureObject(monitor, container, newObject, options);
+            newObject = configureObject(monitor, commandContext, container, newObject, options);
             if (newObject == null) {
                 return null;
             }
@@ -125,38 +131,73 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected abstract OBJECT_TYPE createDatabaseObject(
-        DBRProgressMonitor monitor,
-        DBECommandContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
         Object container,
         Object copyFrom,
-        Map<String, Object> options) throws DBException;
+        @NotNull Map<String, Object> options) throws DBException;
 
     //////////////////////////////////////////////////
     // Actions
 
-    protected abstract void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException;
+    protected abstract void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options) throws DBException;
 
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
 
     }
 
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
 
     }
 
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
-    protected void addObjectReorderActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options) {
+    protected void addObjectReorderActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectReorderCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         if (command.getObject().isPersisted()) {
             // Not supported by implementation
             throw new IllegalStateException("Object reorder is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
         }
     }
 
-    protected abstract void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException;
+    protected abstract void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException;
 
     //////////////////////////////////////////////////
     // Name generator
@@ -221,10 +262,16 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         commandContext.addCommand(command, new ReorderObjectReflector(), true);
     }
 
-    protected OBJECT_TYPE configureObject(DBRProgressMonitor monitor, Object parent, OBJECT_TYPE object, Map<String, Object> options) {
+    protected OBJECT_TYPE configureObject(
+        DBRProgressMonitor monitor,
+        DBECommandContext commandContext,
+        Object parent,
+        OBJECT_TYPE object,
+        Map<String, Object> options
+    ) {
         DBEObjectConfigurator<OBJECT_TYPE> configurator = GeneralUtils.adapt(object, DBEObjectConfigurator.class);
         if (configurator != null) {
-            return configurator.configureObject(monitor, parent, object, options);
+            return configurator.configureObject(monitor, commandContext, parent, object, options);
         }
         return object;
     }

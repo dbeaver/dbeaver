@@ -42,13 +42,13 @@ import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
-public class PropertyObjectEditPage extends BaseObjectEditPage {
+public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObjectEditPage {
 
-    private final DBSObject object;
+    private final OBJECT object;
     private final PropertySourceEditable propertySource;
     private PropertyTreeViewer propertyViewer;
 
-    public PropertyObjectEditPage(@Nullable DBECommandContext commandContext, @NotNull DBSObject object) {
+    public PropertyObjectEditPage(@Nullable DBECommandContext commandContext, @NotNull OBJECT object) {
         super(NLS.bind(
             EditorsMessages.dialog_struct_attribute_edit_page_header_edit_attribute,
             DBUtils.getObjectFullName(object, DBPEvaluationContext.UI)
@@ -66,6 +66,16 @@ public class PropertyObjectEditPage extends BaseObjectEditPage {
                 }
             }
         }
+    }
+
+    @NotNull
+    public OBJECT getObject() {
+        return object;
+    }
+
+    @Nullable
+    public DBECommandContext getCommandContext() {
+        return propertySource.getCommandContext();
     }
 
     protected String getPropertiesGroupTitle() {

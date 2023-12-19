@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKeyColumnTable;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,7 +39,7 @@ import java.util.Map;
  */
 public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator<GenericTableForeignKey> {
     @Override
-    public GenericTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, GenericTableForeignKey foreignKey, Map<String, Object> options) {
+    public GenericTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull GenericTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return new UITask<GenericTableForeignKey>() {
             @Override
             protected GenericTableForeignKey runTask() {

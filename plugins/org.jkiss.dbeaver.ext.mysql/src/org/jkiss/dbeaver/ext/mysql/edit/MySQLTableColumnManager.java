@@ -119,7 +119,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableBase owner, @NotNull DBECommandAbstract<MySQLTableColumn> command, @NotNull Map<String, Object> options)
     {
         StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final MySQLTableColumn column = command.getObject();

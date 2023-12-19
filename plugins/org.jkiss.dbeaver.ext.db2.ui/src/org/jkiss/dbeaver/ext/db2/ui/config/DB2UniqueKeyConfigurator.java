@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -40,7 +43,7 @@ public class DB2UniqueKeyConfigurator implements DBEObjectConfigurator<DB2TableU
             DBSEntityConstraintType.UNIQUE_KEY };
 
     @Override
-    public DB2TableUniqueKey configureObject(DBRProgressMonitor monitor, Object table, DB2TableUniqueKey constraint, Map<String, Object> options) {
+    public DB2TableUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull DB2TableUniqueKey constraint, @NotNull Map<String, Object> options) {
     	return new UITask<DB2TableUniqueKey>() {
             @Override
             protected DB2TableUniqueKey runTask()

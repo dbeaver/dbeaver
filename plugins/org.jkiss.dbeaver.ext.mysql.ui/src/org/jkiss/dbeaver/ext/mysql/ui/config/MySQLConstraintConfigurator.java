@@ -17,11 +17,14 @@
 
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraintColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -38,7 +41,7 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
 
 
     @Override
-    public MySQLTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableConstraint constraint, Map<String, Object> options) {
+    public MySQLTableConstraint configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull MySQLTableConstraint constraint, @NotNull Map<String, Object> options) {
         MySQLDataSource dataSource = constraint.getDataSource();
         return UITask.run(() -> {
             EditConstraintPage editPage;

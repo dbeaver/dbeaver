@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.ext.exasol.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -28,7 +31,7 @@ import java.util.Map;
 
 public class ExasolSchemaConfigurator implements DBEObjectConfigurator<ExasolSchema> {
     @Override
-    public ExasolSchema configureObject(DBRProgressMonitor monitor, Object container, ExasolSchema schema, Map<String, Object> options) {
+    public ExasolSchema configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull ExasolSchema schema, @NotNull Map<String, Object> options) {
         return new UITask<ExasolSchema>() {
             @Override
             protected ExasolSchema runTask() {

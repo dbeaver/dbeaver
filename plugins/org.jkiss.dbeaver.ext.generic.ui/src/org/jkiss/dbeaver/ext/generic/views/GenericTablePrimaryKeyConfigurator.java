@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -37,7 +40,7 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
 
 
     @Override
-    public GenericUniqueKey configureObject(DBRProgressMonitor monitor, Object table, GenericUniqueKey primaryKey, Map<String, Object> options) {
+    public GenericUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull GenericUniqueKey primaryKey, @NotNull Map<String, Object> options) {
         boolean isSupportCheckConstraint = primaryKey.getDataSource().getMetaModel().supportsCheckConstraints();
         return new UITask<GenericUniqueKey>() {
             @Override

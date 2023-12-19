@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.postgresql.ui.config;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -48,7 +51,7 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
     protected static final Log log = Log.getLog(PostgreProcedureConfigurator.class);
 
     @Override
-    public PostgreProcedure configureObject(DBRProgressMonitor monitor, Object parent, PostgreProcedure newProcedure, Map<String, Object> options) {
+    public PostgreProcedure configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreProcedure newProcedure, @NotNull Map<String, Object> options) {
         return new UITask<PostgreProcedure>() {
             @Override
             protected PostgreProcedure runTask() {

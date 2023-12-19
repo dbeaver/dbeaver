@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -31,7 +34,7 @@ import java.util.Map;
 public class SQLServerCheckConstraintConfigurator implements DBEObjectConfigurator<SQLServerTableCheckConstraint> {
 
     @Override
-    public SQLServerTableCheckConstraint configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableCheckConstraint constraint, Map<String, Object> options) {
+    public SQLServerTableCheckConstraint configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableCheckConstraint constraint, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 "Create CHECK constraint",

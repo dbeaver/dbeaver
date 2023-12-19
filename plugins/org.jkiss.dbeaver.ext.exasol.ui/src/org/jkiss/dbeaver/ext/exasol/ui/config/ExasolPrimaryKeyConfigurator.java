@@ -16,12 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.exasol.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -37,7 +40,7 @@ public class ExasolPrimaryKeyConfigurator implements DBEObjectConfigurator<Exaso
     protected static final Log log = Log.getLog(ExasolPrimaryKeyConfigurator.class);
 
     @Override
-    public ExasolTableUniqueKey configureObject(DBRProgressMonitor monitor, Object container, ExasolTableUniqueKey constraint, Map<String, Object> options) {
+    public ExasolTableUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull ExasolTableUniqueKey constraint, @NotNull Map<String, Object> options) {
         return new UITask<ExasolTableUniqueKey>() {
             @Override
             protected ExasolTableUniqueKey runTask()

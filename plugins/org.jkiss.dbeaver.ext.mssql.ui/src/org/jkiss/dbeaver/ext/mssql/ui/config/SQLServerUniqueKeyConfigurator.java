@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKeyColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -34,7 +37,7 @@ import java.util.Map;
 public class SQLServerUniqueKeyConfigurator implements DBEObjectConfigurator<SQLServerTableUniqueKey> {
 
     @Override
-    public SQLServerTableUniqueKey configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableUniqueKey primaryKey, Map<String, Object> options) {
+    public SQLServerTableUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableUniqueKey primaryKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 "Create constraint",

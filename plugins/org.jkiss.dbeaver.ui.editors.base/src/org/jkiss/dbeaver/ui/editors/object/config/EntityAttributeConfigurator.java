@@ -17,7 +17,11 @@
 
 package org.jkiss.dbeaver.ui.editors.object.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditAttributePage;
@@ -29,11 +33,19 @@ import java.util.Map;
  */
 public class EntityAttributeConfigurator extends PropertyObjectConfigurator {
     @Override
-    public DBSObject configureObject(DBRProgressMonitor monitor, Object table, DBSObject object, Map<String, Object> options) {
+    public DBSObject configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object table,
+        @NotNull DBSObject object,
+        @NotNull Map<String, Object> options
+    ) {
         return UITask.run(() -> {
-            final EditAttributePage page = new EditAttributePage(null, object);
-            if (!page.edit()) {
-                return null;
+            if (object instanceof DBSEntityAttribute attr) {
+                final EditAttributePage page = new EditAttributePage(commandContext, attr, options);
+                if (!page.edit()) {
+                    return null;
+                }
             }
             return object;
         });

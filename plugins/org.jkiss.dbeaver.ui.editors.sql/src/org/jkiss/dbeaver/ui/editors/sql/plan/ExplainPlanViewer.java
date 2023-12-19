@@ -437,7 +437,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         DBCQueryPlannerConfiguration configuration = new DBCQueryPlannerConfiguration();
         DBEObjectConfigurator<DBCQueryPlannerConfiguration> plannerConfigurator = GeneralUtils.adapt(planner, DBEObjectConfigurator.class);
         if (plannerConfigurator != null) {
-            return plannerConfigurator.configureObject(monitor, planner, configuration, Collections.emptyMap());
+            return plannerConfigurator.configureObject(monitor, null, planner, configuration, Collections.emptyMap());
         }
         return configuration;
     }

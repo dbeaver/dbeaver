@@ -17,8 +17,11 @@
 
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -33,7 +36,7 @@ import java.util.Map;
 public class MySQLTriggerConfigurator implements DBEObjectConfigurator<MySQLTrigger> {
     
     @Override
-    public MySQLTrigger configureObject(DBRProgressMonitor monitor, Object parent, MySQLTrigger trigger, Map<String, Object> options) {
+    public MySQLTrigger configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull MySQLTrigger trigger, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(trigger.getDataSource(), DBSEntityType.TRIGGER);
             if (!editPage.edit()) {

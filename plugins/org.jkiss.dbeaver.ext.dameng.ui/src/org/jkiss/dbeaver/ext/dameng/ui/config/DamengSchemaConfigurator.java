@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.ext.dameng.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.dameng.model.DamengSchema;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -32,7 +35,7 @@ import java.util.Map;
  */
 public class DamengSchemaConfigurator implements DBEObjectConfigurator<DamengSchema> {
     @Override
-    public DamengSchema configureObject(DBRProgressMonitor monitor, Object container, DamengSchema damengSchema, Map<String, Object> options) {
+    public DamengSchema configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DamengSchema damengSchema, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             String schemaName = EnterNameDialog.chooseName(
                     UIUtils.getActiveWorkbenchShell(),

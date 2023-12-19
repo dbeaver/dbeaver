@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,7 +46,7 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableI
 
 
     @Override
-    public MySQLTableIndex configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableIndex index, Map<String, Object> options) {
+    public MySQLTableIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull MySQLTableIndex index, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             MySQLEditIndexPage editPage = new MySQLEditIndexPage(index);
             if (!editPage.edit()) {

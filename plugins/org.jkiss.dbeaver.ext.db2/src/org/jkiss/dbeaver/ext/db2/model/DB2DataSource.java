@@ -434,7 +434,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         
         DB2PlanConfig cfg = new DB2PlanConfig();
         DBEObjectConfigurator configurator = GeneralUtils.adapt(cfg, DBEObjectConfigurator.class);
-        if (configurator == null || configurator.configureObject(monitor, this, cfg, Collections.emptyMap()) == null) {
+        if (configurator == null || configurator.configureObject(monitor, null, this, cfg, Collections.emptyMap()) == null) {
             return null;
         }
 
