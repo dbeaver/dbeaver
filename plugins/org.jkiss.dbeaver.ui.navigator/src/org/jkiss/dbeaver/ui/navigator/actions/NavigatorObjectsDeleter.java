@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator.actions;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -165,32 +167,58 @@ public class NavigatorObjectsDeleter {
 
     void delete() {
         try {
-            UIUtils.runInProgressService(dbrMonitor -> {
-                dbrMonitor.beginTask("Delete objects", selection.size());
-                try {
-                    for (Object obj: selection) {
-                        if (dbrMonitor.isCanceled()) {
-                            break;
-                        }
-                        if (obj instanceof DBNDatabaseNode) {
-                            dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeName() + "'");
-                            UIUtils.asyncExec(() -> deleteDatabaseNode((DBNDatabaseNode)obj));
-                        } else if (obj instanceof DBNNodeWithResource) {
-                            dbrMonitor.subTask("Delete resource '" + ((DBNNodeWithResource) obj).getResource().getName() + "'");
-                            deleteResource(dbrMonitor, ((DBNNodeWithResource) obj).getResource());
-                        } else if (obj instanceof DBNLocalFolder) {
-                            dbrMonitor.subTask("Delete folder '" + ((DBNLocalFolder) obj).getNodeName() + "'");
-                            deleteLocalFolder((DBNLocalFolder) obj);
-                        } else {
-                            log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-                        }
-                        dbrMonitor.worked(1);
-                    }
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+            List<?> objectsToDelete = new ArrayList<>(selection);
+            List<IResource> filesToDelete = new ArrayList<>();
+            for (Iterator<?> iterator = objectsToDelete.iterator(); iterator.hasNext(); ) {
+                Object obj = iterator.next();
+                if (obj instanceof DBNNodeWithResource && ((DBNNodeWithResource) obj).getResource() instanceof IFile) {
+                    filesToDelete.add(((DBNNodeWithResource) obj).getResource());
+                    iterator.remove();
                 }
-                dbrMonitor.done();
-            });
+            }
+
+            {
+                UIUtils.runInProgressService(dbrMonitor -> {
+                    dbrMonitor.beginTask("Delete objects", objectsToDelete.size() + filesToDelete.size());
+                    try {
+                        if (!filesToDelete.isEmpty()) {
+                            RuntimeUtils.executeJobsForEach(filesToDelete, 10, dbrMonitor, (monitor, resource) -> {
+                                try {
+                                    monitor.subTask("Delete file " + resource.getName());
+                                    log.debug("Delete file '" + resource.getName() + "'");
+                                    resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor.getNestedMonitor());
+                                } catch (Exception e) {
+                                    DBWorkbench.getPlatformUI().showError("File delete error", null, e);
+                                }
+                            });
+                        }
+
+                        if (!objectsToDelete.isEmpty()) {
+                            for (Object obj : objectsToDelete) {
+                                if (dbrMonitor.isCanceled()) {
+                                    break;
+                                }
+                                if (obj instanceof DBNDatabaseNode dbn) {
+                                    dbrMonitor.subTask("Delete database object '" + dbn.getNodeName() + "'");
+                                    UIUtils.asyncExec(() -> deleteDatabaseNode(dbn));
+                                } else if (obj instanceof DBNNodeWithResource nwr) {
+                                    dbrMonitor.subTask("Delete resource '" + nwr.getResource().getName() + "'");
+                                    deleteResource(dbrMonitor, nwr.getResource());
+                                } else if (obj instanceof DBNLocalFolder lf) {
+                                    dbrMonitor.subTask("Delete folder '" + lf.getNodeName() + "'");
+                                    deleteLocalFolder(lf);
+                                } else {
+                                    log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+                                }
+                                dbrMonitor.worked(1);
+                            }
+                        }
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                    dbrMonitor.done();
+                });
+            }
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Delete error", e.getTargetException().getMessage(), e.getTargetException());
         } catch (InterruptedException e) {
