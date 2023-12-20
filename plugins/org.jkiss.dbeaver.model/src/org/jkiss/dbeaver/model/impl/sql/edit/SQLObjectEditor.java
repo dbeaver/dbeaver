@@ -117,15 +117,20 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         createObjectReferences(monitor, commandContext, createCommand);
 
-        // Process additional actions
-        Object additionalAction = options.remove(OPTION_ADDITIONAL_ACTION);
-        if (additionalAction instanceof DBRRunnableWithProgress) {
-            try {
-                ((DBRRunnableWithProgress) additionalAction).run(monitor);
-            } catch (InvocationTargetException e) {
-                throw new DBException("Error processing additional create action", e.getTargetException());
-            } catch (InterruptedException e) {
-                // ignore
+        for (;;) {
+            // Process additional actions
+            // Any additional action may add another action in options
+            Object additionalAction = options.remove(OPTION_ADDITIONAL_ACTION);
+            if (additionalAction instanceof DBRRunnableWithProgress) {
+                try {
+                    ((DBRRunnableWithProgress) additionalAction).run(monitor);
+                } catch (InvocationTargetException e) {
+                    throw new DBException("Error processing additional create action", e.getTargetException());
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            } else {
+                break;
             }
         }
 
