@@ -135,6 +135,6 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     @Override
     protected void cacheChildren(DBRProgressMonitor monitor, DB2TableUniqueKey constraint, List<DB2TableKeyColumn> rows)
     {
-        constraint.setColumns(rows);
+        constraint.setAttributeReferences(rows);
     }
 }

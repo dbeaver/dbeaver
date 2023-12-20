@@ -181,7 +181,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTa
     }
 
     @Override
-    public void setColumns(List<PostgreTableForeignKeyColumn> columns) throws DBException {
+    public void setAttributeReferences(List<PostgreTableForeignKeyColumn> columns) throws DBException {
         this.columns = columns;
     }
 

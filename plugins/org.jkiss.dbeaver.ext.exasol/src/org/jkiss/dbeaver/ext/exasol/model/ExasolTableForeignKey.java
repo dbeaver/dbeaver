@@ -129,7 +129,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, Exas
         return columns;
     }
 
-    public void setColumns(List<ExasolTableForeignKeyColumn> columns) {
+    public void setAttributeReferences(List<ExasolTableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 

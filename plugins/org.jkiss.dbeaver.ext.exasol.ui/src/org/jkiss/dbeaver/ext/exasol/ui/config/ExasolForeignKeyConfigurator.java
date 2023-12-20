@@ -69,7 +69,7 @@ public class ExasolForeignKeyConfigurator implements DBEObjectConfigurator<Exaso
                     }
                 }
 
-                foreignKey.setColumns(columns);
+                foreignKey.setAttributeReferences(columns);
                 SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
 
                 return foreignKey;

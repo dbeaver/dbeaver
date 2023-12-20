@@ -30,8 +30,10 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +46,7 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable, Exaso
     private String owner;
     private Boolean enabled;
 
-    private List<ExasolTableKeyColumn> columns;
+    private final List<ExasolTableKeyColumn> columns = new ArrayList<>();
 
 
     // CONSTRUCTOR
@@ -92,8 +94,14 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable, Exaso
         return columns;
     }
 
-    public void setColumns(List<ExasolTableKeyColumn> columns) {
-        this.columns = columns;
+    @Override
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        this.columns.add(new ExasolTableKeyColumn(this, (ExasolTableColumn) column, columns.size()));
+    }
+
+    public void setAttributeReferences(List<ExasolTableKeyColumn> columns) {
+        this.columns.clear();
+        this.columns.addAll(columns);
     }
 
     // -----------------

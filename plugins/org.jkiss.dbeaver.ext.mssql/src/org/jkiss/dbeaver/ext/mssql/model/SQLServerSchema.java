@@ -765,7 +765,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @SuppressWarnings("unchecked")
         protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableForeignKey foreignKey, List<SQLServerTableForeignKeyColumn> rows)
         {
-            foreignKey.setColumns(rows);
+            foreignKey.setAttributeReferences(rows);
         }
 
     }

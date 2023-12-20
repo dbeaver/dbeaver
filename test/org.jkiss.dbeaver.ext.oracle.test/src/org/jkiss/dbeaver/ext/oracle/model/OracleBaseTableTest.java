@@ -154,7 +154,7 @@ public class OracleBaseTableTest {
         constraint.setName("NEWTABLE_PK");
         constraint.setConstraintType(DBSEntityConstraintType.PRIMARY_KEY);
         OracleTableConstraintColumn constraintColumn = new OracleTableConstraintColumn(constraint, column1, 1);
-        constraint.setColumns(Collections.singletonList(constraintColumn));
+        constraint.setAttributeReferences(Collections.singletonList(constraintColumn));
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);

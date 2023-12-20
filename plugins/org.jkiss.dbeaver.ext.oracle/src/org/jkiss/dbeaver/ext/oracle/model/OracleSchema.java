@@ -931,7 +931,7 @@ public class OracleSchema extends OracleGlobalObject implements
         @Override
         protected void cacheChildren(DBRProgressMonitor monitor, OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
         {
-            constraint.setColumns(rows);
+            constraint.setAttributeReferences(rows);
         }
     }
     
@@ -1163,7 +1163,7 @@ public class OracleSchema extends OracleGlobalObject implements
         @SuppressWarnings("unchecked")
         protected void cacheChildren(DBRProgressMonitor monitor, OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
         {
-            foreignKey.setColumns((List)rows);
+            foreignKey.setAttributeReferences((List)rows);
         }
     }
 

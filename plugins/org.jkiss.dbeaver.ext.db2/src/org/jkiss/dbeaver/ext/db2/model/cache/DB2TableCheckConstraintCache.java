@@ -132,6 +132,6 @@ public final class DB2TableCheckConstraintCache extends
     @Override
     protected void cacheChildren(DBRProgressMonitor monitor, DB2TableCheckConstraint constraint, List<DB2TableCheckConstraintColumn> rows)
     {
-        constraint.setColumns(rows);
+        constraint.setAttributeReferences(rows);
     }
 }

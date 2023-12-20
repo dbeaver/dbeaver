@@ -20,11 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
@@ -33,7 +35,9 @@ import java.util.List;
 /**
  * GenericConstraint
  */
-public abstract class AbstractTableConstraint<TABLE extends DBSTable, COLUMN extends DBSTableConstraintColumn> implements DBSTableConstraint, DBPNamedObject2 {
+public abstract class AbstractTableConstraint<TABLE extends DBSTable, CON_COLUMN extends DBSTableConstraintColumn>
+    implements DBSTableConstraint, DBPNamedObject2
+{
     private final TABLE table;
     private String name;
     protected String description;
@@ -94,9 +98,13 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable, COLUMN ext
 
     @Nullable
     @Override
-    public abstract List<COLUMN> getAttributeReferences(DBRProgressMonitor monitor) throws DBException;
+    public abstract List<CON_COLUMN> getAttributeReferences(DBRProgressMonitor monitor) throws DBException;
 
-    public abstract void setColumns(List<COLUMN> columns) throws DBException;
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        throw new DBCFeatureNotSupportedException("Attribute add is not supported for " + getClass().getSimpleName());
+    }
+
+    public abstract void setAttributeReferences(List<CON_COLUMN> columns) throws DBException;
 
     @NotNull
     @Override

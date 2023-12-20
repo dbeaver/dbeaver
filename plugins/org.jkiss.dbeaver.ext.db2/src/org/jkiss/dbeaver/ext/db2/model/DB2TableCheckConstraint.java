@@ -112,7 +112,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table, DB2Ta
         return columns;
     }
 
-    public void setColumns(List<DB2TableCheckConstraintColumn> columns) {
+    public void setAttributeReferences(List<DB2TableCheckConstraintColumn> columns) {
         this.columns = columns;
     }
 

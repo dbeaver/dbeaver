@@ -21,8 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditAttributePage;
 
@@ -41,7 +41,7 @@ public class EntityAttributeConfigurator extends PropertyObjectConfigurator {
         @NotNull Map<String, Object> options
     ) {
         return UITask.run(() -> {
-            if (object instanceof DBSEntityAttribute attr) {
+            if (object instanceof DBSTableColumn attr) {
                 final EditAttributePage page = new EditAttributePage(commandContext, attr, options);
                 if (!page.edit()) {
                     return null;

@@ -812,7 +812,7 @@ public class MySQLCatalog implements
         @Override
         protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
         {
-            constraint.setColumns(rows);
+            constraint.setAttributeReferences(rows);
         }
     }
 

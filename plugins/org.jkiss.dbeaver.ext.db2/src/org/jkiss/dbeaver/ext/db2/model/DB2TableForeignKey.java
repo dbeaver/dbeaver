@@ -134,7 +134,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableKe
         return columns;
     }
 
-    public void setColumns(List<DB2TableKeyColumn> columns) {
+    public void setAttributeReferences(List<DB2TableKeyColumn> columns) {
         this.columns = columns;
     }
 

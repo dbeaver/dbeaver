@@ -77,7 +77,7 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
                         columns.add(column);
                     }
 
-                    foreignKey.setColumns(columns);
+                    foreignKey.setAttributeReferences(columns);
                     SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
 
                     return foreignKey;

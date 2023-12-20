@@ -77,7 +77,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase
     }
 
     @Override
-    public void setColumns(List<GenericTableForeignKeyColumnTable> columns) throws DBException {
+    public void setAttributeReferences(List<GenericTableForeignKeyColumnTable> columns) throws DBException {
         this.columns = columns;
     }
 

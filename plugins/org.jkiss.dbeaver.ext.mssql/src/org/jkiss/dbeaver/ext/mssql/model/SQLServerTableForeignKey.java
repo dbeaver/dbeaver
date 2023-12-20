@@ -83,7 +83,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
         columns.add(column);
     }
 
-    public void setColumns(List<SQLServerTableForeignKeyColumn> columns) {
+    public void setAttributeReferences(List<SQLServerTableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 

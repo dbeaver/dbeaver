@@ -81,7 +81,7 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase<PostgreT
     }
 
     @Override
-    public void setColumns(List<PostgreTableConstraintColumn> postgreTableConstraintColumns) throws DBException {
+    public void setAttributeReferences(List<PostgreTableConstraintColumn> postgreTableConstraintColumns) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 

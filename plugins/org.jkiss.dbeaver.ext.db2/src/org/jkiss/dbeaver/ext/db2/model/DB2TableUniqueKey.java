@@ -33,9 +33,11 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,7 +55,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table, DB2TableKey
     private Boolean enableQueryOpt;
     private String remarks;
 
-    private List<DB2TableKeyColumn> columns;
+    private final List<DB2TableKeyColumn> columns = new ArrayList<>();
 
     // -----------------
     // Constructor
@@ -111,8 +113,14 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table, DB2TableKey
         return columns;
     }
 
-    public void setColumns(List<DB2TableKeyColumn> columns) {
-        this.columns = columns;
+    @Override
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        columns.add(new DB2TableKeyColumn(this, (DB2TableColumn) column, columns.size()));
+    }
+
+    public void setAttributeReferences(List<DB2TableKeyColumn> columns) {
+        this.columns.clear();
+        this.columns.addAll(columns);
     }
 
     // -----------------

@@ -101,7 +101,7 @@ class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, Gen
     @Override
     protected void cacheChildren(DBRProgressMonitor monitor, GenericUniqueKey primaryKey, List<GenericTableConstraintColumn> rows)
     {
-        primaryKey.setColumns(rows);
+        primaryKey.setAttributeReferences(rows);
     }
 
 }

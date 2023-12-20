@@ -70,7 +70,7 @@ public class ExasolPrimaryKeyConfigurator implements DBEObjectConfigurator<Exaso
                     }
                     constColumns.add(col);
                 }
-                constraint.setColumns(constColumns);
+                constraint.setAttributeReferences(constColumns);
                 return constraint;
             }
         }.execute();

@@ -64,7 +64,7 @@ public class DB2UniqueKeyConfigurator implements DBEObjectConfigurator<DB2TableU
                     column = new DB2TableKeyColumn(constraint, (DB2TableColumn) tableColumn, colIndex++);
                     columns.add(column);
                 }
-                constraint.setColumns(columns);
+                constraint.setAttributeReferences(columns);
 
                 return constraint;
             }

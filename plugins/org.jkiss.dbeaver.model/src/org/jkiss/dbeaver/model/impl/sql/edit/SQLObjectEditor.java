@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.cache.DBSCompositeCache;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,6 +56,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> {
 
     public static final String OPTION_SKIP_CONFIGURATION = "skip.object.configuration";
+    // This option may be set by object configurer, e.g. to create other linked objects.
+    // For example constraint for a columns.
+    // Value of this property must be instance of DBRRunnableWithProgress
+    public static final String OPTION_ADDITIONAL_ACTION = "additional.actions";
 
     public static final String PATTERN_ITEM_INDEX = "%INDEX%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_TABLE = "%TABLE%"; //$NON-NLS-1$
@@ -110,6 +116,18 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         commandContext.addCommand(createCommand, new CreateObjectReflector<>(this), true);
 
         createObjectReferences(monitor, commandContext, createCommand);
+
+        // Process additional actions
+        Object additionalAction = options.remove(OPTION_ADDITIONAL_ACTION);
+        if (additionalAction instanceof DBRRunnableWithProgress) {
+            try {
+                ((DBRRunnableWithProgress) additionalAction).run(monitor);
+            } catch (InvocationTargetException e) {
+                throw new DBException("Error processing additional create action", e.getTargetException());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
 
         return newObject;
     }

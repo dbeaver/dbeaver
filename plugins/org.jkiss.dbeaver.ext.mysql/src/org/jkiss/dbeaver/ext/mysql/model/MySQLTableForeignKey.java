@@ -83,7 +83,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     }
 
     @Override
-    public void setColumns(List<MySQLTableForeignKeyColumn> columns) throws DBException {
+    public void setAttributeReferences(List<MySQLTableForeignKeyColumn> columns) throws DBException {
         this.columns = columns;
     }
 

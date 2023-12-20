@@ -134,6 +134,6 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
     @Override
     protected void cacheChildren(DBRProgressMonitor monitor, DB2TableReference constraint, List<DB2TableKeyColumn> rows)
     {
-        constraint.setColumns(rows);
+        constraint.setAttributeReferences(rows);
     }
 }

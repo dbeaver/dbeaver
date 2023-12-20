@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,7 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
     private static final Log log = Log.getLog(OracleTableConstraintBase.class);
 
     private OracleObjectStatus status;
-    private List<OracleTableConstraintColumn> columns;
+    private final List<OracleTableConstraintColumn> columns = new ArrayList<>();
 
     public OracleTableConstraintBase(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, OracleObjectStatus status, boolean persisted) {
         super(oracleTable, name, null, constraintType, persisted);
@@ -69,15 +71,18 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
         return columns;
     }
 
+    @Override
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        this.columns.add(new OracleTableConstraintColumn(this, (OracleTableColumn) column, columns.size()));
+    }
+
     public void addColumn(OracleTableConstraintColumn column) {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
         this.columns.add(column);
     }
 
-    public void setColumns(List<OracleTableConstraintColumn> columns) {
-        this.columns = columns;
+    public void setAttributeReferences(List<OracleTableConstraintColumn> columns) {
+        this.columns.clear();
+        this.columns.addAll(columns);
     }
 
 }
