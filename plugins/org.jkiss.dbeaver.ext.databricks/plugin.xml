@@ -50,6 +50,7 @@
                         categories="sql,analytic,cloud"
                         singleConnection="true">
                     <replace provider="generic" driver="azure_databricks"/>
+                    <replace provider="databricks" driver="databricks"/>
 
                     <file type="jar" path="maven:/com.databricks:databricks-jdbc:RELEASE[2.6.34]" bundle="!drivers.databricks_native"/>
                     <file type="jar" path="drivers/databricks_native" bundle="drivers.databricks_native"/>
