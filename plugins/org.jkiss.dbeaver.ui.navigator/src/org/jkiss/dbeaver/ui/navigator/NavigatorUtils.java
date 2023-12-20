@@ -636,12 +636,11 @@ public class NavigatorUtils {
                     id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
                     item.dispose();
                 }
-                if (node.getNodeType().startsWith(DBNNode.NodePathType.dbvfs.toString())) {
-                    // remove extra nodes for remote remote
-                    if (id.startsWith("compareWithMenu") || // $NON-NLS-0$
-                        id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
-                        item.dispose();
-                    }
+                if (node.getNodeType().startsWith(DBNNode.NodePathType.dbvfs.toString()) &&
+                    id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                    id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
+                    // remove extra nodes for remote resource only
+                    item.dispose();
                 }
             }
         }
