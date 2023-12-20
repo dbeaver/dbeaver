@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,6 +52,8 @@ import java.util.StringJoiner;
  */
 public class YashanDBStructureAssistant implements DBSStructureAssistant<YashanDBExecutionContext> {
     private static final Log log = Log.getLog(YashanDBStructureAssistant.class);
+
+    public static final int SEARCH_TIMEOUT = 10;
 
     private final YashanDBDataSource dataSource;
 
@@ -151,8 +154,8 @@ public class YashanDBStructureAssistant implements DBSStructureAssistant<YashanD
             });
 
             return objects;
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
+            log.error("search error:",ex);
             throw new DBException(ex, dataSource);
         }
     }
@@ -285,6 +288,7 @@ public class YashanDBStructureAssistant implements DBSStructureAssistant<YashanD
         }
         query.append(")\nORDER BY OBJECT_NAME");
         try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
+            dbStat.setQueryTimeout(SEARCH_TIMEOUT);
             if (!params.isCaseSensitive()) {
                 mask = mask.toUpperCase();
             }
@@ -380,6 +384,7 @@ public class YashanDBStructureAssistant implements DBSStructureAssistant<YashanD
         sql.append("ORDER BY atc.TABLE_NAME");
 
         try (JDBCPreparedStatement preparedStatement = session.prepareStatement(sql.toString())) {
+            preparedStatement.setQueryTimeout(SEARCH_TIMEOUT);
             preparedStatement.setString(1, mask);
             if (schema != null) {
                 preparedStatement.setString(2, schema.getName());
