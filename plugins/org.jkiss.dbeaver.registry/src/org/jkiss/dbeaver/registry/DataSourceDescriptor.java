@@ -951,11 +951,10 @@ public class DataSourceDescriptor
             return false;
         }
 
-
+        boolean detachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
         connecting = true;
         try {
             boolean succeeded = false;
-            boolean detachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
             if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
@@ -970,7 +969,7 @@ public class DataSourceDescriptor
         finally {
             connecting = false;
 
-            if (reflect) {
+            if (!detachedProcess) {
                 updateDataSourceObject(this);
             }
         }
