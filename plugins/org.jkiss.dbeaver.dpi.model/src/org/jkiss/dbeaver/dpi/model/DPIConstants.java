@@ -24,7 +24,5 @@ public class DPIConstants {
 
     public static final String PARAM_SERVER_PORT = "serverPort";
 
-    public static final String SERVER_PARAM_MULTIUSER = "-multiUser";
-    public static final String SERVER_PARAM_DRIVERS_LOCATION = "-driversLocation";
     public static final String SERVER_INI_FILE = "server.ini";
 }

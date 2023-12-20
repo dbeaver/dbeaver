@@ -22,7 +22,6 @@ import org.eclipse.osgi.internal.location.EquinoxLocations;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
 import org.jkiss.dbeaver.dpi.model.DPIDriverLibrariesProvider;
 import org.jkiss.dbeaver.dpi.model.client.ConfigUtils;
@@ -31,8 +30,6 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedWriter;
@@ -70,12 +67,6 @@ public class DPIApplication extends DesktopApplicationImpl implements DPIDriverL
     public Object start(IApplicationContext context) {
         initializeApplicationServices();
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        String customDriversLocation = getCommandLineArgument(DPIConstants.SERVER_PARAM_DRIVERS_LOCATION);
-        if (CommonUtils.isNotEmpty(customDriversLocation)) {
-            PrefUtils.setDefaultPreferenceValue(DBWorkbench.getPlatform().getPreferenceStore(),
-                ModelPreferences.UI_DRIVERS_HOME,
-                customDriversLocation);
-        }
         try {
             runServer(context, application);
         } catch (IOException e) {
