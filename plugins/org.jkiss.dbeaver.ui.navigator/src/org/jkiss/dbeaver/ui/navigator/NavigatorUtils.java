@@ -87,6 +87,15 @@ import java.util.*;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
+    private static final String[] BLOCEKD_MENU_CONTRIBUTIONS = new String[] {
+        "compareWithMenu", // $NON-NLS-0$
+        "team.main", // $NON-NLS-0$
+        "addFromHistoryAction", // $NON-NLS-0$
+        "replaceWithMenu", // $NON-NLS-0$
+        "org.eclipse.debug.ui.contextualLaunch.run.submenu", // $NON-NLS-0$
+        "org.eclipse.debug.ui.contextualLaunch.debug.submenu", // $NON-NLS-0$
+        "org.eclipse.debug.ui.contextualLaunch.profile.submenu" // $NON-NLS-0$
+    };
 
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
@@ -217,7 +226,17 @@ public class NavigatorUtils {
             @Override
             public void menuShown(MenuEvent e)
             {
-                Menu m = (Menu)e.widget;
+                Menu m = (Menu) e.widget;
+                for (MenuItem item : m.getItems()) {
+                    Object itemData = item.getData();
+                    if (itemData instanceof IContributionItem) {
+                        IContributionItem contribution = (IContributionItem) itemData;
+                        String id = contribution.getId();
+                        if (id != null && Arrays.asList(BLOCEKD_MENU_CONTRIBUTIONS).contains(id)) {
+                            item.dispose();
+                        }
+                    }
+                }
                 DBNNode node = getSelectedNode(viewer.getSelection());
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
@@ -227,6 +246,7 @@ public class NavigatorUtils {
                         for (MenuItem item : m.getItems()) {
                             Object itemData = item.getData();
                             if (itemData instanceof IContributionItem) {
+                                IContributionItem ci = (IContributionItem)itemData;
                                 String contribId = ((IContributionItem)itemData).getId();
                                 if (contribId != null && contribId.equals(commandID)) {
                                     m.setDefaultItem(item);
