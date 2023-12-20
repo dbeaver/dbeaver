@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
@@ -42,9 +41,14 @@ public class SystemVariablesResolver implements IVariableResolver {
     public static final String VAR_LOCAL_IP = "local.ip";
 
     private static Properties configuration;
+    private static boolean enableSystemVariables;
 
     public static void setConfiguration(Properties configuration) {
         SystemVariablesResolver.configuration = configuration;
+    }
+
+    public static void setEnableSystemVariables(boolean enable) {
+        SystemVariablesResolver.enableSystemVariables = enable;
     }
 
     @Override
@@ -71,7 +75,7 @@ public class SystemVariablesResolver implements IVariableResolver {
                         return o.toString();
                     }
                 }
-                if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+                if (enableSystemVariables) {
                     // Enable system variables resolve for standalone applications only
                     String var = System.getProperty(name);
                     if (var != null) {
