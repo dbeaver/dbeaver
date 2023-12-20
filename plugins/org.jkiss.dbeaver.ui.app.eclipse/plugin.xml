@@ -25,7 +25,8 @@
         <application id="dbeaver-ce-eclipse"
             family="DB"
             name="%productName"
-            description="%productSubTitle"/>
+            description="%productSubTitle"
+            class="org.jkiss.dbeaver.ui.app.DBeaverPluginApplication"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">

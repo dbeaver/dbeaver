@@ -44,15 +44,15 @@ public class ERDEditorContextMenuProvider extends MenuManager implements IMenuLi
      *
      * @param editor the editor
      */
-    ERDEditorContextMenuProvider(ERDEditorPart editor) {
+    public ERDEditorContextMenuProvider(ERDEditorPart editor, boolean registerForNavigatorActions) {
         super("ERD Editor Context Menu", "#ERDEditorContext");
         this.editor = editor;
 
         this.addMenuListener(this);
         this.setRemoveAllWhenShown(true);
-
-        editor.getEditorSite().registerContextMenu(
-            "#ERDEditorContext", this, editor.getEditorSite().getSelectionProvider(), false);
+        if (registerForNavigatorActions) {
+            editor.getEditorSite().registerContextMenu("#ERDEditorContext", this, editor.getEditorSite().getSelectionProvider(), false);
+        }
     }
 
     public void menuAboutToShow(IMenuManager menu) {
