@@ -951,10 +951,12 @@ public class DataSourceDescriptor
             return false;
         }
 
+
         connecting = true;
         try {
             boolean succeeded = false;
-            if (isDetachedProcessEnabled() && !DBWorkbench.getPlatform().getApplication().isDetachedProcess()) {
+            boolean detachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
+            if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
             }
@@ -962,17 +964,15 @@ public class DataSourceDescriptor
                 // Open local connection
                 succeeded = connect0(monitor, initialize, reflect);
             }
-            if (reflect) {
-                getRegistry().notifyDataSourceListeners(new DBPEvent(
-                    DBPEvent.Action.OBJECT_UPDATE,
-                    DataSourceDescriptor.this,
-                    true));
-            }
 
             return succeeded;
         }
         finally {
             connecting = false;
+
+            if (reflect) {
+                updateDataSourceObject(this);
+            }
         }
     }
 
