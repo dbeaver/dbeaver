@@ -952,9 +952,9 @@ public class DataSourceDescriptor
         }
 
         boolean detachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
+        boolean succeeded = false;
         connecting = true;
         try {
-            boolean succeeded = false;
             if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
@@ -970,7 +970,7 @@ public class DataSourceDescriptor
             connecting = false;
 
             if (!detachedProcess) {
-                updateDataSourceObject(this);
+                updateDataSourceObject(this, succeeded);
             }
         }
     }
@@ -2014,11 +2014,11 @@ public class DataSourceDescriptor
         return authInfo;
     }
 
-    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor) {
+    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor, boolean succeeded) {
         getRegistry().notifyDataSourceListeners(new DBPEvent(
             DBPEvent.Action.OBJECT_UPDATE,
             dataSourceDescriptor,
-            false));
+            succeeded));
     }
 
     /**
