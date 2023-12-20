@@ -87,16 +87,6 @@ import java.util.*;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
-    private static final String[] BLOCEKD_MENU_CONTRIBUTIONS = new String[] {
-        "compareWithMenu", // $NON-NLS-0$
-        "team.main", // $NON-NLS-0$
-        "addFromHistoryAction", // $NON-NLS-0$
-        "replaceWithMenu", // $NON-NLS-0$
-        "org.eclipse.debug.ui.contextualLaunch.run.submenu", // $NON-NLS-0$
-        "org.eclipse.debug.ui.contextualLaunch.debug.submenu", // $NON-NLS-0$
-        "org.eclipse.debug.ui.contextualLaunch.profile.submenu" // $NON-NLS-0$
-    };
-
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -226,29 +216,20 @@ public class NavigatorUtils {
             @Override
             public void menuShown(MenuEvent e)
             {
-                Menu m = (Menu) e.widget;
-                for (MenuItem item : m.getItems()) {
-                    Object itemData = item.getData();
-                    if (itemData instanceof IContributionItem) {
-                        IContributionItem contribution = (IContributionItem) itemData;
-                        String id = contribution.getId();
-                        if (id != null && Arrays.asList(BLOCEKD_MENU_CONTRIBUTIONS).contains(id)) {
-                            item.dispose();
-                        }
-                    }
-                }
+                Menu menu = (Menu) e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
+                removeUnrelatedMenuItems(menu, node);
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
                     try {
-                        for (MenuItem item : m.getItems()) {
+                        for (MenuItem item : menu.getItems()) {
                             Object itemData = item.getData();
                             if (itemData instanceof IContributionItem) {
                                 String contribId = ((IContributionItem)itemData).getId();
                                 if (contribId != null && contribId.equals(commandID)) {
-                                    m.setDefaultItem(item);
+                                    menu.setDefaultItem(item);
                                 }
                             }
                         }
@@ -638,6 +619,31 @@ public class NavigatorUtils {
                 workbenchWindow.getActivePage().bringToTop(nodeView);
             }
             nodeView.showNode(dsNode);
+        }
+    }
+
+    private static void removeUnrelatedMenuItems(Menu menu, DBNNode node) {
+        for (MenuItem item : menu.getItems()) {
+            Object itemData = item.getData();
+            if (itemData instanceof IContributionItem) {
+                IContributionItem contribution = (IContributionItem) itemData;
+                String id = contribution.getId();
+                if (id == null) {
+                    continue;
+                }
+                if (id.startsWith("org.eclipse.debug") || // $NON-NLS-0$
+                    id.startsWith("team.main") || // $NON-NLS-0$
+                    id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
+                    item.dispose();
+                }
+                if (node.getNodeType().startsWith(DBNNode.NodePathType.dbvfs.toString())) {
+                    // remove extra nodes for remote remote
+                    if (id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                        id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
+                        item.dispose();
+                    }
+                }
+            }
         }
     }
 
