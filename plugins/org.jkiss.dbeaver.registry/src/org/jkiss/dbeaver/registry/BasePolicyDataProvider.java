@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
+import java.util.function.Function;
 
 /**
  * Base data policy provider designed to provide specific policy property value.
@@ -28,11 +30,12 @@ import com.sun.jna.platform.win32.WinReg;
  */
 public class BasePolicyDataProvider {
 
-    private static final String DBEAVER_REGESTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
-    private static BasePolicyDataProvider instance = new BasePolicyDataProvider();
+    private static final String DBEAVER_REGISTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
+    private static final BasePolicyDataProvider INSTANCE = new BasePolicyDataProvider();
 
+    @NotNull
     public static BasePolicyDataProvider getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     private BasePolicyDataProvider() {
@@ -45,59 +48,50 @@ public class BasePolicyDataProvider {
      * @param propertyName - property name
      * @return - boolean value
      */
-    public boolean isPolicyEnabled(String propertyName) {
-        boolean policyEnabled = false;
-        policyEnabled = getDataPolicyFromSystem(propertyName);
-        if (policyEnabled) {
-            return policyEnabled;
-        }
-        policyEnabled = getDataPolicyFromRegistry(propertyName);
-        return policyEnabled;
+    public boolean isPolicyEnabled(@NotNull String propertyName) {
+        return getPolicyValue(propertyName, Boolean::valueOf) == Boolean.TRUE;
+    }
+
+    @Nullable
+    public String getPolicyValue(@NotNull String propertyName) {
+        return getPolicyValue(propertyName, Function.identity());
     }
 
     /**
-     * Get boolean value of policy data property from system environment
+     * Retrieves policy data value from system environment or Windows registry
      *
-     * @param property - property name
-     * @return - boolean value
+     * @param property  policy data property
+     * @param converter converter function
+     * @return policy data value or {@code null} if not found
      */
-    private boolean getDataPolicyFromSystem(String property) {
-        String policyValue = System.getProperty(property);
-        if (policyValue != null && !policyValue.isEmpty()) {
-            return Boolean.valueOf(policyValue);
+    @Nullable
+    public <T> T getPolicyValue(@NotNull String property, @NotNull Function<String, T> converter) {
+        String value = System.getProperty(property);
+        if (value != null) {
+            return converter.apply(value);
         }
-        return false;
+
+        value = getRegistryPolicyValue(WinReg.HKEY_CURRENT_USER, property);
+        if (value != null) {
+            return converter.apply(value);
+        }
+
+        value = getRegistryPolicyValue(WinReg.HKEY_LOCAL_MACHINE, property);
+        if (value != null) {
+            return converter.apply(value);
+        }
+
+        return null;
     }
 
-    /**
-     * Get boolean value of policy data property from win registry
-     *
-     * @param property - property name
-     * @return - boolean value
-     */
-    private boolean getDataPolicyFromRegistry(String property) {
-        if (RuntimeUtils.isWindows()) {
-            boolean isPolicyEnabled = getBooleanFromWinRegistryNode(WinReg.HKEY_CURRENT_USER, property);
-            if (isPolicyEnabled) {
-                return isPolicyEnabled;
-            }
-            isPolicyEnabled = getBooleanFromWinRegistryNode(WinReg.HKEY_LOCAL_MACHINE, property);
-            if (isPolicyEnabled) {
-                return isPolicyEnabled;
-            }
+    @Nullable
+    private static String getRegistryPolicyValue(@NotNull WinReg.HKEY root, @NotNull String property) {
+        if (Advapi32Util.registryKeyExists(root, DBEAVER_REGISTRY_POLICY_NODE) &&
+            Advapi32Util.registryValueExists(root, DBEAVER_REGISTRY_POLICY_NODE, property)
+        ) {
+            return Advapi32Util.registryGetStringValue(root, DBEAVER_REGISTRY_POLICY_NODE, property);
         }
-        return false;
-    }
 
-    private boolean getBooleanFromWinRegistryNode(WinReg.HKEY root, String property) {
-        if (Advapi32Util.registryKeyExists(root, DBEAVER_REGESTRY_POLICY_NODE) &&
-            Advapi32Util.registryValueExists(root, DBEAVER_REGESTRY_POLICY_NODE, property)) {
-            String propRegisrtryValue = Advapi32Util.registryGetStringValue(
-                root,
-                DBEAVER_REGESTRY_POLICY_NODE,
-                property);
-            return Boolean.valueOf(propRegisrtryValue);
-        }
-        return false;
+        return null;
     }
 }

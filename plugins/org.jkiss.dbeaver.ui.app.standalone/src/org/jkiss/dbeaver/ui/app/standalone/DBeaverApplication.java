@@ -539,7 +539,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
      * May be overrided in implementors
      */
     protected void initializeApplication() {
-        SystemVariablesResolver.setEnableSystemVariables(true);
+
     }
 
     private Display getDisplay() {
