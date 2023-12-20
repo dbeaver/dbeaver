@@ -38,7 +38,6 @@ import java.util.List;
 public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable
 {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
-    public static final String DATASOURCE_NODE_TYPE = "datasource";
 
     private final DBPDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
@@ -134,11 +133,6 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     public boolean isManagable()
     {
         return true;
-    }
-
-    @Override
-    public String getNodeType() {
-        return DATASOURCE_NODE_TYPE;
     }
 
     @NotNull
