@@ -2018,7 +2018,7 @@ public class DataSourceDescriptor
         getRegistry().notifyDataSourceListeners(new DBPEvent(
             DBPEvent.Action.OBJECT_UPDATE,
             dataSourceDescriptor,
-            false));
+            true));
     }
 
     /**
