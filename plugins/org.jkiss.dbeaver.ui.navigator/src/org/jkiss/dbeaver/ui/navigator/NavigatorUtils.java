@@ -246,7 +246,6 @@ public class NavigatorUtils {
                         for (MenuItem item : m.getItems()) {
                             Object itemData = item.getData();
                             if (itemData instanceof IContributionItem) {
-                                IContributionItem ci = (IContributionItem)itemData;
                                 String contribId = ((IContributionItem)itemData).getId();
                                 if (contribId != null && contribId.equals(commandID)) {
                                     m.setDefaultItem(item);
