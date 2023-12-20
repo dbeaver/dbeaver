@@ -41,9 +41,14 @@ public class SystemVariablesResolver implements IVariableResolver {
     public static final String VAR_LOCAL_IP = "local.ip";
 
     private static Properties configuration;
+    private static boolean enableSystemVariables;
 
     public static void setConfiguration(Properties configuration) {
         SystemVariablesResolver.configuration = configuration;
+    }
+
+    public static void setEnableSystemVariables(boolean enable) {
+        SystemVariablesResolver.enableSystemVariables = enable;
     }
 
     @Override
@@ -70,11 +75,15 @@ public class SystemVariablesResolver implements IVariableResolver {
                         return o.toString();
                     }
                 }
-                String var = System.getProperty(name);
-                if (var != null) {
-                    return var;
+                if (enableSystemVariables) {
+                    // Enable system variables resolve for standalone applications only
+                    String var = System.getProperty(name);
+                    if (var != null) {
+                        return var;
+                    }
+                    return System.getenv(name);
                 }
-                return System.getenv(name);
+                return null;
         }
     }
 
