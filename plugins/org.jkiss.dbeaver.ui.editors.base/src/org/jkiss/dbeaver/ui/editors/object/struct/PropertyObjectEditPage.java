@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,9 +27,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -49,10 +46,7 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
     private PropertyTreeViewer propertyViewer;
 
     public PropertyObjectEditPage(@Nullable DBECommandContext commandContext, @NotNull OBJECT object) {
-        super(NLS.bind(
-            EditorsMessages.dialog_struct_attribute_edit_page_header_edit_attribute,
-            DBUtils.getObjectFullName(object, DBPEvaluationContext.UI)
-        ));
+        super("Edit " + object.getName());
 
         this.object = object;
         this.propertySource = new PropertySourceEditable(commandContext, object, object);

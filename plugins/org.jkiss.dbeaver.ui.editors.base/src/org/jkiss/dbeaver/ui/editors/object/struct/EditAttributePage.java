@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,6 +27,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -33,10 +36,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeConstrainable;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -61,7 +61,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
     private List<Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>>> constraintTypes;
 
     private Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>> selectedConstraintType;
-    private String selectedConstraintName;
+    private final ConstraintNameGenerator constraintNameGenerator;
     private Combo keyTypeCombo;
     private Text constraintNameText;
 
@@ -71,7 +71,12 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
         @NotNull Map<String, Object> options
     ) {
         super(commandContext, object);
+        setTitle(NLS.bind(
+            EditorsMessages.dialog_struct_attribute_edit_page_header_edit_attribute,
+            DBUtils.getObjectFullName(object, DBPEvaluationContext.UI)
+        ));
         this.options = options;
+        this.constraintNameGenerator = new ConstraintNameGenerator(object.getParentObject());
     }
 
     @Override
@@ -129,17 +134,19 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = 150;
         constraintNameText = UIUtils.createLabelText(keysGroup, "Name", null, SWT.BORDER, gd);
-        constraintNameText.addModifyListener(e -> selectedConstraintName = constraintNameText.getText());
+        constraintNameText.addModifyListener(e -> constraintNameGenerator.setConstraintName(constraintNameText.getText()));
     }
 
     private void updateConstraintType() {
         int selectionIndex = keyTypeCombo.getSelectionIndex();
-        if (selectionIndex < 0) {
+        if (!isUnique || selectionIndex < 0) {
             selectedConstraintType = null;
+            setErrorMessage(isUnique ? "You must choose constraint type" : null);
         } else {
             selectedConstraintType = constraintTypes.get(selectionIndex);
-            selectedConstraintName = getObject().getParentObject().getName() + "_" + selectedConstraintType.getFirst().getId();
-            constraintNameText.setText(selectedConstraintName);
+            constraintNameGenerator.setConstraintType(selectedConstraintType.getFirst());
+            constraintNameText.setText(constraintNameGenerator.getConstraintName());
+            constraintNameGenerator.validateAllowedType(selectedConstraintType.getFirst(), this);
         }
     }
 
@@ -169,16 +176,20 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
         DBEObjectMaker<?,?> objectMaker = (DBEObjectMaker<?,?>) objectManager;
         Map<String, Object> constrOptions = new LinkedHashMap<>(options);
         constrOptions.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
+        DBSTableColumn column = getObject();
+        if (column instanceof DBSTypedObjectExt2 to2) {
+            to2.setRequired(true);
+        }
         DBSObject newConstraint = objectMaker.createNewObject(
             monitor,
             commandContext,
-            getObject().getParentObject(),
+            column.getParentObject(),
             null,
             constrOptions);
         if (newConstraint instanceof AbstractTableConstraint<?,?> atc) {
-            atc.setName(selectedConstraintName);
+            atc.setName(constraintNameGenerator.getConstraintName());
             atc.setConstraintType(selectedConstraintType.getFirst());
-            atc.addAttributeReference(getObject());
+            atc.addAttributeReference(column);
         }
     }
 }

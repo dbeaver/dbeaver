@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,6 +41,14 @@ public abstract class BaseObjectEditPage extends DialogPage {
 
     public BaseObjectEditPage(String title, DBIcon icon) {
         super(title, DBeaverIcons.getImageDescriptor(icon));
+    }
+
+    public abstract DBSObject getObject();
+
+    @Override
+    public void setErrorMessage(String newMessage) {
+        super.setErrorMessage(newMessage);
+        container.updateMessage();
     }
 
     @Override

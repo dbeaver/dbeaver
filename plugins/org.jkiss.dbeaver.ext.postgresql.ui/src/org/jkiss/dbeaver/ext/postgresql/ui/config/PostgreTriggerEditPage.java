@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -40,13 +41,18 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
 public class PostgreTriggerEditPage extends EntityEditPage {
 
-    private PostgreTriggerBase trigger;
+    private final PostgreTriggerBase trigger;
     private CSmartSelector<PostgreProcedure> functionCombo;
     PostgreProcedure selectedFunction;
 
     PostgreTriggerEditPage(PostgreTriggerBase trigger) {
         super(trigger.getDataSource(), DBSEntityType.TRIGGER);
         this.trigger = trigger;
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return trigger;
     }
 
     @Override

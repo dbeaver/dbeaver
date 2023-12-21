@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
@@ -187,6 +188,11 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
         } catch (Exception e) {
             previewText.setText(GeneralUtils.getExpressionParseMessage(e));
         }
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return vAttr;
     }
 
     @Override

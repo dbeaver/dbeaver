@@ -19,28 +19,33 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
-class EditObjectDialog extends TrayDialog {
+class EditObjectDialog extends TitleAreaDialog {
 
     private final IDialogPage dialogPage;
 
     public EditObjectDialog(Shell shell, IDialogPage dialogPage) {
         super(shell);
         this.dialogPage = dialogPage;
-        if (this.dialogPage instanceof BaseObjectEditPage) {
-            ((BaseObjectEditPage) this.dialogPage).setContainer(this);
+        if (this.dialogPage instanceof BaseObjectEditPage editPage) {
+            editPage.setContainer(this);
         }
-        if (dialogPage instanceof IHelpContextIdProvider && ((IHelpContextIdProvider) dialogPage).getHelpContextId() != null) {
+        if (dialogPage instanceof IHelpContextIdProvider hcp && hcp.getHelpContextId() != null) {
             setHelpAvailable(true);
         } else {
             setHelpAvailable(false);
@@ -51,6 +56,11 @@ class EditObjectDialog extends TrayDialog {
     protected IDialogSettings getDialogBoundsSettings() {
         String dialogId = "DBeaver.EditObjectDialog." + dialogPage.getClass().getSimpleName();
         return UIUtils.getDialogSettings(dialogId);
+    }
+
+    @Override
+    protected int getShellStyle() {
+        return super.getShellStyle();
     }
 
     @Override
@@ -70,12 +80,22 @@ class EditObjectDialog extends TrayDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(dialogPage.getTitle());
+        String title = dialogPage.getTitle();
+        if (dialogPage instanceof BaseObjectEditPage editPage) {
+            DBSObject object = editPage.getObject();
+            if (object != null) {
+                title = DBUtils.getObjectTypeName(object);
+            }
+        }
+        getShell().setText(title);
+        setTitle(dialogPage.getTitle());
         Composite group = (Composite) super.createDialogArea(parent);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        group.setLayoutData(gd);
 
-        dialogPage.createControl(group);
+        Composite composite = new Composite(group, SWT.NONE);
+        composite.setLayout(new GridLayout(1, false));
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        dialogPage.createControl(composite);
 
         if (dialogPage instanceof IHelpContextIdProvider) {
             UIUtils.setHelp(dialogPage.getControl(), ((IHelpContextIdProvider) dialogPage).getHelpContextId());
@@ -121,4 +141,12 @@ class EditObjectDialog extends TrayDialog {
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
+    public void updateMessage() {
+        String errorMessage = dialogPage.getErrorMessage();
+        setErrorMessage(errorMessage);
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        if (okButton != null) {
+            okButton.setEnabled(CommonUtils.isEmpty(errorMessage));
+        }
+    }
 }

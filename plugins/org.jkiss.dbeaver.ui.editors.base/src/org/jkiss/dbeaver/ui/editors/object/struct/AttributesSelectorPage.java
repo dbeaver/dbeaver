@@ -438,12 +438,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     public List<DBSEntityAttribute> getSelectedAttributes()
     {
         List<DBSEntityAttribute> tableColumns = new ArrayList<>();
-        Set<AttributeInfo> orderedAttributes = new TreeSet<>(new Comparator<AttributeInfo>() {
-            @Override
-            public int compare(AttributeInfo o1, AttributeInfo o2) {
-                return o1.position - o2.position;
-            }
-        });
+        Set<AttributeInfo> orderedAttributes = new TreeSet<>(Comparator.comparingInt(o -> o.position));
         orderedAttributes.addAll(attributes);
         for (AttributeInfo col : orderedAttributes) {
             if (col.position >= 0) {

@@ -39,8 +39,9 @@ import java.util.Map;
  */
 public class DB2UniqueKeyConfigurator implements DBEObjectConfigurator<DB2TableUniqueKey> {
 	
-    private static final DBSEntityConstraintType[] CONS_TYPES  = { DBSEntityConstraintType.PRIMARY_KEY,
-            DBSEntityConstraintType.UNIQUE_KEY };
+    private static final DBSEntityConstraintType[] CONS_TYPES  = {
+        DBSEntityConstraintType.PRIMARY_KEY,
+        DBSEntityConstraintType.UNIQUE_KEY };
 
     @Override
     public DB2TableUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull DB2TableUniqueKey constraint, @NotNull Map<String, Object> options) {

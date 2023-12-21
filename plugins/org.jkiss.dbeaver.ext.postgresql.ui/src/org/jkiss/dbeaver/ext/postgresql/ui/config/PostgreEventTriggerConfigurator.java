@@ -58,7 +58,7 @@ public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<Po
         }.execute();
     }
 
-    class TriggerEventEditPage extends PostgreTriggerEditPage {
+    static class TriggerEventEditPage extends PostgreTriggerEditPage {
 
         private Combo eventCombo;
         PostgreEventTrigger.TriggerEventTypes eventType;
