@@ -780,38 +780,46 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @Nullable Collection<String> dataSourceIds
-    ) throws DBException, IOException {
+    ) throws DBException {
         if (configurationManager.isSecure()) {
             return null;
         }
-        InputStream is = configurationManager.readConfiguration(
-            "%s%s%s".formatted(
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX,
-                configurationStorage.getStorageSubId(),
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT
-            ),
-            dataSourceIds
+        final String name = "%s%s%s".formatted(
+            DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX,
+            configurationStorage.getStorageSubId(),
+            DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT
         );
-        if (is == null) {
-            return null;
-        }
-        try {
+        try (InputStream is = configurationManager.readConfiguration(name, dataSourceIds)) {
+            if (is == null) {
+                return null;
+            }
             final String data = loadConfigFile(is, true);
             return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {}.getType());
         } catch (Exception e) {
-            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !DBWorkbench.getPlatformUI().confirmAction(
-                RegistryMessages.project_open_cannot_read_credentials_title,
-                NLS.bind(
-                    RegistryMessages.project_open_cannot_read_credentials_message,
-                    registry.getProject().getName()
-                ),
-                RegistryMessages.project_open_cannot_read_credentials_button_text,
-                true
-            )) {
-                throw new DBException("Project opening canceled by user");
+            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                if (DBWorkbench.getPlatformUI().confirmAction(
+                    RegistryMessages.project_open_cannot_read_credentials_title,
+                    NLS.bind(
+                        RegistryMessages.project_open_cannot_read_credentials_message,
+                        registry.getProject().getName()
+                    ),
+                    RegistryMessages.project_open_cannot_read_credentials_button_text,
+                    true
+                )) {
+                    final String backupName = name + ".bak";
+                    try (InputStream is = configurationManager.readConfiguration(backupName, dataSourceIds)) {
+                        if (is != null) { // just sanity check
+                            configurationManager.writeConfiguration(backupName, is.readAllBytes());
+                        }
+                        log.debug("A backup file was created that contains secure credentials: " + backupName);
+                    } catch (Exception e1) {
+                        log.error("Error backing up secure credentials", e1);
+                    }
+                } else {
+                    throw new DBException("Project opening canceled by user");
+                }
             }
-
-            log.error("Error decrypting secure credentials", e);
+            log.error("Error reading secure credentials", e);
         }
         return null;
     }
