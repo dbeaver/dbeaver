@@ -849,7 +849,7 @@ public class DataSourceDescriptor
     @Override
     public boolean persistConfiguration() {
         try {
-            persistSecretIfNeeded(false);
+            persistSecretIfNeeded(false, false);
 
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
@@ -871,12 +871,16 @@ public class DataSourceDescriptor
         return true;
     }
 
-    boolean persistSecretIfNeeded(boolean force) throws DBException {
+    boolean persistSecretIfNeeded(boolean force, boolean isNewDataSource) throws DBException {
+        if (isDetached()) {
+            // Do not save secrets for hidden or temporary datasources
+            return false;
+        }
         // Save only if secrets were already resolved or it is a new connection
         if (secretsResolved || (force && getProject().isUseSecretStorage())) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
 
-            persistSecrets(secretController);
+            persistSecrets(secretController, isNewDataSource);
         }
         return true;
     }
@@ -892,9 +896,17 @@ public class DataSourceDescriptor
 
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
+        persistSecrets(secretController, false);
+    }
+
+    void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
         if (!isSharedCredentials()) {
             var secret = saveToSecret();
-            secretController.setSecretValue(getSecretKeyId(), secret);
+            // Do not persist empty secrets for new datasources
+            // If secret controller is external then it may take quite a time + may cause errors because of missing secret
+            if (!isNewDataSource || secret != null) {
+                secretController.setSecretValue(getSecretKeyId(), secret);
+            }
         }
         secretsResolved = true;
     }
@@ -939,10 +951,11 @@ public class DataSourceDescriptor
             return false;
         }
 
+        boolean detachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
+        boolean succeeded = false;
         connecting = true;
         try {
-            boolean succeeded = false;
-            if (isDetachedProcessEnabled() && !DBWorkbench.getPlatform().getApplication().isDetachedProcess()) {
+            if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
             }
@@ -950,17 +963,15 @@ public class DataSourceDescriptor
                 // Open local connection
                 succeeded = connect0(monitor, initialize, reflect);
             }
-            if (reflect) {
-                getRegistry().notifyDataSourceListeners(new DBPEvent(
-                    DBPEvent.Action.OBJECT_UPDATE,
-                    DataSourceDescriptor.this,
-                    true));
-            }
 
             return succeeded;
         }
         finally {
             connecting = false;
+
+            if (!detachedProcess) {
+                updateDataSourceObject(this, succeeded);
+            }
         }
     }
 
@@ -2003,11 +2014,11 @@ public class DataSourceDescriptor
         return authInfo;
     }
 
-    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor) {
+    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor, boolean succeeded) {
         getRegistry().notifyDataSourceListeners(new DBPEvent(
             DBPEvent.Action.OBJECT_UPDATE,
             dataSourceDescriptor,
-            false));
+            succeeded));
     }
 
     /**
