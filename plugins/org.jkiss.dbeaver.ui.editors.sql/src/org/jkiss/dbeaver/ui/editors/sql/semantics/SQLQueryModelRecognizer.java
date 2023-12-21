@@ -685,8 +685,8 @@ public class SQLQueryModelRecognizer {
             SQLDialect dialect = this.obtainSqlDialect();
             boolean isQuotted = dialect.isQuotedIdentifier(rawIdentifierString);
             String unquottedIdentifier = isQuotted ? dialect.getUnquotedIdentifier(rawIdentifierString) : rawIdentifierString;
-            String actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, false) 
-                ? (forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, false, false)) 
+            String actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, true) 
+                ? (forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false)) 
                 : unquottedIdentifier.toLowerCase();
             SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody.getRealInterval(), actualIdentifierString, rawIdentifierString);
             this.symbolEntries.add(entry);

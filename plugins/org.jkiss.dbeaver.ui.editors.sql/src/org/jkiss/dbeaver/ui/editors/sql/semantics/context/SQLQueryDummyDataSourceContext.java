@@ -384,12 +384,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     
     @Override
     public DBSEntity findRealTable(List<String> tableName) {
+    	List<String> rawTableName = tableName.stream().map(s -> this.dialect.getUnquotedIdentifier(s)).toList();
         DummyDbObject source = this.dummyDataSource;
-        DummyDbObject catalog = tableName.size() > 2
-            ? source.getChildrenMapImpl().get(tableName.get(tableName.size() - 3)) : this.defaultDummyCatalog;
-        DummyDbObject schema = tableName.size() > 1
-            ? catalog.getChildrenMapImpl().get(tableName.get(tableName.size() - 2)) : this.defaultDummySchema;
-        return schema.getChildrenMapImpl().get(tableName.get(tableName.size() - 1));
+        DummyDbObject catalog = rawTableName.size() > 2
+            ? source.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
+        DummyDbObject schema = rawTableName.size() > 1
+            ? catalog.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 2)) : this.defaultDummySchema;
+        return schema.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 1));
     }
     
     @Override
