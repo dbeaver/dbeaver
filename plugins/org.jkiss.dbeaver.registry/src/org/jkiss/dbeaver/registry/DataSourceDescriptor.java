@@ -2044,7 +2044,10 @@ public class DataSourceDescriptor
                 props.put(RegistryConstants.ATTR_EMPTY_DATABASE_CREDENTIALS, true);
             }
             this.secretsContainsDatabaseCreds = true;
+        } else {
+            this.secretsContainsDatabaseCreds = false;
         }
+
         if (CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
             // Handlers. If config profile is set then props are saved there
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
