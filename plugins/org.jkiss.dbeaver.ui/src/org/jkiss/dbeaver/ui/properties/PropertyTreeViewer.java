@@ -24,6 +24,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.MouseAdapter;
@@ -366,7 +367,7 @@ public class PropertyTreeViewer extends TreeViewer {
             TreeNode propNode = new TreeNode(category, propertySource, prop);
             // Load nested object's properties
             if (!(propertySource instanceof IPropertySourceEditable)) {
-                Class<?> propType = ((DBPPropertyDescriptor) prop).getDataType();
+                Class<?> propType = prop.getDataType();
                 if (propType != null) {
                     if (DBPObject.class.isAssignableFrom(propType)) {
                         Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
@@ -487,7 +488,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     isMouseEventOnMacos = false;
                     return;
                 }
-                showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
+                showEditor(item, true);
             }
         });
         treeControl.addMouseListener(new MouseAdapter() {
@@ -559,6 +560,9 @@ public class PropertyTreeViewer extends TreeViewer {
             final TreeNode prop = (TreeNode) item.getData();
             if (prop.property == null || !prop.isEditable()) {
                 return;
+            }
+            if (selectedColumn < 0) {
+                selectedColumn = 0;
             }
             final int columnIndex;
             if (selectedColumn == 0 && (!namesEditable || !(prop.property instanceof DBPNamedObject))) {
@@ -638,19 +642,32 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             final Control editorControl = cellEditor.getControl();
             if (editorControl != null) {
-                editorControl.addTraverseListener(e -> {
+                Control traverseControl = editorControl;
+                if (editorControl instanceof Composite) {
+                    for (Control child : ((Composite) editorControl).getChildren()) {
+                        if (child instanceof Text || child instanceof StyledText) {
+                            traverseControl = child;
+                            break;
+                        }
+                    }
+                }
+                traverseControl.addTraverseListener(e -> {
                     /*if (e.detail == SWT.TRAVERSE_RETURN) {
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
                         cellEditorListener.applyEditorValue();
                         disposeOldEditor();
-                    } else */if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                    } else */
+                    if (e.detail == SWT.TRAVERSE_ESCAPE) {
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
                         disposeOldEditor();
                         if (prop.isEditable()) {
                             new ActionResetProperty(prop, false).run();
                         }
+                    } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                        applyEditorValue();
+                        showNextEditor(item, e.detail == SWT.TRAVERSE_TAB_NEXT);
                     }
                 });
                 treeEditor.verticalAlignment = cellEditor.getLayoutData().verticalAlignment;
@@ -665,6 +682,23 @@ public class PropertyTreeViewer extends TreeViewer {
                 cellEditor.setFocus();
             }
         }
+    }
+
+    private void showNextEditor(TreeItem item, boolean next) {
+        TreeItem[] items = super.getTree().getItems();
+        int index = ArrayUtils.indexOf(items, item);
+        if (index < 0) {
+            return;
+        }
+        int nextIndex = index;
+        if (next) {
+            nextIndex++;
+            if (nextIndex >= items.length) nextIndex = 0;
+        } else {
+            nextIndex--;
+            if (nextIndex < 0) nextIndex = items.length - 1;
+        }
+        showEditor(items[nextIndex], true);
     }
 
     private void registerContextMenu()
