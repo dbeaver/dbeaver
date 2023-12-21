@@ -459,6 +459,10 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     }
 
+    protected boolean isColumnsRequired() {
+        return true;
+    }
+
     public void updateColumnSelection(@NotNull Predicate<DBSEntityAttribute> predicate) {
         for (TableItem item : columnsTable.getItems()) {
             item.setChecked(false);
@@ -489,7 +493,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     @Override
     protected String getEditError() {
-        if (!isPageComplete()) {
+        if (isColumnsRequired() && !hasCheckedColumns()) {
             return "You must select at least one column";
         }
         return super.getEditError();

@@ -53,6 +53,10 @@ public class ConstraintNameGenerator {
     }
 
     public ConstraintNameGenerator(DBSEntity entity, String constraintName) {
+        this(entity, constraintName, DBSEntityConstraintType.PRIMARY_KEY);
+    }
+
+    public ConstraintNameGenerator(DBSEntity entity, String constraintName, DBSEntityConstraintType constraintType) {
         this.entity = entity;
         this.constraintName = constraintName;
 
@@ -62,7 +66,7 @@ public class ConstraintNameGenerator {
         addTypePrefix(DBSEntityConstraintType.FOREIGN_KEY, "_FK");
         addTypePrefix(DBSEntityConstraintType.CHECK, "_CHECK");
 
-        this.constraintType = DBSEntityConstraintType.PRIMARY_KEY;
+        this.constraintType = constraintType;
         if (CommonUtils.isEmpty(constraintName)) {
             generateConstraintName();
         }

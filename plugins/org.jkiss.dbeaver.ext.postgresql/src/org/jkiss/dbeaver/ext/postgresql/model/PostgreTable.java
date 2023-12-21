@@ -38,9 +38,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,11 +53,12 @@ import java.util.stream.Collectors;
 /**
  * PostgreTable
  */
-public abstract class PostgreTable extends PostgreTableReal implements PostgreTableContainer, DBDPseudoAttributeContainer
+public abstract class PostgreTable extends PostgreTableReal
+    implements PostgreTableContainer, DBDPseudoAttributeContainer, DBSEntityConstrainable
 {
     private static final Log log = Log.getLog(PostgreTable.class);
 
-    private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
+    private final SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
     //private List<PostgreTablePartition>  partitions  = null;
 
     private final PolicyCache policyCache = new PolicyCache();
@@ -497,6 +496,16 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         subTables = null;
         policyCache.clearCache();
         return super.refreshObject(monitor);
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, PostgreTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, PostgreTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.INDEX, PostgreIndex.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, PostgreTableConstraint.class)
+        );
     }
 
     public static class PostgreColumnHasOidsValidator implements IPropertyValueValidator<PostgreTable, Object> {

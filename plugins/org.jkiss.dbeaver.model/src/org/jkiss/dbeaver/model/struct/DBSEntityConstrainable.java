@@ -16,15 +16,13 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.utils.Pair;
-
 import java.util.List;
 
 /**
  * DBSEntityAttributeConstrainable
  */
-public interface DBSEntityAttributeConstrainable {
+public interface DBSEntityConstrainable {
 
-    List<Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>>> getSupportedConstraints();
+    List<DBSEntityConstraintInfo> getSupportedConstraints();
 
 }

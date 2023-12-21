@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
@@ -41,16 +40,12 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
 
     @Override
     public GenericUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull GenericUniqueKey primaryKey, @NotNull Map<String, Object> options) {
-        boolean isSupportCheckConstraint = primaryKey.getDataSource().getMetaModel().supportsCheckConstraints();
         return new UITask<GenericUniqueKey>() {
             @Override
             protected GenericUniqueKey runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create unique constraint",
-                    primaryKey,
-                    isSupportCheckConstraint ?
-                            new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY, DBSEntityConstraintType.CHECK} :
-                            new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
+                    primaryKey);
                 if (!editPage.edit()) {
                     return null;
                 }

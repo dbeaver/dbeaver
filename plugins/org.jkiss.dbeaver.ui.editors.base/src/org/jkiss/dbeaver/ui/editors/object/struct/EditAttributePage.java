@@ -36,13 +36,15 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstrainable;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintInfo;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
@@ -58,9 +60,9 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
     @NotNull
     private final Map<String, Object> options;
     private boolean isUnique;
-    private List<Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>>> constraintTypes;
+    private List<DBSEntityConstraintInfo> constraintTypes;
 
-    private Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>> selectedConstraintType;
+    private DBSEntityConstraintInfo selectedConstraintType;
     private final ConstraintNameGenerator constraintNameGenerator;
     private Combo keyTypeCombo;
     private Text constraintNameText;
@@ -86,18 +88,18 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
 
     @Override
     protected void createAdditionalEditControls(Composite composite) {
-        if (getObject() instanceof DBSEntityAttributeConstrainable attributeConstrainable) {
-            createKeysGroup(composite, attributeConstrainable);
+        if (getObject().getParentObject() instanceof DBSEntityConstrainable ec) {
+            createKeysGroup(composite, ec);
         }
     }
 
-    private void createKeysGroup(Composite composite, DBSEntityAttributeConstrainable attributeConstrainable) {
+    private void createKeysGroup(Composite composite, DBSEntityConstrainable attributeConstrainable) {
         constraintTypes = attributeConstrainable.getSupportedConstraints();
         if (CommonUtils.isEmpty(constraintTypes)) {
             return;
         }
         constraintTypes = constraintTypes.stream()
-            .filter(ct -> AbstractTableConstraint.class.isAssignableFrom(ct.getSecond()))
+            .filter(ct -> AbstractTableConstraint.class.isAssignableFrom(ct.getImplClass()))
             .collect(Collectors.toList());
         if (CommonUtils.isEmpty(constraintTypes)) {
             return;
@@ -109,8 +111,8 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
 
         keyTypeCombo = UIUtils.createLabelCombo(keysGroup, "Type", "Constraint type", SWT.DROP_DOWN | SWT.READ_ONLY);
         keyTypeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        for (Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>> ct : constraintTypes) {
-            keyTypeCombo.add(ct.getFirst().getLocalizedName());
+        for (DBSEntityConstraintInfo ct : constraintTypes) {
+            keyTypeCombo.add(ct.getType().getLocalizedName());
         }
         keyTypeCombo.setEnabled(false);
 
@@ -143,7 +145,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
             selectedConstraintType = null;
         } else {
             selectedConstraintType = constraintTypes.get(selectionIndex);
-            constraintNameGenerator.setConstraintType(selectedConstraintType.getFirst());
+            constraintNameGenerator.setConstraintType(selectedConstraintType.getType());
             constraintNameText.setText(constraintNameGenerator.getConstraintName());
         }
         validateProperties();
@@ -155,7 +157,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
             if (selectedConstraintType == null) {
                 return "You must choose constraint type";
             }
-            String error = constraintNameGenerator.validateAllowedType(selectedConstraintType.getFirst());
+            String error = constraintNameGenerator.validateAllowedType(selectedConstraintType.getType());
             if (error != null) {
                 return error;
             }
@@ -182,9 +184,10 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
         // Create constraint
         DBECommandContext commandContext = getCommandContext();
 
-        DBEObjectManager<?> objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(selectedConstraintType.getSecond());
+        DBEObjectManager<?> objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+            selectedConstraintType.getImplClass());
         if (objectManager == null) {
-            throw new DBException("Object manager not found for type '" + selectedConstraintType.getSecond().getName() + "'");
+            throw new DBException("Object manager not found for type '" + selectedConstraintType.getImplClass().getName() + "'");
         }
         DBEObjectMaker<?,?> objectMaker = (DBEObjectMaker<?,?>) objectManager;
         Map<String, Object> constrOptions = new LinkedHashMap<>(options);
@@ -201,7 +204,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
             constrOptions);
         if (newConstraint instanceof AbstractTableConstraint<?,?> atc) {
             atc.setName(constraintNameGenerator.getConstraintName());
-            atc.setConstraintType(selectedConstraintType.getFirst());
+            atc.setConstraintType(selectedConstraintType.getType());
             atc.addAttributeReference(column);
         }
     }

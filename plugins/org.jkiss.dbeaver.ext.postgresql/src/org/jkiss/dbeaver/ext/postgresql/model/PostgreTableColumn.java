@@ -28,12 +28,9 @@ import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeConstrainable;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +40,7 @@ import java.util.Map;
  * PostgreTableColumn
  */
 public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
-    implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute, JDBCColumnKeyType, DBSEntityAttributeConstrainable {
+    implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute, JDBCColumnKeyType {
     private static final Log log = Log.getLog(PostgreTableColumn.class);
 
     public PostgreTableColumn(DBRProgressMonitor monitor, PostgreTableBase table, PostgreTableColumn source) throws DBException {
@@ -137,12 +134,4 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
         return false;
     }
 
-    @Override
-    public List<Pair<DBSEntityConstraintType, Class<? extends DBSEntityConstraint>>> getSupportedConstraints() {
-        return List.of(
-            Pair.of(DBSEntityConstraintType.PRIMARY_KEY, PostgreTableConstraint.class),
-            Pair.of(DBSEntityConstraintType.UNIQUE_KEY, PostgreTableConstraint.class),
-            Pair.of(DBSEntityConstraintType.INDEX, PostgreIndex.class)
-        );
-    }
 }

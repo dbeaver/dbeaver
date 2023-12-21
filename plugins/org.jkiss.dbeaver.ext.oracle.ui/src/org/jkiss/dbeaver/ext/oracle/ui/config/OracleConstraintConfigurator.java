@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
@@ -43,11 +42,7 @@ public class OracleConstraintConfigurator implements DBEObjectConfigurator<Oracl
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 OracleUIMessages.edit_oracle_constraint_manager_dialog_title,
-                constraint,
-                new DBSEntityConstraintType[] {
-                    DBSEntityConstraintType.PRIMARY_KEY,
-                    DBSEntityConstraintType.UNIQUE_KEY,
-                    DBSEntityConstraintType.CHECK });
+                constraint);
             if (!editPage.edit()) {
                 return null;
             }

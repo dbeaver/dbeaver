@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
@@ -41,8 +40,7 @@ public class SQLServerUniqueKeyConfigurator implements DBEObjectConfigurator<SQL
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 "Create constraint",
-                primaryKey,
-                new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
+                primaryKey);
             if (!editPage.edit()) {
                 return null;
             }

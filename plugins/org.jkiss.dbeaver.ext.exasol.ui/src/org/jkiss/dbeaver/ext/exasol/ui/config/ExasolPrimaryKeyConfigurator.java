@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
@@ -47,8 +46,7 @@ public class ExasolPrimaryKeyConfigurator implements DBEObjectConfigurator<Exaso
             {
                 EditConstraintPage editPage = new EditConstraintPage(
                         ExasolMessages.edit_exasol_constraint_manager_dialog_title,
-                        constraint,
-                        new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY });
+                        constraint);
                 if (!editPage.edit()) {
                     return null;
                 }

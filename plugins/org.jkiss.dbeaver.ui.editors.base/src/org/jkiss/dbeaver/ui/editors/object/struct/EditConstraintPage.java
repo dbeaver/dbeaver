@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
@@ -59,10 +60,9 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     public EditConstraintPage(
         String title,
-        DBSEntityConstraint constraint,
-        DBSEntityConstraintType[] constraintTypes
+        DBSEntityConstraint constraint
     ) {
-        this(title, constraint.getParentObject(), constraintTypes, false);
+        this(title, constraint.getParentObject(), false);
         if (constraint instanceof DBSEntityReferrer referrer) {
             this.constraint = referrer;
         }
@@ -71,12 +71,16 @@ public class EditConstraintPage extends AttributesSelectorPage {
     public EditConstraintPage(
         String title,
         DBSEntity entity,
-        DBSEntityConstraintType[] constraintTypes,
         boolean showEnable
     ) {
         super(title, entity);
         this.entity = entity;
-        this.constraintTypes = constraintTypes;
+        if (entity instanceof DBSEntityConstrainable entityConstrainable) {
+            this.constraintTypes = entityConstrainable.getSupportedConstraints()
+                .stream().map(DBSEntityConstraintInfo::getType).toArray(DBSEntityConstraintType[]::new);
+        } else {
+            this.constraintTypes = new DBSEntityConstraintType[] { DBSEntityConstraintType.PRIMARY_KEY };
+        }
         this.showEnable = showEnable;
         this.nameGenerator = new ConstraintNameGenerator(entity);
         Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
@@ -91,7 +95,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(EditorsMessages.edit_constraints_error_title, EditorsMessages.edit_constraints_error_message, e);
         }
-        this.nameGenerator = new ConstraintNameGenerator(constraint.getParentObject(), this.constraint.getName());
+        this.nameGenerator = new ConstraintNameGenerator(constraint.getParentObject(), this.constraint.getName(), constraint.getConstraintType());
         if (constraint instanceof DBVEntityConstraint) {
             this.useAllColumns = ((DBVEntityConstraint) constraint).isUseAllColumns();
         }
@@ -195,6 +199,11 @@ public class EditConstraintPage extends AttributesSelectorPage {
         columnsTable.setEnabled(!useAllColumns);
     }
 
+    @Override
+    protected boolean isColumnsRequired() {
+        return !selectedConstraintType.isCustom();
+    }
+
     public String getConstraintName() {
         return nameGenerator.getConstraintName();
     }
@@ -257,4 +266,12 @@ public class EditConstraintPage extends AttributesSelectorPage {
     public boolean isUseAllColumns() {
         return this.useAllColumns;
     }
+
+    public void performFinish() {
+        if (constraint instanceof AbstractTableConstraint<?,?> atc) {
+            atc.setConstraintType(this.getConstraintType());
+            atc.setName(this.getConstraintName());
+        }
+    }
+
 }

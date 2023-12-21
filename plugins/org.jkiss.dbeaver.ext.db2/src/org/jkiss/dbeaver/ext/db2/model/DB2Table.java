@@ -45,8 +45,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSPartitionContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -66,7 +65,7 @@ import java.util.Map;
  * @author Denis Forveille
  */
 public class DB2Table extends DB2TableBase
-    implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer, DBSPartitionContainer {
+    implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer, DBSPartitionContainer, DBSEntityConstrainable {
 
     protected static final Log log = Log.getLog(DB2Table.class);
 
@@ -524,6 +523,14 @@ public class DB2Table extends DB2TableBase
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, DB2TableUniqueKey.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, DB2TableUniqueKey.class)
+        );
     }
 
     public class ColumnMaskCache extends JDBCObjectLookupCache<DB2Table, DB2ColumnMask> {

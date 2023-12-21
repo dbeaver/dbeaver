@@ -44,23 +44,9 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
     public MySQLTableConstraint configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull MySQLTableConstraint constraint, @NotNull Map<String, Object> options) {
         MySQLDataSource dataSource = constraint.getDataSource();
         return UITask.run(() -> {
-            EditConstraintPage editPage;
-            if (dataSource.supportsCheckConstraints()) {
-                editPage = new EditConstraintPage(
-                        MySQLUIMessages.edit_constraint_manager_title,
-                        constraint,
-                        new DBSEntityConstraintType[]{
-                                DBSEntityConstraintType.PRIMARY_KEY,
-                                DBSEntityConstraintType.UNIQUE_KEY,
-                                DBSEntityConstraintType.CHECK});
-            } else {
-                editPage = new EditConstraintPage(
-                        MySQLUIMessages.edit_constraint_manager_title,
-                        constraint,
-                        new DBSEntityConstraintType[]{
-                                DBSEntityConstraintType.PRIMARY_KEY,
-                                DBSEntityConstraintType.UNIQUE_KEY});
-            }
+            EditConstraintPage editPage = new EditConstraintPage(
+                MySQLUIMessages.edit_constraint_manager_title,
+                constraint);
             if (!editPage.edit()) {
                 return null;
             }
