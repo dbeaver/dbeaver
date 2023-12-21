@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
@@ -48,6 +50,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
@@ -636,11 +639,18 @@ public class NavigatorUtils {
                     id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
                     item.dispose();
                 }
-                if (node.getNodeType().startsWith(DBNNode.NodePathType.dbvfs.toString()) &&
+                IResource resource = Adapters.adapt(node, IResource.class);
+                if (resource instanceof IFolder &&
                     id.startsWith("compareWithMenu") || // $NON-NLS-0$
                     id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
-                    // remove extra nodes for remote resource only
                     item.dispose();
+                } else if (node instanceof DBNNodeWithResource) {
+                    DBNNodeWithResource nodeWithResource = (DBNNodeWithResource) node;
+                    if (nodeWithResource.isRemoteResource() &&
+                        id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                        id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
+                        item.dispose();
+                    }
                 }
             }
         }

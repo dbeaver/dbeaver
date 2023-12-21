@@ -626,4 +626,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         }
         throw new DBException("Resource '" + getNodeTargetName() + "' doesn't support streaming");
     }
+
+    @Override
+    public boolean isRemoteResource() {
+        return getNodeType().startsWith(DBNNode.NodePathType.dbvfs.toString());
+    }
 }

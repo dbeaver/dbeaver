@@ -31,4 +31,6 @@ public interface DBNNodeWithResource {
 
     void setResourceImage(DBPImage resourceImage);
 
+    boolean isRemoteResource();
+
 }

@@ -473,4 +473,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         return children == null;
     }
 
+    @Override
+    public boolean isRemoteResource() {
+        return getNodeType().startsWith(DBNNode.NodePathType.dbvfs.toString());
+    }
 }
