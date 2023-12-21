@@ -199,7 +199,7 @@ public class DBVModel extends DBVContainer {
     @Nullable
     public static List<DBVEntityForeignKey> getGlobalReferences(DBNDatabaseNode databaseNode) {
         synchronized (globalReferenceCache) {
-            return globalReferenceCache.get(databaseNode.getNodeItemPath());
+            return globalReferenceCache.get(databaseNode.getNodeUri());
         }
     }
 
@@ -272,7 +272,7 @@ public class DBVModel extends DBVContainer {
     private static void handleEntityRename(DBSEntity object, String oldName, String newName) {
         DBNDatabaseNode objectNode = DBNUtils.getNavigatorModel(object).getNodeByObject(object);
         if (objectNode != null) {
-            String objectNodePath = objectNode.getNodeItemPath();
+            String objectNodePath = objectNode.getNodeUri();
             renameEntityInGlobalCache(objectNodePath, oldName, newName);
         }
         if (object.getDataSource() != null) {

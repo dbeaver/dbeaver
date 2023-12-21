@@ -419,9 +419,9 @@ public class NavigatorUtils {
                         folders.put(folder, nodeFilter);
                     }
                     if (exclude) {
-                        nodeFilter.addExclude(node.getNodeName());
+                        nodeFilter.addExclude(node.getNodeDisplayName());
                     } else {
-                        nodeFilter.addInclude(node.getNodeName());
+                        nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
                 }

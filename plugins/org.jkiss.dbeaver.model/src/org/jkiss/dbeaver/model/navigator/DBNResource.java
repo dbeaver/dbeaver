@@ -54,6 +54,11 @@ import java.util.*;
 public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStreamData {
     private static final Log log = Log.getLog(DBNResource.class);
 
+    //TODO: create real resource root node
+    //this 'node' exist to avoid collision between resource folders and other root nodes
+    //example: you can create 'datasources' folder, and nodeUri will be the same as for DBNProjectDatabases
+    public static final String FAKE_RESOURCE_ROOT_NODE = "resources";
+
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
@@ -131,7 +136,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         if (resource == null || handler == null) {
             return null;
         }
@@ -333,6 +338,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         }
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         String projectPath = getRawNodeItemPath();
