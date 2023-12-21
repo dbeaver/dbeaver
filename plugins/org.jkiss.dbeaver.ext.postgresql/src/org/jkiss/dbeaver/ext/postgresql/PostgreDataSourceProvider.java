@@ -40,13 +40,7 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
@@ -138,14 +132,12 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
 
     @Override
     public List<DBPNativeClientLocation> findLocalClientLocations() {
-        findLocalClients();
-        return new ArrayList<>(localClients);
+        return new ArrayList<>(findLocalClients());
     }
 
     @Override
     public DBPNativeClientLocation getDefaultLocalClientLocation() {
-        findLocalClients();
-        return localClients.isEmpty() ? null : localClients.iterator().next();
+        return CommonUtils.getFirstOrNull(findLocalClientLocations());
     }
 
     @Override
@@ -161,14 +153,14 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         return getFullServerVersion(location.getPath());
     }
 
-    public synchronized static void findLocalClients() {
+    private static synchronized Collection<DBPNativeClientLocation> findLocalClients() {
         if (localClients != null) {
-            return;
+            return localClients;
         }
-        localClients = new HashSet<>();
 
         // find homes in Windows registry
         if (RuntimeUtils.isWindows()) {
+            localClients = new HashSet<>();
             try {
                 if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY)) {
                     String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY);
@@ -189,51 +181,18 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
             } catch (Throwable e) {
                 log.warn("Error reading Windows registry", e);
             }
+        } else {
+            localClients = NativeClientLocationUtils.findLocalClientsOnUnix(
+                List.of("/Library/PostgreSQL", "/Applications/Postgres.app/Contents/versions"),
+                List.of("bin/psql"),
+                path -> {
+                    String absolutePath = path.toAbsolutePath().toString();
+                    return new PostgreServerHome(absolutePath, absolutePath, absolutePath);
+                }
+            ).values();
         }
 
-        // Unix
-        Collection<String> foldersToExamine = new ArrayList<>();
-        foldersToExamine.add("/usr/bin");
-        foldersToExamine.add("/usr/local/bin");
-        if (RuntimeUtils.isLinux()) {
-            foldersToExamine.add("/etc/alternatives");
-        } else if (RuntimeUtils.isMacOS()) {
-            foldersToExamine.add("/Library/PostgreSQL"); //standard location for EDB installer
-            foldersToExamine.add("/Applications/Postgres.app/Contents/versions");
-            if (RuntimeUtils.isOSArchAMD64()) {
-                foldersToExamine.add(NativeClientLocationUtils.HOMEBREW_FORMULAE_LOCATION);
-            } else if (RuntimeUtils.isOSArchAArch64()) {
-                foldersToExamine.add("/opt/homebrew/bin");
-                foldersToExamine.add("/opt/homebrew/Cellar");
-                foldersToExamine.add("/opt/homebrew/opt");
-            }
-        }
-
-        for (String folder : foldersToExamine) {
-            Path folderPath = Path.of(folder);
-            if (Files.notExists(folderPath)) {
-                continue;
-            }
-            try {
-                Files.walkFileTree(folderPath, new SimpleFileVisitor<>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                        if (!file.endsWith("bin/psql")) {
-                            return FileVisitResult.CONTINUE;
-                        }
-                        if (file.toFile().canExecute()) {
-                            Path grandparent = IOUtils.getGrandparent(file);
-                            if (grandparent != null) {
-                                localClients.add(new PostgreServerHome(grandparent.toAbsolutePath().toString()));
-                            }
-                        }
-                        return FileVisitResult.SKIP_SIBLINGS;
-                    }
-                });
-            } catch (IOException e) {
-                log.warn(String.format("Unable to examine folder %s while looking for a PostgreSQL client home", folder), e);
-            }
-        }
+        return localClients;
     }
 
     @Nullable

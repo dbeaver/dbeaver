@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -51,7 +52,8 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     private static final String INSTALLDIR_KEY = "INSTALLDIR";
     //private static final String SERER_VERSION_KEY = "Version";
 
-    private static Map<String,MySQLServerHome> localServers = null;
+    @Nullable
+    private static Map<String, DBPNativeClientLocation> localClients;
     private static Map<String,String> connectionsProps;
 
     static {
@@ -155,17 +157,13 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     // Client manager
 
     @Override
-    public List<DBPNativeClientLocation> findLocalClientLocations()
-    {
-        findLocalClients();
-        return new ArrayList<>(localServers.values());
+    public List<DBPNativeClientLocation> findLocalClientLocations() {
+        return new ArrayList<>(findLocalClients().values());
     }
 
     @Override
-    public DBPNativeClientLocation getDefaultLocalClientLocation()
-    {
-        findLocalClients();
-        return localServers.isEmpty() ? null : localServers.values().iterator().next();
+    public DBPNativeClientLocation getDefaultLocalClientLocation() {
+        return CommonUtils.getFirstOrNull(findLocalClients().values());
     }
 
     @Override
@@ -178,108 +176,77 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return getFullServerVersion(location.getPath());
     }
 
-    public static MySQLServerHome getServerHome(String homeId)
-    {
-        findLocalClients();
-        MySQLServerHome home = localServers.get(homeId);
-        return home == null ? new MySQLServerHome(homeId, homeId) : home;
+    public static DBPNativeClientLocation getServerHome(String homeId) {
+        return findLocalClients().getOrDefault(homeId, new LocalNativeClientLocation(homeId, homeId, homeId));
     }
 
-    public synchronized static void findLocalClients() {
-        if (localServers != null) {
-            return;
+    @NotNull
+    private static synchronized Map<String, DBPNativeClientLocation> findLocalClients() {
+        if (localClients != null) {
+            return localClients;
         }
-        localServers = new LinkedHashMap<>();
+        if (RuntimeUtils.isWindows()) {
+            localClients = findWindowsLocalClients();
+        } else {
+            localClients = findUnixLocalClients();
+        }
+        return localClients;
+    }
+
+    @NotNull
+    private static Map<String, DBPNativeClientLocation> findWindowsLocalClients() {
+        Map<String, DBPNativeClientLocation> result = new HashMap<>();
+
         // read from path
         String path = System.getenv("PATH");
-        if (path != null && RuntimeUtils.isWindows()) {
+        if (path != null) {
             for (String token : path.split(System.getProperty(StandardConstants.ENV_PATH_SEPARATOR))) {
                 token = CommonUtils.removeTrailingSlash(token);
                 File mysqlFile = new File(token, MySQLUtils.getMySQLConsoleBinaryName());
                 if (mysqlFile.exists()) {
-                    File binFolder = mysqlFile.getAbsoluteFile().getParentFile();//.getName()
+                    File binFolder = mysqlFile.getAbsoluteFile().getParentFile();
                     if (binFolder.getName().equalsIgnoreCase("bin")) {
-                    	String homeId = CommonUtils.removeTrailingSlash(binFolder.getParentFile().getAbsolutePath());
-                        localServers.put(homeId, new MySQLServerHome(homeId, null));
+                        String homeId = CommonUtils.removeTrailingSlash(binFolder.getParentFile().getAbsolutePath());
+                        result.put(homeId, new LocalNativeClientLocation(homeId, homeId));
                     }
                 }
             }
         }
 
-        // find homes in Windows registry
-        if (RuntimeUtils.isWindows()) {
-            try {
-                // Search MySQL entries
-                {
-                    if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MYSQL_64)) {
-                        String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MYSQL_64);
-                        if (homeKeys != null) {
-                            for (String homeKey : homeKeys) {
-                                Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MYSQL_64 + "\\" + homeKey);
-                                for (String key : valuesMap.keySet()) {
-                                    if (SERER_LOCATION_KEY.equalsIgnoreCase(key)) {
-                                        String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(key)));
-                                        if (new File(serverPath, "bin").exists()) {
-                                            localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                        }
-                                    }
-                                }
-                            }
-                        }
+        searchInWindowsRegistry(result, REGISTRY_ROOT_MYSQL_64, SERER_LOCATION_KEY);
+        searchInWindowsRegistry(result, REGISTRY_ROOT_MARIADB, INSTALLDIR_KEY);
+
+        return result;
+    }
+
+    private static void searchInWindowsRegistry(Map<String, DBPNativeClientLocation> locationMap, String registryRoot, String installDirKey) {
+        if (!Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, registryRoot)) {
+            return;
+        }
+        for (String homeKey : ArrayUtils.safeArray(Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, registryRoot))) {
+            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey);
+            for (String key : valuesMap.keySet()) {
+                if (installDirKey.equalsIgnoreCase(key)) {
+                    String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(key)));
+                    if (new File(serverPath, "bin").exists()) {
+                        locationMap.put(serverPath, new LocalNativeClientLocation(serverPath, homeKey));
                     }
                 }
-                // Search MariaDB entries
-                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB)) {
-                    String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB);
-                    if (homeKeys != null) {
-                        for (String homeKey : homeKeys) {
-                            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB + "\\" + homeKey);
-                            for (String key : valuesMap.keySet()) {
-                                if (INSTALLDIR_KEY.equalsIgnoreCase(key)) {
-                                    String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(key)));
-                                    if (new File(serverPath, "bin").exists()) {
-                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable e) {
-                log.warn("Error reading Windows registry", e);
-            }
-        } else if (RuntimeUtils.isMacOS()) {
-            Collection<File> mysqlDirs = new ArrayList<>();
-            Collections.addAll(
-                mysqlDirs,
-                NativeClientLocationUtils.getSubdirectoriesWithNamesStartingWith("mysql", new File(NativeClientLocationUtils.USR_LOCAL)) //clients installed via installer downloaded from mysql site
-            );
-            Collections.addAll(
-                mysqlDirs,
-                NativeClientLocationUtils.getSubdirectories(NativeClientLocationUtils.getSubdirectoriesWithNamesStartingWith("mysql", new File(NativeClientLocationUtils.HOMEBREW_FORMULAE_LOCATION)))
-            );
-            Collections.addAll(
-                mysqlDirs,
-                NativeClientLocationUtils.getSubdirectories(NativeClientLocationUtils.getSubdirectoriesWithNamesStartingWith("mariadb", new File(NativeClientLocationUtils.HOMEBREW_FORMULAE_LOCATION)))
-            );
-            for (File dir: mysqlDirs) {
-                File bin = new File(dir, NativeClientLocationUtils.BIN);
-                File binary = new File(bin, MySQLUtils.getMySQLConsoleBinaryName());
-                if (!bin.exists() || !bin.isDirectory() || !binary.exists() || !binary.canExecute()) {
-                    continue;
-                }
-                String version = getFullServerVersion(dir);
-                if (version == null) {
-                    continue;
-                }
-                String canonicalPath = NativeClientLocationUtils.getCanonicalPath(dir);
-                if (canonicalPath.isEmpty()) {
-                    continue;
-                }
-                MySQLServerHome home = new MySQLServerHome(canonicalPath, "MySQL " + version);
-                localServers.put(canonicalPath, home);
             }
         }
+    }
+
+    @NotNull
+    private static Map<String, DBPNativeClientLocation> findUnixLocalClients() {
+        return NativeClientLocationUtils.findLocalClientsOnUnix(
+            List.of(),
+            List.of("bin/mysql", "bin/mariadb"),
+            p -> {
+                File file = p.toFile();
+                String absolutePath = file.getAbsolutePath();
+                return new LocalNativeClientLocation(absolutePath, file, absolutePath);
+            }
+        );
     }
 
     @Nullable
