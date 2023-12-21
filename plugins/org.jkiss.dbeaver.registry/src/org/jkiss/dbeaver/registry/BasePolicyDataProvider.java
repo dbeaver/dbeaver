@@ -20,6 +20,8 @@ import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.function.Function;
 
@@ -29,6 +31,7 @@ import java.util.function.Function;
  * windows registry under HKEY_CURRENT_USER and HKEY_LOCAL_MACHINE nodes.
  */
 public class BasePolicyDataProvider {
+    private static final Log log = Log.getLog(BasePolicyDataProvider.class);
 
     private static final String DBEAVER_REGISTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
     private static final BasePolicyDataProvider INSTANCE = new BasePolicyDataProvider();
@@ -86,10 +89,18 @@ public class BasePolicyDataProvider {
 
     @Nullable
     private static String getRegistryPolicyValue(@NotNull WinReg.HKEY root, @NotNull String property) {
-        if (Advapi32Util.registryKeyExists(root, DBEAVER_REGISTRY_POLICY_NODE) &&
-            Advapi32Util.registryValueExists(root, DBEAVER_REGISTRY_POLICY_NODE, property)
-        ) {
-            return Advapi32Util.registryGetStringValue(root, DBEAVER_REGISTRY_POLICY_NODE, property);
+        if (!RuntimeUtils.isWindows()) {
+            return null;
+        }
+
+        try {
+            if (Advapi32Util.registryKeyExists(root, DBEAVER_REGISTRY_POLICY_NODE) &&
+                Advapi32Util.registryValueExists(root, DBEAVER_REGISTRY_POLICY_NODE, property)
+            ) {
+                return Advapi32Util.registryGetStringValue(root, DBEAVER_REGISTRY_POLICY_NODE, property);
+            }
+        } catch (Throwable e) {
+            log.error("Error reading Windows registry", e);
         }
 
         return null;
