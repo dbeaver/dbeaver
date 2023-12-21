@@ -629,6 +629,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
 
     @Override
     public boolean isRemoteResource() {
-        return getNodeType().startsWith(DBNNode.NodePathType.dbvfs.toString());
+        return false;
     }
 }
