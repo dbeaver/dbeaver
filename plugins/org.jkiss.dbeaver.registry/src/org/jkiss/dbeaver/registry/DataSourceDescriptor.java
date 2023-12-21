@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.dpi.DPIController;
-import org.jkiss.dbeaver.model.dpi.DPIProcessController;
-import org.jkiss.dbeaver.model.dpi.DPIProvider;
-import org.jkiss.dbeaver.model.dpi.DPISession;
+import org.jkiss.dbeaver.model.dpi.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -1014,10 +1011,12 @@ public class DataSourceDescriptor
                 .map(path -> path.toAbsolutePath().toString())
                 .toArray(String[]::new);
             this.dataSource = dpiClient.openDataSource(
-                session.getSessionId(),
-                new String(buffer.getData(), StandardCharsets.UTF_8),
-                driverLibraries,
-                credentials
+                new DPIDataSourceParameters(
+                    session.getSessionId(),
+                    new String(buffer.getData(), StandardCharsets.UTF_8),
+                    driverLibraries,
+                    credentials
+                )
             );
             log.debug("Opened data source: " + dataSource);
         } catch (Exception e) {

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPIDataSourceParameters;
 import org.jkiss.dbeaver.model.dpi.DPISession;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -76,10 +77,7 @@ public class DPIControllerImpl implements DPIController {
     @NotNull
     @Override
     public synchronized DBPDataSource openDataSource(
-        @NotNull String session,
-        @NotNull String container,
-        @NotNull String[] driverLibraries,
-        @Nullable Map<String, String> credentials
+        @NotNull DPIDataSourceParameters parameters
     ) throws DBException {
         DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (project == null) {
@@ -90,7 +88,7 @@ public class DPIControllerImpl implements DPIController {
             throw new DBException("Cannot load datasource from " + registry.getClass().getName());
         }
         DBPDataSourceConfigurationStorage storage =
-            new DataSourceMemoryStorage(container.getBytes(StandardCharsets.UTF_8));
+            new DataSourceMemoryStorage(parameters.getContainerConfiguration().getBytes(StandardCharsets.UTF_8));
         DataSourceConfigurationManager manager = new DataSourceConfigurationManagerBuffer();
         persistentRegistry.loadDataSources(
             List.of(storage),
@@ -103,10 +101,10 @@ public class DPIControllerImpl implements DPIController {
             project.getDataSourceRegistry().getDataSources().stream().findFirst().orElse(null);
 
         if (dataSourceContainer == null) {
-            throw new DBException("Data source '" + container + "' not found");
+            throw new DBException("Data source not found");
         }
         ((DPIApplication) DPIApplication.getInstance()).addDriverLibsLocation(
-            dataSourceContainer.getDriver().getId(), driverLibraries
+            dataSourceContainer.getDriver().getId(), parameters.getDriverLibraries()
         );
         LoggingProgressMonitor monitor = new LoggingProgressMonitor(log);
 

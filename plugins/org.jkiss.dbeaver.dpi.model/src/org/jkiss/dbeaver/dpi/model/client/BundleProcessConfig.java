@@ -210,7 +210,11 @@ class BundleProcessConfig {
             cmd.add("-cp");
             cmd.add(getBundleReference(launcherWiring, false));
         }
-        cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:15005");
+        String debugParams = System.getProperty("dbeaver.debug.dpi.launch.parameters");
+        if (CommonUtils.isNotEmpty(debugParams)) {
+            //"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:15005"
+            cmd.add(debugParams);
+        }
         cmd.add("org.eclipse.equinox.launcher.Main");
 
         cmd.add("-launcher");
@@ -235,21 +239,15 @@ class BundleProcessConfig {
 
     private String resolveJavaExePath() throws IOException {
         String javaExePath = System.getProperty("sun.boot.library.path");
-        Path exePath = Path.of(javaExePath).resolve("java");
+        Path javaInstallationDir = Path.of(javaExePath);
+        Path exePath = javaInstallationDir.resolve("java");
         if (Files.exists(exePath)) {
             return exePath.toString();
         }
 
-        String javaHome = System.getProperty("java.home");
-        Path javaHomeExePath = Path.of(javaHome).resolve("bin/java");
-        if (Files.exists(javaHomeExePath)) {
-            return javaHomeExePath.toString();
-        }
-
-        String javaHomeEnv = System.getenv("JAVA_HOME");
-        Path javaHomeEnvExePath = Path.of(javaHomeEnv).resolve("bin/java");
-        if (Files.exists(javaHomeEnvExePath)) {
-            return javaHomeEnvExePath.toString();
+        exePath = javaInstallationDir.getParent().resolve("bin/java");
+        if (Files.exists(exePath)) {
+            return exePath.toString();
         }
 
         throw new IOException("Java exe not found");
