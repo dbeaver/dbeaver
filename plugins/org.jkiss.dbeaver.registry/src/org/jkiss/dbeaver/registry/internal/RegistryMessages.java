@@ -41,6 +41,11 @@ public class RegistryMessages extends NLS {
     public static String navigator_settings_preset_custom_view_description;
     public static String project_description_comment;
 
+    public static String project_open_cannot_read_credentials_title;
+    public static String project_open_cannot_read_credentials_message;
+    public static String project_open_cannot_read_credentials_button_text;
+    public static String project_open_cannot_read_configuration_title;
+    public static String project_open_cannot_read_configuration_message;
 
     static {
         // initialize resource bundle

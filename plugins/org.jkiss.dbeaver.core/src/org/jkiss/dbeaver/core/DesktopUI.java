@@ -302,7 +302,25 @@ public class DesktopUI implements DBPPlatformUI {
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
     }
-    
+
+    @Override
+    public boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning) {
+        final Reply confirm = new Reply(buttonLabel);
+        final Reply[] decision = new Reply[1];
+
+        UIUtils.syncExec(() -> {
+            decision[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                .setTitle(title)
+                .setMessage(message)
+                .setReplies(confirm, Reply.CANCEL)
+                .setDefaultReply(Reply.CANCEL)
+                .setPrimaryImage(isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION)
+                .showMessageBox();
+        });
+
+        return decision[0] == confirm;
+    }
+
     @NotNull
     @Override
     public UserChoiceResponse showUserChoice(

@@ -167,38 +167,35 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
-        project.ensureOpen();
-
-        if (project.getEclipseProject() != null && !project.getEclipseProject().isOpen()) {
-            return new DBNNode[0];
-        }
-        List<DBNNode> childrenFiltered = new ArrayList<>();
-        Collections.addAll(childrenFiltered, super.getChildren(monitor));
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
-            // Remove non-existing resources (placeholders)
-            childrenFiltered.removeIf(node ->
-                node instanceof DBNResource && !((DBNResource) node).isResourceExists());
-        }
-        if (!CommonUtils.isEmpty(extraNodes)) {
-            childrenFiltered.addAll(extraNodes);
-        }
-        return childrenFiltered.toArray(new DBNNode[0]);
-    }
-
-    @Override
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
-        DBNModel model = getModel();
-        if (model.isGlobal() && !project.isOpen()) {
+        if (getModel().isGlobal() && !project.isOpen()) {
             project.ensureOpen();
         }
-        DBNNode[] children = super.readChildNodes(monitor);
 
-        DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-        children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[]{
-            new DBNProjectDatabases(this, dataSourceRegistry)});
+        final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
 
-        return children;
+        try {
+            dataSourceRegistry.checkForErrors();
+        } catch (Throwable e) {
+            project.dispose();
+            throw e;
+        }
+
+        final List<DBNNode> children = new ArrayList<>();
+
+        children.add(new DBNProjectDatabases(this, dataSourceRegistry));
+        children.addAll(List.of(super.readChildNodes(monitor)));
+
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
+            // Remove non-existing resources (placeholders)
+            children.removeIf(node -> node instanceof DBNResource && !((DBNResource) node).isResourceExists());
+        }
+
+        if (!CommonUtils.isEmpty(extraNodes)) {
+            children.addAll(extraNodes);
+        }
+
+        return children.toArray(DBNNode[]::new);
     }
 
     @Override

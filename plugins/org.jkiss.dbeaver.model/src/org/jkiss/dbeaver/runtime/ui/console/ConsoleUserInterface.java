@@ -101,7 +101,12 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return false;
     }
-    
+
+    @Override
+    public boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning) {
+        return false;
+    }
+
     @NotNull
     @Override
     public UserChoiceResponse showUserChoice(
