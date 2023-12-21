@@ -44,7 +44,7 @@ public class DPIProcessControllerImpl implements DPIProcessController {
 
     private static final Log log = Log.getLog(DPIProcessControllerImpl.class);
 
-    public static final int PROCESS_PAWN_TIMEOUT = 1000000;
+    public static final int PROCESS_PAWN_TIMEOUT = 10000;
     private DPIController dpiRestClient;
     private int dpiServerPort;
     private final Process process;
