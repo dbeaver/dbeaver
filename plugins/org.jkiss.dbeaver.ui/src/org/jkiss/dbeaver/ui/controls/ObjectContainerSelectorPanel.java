@@ -94,7 +94,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         }
 
         public boolean isSameNode(DBNDatabaseNode node) {
-            return containerPath.equals(node.getNodeItemPath());
+            return containerPath.equals(node.getNodeUri());
         }
     }
 
@@ -209,7 +209,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         }
         HistoryItem newItem = new HistoryItem(
             node.getNodeFullName(),
-            node.getNodeItemPath(),
+            node.getNodeUri(),
             node.getDataSourceContainer().getName(),
             node
         );

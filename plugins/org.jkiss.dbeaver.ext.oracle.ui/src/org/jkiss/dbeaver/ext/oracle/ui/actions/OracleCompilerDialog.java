@@ -113,7 +113,7 @@ public class OracleCompilerDialog extends BaseDialog
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
-                        cell.setText(node.getNodeName());
+                        cell.setText(node.getNodeDisplayName());
                         cell.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                     } else {
                         cell.setText(unit.toString());

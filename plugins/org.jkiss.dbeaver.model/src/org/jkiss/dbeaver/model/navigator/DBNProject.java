@@ -74,8 +74,14 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         throw new IllegalStateException("No databases resource in project");
     }
 
+    @NotNull
     @Override
-    public String getNodeName() {
+    public String getName() {
+        return project.getId();
+    }
+
+    @Override
+    public String getNodeDisplayName() {
         return project.getDisplayName();
     }
 
@@ -97,15 +103,9 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         }
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return project.getId();
-    }
-
     @Override
     public String getLocalizedName(String locale) {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
     @NotNull
@@ -311,7 +311,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             extraNodes = new ArrayList<>();
         }
         extraNodes.add(node);
-        extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
+        extraNodes.sort(Comparator.comparing(DBNNode::getNodeDisplayName));
         if (reflect) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
         }
@@ -340,6 +340,13 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         super.dispose(reflect);
     }
 
+    @NotNull
+    @Override
+    public String getNodeId() {
+        return project.getId();
+    }
+
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         return NodePathType.resource.getPrefix() + project.getId();
