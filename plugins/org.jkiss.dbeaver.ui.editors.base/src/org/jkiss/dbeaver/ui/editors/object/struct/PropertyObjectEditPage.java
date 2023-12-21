@@ -104,8 +104,10 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
         nameText.selectAll();
         nameText.addModifyListener(e -> {
             if (object instanceof DBPNamedObject2 && object.getDataSource() != null) {
-                final String transformed = DBObjectNameCaseTransformer.transformName(object.getDataSource(), nameText.getText().trim());
+                String objectName = nameText.getText().trim();
+                final String transformed = DBObjectNameCaseTransformer.transformName(object.getDataSource(), objectName);
                 ((DBPNamedObject2) object).setName(transformed);
+                validateProperties();
             }
         });
 
@@ -116,6 +118,14 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
         propertyViewer = new PropertyTreeViewer(composite, SWT.BORDER);
         propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
         propertyViewer.loadProperties(propertySource);
+        propertyViewer.addPropertyChangeListener(event -> validateProperties());
+    }
+
+    protected String getEditError() {
+        if (CommonUtils.isEmpty(object.getName())) {
+            return "Object name cannot be empty";
+        }
+        return super.getEditError();
     }
 
     @Override

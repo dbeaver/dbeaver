@@ -51,6 +51,14 @@ public abstract class BaseObjectEditPage extends DialogPage {
         container.updateMessage();
     }
 
+    protected String getEditError() {
+        return null;
+    }
+
+    public final void validateProperties() {
+        setErrorMessage(getEditError());
+    }
+
     @Override
     public void performHelp() {
         if (this instanceof IHelpContextIdProvider) {

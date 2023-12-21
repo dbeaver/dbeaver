@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.jface.dialogs.DialogPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -144,7 +143,7 @@ public class ConstraintNameGenerator {
         TYPE_PREFIX.put(type, prefix);
     }
 
-    public void validateAllowedType(DBSEntityConstraintType constraintType, DialogPage dialogPage) {
+    public String validateAllowedType(DBSEntityConstraintType constraintType) {
         if (constraintType == DBSEntityConstraintType.PRIMARY_KEY) {
             boolean hasPK = false;
             try {
@@ -158,11 +157,10 @@ public class ConstraintNameGenerator {
                 log.debug(e);
             }
             if (hasPK) {
-                dialogPage.setErrorMessage("Primary key already exists in '" + DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI) + "'");
-                return;
+                return "Primary key already exists in '" + DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI) + "'";
             }
         }
-        dialogPage.setErrorMessage(null);
+        return null;
     }
 
 }

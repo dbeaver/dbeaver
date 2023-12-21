@@ -141,13 +141,26 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
         int selectionIndex = keyTypeCombo.getSelectionIndex();
         if (!isUnique || selectionIndex < 0) {
             selectedConstraintType = null;
-            setErrorMessage(isUnique ? "You must choose constraint type" : null);
         } else {
             selectedConstraintType = constraintTypes.get(selectionIndex);
             constraintNameGenerator.setConstraintType(selectedConstraintType.getFirst());
             constraintNameText.setText(constraintNameGenerator.getConstraintName());
-            constraintNameGenerator.validateAllowedType(selectedConstraintType.getFirst(), this);
         }
+        validateProperties();
+    }
+
+    @Override
+    protected String getEditError() {
+        if (isUnique) {
+            if (selectedConstraintType == null) {
+                return "You must choose constraint type";
+            }
+            String error = constraintNameGenerator.validateAllowedType(selectedConstraintType.getFirst());
+            if (error != null) {
+                return error;
+            }
+        }
+        return super.getEditError();
     }
 
     @Override

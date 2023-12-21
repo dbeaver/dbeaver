@@ -126,7 +126,10 @@ public class EditConstraintPage extends AttributesSelectorPage {
         if (nameText != null) {
             nameText.selectAll();
             nameText.setFocus();
-            nameText.addModifyListener(e -> nameGenerator.setConstraintName(nameText.getText().trim()));
+            nameText.addModifyListener(e -> {
+                nameGenerator.setConstraintName(nameText.getText().trim());
+                validateProperties();
+            });
         }
 
         UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_constrain_label_type);
@@ -148,7 +151,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 if (nameText != null) {
                     nameText.setText(nameGenerator.getConstraintName());
                 }
-                nameGenerator.validateAllowedType(selectedConstraintType, EditConstraintPage.this);
+                validateProperties();
                 toggleEditAreas();
             }
         });
@@ -175,7 +178,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 }
             });
         }
-        nameGenerator.validateAllowedType(selectedConstraintType, this);
+        validateProperties();
     }
 
     @Override
@@ -207,6 +210,20 @@ public class EditConstraintPage extends AttributesSelectorPage {
     @Override
     public DBSObject getObject() {
         return constraint;
+    }
+
+    @Override
+    protected String getEditError() {
+        // Constraint name may be empty (auto-generated)
+//        if (CommonUtils.isEmpty(constraint.getName())) {
+//            return "Constraint name cannot be empty";
+//        }
+
+        String error = nameGenerator.validateAllowedType(selectedConstraintType);
+        if (error != null) {
+            return error;
+        }
+        return super.getEditError();
     }
 
     @Override

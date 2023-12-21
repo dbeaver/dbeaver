@@ -176,6 +176,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             public void widgetSelected(SelectionEvent e)
             {
                 handleItemSelect((TableItem) e.item, true);
+                validateProperties();
             }
         });
 
@@ -484,6 +485,14 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     protected void handleColumnsChange()
     {
 
+    }
+
+    @Override
+    protected String getEditError() {
+        if (!isPageComplete()) {
+            return "You must select at least one column";
+        }
+        return super.getEditError();
     }
 
     @Override
