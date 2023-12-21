@@ -107,7 +107,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return fileSystem.getFileSystemDisplayName();
     }
 
@@ -201,6 +201,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return this;
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         return getParentNode().getNodeItemPath() + "/" + getName();
@@ -219,7 +220,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     protected void sortChildren(DBNNode[] list) {
         Arrays.sort(list, (o1, o2) -> {
-            return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
+            return o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName());
         });
     }
 

@@ -107,8 +107,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public String getNodeName()
-    {
+    public String getNodeDisplayName() {
         return dataSource.getName();
     }
 
@@ -121,9 +120,10 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     @Override
     public String getNodeFullName()
     {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
+    @Deprecated(forRemoval = true)
     @Override
     public String getNodeItemPath() {
         return makeDataSourceItemPath(dataSource);
@@ -133,6 +133,12 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     public boolean isManagable()
     {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public String getNodeId() {
+        return dataSource.getId();
     }
 
     @Override
