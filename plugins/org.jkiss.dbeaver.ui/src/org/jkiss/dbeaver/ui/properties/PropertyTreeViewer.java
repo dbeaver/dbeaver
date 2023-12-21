@@ -582,55 +582,8 @@ public class PropertyTreeViewer extends TreeViewer {
                 ((BooleanStyleDecorator) cellEditor).setBooleanAlignment(UIElementAlignment.LEFT);
             }
             final Object propertyValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
-            final ICellEditorListener cellEditorListener = new ICellEditorListener() {
-                @Override
-                public void applyEditorValue()
-                {
-                    try {
-                        //editorValueChanged(true, true);
-                        final Object value = cellEditor.getValue();
-                        final Object oldValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
-                        if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
-                            // The same empty string
-                            return;
-                        }
-                        if (DBUtils.compareDataValues(oldValue, value) != 0) {
-                            if (columnIndex == 0) {
-                                String newName = CommonUtils.toString(value);
-                                String oldPropId = prop.property.getId();
-                                Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
-                                ((DBPNamedObject2) prop.property).setName(newName);
-                                if (oldPropValue != null) {
-                                    prop.propertySource.resetPropertyValueToDefault(oldPropId);
-                                    prop.propertySource.setPropertyValue(null, prop.property.getId(), oldPropValue);
-                                }
-                            } else {
-                                prop.propertySource.setPropertyValue(
-                                    null,
-                                    prop.property.getId(),
-                                    value);
-                            }
-                            handlePropertyChange(prop);
-                        }
 
-                        disposeOldEditor();
-                    } catch (Exception e) {
-                        DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
-                    }
-                }
-
-                @Override
-                public void cancelEditor()
-                {
-                    disposeOldEditor();
-                }
-
-                @Override
-                public void editorValueChanged(boolean oldValidState, boolean newValidState)
-                {
-                }
-            };
-            cellEditor.addListener(cellEditorListener);
+            cellEditor.addListener(new CellEditorListener(cellEditor, columnIndex, prop));
             if (propertyValue != null) {
                 cellEditor.setValue(UIUtils.normalizePropertyValue(propertyValue));
             }
@@ -666,6 +619,7 @@ public class PropertyTreeViewer extends TreeViewer {
                             new ActionResetProperty(prop, false).run();
                         }
                     } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                        e.doit = false;
                         applyEditorValue();
                         showNextEditor(item, e.detail == SWT.TRAVERSE_TAB_NEXT);
                     }
@@ -685,7 +639,8 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     private void showNextEditor(TreeItem item, boolean next) {
-        TreeItem[] items = super.getTree().getItems();
+        TreeItem parentItem = item.getParentItem();
+        TreeItem[] items = parentItem == null ? super.getTree().getItems() : parentItem.getItems();
         int index = ArrayUtils.indexOf(items, item);
         if (index < 0) {
             return;
@@ -698,7 +653,9 @@ public class PropertyTreeViewer extends TreeViewer {
             nextIndex--;
             if (nextIndex < 0) nextIndex = items.length - 1;
         }
-        showEditor(items[nextIndex], true);
+        TreeItem nextItem = items[nextIndex];
+        getTree().showItem(nextItem);
+        showEditor(nextItem, true);
     }
 
     private void registerContextMenu()
@@ -1368,6 +1325,65 @@ public class PropertyTreeViewer extends TreeViewer {
                     break;
                 }
             }
+        }
+    }
+
+    private class CellEditorListener implements ICellEditorListener {
+        private final CellEditor cellEditor;
+        private final int columnIndex;
+        private final TreeNode prop;
+
+        public CellEditorListener(CellEditor cellEditor, int columnIndex, TreeNode prop) {
+            this.cellEditor = cellEditor;
+            this.columnIndex = columnIndex;
+            this.prop = prop;
+        }
+
+        @Override
+        public void applyEditorValue()
+        {
+            try {
+                //editorValueChanged(true, true);
+                final Object value = cellEditor.getValue();
+                final Object oldValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
+                if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
+                    // The same empty string
+                    return;
+                }
+                if (DBUtils.compareDataValues(oldValue, value) != 0) {
+                    if (columnIndex == 0) {
+                        String newName = CommonUtils.toString(value);
+                        String oldPropId = prop.property.getId();
+                        Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
+                        ((DBPNamedObject2) prop.property).setName(newName);
+                        if (oldPropValue != null) {
+                            prop.propertySource.resetPropertyValueToDefault(oldPropId);
+                            prop.propertySource.setPropertyValue(null, prop.property.getId(), oldPropValue);
+                        }
+                    } else {
+                        prop.propertySource.setPropertyValue(
+                            null,
+                            prop.property.getId(),
+                            value);
+                    }
+                    handlePropertyChange(prop);
+                }
+
+                disposeOldEditor();
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
+            }
+        }
+
+        @Override
+        public void cancelEditor()
+        {
+            disposeOldEditor();
+        }
+
+        @Override
+        public void editorValueChanged(boolean oldValidState, boolean newValidState)
+        {
         }
     }
 }
