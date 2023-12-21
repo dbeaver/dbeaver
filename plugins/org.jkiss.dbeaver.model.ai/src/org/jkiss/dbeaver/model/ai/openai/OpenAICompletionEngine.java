@@ -61,7 +61,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
 
     //How many retries may be done if code 429 happens
-    private static final int MAX_REQUEST_ATTEMPTS = 3;
+    protected static final int MAX_REQUEST_ATTEMPTS = 3;
 
     private static final Map<String, GPTCompletionAdapter> clientInstances = new HashMap<>();
 
@@ -158,6 +158,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         DBSObjectContainer mainObject = getScopeObject(context, executionContext);
 
         final GPTModel model = getModel();
+        GPTCompletionAdapter service = getServiceInstance(executionContext);
         final DAICompletionMessage metadataMessage = MetadataProcessor.INSTANCE.createMetadataMessage(
             monitor,
             context,
@@ -171,7 +172,6 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         mergedMessages.add(metadataMessage);
         mergedMessages.addAll(messages);
 
-        GPTCompletionAdapter service = getServiceInstance(executionContext);
         if (monitor.isCanceled()) {
             return "";
         }

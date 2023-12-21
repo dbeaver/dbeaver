@@ -18,14 +18,11 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
@@ -138,11 +135,14 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             @Override
             public void mouseUp(MouseEvent e) {
                 super.mouseUp(e);
+                // Commented because it forced selection reset on connection expand
+/*
                 Point point = new Point(e.x, e.y);
                 TreeItem item = navigatorTree.getViewer().getTree().getItem(point);
                 if (item == null) {
                     navigatorTree.getViewer().setSelection(new StructuredSelection());
                 } 
+*/
             }
         });
         navigatorTree.getViewer().addDoubleClickListener(event -> {
