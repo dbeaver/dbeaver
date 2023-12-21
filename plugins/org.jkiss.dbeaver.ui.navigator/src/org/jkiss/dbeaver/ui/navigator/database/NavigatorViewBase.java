@@ -250,7 +250,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 // Don't display status message for root node - it has no meaningful information
                 getViewSite().getActionBars().getStatusLineManager().setMessage(null);
             } else if (lastSelection instanceof DBNNode) {
-                final String name = ((DBNNode) lastSelection).getNodeName();
+                final String name = ((DBNNode) lastSelection).getNodeDisplayName();
                 final String desc = ((DBNNode) lastSelection).getNodeDescription();
                 if (CommonUtils.isEmpty(desc)) {
                     getViewSite().getActionBars().getStatusLineManager().setMessage(name);

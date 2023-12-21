@@ -45,8 +45,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         dbvfs,
         folder,
         database,
-        ext,
-        other;
+        ext, other, node;
 
         public String getPrefix() {
             return name() + "://";
@@ -92,13 +91,23 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     }
 
     @NotNull
-    @Override
-    public String getName() {
-        return getNodeName();
+    public String getNodeId() {
+        return getName();
     }
 
+    @NotNull
+    @Override
+    public String getName() {
+        return getNodeDisplayName();
+    }
+
+    /**
+     * Internal node name. Usually it is the same as getName.
+     */
+    public abstract String getNodeDisplayName();
+
     protected String getSortName() {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
     @Override
@@ -117,11 +126,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     public String getNodeTypeLabel() {
         return getNodeType();
     }
-
-    /**
-     * Internal node name. Usually it is the same as getName.
-     */
-    public abstract String getNodeName();
 
     @Nullable
     public String getNodeBriefInfo() {
@@ -148,14 +152,14 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     public String getNodeFullName() {
         StringBuilder pathName = new StringBuilder();
-        pathName.append(getNodeName());
+        pathName.append(getNodeDisplayName());
 
         for (DBNNode parent = getParentNode(); parent != null && !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
             if (parent instanceof DBNDatabaseFolder) {
                 // skip folders
                 continue;
             }
-            String parentName = parent.getNodeName();
+            String parentName = parent.getNodeDisplayName();
             if (!CommonUtils.isEmpty(parentName)) {
                 pathName.insert(0, '.').insert(0, parentName);
             }
@@ -168,7 +172,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      * Equals to regular node name by default.
      */
     public String getNodeTargetName() {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
     public boolean hasChildren(boolean navigableOnly) {
@@ -251,8 +255,34 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      * Where typeN is path element for particular database item, name is database object name.
      *
      * @return full item node path
+     * @deprecated the path is not unique and does not contain complete information to find the correct node
+     * use {@link #getNodeUri()} instead
      */
+    @Deprecated(forRemoval = true)
     public abstract String getNodeItemPath();
+
+    /**
+     * Node uri path in form [node://]<parentPath>/<path>
+     *
+     * @return a unique path to the node containing information about the reals hierarchy
+     */
+    @NotNull
+    public final String getNodeUri() {
+        var pathBuilder = new StringBuilder();
+        for (DBNNode currentNode = this; (currentNode != null && !(currentNode instanceof DBNRoot)); currentNode = currentNode.getParentNode()) {
+            if (!pathBuilder.isEmpty()) {
+                pathBuilder.insert(0, '/');
+            }
+            String nodeId = currentNode.getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
+            if (currentNode instanceof DBNResource && currentNode.getParentNode() instanceof DBNProject) {
+                //FIXME: remove after migration to the real resource root node
+                nodeId = DBNResource.FAKE_RESOURCE_ROOT_NODE + "/" + nodeId;
+            }
+            pathBuilder.insert(0, nodeId);
+        }
+
+        return NodePathType.node.getPrefix() + pathBuilder;
+    }
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
@@ -328,4 +358,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return false;
     }
 
+    @Override
+    public String toString() {
+        return getNodeUri();
+    }
 }
