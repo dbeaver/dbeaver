@@ -362,10 +362,16 @@ public class SQLBackgroundParsingJob {
                 }
                 return;
             } else {
-                elements.set(0, SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset()));
+                SQLScriptElement element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset());
+                if (element != null) {
+                    elements.set(0, element);
+                }
                 if (elements.size() > 1) {
                     int index = elements.size() - 1;
-                    elements.set(index, SQLScriptParser.extractQueryAtPos(parserContext, elements.get(index).getOffset()));
+                    element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(index).getOffset());
+                    if (element != null) {
+                        elements.set(index, element);
+                    }
                 }
             }
             
