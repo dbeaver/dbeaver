@@ -66,6 +66,7 @@ public class DPISerializer {
     public static Gson createSerializer(DPIContext context) {
         return new GsonBuilder()
             .registerTypeAdapterFactory(new DPITypeAdapterFactory(context))
+            .registerTypeAdapterFactory(new ThrowableAdapterFactory())
             .create();
     }
 

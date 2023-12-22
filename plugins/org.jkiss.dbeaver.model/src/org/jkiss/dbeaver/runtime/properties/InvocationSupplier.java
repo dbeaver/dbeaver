@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.runtime.properties;
 
-/**
- * DPI constants
- */
-public class DPIConstants {
+import java.lang.reflect.InvocationTargetException;
 
-
-    public static final String PARAM_SERVER_PORT = "serverPort";
-
-    public static final String SERVER_INI_FILE = "server.ini";
+@FunctionalInterface
+public interface InvocationSupplier<T> {
+    T get() throws InvocationTargetException;
 }

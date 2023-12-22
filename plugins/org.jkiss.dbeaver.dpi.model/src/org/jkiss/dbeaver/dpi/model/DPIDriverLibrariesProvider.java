@@ -16,13 +16,12 @@
  */
 package org.jkiss.dbeaver.dpi.model;
 
-/**
- * DPI constants
- */
-public class DPIConstants {
+import org.jkiss.code.NotNull;
 
+import java.nio.file.Path;
+import java.util.List;
 
-    public static final String PARAM_SERVER_PORT = "serverPort";
-
-    public static final String SERVER_INI_FILE = "server.ini";
+public interface DPIDriverLibrariesProvider {
+    @NotNull
+    List<Path> getDriverLibsLocation(@NotNull String driverId);
 }
