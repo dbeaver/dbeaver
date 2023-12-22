@@ -784,11 +784,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (configurationManager.isSecure()) {
             return null;
         }
-        final String name = "%s%s%s".formatted(
-            DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX,
-            configurationStorage.getStorageSubId(),
-            DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT
-        );
+        final String name = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX
+            + configurationStorage.getStorageSubId()
+            + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
         try (InputStream is = configurationManager.readConfiguration(name, dataSourceIds)) {
             if (is == null) {
                 return null;
@@ -839,7 +837,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (is == null) {
             return null;
         }
-        try {
+        try (is) {
             final String data = loadConfigFile(is, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
             return JSONUtils.parseMap(CONFIG_GSON, new StringReader(data));
         } catch (Exception e) {
