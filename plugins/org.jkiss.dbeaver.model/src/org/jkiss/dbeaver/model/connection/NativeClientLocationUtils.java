@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class NativeClientLocationUtils {
+public final class NativeClientLocationUtils {
     private static final Log log = Log.getLog(NativeClientLocationUtils.class);
 
     private NativeClientLocationUtils() {
@@ -46,16 +46,16 @@ public class NativeClientLocationUtils {
      * can supply extra folders to examine.
      *
      * @param extraFoldersToExamine extra folders to look for the clients
-     * @param fileEndings the endings of full file paths for search for
-     * @param grandparentPathToClientLocationMapper a function that maps tool's grandparent folder to an instance of {@code DBPNativeClientLocation}
+     * @param fileEndings the endings of full file paths to search for
+     * @param grandparentPathToClientLocationMapper maps tool's grandparent folder to an instance of {@code DBPNativeClientLocation}
      * @return map of local client locations
      */
     public static Map<String, DBPNativeClientLocation> findLocalClientsOnUnix(
-            Collection<String> extraFoldersToExamine,
-            Collection<String> fileEndings,
-            Function<Path, DBPNativeClientLocation> grandparentPathToClientLocationMapper
+        Collection<String> extraFoldersToExamine,
+        Iterable<String> fileEndings,
+        Function<? super Path, ? extends DBPNativeClientLocation> grandparentPathToClientLocationMapper
     ) {
-        Collection<String> foldersToExamine = NativeClientLocationUtils.unixFoldersToExamine();
+        Collection<String> foldersToExamine = unixFoldersToExamine();
         foldersToExamine.addAll(extraFoldersToExamine);
         Map<String, DBPNativeClientLocation> result = new HashMap<>();
         for (String folder : foldersToExamine) {
@@ -70,7 +70,7 @@ public class NativeClientLocationUtils {
                         if (!somethingEndsWith(file, fileEndings)) {
                             return FileVisitResult.CONTINUE;
                         }
-                        if (file.toFile().canExecute()) {
+                        if (Files.isExecutable(file)) {
                             Path grandparent = getGrandparent(file);
                             if (grandparent != null) {
                                 result.put(grandparent.toString(), grandparentPathToClientLocationMapper.apply(grandparent));
@@ -80,7 +80,7 @@ public class NativeClientLocationUtils {
                     }
                 });
             } catch (IOException e) {
-                log.warn(String.format("Unable to examine folder %s while looking for a client home", folder), e);
+                log.warn("Unable to examine folder %s while looking for a client home".formatted(folder), e);
             }
         }
         return result;
@@ -105,7 +105,7 @@ public class NativeClientLocationUtils {
         return foldersToExamine;
     }
 
-    private static boolean somethingEndsWith(Path file, Collection<String> fileEndings) {
+    private static boolean somethingEndsWith(Path file, Iterable<String> fileEndings) {
         for (String endings : fileEndings) {
             if (file.endsWith(endings)) {
                 return true;

@@ -200,9 +200,8 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         // read from path
         String path = System.getenv("PATH");
         if (path != null) {
-            for (String token : path.split(System.getProperty(StandardConstants.ENV_PATH_SEPARATOR))) {
-                token = CommonUtils.removeTrailingSlash(token);
-                File mysqlFile = new File(token, MySQLUtils.getMySQLConsoleBinaryName());
+            for (String token : path.split(File.pathSeparator)) {
+                File mysqlFile = new File(CommonUtils.removeTrailingSlash(token), MySQLUtils.getMySQLConsoleBinaryName());
                 if (mysqlFile.exists()) {
                     File binFolder = mysqlFile.getAbsoluteFile().getParentFile();
                     if (binFolder.getName().equalsIgnoreCase("bin")) {
@@ -219,20 +218,27 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return result;
     }
 
-    private static void searchInWindowsRegistry(Map<String, DBPNativeClientLocation> locationMap, String registryRoot, String installDirKey) {
-        if (!Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, registryRoot)) {
-            return;
-        }
-        for (String homeKey : ArrayUtils.safeArray(Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, registryRoot))) {
-            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey);
-            for (String key : valuesMap.keySet()) {
-                if (installDirKey.equalsIgnoreCase(key)) {
-                    String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(key)));
-                    if (new File(serverPath, "bin").exists()) {
-                        locationMap.put(serverPath, new LocalNativeClientLocation(serverPath, homeKey));
+    private static void searchInWindowsRegistry(
+        Map<? super String, ? super DBPNativeClientLocation> locationMap,
+        String registryRoot,
+        String installDirKey
+    ) {
+        try {
+            if (!Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, registryRoot)) {
+                return;
+            }
+            for (String homeKey : ArrayUtils.safeArray(Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, registryRoot))) {
+                for (var entry : Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey).entrySet()) {
+                    if (installDirKey.equalsIgnoreCase(entry.getKey())) {
+                        String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(entry.getValue()));
+                        if (new File(serverPath, "bin").exists()) {
+                            locationMap.put(serverPath, new LocalNativeClientLocation(serverPath, homeKey));
+                        }
                     }
                 }
             }
+        } catch (Throwable e) {
+            log.warn("Error reading Windows registry", e);
         }
     }
 

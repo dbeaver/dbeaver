@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 /**
  * PostgreServerHome
  */
-public class PostgreServerHome extends LocalNativeClientLocation {
+class PostgreServerHome extends LocalNativeClientLocation {
     PostgreServerHome(String id, String path, String branding) {
         super(id, path, branding);
     }

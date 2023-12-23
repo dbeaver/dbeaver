@@ -39,7 +39,7 @@ public class LocalNativeClientLocation implements DBPNativeClientLocation {
         this(id, new File(path != null ? path : id), displayName);
     }
 
-    public LocalNativeClientLocation(String id, @NotNull File path) {
+    private LocalNativeClientLocation(String id, @NotNull File path) {
         this(id, path, path.getAbsolutePath());
     }
 
