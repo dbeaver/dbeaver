@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.dpi.app;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.internal.location.EquinoxLocations;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
+import org.jkiss.dbeaver.dpi.model.DPIDriverLibrariesProvider;
 import org.jkiss.dbeaver.dpi.model.client.ConfigUtils;
 import org.jkiss.dbeaver.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -35,16 +37,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * DPI application
  */
-public class DPIApplication extends DesktopApplicationImpl {
+public class DPIApplication extends DesktopApplicationImpl implements DPIDriverLibrariesProvider {
 
     private static final Log log = Log.getLog(DPIApplication.class);
+
+    private final Map<String, String[]> driverLibsLocation = new ConcurrentHashMap<>();
+
+    public DPIApplication() {
+    }
 
     @Override
     public boolean isHeadlessMode() {
@@ -60,7 +67,6 @@ public class DPIApplication extends DesktopApplicationImpl {
     public Object start(IApplicationContext context) {
         initializeApplicationServices();
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-
         try {
             runServer(context, application);
         } catch (IOException e) {
@@ -150,4 +156,26 @@ public class DPIApplication extends DesktopApplicationImpl {
         return "default";
     }
 
+    @Nullable
+    private String getCommandLineArgument(@NotNull String argName) {
+        String[] args = Platform.getCommandLineArgs();
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals(argName) && args.length > i + 1) {
+                return args[i + 1];
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public synchronized List<Path> getDriverLibsLocation(@NotNull String driverId) {
+        return Arrays.stream(driverLibsLocation.getOrDefault(driverId, new String[0]))
+            .map(Path::of)
+            .collect(Collectors.toList());
+    }
+
+    public void addDriverLibsLocation(@NotNull String driverId, @NotNull String[] driverLibsLocation) {
+        this.driverLibsLocation.put(driverId, driverLibsLocation);
+    }
 }

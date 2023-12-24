@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.utils.rest.RequestMapping;
 import org.jkiss.utils.rest.RequestParameter;
 
-import java.util.Map;
-
 /**
  * Detached data source proxy.
  */
@@ -37,16 +35,13 @@ public interface DPIController extends AutoCloseable {
      * Opens new session
      */
     @RequestMapping
-    DPISession openSession(@RequestParameter("project") String projectId) throws DBException;
+    DPISession openSession() throws DBException;
 
     @RequestMapping
     @NotNull
     DBPDataSource openDataSource(
-        @RequestParameter("session") @NotNull String session,
-        @RequestParameter("project") String projectId,
-        @RequestParameter("container") @NotNull String container,
-        @RequestParameter("credentials") @Nullable Map<String, String> credentials)
-        throws DBException;
+        @RequestParameter("parameters") @NotNull DPIDataSourceParameters parameters
+    ) throws DBException;
 
     @RequestMapping
     // Closes session and terminates detached process when last session is closed
