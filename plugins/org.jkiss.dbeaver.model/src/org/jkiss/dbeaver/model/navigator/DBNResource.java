@@ -338,7 +338,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         }
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         String projectPath = getRawNodeItemPath();

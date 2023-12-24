@@ -123,7 +123,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return getNodeDisplayName();
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return makeDataSourceItemPath(dataSource);
