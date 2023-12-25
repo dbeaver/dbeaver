@@ -17,19 +17,27 @@
 package org.jkiss.dbeaver.dpi.app;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.registry.EclipseWorkspaceImpl;
 
 /**
  * DPIWorkspace
  */
 public class DPIWorkspace extends EclipseWorkspaceImpl {
+    private final DBPProject fakeProject;
 
     DPIWorkspace(DPIPlatform platform) {
         super(platform, ResourcesPlugin.getWorkspace());
+        this.fakeProject = new DPIVirtualProject(this, getAuthContext(), "dpi-virtual-project");
     }
 
     @Override
     public boolean isReadOnly() {
         return true;
+    }
+
+    @Override
+    public DBPProject getActiveProject() {
+        return fakeProject;
     }
 }

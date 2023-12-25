@@ -218,4 +218,8 @@ public interface DBPDriver extends DBPNamedObject
         return isCustom() ? getProviderId() + ":custom-driver" : getFullId();
     }
 
+    /**
+     * download all required driver jar files without creating a driver instance
+     */
+    void downloadRequiredDependencies(@NotNull DBRProgressMonitor monitor);
 }
