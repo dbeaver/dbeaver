@@ -33,6 +33,7 @@ import java.nio.file.Path;
 public abstract class EclipsePluginApplicationImpl extends DesktopApplicationImpl {
 
     public EclipsePluginApplicationImpl() {
+        initializeApplicationServices();
     }
 
     @Override
