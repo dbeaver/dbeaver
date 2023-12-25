@@ -265,7 +265,7 @@ public class SQLBackgroundParsingJob {
         }
         Interval visibleFragment = UIUtils.syncExec(new RunnableWithResult<>() {
             public Interval runWithResult() {
-                if (viewer == null) {
+                if (viewer == null || viewer.getDocument() == null) {
                     return null;
                 }
                 int startOffset = viewer.getTopIndexStartOffset();
