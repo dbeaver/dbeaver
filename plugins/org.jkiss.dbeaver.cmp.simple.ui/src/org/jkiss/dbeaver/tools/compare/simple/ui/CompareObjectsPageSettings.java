@@ -72,7 +72,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             for (DBNDatabaseNode node : settings.getNodes()) {
                 TableItem item = new TableItem(nodesTable, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
-                item.setText(0, node.getNodeName());
+                item.setText(0, node.getNodeDisplayName());
                 item.setText(1, node.getNodeTypeLabel());
                 item.setText(2, node.getNodeFullName());
             }

@@ -83,7 +83,7 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
         private DBNDatabaseNode node;
 
         public AddBookmarkDialog(Shell parentShell, DBNDatabaseNode node) {
-            super(parentShell, CoreMessages.actions_navigator_bookmark_title, node.getNodeName());
+            super(parentShell, CoreMessages.actions_navigator_bookmark_title, node.getNodeDisplayName());
             this.node = node;
         }
 

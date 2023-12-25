@@ -73,7 +73,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 }
             }
             if (container == null) {
-                throw new DBException("Can't detect container for '" + element.getNodeName() + "'");
+                throw new DBException("Can't detect container for '" + element.getNodeDisplayName() + "'");
             }
             if (container instanceof DBNDatabaseNode && ObjectPropertyTester.isMetadataChangeDisabled((DBNDatabaseNode) container)) {
                 throw new DBException("Object create not available in simple view mode");
