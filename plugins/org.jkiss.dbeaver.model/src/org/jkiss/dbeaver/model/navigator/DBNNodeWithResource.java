@@ -31,6 +31,11 @@ public interface DBNNodeWithResource {
 
     void setResourceImage(DBPImage resourceImage);
 
+    /**
+     * True if resource is remote, false is local
+     *
+     * @return - boolean value
+     */
     boolean isRemoteResource();
 
 }
