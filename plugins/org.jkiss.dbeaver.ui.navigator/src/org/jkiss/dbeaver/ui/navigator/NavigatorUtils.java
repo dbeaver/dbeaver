@@ -638,18 +638,15 @@ public class NavigatorUtils {
                     id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
                     item.dispose();
                 }
-                IResource resource = Adapters.adapt(node, IResource.class);
-                if (resource instanceof IFolder &&
+                DBNNodeWithResource adapt = Adapters.adapt(node, DBNNodeWithResource.class);
+                if (adapt == null) {
+                    return;
+                }
+                if ((adapt.isRemoteResource() ||
+                    adapt.getResource() instanceof IFolder) &&
                     id.startsWith("compareWithMenu") || // $NON-NLS-0$
                     id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
                     item.dispose();
-                } else if (node instanceof DBNNodeWithResource) {
-                    DBNNodeWithResource nodeWithResource = (DBNNodeWithResource) node;
-                    if (nodeWithResource.isRemoteResource() &&
-                        id.startsWith("compareWithMenu") || // $NON-NLS-0$
-                        id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
-                        item.dispose();
-                    }
                 }
             }
         }
