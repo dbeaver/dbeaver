@@ -46,8 +46,8 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     {
         super(dbnDatabaseNode, commandContext);
 
-        this.nodePath = dbnDatabaseNode.getNodeItemPath();
-        this.nodeName = dbnDatabaseNode.getNodeName();
+        this.nodePath = dbnDatabaseNode.getNodeUri();
+        this.nodeName = dbnDatabaseNode.getNodeDisplayName();
     }
     
     @Override
@@ -70,7 +70,7 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
             }
             toolTip.append(node.getNodeTypeLabel());
             toolTip.append(": ");
-            toolTip.append(node.getNodeName());
+            toolTip.append(node.getNodeDisplayName());
             toolTip.append(" \n");
             if (node instanceof DBNDataSource) {
                 break;

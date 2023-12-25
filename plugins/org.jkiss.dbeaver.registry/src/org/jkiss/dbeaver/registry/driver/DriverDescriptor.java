@@ -23,7 +23,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.dpi.model.DPIDriverLibrariesProvider;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -38,8 +40,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.NativeClientDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -825,7 +825,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public SQLDialectMetadata getScriptDialect() {
         if (!CommonUtils.isEmpty(dialectId)) {
-            SQLDialectDescriptor dialect = SQLDialectRegistry.getInstance().getDialect(dialectId);
+            SQLDialectMetadata dialect = DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect(dialectId);
             if (dialect != null) {
                 return dialect;
             } else {
@@ -1328,6 +1328,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(new LoggingProgressMonitor(log), true);
     }
 
+    public void downloadRequiredDependencies(@NotNull DBRProgressMonitor monitor) {
+        validateFilesPresence(monitor, false);
+    }
+
     @Override
     public boolean needsExternalDependencies() {
         for (DBPDriverLibrary library : libraries) {
@@ -1347,7 +1351,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // We are in distributed mode
             return syncDistributedDependencies(monitor);
         }
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        if (application.isDetachedProcess()) {
+            return syncDpiDependencies(application);
+        }
 
+        if (application.isDetachedProcess()) {
+            log.error("Detached process has no ability to find/download driver libraries, " +
+                "it must be specified directly"
+            );
+        }
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
         for (DBPDriverLibrary library : libraries) {
@@ -1437,6 +1450,28 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         // Check if local files are zip archives with jars inside
         return DriverUtils.extractZipArchives(result);
+    }
+
+    private List<Path> syncDpiDependencies(DBPApplication application) {
+        if (application instanceof DPIDriverLibrariesProvider driversProvider) {
+            List<Path> result = new ArrayList<>();
+            List<Path> librariesPath = driversProvider.getDriverLibsLocation(getId());
+            for (Path path : librariesPath) {
+                if (Files.isDirectory(path)) {
+                    result.addAll(readJarsFromDir(path));
+                } else {
+                    if (!result.contains(path)) {
+                        result.add(path);
+                    }
+                }
+            }
+            return DriverUtils.extractZipArchives(result);
+        } else {
+            log.error("Detached process has no ability to find/download driver libraries, " +
+                "it must be specified directly"
+            );
+        }
+        return List.of();
     }
 
     private Collection<? extends Path> readJarsFromDir(Path localFile) {

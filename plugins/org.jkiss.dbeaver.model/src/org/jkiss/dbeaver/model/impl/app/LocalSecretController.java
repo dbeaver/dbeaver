@@ -61,7 +61,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
                 .get(keyPath.getFileName().toString(), null);
         } catch (StorageException e) {
             if (e.getErrorCode() == StorageException.NO_PASSWORD) {
-                throw new DBSecurityException("Can not load secure settings - master password is not provided");
+                throw new DBSecurityException("Cannot load secure settings - master password is not provided");
             }
             throw new DBSecurityException("Error getting preference value '" + secretId + "'", e);
         }
@@ -72,11 +72,15 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
         try {
             Path keyPath = root.resolve(escapeSecretKey(secretId));
 
-            getNodeByPath(keyPath.getParent())
-                .put(keyPath.getFileName().toString(), secretValue, true);
+            ISecurePreferences node = getNodeByPath(keyPath.getParent());
+            if (secretValue != null) {
+                node.put(keyPath.getFileName().toString(), secretValue, true);
+            } else {
+                node.remove(keyPath.getFileName().toString());
+            }
         } catch (StorageException e) {
             if (e.getErrorCode() == StorageException.NO_PASSWORD) {
-                throw new DBSecurityException("Can not save secure settings - master password is not provided");
+                throw new DBSecurityException("Cannot save secure settings - master password is not provided");
             }
             throw new DBSecurityException("Error setting preference value '" + secretId + "'", e);
         }

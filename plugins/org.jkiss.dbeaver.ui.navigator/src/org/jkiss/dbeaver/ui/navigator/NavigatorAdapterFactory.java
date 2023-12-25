@@ -152,7 +152,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
 
                     @Override
                     public String getLabel(Object o) {
-                        return node.getNodeName();
+                        return node.getNodeDisplayName();
                     }
 
                     @Override

@@ -54,7 +54,7 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public String getName() {
-        return node.getNodeName();
+        return node.getNodeDisplayName();
     }
 
     @Override

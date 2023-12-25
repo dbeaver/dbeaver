@@ -16,137 +16,15 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.equinox.app.IApplication;
-import org.eclipse.equinox.app.IApplicationContext;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
-import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.UUID;
+import org.jkiss.dbeaver.model.impl.app.AbstractApplication;
 
 /**
  * Base application implementation
  */
-public abstract class BaseApplicationImpl implements IApplication, DBPApplication {
+public abstract class BaseApplicationImpl extends AbstractApplication {
 
-    private static final Log log = Log.getLog(BaseApplicationImpl.class);
-
-    private static DBPApplication INSTANCE;
-
-    private String applicationRunId;
-    private final long applicationStartTime = System.currentTimeMillis();
 
     protected BaseApplicationImpl() {
-        if (INSTANCE != null && !(INSTANCE instanceof EclipsePluginApplicationImpl)) {
-            log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
-        }
-        INSTANCE = this;
-    }
-
-    public static DBPApplication getInstance() {
-        if (INSTANCE == null) {
-            DBPApplication instance = null;
-            ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
-            if (application != null && application.getImplClass() != null) {
-                try {
-                    instance = application.getImplClass().getConstructor().newInstance();
-                } catch (Throwable e) {
-                    log.error(e);
-                }
-            }
-            if (instance == null) {
-                instance = new EclipsePluginApplicationImpl();
-            }
-            INSTANCE = instance;
-        }
-        return INSTANCE;
-    }
-
-    public boolean isStandalone() {
-        return true;
-    }
-
-    @Override
-    public boolean isPrimaryInstance() {
-        return true;
-    }
-
-    @Override
-    public boolean isHeadlessMode() {
-        return false;
-    }
-
-    @Override
-    public boolean isExclusiveMode() {
-        return false;
-    }
-
-    @Override
-    public boolean isMultiuser() {
-        return false;
-    }
-
-    @Override
-    public boolean isDistributed() {
-        return false;
-    }
-
-    @Override
-    public boolean isDetachedProcess() {
-        return false;
-    }
-
-    @NotNull
-    public String getApplicationRunId() {
-        if (applicationRunId == null) {
-            applicationRunId = UUID.randomUUID().toString();
-        }
-        return applicationRunId;
-    }
-
-    @Override
-    public long getApplicationStartTime() {
-        return applicationStartTime;
-    }
-
-    @Override
-    public String getInfoDetails(DBRProgressMonitor monitor) {
-        return "N/A";
-    }
-
-    @Nullable
-    @Override
-    public String getProductProperty(@NotNull String propName) {
-        return Platform.getProduct().getProperty(propName);
-    }
-
-    @Override
-    public boolean hasProductFeature(@NotNull String featureName) {
-        // By default, product includes almost all possible features
-        // Feature set can be customized by particular implementation
-        return switch (featureName) {
-            case DBFUtils.PRODUCT_FEATURE_MULTI_FS -> false;
-            default -> true;
-        };
-    }
-
-    /////////////////////////////////////////
-    // IApplication
-
-    @Override
-    public Object start(IApplicationContext context) throws Exception {
-        return EXIT_OK;
-    }
-
-    @Override
-    public void stop() {
-
     }
 
 }

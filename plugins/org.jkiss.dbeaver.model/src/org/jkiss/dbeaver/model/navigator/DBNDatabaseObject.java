@@ -82,7 +82,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
                 // skip folders
                 continue;
             }
-            String parentName = parent.getNodeName();
+            String parentName = parent.getNodeDisplayName();
             if (!CommonUtils.isEmpty(parentName)) {
                 if (pathName.length() > 0) {
                     pathName.insert(0, '.');
@@ -90,7 +90,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
                 pathName.insert(0, parentName);
             }
         }
-        pathName.insert(0, getNodeName() + " (");
+        pathName.insert(0, getNodeDisplayName() + " (");
         pathName.append(")");
         return pathName.toString();
     }

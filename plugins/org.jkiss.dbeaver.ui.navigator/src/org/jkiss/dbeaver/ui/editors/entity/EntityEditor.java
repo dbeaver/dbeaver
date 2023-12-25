@@ -789,7 +789,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             getSite().getShell(),
             NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
-            getEditorInput().getNavigatorNode().getNodeName(),
+            getEditorInput().getNavigatorNode().getNodeDisplayName(),
             subEditorsString);
         if (result == IDialogConstants.YES_ID) {
 //            getWorkbenchPart().getSite().getPage().saveEditor(this, false);
@@ -1136,7 +1136,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         // FIXME: Drop-downs are too high - lead to minor UI glitches during editor opening. Also they don't make much sense.
         final ToolItem item = new ToolItem(infoGroup, databaseNode instanceof DBNDatabaseFolder ? SWT.DROP_DOWN : SWT.PUSH);
-        item.setText(databaseNode.getNodeName());
+        item.setText(databaseNode.getNodeDisplayName());
         item.setImage(DBeaverIcons.getImage(databaseNode.getNodeIconDefault()));
         item.setData(databaseNode);
 
