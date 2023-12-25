@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.dpi.DPIController;
-import org.jkiss.dbeaver.model.dpi.DPIProcessController;
-import org.jkiss.dbeaver.model.dpi.DPIProvider;
-import org.jkiss.dbeaver.model.dpi.DPISession;
+import org.jkiss.dbeaver.model.dpi.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -52,10 +49,7 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -80,6 +74,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -849,7 +844,7 @@ public class DataSourceDescriptor
     @Override
     public boolean persistConfiguration() {
         try {
-            persistSecretIfNeeded(false);
+            persistSecretIfNeeded(false, false);
 
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
@@ -871,12 +866,16 @@ public class DataSourceDescriptor
         return true;
     }
 
-    boolean persistSecretIfNeeded(boolean force) throws DBException {
+    boolean persistSecretIfNeeded(boolean force, boolean isNewDataSource) throws DBException {
+        if (isDetached()) {
+            // Do not save secrets for hidden or temporary datasources
+            return false;
+        }
         // Save only if secrets were already resolved or it is a new connection
         if (secretsResolved || (force && getProject().isUseSecretStorage())) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
 
-            persistSecrets(secretController);
+            persistSecrets(secretController, isNewDataSource);
         }
         return true;
     }
@@ -892,9 +891,17 @@ public class DataSourceDescriptor
 
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
+        persistSecrets(secretController, false);
+    }
+
+    void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
         if (!isSharedCredentials()) {
             var secret = saveToSecret();
-            secretController.setSecretValue(getSecretKeyId(), secret);
+            // Do not persist empty secrets for new datasources
+            // If secret controller is external then it may take quite a time + may cause errors because of missing secret
+            if (!isNewDataSource || secret != null) {
+                secretController.setSecretValue(getSecretKeyId(), secret);
+            }
         }
         secretsResolved = true;
     }
@@ -939,10 +946,12 @@ public class DataSourceDescriptor
             return false;
         }
 
+        boolean detachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
+        boolean succeeded = false;
         connecting = true;
         try {
-            boolean succeeded = false;
-            if (isDetachedProcessEnabled() && !DBWorkbench.getPlatform().getApplication().isDetachedProcess()) {
+            getDriver().downloadRequiredDependencies(monitor);
+            if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
             }
@@ -950,17 +959,15 @@ public class DataSourceDescriptor
                 // Open local connection
                 succeeded = connect0(monitor, initialize, reflect);
             }
-            if (reflect) {
-                getRegistry().notifyDataSourceListeners(new DBPEvent(
-                    DBPEvent.Action.OBJECT_UPDATE,
-                    DataSourceDescriptor.this,
-                    true));
-            }
 
             return succeeded;
         }
         finally {
             connecting = false;
+
+            if (!detachedProcess) {
+                updateDataSourceObject(this, succeeded);
+            }
         }
     }
 
@@ -983,12 +990,34 @@ public class DataSourceDescriptor
             dpiController = provider.detachDatabaseProcess(monitor, this);
             Map<String, String> credentials = new LinkedHashMap<>();
             DPIController dpiClient = dpiController.getClient();
-            DPISession session = dpiClient.openSession(getProject().getId());
+            DPISession session = dpiClient.openSession();
             if (session == null) {
                 throw new IllegalStateException("No session");
             }
             log.debug("New DPI session: " + session.getSessionId());
-            this.dataSource = dpiClient.openDataSource(session.getSessionId(), getProject().getId(), getId(), credentials);
+            if (!(getRegistry() instanceof DataSourcePersistentRegistry persistentRegistry)) {
+                throw new IllegalStateException("Illegal registry " + getRegistry().getClass());
+            }
+            DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
+            persistentRegistry.saveConfigurationToManager(new VoidProgressMonitor(),
+                buffer,
+                dsc -> dsc.equals(this)
+            );
+
+            String[] driverLibraries = getDriver().getDriverLibraries()
+                .stream()
+                .map(DBPDriverLibrary::getLocalFile)
+                .filter(Objects::nonNull)
+                .map(path -> path.toAbsolutePath().toString())
+                .toArray(String[]::new);
+            this.dataSource = dpiClient.openDataSource(
+                new DPIDataSourceParameters(
+                    session.getSessionId(),
+                    new String(buffer.getData(), StandardCharsets.UTF_8),
+                    driverLibraries,
+                    credentials
+                )
+            );
             log.debug("Opened data source: " + dataSource);
         } catch (Exception e) {
             log.debug("Error starting DPI child process", e);
@@ -1262,7 +1291,7 @@ public class DataSourceDescriptor
         return true;
     }
 
-    private void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
+    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
         final DBPDataSourceProvider provider = driver.getDataSourceProvider();
         final DBPDataSourceProviderSynchronizable providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
 
@@ -2003,11 +2032,11 @@ public class DataSourceDescriptor
         return authInfo;
     }
 
-    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor) {
+    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor, boolean succeeded) {
         getRegistry().notifyDataSourceListeners(new DBPEvent(
             DBPEvent.Action.OBJECT_UPDATE,
             dataSourceDescriptor,
-            false));
+            succeeded));
     }
 
     /**

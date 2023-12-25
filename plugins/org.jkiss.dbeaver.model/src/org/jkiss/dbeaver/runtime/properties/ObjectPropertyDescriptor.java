@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.dpi.DPIClientObject;
@@ -406,11 +407,33 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
         if (object instanceof DPIClientObject) {
-            System.out.println("Read DPI property " + getId());
+            log.debug("Read DPI property " + getId());
         }
+
         Method getter = getGetter();
         Object[] params = getter.getParameterCount() > 0 ?
             new Object[getter.getParameterCount()] : null;
+        Object finalObject = object;
+
+
+        InvocationSupplier<Object> readPropertyMethod;
+        if (object instanceof DPIClientObject dpiObject) {
+            readPropertyMethod = () -> {
+                try {
+                    return dpiObject.dpiPropertyValue(progressMonitor, getId());
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e, e.getMessage());
+                }
+            };
+        } else {
+            readPropertyMethod = () -> {
+                try {
+                    return getGetter().invoke(finalObject, params);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e, e.getMessage());
+                }
+            };
+        }
 
         if (isLazy() && params != null) {
             // Lazy (probably cached)
@@ -420,12 +443,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             params[0] = progressMonitor;
         }
         if (progressMonitor != null && isLazy() && object instanceof DBSObject) {
-            Object finalObject = object;
             Object[] finalResult = new Object[1];
             try {
                 DBExecUtils.tryExecuteRecover(progressMonitor, ((DBSObject) object).getDataSource(), param -> {
                     try {
-                        finalResult[0] = getter.invoke(finalObject, params);
+                        finalResult[0] = readPropertyMethod.get();
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -435,7 +457,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
             value = finalResult[0];
         } else {
-            value = getter.invoke(object, params);
+            value = readPropertyMethod.get();
         }
 
         if (formatValue) {

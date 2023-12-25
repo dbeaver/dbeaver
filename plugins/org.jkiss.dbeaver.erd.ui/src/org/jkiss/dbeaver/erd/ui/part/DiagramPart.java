@@ -417,9 +417,7 @@ public class DiagramPart extends PropertyAwarePart {
      *
      * @return - router
      */
-    public ERDConnectionRouter getRouter() {
+    public ERDConnectionRouter getActiveRouter() {
         return router;
     }
-
-
 }

@@ -29,11 +29,14 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
+import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -71,11 +74,21 @@ public class DirectedGraphLayoutVisitor {
         if (graph.nodes.size() > 0) {
             addDiagramEdges(diagram);
             try {
-                //new CompoundDirectedGraphLayout().visit(graph);
-                new NodeJoiningDirectedGraphLayout(diagram).visit(graph);
+                if (diagram instanceof DiagramPart) {
+                    DiagramPart diagramPart = (DiagramPart) diagram;
+                    ERDConnectionRouterDescriptor diagramRouter = diagramPart.getEditor().getDiagramRouter();
+                    DirectedGraphLayout layout = null;
+                    if (diagramRouter.supportedAttributeAssociation()) {
+                        layout = new OrthoDirectedGraphLayout(diagram);
+                    } else {
+                        layout = new NodeJoiningDirectedGraphLayout(diagram);
+                    }
+                    layout.visit(graph);
+                }
             } catch (Exception e) {
-                log.error("Diagram layout error", e);
+                log.error("Error during layoting elements:" + e.getMessage(), e);
             }
+           
             applyDiagramResults(diagram);
         }
 
@@ -97,10 +110,15 @@ public class DirectedGraphLayoutVisitor {
      */
     protected void addEntityNode(NodePart nodeEditPart)
     {
-        Node entityNode;
-        if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getEntity().hasSelfLinks()) {
-            entityNode = new Subgraph(nodeEditPart);
-        } else {
+        Node entityNode = null;
+        ERDEntity entity = null;
+        if (nodeEditPart instanceof EntityPart) {
+            entity = ((EntityPart) nodeEditPart).getEntity();
+            if (entity.hasSelfLinks()) {
+                entityNode = new Subgraph(nodeEditPart);
+            }
+        }
+        if (entityNode == null) {
             entityNode = new Node(nodeEditPart);
         }
         Dimension preferredSize = nodeEditPart.getFigure().getPreferredSize(-1, -1);
@@ -202,7 +220,6 @@ public class DirectedGraphLayoutVisitor {
                 n.y / snapSize.height * snapSize.height - n.y
             );
         }
-
         tableFigure.setBounds(bounds);
 
         List<?> sourceConnections = entityPart.getSourceConnections();

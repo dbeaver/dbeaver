@@ -694,7 +694,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         final DBNNode node = (DBNNode) item.getData();
 
         Text text = new Text(treeViewer.getTree(), SWT.BORDER);
-        text.setText(node.getNodeName());
+        text.setText(node.getNodeDisplayName());
         text.selectAll();
         text.setFocus();
         text.addFocusListener(new FocusAdapter() {
@@ -713,7 +713,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     final String newName = text.getText();
                     disposeOldEditor();
                     treeViewer.getTree().setFocus();
-                    if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
+                    if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeDisplayName())) {
                         NavigatorHandlerObjectRename.renameNode(
                             UIUtils.getActiveWorkbenchWindow(),
                             treeViewer.getControl().getShell(),
