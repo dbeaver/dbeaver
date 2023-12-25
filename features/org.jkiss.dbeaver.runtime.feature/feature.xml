@@ -64,5 +64,6 @@
     <plugin id="org.jkiss.bundle.gis" version="0.0.0" />
     <plugin id="org.jkiss.bundle.sshj" version="0.0.0" />
     <plugin id="org.jkiss.bundle.antlr4" version="0.0.0" />
+    <plugin id="org.jkiss.bundle.jsvg" version="0.0.0" />
 
 </feature>
