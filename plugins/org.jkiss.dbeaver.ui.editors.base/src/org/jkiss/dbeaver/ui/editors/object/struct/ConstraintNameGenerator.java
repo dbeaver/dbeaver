@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -41,6 +42,7 @@ public class ConstraintNameGenerator {
     private static final Log log = Log.getLog(ConstraintNameGenerator.class);
 
 
+    @NotNull
     private final DBSEntity entity;
     private final Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
     private DBSEntityConstraintType constraintType;
@@ -56,7 +58,7 @@ public class ConstraintNameGenerator {
         this(entity, constraintName, DBSEntityConstraintType.PRIMARY_KEY);
     }
 
-    public ConstraintNameGenerator(DBSEntity entity, String constraintName, DBSEntityConstraintType constraintType) {
+    public ConstraintNameGenerator(@NotNull DBSEntity entity, String constraintName, DBSEntityConstraintType constraintType) {
         this.entity = entity;
         this.constraintName = constraintName;
 
@@ -116,11 +118,9 @@ public class ConstraintNameGenerator {
         if (CommonUtils.isEmpty(this.constraintName)) {
             String namePrefix = TYPE_PREFIX.get(constraintType);
             if (namePrefix == null) {
-                namePrefix = "KEY";
+                namePrefix = "_KEY";
             }
-            this.constraintName = DBObjectNameCaseTransformer.transformName(
-                entity.getDataSource(),
-                CommonUtils.escapeIdentifier(entity.getName()) + namePrefix);
+            this.constraintName = CommonUtils.escapeIdentifier(entity.getName()) + namePrefix;
         }
         makeNameUnique();
     }
@@ -134,7 +134,7 @@ public class ConstraintNameGenerator {
                 curName = constraintName + "_" + conIndex;
                 conIndex++;
             }
-            constraintName = curName;
+            constraintName = DBObjectNameCaseTransformer.transformName(entity.getDataSource(), curName);
         } catch (DBException e) {
             log.debug(e);
         }
