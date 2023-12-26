@@ -75,6 +75,7 @@
                 <artifactId>target-platform-configuration</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
+                    <pomDependencies>consider</pomDependencies>
                     <environments>
                         <environment>
                             <os>win32</os>
@@ -174,6 +175,7 @@
                         <artifactId>target-platform-configuration</artifactId>
                         <version>${tycho-version}</version>
                         <configuration>
+                            <pomDependencies>consider</pomDependencies>
                             <environments>
                                 <environment>
                                     <os>win32</os>

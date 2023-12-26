@@ -343,7 +343,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return project.getId();
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return NodePathType.resource.getPrefix() + project.getId();
