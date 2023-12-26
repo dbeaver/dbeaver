@@ -31,6 +31,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,7 +121,13 @@ public class ConstraintNameGenerator {
             if (namePrefix == null) {
                 namePrefix = "_KEY";
             }
-            this.constraintName = CommonUtils.escapeIdentifier(entity.getName()) + namePrefix;
+            String entityName = CommonUtils.escapeIdentifier(entity.getName());
+            if (entityName != null && !entityName.isBlank()) {
+                if (Character.isLowerCase(entityName.charAt(0))) {
+                    namePrefix = namePrefix.toLowerCase(Locale.ENGLISH);
+                }
+            }
+            this.constraintName = entityName + namePrefix;
         }
         makeNameUnique();
     }
