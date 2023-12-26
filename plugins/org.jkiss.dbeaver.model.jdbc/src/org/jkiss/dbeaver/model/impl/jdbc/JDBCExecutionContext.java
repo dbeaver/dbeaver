@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -270,13 +273,13 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     //////////////////////////////////////////////////////////////
 
     @Override
-    public DBPTransactionIsolation getTransactionIsolation()
-        throws DBCException {
+    public DBPTransactionIsolation getTransactionIsolation() {
         if (transactionIsolationLevel == null) {
             if (!txnIsolationLevelReadInProgress) {
                 txnIsolationLevelReadInProgress = true;
-                try {
-                    if (!RuntimeUtils.runTask(monitor -> {
+                new AbstractJob("Get transaction isolation level") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
                         try {
                             DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
                                 try {
@@ -287,27 +290,17 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                                 }
                             });
                         } catch (DBException e) {
-                            throw new InvocationTargetException(e);
+                            log.debug("Error determining transaction isolation level", e);
+                        } finally {
+                            txnIsolationLevelReadInProgress = false;
                         }
-                    }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT, true)) {
-                        throw new DBCException("Can't determine transaction isolation - timeout");
+                        return Status.OK_STATUS;
                     }
-                } finally {
-                    txnIsolationLevelReadInProgress = false;
-                }
-            } else {
-                // Wait
-                long startTime = System.currentTimeMillis();
-                while (txnIsolationLevelReadInProgress) {
-                    if (System.currentTimeMillis() - startTime > TXN_INFO_READ_TIMEOUT) {
-                        break;
-                    }
-                    RuntimeUtils.pause(50);
-                }
+                }.schedule();
             }
             if (transactionIsolationLevel == null) {
-                transactionIsolationLevel = Connection.TRANSACTION_NONE;
-                log.error("Cannot determine transaction isolation level due to connection hanging. Setting to NONE.");
+                return JDBCTransactionIsolation.getByCode(Connection.TRANSACTION_NONE);
+                //log.error("Cannot determine transaction isolation level due to connection hanging. Setting to NONE.");
             }
         }
         return JDBCTransactionIsolation.getByCode(transactionIsolationLevel);
