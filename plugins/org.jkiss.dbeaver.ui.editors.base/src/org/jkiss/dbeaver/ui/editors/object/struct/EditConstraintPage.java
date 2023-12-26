@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -58,44 +56,31 @@ public class EditConstraintPage extends AttributesSelectorPage {
     private boolean showEnable = false;
     private boolean useAllColumns = false;
 
-    public EditConstraintPage(
-        String title,
-        DBSEntityConstraint constraint
-    ) {
-        this(title, constraint.getParentObject(), false);
-        if (constraint instanceof DBSEntityReferrer referrer) {
-            this.constraint = referrer;
-        }
-    }
-
-    public EditConstraintPage(
-        String title,
-        DBSEntity entity,
-        boolean showEnable
-    ) {
-        super(title, entity);
-        this.entity = entity;
-        if (entity instanceof DBSEntityConstrainable entityConstrainable) {
-            this.constraintTypes = entityConstrainable.getSupportedConstraints()
-                .stream().map(DBSEntityConstraintInfo::getType).toArray(DBSEntityConstraintType[]::new);
-        } else {
-            this.constraintTypes = new DBSEntityConstraintType[] { DBSEntityConstraintType.PRIMARY_KEY };
-        }
-        this.showEnable = showEnable;
-        this.nameGenerator = new ConstraintNameGenerator(entity);
-        Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
-    }
-
     public EditConstraintPage(String title, DBSEntityReferrer constraint) {
         super(title, constraint.getParentObject());
         this.constraint = constraint;
-        this.constraintTypes = new DBSEntityConstraintType[]{constraint.getConstraintType()};
+
+        if (entity instanceof DBSEntityConstrainable entityConstrainable) {
+            this.constraintTypes = entityConstrainable.getSupportedConstraints()
+                .stream()
+                .map(DBSEntityConstraintInfo::getType)
+                .filter(type -> type != DBSEntityConstraintType.INDEX)
+                .toArray(DBSEntityConstraintType[]::new);
+        } else {
+            this.constraintTypes = new DBSEntityConstraintType[]{constraint.getConstraintType()};
+        }
+        this.selectedConstraintType = constraint.getConstraintType();
+        this.constraint = constraint;
+
         try {
             this.attributes = constraint.getAttributeReferences(new VoidProgressMonitor());
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(EditorsMessages.edit_constraints_error_title, EditorsMessages.edit_constraints_error_message, e);
         }
-        this.nameGenerator = new ConstraintNameGenerator(constraint.getParentObject(), this.constraint.getName(), constraint.getConstraintType());
+        this.nameGenerator = new ConstraintNameGenerator(
+            constraint.getParentObject(),
+            this.constraint.isPersisted() ? this.constraint.getName() : null,
+            constraint.getConstraintType());
         if (constraint instanceof DBVEntityConstraint) {
             this.useAllColumns = ((DBVEntityConstraint) constraint).isUseAllColumns();
         }
@@ -142,11 +127,15 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
         for (DBSEntityConstraintType constraintType : constraintTypes) {
             typeCombo.add(constraintType.getName());
-            if (selectedConstraintType == null) {
+            if (selectedConstraintType == null || constraintType == selectedConstraintType) {
                 selectedConstraintType = constraintType;
+                typeCombo.select(typeCombo.getItemCount() - 1);
             }
         }
-        typeCombo.select(0);
+        if (selectedConstraintType == null) {
+            typeCombo.select(0);
+            selectedConstraintType = constraintTypes[0];
+        }
         typeCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

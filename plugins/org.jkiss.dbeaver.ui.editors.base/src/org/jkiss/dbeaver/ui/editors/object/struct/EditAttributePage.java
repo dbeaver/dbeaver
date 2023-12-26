@@ -99,7 +99,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
             return;
         }
         constraintTypes = constraintTypes.stream()
-            .filter(ct -> AbstractTableConstraint.class.isAssignableFrom(ct.getImplClass()))
+            .filter(ct -> AbstractTableConstraint.class.isAssignableFrom(ct.getImplClass()) && ct.getType().isUnique())
             .collect(Collectors.toList());
         if (CommonUtils.isEmpty(constraintTypes)) {
             return;
