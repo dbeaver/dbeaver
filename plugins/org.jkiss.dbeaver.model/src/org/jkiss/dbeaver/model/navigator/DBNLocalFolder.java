@@ -133,7 +133,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 */
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return makeLocalFolderItemPath(folder);

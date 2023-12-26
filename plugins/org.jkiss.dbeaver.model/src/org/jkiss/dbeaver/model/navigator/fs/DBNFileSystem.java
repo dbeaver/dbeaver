@@ -201,7 +201,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return this;
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return getParentNode().getNodeItemPath() + "/" + getName();

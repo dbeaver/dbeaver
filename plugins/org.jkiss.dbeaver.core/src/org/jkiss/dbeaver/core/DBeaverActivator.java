@@ -72,10 +72,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (MissingResourceException x) {
             coreResourceBundle = null;
         }
-        if (
-                DesktopPlatform.isStandalone()
-                && getPreferenceStore().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)
-        ) {
+        if (getPreferenceStore().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
             try {
                 if (Desktop.isDesktopSupported()) {
                     injectProxyPeer();

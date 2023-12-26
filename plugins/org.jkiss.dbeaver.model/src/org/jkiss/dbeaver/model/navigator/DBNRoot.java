@@ -169,7 +169,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return true;
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return "";

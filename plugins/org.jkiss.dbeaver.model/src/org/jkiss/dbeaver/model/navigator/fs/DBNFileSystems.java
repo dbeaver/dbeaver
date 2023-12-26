@@ -254,7 +254,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
         }
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return NodePathType.ext.getPrefix() + ((DBNProject) getParentNode()).getProject().getId() + "/" + getName();

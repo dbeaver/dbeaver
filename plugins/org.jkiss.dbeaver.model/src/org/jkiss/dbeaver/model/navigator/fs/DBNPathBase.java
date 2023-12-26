@@ -225,7 +225,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         return this;
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return getParentNode().getNodeItemPath() + "/" + getName();

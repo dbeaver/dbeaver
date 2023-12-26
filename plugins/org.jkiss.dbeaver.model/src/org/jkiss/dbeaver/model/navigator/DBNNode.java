@@ -258,7 +258,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      * @deprecated the path is not unique and does not contain complete information to find the correct node
      * use {@link #getNodeUri()} instead
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated
     public abstract String getNodeItemPath();
 
     /**

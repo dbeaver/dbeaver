@@ -71,7 +71,7 @@ public class DBNEmptyNode extends DBNNode
         return false;
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return null;
