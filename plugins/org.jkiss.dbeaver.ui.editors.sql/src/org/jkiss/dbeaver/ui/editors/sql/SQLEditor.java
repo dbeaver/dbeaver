@@ -2184,6 +2184,9 @@ public class SQLEditor extends SQLEditorBase implements
             if (editorInput instanceof IFileEditorInput) {
                 final IFile file = ((IFileEditorInput) editorInput).getFile();
                 if (!file.exists()) {
+                    file.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
+                }
+                if (!file.exists()) {
                     file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
                 }
             }

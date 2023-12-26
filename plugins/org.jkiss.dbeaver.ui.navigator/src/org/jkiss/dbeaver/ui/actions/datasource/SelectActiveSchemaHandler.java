@@ -117,7 +117,11 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBNDatabaseNode node = dialog.getSelectedObject();
         if (node != null && node.getObject() != defaultObject) {
             // Change current schema
-            changeDataBaseSelection(dataSourceContainer, executionContext, contextDefaultObjectsReader.getDefaultCatalogName(), dialog.getCurrentInstanceName(), node.getNodeName());
+            changeDataBaseSelection(dataSourceContainer,
+                executionContext,
+                contextDefaultObjectsReader.getDefaultCatalogName(),
+                dialog.getCurrentInstanceName(),
+                node.getNodeDisplayName());
         }
 
         return null;
@@ -270,7 +274,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                                 executionContext,
                                 contextDefaultObjectsReader.getDefaultCatalogName(),
                                 (object instanceof DBSCatalog ? object.getName() : contextDefaultObjectsReader.getDefaultCatalogName()),
-                                (object instanceof DBSSchema ? node.getNodeName() : null));
+                                (object instanceof DBSSchema ? node.getNodeDisplayName() : null));
                         }
                     }
                 ));

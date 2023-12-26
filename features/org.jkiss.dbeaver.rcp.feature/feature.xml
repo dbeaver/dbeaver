@@ -1,153 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.rcp.feature"
-      label="%featureName"
-      version="2.1.196.qualifier"
-      provider-name="%providerName">
+        id="org.jkiss.dbeaver.rcp.feature"
+        label="%featureName"
+        version="3.0.0.qualifier"
+        provider-name="%providerName">
 
     <description>
-      %description
+        %description
     </description>
 
     <copyright>
-      %copyright
+        %copyright
     </copyright>
 
     <license url="%licenseURL">
-      %license
+        %license
     </license>
 
-<!--
     <includes id="org.eclipse.rcp" version="0.0.0"/>
-
-    <plugin id="com.ibm.icu.base" version="0.0.0" />
-    <plugin id="org.eclipse.draw2d" version="0.0.0" />
-    <plugin id="org.eclipse.gef" version="0.0.0" />
--->
-
-    <requires>
-        <import plugin="org.eclipse.core.runtime" version="3.7" match="greaterOrEqual"/>
-    </requires>
-
-    <plugin id="com.ibm.icu.base" version="0.0.0" />
-
-    <plugin id="javax.annotation" version="0.0.0" />
-    <plugin id="javax.inject" version="0.0.0" />
-
-    <plugin id="org.apache.batik.css" version="0.0.0" />
-    <plugin id="org.apache.batik.util" version="0.0.0" />
-
-    <plugin id="org.eclipse.compare.core" version="0.0.0" />
-
-    <plugin id="org.eclipse.core.commands" version="0.0.0" />
-    <plugin id="org.eclipse.core.contenttype" version="0.0.0" />
-    <plugin id="org.eclipse.core.databinding" version="0.0.0" />
-    <plugin id="org.eclipse.core.databinding.observable" version="0.0.0" />
-    <plugin id="org.eclipse.core.databinding.property" version="0.0.0" />
-    <plugin id="org.eclipse.core.expressions" version="0.0.0" />
-    <plugin id="org.eclipse.core.filesystem" version="0.0.0" />
-    <plugin id="org.eclipse.core.jobs" version="0.0.0" />
-    <plugin id="org.eclipse.core.net" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.core.resources" version="0.0.0" />
-    <plugin id="org.eclipse.core.variables" version="0.0.0"/>
-    <plugin id="org.eclipse.e4.core.commands" version="0.0.0" />
-    <plugin id="org.eclipse.e4.core.contexts" version="0.0.0" />
-    <plugin id="org.eclipse.e4.core.di" version="0.0.0" />
-    <plugin id="org.eclipse.e4.core.di.extensions" version="0.0.0" />
-    <plugin id="org.eclipse.e4.core.services" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.bindings" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.css.core" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.css.swt" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.css.swt.theme" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.di" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.model.workbench" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.services" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.widgets" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.workbench" version="0.0.0" />
-
-    <plugin id="org.eclipse.e4.ui.workbench.renderers.swt" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.workbench.renderers.swt.cocoa" os="macosx" ws="cocoa" version="0.0.0" fragment="true" />
-
-    <plugin id="org.eclipse.e4.ui.workbench3" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.workbench.swt" version="0.0.0" />
-    <plugin id="org.eclipse.e4.ui.workbench.addons.swt" version="0.0.0" />
-
-    <plugin id="org.eclipse.emf.common" version="0.0.0" />
-    <plugin id="org.eclipse.emf.ecore" version="0.0.0" />
-    <plugin id="org.eclipse.emf.ecore.change" version="0.0.0" />
-    <plugin id="org.eclipse.emf.ecore.xmi" version="0.0.0" />
-    <plugin id="org.apache.felix.scr" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.app" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.bidi" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.common" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.event" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.launcher" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.preferences" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.registry" version="0.0.0" />
-    <plugin id="org.eclipse.equinox.simpleconfigurator" version="0.0.0" />
-<!--    Was removed in 2019-12? -->
-<!--    <plugin id="org.eclipse.equinox.util" version="0.0.0" />-->
-    <plugin id="org.eclipse.help" version="0.0.0" />
-    <plugin id="org.eclipse.jface" version="0.0.0" />
-    <plugin id="org.eclipse.jface.databinding" version="0.0.0" />
-    <plugin id="org.eclipse.jface.notifications" version="0.0.0" />
-    <plugin id="org.eclipse.jface.text" version="0.0.0" />
-
-    <plugin id="org.eclipse.osgi" version="0.0.0" />
-    <plugin id="org.eclipse.osgi.services" version="0.0.0" />
-    <plugin id="org.eclipse.osgi.compatibility.state" version="0.0.0" />
-    <plugin id="org.eclipse.osgi.util" version="0.0.0" />
-
-    <plugin id="org.eclipse.swt" version="0.0.0" />
-
-    <plugin id="org.eclipse.text" version="0.0.0" />
-    <plugin id="org.eclipse.ui" version="0.0.0" />
-    <plugin id="org.eclipse.ui.forms" version="0.0.0" />
-    <plugin id="org.eclipse.ui.views" version="0.0.0" />
-    <plugin id="org.eclipse.ui.views.log" version="0.0.0" />
-    <plugin id="org.eclipse.ui.workbench" version="0.0.0" />
-    <plugin id="org.eclipse.ui.workbench.texteditor" version="0.0.0" />
 
     <plugin id="org.eclipse.ui.intro" version="0.0.0" />
     <plugin id="org.eclipse.ui.themes" version="0.0.0"/>
-
-    <plugin id="org.eclipse.update.configurator" version="0.0.0"/>
-
-    <!-- Network -->
-    <plugin id="org.eclipse.ui.net" version="0.0.0"/>
-    <plugin id="org.eclipse.jsch.core" version="0.0.0"/>
-    <plugin id="org.eclipse.jsch.ui" version="0.0.0"/>
-
-    <!-- IDE plugin -->
-
-    <plugin id="org.eclipse.ui.ide" version="0.0.0" />
-    <plugin id="org.eclipse.ui.editors" version="0.0.0"/>
-
-    <!-- Eclipse Mars additions -->
-
-    <plugin id="org.eclipse.e4.core.di.annotations" version="0.0.0" />
-    <plugin id="org.eclipse.e4.emf.xpath" version="0.0.0" />
-
-    <!-- OS dependent -->
-
-    <plugin id="org.eclipse.core.resources.win32.x86_64" os="win32" arch="x86_64" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.core.filesystem.win32.x86_64" os="win32" arch="x86_64" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.swt.win32.win32.x86_64" os="win32" ws="win32" arch="x86_64" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.e4.ui.swt.win32" ws="win32" version="0.0.0" />
-    <plugin id="org.eclipse.ui.win32" os="win32" version="0.0.0" fragment="true" />
-
-    <plugin id="org.eclipse.compare.win32" os="win32" version="0.0.0" />
-    <plugin id="org.eclipse.core.net.win32" os="win32" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.core.net.linux" os="linux" version="0.0.0" fragment="true" />
-
-    <plugin id="org.eclipse.core.filesystem.linux.x86_64" os="linux" arch="x86_64" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.swt.gtk.linux.x86_64" os="linux" ws="gtk" arch="x86_64" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.e4.ui.swt.gtk" ws="gtk" version="0.0.0" />
-
-    <plugin id="org.eclipse.core.filesystem.macosx" os="macosx" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.swt.cocoa.macosx.x86_64" os="macosx" ws="cocoa" arch="x86_64" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.swt.cocoa.macosx.aarch64" os="macosx" ws="cocoa" arch="aarch64" version="0.0.0" fragment="true" />
-    <plugin id="org.eclipse.ui.cocoa" os="macosx" ws="cocoa" version="0.0.0" fragment="true" />
-
+    <plugin id="com.ibm.icu.base" version="0.0.0"/>
 
 </feature>

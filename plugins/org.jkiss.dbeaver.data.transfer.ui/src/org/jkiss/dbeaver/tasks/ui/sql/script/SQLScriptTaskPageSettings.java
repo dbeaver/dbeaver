@@ -240,7 +240,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             dataSourceViewer.setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    return ((DBNDataSource) element).getNodeName();
+                    return ((DBNDataSource) element).getNodeDisplayName();
                 }
                 @Override
                 public Image getImage(Object element) {

@@ -1157,10 +1157,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void run() {
             setDiagramRouter(router);
             refreshDiagram(true, false);
+            getDiagramPart().rearrangeDiagram();
         }
     }
-    
-    
 
     private class ChangeAttributeVisibilityAction extends Action {
         private final boolean defStyle;
@@ -1654,6 +1653,4 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public void setDiagramRouter(ERDConnectionRouterDescriptor router) {
         this.routerStyle = router;
     }
-   
-    
 }

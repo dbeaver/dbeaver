@@ -82,7 +82,7 @@ public class DatabaseLabelProviders {
             if (element == null) {
                 return EMPTY_SELECTION_TEXT;
             }
-            return ((DBNDatabaseNode)element).getNodeName();
+            return ((DBNDatabaseNode) element).getNodeDisplayName();
         }
 
         @Override
