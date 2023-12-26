@@ -140,6 +140,7 @@ public class GridColumn implements IGridColumn {
         Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
         filterBounds.x = bounds.width - filterBounds.width - GridColumnRenderer.RIGHT_MARGIN;
         filterBounds.y = bounds.y + GridColumnRenderer.TOP_MARGIN;
+
         return filterBounds.contains(x, y);
     }
 
@@ -178,6 +179,7 @@ public class GridColumn implements IGridColumn {
         Rectangle imgBounds = image.getBounds();
         imgBounds.x += bounds.x + GridColumnRenderer.LEFT_MARGIN;
         imgBounds.y += bounds.y + GridColumnRenderer.TOP_MARGIN;
+
         return imgBounds.contains(x, y);
     }
 

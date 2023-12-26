@@ -170,8 +170,7 @@ class GridColumnRenderer extends AbstractRenderer {
 
         gc.setForeground(grid.getLabelProvider().getHeaderForeground(element, selected || hovering));
 
-        {
-            // Draw column name
+        { // Draw column name
             final String text = UITextUtils.getShortString(grid.fontMetrics, getColumnText(element), bounds.width);
             gc.setFont(getColumnFont(element));
             gc.setClipping(bounds.x, bounds.y, bounds.width, grid.fontMetrics.getHeight());
@@ -179,8 +178,7 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.setClipping((Rectangle) null);
         }
 
-        {
-            // Draw column description
+        { // Draw column description
             String text = getColumnDescription(element);
             if (!CommonUtils.isEmpty(text)) {
                 text = UITextUtils.getShortString(grid.fontMetrics, text, bounds.width);
