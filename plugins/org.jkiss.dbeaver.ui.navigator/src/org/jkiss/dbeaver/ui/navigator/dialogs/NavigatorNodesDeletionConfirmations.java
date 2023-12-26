@@ -70,8 +70,12 @@ public final class NavigatorNodesDeletionConfirmations {
             );
         }
         DBNNode node = (DBNNode) selectedObjects.iterator().next();
-        String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeTypeLabel(), node.getNodeName());
-        String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeTypeLabel(), node.getNodeName());
+        String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title,
+            node.getNodeTypeLabel(),
+            node.getNodeDisplayName());
+        String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message,
+            node.getNodeTypeLabel(),
+            node.getNodeDisplayName());
         return confirm(shell, title, message, selectedObjects, deleter);
     }
 

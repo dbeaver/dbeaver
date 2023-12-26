@@ -115,8 +115,7 @@ public abstract class ObjectAttributeDescriptor {
         return getter == null ? null : getter.getAnnotation(annoType);
     }
 
-    public Method getGetter()
-    {
+    public Method getGetter() {
         return getter;
     }
 

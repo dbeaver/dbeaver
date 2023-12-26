@@ -135,7 +135,7 @@ public class NavigatorDragSourceListener implements DragSourceListener {
             } else if (nextSelected instanceof DBNStreamData streamData && streamData.supportsStreamData()
                 && (EditorInputTransfer.getInstance().isSupportedType(event.dataType)
                     || FileTransfer.getInstance().isSupportedType(event.dataType))) {
-                String fileName = node.getNodeName();
+                String fileName = node.getNodeDisplayName();
                 try {
                     Path tmpFile = copyStreamToTempFile(streamData, fileName);
                     if (tmpFile == null) {

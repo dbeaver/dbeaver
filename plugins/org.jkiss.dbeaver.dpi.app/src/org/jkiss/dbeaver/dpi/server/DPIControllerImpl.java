@@ -23,23 +23,30 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPIDataSourceParameters;
 import org.jkiss.dbeaver.model.dpi.DPISession;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.rest.RestServer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -61,7 +68,7 @@ public class DPIControllerImpl implements DPIController {
     }
 
     @Override
-    public DPISession openSession(String projectId) {
+    public DPISession openSession() {
         DPISession session = new DPISession(UUID.randomUUID().toString());
         this.sessions.put(session.getSessionId(), session);
         return session;
@@ -70,24 +77,38 @@ public class DPIControllerImpl implements DPIController {
     @NotNull
     @Override
     public synchronized DBPDataSource openDataSource(
-        @NotNull String session,
-        @NotNull String projectId,
-        @NotNull String container,
-        @Nullable Map<String, String> credentials
+        @NotNull DPIDataSourceParameters parameters
     ) throws DBException {
-        DPISession dpiSession = getSession(session);
-
-        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (project == null) {
-            throw new DBException("Project '" + projectId + "' not found");
+            throw new DBException("Active project not found");
         }
-        DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(container);
+        DBPDataSourceRegistry registry = project.getDataSourceRegistry();
+        if (!(registry instanceof DataSourcePersistentRegistry persistentRegistry)) {
+            throw new DBException("Cannot load datasource from " + registry.getClass().getName());
+        }
+        DBPDataSourceConfigurationStorage storage =
+            new DataSourceMemoryStorage(parameters.getContainerConfiguration().getBytes(StandardCharsets.UTF_8));
+        DataSourceConfigurationManager manager = new DataSourceConfigurationManagerBuffer();
+        persistentRegistry.loadDataSources(
+            List.of(storage),
+            manager,
+            List.of(),
+            true,
+            false
+        );
+        DBPDataSourceContainer dataSourceContainer =
+            project.getDataSourceRegistry().getDataSources().stream().findFirst().orElse(null);
+
         if (dataSourceContainer == null) {
-            throw new DBException("Data source '" + container + "' not found");
+            throw new DBException("Data source not found");
         }
+        ((DPIApplication) DPIApplication.getInstance()).addDriverLibsLocation(
+            dataSourceContainer.getDriver().getId(), parameters.getDriverLibraries()
+        );
         LoggingProgressMonitor monitor = new LoggingProgressMonitor(log);
 
-        dataSourceContainer.connect(monitor, true, false);
+        ((DataSourceDescriptor) dataSourceContainer).openDataSource(monitor, true);
 
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
 
@@ -151,6 +172,8 @@ public class DPIControllerImpl implements DPIController {
     }
 
     private Object invokeObjectMethod(Object object, Method method, Object[] args) throws DBException {
+        boolean originalAccessible = method.canAccess(object);
+        method.setAccessible(true);
         try {
             log.debug("DPI Server: invoke DPI method " + method + " on " + object.getClass());
             Class<?>[] parameterTypes = method.getParameterTypes();
@@ -180,7 +203,14 @@ public class DPIControllerImpl implements DPIController {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException) e).getTargetException();
             }
-            throw new DBException("Error invoking DPI method", e);
+            throw new DBException("Error invoking DPI method "
+                + object.getClass() + "#"
+                + method.getName() + " : "
+                + e.getMessage(),
+                e
+            );
+        } finally {
+            method.setAccessible(originalAccessible);
         }
     }
 

@@ -36,7 +36,7 @@ public class DBNEmptyNode extends DBNNode
     }
 
     @Override
-    public String getNodeName()
+    public String getNodeDisplayName()
     {
         return "#empty"; //$NON-NLS-1$
     }
@@ -71,6 +71,7 @@ public class DBNEmptyNode extends DBNNode
         return false;
     }
 
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return null;

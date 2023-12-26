@@ -150,12 +150,13 @@
                         </folder>
                     </items>
                 </folder>
-                <folder label="%tree.security.node.name" icon="#security" description="Security management">
+                <folder label="%tree.security.node.name" icon="#security" id="securityManagement" description="Security management">
                     <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin" label="%tree.logins.node.name" icon="#folder_user" description="Logins">
                         <items label="%tree.login.node.name" path="logins" property="logins" icon="#user"/>
                     </folder>
                 </folder>
-                <folder label="%tree.administer.node.name" icon="#folder_admin" description="tree.administer.node.description">
+                <folder label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin"
+                        description="tree.administer.node.description">
                     <treeContribution category="connectionEditor"/>
                 </folder>
             </tree>
