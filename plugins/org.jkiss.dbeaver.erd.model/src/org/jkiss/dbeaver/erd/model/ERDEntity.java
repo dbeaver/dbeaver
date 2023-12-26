@@ -207,47 +207,42 @@ public class ERDEntity extends ERDElement<DBSEntity> {
      * @param diagram all diagram entities map
      * @param create    if true then creates all found model association. Otherwise only saves unresolved ones.
      * @param reflect   reflect UI
+     * @throws DBException 
      */
-    public void addModelRelations(DBRProgressMonitor monitor, ERDContainer diagram, boolean create, boolean reflect) {
-        try {
-            Set<DBSEntityAttribute> fkAttrs = new HashSet<>();
-            // Make associations
-            Collection<? extends DBSEntityAssociation> fks = DBVUtils.getAllAssociations(monitor, getObject());
-            if (fks != null) {
-                for (DBSEntityAssociation fk : fks) {
-                    if (fk instanceof DBSEntityReferrer) {
-                        fkAttrs.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) fk));
-                    }
-                    ERDEntity entity2 = diagram.getEntityMap().get(
+    public void addModelRelations(DBRProgressMonitor monitor, ERDContainer diagram, boolean create, boolean reflect) throws DBException {
+        Set<DBSEntityAttribute> fkAttrs = new HashSet<>();
+        // Make associations
+        Collection<? extends DBSEntityAssociation> fks = DBVUtils.getAllAssociations(monitor, getObject());
+        if (fks != null) {
+            for (DBSEntityAssociation fk : fks) {
+                if (fk instanceof DBSEntityReferrer) {
+                    fkAttrs.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) fk));
+                }
+                ERDEntity entity2 = diagram.getEntityMap().get(
                         DBVUtils.getRealEntity(monitor, fk.getAssociatedEntity()));
-                    if (entity2 == null) {
-                        //log.debug("Table '" + fk.getReferencedKey().getTable().getFullyQualifiedName() + "' not found in ERD");
-                        if (unresolvedKeys == null) {
-                            unresolvedKeys = new ArrayList<>();
+                if (entity2 == null) {
+                    if (unresolvedKeys == null) {
+                        unresolvedKeys = new ArrayList<>();
+                    }
+                    unresolvedKeys.add(fk);
+                } else {
+                    if (create) {
+                        if (DBUtils.isInheritedObject(fk)) {
+                            continue;
                         }
-                        unresolvedKeys.add(fk);
-                    } else {
-                        if (create) {
-                            if (DBUtils.isInheritedObject(fk)) {
-                                continue;
-                            }
-                            diagram.getContentProvider().createAutoAssociation(diagram, fk, this, entity2, reflect);
-                        }
+                        diagram.getContentProvider().createAutoAssociation(diagram, fk, this, entity2, reflect);
                     }
                 }
             }
+        }
 
-            // Mark attribute's fk flag
-            if (!fkAttrs.isEmpty()) {
-                for (ERDEntityAttribute attribute : this.getAttributes()) {
-                    if (fkAttrs.contains(attribute.getObject())) {
-                        attribute.setInForeignKey(true);
-                    }
+        // Mark attribute's fk flag
+        if (!fkAttrs.isEmpty()) {
+            for (ERDEntityAttribute attribute : this.getAttributes()) {
+                if (fkAttrs.contains(attribute.getObject())) {
+                    attribute.setInForeignKey(true);
                 }
             }
-
-        } catch (Throwable e) {
-            log.error("Can't load table '" + getObject().getName() + "' foreign keys", e);
         }
     }
 
