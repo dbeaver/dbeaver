@@ -308,7 +308,9 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         entityMap.put("id", context.addElementInfo(this));
         DBNDatabaseNode node = context.getNavigatorModel().getNodeByObject(context.getMonitor(), dbsEntity, true);
         if (node != null) {
-            entityMap.put("nodeId", node.getNodeUri());
+            //TODO: use only node URI after finish migration to the new node path format
+            entityMap.put("nodeId", node.getNodeItemPath());
+            entityMap.put("nodeUri", node.getNodeUri());
         }
         entityMap.put("name", this.getName());
         if (!CommonUtils.isEmpty(this.getAlias())) {

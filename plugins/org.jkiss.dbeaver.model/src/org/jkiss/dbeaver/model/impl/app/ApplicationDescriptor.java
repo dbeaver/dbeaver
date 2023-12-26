@@ -39,6 +39,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
     private boolean finalApplication = true;
 
     private final ObjectType implClass;
+    private DBPApplication implementation;
 
     ApplicationDescriptor(IConfigurationElement config) {
         super(config);
@@ -100,7 +101,14 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         return hidden;
     }
 
-    public Class<? extends DBPApplication> getImplClass() {
+    public DBPApplication getInstance() throws Exception {
+        if (implementation == null) {
+            implementation = getImplClass().getConstructor().newInstance();
+        }
+        return implementation;
+    }
+
+    private Class<? extends DBPApplication> getImplClass() {
         return implClass.getObjectClass(DBPApplication.class);
     }
 
