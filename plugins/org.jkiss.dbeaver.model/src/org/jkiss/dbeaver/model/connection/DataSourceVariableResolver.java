@@ -18,9 +18,6 @@ package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
-import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -49,11 +46,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
 
     @Override
     protected boolean isResolveSystemVariables() {
-        DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        if (application instanceof DBPApplicationDPI dpiApp) {
-            return dpiApp.isEnableEnvVariables();
-        }
-        return DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop;
+        return DBWorkbench.getPlatform().getApplication().isEnvironmentVariablesAccessible();
     }
 
     @Override

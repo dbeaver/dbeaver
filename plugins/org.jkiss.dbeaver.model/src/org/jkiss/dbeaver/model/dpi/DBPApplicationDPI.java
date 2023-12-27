@@ -24,6 +24,4 @@ import java.util.List;
 public interface DBPApplicationDPI {
     @NotNull
     List<Path> getDriverLibsLocation(@NotNull String driverId);
-
-    boolean isEnableEnvVariables();
 }

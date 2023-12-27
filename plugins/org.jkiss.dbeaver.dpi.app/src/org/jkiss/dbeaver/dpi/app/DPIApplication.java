@@ -51,7 +51,7 @@ public class DPIApplication extends DesktopApplicationImpl implements DBPApplica
 
     private final Map<String, String[]> driverLibsLocation = new ConcurrentHashMap<>();
 
-    private boolean envVariablesEnabled = false;
+    private boolean environmentVariablesAccessible = false;
 
     public DPIApplication() {
     }
@@ -73,7 +73,8 @@ public class DPIApplication extends DesktopApplicationImpl implements DBPApplica
         try {
             String enableEnvVariablesArgument = getCommandLineArgument(DPIConstants.ARG_ENABLE_ENV);
             if (CommonUtils.isNotEmpty(enableEnvVariablesArgument)) {
-                this.envVariablesEnabled = Boolean.parseBoolean(enableEnvVariablesArgument);
+                // allow access to env variables only if the main application has them
+                this.environmentVariablesAccessible = Boolean.parseBoolean(enableEnvVariablesArgument);
             }
             runServer(context, application);
         } catch (IOException e) {
@@ -159,6 +160,11 @@ public class DPIApplication extends DesktopApplicationImpl implements DBPApplica
     }
 
     @Override
+    public boolean isEnvironmentVariablesAccessible() {
+        return environmentVariablesAccessible;
+    }
+
+    @Override
     public String getDefaultProjectName() {
         return "default";
     }
@@ -184,9 +190,5 @@ public class DPIApplication extends DesktopApplicationImpl implements DBPApplica
 
     public void addDriverLibsLocation(@NotNull String driverId, @NotNull String[] driverLibsLocation) {
         this.driverLibsLocation.put(driverId, driverLibsLocation);
-    }
-
-    public boolean isEnableEnvVariables() {
-        return envVariablesEnabled;
     }
 }
