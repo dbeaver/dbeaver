@@ -106,7 +106,7 @@ pipeline{
             script {
                 if (_merge_build != 'True') {
                     if ("${BRANCH_NAME}" == "master") {
-                        build wait: false, propagate: false, job: 'document-build', parameters: [string(name: 'project', value: 'DBeaver'), string(name: 'branch', value: "master"), string(name: 'version', value: '23.1')]
+                        build wait: false, propagate: false, job: 'document-build', parameters: [string(name: 'project', value: 'DBeaver'), string(name: 'branch', value: "master"), string(name: 'version', value: '23.1'), string(name: 'doc_dir', value: "${_export_path}/latest/")]
                     }
                 }
             }
