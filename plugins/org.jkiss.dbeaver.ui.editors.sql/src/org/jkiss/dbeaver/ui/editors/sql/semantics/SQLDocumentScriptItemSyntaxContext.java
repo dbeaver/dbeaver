@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 
-class SQLDocumentScriptItemSyntaxContext {
+public class SQLDocumentScriptItemSyntaxContext {
     public static class TokenEntryAtOffset {
         public final int offset;
         public final SQLQuerySymbolEntry entry;
@@ -33,10 +33,16 @@ class SQLDocumentScriptItemSyntaxContext {
     }
 
     private final OffsetKeyedTreeMap<SQLQuerySymbolEntry> entries = new OffsetKeyedTreeMap<>();
+    private final SQLQuerySelectionModel queryModel;
     private int length;
 
-    public SQLDocumentScriptItemSyntaxContext(int length) {
+    public SQLDocumentScriptItemSyntaxContext(SQLQuerySelectionModel queryModel, int length) {
+    	this.queryModel = queryModel;
         this.length = length;
+    }
+    
+    public SQLQuerySelectionModel getQueryModel() {
+    	return this.queryModel;
     }
 
     public int length() {

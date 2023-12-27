@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
@@ -29,14 +30,22 @@ import java.util.List;
  */
 public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetOperationModel {
     private final List<SQLQuerySymbolEntry> correspondingColumnNames;
+    private final SQLQueryRowsSetCorrespondingOperationKind kind;
     
     public SQLQueryRowsSetCorrespondingOperationModel(
+		@NotNull Interval range, 
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
-        @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames
+        @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames,
+        @NotNull SQLQueryRowsSetCorrespondingOperationKind kind
     ) {
-        super(left, right);
+        super(range, left, right);
         this.correspondingColumnNames = correspondingColumnNames;
+        this.kind = kind;
+    }
+    
+    public SQLQueryRowsSetCorrespondingOperationKind getKind() {
+    	return this.kind;
     }
 
     @NotNull
@@ -87,6 +96,11 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         }
 
         return correspondingColumnNames.isEmpty() ? left : context.overrideResultTuple(resultColumns); // TODO multiple definitions per symbol
+    }
+    
+    @Override
+    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+    	return visitor.visitRowsSetCorrespondingOp(this, arg);
     }
 }
 

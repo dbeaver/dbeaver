@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
@@ -29,26 +30,36 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     private final List<SQLQuerySymbolEntry> columsToJoin;
     
     public SQLQueryRowsNaturalJoinModel(
+		@NotNull Interval range, 
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable SQLQueryValueExpression condition
     ) {
-        super(left, right);
+        super(range, left, right);
         this.condition = condition;
         this.columsToJoin = null;
     }
     
     public SQLQueryRowsNaturalJoinModel(
-        @NotNull SQLQueryRowsSourceModel left,
+		@NotNull Interval range, 
+		@NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable List<SQLQuerySymbolEntry> columsToJoin
     ) {
-        super(left, right);
+        super(range, left, right);
         this.condition = null;
         this.columsToJoin = columsToJoin;
     }
+    
+    public @Nullable SQLQueryValueExpression getCondition() {
+		return condition;
+	}
 
-    @NotNull
+	public @Nullable List<SQLQuerySymbolEntry> getColumsToJoin() {
+		return columsToJoin;
+	}
+
+	@NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLQueryDataContext left = this.left.propagateContext(context, statistics);
@@ -77,5 +88,10 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
             this.condition.propagateContext(combinedContext, statistics);
         }
         return combinedContext;
+    }
+    
+    @Override
+    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+    	return visitor.visitRowsNaturalJoin(this, arg);
     }
 }

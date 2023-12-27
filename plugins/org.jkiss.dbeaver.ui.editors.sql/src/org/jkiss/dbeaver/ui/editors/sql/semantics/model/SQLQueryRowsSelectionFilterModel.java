@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
@@ -29,20 +30,42 @@ public class SQLQueryRowsSelectionFilterModel extends SQLQueryRowsSourceModel { 
     private final SQLQueryValueExpression orderByClause;
 
     public SQLQueryRowsSelectionFilterModel(
+		@NotNull Interval range, 
         @NotNull SQLQueryRowsSourceModel fromSource,
         @Nullable SQLQueryValueExpression whereClause,
         @Nullable SQLQueryValueExpression havingClause,
         @Nullable SQLQueryValueExpression groupByClause,
         @Nullable SQLQueryValueExpression orderByClause
     ) {
+    	super(range);
         this.fromSource = fromSource;
         this.whereClause = whereClause;
         this.havingClause = havingClause;
         this.groupByClause = groupByClause;
         this.orderByClause = orderByClause;
     }
+    
+    public SQLQueryRowsSourceModel getFromSource() {
+		return fromSource;
+	}
 
-    @NotNull
+    public SQLQueryValueExpression getWhereClause() {
+		return whereClause;
+	}
+
+	public SQLQueryValueExpression getHavingClause() {
+		return havingClause;
+	}
+
+	public SQLQueryValueExpression getGroupByClause() {
+		return groupByClause;
+	}
+
+	public SQLQueryValueExpression getOrderByClause() {
+		return orderByClause;
+	}
+
+	@NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLQueryDataContext result = fromSource.propagateContext(context, statistics);
@@ -62,4 +85,9 @@ public class SQLQueryRowsSelectionFilterModel extends SQLQueryRowsSourceModel { 
              
         return result;
     }
+    
+    @Override
+	protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+		return visitor.visitRowsSelectionFilter(this, arg);
+	}
 }

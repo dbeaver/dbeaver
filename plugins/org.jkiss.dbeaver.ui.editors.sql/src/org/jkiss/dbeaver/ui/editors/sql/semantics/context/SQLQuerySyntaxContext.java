@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -78,8 +79,8 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     }
     
     @Override
-    public SQLQueryRowsSourceModel getDefaultTable() {
-        return this.parent.getDefaultTable();
+    public SQLQueryRowsSourceModel getDefaultTable(Interval range) {
+        return this.parent.getDefaultTable(range);
     }
 }
 

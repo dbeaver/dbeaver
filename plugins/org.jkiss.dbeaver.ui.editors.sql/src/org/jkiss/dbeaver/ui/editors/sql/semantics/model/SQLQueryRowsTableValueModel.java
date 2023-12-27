@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
 
-    public SQLQueryRowsTableValueModel() {
+    public SQLQueryRowsTableValueModel(@NotNull Interval range) {
+    	super(range);
         // TODO
     }
     
@@ -32,4 +34,9 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
         // TODO
         return context;
     }    
+    
+    @Override
+    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+    	return visitor.visitRowsTableValue(this, arg);
+    }
 }

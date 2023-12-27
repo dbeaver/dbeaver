@@ -23,9 +23,24 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentScriptItemSyntaxContext.TokenEntryAtOffset;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
+
 public class SQLDocumentSyntaxContext {
+	
+	public interface SQLDocumentSyntaxContextListener {
+		void onScriptItemIntroduced(SQLDocumentScriptItemSyntaxContext item);
+		void onScriptItemInvalidated(SQLDocumentScriptItemSyntaxContext item);
+		void onAllScriptItemsInvalidated();
+	}
+	
     public static class ScriptItemAtOffset {
         public final int offset;
         public final SQLDocumentScriptItemSyntaxContext item;
@@ -37,6 +52,8 @@ public class SQLDocumentSyntaxContext {
     }
     
     private static final Log log = Log.getLog(SQLDocumentSyntaxContext.class);
+    
+    private final Set<SQLDocumentSyntaxContextListener> listeners = new HashSet<>();
     
     private final OffsetKeyedTreeMap<SQLDocumentScriptItemSyntaxContext> scriptItems = new OffsetKeyedTreeMap<>();
     
@@ -51,6 +68,29 @@ public class SQLDocumentSyntaxContext {
     public SQLDocumentSyntaxContext() {
     }
     
+    public void addListener(SQLDocumentSyntaxContextListener listener) {
+    	this.listeners.add(listener);
+    }
+    
+    public void removeListener(SQLDocumentSyntaxContextListener listener) {
+    	this.listeners.remove(listener);
+    }
+    
+    private void forEachListener(Consumer<SQLDocumentSyntaxContextListener> action) {
+    	for (SQLDocumentSyntaxContextListener listener: this.listeners) {
+    		action.accept(listener);
+    	}
+    }
+    
+    public List<ScriptItemAtOffset> getScriptItems() {
+    	List<ScriptItemAtOffset> result = new ArrayList<>();
+    	NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(Integer.MIN_VALUE);
+    	while (it.next()) {
+    		result.add(new ScriptItemAtOffset(it.getCurrOffset(), it.getCurrValue()));
+    	}
+    	return result;
+    }
+    
     public ScriptItemAtOffset findScriptItem(int offset) {
         if (offset == this.lastItemAccessOffset) {
             // found, do nothing
@@ -58,7 +98,7 @@ public class SQLDocumentSyntaxContext {
             offset < this.lastAccessedItemOffset + this.lastAccessedScriptItem.length()) {
             this.lastItemAccessOffset = offset;
         } else {
-            NodesIterator<SQLDocumentScriptItemSyntaxContext> it = scriptItems.nodesIteratorAt(offset);
+            NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(offset);
             SQLDocumentScriptItemSyntaxContext scriptItem = it.getCurrValue();
             int itemOffset = it.getCurrOffset();
             if (scriptItem == null && it.prev()) {
@@ -123,9 +163,10 @@ public class SQLDocumentSyntaxContext {
         this.lastAccessedScriptItem = null;
     }
     
-    public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(int offset, int length) {
-        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(length);
+    public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(SQLQuerySelectionModel queryModel, int offset, int length) {
+        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(queryModel, length);
         this.scriptItems.put(offset, scriptItem);
+        this.forEachListener(l -> l.onScriptItemIntroduced(scriptItem));
         return scriptItem;
     }
     
@@ -152,22 +193,25 @@ public class SQLDocumentSyntaxContext {
                 int lastAffectedOffset = currOffset;
                 if (currItem != null) {
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
+                    this.forEachListener(l -> l.onScriptItemInvalidated(currItem));
                     lastAffectedOffset = currOffset + currItem.length();
                 } else if (it.prev()) {
                     currOffset = it.getCurrOffset();
-                    currItem = it.getCurrValue();
-                    if  (currOffset <= offset && currOffset + currItem.length() > offset) {
-                        keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
-                        lastAffectedOffset = currOffset + currItem.length();
+                    SQLDocumentScriptItemSyntaxContext currItem2 = it.getCurrValue();
+                    if  (currOffset <= offset && currOffset + currItem2.length() > offset) {
+                    	keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
+                    	this.forEachListener(l -> l.onScriptItemInvalidated(currItem));
+                    	lastAffectedOffset = currOffset + currItem2.length();
                     }
                 } else {
                     lastAffectedOffset = offset + oldLength;
                 }
                 while (it.next() && (delta < 0 || lastAffectedOffset <= (offset + oldLength))) {
                     currOffset = it.getCurrOffset();
-                    currItem = it.getCurrValue();
+                    SQLDocumentScriptItemSyntaxContext currItem3 = it.getCurrValue();
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, currOffset);
-                    lastAffectedOffset = currOffset + currItem.length();
+                    this.forEachListener(l -> l.onScriptItemInvalidated(currItem3));
+                    lastAffectedOffset = currOffset + currItem3.length();
                 }
                 int firstAffectedOffset = 0;
                 for (ListNode<Integer> kn = keyOffsetsToRemove; kn != null; kn = kn.next) {
@@ -208,6 +252,7 @@ public class SQLDocumentSyntaxContext {
     }
 
     public void clear() {
+    	this.forEachListener(l -> l.onAllScriptItemsInvalidated());
         this.scriptItems.clear();
         this.resetLastAccessCache();
     }
@@ -223,9 +268,11 @@ public class SQLDocumentSyntaxContext {
         int off1 = it1.getCurrOffset();
         if (it1.getCurrValue() != null && off1 < rangeStart) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
+            this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }
         while (it1.next() && (off1 = it1.getCurrOffset()) < rangeStart) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
+            this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }
         int actualStart = it1.next() ? it1.getCurrOffset() : Integer.MAX_VALUE; 
 
@@ -233,9 +280,11 @@ public class SQLDocumentSyntaxContext {
         int off2 = it2.getCurrOffset();
         if (it2.getCurrValue() != null && off2 > rangeEnd) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off2);
+            this.forEachListener(l -> l.onScriptItemInvalidated(it2.getCurrValue()));
         }
         while (it2.prev() && (off2 = it2.getCurrOffset()) > rangeEnd) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off2);
+            this.forEachListener(l -> l.onScriptItemInvalidated(it2.getCurrValue()));
         }
         int actualEnd = it1.prev() ? it2.getCurrOffset() : 0; 
         

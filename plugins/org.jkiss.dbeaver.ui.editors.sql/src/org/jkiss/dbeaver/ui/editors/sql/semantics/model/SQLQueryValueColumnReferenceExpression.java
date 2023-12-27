@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
@@ -31,14 +32,20 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     private final SQLQueryQualifiedName tableName;
     private final SQLQuerySymbolEntry columnName;
 
-    public SQLQueryValueColumnReferenceExpression(@NotNull SQLQuerySymbolEntry columnName) {
+    public SQLQueryValueColumnReferenceExpression(@NotNull Interval range, @NotNull SQLQuerySymbolEntry columnName) {
+    	super(range);
         this.tableName = null;
         this.columnName = columnName;
     }
 
-    public SQLQueryValueColumnReferenceExpression(@NotNull SQLQueryQualifiedName tableName, @NotNull SQLQuerySymbolEntry columnName) {
+    public SQLQueryValueColumnReferenceExpression(@NotNull Interval range, @NotNull SQLQueryQualifiedName tableName, @NotNull SQLQuerySymbolEntry columnName) {
+    	super(range);
         this.tableName = tableName;
         this.columnName = columnName;
+    }
+    
+    public @Nullable SQLQueryQualifiedName getTableName() {
+    	return this.tableName;
     }
 
     @NotNull
@@ -73,5 +80,10 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             this.propagateColumnDefinition(context.resolveColumn(this.columnName.getName()), statistics);
         }
         // System.out.println(this.tableName + "." + this.columnName + " --> " + this.columnName.getDefinition());
+    }
+    
+    @Override
+    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+    	return visitor.visitValueColumnRefExpr(this, arg);
     }
 }

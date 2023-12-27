@@ -395,7 +395,7 @@ public class SQLBackgroundParsingJob {
                         if (DEBUG) {
                             log.debug("registering script item @" + element.getOffset() + "+" + element.getLength());
                         }
-                        SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(element.getOffset(), element.getLength());
+                        SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(queryModel, element.getOffset(), element.getLength());
                         itemContext.clear();
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);

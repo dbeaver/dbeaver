@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
@@ -75,5 +76,5 @@ public abstract class SQLQueryDataContext {
 
     public abstract SQLDialect getDialect();
 
-    public abstract SQLQueryRowsSourceModel getDefaultTable();
+    public abstract SQLQueryRowsSourceModel getDefaultTable(Interval range);
 }

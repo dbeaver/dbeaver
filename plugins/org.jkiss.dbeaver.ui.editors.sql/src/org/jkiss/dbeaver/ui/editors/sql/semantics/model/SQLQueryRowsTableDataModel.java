@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,7 +36,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     private final SQLQueryQualifiedName name;
     private DBSEntity table = null;
    
-    public SQLQueryRowsTableDataModel(@NotNull SQLQueryQualifiedName name) {
+    public SQLQueryRowsTableDataModel(@NotNull Interval range, @NotNull SQLQueryQualifiedName name) {
+    	super(range);
         this.name = name;
     }
 
@@ -91,5 +93,10 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
             statistics.appendError(this.name.entityName, "Table not found");
         }
         return context;
+    }
+    
+    @Override
+    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+    	return visitor.visitRowsTableData(this, arg);
     }
 }

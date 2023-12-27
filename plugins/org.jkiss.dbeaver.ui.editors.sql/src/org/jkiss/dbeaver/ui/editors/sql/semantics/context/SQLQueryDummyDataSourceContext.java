@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
@@ -406,14 +408,14 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public SQLQueryRowsSourceModel getDefaultTable() {
-        return new DummyTableRowsSource();
+    public SQLQueryRowsSourceModel getDefaultTable(Interval range) {
+        return new DummyTableRowsSource(range);
     }
     
-    private class DummyTableRowsSource extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
+    public class DummyTableRowsSource extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
         
-        public DummyTableRowsSource() {
-            super();
+        public DummyTableRowsSource(@NotNull Interval range) {
+            super(range);
         }
 
         @Override
@@ -428,6 +430,10 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return context;
         }
         
+        @Override
+        protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
+        	return visitor.visitDummyTableRowsSource(this, arg);
+        }
     }
     
 }
