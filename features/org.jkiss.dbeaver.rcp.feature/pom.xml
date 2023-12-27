@@ -13,38 +13,4 @@
     <version>3.0.0-SNAPSHOT</version>
     <packaging>eclipse-feature</packaging>
 
-    <build>
-        <plugins>
-            <!-- Tycho configuration -->
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>target-platform-configuration</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <filters>
-                        <!-- Limit JNA to version 4.5. Newer version added in E4 2021-03 and it leads to JNA dups. #12149 -->
-                        <filter>
-                            <type>eclipse-plugin</type>
-                            <id>com.sun.jna</id>
-                            <restrictTo>
-                                <type>eclipse-plugin</type>
-                                <id>com.sun.jna</id>
-                                <versionRange>[5.0.0, 6.0.0]</versionRange>
-                            </restrictTo>
-                        </filter>
-                        <filter>
-                            <type>eclipse-plugin</type>
-                            <id>com.sun.jna.platform</id>
-                            <restrictTo>
-                                <type>eclipse-plugin</type>
-                                <id>com.sun.jna.platform</id>
-                                <versionRange>[5.0.0, 6.0.0]</versionRange>
-                            </restrictTo>
-                        </filter>
-                    </filters>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

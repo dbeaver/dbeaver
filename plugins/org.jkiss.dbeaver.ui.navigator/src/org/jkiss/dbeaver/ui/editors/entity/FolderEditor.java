@@ -65,7 +65,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
         DBNNode rootNode = getRootNode();
-        history.add(rootNode.getNodeItemPath());
+        history.add(rootNode.getNodeUri());
     }
 
     @Override
@@ -95,7 +95,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         if (input != null) {
             final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
             setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
-            setPartName(navigatorNode.getNodeName());
+            setPartName(navigatorNode.getNodeDisplayName());
         }
     }
 
@@ -234,7 +234,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                     }
                 }
                 historyPosition++;
-                history.add(node.getNodeItemPath());
+                history.add(node.getNodeUri());
                 changeCurrentNode(node);
             } else {
                 super.openNodeEditor(node);
@@ -248,7 +248,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
             }
             setRootNode(node);
             loadData();
-            setPartName(node.getNodeName());
+            setPartName(node.getNodeDisplayName());
             setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
             updateActions();
 

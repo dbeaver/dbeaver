@@ -394,7 +394,7 @@ public class SearchDataPage extends AbstractSearchPage {
                     if (sourcesString.length() > 0) {
                         sourcesString.append("|"); //$NON-NLS-1$
                     }
-                    sourcesString.append(((DBNDatabaseNode) node).getNodeItemPath());
+                    sourcesString.append(((DBNDatabaseNode) node).getNodeUri());
                 }
             }
         }

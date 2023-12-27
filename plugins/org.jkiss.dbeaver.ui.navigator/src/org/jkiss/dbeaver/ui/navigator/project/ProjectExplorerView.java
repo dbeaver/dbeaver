@@ -334,7 +334,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     }
 
     private void updateTitle() {
-        setPartName("Project - " + getRootNode().getNodeName());
+        setPartName("Project - " + getRootNode().getNodeDisplayName());
     }
 
     public void configureView() {

@@ -75,7 +75,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
             UIExecutionQueue.queueExec(() -> {
                 try {
                     DBNNode node = getNodeFromSecondaryId(secondaryId);
-                    setPartName(node.getNodeName());
+                    setPartName(node.getNodeDisplayName());
                     setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                 } catch (DBException e) {
                     // ignore
@@ -93,10 +93,10 @@ public class DatabaseBrowserView extends NavigatorViewBase {
             }
         }
         if (project == null) {
-            throw new IllegalStateException("Navigator node " + node.getNodeItemPath() + " doesn't belong to a project");
+            throw new IllegalStateException("Navigator node " + node.getNodeUri() + " doesn't belong to a project");
         }
         // We can't use colon in secondary ID
-        return project.getName() + "|" + node.getNodeItemPath().replace(":", "~");
+        return project.getName() + "|" + node.getNodeUri().replace(":", "~");
     }
 
     public static DBNNode getNodeFromSecondaryId(String id) throws DBException {

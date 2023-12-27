@@ -150,12 +150,13 @@
                         </folder>
                     </items>
                 </folder>
-                <folder label="%tree.security.node.name" icon="#security" description="Security management">
+                <folder label="%tree.security.node.name" icon="#security" id="securityManagement" description="Security management">
                     <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin" label="%tree.logins.node.name" icon="#folder_user" description="Logins">
                         <items label="%tree.login.node.name" path="logins" property="logins" icon="#user"/>
                     </folder>
                 </folder>
-                <folder label="%tree.administer.node.name" icon="#folder_admin" description="tree.administer.node.description">
+                <folder label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin"
+                        description="tree.administer.node.description">
                     <treeContribution category="connectionEditor"/>
                 </folder>
             </tree>
@@ -182,8 +183,8 @@
                     <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
                     <replace provider="mssql" driver="mssql_jdbc_legacy"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[9.2.0.jre8]" bundle="!drivers.mssql.new"/>
-                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[9.2.0.x64]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[12.4.1.jre11]" bundle="!drivers.mssql.new"/>
+                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[12.4.1.x64]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
                     <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
 
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>

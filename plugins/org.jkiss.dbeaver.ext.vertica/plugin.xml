@@ -97,7 +97,7 @@
                         </folder>
                     </items>
                 </folder>
-                <folder label="%tree.admin.node.name" icon="#folder_admin" description="%tree.admin.node.description">
+                <folder label="%tree.admin.node.name" icon="#folder_admin" id="folderAdmin" description="%tree.admin.node.description">
                     <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
                         <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                     </folder>

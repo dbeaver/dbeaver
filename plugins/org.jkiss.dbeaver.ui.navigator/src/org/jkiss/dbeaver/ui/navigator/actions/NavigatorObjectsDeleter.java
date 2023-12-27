@@ -173,13 +173,13 @@ public class NavigatorObjectsDeleter {
                             break;
                         }
                         if (obj instanceof DBNDatabaseNode) {
-                            dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeName() + "'");
+                            dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeDisplayName() + "'");
                             UIUtils.asyncExec(() -> deleteDatabaseNode((DBNDatabaseNode)obj));
                         } else if (obj instanceof DBNNodeWithResource) {
                             dbrMonitor.subTask("Delete resource '" + ((DBNNodeWithResource) obj).getResource().getName() + "'");
                             deleteResource(dbrMonitor, ((DBNNodeWithResource) obj).getResource());
                         } else if (obj instanceof DBNLocalFolder) {
-                            dbrMonitor.subTask("Delete folder '" + ((DBNLocalFolder) obj).getNodeName() + "'");
+                            dbrMonitor.subTask("Delete folder '" + ((DBNLocalFolder) obj).getNodeDisplayName() + "'");
                             deleteLocalFolder((DBNLocalFolder) obj);
                         } else {
                             log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -238,7 +238,8 @@ public class NavigatorObjectsDeleter {
             }
             final DBSObject object = node.getObject();
             if (object == null) {
-                throw new DBException("Can't delete node with null object (" + node.getClass().getSimpleName() + ":" + node.getNodeName() + ")");
+                throw new DBException("Can't delete node with null object (" + node.getClass()
+                    .getSimpleName() + ":" + node.getNodeDisplayName() + ")");
             }
             final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
@@ -281,7 +282,8 @@ public class NavigatorObjectsDeleter {
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.actions_navigator_error_dialog_delete_object_title,
-                    NLS.bind(UINavigatorMessages.actions_navigator_error_dialog_delete_object_message, node.getNodeName()),
+                NLS.bind(UINavigatorMessages.actions_navigator_error_dialog_delete_object_message,
+                    node.getNodeDisplayName()),
                     e
             );
         }
