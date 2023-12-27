@@ -26,7 +26,7 @@ public class SQLDocumentScriptItemSyntaxContext {
         public final int offset;
         public final SQLQuerySymbolEntry entry;
 
-        public TokenEntryAtOffset(int offset, SQLQuerySymbolEntry entry) {
+        public TokenEntryAtOffset(int offset, @NotNull SQLQuerySymbolEntry entry) {
             this.offset = offset;
             this.entry = entry;
         }
@@ -36,13 +36,14 @@ public class SQLDocumentScriptItemSyntaxContext {
     private final SQLQuerySelectionModel queryModel;
     private int length;
 
-    public SQLDocumentScriptItemSyntaxContext(SQLQuerySelectionModel queryModel, int length) {
-    	this.queryModel = queryModel;
+    public SQLDocumentScriptItemSyntaxContext(@NotNull SQLQuerySelectionModel queryModel, int length) {
+        this.queryModel = queryModel;
         this.length = length;
     }
-    
+
+    @NotNull
     public SQLQuerySelectionModel getQueryModel() {
-    	return this.queryModel;
+        return this.queryModel;
     }
 
     public int length() {

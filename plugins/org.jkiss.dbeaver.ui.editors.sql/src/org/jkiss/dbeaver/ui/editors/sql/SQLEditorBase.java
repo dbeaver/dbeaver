@@ -630,16 +630,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (ITemplatesPage.class.equals(required)) {
             return (T) getTemplatesPage();
         } else if (IContentOutlinePage.class.equals(required)) {
-        	return (T) getOverviewOutlinePage();
+            return (T) getOverviewOutlinePage();
         }
     
         return super.getAdapter(required);
     }
     
     private SQLEditorOutlinePage outlinePage;
-    
+
+    @NotNull
     private IContentOutlinePage getOverviewOutlinePage() {
-    	if ((null == outlinePage || outlinePage.getControl().isDisposed()) && this.getSyntaxContext() != null) {
+        if ((null == outlinePage || outlinePage.getControl().isDisposed()) && this.getSyntaxContext() != null) {
             outlinePage = new SQLEditorOutlinePage(this);
         }
         return outlinePage;
