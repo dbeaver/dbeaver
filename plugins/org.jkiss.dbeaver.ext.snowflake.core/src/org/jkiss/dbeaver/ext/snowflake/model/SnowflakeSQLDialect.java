@@ -71,12 +71,17 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
     @Override
     public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
+            boolean useDollarQuoteRule = dataSource == null ||
+                CommonUtils.getBoolean(
+                    dataSource.getConnectionConfiguration().getProviderProperty(SnowflakeConstants.PROP_DD_STRING),
+                    dataSource.getPreferenceStore().getBoolean(SnowflakeConstants.PROP_DD_STRING) // backward compatibility
+                );
             return new TPRule[] {
                 new SQLDollarQuoteRule(
                     position == RulePosition.PARTITION,
                     false,
                     false,
-                    dataSource == null || dataSource.getPreferenceStore().getBoolean(SnowflakeConstants.PROP_DD_STRING)
+                    useDollarQuoteRule
                 )
             };
         }

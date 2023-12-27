@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
 /**
@@ -24,8 +25,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
  */
 public interface DBPObjectStatistics {
 
+    @DPIElement(objectState = true)
     boolean hasStatistics();
 
+    @DPIElement(objectState = true)
     long getStatObjectSize();
 
     @Nullable

@@ -17,14 +17,16 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+
 /**
  * Virtual object.
  * Object which doesn't exist in database but exist on client side.
  * Virtual schemas can be created for some drivers (e.g. Phoenix)
  */
-public interface DBPVirtualObject
-{
+public interface DBPVirtualObject {
 
+    @DPIElement(cache = true)
     boolean isVirtual();
 
 }

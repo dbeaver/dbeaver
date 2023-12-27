@@ -65,7 +65,6 @@ public class GeneralUtils {
 
     public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
-    public static final Charset ASCII_CHARSET = StandardCharsets.US_ASCII;
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
@@ -78,7 +77,7 @@ public class GeneralUtils {
         '8', '9', 'a', 'b',
         'c', 'd', 'e', 'f'
     };
-    
+
     public static final String PROP_TRUST_STORE = "javax.net.ssl.trustStore"; //$NON-NLS-1$
     public static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
     public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
@@ -91,7 +90,8 @@ public class GeneralUtils {
         }
     }
 
-    private static final Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)(\\:[^\\$\\{\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VAR_PATTERN = Pattern.compile(
+        "(\\$\\{([\\w\\.\\-]+)(\\:[^\\$\\{\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
 
     /**
      * Default encoding (UTF-8)
@@ -117,12 +117,6 @@ public class GeneralUtils {
 
     public static String getDefaultLineSeparator() {
         return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
-    }
-
-    public static void writeByteAsHex(Writer out, byte b) throws IOException {
-        int v = b & 0xFF;
-        out.write(HEX_CHAR_TABLE[v >>> 4]);
-        out.write(HEX_CHAR_TABLE[v & 0xF]);
     }
 
     public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException {
@@ -421,7 +415,7 @@ public class GeneralUtils {
     }
 
     public interface IParameterHandler {
-        boolean setParameter(String name, String  value);
+        boolean setParameter(String name, String value);
     }
 
     public static class MapResolver implements IVariableResolver {
@@ -438,13 +432,6 @@ public class GeneralUtils {
         }
     }
 
-    public static String replaceSystemEnvironmentVariables(String string) {
-        if (string == null) {
-            return null;
-        }
-        return replaceVariables(string, System::getenv);
-    }
-
     public static String replaceSystemPropertyVariables(String string) {
         if (string == null) {
             return null;
@@ -457,7 +444,6 @@ public class GeneralUtils {
         return "${" + name + "}";
     }
 
-    @NotNull
     public static boolean isVariablePattern(String pattern) {
         return pattern.startsWith("${") && pattern.endsWith("}");
     }
@@ -490,7 +476,7 @@ public class GeneralUtils {
         }
         return null;
     }
-    
+
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
         return replaceVariables(string, resolver, false);
@@ -510,9 +496,9 @@ public class GeneralUtils {
                 pos = matcher.end();
                 String matchedName = matcher.group(2);
                 String varName = isUpperCaseVarName ? matchedName.toUpperCase(Locale.ENGLISH) : matchedName;
-                String varValue = null;
+                String varValue;
                 if (resolvedVars != null) {
-                    varValue = resolvedVars.get(varName); 
+                    varValue = resolvedVars.get(varName);
                     if (varValue != null) {
                         string = substituteVariable(string, matcher, varValue);
                         matcher = VAR_PATTERN.matcher(string);
@@ -752,9 +738,7 @@ public class GeneralUtils {
             return adapter.cast(sourceObject);
         }
 
-        if (sourceObject instanceof IAdaptable) {
-            IAdaptable adaptable = (IAdaptable) sourceObject;
-
+        if (sourceObject instanceof IAdaptable adaptable) {
             T result = adaptable.getAdapter(adapter);
             if (result != null) {
                 // Sanity-check
@@ -824,12 +808,12 @@ public class GeneralUtils {
     public static UUID getMixedEndianUUIDFromBytes(byte[] bytes) {
         ByteBuffer source = ByteBuffer.wrap(bytes);
         ByteBuffer target = ByteBuffer.allocate(16).
-                order(ByteOrder.LITTLE_ENDIAN).
-                putInt(source.getInt()).
-                putShort(source.getShort()).
-                putShort(source.getShort()).
-                order(ByteOrder.BIG_ENDIAN).
-                putLong(source.getLong());
+            order(ByteOrder.LITTLE_ENDIAN).
+            putInt(source.getInt()).
+            putShort(source.getShort()).
+            putShort(source.getShort()).
+            order(ByteOrder.BIG_ENDIAN).
+            putLong(source.getLong());
         target.rewind();
         return new UUID(target.getLong(), target.getLong());
     }

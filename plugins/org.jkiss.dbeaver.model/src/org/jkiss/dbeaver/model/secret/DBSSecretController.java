@@ -42,17 +42,17 @@ public interface DBSSecretController {
     void flushChanges() throws DBException;
 
     @NotNull
-    static DBSSecretController getProjectSecretController(DBPProject project) {
+    static DBSSecretController getProjectSecretController(DBPProject project) throws DBException {
         return getSessionSecretController(project.getWorkspaceSession());
     }
 
     @NotNull
-    static DBSSecretController getGlobalSecretController() {
+    static DBSSecretController getGlobalSecretController() throws DBException {
         return getSessionSecretController(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
     }
 
     @NotNull
-    static DBSSecretController getSessionSecretController(SMSession spaceSession) {
+    static DBSSecretController getSessionSecretController(SMSession spaceSession) throws DBException {
         SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
         if (secretKeeper != null) {
             DBSSecretController secretController = secretKeeper.getSecretController();

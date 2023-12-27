@@ -123,7 +123,7 @@ public class ClientHomesSelector implements ISelectionProvider {
 
         Map<String, DBPNativeClientLocation> homes = new LinkedHashMap<>();
 
-        AbstractJob hlJob = new AbstractJob("Find native client homes") {
+        AbstractJob hlJob = new AbstractJob("Find local client homes") {
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {

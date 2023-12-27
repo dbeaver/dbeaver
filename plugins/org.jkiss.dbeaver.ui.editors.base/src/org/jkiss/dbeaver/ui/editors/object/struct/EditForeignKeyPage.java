@@ -174,7 +174,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         if (ownerTableNode != null) {
             setImageDescriptor(DBeaverIcons.getImageDescriptor(ownerTableNode.getNodeIcon()));
-            setTitle(title + " | " + NLS.bind(EditorsMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
+            setTitle(title + " | " + NLS.bind(EditorsMessages.dialog_struct_edit_fk_title,
+                title,
+                ownerTableNode.getNodeDisplayName()));
         }
 
         if (!(foreignKey.getParentObject() instanceof DBVEntity)) {
@@ -445,7 +447,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
                 @Override
                 public String getText(Object element) {
-                    return ((DBNDatabaseNode) element).getNodeName();
+                    return ((DBNDatabaseNode) element).getNodeDisplayName();
                 }
             };
 
@@ -589,7 +591,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         for (DBNDatabaseNode entityNode : entities) {
             TableItem tableItem = new TableItem(tableList, SWT.LEFT);
-            tableItem.setText(entityNode.getNodeName());
+            tableItem.setText(entityNode.getNodeDisplayName());
             tableItem.setImage(DBeaverIcons.getImage(entityNode.getNodeIconDefault()));
             tableItem.setData(entityNode);
         }

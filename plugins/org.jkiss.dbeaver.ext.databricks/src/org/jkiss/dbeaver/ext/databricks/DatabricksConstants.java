@@ -22,4 +22,7 @@ public class DatabricksConstants {
     public static final String PROP_CREATED_TIME = "Created Time";
     public static final String PROP_TABLE_PROPERTIES = "Table Properties";
     public static final String PROP_STORAGE_PROPERTIES = "Storage Properties";
+    public static final String DRIVER_CLASS_LEGACY = "com.simba.spark.jdbc.Driver";
+    public static final String JDBC_LEGACY_URL_SUBPROTOCOL = "jdbc:spark://";
+
 }

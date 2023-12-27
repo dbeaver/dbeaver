@@ -37,9 +37,8 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialectInsertReplaceMethod;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodRegistry;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
@@ -435,7 +434,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (onDuplicateKeyCaseOn) {
                     String insertMethodId = settings.getOnDuplicateKeyInsertMethodId();
                     if (!CommonUtils.isEmpty(insertMethodId)) {
-                        SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                        SQLDialectInsertReplaceMethod insertReplaceMethod =
+                            DBWorkbench.getPlatform().getSQLDialectRegistry().getInsertReplaceMethod(insertMethodId);
                         if (insertReplaceMethod != null) {
                             try {
                                 DBDInsertReplaceMethod insertMethod = insertReplaceMethod.createInsertMethod();

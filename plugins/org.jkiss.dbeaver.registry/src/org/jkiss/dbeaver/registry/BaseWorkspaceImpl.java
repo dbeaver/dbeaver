@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
@@ -290,7 +291,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     private static String getLocalHostId() {
         // Here we get local machine identifier. It is hashed and thus depersonalized
         try {
-            InetAddress localHost = InetAddress.getLocalHost();
+            InetAddress localHost = RuntimeUtils.getLocalHostOrLoopback();
             NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
             if (ni == null || ni.getHardwareAddress() == null) {
                 Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();

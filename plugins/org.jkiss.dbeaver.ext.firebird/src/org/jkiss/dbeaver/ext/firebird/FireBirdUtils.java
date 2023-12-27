@@ -17,15 +17,13 @@
 
 package org.jkiss.dbeaver.ext.firebird;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedureParameter;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTrigger;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTriggerType;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -193,11 +191,7 @@ public class FireBirdUtils {
                 sql.append("RETURNS ");
                 if (isFunction) {
                     GenericProcedureParameter param = results.get(0); // According Firebird documentation, functions return just one data type without parameter name
-                    sql.append(param.getTypeName());
-                    String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
-                    if (typeModifiers != null) {
-                        sql.append(typeModifiers);
-                    }
+                    addProcedureType(sql, param);
                     sql.append("\n");
                 } else {
                     sql.append("(\n");
@@ -230,11 +224,7 @@ public class FireBirdUtils {
             sql.append(paramsJoiner.toString());
             return;
         }
-        sql.append(param.getTypeName());
-        String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
-        if (typeModifiers != null) {
-            sql.append(typeModifiers);
-        }
+        addProcedureType(sql, param);
         boolean notNull = param.isRequired();
         if (notNull) {
             sql.append(" NOT NULL");
@@ -243,6 +233,25 @@ public class FireBirdUtils {
             String defaultValue = ((FireBirdProcedureParameter) param).getDefaultValue();
             if (!CommonUtils.isEmpty(defaultValue)) {
                 sql.append(" ").append(defaultValue);
+            }
+        }
+    }
+
+    private static void addProcedureType(@NotNull StringBuilder sql, @NotNull GenericProcedureParameter param) {
+        GenericDataSource dataSource = param.getDataSource();
+        if ((param instanceof FireBirdProcedureParameter par) &&
+                CommonUtils.isNotEmpty(par.getFieldName()) && CommonUtils.isNotEmpty(par.getRelationName())
+        ) {
+            // We need to use link on the original column syntax here instead of the real type name and modification
+            sql.append(" TYPE OF COLUMN ")
+                    .append(DBUtils.getQuotedIdentifier(dataSource, par.getRelationName()))
+                    .append(".")
+                    .append(DBUtils.getQuotedIdentifier(dataSource, par.getFieldName()));
+        } else {
+            sql.append(param.getTypeName());
+            String typeModifiers = SQLUtils.getColumnTypeModifiers(dataSource, param, param.getTypeName(), param.getDataKind());
+            if (typeModifiers != null) {
+                sql.append(typeModifiers);
             }
         }
     }

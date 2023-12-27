@@ -107,6 +107,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
                             ERDEntityAttribute erdTargetAttr = ERDUtils.getAttributeByModel(targetEntity, targetAttr);
                             if (erdSourceAttr != null || erdTargetAttr != null) {
                                 addCondition(erdSourceAttr, erdTargetAttr);
+                            } else {
+                                log.error("Error resolving ERD association attributes (source/target attribute is null)");
                             }
                         }
                     }

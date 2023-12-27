@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.controls.imageview.AbstractImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageViewer;
@@ -45,10 +46,9 @@ public class ImagePanelEditor implements IStreamValueEditorPersistent<AbstractIm
 
     @Override
     public AbstractImageViewer createControl(IValueController valueController) {
-        DBPPreferenceStore preferenceStore = valueController.getExecutionContext()
-            .getDataSource()
-            .getContainer()
-            .getPreferenceStore();
+        final DBPPreferenceStore preferenceStore = valueController.getExecutionContext() != null
+            ? valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore()
+            : DBWorkbench.getPlatform().getPreferenceStore();
         if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
             return new BrowserImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
         } else {
@@ -97,11 +97,6 @@ public class ImagePanelEditor implements IStreamValueEditorPersistent<AbstractIm
 
     @Override
     public void contributeSettings(@NotNull IContributionManager manager, @NotNull AbstractImageViewer control) throws DBCException {
-
-    }
-
-    @Override
-    public void disposeEditor() {
 
     }
 

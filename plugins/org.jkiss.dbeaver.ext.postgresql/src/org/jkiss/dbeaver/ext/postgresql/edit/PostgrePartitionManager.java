@@ -79,7 +79,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
 
     @Override
     protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
-        return !(command.getObject() instanceof PostgreTableConstraint);
+        return !(command.getObject() instanceof PostgreTableConstraint) && !(command.getObject() instanceof PostgreIndex);
     }
 
     @Override

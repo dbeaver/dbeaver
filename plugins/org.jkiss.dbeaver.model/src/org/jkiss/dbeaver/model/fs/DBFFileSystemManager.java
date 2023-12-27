@@ -50,7 +50,7 @@ public class DBFFileSystemManager implements DBFEventListener {
         DBFEventManager.getInstance().addListener(this);
     }
 
-    public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
+    public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (dbfFileSystems != null) {
             for (DBFVirtualFileSystem fs : dbfFileSystems.values()) {
                 try {
@@ -60,14 +60,15 @@ public class DBFFileSystemManager implements DBFEventListener {
                 }
             }
         }
-        this.dbfFileSystems = new LinkedHashMap<>();
+        Map<String, DBFVirtualFileSystem> fsList = new LinkedHashMap<>();
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
             var fsProvider = fileSystemProviderDescriptor.getInstance();
             for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, project)) {
-                dbfFileSystems.put(dbfFileSystem.getId(), dbfFileSystem);
+                fsList.put(dbfFileSystem.getId(), dbfFileSystem);
             }
         }
+        dbfFileSystems = fsList;
     }
 
     @NotNull
@@ -105,7 +106,7 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     @NotNull
-    public synchronized Collection<DBFVirtualFileSystem> getVirtualFileSystems() {
+    public synchronized Collection<DBFVirtualFileSystem> getVirtualFileSystems() throws DBException {
         if (dbfFileSystems == null) {
             reloadFileSystems(new LoggingProgressMonitor());
         }
@@ -114,7 +115,11 @@ public class DBFFileSystemManager implements DBFEventListener {
 
     @Override
     public void handleFSEvent() {
-        reloadFileSystems(new LoggingProgressMonitor());
+        try {
+            reloadFileSystems(new LoggingProgressMonitor());
+        } catch (DBException e) {
+            log.error(e);
+        }
     }
 
     public void close() {

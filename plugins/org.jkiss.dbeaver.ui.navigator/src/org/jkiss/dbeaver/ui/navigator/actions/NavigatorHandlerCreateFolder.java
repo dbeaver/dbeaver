@@ -108,7 +108,7 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
                 newFolder.create(true, true, new NullProgressMonitor());
             }
         } catch (CoreException e) {
-            throw new DBException("Can't create new folder", e);
+            throw new DBException("Can't create new folder: " + e.getMessage(), e);
         }
     }
 }

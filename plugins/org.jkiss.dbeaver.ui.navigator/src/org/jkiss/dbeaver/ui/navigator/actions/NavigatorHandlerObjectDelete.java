@@ -165,7 +165,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             String confirmMessage;
             if (dependentObjectsListNodes.size() == 1) {
                 DBNDatabaseNode node = (DBNDatabaseNode) dependentObjectsListNodes.get(0);
-                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_one_object, node.getNodeTypeLabel(), node.getNodeName());
+                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_one_object,
+                    node.getNodeTypeLabel(),
+                    node.getNodeDisplayName());
             } else {
                 confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_objects, dependentObjectsListNodes.size());
             }

@@ -63,7 +63,9 @@ public class DBNBookmarkFolder extends DBNResource {
     public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDatabaseNode) {
-                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+                    node.getNodeDisplayName(),
+                    (IFolder) getResource());
             } else if (node instanceof DBNBookmark) {
                 super.dropNodes(monitor, Collections.singleton(node));
             }
@@ -79,7 +81,9 @@ public class DBNBookmarkFolder extends DBNResource {
     public void pasteNodes(@NotNull Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDatabaseNode) {
-                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+                    node.getNodeDisplayName(),
+                    (IFolder) getResource());
             }
         }
     }

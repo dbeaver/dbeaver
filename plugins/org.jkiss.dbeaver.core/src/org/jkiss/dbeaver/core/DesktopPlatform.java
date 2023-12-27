@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,48 +82,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     private DBACertificateStorage certificateStorage;
     private DBPPlatformLanguage language;
 
-    private static boolean disposed = false;
-
-    public static DesktopPlatform getInstance() {
-        if (instance == null) {
-            synchronized (DesktopPlatform.class) {
-                if (disposed) {
-                    throw new IllegalStateException("DBeaver core already disposed");
-                }
-                if (instance == null) {
-                    // Initialize DBeaver Core
-                    DesktopPlatform.createInstance();
-                }
-            }
-        }
-        return instance;
-    }
-
-    private static DesktopPlatform createInstance() {
-        log.debug("Initializing " + GeneralUtils.getProductTitle());
-        if (Platform.getProduct() != null) {
-            Bundle definingBundle = Platform.getProduct().getDefiningBundle();
-            if (definingBundle != null) {
-                log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
-            } else {
-                log.debug("No product bundle found");
-            }
-        }
-
-        try {
-            instance = new DesktopPlatform();
-            instance.initialize();
-            return instance;
-        } catch (Throwable e) {
-            log.error("Error initializing desktop platform", e);
-            throw new IllegalStateException("Error initializing desktop platform", e);
-        }
-    }
-
-    public static String getCorePluginID() {
-        return DBeaverActivator.getInstance().getBundle().getSymbolicName();
-    }
-
     public static boolean isStandalone() {
         return BaseApplicationImpl.getInstance().isStandalone();
     }
@@ -147,7 +104,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         return DBeaverActivator.getInstance().getPreferences();
     }
 
-    private DesktopPlatform() {
+    public DesktopPlatform() {
+        instance = this;
     }
 
     protected void initialize() {
@@ -233,7 +191,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         }
 
         DesktopPlatform.instance = null;
-        DesktopPlatform.disposed = true;
         System.gc();
         log.debug("Platform shutdown completed (" + (System.currentTimeMillis() - startTime) + "ms)");
         // Just in case do System.eis after pause

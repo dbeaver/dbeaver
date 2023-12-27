@@ -21,7 +21,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 public class DatabricksDataSource extends GenericDataSource {
 
@@ -34,5 +36,19 @@ public class DatabricksDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new DatabricksSQLDialect());
     }
 
+
+    @Override
+    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        String url = super.getConnectionURL(connectionInfo);
+        if (!isLegacyDriver() && url.startsWith(DatabricksConstants.JDBC_LEGACY_URL_SUBPROTOCOL)) {
+            log.debug("Detected a legacy connection URL in the Databricks native driver. Updating to the native URL.");
+            url = url.replaceFirst(DatabricksConstants.JDBC_LEGACY_URL_SUBPROTOCOL, "jdbc:databricks://");
+        }
+        return url;
+    }
+
+    private boolean isLegacyDriver() {
+        return CommonUtils.equalObjects(DatabricksConstants.DRIVER_CLASS_LEGACY, getContainer().getDriver().getDriverClassName());
+    }
 
 }

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -56,7 +57,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
     private static final Log log = Log.getLog(PrefPageNetworkProfiles.class);
 
-    protected abstract DBSSecretController getSecretController();
+    protected abstract DBSSecretController getSecretController() throws DBException;
     protected abstract List<DBWNetworkProfile> getDefaultNetworkProfiles();
     protected abstract void updateNetworkProfiles(List<DBWNetworkProfile> allProfiles);
     protected abstract DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile);
@@ -388,7 +389,13 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
         profilesTable.removeAll();
         {
-            DBSSecretController secretController = getSecretController();
+            DBSSecretController secretController;
+            try {
+                secretController = getSecretController();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("No secret controller", null, e);
+                return;
+            }
 
             for (DBWNetworkProfile profile : getDefaultNetworkProfiles()) {
                 if (secretController != null) {

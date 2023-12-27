@@ -330,14 +330,6 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
-    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
-        if (table instanceof RedshiftTable) {
-            return new RedshiftTableColumn(monitor, (RedshiftTable)table, dbResult);
-        }
-        return super.createTableColumn(monitor, schema, table, dbResult);
-    }
-
-    @Override
     public boolean supportsStoredProcedures() {
         return isRedshiftVersionAtLeast(1, 0, 7562);
     }

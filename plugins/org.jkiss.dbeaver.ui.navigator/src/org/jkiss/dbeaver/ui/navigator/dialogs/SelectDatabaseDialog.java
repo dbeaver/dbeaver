@@ -147,8 +147,8 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
             selectedInstances.clear();
             selectedInstances.addAll(selection.toList());
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.get(0);
-            if (instance != null && !CommonUtils.equalObjects(instance.getNodeName(), currentInstanceName)) {
-                currentInstanceName = instance.getNodeName();
+            if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
+                currentInstanceName = instance.getNodeDisplayName();
                 objectList.loadData();
             }
         });

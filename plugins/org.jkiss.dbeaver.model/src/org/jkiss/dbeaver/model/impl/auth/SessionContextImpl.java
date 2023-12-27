@@ -112,7 +112,7 @@ public class SessionContextImpl implements SMSessionContext {
         }
     }
 
-    public void close() {
+    public void clear() {
         this.sessions.clear();
     }
 

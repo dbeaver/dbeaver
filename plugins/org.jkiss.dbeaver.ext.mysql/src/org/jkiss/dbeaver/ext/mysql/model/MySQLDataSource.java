@@ -110,6 +110,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 } else {
                     return 255;
                 }
+            case DBPDataSource.FEATURE_LIMIT_AFFECTS_DML:
+                return true;
         }
         return super.getDataSourceFeature(featureId);
     }

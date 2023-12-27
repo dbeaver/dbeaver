@@ -17,16 +17,18 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+
 /**
  * Object with long unique ID
  */
-public interface DBPObjectWithLongId extends DBPObject
-{
+public interface DBPObjectWithLongId extends DBPObject {
     /**
      * Object unique ID.
      * ID may be unique withn object parent or within whole database - it depends on particular object type.
      * Usually uniqueness has the same rules as for DBPNamedObject
      */
+    @DPIElement
     long getObjectId();
 
 }

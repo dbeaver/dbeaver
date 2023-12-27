@@ -673,8 +673,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
                 "    TABNAME,\n" +
                 "    SUM(DATA_OBJECT_P_SIZE + INDEX_OBJECT_P_SIZE + LONG_OBJECT_P_SIZE + LOB_OBJECT_P_SIZE + XML_OBJECT_P_SIZE) AS TOTAL_SIZE_IN_KB\n" +
-                "FROM SYSIBMADM.ADMINTABINFO\n" +
-                "WHERE TABSCHEMA=?\n" +
+                "FROM TABLE(ADMIN_GET_TAB_INFO(?,''))\n" +
                 "GROUP BY TABNAME")) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

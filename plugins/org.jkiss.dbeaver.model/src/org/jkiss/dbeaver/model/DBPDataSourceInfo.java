@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.osgi.framework.Version;
 

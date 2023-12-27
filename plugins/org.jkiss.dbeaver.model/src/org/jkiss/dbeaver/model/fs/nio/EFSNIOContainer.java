@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -113,7 +112,7 @@ public abstract class EFSNIOContainer extends EFSNIOResource implements IContain
                     }
                 });
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
 

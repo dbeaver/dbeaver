@@ -39,7 +39,7 @@ public abstract class JDBCTableForeignKey<
     implements DBSTableForeignKey
 {
     @Nullable
-    protected PRIMARY_KEY referencedKey;
+    protected PRIMARY_KEY referencedConstraint;
     protected DBSForeignKeyModifyRule deleteRule;
     protected DBSForeignKeyModifyRule updateRule;
 
@@ -47,13 +47,13 @@ public abstract class JDBCTableForeignKey<
         @NotNull TABLE table,
         @NotNull String name,
         @Nullable String description,
-        @Nullable PRIMARY_KEY referencedKey,
+        @Nullable PRIMARY_KEY referencedConstraint,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         boolean persisted)
     {
         super(table, name, description, DBSEntityConstraintType.FOREIGN_KEY, persisted);
-        this.referencedKey = referencedKey;
+        this.referencedConstraint = referencedConstraint;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;
     }
@@ -71,15 +71,15 @@ public abstract class JDBCTableForeignKey<
             if (refEntity != null) {
                 if (srcRefConstraint instanceof JDBCTableConstraint && refEntity.getParentObject() == table.getParentObject()) {
                     // Referenced object in the same schema as we are - let's just use it
-                    this.referencedKey = (PRIMARY_KEY) srcRefConstraint;
+                    this.referencedConstraint = (PRIMARY_KEY) srcRefConstraint;
                 } else {
                     // Try to find table with the same name as referenced constraint owner
                     DBSObject tableContainer = table.getContainer();
                     if (tableContainer instanceof DBSObjectContainer) {
                         DBSObject refTable = ((DBSObjectContainer)tableContainer).getChild(monitor, refEntity.getName());
-                        if (refTable instanceof DBSEntity && referencedKey instanceof DBSEntityReferrer) {
-                            List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) referencedKey);
-                            this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
+                        if (refTable instanceof DBSEntity && referencedConstraint instanceof DBSEntityReferrer) {
+                            List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) referencedConstraint);
+                            this.referencedConstraint = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
                         }
                     }
                 }
@@ -99,11 +99,7 @@ public abstract class JDBCTableForeignKey<
     @Property(viewable = true, order = 3)
     public TABLE getReferencedTable()
     {
-        return referencedKey == null ? null : (TABLE) referencedKey.getParentObject();
-    }
-
-    public void setReferencedKey(PRIMARY_KEY referencedKey) {
-        this.referencedKey = referencedKey;
+        return referencedConstraint == null ? null : (TABLE) referencedConstraint.getParentObject();
     }
 
     @Nullable
@@ -111,7 +107,11 @@ public abstract class JDBCTableForeignKey<
     @Property(id = "reference", viewable = true, order = 4)
     public PRIMARY_KEY getReferencedConstraint()
     {
-        return referencedKey;
+        return referencedConstraint;
+    }
+
+    public void setReferencedConstraint(PRIMARY_KEY referencedConstraint) {
+        this.referencedConstraint = referencedConstraint;
     }
 
     @NotNull

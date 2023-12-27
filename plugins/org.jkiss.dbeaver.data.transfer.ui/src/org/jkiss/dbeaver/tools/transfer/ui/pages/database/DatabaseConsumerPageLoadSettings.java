@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
-import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectInsertReplaceMethod;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
@@ -73,7 +73,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     private Button useBatchCheck;
     private Button ignoreDuplicateRows;
     private Button useBulkLoadCheck;
-    private List<SQLInsertReplaceMethodDescriptor> availableInsertMethodsDescriptors;
+    private List<SQLDialectInsertReplaceMethod> availableInsertMethodsDescriptors;
     private final Map<String, EventProcessorComposite<?>> processors = new HashMap<>();
 
     public DatabaseConsumerPageLoadSettings() {
@@ -144,7 +144,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 public void widgetSelected(SelectionEvent e) {
                     int selIndex = onDuplicateKeyInsertMethods.getSelectionIndex();
                     if (selIndex > 0 && !CommonUtils.isEmpty(availableInsertMethodsDescriptors)) {
-                        SQLInsertReplaceMethodDescriptor methodDescriptor = availableInsertMethodsDescriptors.get(selIndex - 1);
+                        SQLDialectInsertReplaceMethod methodDescriptor = availableInsertMethodsDescriptors.get(selIndex - 1);
                         settings.setOnDuplicateKeyInsertMethodId(methodDescriptor.getId());
                     } else {
                         settings.setOnDuplicateKeyInsertMethodId(onDuplicateKeyInsertMethods.getText());
@@ -471,9 +471,10 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
         DBPDataSource dataSource = container.getDataSource();
 
-        List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
+        List<SQLDialectInsertReplaceMethod> insertMethodsDescriptors = null;
         if (dataSource != null) {
-            SQLDialectDescriptor dialectDescriptor = SQLDialectRegistry.getInstance().getDialect(dataSource.getSQLDialect().getDialectId());
+            SQLDialectMetadata dialectDescriptor = DBWorkbench.getPlatform().getSQLDialectRegistry()
+                .getDialect(dataSource.getSQLDialect().getDialectId());
             if (dialectDescriptor != null) {
                 insertMethodsDescriptors = dialectDescriptor.getSupportedInsertReplaceMethodsDescriptors();
             }
@@ -483,7 +484,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         onDuplicateKeyInsertMethods.add(DBSDataManipulator.INSERT_NONE_METHOD);
         if (!CommonUtils.isEmpty(insertMethodsDescriptors)) {
             boolean emptyButton = true;
-            for (SQLInsertReplaceMethodDescriptor insertMethod : insertMethodsDescriptors) {
+            for (SQLDialectInsertReplaceMethod insertMethod : insertMethodsDescriptors) {
                 onDuplicateKeyInsertMethods.add(insertMethod.getLabel());
                 if (insertMethod.getId().equals(settings.getOnDuplicateKeyInsertMethodId())) {
                     onDuplicateKeyInsertMethods.setText(insertMethod.getLabel());

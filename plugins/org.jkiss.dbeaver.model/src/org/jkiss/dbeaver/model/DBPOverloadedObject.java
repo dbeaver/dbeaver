@@ -17,16 +17,17 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 
 /**
  * Overloaded object.
  */
-public interface DBPOverloadedObject extends DBPObject
-{
+public interface DBPOverloadedObject extends DBPObject {
 
     /**
      * Returns overloaded name (with parameters).
      */
+    @DPIElement
     @NotNull
     String getOverloadedName();
 

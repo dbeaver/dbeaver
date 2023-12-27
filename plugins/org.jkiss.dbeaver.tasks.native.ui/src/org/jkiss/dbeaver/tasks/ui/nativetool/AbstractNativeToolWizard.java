@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -154,7 +155,10 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                     settings.setClientHome(null);
                 }
                 if (settings.getClientHome() == null) {
-                    currentPage.setErrorMessage(TaskNativeUIMessages.tools_wizard_message_no_client_home);
+                    currentPage.setErrorMessage(TaskNativeUIMessages.tools_wizard_message_no_client_home + "\n " +
+                                    NLS.bind(
+                                            TaskNativeUIMessages.tools_wizard_message_no_client_home_link,
+                                            HelpUtils.getHelpExternalReference("Local-Client-Configuration")));
                     getContainer().updateMessage();
                     return;
                 }
@@ -192,8 +196,8 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
-            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
+            DBWorkbench.getPlatformUI().showError("Download local client file(s)", "Error downloading client file(s)", e.getTargetException());
+            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading local client file(s)");
             getContainer().updateMessage();
             return false;
         } catch (InterruptedException e) {

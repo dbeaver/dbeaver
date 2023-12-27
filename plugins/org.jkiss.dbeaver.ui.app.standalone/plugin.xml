@@ -47,12 +47,12 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="120,228"/>
+            <property name="versionInfoCoord" value="116,231"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="212,72,40"/>
-            <property name="startupMessageRect" value="22,6,157,25"/>
-            <property name="startupProgressRect" value="74,280,206,6"/>
+            <property name="startupMessageRect" value="72,270,240,21"/>
+            <property name="startupProgressRect" value="0,295,601,6"/>
+            <property name="startupForegroundColor" value="302220"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -408,6 +408,14 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.misc" class="org.jkiss.dbeaver.ui.preferences.PrefPageMiscellaneous" name="%pref.page.name.miscellaneous">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.keyword.pref.ui.misc"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="holiday decoration christmas snow"/>
     </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">
@@ -463,6 +471,15 @@
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.natures"/>
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.linkedResourcesPage"/>
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.debug.ui/org.eclipse.debug.ui.properties.defaultLaunchConfigurations"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <editorOnboardingCommand id="org.jkiss.dbeaver.core.new.connection"/>
+            <editorOnboardingCommand id="org.jkiss.dbeaver.core.sql.editor.recent"/>
+            <editorOnboardingCommand id="org.eclipse.ui.window.showKeyAssist"/>
+            <editorOnboardingCommand id="org.eclipse.ui.window.quickAccess"/>
+        </perspectiveExtension>
     </extension>
 
 </plugin>

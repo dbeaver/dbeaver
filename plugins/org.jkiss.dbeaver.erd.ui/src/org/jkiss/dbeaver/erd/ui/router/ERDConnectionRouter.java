@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.erd.ui.router;
 
-import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.AutomaticRouter;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;

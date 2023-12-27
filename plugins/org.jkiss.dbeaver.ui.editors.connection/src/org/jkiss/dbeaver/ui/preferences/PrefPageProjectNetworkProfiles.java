@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -53,7 +54,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     }
 
     @Override
-    protected DBSSecretController getSecretController() {
+    protected DBSSecretController getSecretController() throws DBException {
         DBSSecretController secretController = null;
         if (projectMeta.isUseSecretStorage()) {
             secretController = DBSSecretController.getProjectSecretController(projectMeta);

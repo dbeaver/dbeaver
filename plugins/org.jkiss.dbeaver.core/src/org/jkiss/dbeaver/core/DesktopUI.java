@@ -49,7 +49,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -681,7 +681,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBNPath openFileSystemSelector(
+    public DBNPathBase openFileSystemSelector(
         @NotNull String title,
         boolean folder,
         int style,
@@ -695,9 +695,9 @@ public class DesktopUI implements DBPPlatformUI {
             FileSystemExplorerView.getFileSystemsNode(),
             null,
             null,
-            new Class[] { DBNPath.class },
+            new Class[] { DBNPathBase.class },
             null);
-        if (object instanceof DBNPath path) {
+        if (object instanceof DBNPathBase path) {
             return path;
         }
         return null;

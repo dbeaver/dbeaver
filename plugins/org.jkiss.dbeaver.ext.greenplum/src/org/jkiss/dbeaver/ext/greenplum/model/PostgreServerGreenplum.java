@@ -184,4 +184,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     public boolean supportsEventTriggers() {
         return dataSource.isServerVersionAtLeast(9, 3);
     }
+
+    @Override
+    public boolean supportsRowLevelSecurity() {
+        return dataSource.isServerVersionAtLeast(12, 0);
+    }
 }

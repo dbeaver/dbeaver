@@ -25,7 +25,6 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_init_column_description;
     public static String data_transfer_wizard_init_column_exported;
     public static String data_transfer_wizard_init_description;
-    public static String data_transfer_wizard_init_name;
     public static String data_transfer_wizard_init_title;
     public static String data_transfer_wizard_job_container_name;
     public static String data_transfer_wizard_job_name;

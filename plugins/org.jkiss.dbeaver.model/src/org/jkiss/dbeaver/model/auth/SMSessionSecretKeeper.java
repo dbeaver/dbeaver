@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
 /**
@@ -29,6 +30,6 @@ public interface SMSessionSecretKeeper extends SMSession {
      * Associated secret controller
      */
     @Nullable
-    DBSSecretController getSecretController();
+    DBSSecretController getSecretController() throws DBException;
 
 }

@@ -24,10 +24,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.utils.CommonUtils;
 
 public class SnowflakeConnectionPageAdvanced extends ConnectionPageAbstract {
 
@@ -60,14 +63,21 @@ public class SnowflakeConnectionPageAdvanced extends ConnectionPageAbstract {
 
     @Override
     public void loadSettings() {
+        final DBPConnectionConfiguration config = getSite().getActiveDataSource().getConnectionConfiguration();
         final DBPPreferenceStore store = getSite().getActiveDataSource().getPreferenceStore();
-        sqlDollarQuoteBehaviorCombo.select(store.getBoolean(SnowflakeConstants.PROP_DD_STRING) ? 0 : 1);
+        boolean useDollarQuote = CommonUtils.getBoolean(
+            config.getProviderProperty(SnowflakeConstants.PROP_DD_STRING),
+            store.getBoolean(SnowflakeConstants.PROP_DD_STRING) // backward compatibility
+        );
+        sqlDollarQuoteBehaviorCombo.select(useDollarQuote ? 0 : 1);
     }
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
-        final DBPPreferenceStore store = dataSource.getPreferenceStore();
-        store.setValue(SnowflakeConstants.PROP_DD_STRING, sqlDollarQuoteBehaviorCombo.getSelectionIndex() == 0);
+        dataSource.getConnectionConfiguration().setProviderProperty(
+            SnowflakeConstants.PROP_DD_STRING,
+            CommonUtils.toString(sqlDollarQuoteBehaviorCombo.getSelectionIndex() == 0)
+        );
     }
 
     @Override

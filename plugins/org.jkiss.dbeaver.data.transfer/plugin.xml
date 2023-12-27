@@ -286,7 +286,8 @@
         <serializer id="databaseTransferConsumer"
                     class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
         <serializer id="streamTransferConsumer"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"/>
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"
+                    supportsDistributedMode="false"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

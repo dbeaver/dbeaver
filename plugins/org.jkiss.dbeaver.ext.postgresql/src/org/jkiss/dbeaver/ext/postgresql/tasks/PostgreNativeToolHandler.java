@@ -50,7 +50,7 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
     }
 
     @Override
-    public void fillProcessParameters(SETTINGS settings, PROCESS_ARG process_arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(SETTINGS settings, PROCESS_ARG processArg, List<String> cmd) throws IOException {
         File dumpBinary = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), PostgreConstants.BIN_FOLDER,
             this instanceof PostgreDatabaseBackupHandler ? "pg_dump" :
                 this instanceof PostgreDatabaseRestoreHandler ? "pg_restore" :

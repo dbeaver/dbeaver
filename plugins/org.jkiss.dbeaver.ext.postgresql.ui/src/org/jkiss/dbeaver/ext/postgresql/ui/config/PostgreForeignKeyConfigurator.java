@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKeyColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -69,6 +70,7 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 }
                 foreignKey.setDeferrable(editPage.isDeferrable);
                 foreignKey.setDeferred(editPage.isDeferred);
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
                 return foreignKey;
             }
         }.execute();

@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -98,7 +99,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         });
 
         viewPlaceholder.addDisposeListener(e -> disposeValueEditor());
-
+        viewPlaceholder.addTraverseListener(this::handleTraverseEvent);
 /*
         addTraverseListener(new TraverseListener() {
             @Override
@@ -251,6 +252,8 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                         (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
                     UIUtils.addFocusTracker(presentation.getController().getSite(), VALUE_VIEW_CONTROL_ID, control);
                     presentation.getController().lockActionsByFocus(control);
+
+                    control.addTraverseListener(this::handleTraverseEvent);
                 }
 
                 if (referenceValue || singleLineEditor) {
@@ -310,6 +313,13 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
         if (valueEditor instanceof BaseValueEditor) {
             ((BaseValueEditor) valueEditor).setAutoSaveEnabled(true);
+        }
+    }
+
+    private void handleTraverseEvent(TraverseEvent e) {
+        if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+            e.doit = false;
+            UIUtils.asyncExec(() -> presentation.getControl().setFocus());
         }
     }
 

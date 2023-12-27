@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -49,7 +51,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.net.ssl.SSLHandshakeException;
 
 class DriverDependenciesTree {
     private static final Log log = Log.getLog(DriverDependenciesTree.class);
@@ -209,7 +210,12 @@ class DriverDependenciesTree {
         } catch (IOException e) {
             String message;
             if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
-                message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg;
+                if (DBWorkbench.getPlatform()
+                    .getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
+                    message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg;
+                } else {
+                    message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg_advanced;
+                }
             } else {
                 message = UIConnectionMessages.dialog_driver_download_network_unavailable_msg;
             }

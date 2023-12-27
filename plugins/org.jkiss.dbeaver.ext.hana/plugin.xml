@@ -71,7 +71,8 @@
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                 <folder label="%tree.procedure_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false">
-                                        <items label="%tree.inplace_table_type.node.name" property="inplaceTableType" visibleIf="object.hasInplaceTableType()" navigable="false"/>
+                                        <items label="%tree.inplace_table_type.node.name" path="inplaceTableType"
+                                               property="inplaceTableType" visibleIf="object.hasInplaceTableType()" navigable="false"/>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANADependency" label="%tree.dependencies.node.name" icon="#references">
@@ -83,7 +84,8 @@
                             <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
                                 <folder label="%tree.function_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
                                     <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false">
-                                        <items label="%tree.inplace_table_type.node.name" property="inplaceTableType" visibleIf="object.hasInplaceTableType()" navigable="false"/>
+                                        <items label="%tree.inplace_table_type.node.name" path="inplaceTableType"
+                                               property="inplaceTableType" visibleIf="object.hasInplaceTableType()" navigable="false"/>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANADependency" label="%tree.dependencies.node.name" icon="#references">
@@ -137,6 +139,12 @@
                     <parameter name="krb5.sendUserNameToDatabase" value="false"/>
                     <parameter name="krb5.sendPasswordToDatabase" value="false"/>
                 </driver>
+
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="instanceNumber" label="Instance Number" type="string"/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
 
        </datasource>

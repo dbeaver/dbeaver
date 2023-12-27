@@ -236,7 +236,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     FolderEditor.class.getName());
             }
         } catch (Exception ex) {
-            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
+            DBWorkbench.getPlatformUI()
+                .showError(UINavigatorMessages.actions_navigator_error_dialog_open_entity_title,
+                    "Can't open entity '" + selectedNode.getNodeDisplayName() + "'",
+                    ex);
             return null;
         }
     }
@@ -257,7 +260,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 if (editorInput instanceof INavigatorEditorInput) {
                     boolean matches;
                     if (editorInput instanceof DatabaseLazyEditorInput) {
-                        matches = node.getNodeItemPath().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
+                        matches = node.getNodeUri().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
                     } else {
                         matches = ((INavigatorEditorInput) editorInput).getNavigatorNode() == node;
                     }
@@ -348,7 +351,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     label = NLS.bind(actionName, UINavigatorMessages.actions_navigator__objects);
                 } else {
                     if (node instanceof DBNNodeWithResource) {
-                        label = actionName + " '" +  node.getNodeName() + "'"; //$NON-NLS-1$
+                        label = actionName + " '" + node.getNodeDisplayName() + "'"; //$NON-NLS-1$
                     } else {
                         label = NLS.bind(actionName, node.getNodeTypeLabel()); //$NON-NLS-1$
                     }

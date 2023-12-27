@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -100,6 +101,11 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
         viewer.getTree().setHeaderVisible(true);
 
         UIExecutionQueue.queueExec(() -> createColumns(viewer));
+    }
+
+    @Override
+    protected void installDragAndDropSupport(DatabaseNavigatorTree navigatorTree) {
+        super.installDragAndDropSupport(navigatorTree);
     }
 
     @Override

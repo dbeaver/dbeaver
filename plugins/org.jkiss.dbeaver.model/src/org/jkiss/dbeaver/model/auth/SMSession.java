@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 /**
  * Access session.
  */
-public interface SMSession extends DBPObject, AutoCloseable {
+public interface SMSession extends DBPObject {
 
     /**
      * Session space

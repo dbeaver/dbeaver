@@ -148,8 +148,8 @@ import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2184,6 +2184,9 @@ public class SQLEditor extends SQLEditorBase implements
             if (editorInput instanceof IFileEditorInput) {
                 final IFile file = ((IFileEditorInput) editorInput).getFile();
                 if (!file.exists()) {
+                    file.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
+                }
+                if (!file.exists()) {
                     file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
                 }
             }
@@ -2843,7 +2846,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean transformQueryWithParameters(SQLQuery query) {
-        return createScriptContext().fillQueryParameters(query, false);
+        return createScriptContext().fillQueryParameters(query, () -> null, false);
     }
 
     private boolean checkSession(DBRProgressListener onFinish)
@@ -3635,7 +3638,7 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         } else {
                             SQLQuery query = (SQLQuery) element;
-                            scriptContext.fillQueryParameters(query, false);
+                            scriptContext.fillQueryParameters(query, () -> null, false);
 
                             SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);
                             producers.add(new DatabaseTransferProducer(dataContainer, null));
@@ -3812,13 +3815,6 @@ public class SQLEditor extends SQLEditorBase implements
         ) {
             return new MultiTabsQueryResultsContainer(this, resultSetNumber, resultSetIndex, dataContainer);
         }
-
-        @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            if (resultContainers.size() > resultSetNumber) {
-                resultContainers.get(resultSetNumber).dispose();
-            }
-        }
     }
     
     class SingleTabQueryProcessor extends QueryProcessor {
@@ -3916,11 +3912,6 @@ public class SQLEditor extends SQLEditorBase implements
             };
             tabContentScroller.getDisplay().addFilter(SWT.MouseVerticalWheel, scrollListener);
             tabContentScroller.addDisposeListener(e -> tabContentScroller.getDisplay().removeFilter(SWT.MouseVerticalWheel, scrollListener));
-        }
-        
-        @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            // don't know why it is needed in multitab case during history commands, but here we are just ignoring it
         }
     }
     
@@ -4836,6 +4827,7 @@ public class SQLEditor extends SQLEditorBase implements
                             // see #16605
                             // But we need to avoid the result tab with the select statement
                             // because the statistics window can not be in focus in this case
+                            results.handleExecuteResult(result);
                             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) &&
                                 query.getType() != SQLQueryType.SELECT
                             ) {
@@ -5499,7 +5491,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         final long currentTime = System.currentTimeMillis();
         final long elapsedSeconds = (currentTime - lastUserActivityTime) / 1000;
-        if (elapsedSeconds < 1) {
+        if (elapsedSeconds < 60) {
             return null;
         }
 

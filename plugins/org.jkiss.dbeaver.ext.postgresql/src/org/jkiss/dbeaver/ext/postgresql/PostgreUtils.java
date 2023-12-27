@@ -860,7 +860,7 @@ public class PostgreUtils {
             JDBCUtils.queryString(session, getQueryForSystemColumnChecking(tableName, columnName));
             return true;
         } catch (SQLException e) {
-            log.debug("Error reading system information from the " + tableName + " table", e);
+            log.debug("Error reading system information from the " + tableName + " table: " + e.getMessage());
         }
         return false;
     }

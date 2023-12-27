@@ -142,10 +142,9 @@ final class MessageBoxModern extends BaseDialog {
             }
         }
 
-        UIUtils.createEmptyLabel(content, 1, 1);
         if (customArea != null) {
-            customArea.accept(content);
             UIUtils.createEmptyLabel(content, 1, 1);
+            customArea.accept(content);
         }
 
         // create the top level composite for the dialog area

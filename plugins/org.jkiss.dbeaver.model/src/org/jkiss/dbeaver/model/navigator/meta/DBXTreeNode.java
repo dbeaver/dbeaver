@@ -212,7 +212,7 @@ public abstract class DBXTreeNode
         return children;
     }
 
-    public List<DBXTreeNode> getChildren(DBNNode context)
+    public List<DBXTreeNode> getChildren(@Nullable DBNNode context)
     {
         if (context != null && !CommonUtils.isEmpty(children)) {
             boolean hasExpr = false;

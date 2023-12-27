@@ -208,7 +208,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class DeleteColumnAction extends GroupingAction {
         DeleteColumnAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));
         }
 
         @Override

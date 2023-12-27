@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -27,8 +28,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 /**
  * GenericConstraint
  */
-public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements DBSTableConstraint
-{
+public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements DBSTableConstraint, DBPNamedObject2 {
     private final TABLE table;
     private String name;
     protected String description;

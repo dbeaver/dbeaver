@@ -57,4 +57,9 @@ public class DBNModelExtenderDescriptor extends AbstractDescriptor {
     public boolean isRoot() {
         return isRoot;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }

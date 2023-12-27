@@ -268,7 +268,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
             }
         }
         catch (Exception ex) {
-            log.warn("Error reading PostgreSQL native client version from " + cmd, ex);
+            log.warn("Error reading PostgreSQL local client version from " + cmd, ex);
         }
         return null;
     }

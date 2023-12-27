@@ -68,6 +68,12 @@ public class PlatformLanguageRegistry
     public PlatformLanguageDescriptor getLanguage(Locale locale)
     {
         for (PlatformLanguageDescriptor descriptor : descriptors) {
+            if (descriptor.getCode().equals(locale.toString())) {
+                return descriptor;
+            }
+        }
+        // Try to search by language only
+        for (PlatformLanguageDescriptor descriptor : descriptors) {
             if (descriptor.getCode().equals(locale.getLanguage())) {
                 return descriptor;
             }

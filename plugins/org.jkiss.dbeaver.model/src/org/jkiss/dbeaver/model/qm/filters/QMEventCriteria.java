@@ -48,7 +48,7 @@ public class QMEventCriteria {
     @NotNull
     private Set<QMEventStatus> eventStatuses = Collections.emptySet();
     @NotNull
-    private Set<String> projectNames = Collections.emptySet();
+    private Set<String> projectIds = Collections.emptySet();
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
     @Nullable
@@ -204,15 +204,15 @@ public class QMEventCriteria {
     }
 
     @NotNull
-    public Set<String> getProjectNames() {
-        return projectNames;
+    public Set<String> getProjectIds() {
+        return projectIds;
     }
 
-    public void setProjectNames(@NotNull Set<String> projectNames) {
-        this.projectNames = projectNames;
+    public void setProjectIds(@NotNull Set<String> projectIds) {
+        this.projectIds = projectIds;
     }
 
-    public boolean hasProjectNames() {
-        return !projectNames.isEmpty();
+    public boolean hasProjectIds() {
+        return !projectIds.isEmpty();
     }
 }

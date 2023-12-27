@@ -37,6 +37,6 @@ public interface DBFFileSystemProvider extends DBPObject {
     DBFVirtualFileSystem[] getAvailableFileSystems(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPProject project
-    );
+    ) throws DBException;
 
 }

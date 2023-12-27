@@ -17,16 +17,19 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+
 /**
  * Abstract persisted object
  */
-public interface DBPPersistedObject extends DBPObject
-{
+public interface DBPPersistedObject extends DBPObject {
 
     /**
      * Object's persisted flag
+     *
      * @return true if object is persisted in external data source
      */
+    @DPIElement(objectState = true, cache = true)
     boolean isPersisted();
 
 }

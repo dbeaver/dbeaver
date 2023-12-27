@@ -69,7 +69,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Property(viewable = true, order = 1)
     public String getName()
     {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
     @Override
@@ -91,7 +91,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public String getNodeName()
+    public String getNodeDisplayName()
     {
         return folder.getName();
     }
@@ -133,6 +133,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 */
     }
 
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return makeLocalFolderItemPath(folder);

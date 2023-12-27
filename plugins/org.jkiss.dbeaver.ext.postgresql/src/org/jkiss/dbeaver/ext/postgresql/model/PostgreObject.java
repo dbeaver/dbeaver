@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObjectWithLongId;
-import org.jkiss.dbeaver.model.DPIContainer;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

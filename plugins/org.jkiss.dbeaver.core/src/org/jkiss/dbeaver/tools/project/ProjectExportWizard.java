@@ -147,10 +147,11 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
             {
                 // Export source info
+                InetAddress localHost = RuntimeUtils.getLocalHostOrLoopback();
                 meta.startElement(ExportConstants.TAG_SOURCE);
                 meta.addAttribute(ExportConstants.ATTR_TIME, System.currentTimeMillis());
-                meta.addAttribute(ExportConstants.ATTR_ADDRESS, InetAddress.getLocalHost().getHostAddress());
-                meta.addAttribute(ExportConstants.ATTR_HOST, InetAddress.getLocalHost().getHostName());
+                meta.addAttribute(ExportConstants.ATTR_ADDRESS, localHost.getHostAddress());
+                meta.addAttribute(ExportConstants.ATTR_HOST, localHost.getHostName());
                 meta.endElement();
             }
 

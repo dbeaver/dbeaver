@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -222,5 +224,19 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     protected boolean isFKConstraintDuplicated(TABLE_TYPE owner) {
         return false;
     }
+
+    public static <FK extends AbstractTableConstraint> void updateForeignKeyName(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull FK foreignKey) {
+        SQLForeignKeyManager objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+            foreignKey.getClass(), SQLForeignKeyManager.class);
+        if (objectManager == null) {
+            log.debug("Foreign key manager not found for " + foreignKey.getClass().getName());
+        } else {
+            String fkName = objectManager.getNewConstraintName(monitor, foreignKey);
+            foreignKey.setName(fkName);
+        }
+    }
+
 }
 

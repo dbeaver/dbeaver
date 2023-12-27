@@ -65,6 +65,8 @@ public interface IStreamValueEditor<CONTROL extends Control>
     void contributeSettings(@NotNull IContributionManager manager, @NotNull CONTROL control)
             throws DBCException;
 
-    void disposeEditor();
+    default void disposeEditor() {
+        // do nothing by default
+    }
 
 }

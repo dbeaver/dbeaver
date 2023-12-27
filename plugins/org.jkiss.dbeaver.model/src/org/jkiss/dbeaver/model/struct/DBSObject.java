@@ -18,7 +18,12 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 
 /**
  * Meta object
