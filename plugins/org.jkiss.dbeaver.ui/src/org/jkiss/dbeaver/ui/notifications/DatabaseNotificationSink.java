@@ -144,6 +144,7 @@ public class DatabaseNotificationSink {
         popup.setBlockOnOpen(false);
 
         popup.open();
+        popup.setFocus();
     }
 
 }
