@@ -216,10 +216,9 @@ public class ERDEditorEmbedded extends ERDEditorPart
     }
 
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
-        throws DBException
-    {
+            throws DBException {
         monitor.beginTask("Load database entities", 1);
-        
+
         // validate connections first
         DBPDataSource dataSource = getExecutionContext().getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
@@ -229,7 +228,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
                 container.connect(monitor, true, true);
             } catch (DBException e) {
                 log.debug(e);
-                throw new DBException("DataSource "+ dataSource.getName()+" is disconnected. Please revalidate it.");
+                throw new DBException("DataSource " + dataSource.getName() + " is disconnected. Please revalidate it.");
             }
         }
         DBSObject dbObject = getRootObject();
@@ -246,22 +245,16 @@ public class ERDEditorEmbedded extends ERDEditorPart
             //diagram = new EntityDiagram(dbObject, dbObject.getName(), getContentProvider(), getDecorator());
 
             // Fill from database even if we loaded from state (something could change since last view)
-                diagram.fillEntities(
-                monitor,
-                ERDUtils.collectDatabaseTables(
+            diagram.fillEntities(
                     monitor,
-                    dbObject,
-                    diagram,
-                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
-                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)),
-                dbObject);
-            
-//            if (!status.isOK()) {
-//                diagram.addErrorMessage(status.getMessage());
-//                monitor.done();
-//                return null;
-//            }
-            
+                    ERDUtils.collectDatabaseTables(
+                            monitor,
+                            dbObject,
+                            diagram,
+                            ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
+                            ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)),
+                    dbObject);
+
             if (dbObject instanceof DBSObjectContainer) {
                 diagram.setRootObjectContainer((DBSObjectContainer) dbObject);
             }
@@ -287,9 +280,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
             diagram.setLayoutManualAllowed(true);
             diagram.setNeedsAutoLayout(!hasPersistedState);
         }
-
         monitor.done();
-
         return diagram;
     }
 

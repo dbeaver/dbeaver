@@ -204,10 +204,11 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     /**
      * Resolve and create entity associations.
      * Also caches all unresolved associations (associations with entities which are not present in diagram yet)
+     *
      * @param diagram all diagram entities map
-     * @param create    if true then creates all found model association. Otherwise only saves unresolved ones.
-     * @param reflect   reflect UI
-     * @throws DBException 
+     * @param create  if true then creates all found model association. Otherwise only saves unresolved ones.
+     * @param reflect reflect UI
+     * @throws DBException - exception
      */
     public void addModelRelations(DBRProgressMonitor monitor, ERDContainer diagram, boolean create, boolean reflect) throws DBException {
         Set<DBSEntityAttribute> fkAttrs = new HashSet<>();
