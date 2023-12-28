@@ -55,19 +55,21 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         SQLQueryDataContext right = this.right.propagateContext(context, statistics);
         if (this.columsToJoin != null) {
             for (SQLQuerySymbolEntry column : columsToJoin) {
-                SQLQuerySymbol symbol = column.getSymbol();
-                SQLQuerySymbolDefinition leftColumnDef = left.resolveColumn(column.getName());
-                SQLQuerySymbolDefinition rightColumnDef = right.resolveColumn(column.getName());
-                if (leftColumnDef != null && rightColumnDef != null) {
-                    symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN); 
-                    symbol.setDefinition(column); // TODO multiple definitions per symbol
-                } else {
-                    if (leftColumnDef != null) {
-                        statistics.appendError(column, "Column not found to the left of join");
+                if (column.isNotClassified()) {
+                    SQLQuerySymbol symbol = column.getSymbol();
+                    SQLQuerySymbolDefinition leftColumnDef = left.resolveColumn(column.getName());
+                    SQLQuerySymbolDefinition rightColumnDef = right.resolveColumn(column.getName());
+                    if (leftColumnDef != null && rightColumnDef != null) {
+                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN); 
+                        symbol.setDefinition(column); // TODO multiple definitions per symbol
                     } else {
-                        statistics.appendError(column, "Column not found to the right of join");
+                        if (leftColumnDef != null) {
+                            statistics.appendError(column, "Column not found to the left of join");
+                        } else {
+                            statistics.appendError(column, "Column not found to the right of join");
+                        }
+                        symbol.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     }
-                    symbol.setSymbolClass(SQLQuerySymbolClass.ERROR);
                 }
             }
         }

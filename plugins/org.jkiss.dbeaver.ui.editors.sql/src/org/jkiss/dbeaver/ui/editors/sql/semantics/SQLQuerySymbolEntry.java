@@ -23,18 +23,25 @@ import org.jkiss.code.Nullable;
 public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
     private final Interval region;
     private final String name;
+    private final String rawName;
     
     private SQLQuerySymbol symbol = null;
     private SQLQuerySymbolDefinition definition = null;
     
-    public SQLQuerySymbolEntry(@NotNull Interval region, @NotNull String name) {
+    public SQLQuerySymbolEntry(@NotNull Interval region, @NotNull String name, @NotNull String rawName) {
         this.region = region;
         this.name = name;
+        this.rawName = rawName;
     }
 
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @NotNull
+    public String getRawName() {
+        return rawName;
     }
 
     @NotNull
@@ -113,5 +120,9 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
     @Override
     public String toString() {
         return super.toString() + "[" + this.name + ", " + this.getSymbolClass() + "]";
+    }
+
+    public boolean isNotClassified() {
+        return this.symbol == null || this.symbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN;
     }
 }
