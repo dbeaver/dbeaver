@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -245,6 +246,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
+        GeneralUtils.validateResourceName(newName);
         getDataSourceRegistry().moveFolder(folder.getFolderPath(), generateNewFolderPath(folder.getParent(), newName));
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
