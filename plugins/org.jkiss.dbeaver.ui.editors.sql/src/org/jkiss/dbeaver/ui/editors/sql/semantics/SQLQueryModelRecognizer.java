@@ -44,7 +44,6 @@ import org.jkiss.utils.Pair;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class SQLQueryModelRecognizer {
 
@@ -92,7 +91,6 @@ public class SQLQueryModelRecognizer {
             @Override
             public void doWork() {
                 TreeMapperCallback<T, C> translation = translations.get(node.getNodeName());
-                // System.out.println("\texpanding " + node.getNodeName() + " as " + (translation == null ? "TRANSPARENT" : "HANDLED"));
                 MapperResultFrame<T> aggregator = translation == null ? parent : new MapperDataPendingNodeFrame(node, parent, translation);
                 
                 if (translation != null) {
@@ -250,7 +248,7 @@ public class SQLQueryModelRecognizer {
                 }
             }),
             Map.entry(STMKnownRuleNames.joinedTable, (n, cc, r) -> {
-            	 // joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
+                // joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
                 if (cc.isEmpty()) {
                     return r.queryDataContext.getDefaultTable(n.getRealInterval());
                 } else {
@@ -258,14 +256,15 @@ public class SQLQueryModelRecognizer {
                     for (int i = 1; i < cc.size(); i++) {
                         final SQLQueryRowsSourceModel currSource = source;
                         final SQLQueryRowsSourceModel nextSource = cc.get(i);
-                        STMTreeNode childNode = n.getStmChild(i); // TODO see second case of the first source if parens are correctly ignored here
+                        // TODO see second case of the first source if parens are correctly ignored here
+                        STMTreeNode childNode = n.getStmChild(i);
                         Interval range = Interval.of(n.getRealInterval().a, childNode.getRealInterval().b);
                         source = switch (childNode.getNodeKindId()) {
                             case SQLStandardParser.RULE_naturalJoinTerm ->
                                 Optional.ofNullable(childNode.findChildOfName(STMKnownRuleNames.joinSpecification))
                                     .map(cn -> cn.findChildOfName(STMKnownRuleNames.joinCondition))
                                     .map(cn -> cn.findChildOfName(STMKnownRuleNames.searchCondition))
-                                    .map(cn -> r.collectValueExpression(cn))
+                                    .map(r::collectValueExpression)
                                     .map(e -> new SQLQueryRowsNaturalJoinModel(range, currSource, nextSource, e))
                                     .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, currSource, nextSource, r.collectColumnNameList(childNode)));
                             case SQLStandardParser.RULE_crossJoinTerm -> new SQLQueryRowsCrossJoinModel(range, currSource, nextSource);
@@ -308,21 +307,24 @@ public class SQLQueryModelRecognizer {
             Map.entry(STMKnownRuleNames.querySpecification, (n, cc, r) -> {
                 STMTreeNode selectListNode = n.findChildOfName(STMKnownRuleNames.selectList);
                 SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(
-            		selectListNode.getRealInterval(),
-            		(selectListNode.getChildCount() + 1) / 2
-        		);
+                    selectListNode.getRealInterval(),
+                    (selectListNode.getChildCount() + 1) / 2
+                );
                 for (int i = 0; i < selectListNode.getChildCount(); i += 2) {
                     STMTreeNode selectSublist = selectListNode.getStmChild(i);
                     if (selectSublist.getChildCount() > 0) {
                         STMTreeNode sublistNode = selectSublist.getStmChild(0);
                         if (sublistNode != null) {
-                        	Interval range = sublistNode.getRealInterval();
+                            Interval range = sublistNode.getRealInterval();
                             switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
-                                case SQLStandardParser.RULE_derivedColumn -> { // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
+                                case SQLStandardParser.RULE_derivedColumn -> {
+                                    // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
                                     SQLQueryValueExpression expr = r.collectValueExpression(sublistNode.getStmChild(0));
                                     if (sublistNode.getChildCount() > 1) {
                                         STMTreeNode asClause = sublistNode.getStmChild(1);
-                                        SQLQuerySymbolEntry asColumnName = r.collectIdentifier(asClause.getStmChild(asClause.getChildCount() - 1));
+                                        SQLQuerySymbolEntry asColumnName = r.collectIdentifier(
+                                            asClause.getStmChild(asClause.getChildCount() - 1)
+                                        );
                                         resultModel.addColumnSpec(range, expr, asColumnName);
                                     } else {
                                         resultModel.addColumnSpec(range, expr);
@@ -365,17 +367,15 @@ public class SQLQueryModelRecognizer {
                             lastSubnode.getStmChild(lastSubnode.getChildCount() == 1 || lastSubnode.getChildCount() == 4 ? 0 : 1)
                         ); 
                         source = new SQLQueryRowsCorrelatedSourceModel(
-                    		n.getRealInterval(), source, correlationName, r.collectColumnNameList(lastSubnode), !cc.isEmpty()
-                		);
+                            n.getRealInterval(), source, correlationName, r.collectColumnNameList(lastSubnode), !cc.isEmpty()
+                        );
                     }
                 }
                 return source;
             }),
-            Map.entry(STMKnownRuleNames.explicitTable, (n, cc, r) -> {
-                return r.collectTableReference(n);
-            }),
+            Map.entry(STMKnownRuleNames.explicitTable, (n, cc, r) -> r.collectTableReference(n)),
             Map.entry(STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
-                return new SQLQueryRowsTableValueModel(n.getRealInterval());                 // TODO
+                return new SQLQueryRowsTableValueModel(n.getRealInterval()); // TODO
             })
         );
 
@@ -816,8 +816,7 @@ public class SQLQueryModelRecognizer {
             Stack<List<SQLQueryValueExpression>> childLists = new Stack<>();
             stack.add(node);
             childLists.push(new ArrayList<>(1));
-            
-//            int indent = 0;
+
             while (stack.size() > 0) {
                 STMTreeNode n = stack.pop();
                 
@@ -827,11 +826,8 @@ public class SQLQueryModelRecognizer {
                         rn = rn.getStmChild(0);
                     }
                     if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
-//                        System.out.println("  ".repeat(indent + 1) + rn.getNodeName() + ";");
                         childLists.peek().add(collectKnownValueExpression(rn));
                     } else {
-//                        indent++;
-//                        System.out.println("  ".repeat(indent) + n.getNodeName() + " {");
                         stack.push(n);
                         stack.push(null);
                         childLists.push(new ArrayList<>(rn.getChildCount()));
@@ -840,36 +836,27 @@ public class SQLQueryModelRecognizer {
                         }
                     }
                 } else {
-                    STMTreeNode cn = stack.pop();
-//                    System.out.println("  ".repeat(indent) + "} " + cn.getNodeName());
-//                    indent--;
-                    
+                    STMTreeNode content = stack.pop();
                     List<SQLQueryValueExpression> children = childLists.pop();
                     if (children.size() > 0) {
-                        SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression c ? c 
-                                : new SQLQueryValueFlattenedExpression(cn.getRealInterval(), cn.getTextContent(), children);
+                        SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression c ?
+                            c :
+                            new SQLQueryValueFlattenedExpression(content.getRealInterval(), content.getTextContent(), children);
                         childLists.peek().add(e);
                     }
                 }
             }
             
             List<SQLQueryValueExpression> roots = childLists.pop();
-            return roots.isEmpty() ? new SQLQueryValueFlattenedExpression(node.getRealInterval(), node.getTextContent(), Collections.emptyList()) : roots.get(0);
+            return roots.isEmpty() ?
+                new SQLQueryValueFlattenedExpression(node.getRealInterval(), node.getTextContent(), Collections.emptyList()) :
+                roots.get(0);
         }
-
-//        
-//        List<STMTreeNode> knownExprs = STMUtils.expandSubtree(node, null, knownRecognizableValueExpressionNames);
-//        return knownExprs.size() == 1 
-//    		? collectKnownValueExpression(knownExprs.get(0))
-//            : new SQLQueryValueFlattenedExpression(
-//        			node.getRealInterval(), 
-//        			knownExprs.stream().map(this::collectKnownValueExpression).collect(Collectors.toList())
-//			);
     }
 
     @NotNull
     private SQLQueryValueExpression collectKnownValueExpression(@NotNull STMTreeNode node) {
-    	Interval range = node.getRealInterval();
+        Interval range = node.getRealInterval();
         return switch (node.getNodeKindId()) {
             case SQLStandardParser.RULE_subquery -> new SQLQueryValueSubqueryExpression(range, this.collectQueryExpression(node));
             case SQLStandardParser.RULE_columnReference -> {

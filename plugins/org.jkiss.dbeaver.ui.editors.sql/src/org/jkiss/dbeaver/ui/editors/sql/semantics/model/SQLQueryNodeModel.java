@@ -17,22 +17,24 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
+import org.jkiss.code.NotNull;
 
 public abstract class SQLQueryNodeModel {
-	
-	private final Interval region;
-	
-	protected SQLQueryNodeModel(Interval region) {
-		this.region = region;
-	}
-	
-	public final Interval getInterval() {
-		return this.region;
-	}
 
-	public final <T, R> R apply(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-		return this.applyImpl(visitor, arg);
-	}
+    private final Interval region;
 
-	protected abstract <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg);
+    protected SQLQueryNodeModel(@NotNull Interval region) {
+        this.region = region;
+    }
+
+    @NotNull
+    public final Interval getInterval() {
+        return this.region;
+    }
+
+    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return this.applyImpl(visitor, node);
+    }
+
+    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node);
 }

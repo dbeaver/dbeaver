@@ -25,21 +25,21 @@ public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     private final SQLQueryRowsSourceModel source;
 
     public SQLQueryValueSubqueryExpression(@NotNull Interval range, @NotNull SQLQueryRowsSourceModel source) {
-    	super(range);
+        super(range);
         this.source = source;
     }
-    
+
     public SQLQueryRowsSourceModel getSource() {
-    	return this.source;
+        return this.source;
     }
-    
+
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.source.propagateContext(context, statistics);
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitValueSubqueryExpr(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitValueSubqueryExpr(this, node);
     }
 }

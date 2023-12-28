@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.CompleteTupleSpec;
@@ -23,38 +25,54 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultM
 
 public interface SQLQueryNodeModelVisitor<T, R> {
 
-	R visitValueSubqueryExpr(SQLQueryValueSubqueryExpression subqueryExpr, T arg);
+    @Nullable
+    R visitValueSubqueryExpr(SQLQueryValueSubqueryExpression subqueryExpr, T arg);
 
-	R visitValueFlatExpr(SQLQueryValueFlattenedExpression flattenedExpr, T arg);
+    @Nullable
+    R visitValueFlatExpr(SQLQueryValueFlattenedExpression flattenedExpr, T arg);
 
-	R visitValueColumnRefExpr(SQLQueryValueColumnReferenceExpression columnRefExpr, T arg);
+    @Nullable
+    R visitValueColumnRefExpr(SQLQueryValueColumnReferenceExpression columnRefExpr, T arg);
 
-	R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);
+    @Nullable
+    R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);
 
-	R visitSelectionModel(SQLQuerySelectionModel selection, T arg);
+    @Nullable
+    R visitSelectionModel(SQLQuerySelectionModel selection, T arg);
 
-	R visitRowsTableData(SQLQueryRowsTableDataModel tableData, T arg);
+    @Nullable
+    R visitRowsTableData(SQLQueryRowsTableDataModel tableData, T arg);
 
-	R visitRowsTableValue(SQLQueryRowsTableValueModel tableValue, T arg);
+    @Nullable
+    R visitRowsTableValue(SQLQueryRowsTableValueModel tableValue, T arg);
 
-	R visitRowsSelectionFilter(SQLQueryRowsSelectionFilterModel selectionFilter, T arg);
+    @Nullable
+    R visitRowsSelectionFilter(SQLQueryRowsSelectionFilterModel selectionFilter, T arg);
 
-	R visitRowsCrossJoin(SQLQueryRowsCrossJoinModel crossJoin, T arg);
+    @Nullable
+    R visitRowsCrossJoin(SQLQueryRowsCrossJoinModel crossJoin, T arg);
 
-	R visitRowsCorrelatedSource(SQLQueryRowsCorrelatedSourceModel correlated, T arg);
+    @Nullable
+    R visitRowsCorrelatedSource(SQLQueryRowsCorrelatedSourceModel correlated, T arg);
 
-	R visitRowsNaturalJoin(SQLQueryRowsNaturalJoinModel naturalJoin, T arg);
+    @Nullable
+    R visitRowsNaturalJoin(SQLQueryRowsNaturalJoinModel naturalJoin, T arg);
 
-	R visitRowsProjection(SQLQueryRowsProjectionModel projection, T arg);
+    @Nullable
+    R visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull T arg);
 
-	R visitRowsSetCorrespondingOp(SQLQueryRowsSetCorrespondingOperationModel correspondingOp, T arg);
+    @Nullable
+    R visitRowsSetCorrespondingOp(@NotNull SQLQueryRowsSetCorrespondingOperationModel correspondingOp, @NotNull T arg);
 
-	R visitDummyTableRowsSource(DummyTableRowsSource dummyTable, T arg);
+    @Nullable
+    R visitDummyTableRowsSource(@NotNull DummyTableRowsSource dummyTable, @NotNull T arg);
 
-	R visitSelectCompleteTupleSpec(CompleteTupleSpec completeTupleSpec, T arg);
+    @Nullable
+    R visitSelectCompleteTupleSpec(@NotNull CompleteTupleSpec completeTupleSpec, @NotNull T arg);
 
-	R visitSelectTupleSpec(TupleSpec tupleSpec, T arg);
+    @Nullable
+    R visitSelectTupleSpec(@NotNull TupleSpec tupleSpec, @NotNull T arg);
 
-	R visitSelectColumnSpec(ColumnSpec columnSpec, T arg);
-	
+    @Nullable
+    R visitSelectColumnSpec(@NotNull ColumnSpec columnSpec, @NotNull T arg);
 }

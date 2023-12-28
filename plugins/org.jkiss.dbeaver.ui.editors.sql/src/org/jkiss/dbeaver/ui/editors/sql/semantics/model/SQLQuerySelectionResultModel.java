@@ -23,19 +23,60 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
-    public static abstract class ResultSublistSpec extends SQLQueryNodeModel {
-    	
-        protected ResultSublistSpec(Interval region) {
-			super(region);
-		}
+    private final List<ResultSublistSpec> sublists;
 
-		@NotNull
+    public SQLQuerySelectionResultModel(@NotNull Interval range, int capacity) {
+        super(range);
+        this.sublists = new ArrayList<>(capacity);
+    }
+
+    public List<ResultSublistSpec> getSublists() {
+        return this.sublists;
+    }
+
+    public void addColumnSpec(@NotNull Interval range, @NotNull SQLQueryValueExpression valueExpression) {
+        this.sublists.add(new ColumnSpec(range, valueExpression));
+    }
+
+    public void addColumnSpec(
+        @NotNull Interval range,
+        @NotNull SQLQueryValueExpression valueExpression,
+        @Nullable SQLQuerySymbolEntry alias
+    ) {
+        this.sublists.add(new ColumnSpec(range, valueExpression, alias));
+    }
+
+    public void addTupleSpec(@NotNull Interval range, @NotNull SQLQueryQualifiedName tableName) {
+        this.sublists.add(new TupleSpec(range, tableName));
+    }
+
+    public void addCompleteTupleSpec(@NotNull Interval range) {
+        this.sublists.add(new CompleteTupleSpec(range));
+    }
+
+    public List<SQLQuerySymbol> expandColumns(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        return this.sublists.stream().flatMap(s -> s.expand(context, statistics)).collect(Collectors.toList());
+    }
+
+    @Override
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitSelectionResult(this, node);
+    }
+
+    public static abstract class ResultSublistSpec extends SQLQueryNodeModel {
+
+        protected ResultSublistSpec(Interval region) {
+            super(region);
+        }
+
+        @NotNull
         protected abstract Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
     }
 
@@ -48,17 +89,19 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         }
 
         public ColumnSpec(@NotNull Interval region, @NotNull SQLQueryValueExpression valueExpression, @Nullable SQLQuerySymbolEntry alias) {
-        	super(region);
+            super(region);
             this.valueExpression = valueExpression;
             this.alias = alias;
         }
-        
-        public @NotNull SQLQueryValueExpression getValueExpression() {
-        	return this.valueExpression;
+
+        @NotNull
+        public SQLQueryValueExpression getValueExpression() {
+            return this.valueExpression;
         }
-        
-        public @Nullable SQLQuerySymbolEntry getAlias() {
-        	return this.alias;
+
+        @Nullable
+        public SQLQuerySymbolEntry getAlias() {
+            return this.alias;
         }
 
         @NotNull
@@ -84,10 +127,10 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
             return Stream.of(columnName);
         }
-        
+
         @Override
-        protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-        	return visitor.visitSelectColumnSpec(this, arg);
+        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+            return visitor.visitSelectColumnSpec(this, node);
         }
     }
 
@@ -95,17 +138,19 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         private final SQLQueryQualifiedName tableName;
         private SourceResolutionResult resolutionResult;
 
-        public TupleSpec(@NotNull Interval region, SQLQueryQualifiedName tableName) {
-        	super(region);
+        public TupleSpec(@NotNull Interval region, @NotNull SQLQueryQualifiedName tableName) {
+            super(region);
             this.tableName = tableName;
         }
-        
+
+        @NotNull
         public SQLQueryQualifiedName getTableName() {
-        	return this.tableName;
+            return this.tableName;
         }
-        
+
+        @Nullable
         public SourceResolutionResult getResolutionResult() {
-        	return this.resolutionResult;
+            return this.resolutionResult;
         }
 
         @NotNull
@@ -127,65 +172,28 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
                 return Stream.empty();
             }
         }
-        
+
         @Override
-        protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-            return visitor.visitSelectTupleSpec(this, arg);
+        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+            return visitor.visitSelectTupleSpec(this, node);
         }
     }
 
     public static class CompleteTupleSpec extends ResultSublistSpec {
-    	
+
         public CompleteTupleSpec(@NotNull Interval region) {
-			super(region);
-		}
+            super(region);
+        }
 
         @NotNull
         @Override
         protected Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
             return context.getColumnsList().stream();
         }
-        
+
         @Override
-        protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-        	return visitor.visitSelectCompleteTupleSpec(this, arg);
+        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+            return visitor.visitSelectCompleteTupleSpec(this, node);
         }
-    }
-
-
-    private final List<ResultSublistSpec> sublists;
-
-    public SQLQuerySelectionResultModel(@NotNull Interval range, int capacity) {
-    	super(range);
-        this.sublists = new ArrayList<>(capacity);
-    }
-    
-    public List<ResultSublistSpec> getSublists() {
-    	return this.sublists;
-    }
-
-    public void addColumnSpec(@NotNull Interval range, @NotNull SQLQueryValueExpression valueExpression) {
-        this.sublists.add(new ColumnSpec(range, valueExpression));
-    }
-
-    public void addColumnSpec(@NotNull Interval range, @NotNull SQLQueryValueExpression valueExpression, @Nullable SQLQuerySymbolEntry alias) {
-        this.sublists.add(new ColumnSpec(range, valueExpression, alias));
-    }
-
-    public void addTupleSpec(@NotNull Interval range, @NotNull SQLQueryQualifiedName tableName) {
-        this.sublists.add(new TupleSpec(range, tableName));
-    }
-
-    public void addCompleteTupleSpec(@NotNull Interval range) {
-        this.sublists.add(new CompleteTupleSpec(range));
-    }
-
-    public List<SQLQuerySymbol> expandColumns(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        return this.sublists.stream().flatMap(s -> s.expand(context, statistics)).collect(Collectors.toList());
-    }
-    
-    @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitSelectionResult(this, arg);
     }
 }

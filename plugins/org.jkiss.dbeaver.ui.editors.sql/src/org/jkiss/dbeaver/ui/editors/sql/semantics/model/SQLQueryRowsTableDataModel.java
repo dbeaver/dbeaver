@@ -32,23 +32,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition { 
+public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
     private final SQLQueryQualifiedName name;
     private DBSEntity table = null;
-   
+
     public SQLQueryRowsTableDataModel(@NotNull Interval range, @NotNull SQLQueryQualifiedName name) {
-    	super(range);
+        super(range);
         this.name = name;
     }
 
     public SQLQueryQualifiedName getName() {
         return this.name;
     }
-    
+
     public DBSEntity getTable() {
         return this.table;
     }
-    
+
     @NotNull
     @Override
     public SQLQuerySymbolClass getSymbolClass() {
@@ -58,8 +58,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @NotNull
     private SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
         SQLDialect dialect = context.getDialect();
-        String name = dialect.mustBeQuoted(attr.getName(), true) 
-            ? dialect.getQuotedIdentifier(attr.getName(), true, false) 
+        String name = dialect.mustBeQuoted(attr.getName(), true)
+            ? dialect.getQuotedIdentifier(attr.getName(), true, false)
             : attr.getName().toLowerCase();
         SQLQuerySymbol symbol = new SQLQuerySymbol(name);
         symbol.setDefinition(new SQLQuerySymbolByDbObjectDefinition(attr, SQLQuerySymbolClass.COLUMN));
@@ -72,8 +72,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.name.isNotClassified()) {
             this.table = context.findRealTable(this.name.toListOfStrings());
-                    
-            if (this.table != null) { 
+
+            if (this.table != null) {
                 this.name.setDefinition(table);
                 context = context.extendWithRealTable(this.table, this);
                 try {
@@ -96,9 +96,9 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         }
         return context;
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitRowsTableData(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitRowsTableData(this, node);
     }
 }

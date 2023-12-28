@@ -19,20 +19,26 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
 
 public class SQLQuerySelectionModel extends SQLQueryNodeModel {
 
     // TODO bring cte here apparently
-    
+
     private final HashSet<SQLQuerySymbolEntry> symbolEntries;
     private final SQLQueryRowsSourceModel resultSource;
-    
-    public SQLQuerySelectionModel(@NotNull Interval range, @Nullable SQLQueryRowsSourceModel resultSource, @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries) {
-    	super(range);
+
+    public SQLQuerySelectionModel(
+        @NotNull Interval range,
+        @Nullable SQLQueryRowsSourceModel resultSource,
+        @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries
+    ) {
+        super(range);
         this.resultSource = resultSource;
         this.symbolEntries = symbolEntries;
     }
@@ -41,9 +47,10 @@ public class SQLQuerySelectionModel extends SQLQueryNodeModel {
     public Collection<SQLQuerySymbolEntry> getAllSymbols() {
         return symbolEntries;
     }
-    
+
+    @Nullable
     public SQLQueryRowsSourceModel getResultSource() {
-    	return this.resultSource;
+        return this.resultSource;
     }
 
     public void propagateContex(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
@@ -51,9 +58,9 @@ public class SQLQuerySelectionModel extends SQLQueryNodeModel {
             this.resultSource.propagateContext(dataContext, recognitionContext);
         }
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitSelectionModel(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitSelectionModel(this, node);
     }
 }

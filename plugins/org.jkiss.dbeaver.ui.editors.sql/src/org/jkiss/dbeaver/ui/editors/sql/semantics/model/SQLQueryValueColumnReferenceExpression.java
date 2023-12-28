@@ -20,12 +20,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
@@ -34,19 +29,23 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     private final SQLQuerySymbolEntry columnName;
 
     public SQLQueryValueColumnReferenceExpression(@NotNull Interval range, @NotNull SQLQuerySymbolEntry columnName) {
-    	super(range);
+        super(range);
         this.tableName = null;
         this.columnName = columnName;
     }
 
-    public SQLQueryValueColumnReferenceExpression(@NotNull Interval range, @NotNull SQLQueryQualifiedName tableName, @NotNull SQLQuerySymbolEntry columnName) {
-    	super(range);
+    public SQLQueryValueColumnReferenceExpression(
+        @NotNull Interval range,
+        @NotNull SQLQueryQualifiedName tableName,
+        @NotNull SQLQuerySymbolEntry columnName
+    ) {
+        super(range);
         this.tableName = tableName;
         this.columnName = columnName;
     }
-    
+
     public @Nullable SQLQueryQualifiedName getTableName() {
-    	return this.tableName;
+        return this.tableName;
     }
 
     @NotNull
@@ -54,7 +53,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
         return this.columnName.getSymbol();
     }
-    
+
     void propagateColumnDefinition(@Nullable SQLQuerySymbolDefinition columnDef, @NotNull SQLQueryRecognitionContext statistics) {
         // TODO consider ambiguity
         if (columnDef != null) {
@@ -64,7 +63,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             statistics.appendError(this.columnName, "Column not found in dataset");
         }
     }
-    
+
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLDialect dialect = context.getDialect();
@@ -80,7 +79,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
             SQLQuerySymbolDefinition columnDef = context.resolveColumn(this.columnName.getName());
-            
+
             SQLQuerySymbolClass forcedClass = null;
             if (columnDef == null) {
                 String rawString = columnName.getRawName();
@@ -99,7 +98,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     }
                 }
             }
-            
+
             if (forcedClass != null) {
                 this.columnName.getSymbol().setSymbolClass(forcedClass);
             } else {
@@ -107,9 +106,9 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             }
         }
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitValueColumnRefExpr(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitValueColumnRefExpr(this, node);
     }
 }

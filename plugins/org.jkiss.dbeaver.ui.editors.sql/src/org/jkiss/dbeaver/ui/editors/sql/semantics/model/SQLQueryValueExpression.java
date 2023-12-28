@@ -24,12 +24,12 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
-	
-    public SQLQueryValueExpression(Interval region) {
-		super(region);
-	}
 
-	@Nullable
+    public SQLQueryValueExpression(Interval region) {
+        super(region);
+    }
+
+    @Nullable
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
         return null;
     }

@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.ArrayList;
@@ -29,31 +32,31 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
     private final SQLQuerySymbolEntry alias;
     private final List<SQLQuerySymbolEntry> correlationColumNames;
     private final boolean forSubquery;
-    
+
     public SQLQueryRowsCorrelatedSourceModel(
-		@NotNull Interval range, 
+        @NotNull Interval range,
         @NotNull SQLQueryRowsSourceModel source,
         @NotNull SQLQuerySymbolEntry alias,
-        @NotNull List<SQLQuerySymbolEntry> correlationColumNames, 
+        @NotNull List<SQLQuerySymbolEntry> correlationColumNames,
         boolean forSubquery
     ) {
-    	super(range);
+        super(range);
         this.source = source;
         this.alias = alias;
         this.correlationColumNames = correlationColumNames;
         this.forSubquery = forSubquery;
     }
-    
+
     public SQLQueryRowsSourceModel getSource() {
-    	return this.source;
+        return this.source;
     }
-    
+
     public SQLQuerySymbolEntry getAlias() {
-    	return this.alias;
+        return this.alias;
     }
-    
+
     public List<SQLQuerySymbolEntry> getCorrelationColumNames() {
-    	return this.correlationColumNames;
+        return this.correlationColumNames;
     }
 
     @NotNull
@@ -68,7 +71,7 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
             if (this.alias.isNotClassified()) {
                 this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
             }
-    
+
             if (correlationColumNames.size() > 0) {
                 List<SQLQuerySymbol> columns = new ArrayList<>(context.getColumnsList());
                 for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
@@ -86,9 +89,9 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         }
         return context;
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitRowsCorrelatedSource(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitRowsCorrelatedSource(this, node);
     }
 }

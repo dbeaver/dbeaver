@@ -28,9 +28,9 @@ import java.util.List;
 public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel {
     private final SQLQueryValueExpression condition;
     private final List<SQLQuerySymbolEntry> columsToJoin;
-    
+
     public SQLQueryRowsNaturalJoinModel(
-		@NotNull Interval range, 
+        @NotNull Interval range,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable SQLQueryValueExpression condition
@@ -39,10 +39,10 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         this.condition = condition;
         this.columsToJoin = null;
     }
-    
+
     public SQLQueryRowsNaturalJoinModel(
-		@NotNull Interval range, 
-		@NotNull SQLQueryRowsSourceModel left,
+        @NotNull Interval range,
+        @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
         @Nullable List<SQLQuerySymbolEntry> columsToJoin
     ) {
@@ -50,16 +50,16 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         this.condition = null;
         this.columsToJoin = columsToJoin;
     }
-    
+
     public @Nullable SQLQueryValueExpression getCondition() {
-		return condition;
-	}
+        return condition;
+    }
 
-	public @Nullable List<SQLQuerySymbolEntry> getColumsToJoin() {
-		return columsToJoin;
-	}
+    public @Nullable List<SQLQuerySymbolEntry> getColumsToJoin() {
+        return columsToJoin;
+    }
 
-	@NotNull
+    @NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLQueryDataContext left = this.left.propagateContext(context, statistics);
@@ -71,7 +71,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                     SQLQuerySymbolDefinition leftColumnDef = left.resolveColumn(column.getName());
                     SQLQuerySymbolDefinition rightColumnDef = right.resolveColumn(column.getName());
                     if (leftColumnDef != null && rightColumnDef != null) {
-                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN); 
+                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
                     } else {
                         if (leftColumnDef != null) {
@@ -84,16 +84,16 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                 }
             }
         }
-        
+
         SQLQueryDataContext combinedContext = left.combine(right);
         if (this.condition != null) {
             this.condition.propagateContext(combinedContext, statistics);
         }
         return combinedContext;
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitRowsNaturalJoin(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitRowsNaturalJoin(this, node);
     }
 }

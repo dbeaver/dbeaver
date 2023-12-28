@@ -22,18 +22,20 @@ import org.jkiss.code.NotNull;
 public abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceModel {
     protected final SQLQueryRowsSourceModel left;
     protected final SQLQueryRowsSourceModel right;
-    
+
     public SQLQueryRowsSetOperationModel(@NotNull Interval range, @NotNull SQLQueryRowsSourceModel left, @NotNull SQLQueryRowsSourceModel right) {
-    	super(range);
+        super(range);
         this.left = left;
         this.right = right;
     }
 
-	public SQLQueryRowsSourceModel getLeft() {
-		return left;
-	}
+    @NotNull
+    public SQLQueryRowsSourceModel getLeft() {
+        return left;
+    }
 
-	public SQLQueryRowsSourceModel getRight() {
-		return right;
-	}
+    @NotNull
+    public SQLQueryRowsSourceModel getRight() {
+        return right;
+    }
 }

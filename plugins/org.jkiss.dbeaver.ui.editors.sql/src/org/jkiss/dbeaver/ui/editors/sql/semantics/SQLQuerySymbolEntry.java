@@ -62,7 +62,6 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
             if (this.symbol != null && this.symbol.getDefinition() != null) {
                 this.definition = definition;
             } else {
-                // this.getSymbol().setSymbolClass(definition.getSymbolClass());
                 this.getSymbol().setDefinition(definition);
             }
         }
@@ -83,9 +82,9 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
         return this.getSymbol().getSymbolClass();
     }
     
-    public void merge(@Nullable SQLQuerySymbol symbol) {
+    public void merge(@NotNull SQLQuerySymbol symbol) {
         if (this.symbol != null) {
-            
+            // TODO: illegal operation?
         } else {
             this.symbol = symbol;
             this.symbol.registerEntry(this);

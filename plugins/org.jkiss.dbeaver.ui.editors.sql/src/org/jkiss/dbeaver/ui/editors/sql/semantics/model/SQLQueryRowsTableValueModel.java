@@ -24,19 +24,19 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
 
     public SQLQueryRowsTableValueModel(@NotNull Interval range) {
-    	super(range);
+        super(range);
         // TODO
     }
-    
-    
+
+
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         // TODO
         return context;
-    }    
-    
+    }
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitRowsTableValue(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitRowsTableValue(this, node);
     }
 }

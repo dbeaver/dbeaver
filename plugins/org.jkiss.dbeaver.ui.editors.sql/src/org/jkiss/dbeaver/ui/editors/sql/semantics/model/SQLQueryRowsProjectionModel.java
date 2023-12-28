@@ -28,31 +28,38 @@ import java.util.List;
 public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     private final SQLQueryRowsSourceModel fromSource; // from tableExpression
     private final SQLQuerySelectionResultModel result; // selectList
-    
-    public SQLQueryRowsProjectionModel(@NotNull Interval range, @NotNull SQLQueryRowsSourceModel fromSource, @NotNull SQLQuerySelectionResultModel result) {
-    	super(range);
+
+    public SQLQueryRowsProjectionModel(
+        @NotNull Interval range,
+        @NotNull SQLQueryRowsSourceModel fromSource,
+        @NotNull SQLQuerySelectionResultModel result
+    ) {
+        super(range);
         this.result = result;
         this.fromSource = fromSource;
     }
-    
+
     public SQLQueryRowsSourceModel getFromSource() {
-		return fromSource;
-	}
+        return fromSource;
+    }
 
-	public SQLQuerySelectionResultModel getResult() {
-		return result;
-	}
+    public SQLQuerySelectionResultModel getResult() {
+        return result;
+    }
 
-	@NotNull
+    @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected SQLQueryDataContext propagateContextImpl(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         context = fromSource.propagateContext(context, statistics);
-        List<SQLQuerySymbol> resultColumns = this.result.expandColumns(context, statistics); 
+        List<SQLQuerySymbol> resultColumns = this.result.expandColumns(context, statistics);
         return context.overrideResultTuple(resultColumns).hideSources();
     }
-    
+
     @Override
-    protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-    	return visitor.visitRowsProjection(this, arg);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitRowsProjection(this, node);
     }
 }

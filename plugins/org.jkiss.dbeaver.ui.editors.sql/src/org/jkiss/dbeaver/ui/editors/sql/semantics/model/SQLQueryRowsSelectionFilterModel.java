@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 public class SQLQueryRowsSelectionFilterModel extends SQLQueryRowsSourceModel { // see tableExpression
@@ -30,46 +30,49 @@ public class SQLQueryRowsSelectionFilterModel extends SQLQueryRowsSourceModel { 
     private final SQLQueryValueExpression orderByClause;
 
     public SQLQueryRowsSelectionFilterModel(
-		@NotNull Interval range, 
+        @NotNull Interval range,
         @NotNull SQLQueryRowsSourceModel fromSource,
         @Nullable SQLQueryValueExpression whereClause,
         @Nullable SQLQueryValueExpression havingClause,
         @Nullable SQLQueryValueExpression groupByClause,
         @Nullable SQLQueryValueExpression orderByClause
     ) {
-    	super(range);
+        super(range);
         this.fromSource = fromSource;
         this.whereClause = whereClause;
         this.havingClause = havingClause;
         this.groupByClause = groupByClause;
         this.orderByClause = orderByClause;
     }
-    
+
     public SQLQueryRowsSourceModel getFromSource() {
-		return fromSource;
-	}
+        return fromSource;
+    }
 
     public SQLQueryValueExpression getWhereClause() {
-		return whereClause;
-	}
+        return whereClause;
+    }
 
-	public SQLQueryValueExpression getHavingClause() {
-		return havingClause;
-	}
+    public SQLQueryValueExpression getHavingClause() {
+        return havingClause;
+    }
 
-	public SQLQueryValueExpression getGroupByClause() {
-		return groupByClause;
-	}
+    public SQLQueryValueExpression getGroupByClause() {
+        return groupByClause;
+    }
 
-	public SQLQueryValueExpression getOrderByClause() {
-		return orderByClause;
-	}
+    public SQLQueryValueExpression getOrderByClause() {
+        return orderByClause;
+    }
 
-	@NotNull
+    @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected SQLQueryDataContext propagateContextImpl(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         SQLQueryDataContext result = fromSource.propagateContext(context, statistics);
-        
+
         if (this.whereClause != null) {
             this.whereClause.propagateContext(result, statistics);
         }
@@ -82,12 +85,11 @@ public class SQLQueryRowsSelectionFilterModel extends SQLQueryRowsSourceModel { 
         if (this.orderByClause != null) {
             this.orderByClause.propagateContext(result, statistics);
         }
-             
         return result;
     }
-    
+
     @Override
-	protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-		return visitor.visitRowsSelectionFilter(this, arg);
-	}
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitRowsSelectionFilter(this, node);
+    }
 }

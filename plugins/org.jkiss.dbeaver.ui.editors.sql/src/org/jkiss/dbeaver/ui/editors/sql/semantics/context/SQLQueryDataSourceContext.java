@@ -106,8 +106,9 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         return this.dialect;
     }
 
+    @NotNull
     @Override
-    public SQLQueryRowsSourceModel getDefaultTable(Interval range) {
+    public SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range) {
         return new SQLQueryRowsTableValueModel(range);
     }
 }

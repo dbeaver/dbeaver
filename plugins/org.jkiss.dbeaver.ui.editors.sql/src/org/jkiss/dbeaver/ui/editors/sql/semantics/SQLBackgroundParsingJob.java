@@ -401,6 +401,7 @@ public class SQLBackgroundParsingJob {
                             log.debug("registering script item @" + element.getOffset() + "+" + element.getLength());
                         }
                         SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(
+                            element.getOriginalText(), 
                             queryModel,
                             element.getOffset(),
                             element.getLength()

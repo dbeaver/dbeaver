@@ -36,10 +36,12 @@ import java.util.function.Consumer;
 
 public class SQLDocumentSyntaxContext {
 
-    public interface SQLDocumentSyntaxContextListener {
-        void onScriptItemIntroduced(SQLDocumentScriptItemSyntaxContext item);
+    private static final Log log = Log.getLog(SQLDocumentSyntaxContext.class);
 
-        void onScriptItemInvalidated(SQLDocumentScriptItemSyntaxContext item);
+    public interface SQLDocumentSyntaxContextListener {
+        void onScriptItemIntroduced(@Nullable SQLDocumentScriptItemSyntaxContext item);
+
+        void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item);
 
         void onAllScriptItemsInvalidated();
     }
@@ -53,10 +55,6 @@ public class SQLDocumentSyntaxContext {
             this.item = item;
         }
     }
-
-    private static final Log log = Log.getLog(SQLDocumentSyntaxContext.class);
-
-    private final Set<SQLDocumentSyntaxContextListener> listeners = new HashSet<>();
 
     private final Set<SQLDocumentSyntaxContextListener> listeners = new HashSet<>();
     
@@ -73,20 +71,21 @@ public class SQLDocumentSyntaxContext {
     public SQLDocumentSyntaxContext() {
     }
 
-    public void addListener(SQLDocumentSyntaxContextListener listener) {
+    public void addListener(@NotNull SQLDocumentSyntaxContextListener listener) {
         this.listeners.add(listener);
     }
-
-    public void removeListener(SQLDocumentSyntaxContextListener listener) {
+    
+    public void removeListener(@NotNull SQLDocumentSyntaxContextListener listener) {
         this.listeners.remove(listener);
     }
-
-    private void forEachListener(Consumer<SQLDocumentSyntaxContextListener> action) {
+    
+    private void forEachListener(@NotNull Consumer<SQLDocumentSyntaxContextListener> action) {
         for (SQLDocumentSyntaxContextListener listener : this.listeners) {
             action.accept(listener);
         }
     }
 
+    @NotNull
     public List<ScriptItemAtOffset> getScriptItems() {
         List<ScriptItemAtOffset> result = new ArrayList<>();
         NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(Integer.MIN_VALUE);
@@ -96,29 +95,7 @@ public class SQLDocumentSyntaxContext {
         return result;
     }
 
-    public void addListener(SQLDocumentSyntaxContextListener listener) {
-    	this.listeners.add(listener);
-    }
-    
-    public void removeListener(SQLDocumentSyntaxContextListener listener) {
-    	this.listeners.remove(listener);
-    }
-    
-    private void forEachListener(Consumer<SQLDocumentSyntaxContextListener> action) {
-    	for (SQLDocumentSyntaxContextListener listener: this.listeners) {
-    		action.accept(listener);
-    	}
-    }
-    
-    public List<ScriptItemAtOffset> getScriptItems() {
-    	List<ScriptItemAtOffset> result = new ArrayList<>();
-    	NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(Integer.MIN_VALUE);
-    	while (it.next()) {
-    		result.add(new ScriptItemAtOffset(it.getCurrOffset(), it.getCurrValue()));
-    	}
-    	return result;
-    }
-    
+    @Nullable
     public ScriptItemAtOffset findScriptItem(int offset) {
         if (offset == this.lastItemAccessOffset) {
             // found, do nothing
@@ -143,9 +120,9 @@ public class SQLDocumentSyntaxContext {
                 this.lastAccessedScriptItem = null;
             }
         }
-        return this.lastAccessedScriptItem == null
-            ? null
-            : new ScriptItemAtOffset(this.lastAccessedItemOffset, this.lastAccessedScriptItem);
+        return this.lastAccessedScriptItem == null ?
+            null :
+            new ScriptItemAtOffset(this.lastAccessedItemOffset, this.lastAccessedScriptItem);
     }
 
     /**
@@ -192,21 +169,23 @@ public class SQLDocumentSyntaxContext {
         this.lastAccessedItemOffset = Integer.MAX_VALUE;
         this.lastAccessedScriptItem = null;
     }
-    
-    public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(String elementOriginalText, SQLQuerySelectionModel queryModel, int offset, int length) {
+
+    public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(
+        @NotNull String elementOriginalText,
+        @NotNull SQLQuerySelectionModel queryModel,
+        int offset,
+        int length
+    ) {
         SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(elementOriginalText, queryModel, length);
         this.scriptItems.put(offset, scriptItem);
         this.forEachListener(l -> l.onScriptItemIntroduced(scriptItem));
         return scriptItem;
     }
 
+    @NotNull
     public IRegion applyDelta(int offset, int oldLength, int newLength) {
         IRegion affectedRegion;
         if (oldLength > 0) {
-            // ScriptItemAtOffset scriptItem = this.findScriptItem(offset);
-            // if (scriptItem != null && scriptItem.offset <= offset && scriptItem.offset + scriptItem.item.length() > offset + oldLength) {
-            // }
-
             // TODO:
             //   if oldLength fits in one scriptItem, them remove some part of it using split-join operation
             //   otherwise, drop all the scriptItems in oldLength range and apply newLength-oldLength as offset for all the tailing
@@ -287,7 +266,8 @@ public class SQLDocumentSyntaxContext {
         this.resetLastAccessCache();
     }
 
-    public Interval dropInvisibleScriptItems(Interval actualFragment) {
+    @NotNull
+    public Interval dropInvisibleScriptItems(@NotNull Interval actualFragment) {
         int rangeStart = actualFragment.a;
         int rangeEnd = actualFragment.b;
 
