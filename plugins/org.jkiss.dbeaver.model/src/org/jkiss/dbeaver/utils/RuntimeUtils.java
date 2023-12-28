@@ -169,29 +169,24 @@ public final class RuntimeUtils {
     }
 
     public static String formatExecutionTime(long ms) {
-        if (ms < 1000) {
-            // Less than a second, show just ms
-            return ms + "ms";
-        }
-        if (ms < 60000) {
-            // Less than a minute, show sec and ms
-            return ms / 1000 + "." + ms % 1000 + "s";
-        }
-        long sec = ms / 1000;
-        long min = sec / 60;
-        sec -= min * 60;
-        return min + "m " + sec + "s";
+        return formatExecutionTime(Duration.ofMillis(ms));
     }
 
     @NotNull
-    public static String formatExecutionTimeShort(@NotNull Duration duration) {
-        final long min = duration.toMinutes();
-        final long sec = duration.toSecondsPart();
+    public static String formatExecutionTime(@NotNull Duration duration) {
+        final long hours = duration.toHours();
+        final int minutes = duration.toMinutesPart();
+        final int seconds = duration.toSecondsPart();
+        final int millis = duration.toMillisPart();
 
-        if (min > 0) {
-            return "%dm %ds".formatted(min, sec);
+        if (hours > 0) {
+            return String.format("%dh %dm %ds", hours, minutes, seconds);
+        } else if (minutes > 0) {
+            return String.format("%dm %ds", minutes, seconds);
+        } else if (seconds > 0) {
+            return String.format("%ds", seconds);
         } else {
-            return "%ds".formatted(sec);
+            return String.format("%.03fs", millis / 1000.0);
         }
     }
 
