@@ -143,9 +143,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
             return null;
         }
 
-        if (model.isChatAPI()) {
-            completionText = completionText.trim() + ";";
-        } else {
+        if (!model.isChatAPI()) {
             completionText = "SELECT " + completionText.trim() + ";";
         }
 

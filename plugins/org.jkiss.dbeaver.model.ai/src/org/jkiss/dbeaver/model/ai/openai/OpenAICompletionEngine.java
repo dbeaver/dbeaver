@@ -107,7 +107,6 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             .frequencyPenalty(0.0)
             .presencePenalty(0.0)
             .n(1)
-            .stop(List.of("#", ";"))
             .model(modelId)
             //.echo(true)
             .build();
@@ -289,6 +288,9 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
                     completionText = ((CompletionChoice) choice).getText();
                 } else {
                     completionText = ((ChatCompletionChoice) choice).getMessage().getContent();
+                }
+                if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.GPT_LOG_QUERY))) {
+                    log.debug("GPT response:\n" + completionText);
                 }
                 return completionText;
             } catch (Exception exception) {
