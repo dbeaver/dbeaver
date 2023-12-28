@@ -58,8 +58,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @NotNull
     private SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
         SQLDialect dialect = context.getDialect();
-        String name = dialect.mustBeQuoted(attr.getName(), false) 
-            ? dialect.getQuotedIdentifier(attr.getName(), false, false) 
+        String name = dialect.mustBeQuoted(attr.getName(), true) 
+            ? dialect.getQuotedIdentifier(attr.getName(), true, false) 
             : attr.getName().toLowerCase();
         SQLQuerySymbol symbol = new SQLQuerySymbol(name);
         symbol.setDefinition(new SQLQuerySymbolByDbObjectDefinition(attr, SQLQuerySymbolClass.COLUMN));
@@ -70,27 +70,29 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.table = context.findRealTable(name.toListOfStrings());
-                
-        if (this.table != null) { 
-            this.name.setDefinition(table);
-            context = context.extendWithRealTable(this.table, this);
-            try {
-                List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(new VoidProgressMonitor());
-                if (attributes != null) {
-                    final SQLQueryDataContext attrsContext = context;
-                    List<SQLQuerySymbol> columns = attributes.stream()
-                        .filter(a -> !DBUtils.isHiddenObject(a))
-                        .map(a -> this.prepareColumnSymbol(attrsContext, a))
-                        .collect(Collectors.toList());
-                    context = context.overrideResultTuple(columns);
+        if (this.name.isNotClassified()) {
+            this.table = context.findRealTable(this.name.toListOfStrings());
+                    
+            if (this.table != null) { 
+                this.name.setDefinition(table);
+                context = context.extendWithRealTable(this.table, this);
+                try {
+                    List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(new VoidProgressMonitor());
+                    if (attributes != null) {
+                        final SQLQueryDataContext attrsContext = context;
+                        List<SQLQuerySymbol> columns = attributes.stream()
+                            .filter(a -> !DBUtils.isHiddenObject(a))
+                            .map(a -> this.prepareColumnSymbol(attrsContext, a))
+                            .collect(Collectors.toList());
+                        context = context.overrideResultTuple(columns);
+                    }
+                } catch (DBException ex) {
+                    statistics.appendError(this.name.entityName, "Failed to resolve table", ex);
                 }
-            } catch (DBException ex) {
-                statistics.appendError(this.name.entityName, "Failed to resolve table", ex);
+            } else {
+                this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
+                statistics.appendError(this.name.entityName, "Table not found");
             }
-        } else {
-            this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
-            statistics.appendError(this.name.entityName, "Table not found");
         }
         return context;
     }

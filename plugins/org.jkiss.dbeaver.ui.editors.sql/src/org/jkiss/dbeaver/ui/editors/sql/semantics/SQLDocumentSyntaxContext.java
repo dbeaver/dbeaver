@@ -298,7 +298,6 @@ public class SQLDocumentSyntaxContext {
             this.scriptItems.removeAt(kn.data);
             droppedCount++;
         }
-        // System.out.println("dropped " + droppedCount + ", kept " + this.scriptItems.size());
 
         return new Interval(actualStart, actualEnd);
     }

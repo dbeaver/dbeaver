@@ -130,7 +130,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         
         @Override
         protected <R, T> R applyImpl(SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
-        	return visitor.visitSelectTupleSpec(this, arg);
+            return visitor.visitSelectTupleSpec(this, arg);
         }
     }
 

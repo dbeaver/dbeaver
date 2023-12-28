@@ -66,6 +66,8 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
     private boolean evalMode;
     private int keywordStyle = SWT.NORMAL;
 
+    private final boolean DEBUG = false;
+
     public SQLRuleScanner() {
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
     }
@@ -174,8 +176,22 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         if (entry != null) {
             int end = syntaxContext.getLastAccessedTokenOffset() + entry.getInterval().length();
             if (end > offset) {
-                while (this.getOffset() < end) {
-                    super.read();
+                if (DEBUG) {
+                    StringBuilder sb = new StringBuilder();
+                    while (this.getOffset() < end) {
+                        int c = super.read();
+                        if (c == RuleBasedScanner.EOF) {
+                            return Token.UNDEFINED;
+                        }
+                        sb.append((char) c);
+                    }
+                    System.out.println("found @" + offset + "-" + end + " " + entry + " = " + sb.toString());
+                } else {
+                    while (this.getOffset() < end) {
+                        if (super.read() == RuleBasedScanner.EOF) {
+                            return Token.UNDEFINED;
+                        }
+                    }
                 }
                 return this.extraSyntaxTokens.computeIfAbsent(
                     entry.getSymbolClass().getTokenType(),
@@ -188,33 +204,18 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
             return Token.UNDEFINED;
         }
     }
-    
+
     @Override
     public IToken nextToken() {
         super.fTokenOffset = fOffset;
         super.fColumn = UNDEFINED;
 
-        if (super.fRules != null) {
-            {
-                IToken token = this.tryResolveExtraToken();
-                if (!token.isUndefined()) {
-                    return token;
-                }
-            }
-            
-            for (IRule fRule : super.fRules) {
-                IToken token = (fRule.evaluate(this));
-                if (!token.isUndefined()) {
-                    return token;
-                }
-            }
+        IToken token = this.tryResolveExtraToken();
+        if (!token.isUndefined()) {
+            return token;
         }
-
-        if (read() == RuleBasedScanner.EOF) {
-            return Token.EOF;
-        }
-
-        return super.fDefaultReturnToken;
+        
+        return super.nextToken();
     }
 
     private class SimpleRuleAdapter<RULE extends TPRule> implements IRule {
