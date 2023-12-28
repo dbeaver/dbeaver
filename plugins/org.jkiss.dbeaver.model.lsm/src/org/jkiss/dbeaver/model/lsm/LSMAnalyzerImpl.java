@@ -24,43 +24,40 @@ import org.antlr.v4.runtime.atn.PredictionMode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
-import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMParserOverrides;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
+
 public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMParserOverrides> implements LSMAnalyzer {
 
     private static final Log log = Log.getLog(LSMAnalyzerImpl.class);
     
-    private final SyntaxModel syntaxModel;
+    private final SQLDialect dialect;
     
-    public LSMAnalyzerImpl() {
-        Pair<TLexer, TParser> pair = this.createParser(STMSource.fromString(""));
-        syntaxModel = new SyntaxModel(pair.getSecond());
-        syntaxModel.introduce(SelectStatement.class);
+    public LSMAnalyzerImpl(@NotNull SQLDialect dialect) {
+        this.dialect = dialect;
     }
 
     @NotNull
-    protected abstract Pair<TLexer, TParser> createParser(@NotNull STMSource source);
+    protected abstract Pair<TLexer, TParser> createParser(@NotNull STMSource source, @NotNull SQLDialect dialect);
 
     @NotNull
     protected abstract STMTreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
 
     @NotNull
     protected TParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        Pair<TLexer, TParser> pair = this.createParser(source);
+        Pair<TLexer, TParser> pair = this.createParser(source, this.dialect);
         TLexer lexer = pair.getFirst();
         TParser parser = pair.getSecond();
         
         if (errorListener != null) {
             lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
-            lexer.addErrorListener((ANTLRErrorListener) errorListener);
+            lexer.addErrorListener(errorListener);
             parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
-            parser.addErrorListener((ANTLRErrorListener) errorListener);
+            parser.addErrorListener(errorListener);
         }
         
         parser.getInterpreter().setPredictionMode(PredictionMode.LL);
@@ -82,17 +79,4 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
         }
     }
 
-    @Nullable
-    @Override
-    public LSMElement parseSqlQueryModel(@NotNull STMSource source) {
-        STMTreeRuleNode root = parseSqlQueryTree(source, null);
-        if (root != null) {
-            SyntaxModelMappingResult<SelectStatement> result = this.syntaxModel.map(root, SelectStatement.class);
-            if (!result.isNoErrors()) {
-                result.getErrors().printToStderr();
-            }
-            return result.getModel();
-        }
-        return null;
-    }
 }
