@@ -47,5 +47,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.bundle.jsvg,
  org.eclipse.ui.forms,
  org.eclipse.ui.workbench.texteditor,
- org.eclipse.e4.ui.model.workbench
+ org.eclipse.e4.ui.model.workbench,
+ org.jkiss.dbeaver.ui.editors.base
 Automatic-Module-Name: org.jkiss.dbeaver.ui
