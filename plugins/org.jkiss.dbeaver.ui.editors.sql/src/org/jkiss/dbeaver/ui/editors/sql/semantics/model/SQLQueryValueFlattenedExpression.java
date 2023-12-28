@@ -25,10 +25,16 @@ import java.util.List;
 
 public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
     private final List<SQLQueryValueExpression> operands;
+    private final String content;
 
-    public SQLQueryValueFlattenedExpression(@NotNull Interval range, @NotNull List<SQLQueryValueExpression> operands) {
+    public SQLQueryValueFlattenedExpression(@NotNull Interval range, @NotNull String content, @NotNull List<SQLQueryValueExpression> operands) {
     	super(range);
+        this.content = content;
         this.operands = operands;
+    }
+    
+    public String getContent() {
+        return this.content;
     }
     
     public List<SQLQueryValueExpression> getOperands() {

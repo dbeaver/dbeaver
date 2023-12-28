@@ -19,11 +19,15 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -38,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
@@ -67,8 +72,9 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         DummyDbObject apply(DummyDbObject parent, String name, int index);
     }
     
-    private class DummyDbObject implements DBSEntityAttribute, DBSTable, DBSSchema, DBSCatalog, DBPDataSource {
+    private class DummyDbObject implements DBSEntityAttribute, DBSTable, DBSSchema, DBSCatalog, DBPDataSource, DBPImageProvider {
         private final DummyDbObject container;
+        private final DBPImage image;
         private final String name;
         private final String description;
         private final int position;
@@ -77,8 +83,9 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         private Map<String, DummyDbObject> childrenByName = null;
         private List<DummyDbObject> children = null;
         
-        public DummyDbObject(DummyDbObject container, String name, String description, int position, Set<String> childrenNames, DummyObjectCtor childCtor) {
+        public DummyDbObject(DummyDbObject container, DBPImage image, String name, String description, int position, Set<String> childrenNames, DummyObjectCtor childCtor) {
             this.container = container;
+            this.image = image;
             this.name = name;
             this.description = description;
             this.position = position;
@@ -116,6 +123,11 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return dummyDataSource;
         }
 
+        @Override
+        public DBPImage getObjectImage() {
+            return this.image;
+        }
+        
         @NotNull
         @Override
         public String getName() {
@@ -220,11 +232,11 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         @NotNull
         @Override
         public String getFullyQualifiedName(DBPEvaluationContext context) {
-            StringBuilder sb = new StringBuilder();
-            for (DBSObject o = this; o != null; o = o.getParentObject()) {
-                sb.append(dialect.getQuotedIdentifier(o.getName(), false, false));
+            if (this.container == defaultDummySchema || this.container == defaultDummyCatalog || this.container == dummyDataSource) {
+                return this.name;
+            } else {
+                return DBUtils.getFullQualifiedName(getDataSource(), this.container, this);
             }
-            return sb.toString();
         }
 
         @Override
@@ -360,23 +372,23 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     private DummyDbObject prepareDataSource() {
-        return new DummyDbObject(null, "DummyDataSource", "Dummy data source for purposes of static query semantic analysis", 0, knownCatalogNames, this::prepareCatalog);
+        return new DummyDbObject(null, UIIcon.DATABASES, "DummyDataSource", "Dummy data source for purposes of static query semantic analysis", 0, knownCatalogNames, this::prepareCatalog);
     }
     
     private DummyDbObject prepareCatalog(DummyDbObject parent, String name, int index) {
-        return new DummyDbObject(parent, name, "Dummy catalog for purposes of static query semantic analysis", index, knownSchemaNames, this::prepareSchema);
+        return new DummyDbObject(parent, DBIcon.TREE_DATABASE, name, "Dummy catalog for purposes of static query semantic analysis", index, knownSchemaNames, this::prepareSchema);
     }
     
     private DummyDbObject prepareSchema(DummyDbObject parent, String name, int index) {
-        return new DummyDbObject(parent, name, "Dummy schema for purposes of static query semantic analysis", index, knownTableNames, this::prepareTable);
+        return new DummyDbObject(parent, DBIcon.TREE_SCHEMA, name, "Dummy schema for purposes of static query semantic analysis", index, knownTableNames, this::prepareTable);
     }
     
     private DummyDbObject prepareTable(DummyDbObject parent, String name, int index) {
-        return new DummyDbObject(parent, name, "Dummy table for purposes of static query semantic analysis", index, knownColumnNames, this::prepareColumn);
+        return new DummyDbObject(parent, DBIcon.TREE_TABLE, name, "Dummy table for purposes of static query semantic analysis", index, knownColumnNames, this::prepareColumn);
     }
     
     private DummyDbObject prepareColumn(DummyDbObject parent, String name, int index) {
-        return new DummyDbObject(parent, name, "Dummy column for purposes of static query semantic analysis", index, Collections.emptySet(), null);
+        return new DummyDbObject(parent, DBIcon.TYPE_STRING, name, "Dummy column for purposes of static query semantic analysis", index, Collections.emptySet(), null);
     }
     
     @Override

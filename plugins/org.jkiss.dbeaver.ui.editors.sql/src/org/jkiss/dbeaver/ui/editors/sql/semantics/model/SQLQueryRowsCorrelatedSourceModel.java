@@ -63,7 +63,7 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         if (this.alias.isNotClassified()) {
-            context = this.source.propagateContext(context, statistics).extendWithTableAlias(this.alias.getSymbol(), this.source);
+            context = this.source.propagateContext(context, statistics).extendWithTableAlias(this.alias.getSymbol(), this);
             this.alias.getSymbol().setDefinition(this.alias);
             if (this.alias.isNotClassified()) {
                 this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
@@ -75,8 +75,9 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
                     SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
                     if (correlatedNameDef.isNotClassified()) {
                         SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
-                        correlatedNameDef.setDefinition(columns.get(i).getDefinition());
                         correlatedName.setDefinition(correlatedNameDef);
+                        correlatedName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
+                        correlatedNameDef.setDefinition(columns.get(i).getDefinition());
                         columns.set(i, correlatedName);
                     }
                 }

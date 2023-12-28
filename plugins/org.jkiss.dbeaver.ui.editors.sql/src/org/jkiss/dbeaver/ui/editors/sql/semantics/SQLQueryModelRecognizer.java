@@ -659,7 +659,7 @@ public class SQLQueryModelRecognizer {
         }
         
         List<SQLQuerySymbolEntry> result = new ArrayList<>(node.getChildCount());
-        for (int i = 0; i < node.getChildCount(); i++) {
+        for (int i = 0; i < node.getChildCount(); i += 2) {
             result.add(collectIdentifier(node.getStmChild(i)));
         }
         return result;
@@ -672,7 +672,7 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.authorizationIdentifier,
         STMKnownRuleNames.columnName
     );
-
+    
     @NotNull
     private SQLQuerySymbolEntry collectIdentifier(@NotNull STMTreeNode node) {
         return collectIdentifier(node, false);
@@ -809,13 +809,62 @@ public class SQLQueryModelRecognizer {
             );
         }
         
-        List<STMTreeNode> knownExprs = STMUtils.expandSubtree(node, null, knownRecognizableValueExpressionNames);
-        return knownExprs.size() == 1 
-    		? collectKnownValueExpression(knownExprs.get(0))
-            : new SQLQueryValueFlattenedExpression(
-        			node.getRealInterval(), 
-        			knownExprs.stream().map(this::collectKnownValueExpression).collect(Collectors.toList())
-			);
+        if (knownRecognizableValueExpressionNames.contains(node.getNodeName())) {
+            return collectKnownValueExpression(node);
+        } else {
+            Stack<STMTreeNode> stack = new Stack<>();
+            Stack<List<SQLQueryValueExpression>> childLists = new Stack<>();
+            stack.add(node);
+            childLists.push(new ArrayList<>(1));
+            
+//            int indent = 0;
+            while (stack.size() > 0) {
+                STMTreeNode n = stack.pop();
+                
+                if (n != null) {
+                    STMTreeNode rn = n;
+                    while (rn.getChildCount() == 1 && !knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
+                        rn = rn.getStmChild(0);
+                    }
+                    if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
+//                        System.out.println("  ".repeat(indent + 1) + rn.getNodeName() + ";");
+                        childLists.peek().add(collectKnownValueExpression(rn));
+                    } else {
+//                        indent++;
+//                        System.out.println("  ".repeat(indent) + n.getNodeName() + " {");
+                        stack.push(n);
+                        stack.push(null);
+                        childLists.push(new ArrayList<>(rn.getChildCount()));
+                        for (int i = rn.getChildCount() - 1; i >= 0; i--) {
+                            stack.push(rn.getStmChild(i));
+                        }
+                    }
+                } else {
+                    STMTreeNode cn = stack.pop();
+//                    System.out.println("  ".repeat(indent) + "} " + cn.getNodeName());
+//                    indent--;
+                    
+                    List<SQLQueryValueExpression> children = childLists.pop();
+                    if (children.size() > 0) {
+                        SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression c ? c 
+                                : new SQLQueryValueFlattenedExpression(cn.getRealInterval(), cn.getTextContent(), children);
+                        childLists.peek().add(e);
+                    }
+                }
+            }
+            
+            List<SQLQueryValueExpression> roots = childLists.pop();
+            return roots.isEmpty() ? new SQLQueryValueFlattenedExpression(node.getRealInterval(), node.getTextContent(), Collections.emptyList()) : roots.get(0);
+        }
+
+//        
+//        List<STMTreeNode> knownExprs = STMUtils.expandSubtree(node, null, knownRecognizableValueExpressionNames);
+//        return knownExprs.size() == 1 
+//    		? collectKnownValueExpression(knownExprs.get(0))
+//            : new SQLQueryValueFlattenedExpression(
+//        			node.getRealInterval(), 
+//        			knownExprs.stream().map(this::collectKnownValueExpression).collect(Collectors.toList())
+//			);
     }
 
     @NotNull

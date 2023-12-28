@@ -59,8 +59,12 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
         if (this.definition != null) {
             throw new UnsupportedOperationException("Symbol entry definition has already been set");
         } else {
-            this.definition = definition;
-            this.getSymbol().setSymbolClass(definition.getSymbolClass());
+            if (this.symbol != null && this.symbol.getDefinition() != null) {
+                this.definition = definition;
+            } else {
+                // this.getSymbol().setSymbolClass(definition.getSymbolClass());
+                this.getSymbol().setDefinition(definition);
+            }
         }
     }
 

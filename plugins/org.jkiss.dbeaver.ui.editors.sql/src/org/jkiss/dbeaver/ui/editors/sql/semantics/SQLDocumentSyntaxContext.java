@@ -58,6 +58,8 @@ public class SQLDocumentSyntaxContext {
 
     private final Set<SQLDocumentSyntaxContextListener> listeners = new HashSet<>();
 
+    private final Set<SQLDocumentSyntaxContextListener> listeners = new HashSet<>();
+    
     private final OffsetKeyedTreeMap<SQLDocumentScriptItemSyntaxContext> scriptItems = new OffsetKeyedTreeMap<>();
 
     private int lastTokenAccessOffset = Integer.MAX_VALUE;
@@ -94,6 +96,29 @@ public class SQLDocumentSyntaxContext {
         return result;
     }
 
+    public void addListener(SQLDocumentSyntaxContextListener listener) {
+    	this.listeners.add(listener);
+    }
+    
+    public void removeListener(SQLDocumentSyntaxContextListener listener) {
+    	this.listeners.remove(listener);
+    }
+    
+    private void forEachListener(Consumer<SQLDocumentSyntaxContextListener> action) {
+    	for (SQLDocumentSyntaxContextListener listener: this.listeners) {
+    		action.accept(listener);
+    	}
+    }
+    
+    public List<ScriptItemAtOffset> getScriptItems() {
+    	List<ScriptItemAtOffset> result = new ArrayList<>();
+    	NodesIterator<SQLDocumentScriptItemSyntaxContext> it = this.scriptItems.nodesIteratorAt(Integer.MIN_VALUE);
+    	while (it.next()) {
+    		result.add(new ScriptItemAtOffset(it.getCurrOffset(), it.getCurrValue()));
+    	}
+    	return result;
+    }
+    
     public ScriptItemAtOffset findScriptItem(int offset) {
         if (offset == this.lastItemAccessOffset) {
             // found, do nothing
@@ -167,9 +192,9 @@ public class SQLDocumentSyntaxContext {
         this.lastAccessedItemOffset = Integer.MAX_VALUE;
         this.lastAccessedScriptItem = null;
     }
-
-    public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(SQLQuerySelectionModel queryModel, int offset, int length) {
-        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(queryModel, length);
+    
+    public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(String elementOriginalText, SQLQuerySelectionModel queryModel, int offset, int length) {
+        SQLDocumentScriptItemSyntaxContext scriptItem = new SQLDocumentScriptItemSyntaxContext(elementOriginalText, queryModel, length);
         this.scriptItems.put(offset, scriptItem);
         this.forEachListener(l -> l.onScriptItemIntroduced(scriptItem));
         return scriptItem;

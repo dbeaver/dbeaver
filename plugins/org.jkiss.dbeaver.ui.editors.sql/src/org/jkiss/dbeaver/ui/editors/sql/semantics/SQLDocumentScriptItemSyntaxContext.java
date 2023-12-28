@@ -33,12 +33,22 @@ public class SQLDocumentScriptItemSyntaxContext {
     }
 
     private final OffsetKeyedTreeMap<SQLQuerySymbolEntry> entries = new OffsetKeyedTreeMap<>();
+    private final String originalText;
     private final SQLQuerySelectionModel queryModel;
     private int length;
 
-    public SQLDocumentScriptItemSyntaxContext(@NotNull SQLQuerySelectionModel queryModel, int length) {
-        this.queryModel = queryModel;
+    public SQLDocumentScriptItemSyntaxContext(String originalText, SQLQuerySelectionModel queryModel, int length) {
+        this.originalText = originalText;
+    	this.queryModel = queryModel;
         this.length = length;
+    }
+    
+    public String getOriginalText() {
+        return this.originalText;
+    }
+    
+    public SQLQuerySelectionModel getQueryModel() {
+    	return this.queryModel;
     }
 
     @NotNull
