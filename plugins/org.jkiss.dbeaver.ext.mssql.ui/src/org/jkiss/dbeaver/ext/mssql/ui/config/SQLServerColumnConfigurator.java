@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.PropertyObjectEditPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditAttributePage;
 
 import java.util.Map;
 
@@ -33,7 +33,7 @@ public class SQLServerColumnConfigurator implements DBEObjectConfigurator<SQLSer
         return new UITask<SQLServerTableColumn>() {
             @Override
             protected SQLServerTableColumn runTask() {
-                final PropertyObjectEditPage page = new PropertyObjectEditPage(null, column);
+                final EditAttributePage page = new EditAttributePage(commandContext, column, options);
                 if (!page.edit()) {
                     return null;
                 }
