@@ -633,8 +633,8 @@ public class NavigatorUtils {
                     continue;
                 }
                 if (id.startsWith("org.eclipse.debug") || // $NON-NLS-0$
-                        id.startsWith("team.main") || // $NON-NLS-0$
-                        id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
+                    id.startsWith("team.main") || // $NON-NLS-0$
+                    id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
                     item.dispose();
                 }
                 DBNNodeWithResource adapt = Adapters.adapt(node, DBNNodeWithResource.class);
@@ -642,9 +642,9 @@ public class NavigatorUtils {
                     return;
                 }
                 if ((adapt.isRemoteResource() ||
-                        adapt.getResource() instanceof IFolder) &&
-                        id.startsWith("compareWithMenu") || // $NON-NLS-0$
-                        id.startsWith("replaceWithMenu")) { // $NON-NLS-0$
+                    adapt.getResource() instanceof IFolder) &&
+                    (id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                        id.startsWith("replaceWithMenu"))) { // $NON-NLS-0$
                     item.dispose();
                 }
             }
