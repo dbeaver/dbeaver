@@ -154,8 +154,13 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
         this.notifications = notifications;
     }
 
+    /**
+     * Allows to set focus on first child
+     */
     public void setFocus() {
-        parent.getChildren()[0].setFocus();
+        if (parent != null && parent.getChildren() != null && parent.getChildren().length > 0) {
+            parent.getChildren()[0].setFocus();
+        }
     }
 
 }
