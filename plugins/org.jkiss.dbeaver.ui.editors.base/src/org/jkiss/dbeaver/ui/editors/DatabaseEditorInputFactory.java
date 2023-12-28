@@ -68,8 +68,8 @@ public class DatabaseEditorInputFactory implements IElementFactory
         memento.putString(TAG_CLASS, input.getClass().getName());
         memento.putString(TAG_PROJECT, context.getDataSource().getContainer().getProject().getName());
         memento.putString(TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());
-        memento.putString(TAG_NODE, node.getNodeItemPath());
-        memento.putString(TAG_NODE_NAME, node.getNodeName());
+        memento.putString(TAG_NODE, node.getNodeUri());
+        memento.putString(TAG_NODE_NAME, node.getNodeDisplayName());
         if (!CommonUtils.isEmpty(input.getDefaultPageId())) {
             memento.putString(TAG_ACTIVE_PAGE, input.getDefaultPageId());
         }

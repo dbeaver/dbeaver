@@ -69,7 +69,8 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
     public static boolean renameNode(IWorkbenchWindow workbenchWindow, Shell shell, final DBNNode node, String newName, Object uiSource)
     {
-        String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true, false) : node.getNodeName();
+        String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true,
+            false) : node.getNodeDisplayName();
         if (oldName == null) {
             oldName = "?";
         }
@@ -142,7 +143,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
             DBWorkbench.getPlatformUI().showError(
                 UINavigatorMessages.actions_navigator_rename_database_object_exception_title,
                 NLS.bind(UINavigatorMessages.actions_navigator_rename_database_object_exception_message,
-                    node.getNodeName()),
+                    node.getNodeDisplayName()),
                 e);
             return false;
         }

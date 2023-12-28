@@ -5522,12 +5522,12 @@ public class SQLEditor extends SQLEditorBase implements
         ) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_rollback_label,
-                RuntimeUtils.formatExecutionTimeShort(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds))
+                RuntimeUtils.formatExecutionTime(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds))
             );
         } else if (disconnectTimeoutSeconds > 0 && disconnectTimeoutSeconds > elapsedSeconds) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_disconnect_label,
-                RuntimeUtils.formatExecutionTimeShort(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds))
+                RuntimeUtils.formatExecutionTime(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds))
             );
         } else {
             return null;

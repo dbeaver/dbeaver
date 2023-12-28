@@ -92,7 +92,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript" label="%tree.scripts.node.name"
-                                icon="#procedures" description="%tree.scripts.node.description">
+                                icon="#procedures" id="scripts" description="%tree.scripts.node.description">
                             <folder
                                   icon="#procedures"
                                   label="%tree.scripts.adapter.node.name"
@@ -217,13 +217,14 @@
                       </folder>
                       <items
                             icon="#parameter"
+                            path="virtualsparameter"
                             label="%tree.virtualschemaparameters.node.name"
                             navigable="false"
                             property="virtualSchemaParameters">
                       </items>
                    </items>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin" description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder
@@ -313,6 +314,7 @@
                       visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
                    <items
                          icon="icons/role.gif"
+                         path="roles"
                          label="%tree.role.node.name"
                          property="roles">
                       <items
@@ -400,6 +402,7 @@
                 <folder
                       description="%tree.security.node.description"
                       icon="#folder_info"
+                      id="folderInfo"
                       label="%tree.security.node.name"
                       visibleIf="connected &amp;&amp; dataSource.hasPasswordPolicy">
                    <folder

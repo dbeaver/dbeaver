@@ -71,6 +71,8 @@ public class BundleConfigGenerator {
         if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             // Add slf4j adapter for desktop applications
             addBundleByName("org.jkiss.dbeaver.slf4j", processConfig);
+        } else {
+            addBundleByName("io.cloudbeaver.slf4j", processConfig);
         }
         addBundleByName("com.dbeaver.resources.drivers.jdbc", processConfig);
 
