@@ -70,15 +70,17 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
             resultColumns = new ArrayList<>(correspondingColumnNames.size());
             for (int i = 0; i < resultColumns.size(); i++) {
                 SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
-                SQLQuerySymbolDefinition leftDef = left.resolveColumn(column.getName());
-                SQLQuerySymbolDefinition rightDef = right.resolveColumn(column.getName());
-                
-                if (leftDef == null || rightDef == null) {
-                    nonMatchingColumnSets = true;
+                if (column.isNotClassified()) {
+                    SQLQuerySymbolDefinition leftDef = left.resolveColumn(column.getName());
+                    SQLQuerySymbolDefinition rightDef = right.resolveColumn(column.getName());
+                    
+                    if (leftDef == null || rightDef == null) {
+                        nonMatchingColumnSets = true;
+                    }
+                    
+                    column.getSymbol().setDefinition(column); // TODO combine multiple definitions
+                    resultColumns.add(column.getSymbol());
                 }
-                
-                column.getSymbol().setDefinition(column); // TODO combine multiple definitions
-                resultColumns.add(column.getSymbol());
             }
         }
         

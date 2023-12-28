@@ -124,4 +124,8 @@ public class SQLQueryQualifiedName { // qualifier
     public boolean equals(Object obj) {
         return obj instanceof SQLQueryQualifiedName other && this.toListOfStrings().equals(other.toListOfStrings());
     }
+
+    public boolean isNotClassified() {
+        return this.entityName.isNotClassified();
+    }
 }
