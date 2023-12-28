@@ -36,6 +36,122 @@ lexer grammar SQLStandardLexer;
     package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 }
 
+@lexer::members {
+    private java.util.Map<String, String> knownIdentifierQuotes = java.util.Collections.emptyMap();
+    private int[] knownIdentifierQuoteHeads = new int[0];
+    private int knownIdentifierLongestHead = 0;
+    private int lastIdentifierStart = 0;
+    private int lastIdentifierEnd = 0;
+    private int lastIdentifierLength = 0;
+
+    public SQLStandardLexer(CharStream input, java.util.Map<String, String> knownIdentifierQuotes) {
+        this(input);
+        this.knownIdentifierQuotes = knownIdentifierQuotes;
+        this.knownIdentifierLongestHead = knownIdentifierQuotes.size() < 1 ? 0 : knownIdentifierQuotes.keySet().stream().mapToInt(k -> k.length()).max().getAsInt();
+        this.knownIdentifierQuoteHeads = knownIdentifierQuotes.keySet().stream().mapToInt(s -> s.charAt(0)).toArray();
+    }
+
+    private class QuottedIdentifierConsumer {
+        private final CharStream input;
+        private int pos;
+        private StringBuilder captured = new StringBuilder();
+        private String expectedTail;
+
+        public QuottedIdentifierConsumer(final CharStream input) {
+            this.input = input;
+            this.pos = 0;
+        }
+
+        public String captured() {
+            return this.captured.toString();
+        }
+
+        public boolean isEscapeable() {
+            return captured.equals(expectedTail);
+        }
+
+        public boolean tryConsumeHead() {
+            do {
+                int c = input.LA(++pos);
+                if (c == EOF) {
+                    return false;
+                }
+                captured.append((char) c);
+                if (pos > knownIdentifierLongestHead) {
+                    return false;
+                }
+                expectedTail = knownIdentifierQuotes.get(captured.toString());
+            } while (expectedTail == null);
+            return true;
+        }
+
+        public boolean tryConsumeEscapedEntry() {
+            StringBuilder follow = new StringBuilder();
+            while (follow.length() < expectedTail.length()) {
+                int c = input.LA(++pos);
+                if (c == EOF) {
+                    return false;
+                }
+                follow.append((char) c);
+            }
+            if (follow.toString().equals(expectedTail)) {
+                captured.append(follow);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public boolean tryConsumeBody() {
+            do {
+                int c = input.LA(++pos);
+                if (c == EOF) {
+                    return false;
+                }
+                captured.append((char) c);
+            } while (!captured.toString().endsWith(expectedTail));
+            return true;
+        }
+    }
+
+    private boolean tryConsumeQuottedIdentifier(final CharStream input) {
+        if (input.index() < 1) {
+            return false;
+        }
+        if (!org.jkiss.utils.ArrayUtils.contains(knownIdentifierQuoteHeads, input.LA(1))) {
+            return false;
+        }
+
+        var c = new QuottedIdentifierConsumer(input);
+        if (!c.tryConsumeHead()) {
+            return false;
+        }
+        if (!c.tryConsumeBody()) {
+            return false;
+        }
+        if (c.isEscapeable()) {
+            while (c.tryConsumeEscapedEntry()) {
+                if (!c.tryConsumeBody()) {
+                    return false;
+                }
+            }
+        }
+
+        lastIdentifierStart = input.index();
+        lastIdentifierLength = c.captured().length();
+        lastIdentifierEnd = input.index() + c.captured().length();
+        return true;
+    }
+
+    private boolean isIdentifierEndReached(final CharStream input) {
+        return _input.index() < lastIdentifierEnd;
+    }
+
+    int cnt;
+}
+
+DelimitedIdentifier: { tryConsumeQuottedIdentifier(_input) }? ({isIdentifierEndReached(_input)}? .)+;
+
 // letters to support case-insensitivity for keywords
 fragment A:[aA];
 fragment B:[bB];
@@ -269,14 +385,6 @@ Separator: (NewLine|Space)+ -> channel(HIDDEN);
 Space: [ \t]+;
 
 
-// identifiers
-DelimitedIdentifier: IdentifierQuote DelimitedIdentifierBody IdentifierQuote;
-fragment IdentifierQuote: (DoubleQuote|BackQuote);
-fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
-fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
-fragment NondoublequoteCharacter: ~[`"];
-fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
-
 Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
 fragment IdentifierStart: SimpleLatinLetter;
@@ -291,3 +399,11 @@ HexStringLiteral: 'X' SingleQuote Hexit* SingleQuote ((Separator)+ SingleQuote H
 StringLiteralContent: SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
 
 WS: Separator;
+
+
+// quotted something
+Quotted: Quotted1|Quotted2;
+fragment Quotted1: DoubleQuote ((~["])|(DoubleQuote DoubleQuote))+ DoubleQuote;
+fragment Quotted2: BackQuote ((~[`])|(BackQuote BackQuote))+ BackQuote;
+
+

@@ -16,16 +16,14 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.stm.STMErrorListener;
-import org.jkiss.dbeaver.model.stm.STMSource;
-import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
-public interface LSMAnalyzer {
-
-    @Nullable
-    STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener);
-
-    
+/**
+ * Factory responsible for creating analyzer instances, parametrized with a given dialect
+ */
+public interface LSMAnalyzerFactory {
+    /**
+     * Creates analyzer instance, parametrized with a given dialect
+     */
+    LSMAnalyzer createAnalyzer(SQLDialect dialect);
 }
