@@ -2229,22 +2229,17 @@ public class SQLEditor extends SQLEditorBase implements
     private void checkInputFileExistence(IEditorInput editorInput) {
         // Check for file existence
         try {
-            if (editorInput instanceof IFileEditorInput fei) {
-                final IFile file = fei.getFile();
+            if (editorInput instanceof IFileEditorInput) {
+                final IFile file = ((IFileEditorInput) editorInput).getFile();
                 if (!file.exists()) {
-                    // First try to refresh
-                    try {
-                        file.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
-                    } catch (CoreException e) {
-                        log.debug("Error refreshing resource: " + e.getMessage());
-                    }
-                    if (!file.exists()) {
-                        file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
-                    }
+                    file.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
+                }
+                if (!file.exists()) {
+                    file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
                 }
             }
         } catch (Exception e) {
-            log.error("Error checking SQL file existence: " + e.getMessage());
+            log.error("Error checking SQL file", e);
         }
     }
 
