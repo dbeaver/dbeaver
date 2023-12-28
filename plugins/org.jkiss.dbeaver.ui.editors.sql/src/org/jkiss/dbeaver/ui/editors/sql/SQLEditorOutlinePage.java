@@ -24,6 +24,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.SQLDocumentSyntaxContextListener;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
@@ -62,6 +64,39 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private List<OutlineNode> rootNodes;
     private SelectionSyncOperation currentSelectionSyncOp = SelectionSyncOperation.NONE;
     private SQLOutlineNodeBuilder currentNodeBuilder = new SQLOutlineNodeFullBuilder();
+    
+    private final CaretListener caretListener = event -> {
+        if (currentSelectionSyncOp == SelectionSyncOperation.NONE) {
+            LinkedList<OutlineNode> path = new LinkedList<>();
+            int offset = event.caretOffset;
+            OutlineNode node = scriptNode;
+            OutlineNode nextNode = scriptNode;
+            path.add(node);
+            while (nextNode != null) {
+                node = nextNode;
+                nextNode = null;
+                for (int i = 0; i < node.getChildrenCount(); i++) {
+                    OutlineNode child = node.getChild(i);
+                    IRegion range = child.getTextRange();
+                    if (range != null && range.getOffset() <= offset) {
+                        nextNode = child;
+                        path.add(child);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            if (node != null) {
+                currentSelectionSyncOp = SelectionSyncOperation.FROM_EDITOR;
+                treeViewer.getTree().setRedraw(false);
+                treeViewer.reveal(new TreePath(path.toArray(OutlineNode[]::new)));
+                treeViewer.setSelection(new StructuredSelection(node), true);
+                treeViewer.getTree().setRedraw(true);
+                currentSelectionSyncOp = SelectionSyncOperation.NONE;
+            }
+        }
+    };
 
     public SQLEditorOutlinePage(@NotNull SQLEditorBase editor) {
         this.editor = editor;
@@ -123,41 +158,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         this.treeViewer.setAutoExpandLevel(3);
 
         TextViewer textViewer = this.editor.getTextViewer();
-        if (textViewer == null) {
-            return;
+        if (textViewer != null) {
+            textViewer.getTextWidget().addCaretListener(this.caretListener);
         }
-        textViewer.getTextWidget().addCaretListener(event -> {
-            if (currentSelectionSyncOp == SelectionSyncOperation.NONE) {
-                LinkedList<OutlineNode> path = new LinkedList<>();
-                int offset = event.caretOffset;
-                OutlineNode node = scriptNode;
-                OutlineNode nextNode = scriptNode;
-                path.add(node);
-                while (nextNode != null) {
-                    node = nextNode;
-                    nextNode = null;
-                    for (int i = 0; i < node.getChildrenCount(); i++) {
-                        OutlineNode child = node.getChild(i);
-                        IRegion range = child.getTextRange();
-                        if (range != null && range.getOffset() <= offset) {
-                            nextNode = child;
-                            path.add(child);
-                        } else {
-                            break;
-                        }
-                    }
-                }
-
-                if (node != null) {
-                    currentSelectionSyncOp = SelectionSyncOperation.FROM_EDITOR;
-                    treeViewer.getTree().setRedraw(false);
-                    treeViewer.reveal(new TreePath(path.toArray(OutlineNode[]::new)));
-                    treeViewer.setSelection(new StructuredSelection(node), true);
-                    treeViewer.getTree().setRedraw(true);
-                    currentSelectionSyncOp = SelectionSyncOperation.NONE;
-                }
-            }
-        });
+        
+        SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
     }
 
     @Override
@@ -201,8 +206,15 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
     @Override
     public void dispose() {
+        TextViewer textViewer = this.editor.getTextViewer();
+        if (textViewer != null) {
+            textViewer.getTextWidget().removeCaretListener(this.caretListener);
+        }
+        
         this.scriptNode.dispose();
         super.dispose();
+        
+        SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
     }
 
     private enum SelectionSyncOperation {
