@@ -151,7 +151,7 @@ public class DatabaseNotificationSink {
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         String storedScreenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
         ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
-        // set focus for all screen reader not default  
+        // set focus for all screen readers  
         if (!screenReader.equals(ScreenReader.DEFAULT)) {
             popup.setFocus();
         }
