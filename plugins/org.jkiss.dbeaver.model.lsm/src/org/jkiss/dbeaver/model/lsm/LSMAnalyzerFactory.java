@@ -14,28 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.lsm;
 
-package org.jkiss.dbeaver.model.navigator;
-
-import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 /**
- * DBNNodeWithImage
+ * Factory responsible for creating analyzer instances, parametrized with a given dialect
  */
-public interface DBNNodeWithResource {
-
-    IResource getResource();
-
-    DBPImage getResourceImage();
-
-    void setResourceImage(DBPImage resourceImage);
-
+public interface LSMAnalyzerFactory {
     /**
-     * True if resource is remote, false is local
-     *
-     * @return - boolean value
+     * Creates analyzer instance, parametrized with a given dialect
      */
-    boolean isRemoteResource();
-
+    LSMAnalyzer createAnalyzer(SQLDialect dialect);
 }
