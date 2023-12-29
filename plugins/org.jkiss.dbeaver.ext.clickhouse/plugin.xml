@@ -24,7 +24,7 @@
                 <driver
                         id="yandex_clickhouse"
                         label="ClickHouse (Legacy)"
-                        class="ru.yandex.clickhouse.ClickHouseDriver"
+                        class="com.clickhouse.jdbc.ClickHouseDriver"
                         sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                         defaultPort="8123"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
