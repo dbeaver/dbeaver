@@ -14,24 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
+package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
-import org.jkiss.dbeaver.model.lsm.*;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
-import org.jkiss.dbeaver.model.stm.STMSource;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFactory;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
-import java.io.StringReader;
+public class SQLStandardAnalyzerFactory implements LSMAnalyzerFactory {
 
+    public SQLStandardAnalyzerFactory() {
+        // do nothing
+    }
 
-public class TestEngine {
-
-    public static void main(String[] args) throws Exception {
-        STMSource source = STMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
-        
-        LSMAnalyzer dd = new SQLStandardAnalyzer();
-        
-        LSMElement model = dd.parseSqlQueryModel(source);
-        
-        System.out.println(model);
+    @Override
+    public LSMAnalyzer createAnalyzer(SQLDialect dialect) {
+        return new SQLStandardAnalyzer(dialect);
     }
 }

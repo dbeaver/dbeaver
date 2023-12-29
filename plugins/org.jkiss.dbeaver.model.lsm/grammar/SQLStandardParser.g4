@@ -42,12 +42,6 @@ options {
     package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 }
 
-@members {
-private boolean isSupportSquareBracketQuotation;
-public boolean isSupportSquareBracketQuotation() { return isSupportSquareBracketQuotation; }
-public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareBracketQuotation = value; }
-}
-
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
 sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
@@ -77,8 +71,7 @@ unqualifiedSchemaName: identifier;
 qualifiedName: (schemaName Period)? identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier|squareBracketIdentifier|nonReserved);
-squareBracketIdentifier: {isSupportSquareBracketQuotation()}? LeftBracket (~RightBracket|(RightBracket RightBracket))* RightBracket;
+actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 
 // data types
 dataType: (datetimeType|intervalType|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
