@@ -409,6 +409,7 @@ public class SQLQueryModelRecognizer {
         if (this.isReadMetadataForSemanticAnalysis
             && this.executionContext != null
             && this.executionContext.getDataSource() instanceof DBSObjectContainer
+            && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect
         ) {
             return new SQLQueryDataSourceContext(this.executionContext, this.executionContext.getDataSource().getSQLDialect());
         } else {
