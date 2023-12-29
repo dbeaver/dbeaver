@@ -41,4 +41,9 @@ public class PostgreServerGCloud extends PostgreServerPostgreSQL {
     public String getServerTypeName() {
         return "Google Cloud SQL PostgreSQL";
     }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return false;
+    }
 }
