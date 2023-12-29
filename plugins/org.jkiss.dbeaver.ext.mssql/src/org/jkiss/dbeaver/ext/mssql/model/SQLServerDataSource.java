@@ -197,9 +197,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        DBWHandlerConfiguration sslHandler = connectionInfo.getHandler(SQLServerConstants.HANDLER_SSL);
-        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            // App name
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {// App name
             properties.put(
                 SQLServerUtils.isDriverJtds(getContainer().getDriver()) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
                 CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 64));
