@@ -229,7 +229,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 " JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "sysindexes") + " SI ON I.Object_id = SI.id AND I.index_id = SI.indid   \n" +
                 " JOIN (SELECT * FROM (  \n" +
                 "    SELECT IC2.object_id , IC2.index_id ,  \n" +
-                "        STUFF((SELECT ' , ' + C.name + CASE WHEN MAX(CONVERT(INT,IC1.is_descending_key)) = 1 THEN ' DESC ' ELSE ' ASC ' END \n" +
+                "        STUFF((SELECT ' , [' + C.name + ']' + CASE WHEN MAX(CONVERT(INT,IC1.is_descending_key)) = 1 THEN ' DESC ' ELSE ' ASC ' END \n" +
                 "    FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "index_columns") + " IC1  \n" +
                 "    JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "columns") + " C   \n" +
                 "       ON C.object_id = IC1.object_id   \n" +
@@ -249,7 +249,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 " JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "filegroups") + " FG ON I.data_space_id=FG.data_space_id   \n" +
                 " LEFT JOIN (SELECT * FROM (   \n" +
                 "    SELECT IC2.object_id , IC2.index_id ,   \n" +
-                "        STUFF((SELECT ' , ' + C.name  \n" +
+                "        STUFF((SELECT ' , [' + C.name + ']'  \n" +
                 "    FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "index_columns") + " IC1   \n" +
                 "    JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "columns") + " C    \n" +
                 "       ON C.object_id = IC1.object_id    \n" +
