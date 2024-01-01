@@ -23,11 +23,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.dpi.model.DPIDriverLibrariesProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.*;
+import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
@@ -1453,7 +1453,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     private List<Path> syncDpiDependencies(DBPApplication application) {
-        if (application instanceof DPIDriverLibrariesProvider driversProvider) {
+        if (application instanceof DBPApplicationDPI driversProvider) {
             List<Path> result = new ArrayList<>();
             List<Path> librariesPath = driversProvider.getDriverLibsLocation(getId());
             for (Path path : librariesPath) {

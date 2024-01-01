@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model.lsm;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
-import java.nio.file.Path;
-import java.util.List;
-
-public interface DPIDriverLibrariesProvider {
-    @NotNull
-    List<Path> getDriverLibsLocation(@NotNull String driverId);
+/**
+ * Factory responsible for creating analyzer instances, parametrized with a given dialect
+ */
+public interface LSMAnalyzerFactory {
+    /**
+     * Creates analyzer instance, parametrized with a given dialect
+     */
+    LSMAnalyzer createAnalyzer(SQLDialect dialect);
 }
