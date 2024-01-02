@@ -50,7 +50,6 @@ public class CubridTable extends GenericTable {
 	public CubridTable(DBRProgressMonitor monitor, CubridObjectContainer container, @Nullable String tableName,
 			@Nullable String tableType, @Nullable JDBCResultSet dbResult) {
 		super(container, tableName, tableType, dbResult);
-		this.container = container;
 		this.owners = getUsers(monitor);
 		String owner_name;
 
