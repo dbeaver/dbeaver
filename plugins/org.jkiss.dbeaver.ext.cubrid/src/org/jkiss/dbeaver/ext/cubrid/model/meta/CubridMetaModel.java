@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class CubridMetaModel extends GenericMetaModel {
 
@@ -102,19 +103,19 @@ public class CubridMetaModel extends GenericMetaModel {
 		String tableName = JDBCUtils.safeGetString(dbResult, CubridConstants.CLASS_NAME);
 		String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
 
-		CubridTable table = this.createTableImpl(owner, tableName, tableType, dbResult);
+		CubridTable table = this.createTableImpl(session.getProgressMonitor(), owner, tableName, tableType, dbResult);
 		if (table == null) {
 			return null;
 		}
 		return table;
 	}
 
-	public CubridTable createTableImpl(CubridObjectContainer container, @Nullable String tableName,
+	public CubridTable createTableImpl(DBRProgressMonitor monitor, CubridObjectContainer container, @Nullable String tableName,
 			@Nullable String tableType, @Nullable JDBCResultSet dbResult) {
 		if (tableType != null && isView(tableType)) {
-			return new CubridView(container, tableName, tableType, dbResult);
+			return new CubridView(monitor, container, tableName, tableType, dbResult);
 		}
-		return new CubridTable(container, tableName, tableType, dbResult);
+		return new CubridTable(monitor, container, tableName, tableType, dbResult);
 	}
 
 }

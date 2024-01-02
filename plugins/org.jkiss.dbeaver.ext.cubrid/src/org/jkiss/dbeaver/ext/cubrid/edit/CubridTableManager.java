@@ -60,7 +60,7 @@ public class CubridTableManager extends SQLTableManager<CubridTable, CubridObjec
 
 		CubridObjectContainer objectContainer = ((CubridUser) container).getParentObject();
 
-		CubridTable table = new CubridTable(objectContainer, NEW_TABLE_NAME, TABLE_TYPE_TABLE, null);
+		CubridTable table = new CubridTable(monitor, objectContainer, NEW_TABLE_NAME, TABLE_TYPE_TABLE, null);
 		setNewObjectName(monitor, objectContainer, table);
 		return table;
 	}

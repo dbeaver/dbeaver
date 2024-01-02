@@ -26,8 +26,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 public class CubridView extends CubridTable implements DBSView {
 
-	public CubridView(CubridObjectContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
-		super(container, tableName, tableType, dbResult);
+	public CubridView(DBRProgressMonitor monitor, CubridObjectContainer container, String tableName, String tableType,
+			JDBCResultSet dbResult) {
+		super(monitor, container, tableName, tableType, dbResult);
 	}
 
 	@Override

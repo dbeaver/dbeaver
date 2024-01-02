@@ -45,11 +45,13 @@ public class CubridTable extends GenericTable {
 	private CubridUser owner;
 	private CubridObjectContainer container;
 	private boolean isSystemTable;
+	private Collection<? extends CubridUser> owners;
 
-	public CubridTable(CubridObjectContainer container, @Nullable String tableName, @Nullable String tableType,
-			@Nullable JDBCResultSet dbResult) {
+	public CubridTable(DBRProgressMonitor monitor, CubridObjectContainer container, @Nullable String tableName,
+			@Nullable String tableType, @Nullable JDBCResultSet dbResult) {
 		super(container, tableName, tableType, dbResult);
 		this.container = container;
+		this.owners = getUsers(monitor);
 		String owner_name;
 
 		if (dbResult != null) {
@@ -60,7 +62,7 @@ public class CubridTable extends GenericTable {
 			isSystemTable = false;
 		}
 
-		for (CubridUser cbOwner : getUsers()) {
+		for (CubridUser cbOwner : getUsers(monitor)) {
 			if (cbOwner.getName().equals(owner_name)) {
 				this.owner = cbOwner;
 				break;
@@ -119,9 +121,9 @@ public class CubridTable extends GenericTable {
 		return this.container;
 	}
 
-	public Collection<? extends CubridUser> getUsers() {
+	public Collection<? extends CubridUser> getUsers(DBRProgressMonitor monitor) {
 		try {
-			return container.getDataSource().getCubridUsers(null);
+			return container.getDataSource().getCubridUsers(monitor);
 		} catch (DBException e) {
 			log.error("Cannot get user", e);
 		}
@@ -171,7 +173,7 @@ public class CubridTable extends GenericTable {
 
 		@Override
 		public Object[] getPossibleValues(CubridTable object) {
-			return object.getUsers().toArray();
+			return object.owners.toArray();
 		}
 	}
 
