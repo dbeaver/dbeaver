@@ -44,22 +44,27 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        context = source.propagateContext(context, statistics).extendWithTableAlias(this.alias.getSymbol(), source);
-        this.alias.getSymbol().setDefinition(this.alias);
-        this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
-
-        if (correlationColumNames.size() > 0) {
-            List<SQLQuerySymbol> columns = new ArrayList<>(context.getColumnsList());
-            for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
-                SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
-                SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
-                correlatedNameDef.setDefinition(columns.get(i).getDefinition());
-                correlatedName.setDefinition(correlatedNameDef);
-                columns.set(i, correlatedName);
+        if (this.alias.isNotClassified()) {
+            context = source.propagateContext(context, statistics).extendWithTableAlias(this.alias.getSymbol(), source);
+            this.alias.getSymbol().setDefinition(this.alias);
+            if (this.alias.isNotClassified()) {
+                this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
             }
-            context = context.overrideResultTuple(columns);
+    
+            if (correlationColumNames.size() > 0) {
+                List<SQLQuerySymbol> columns = new ArrayList<>(context.getColumnsList());
+                for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
+                    SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
+                    if (correlatedNameDef.isNotClassified()) {
+                        SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
+                        correlatedNameDef.setDefinition(columns.get(i).getDefinition());
+                        correlatedName.setDefinition(correlatedNameDef);
+                        columns.set(i, correlatedName);
+                    }
+                }
+                context = context.overrideResultTuple(columns);
+            }
         }
-        
         return context;
     }
 }

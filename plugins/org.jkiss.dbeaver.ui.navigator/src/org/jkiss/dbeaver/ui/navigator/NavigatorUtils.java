@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
@@ -87,7 +89,6 @@ import java.util.*;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
-
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -217,19 +218,20 @@ public class NavigatorUtils {
             @Override
             public void menuShown(MenuEvent e)
             {
-                Menu m = (Menu)e.widget;
+                Menu menu = (Menu) e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
+                removeUnrelatedMenuItems(menu, node);
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
                     try {
-                        for (MenuItem item : m.getItems()) {
+                        for (MenuItem item : menu.getItems()) {
                             Object itemData = item.getData();
                             if (itemData instanceof IContributionItem) {
                                 String contribId = ((IContributionItem)itemData).getId();
                                 if (contribId != null && contribId.equals(commandID)) {
-                                    m.setDefaultItem(item);
+                                    menu.setDefaultItem(item);
                                 }
                             }
                         }
@@ -619,6 +621,33 @@ public class NavigatorUtils {
                 workbenchWindow.getActivePage().bringToTop(nodeView);
             }
             nodeView.showNode(dsNode);
+        }
+    }
+
+    private static void removeUnrelatedMenuItems(Menu menu, DBNNode node) {
+        for (MenuItem item : menu.getItems()) {
+            Object itemData = item.getData();
+            if (itemData instanceof IContributionItem contribution) {
+                String id = contribution.getId();
+                if (id == null) {
+                    continue;
+                }
+                if (id.startsWith("org.eclipse.debug") || // $NON-NLS-0$
+                    id.startsWith("team.main") || // $NON-NLS-0$
+                    id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
+                    item.dispose();
+                }
+                DBNNodeWithResource adapt = Adapters.adapt(node, DBNNodeWithResource.class);
+                if (adapt == null) {
+                    return;
+                }
+                if ((adapt.isRemoteResource() ||
+                    adapt.getResource() instanceof IFolder) &&
+                    (id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                        id.startsWith("replaceWithMenu"))) { // $NON-NLS-0$
+                    item.dispose();
+                }
+            }
         }
     }
 
