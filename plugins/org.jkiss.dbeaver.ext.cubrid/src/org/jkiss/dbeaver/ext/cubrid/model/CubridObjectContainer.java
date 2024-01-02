@@ -57,7 +57,6 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 	private final CubridUserCache cubridUserCache;
 	private final CubridTableCache cubridTableCache;
 	private final CubridSystemTableCache cubridSystemTableCache;
-	private final CubridSystemViewCache cubridSystemViewCache;
 	private final CubridIndexCache cubridIndexCache;
 
 	protected CubridObjectContainer(CubridDataSource dataSource) {
@@ -66,7 +65,6 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		this.cubridUserCache = new CubridUserCache();
 		this.cubridTableCache = new CubridTableCache(dataSource);
 		this.cubridSystemTableCache = new CubridSystemTableCache(dataSource);
-		this.cubridSystemViewCache = new CubridSystemViewCache(dataSource);
 		this.cubridIndexCache = new CubridIndexCache(cubridTableCache);
 	}
 
@@ -159,8 +157,8 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 
 	public List<? extends CubridView> getSystemViews(DBRProgressMonitor monitor, String name) throws DBException {
 		List<CubridView> views = new ArrayList<>();
-		for (CubridTable table : this.cubridSystemViewCache.getAllObjects(monitor, this)) {
-			if (table.getOwner().getName().equals(name)) {
+		for (CubridTable table : this.cubridSystemTableCache.getAllObjects(monitor, this)) {
+			if (table.isView() && table.getOwner().getName().equals(name)) {
 				views.add((CubridView) table);
 			}
 		}
@@ -248,28 +246,9 @@ public class CubridObjectContainer extends GenericObjectContainer implements Gen
 		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
 				@NotNull CubridObjectContainer owner, @Nullable CubridTable object, @Nullable String objectName)
 				throws SQLException {
-			String sql = "select *, class_name as TABLE_NAME, case when class_type = 'CLASS' \r\n"
-					+ "then 'TABLE' end as TABLE_TYPE from db_class\r\n" + "where class_type = 'CLASS' \r\n"
-					+ "and is_system_class = 'YES'";
-			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-			return dbStat;
-		}
-
-	}
-
-	public class CubridSystemViewCache extends CubridTableCache {
-
-		protected CubridSystemViewCache(CubridDataSource dataSource) {
-			super(dataSource);
-		}
-
-		@Override
-		public @NotNull JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
-				@NotNull CubridObjectContainer owner, @Nullable CubridTable object, @Nullable String objectName)
-				throws SQLException {
-			String sql = "select *, case when class_type = 'VCLASS' \r\n" + "then 'VIEW' end as TABLE_TYPE,\r\n"
-					+ "class_name as TABLE_NAME from db_class\r\n" + "where class_type='VCLASS'\r\n"
-					+ "and is_system_class='YES'";
+			String sql = "select *, class_name as TABLE_NAME, case when class_type = 'CLASS'\r\n"
+					+ "then 'TABLE' when class_type = 'VCLASS' then 'VIEW'end as TABLE_TYPE\r\n"
+					+ "from db_class where is_system_class = 'YES'";
 			final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
 			return dbStat;
 		}
