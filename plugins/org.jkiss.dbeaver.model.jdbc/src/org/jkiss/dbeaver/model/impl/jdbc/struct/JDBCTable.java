@@ -59,9 +59,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private static final Log log = Log.getLog(JDBCTable.class);
 
     private static final String DEFAULT_TABLE_ALIAS = "x";
-
-    private static final String geometryDataType = "MDSYS.ST_GEOMETRY";
-
     private boolean persisted;
     private boolean allNulls;
 
@@ -129,9 +126,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         DBPDataSource dataSource = session.getDataSource();
         DBRProgressMonitor monitor = session.getProgressMonitor();
-        List<? extends DBSEntityAttribute> column_list = new ArrayList<DBSEntityAttribute>();
         try {
-            column_list = readRequiredMeta(monitor);
+            readRequiredMeta(monitor);
         } catch (DBException e) {
             log.warn(e);
         }
@@ -154,28 +150,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT ");
-        if (column_list != null){
-            for (DBSEntityAttribute column: column_list){
-                String column_name = column.getName();
-                if (column.getTypeName().equals(geometryDataType)){
-                    query.append("ST_ASTEXT(").append(column_name).append("), ");
-                }
-                else {
-                    if (column_name.startsWith("SYS_NC") && column_name.endsWith("$")){
-                        continue;
-                    }
-                    else {
-                        query.append(column.getName()).append(", ");
-                    }
-                }
-            }
-            query.delete(query.length() - 2, query.length() - 1);
-        }
-        else {
-            appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
-        }
+        appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
         query.append(" FROM ").append(getTableName());
-        if (column_list == null && tableAlias != null) {
+        if (tableAlias != null) {
             query.append(" ").append(tableAlias); //$NON-NLS-1$
         }
         appendExtraSelectParameters(query);
@@ -907,22 +884,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
      * @param monitor progress monitor
      * @throws DBCException on error
      */
-    private List<? extends DBSEntityAttribute> readRequiredMeta(DBRProgressMonitor monitor)
+    private void readRequiredMeta(DBRProgressMonitor monitor)
         throws DBCException
     {
-        List<? extends DBSEntityAttribute> column_list = new ArrayList<DBSEntityAttribute>();
-        boolean hasGeometry = false;
         try {
-            column_list = getAttributes(monitor);
-            if (column_list != null && column_list.get(0).getDataSource().getInfo().getDatabaseProductName().equals("YashanDB")){
-                for (DBSEntityAttribute column: column_list) {
-                    if (column.getTypeName().equals(geometryDataType)){
-                        return column_list;
-                    }
-                }
-            }
-
-            return null;
+            getAttributes(monitor);
         }
         catch (DBException e) {
             throw new DBCException("Can't cache table columns", e);

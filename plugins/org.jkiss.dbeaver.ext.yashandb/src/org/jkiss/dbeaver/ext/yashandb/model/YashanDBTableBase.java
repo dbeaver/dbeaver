@@ -6,6 +6,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.yashandb.model.source.YashanDBStatefulObject;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -16,8 +20,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -26,10 +32,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author: donghy
@@ -39,6 +42,8 @@ import java.util.Map;
 public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, YashanDBSchema>
         implements DBPNamedObject2, DBPRefreshableObject, YashanDBStatefulObject, DBPObjectWithLazyDescription {
     private static final Log log = Log.getLog(YashanDBTableBase.class);
+
+    private static final String GEOMETRY_DATA_TYPE = "MDSYS.ST_GEOMETRY";
 
     protected boolean valid;
     private String comment;
@@ -133,7 +138,6 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
     }
 
 
-
     /**
      * getComment by search sql.
      */
@@ -146,8 +150,6 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
                 getName(),
                 getTableTypeName());
     }
-
-
 
 
     /**
@@ -309,8 +311,7 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
     }
 
     @Association
-    public List<? extends YashanDBTableColumn> getCachedAttributes()
-    {
+    public List<? extends YashanDBTableColumn> getCachedAttributes() {
         final DBSObjectCache<YashanDBTableBase, YashanDBTableColumn> childrenCache = getContainer().getTableCache().getChildrenCache(this);
         if (childrenCache != null) {
             return childrenCache.getCachedObjects();
@@ -341,4 +342,55 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
         }
     }
 
+    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
+        // FIXME:  jdbc不支持geometry类型的直接查询，对geometry类型需要使用ST_ASTEST来转义，需要拼接所有的列，可能存在小写的列，需要使用双引号来包围
+        List<YashanDBTableColumn> attributes;
+        try {
+            attributes = getAttributes(monitor);
+        } catch (DBException e) {
+            log.warn("get yashandb attribute err", e);
+            super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
+            return;
+        }
+        boolean isIncludeGeometry = false;
+        for (YashanDBTableColumn a : attributes) {
+            if (a.getTypeName().equals(GEOMETRY_DATA_TYPE)) {
+                isIncludeGeometry = true;
+                break;
+            }
+        }
+        if (!isIncludeGeometry) {
+            super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
+            return;
+        }
+        String aliasPerfix = "";
+        if (tableAlias != null) {
+            aliasPerfix = tableAlias + ".";
+        }
+        for (YashanDBTableColumn a : attributes) {
+            String name = a.getName();
+            if (name.startsWith("SYS_NC") && name.endsWith("$")){
+                continue;
+            }
+            if (a.getTypeName().equals(GEOMETRY_DATA_TYPE)) {
+                query.append("ST_ASTEXT");
+                query.append("(").append(aliasPerfix).append(quoteColumn(name)).append(")").append(", ");
+                continue;
+            }
+            query.append(aliasPerfix).append(quoteColumn(name)).append(", ");
+        }
+        if (rowIdAttribute != null) {
+            query.append(tableAlias).append(".").append(rowIdAttribute.translateExpression(tableAlias));
+            if (rowIdAttribute.getAlias() != null) {
+                query.append(" as ").append(rowIdAttribute.getAlias());
+            }
+            return;
+        }
+        // delete last ","
+        query.delete(query.length() - 2, query.length() - 1);
+    }
+
+    private String quoteColumn(String s) {
+        return String.format("\"%s\"", s);
+    }
 }
