@@ -18,22 +18,23 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
-public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
+public abstract class SQLQueryNodeModel {
 
-    public SQLQueryValueExpression(Interval region) {
-        super(region);
+    private final Interval region;
+
+    protected SQLQueryNodeModel(@NotNull Interval region) {
+        this.region = region;
     }
 
-    @Nullable
-    public SQLQuerySymbol getColumnNameIfTrivialExpression() {
-        return null;
+    @NotNull
+    public final Interval getInterval() {
+        return this.region;
     }
 
-    abstract void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
+    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return this.applyImpl(visitor, node);
+    }
+
+    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node);
 }
-
