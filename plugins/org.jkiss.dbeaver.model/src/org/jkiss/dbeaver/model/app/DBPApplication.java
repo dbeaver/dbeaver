@@ -121,4 +121,9 @@ public interface DBPApplication {
         return null;
     }
 
+    /**
+     * enables the use of environment variables while the application is in use
+     * for example, in a script template
+     */
+    boolean isEnvironmentVariablesAccessible();
 }
