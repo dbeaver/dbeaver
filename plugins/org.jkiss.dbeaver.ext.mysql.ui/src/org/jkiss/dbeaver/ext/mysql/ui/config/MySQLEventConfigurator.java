@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEvent;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -32,7 +35,7 @@ import java.util.Map;
 public class MySQLEventConfigurator implements DBEObjectConfigurator<MySQLEvent> {
 
     @Override
-    public MySQLEvent configureObject(DBRProgressMonitor monitor, Object parent, MySQLEvent event, Map<String, Object> options) {
+    public MySQLEvent configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull MySQLEvent event, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(event.getDataSource(), DBSEntityType.EVENT);
             if (!editPage.edit()) {

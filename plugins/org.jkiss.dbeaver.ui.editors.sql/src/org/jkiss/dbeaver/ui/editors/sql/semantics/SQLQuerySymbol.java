@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
 import java.util.HashSet;

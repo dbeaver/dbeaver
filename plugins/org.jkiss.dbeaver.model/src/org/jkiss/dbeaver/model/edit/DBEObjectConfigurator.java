@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -28,6 +30,11 @@ import java.util.Map;
  */
 public interface DBEObjectConfigurator<OBJECT_TYPE extends DBPObject> {
 
-    OBJECT_TYPE configureObject(DBRProgressMonitor monitor, Object container, OBJECT_TYPE object, Map<String, Object> options);
+    OBJECT_TYPE configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object container,
+        @NotNull OBJECT_TYPE object,
+        @NotNull Map<String, Object> options);
 
 }

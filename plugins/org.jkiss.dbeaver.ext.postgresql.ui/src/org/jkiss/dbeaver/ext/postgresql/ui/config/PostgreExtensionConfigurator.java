@@ -19,8 +19,11 @@
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateExtensionDialog;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -31,7 +34,7 @@ import java.util.Map;
 
 public class PostgreExtensionConfigurator implements DBEObjectConfigurator<PostgreExtension> {
         @Override
-        public PostgreExtension configureObject(DBRProgressMonitor monitor, Object parent, PostgreExtension extension, Map<String, Object> options) {
+        public PostgreExtension configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreExtension extension, @NotNull Map<String, Object> options) {
             return new UITask<PostgreExtension>() {
                 @Override
                 protected PostgreExtension runTask() {

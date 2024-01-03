@@ -26,10 +26,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
@@ -55,7 +58,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
     private static PostgreDataSource dataSource;
 
     @Override
-    public DBCQueryPlannerConfiguration configureObject(DBRProgressMonitor monitor, Object container, DBCQueryPlannerConfiguration configuration, Map<String, Object> options) {
+    public DBCQueryPlannerConfiguration configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DBCQueryPlannerConfiguration configuration, @NotNull Map<String, Object> options) {
         if (container instanceof DBCQueryPlanner) {
             DBPDataSource dbpDataSource = ((DBCQueryPlanner) container).getDataSource();
             if (dbpDataSource instanceof PostgreDataSource) {

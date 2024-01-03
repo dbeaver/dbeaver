@@ -48,7 +48,9 @@ import java.util.*;
 /**
  * MySQLTable
  */
-public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer {
+public class MySQLTable extends MySQLTableBase
+    implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer, DBSEntityConstrainable
+{
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
@@ -301,6 +303,17 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     {
         // Read indexes using cache
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        List<DBSEntityConstraintInfo> result = new ArrayList<>();
+        result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, MySQLTableConstraint.class));
+        result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, MySQLTableConstraint.class));
+        if (getDataSource().supportsCheckConstraints()) {
+            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, MySQLTableConstraint.class));
+        }
+        return result;
     }
 
     @Nullable

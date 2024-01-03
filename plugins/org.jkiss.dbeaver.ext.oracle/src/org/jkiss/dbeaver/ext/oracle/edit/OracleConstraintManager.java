@@ -87,7 +87,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
                     ModelMessages.model_jdbc_create_new_constraint,
                     "ALTER " + tableType + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                         "\nADD " + getNestedDeclaration(monitor, table, command, options) +
-                    "\n"  + (!isView && constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" ) +
+                    " "  + (!isView && constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" ) +
                     (isView ? " NOVALIDATE" : "")
                 	));
     }
