@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
@@ -24,22 +23,12 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     private final SQLQueryRowsSourceModel source;
 
-    public SQLQueryValueSubqueryExpression(@NotNull Interval range, @NotNull SQLQueryRowsSourceModel source) {
-        super(range);
+    public SQLQueryValueSubqueryExpression(@NotNull SQLQueryRowsSourceModel source) {
         this.source = source;
     }
-
-    public SQLQueryRowsSourceModel getSource() {
-        return this.source;
-    }
-
+    
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.source.propagateContext(context, statistics);
-    }
-
-    @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitValueSubqueryExpr(this, node);
     }
 }

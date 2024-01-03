@@ -16,26 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 
-public abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceModel {
+abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceModel {
     protected final SQLQueryRowsSourceModel left;
     protected final SQLQueryRowsSourceModel right;
-
-    public SQLQueryRowsSetOperationModel(@NotNull Interval range, @NotNull SQLQueryRowsSourceModel left, @NotNull SQLQueryRowsSourceModel right) {
-        super(range);
+    
+    public SQLQueryRowsSetOperationModel(@NotNull SQLQueryRowsSourceModel left, @NotNull SQLQueryRowsSourceModel right) {
         this.left = left;
         this.right = right;
-    }
-
-    @NotNull
-    public SQLQueryRowsSourceModel getLeft() {
-        return left;
-    }
-
-    @NotNull
-    public SQLQueryRowsSourceModel getRight() {
-        return right;
     }
 }

@@ -52,7 +52,6 @@ import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
-import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -629,21 +628,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
         if (ITemplatesPage.class.equals(required)) {
             return (T) getTemplatesPage();
-        } else if (IContentOutlinePage.class.equals(required)) {
-            return (T) getOverviewOutlinePage();
         }
-    
-        return super.getAdapter(required);
-    }
-    
-    private SQLEditorOutlinePage outlinePage;
 
-    @NotNull
-    private IContentOutlinePage getOverviewOutlinePage() {
-        if ((null == outlinePage || outlinePage.getControl().isDisposed()) && this.getSyntaxContext() != null) {
-            outlinePage = new SQLEditorOutlinePage(this);
-        }
-        return outlinePage;
+        return super.getAdapter(required);
     }
 
     public SQLTemplatesPage getTemplatesPage() {

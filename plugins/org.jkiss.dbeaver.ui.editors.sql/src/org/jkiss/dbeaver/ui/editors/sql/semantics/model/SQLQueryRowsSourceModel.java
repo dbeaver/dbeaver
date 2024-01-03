@@ -17,19 +17,13 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 
-public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
+public abstract class SQLQueryRowsSourceModel {
     private SQLQueryDataContext dataContext;
-
-    public SQLQueryRowsSourceModel(Interval region) {
-        super(region);
-        this.dataContext = null;
-    }
 
     @NotNull
     public SQLQueryDataContext getDataContext() {
@@ -44,7 +38,7 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
     public SQLQueryDataContext propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         return this.dataContext = this.propagateContextImpl(context, statistics);
     }
-
+    
     protected abstract SQLQueryDataContext propagateContextImpl(
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics

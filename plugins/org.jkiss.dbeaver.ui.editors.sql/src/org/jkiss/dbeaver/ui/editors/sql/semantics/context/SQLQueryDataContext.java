@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
-import org.antlr.v4.runtime.misc.Interval;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
@@ -44,6 +42,8 @@ public abstract class SQLQueryDataContext {
     public abstract DBSEntity findRealTable(List<String> tableName);
 
     public abstract SQLQuerySymbolDefinition resolveColumn(String simpleName);  // TODO consider ambiguous column names
+
+    // abstract SQLQuerySymbolDefinition resolveColumn(List<String> tableName, String columnName);
     
     public SourceResolutionResult resolveSource(List<String> tableName) { // TODO consider ambiguous table names
         DBSEntity table = this.findRealTable(tableName);
@@ -75,6 +75,5 @@ public abstract class SQLQueryDataContext {
 
     public abstract SQLDialect getDialect();
 
-    @NotNull
-    public abstract SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range);
+    public abstract SQLQueryRowsSourceModel getDefaultTable();
 }

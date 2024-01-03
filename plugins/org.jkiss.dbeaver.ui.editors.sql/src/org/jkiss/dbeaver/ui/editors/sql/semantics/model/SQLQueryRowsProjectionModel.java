@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
@@ -28,38 +27,17 @@ import java.util.List;
 public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     private final SQLQueryRowsSourceModel fromSource; // from tableExpression
     private final SQLQuerySelectionResultModel result; // selectList
-
-    public SQLQueryRowsProjectionModel(
-        @NotNull Interval range,
-        @NotNull SQLQueryRowsSourceModel fromSource,
-        @NotNull SQLQuerySelectionResultModel result
-    ) {
-        super(range);
+    
+    public SQLQueryRowsProjectionModel(@NotNull SQLQueryRowsSourceModel fromSource, @NotNull SQLQuerySelectionResultModel result) {
         this.result = result;
         this.fromSource = fromSource;
     }
 
-    public SQLQueryRowsSourceModel getFromSource() {
-        return fromSource;
-    }
-
-    public SQLQuerySelectionResultModel getResult() {
-        return result;
-    }
-
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
+    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         context = fromSource.propagateContext(context, statistics);
-        List<SQLQuerySymbol> resultColumns = this.result.expandColumns(context, statistics);
+        List<SQLQuerySymbol> resultColumns = this.result.expandColumns(context, statistics); 
         return context.overrideResultTuple(resultColumns).hideSources();
-    }
-
-    @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsProjection(this, node);
     }
 }
