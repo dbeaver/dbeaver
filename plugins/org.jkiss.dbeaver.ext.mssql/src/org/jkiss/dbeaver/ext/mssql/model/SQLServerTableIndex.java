@@ -206,7 +206,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 "    CASE WHEN I.is_unique = 1 THEN ' UNIQUE ' ELSE '' END  +  \n" +
                 "    I.type_desc COLLATE DATABASE_DEFAULT +' INDEX ' +   \n" +
                 "    I.name  + ' ON '  +  \n" +
-                "    Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
+                "    '[' + Schema_name(T.Schema_id) + '].[' + T.name + '] ( ' + \n" +
                 "    KeyColumns + ' )  ' + \n" +
                 "    ISNULL('\n\t INCLUDE ('+IncludedColumns+' ) ','') + \n" +
                 "    ISNULL('\n\t WHERE  '+I.Filter_definition,'') + '\n\t WITH ( ' + \n" +
