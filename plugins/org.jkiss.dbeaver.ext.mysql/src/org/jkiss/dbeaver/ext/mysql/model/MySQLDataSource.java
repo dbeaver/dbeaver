@@ -929,6 +929,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-triggers"), true);
     }
 
+    /**
+     * Returns true if local clients using is supported.
+     */
+    @Association
+    public boolean supportsNativeClients() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(MySQLConstants.DRIVER_PARAM_CLIENTS), true);
+    }
+
     public boolean isSystemCatalog(String name) {
         return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name) ||
             MySQLConstants.PERFORMANCE_SCHEMA_NAME.equalsIgnoreCase(name) ||

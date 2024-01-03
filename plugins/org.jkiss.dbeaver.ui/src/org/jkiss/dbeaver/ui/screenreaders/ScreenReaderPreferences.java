@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.ui.screenreaders;
 
-import org.jkiss.code.NotNull;
-
-import java.nio.file.Path;
-import java.util.List;
-
-public interface DPIDriverLibrariesProvider {
-    @NotNull
-    List<Path> getDriverLibsLocation(@NotNull String driverId);
+/**
+ * Preferences of screen reader
+ */
+public class ScreenReaderPreferences {
+    public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
 }

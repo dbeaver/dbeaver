@@ -393,6 +393,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Association
+    @Nullable
+    public GenericTrigger getTableTrigger(@NotNull DBRProgressMonitor monitor, String triggerName) throws DBException {
+        return getDataSource().getMetaModel().supportsTriggers(getDataSource()) ?
+            tableTriggerCache.getObject(monitor, this, triggerName) : null;
+    }
+
+    @Association
     public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getDataTypes(monitor);
     }

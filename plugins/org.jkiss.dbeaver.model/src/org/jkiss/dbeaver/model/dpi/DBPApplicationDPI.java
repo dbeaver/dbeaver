@@ -14,28 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.dpi;
 
-package org.jkiss.dbeaver.model.navigator;
+import org.jkiss.code.NotNull;
 
-import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.DBPImage;
+import java.nio.file.Path;
+import java.util.List;
 
-/**
- * DBNNodeWithImage
- */
-public interface DBNNodeWithResource {
-
-    IResource getResource();
-
-    DBPImage getResourceImage();
-
-    void setResourceImage(DBPImage resourceImage);
-
-    /**
-     * True if resource is remote, false is local
-     *
-     * @return - boolean value
-     */
-    boolean isRemoteResource();
-
+public interface DBPApplicationDPI {
+    @NotNull
+    List<Path> getDriverLibsLocation(@NotNull String driverId);
 }
