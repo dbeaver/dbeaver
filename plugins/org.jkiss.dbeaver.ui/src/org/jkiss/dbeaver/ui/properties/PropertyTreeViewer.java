@@ -24,6 +24,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.MouseAdapter;
@@ -366,7 +367,7 @@ public class PropertyTreeViewer extends TreeViewer {
             TreeNode propNode = new TreeNode(category, propertySource, prop);
             // Load nested object's properties
             if (!(propertySource instanceof IPropertySourceEditable)) {
-                Class<?> propType = ((DBPPropertyDescriptor) prop).getDataType();
+                Class<?> propType = prop.getDataType();
                 if (propType != null) {
                     if (DBPObject.class.isAssignableFrom(propType)) {
                         Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
@@ -487,7 +488,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     isMouseEventOnMacos = false;
                     return;
                 }
-                showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
+                showEditor(item, true);
             }
         });
         treeControl.addMouseListener(new MouseAdapter() {
@@ -560,6 +561,9 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
+            if (selectedColumn < 0) {
+                selectedColumn = 0;
+            }
             final int columnIndex;
             if (selectedColumn == 0 && (!namesEditable || !(prop.property instanceof DBPNamedObject))) {
                 columnIndex = 1;
@@ -578,55 +582,8 @@ public class PropertyTreeViewer extends TreeViewer {
                 ((BooleanStyleDecorator) cellEditor).setBooleanAlignment(UIElementAlignment.LEFT);
             }
             final Object propertyValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
-            final ICellEditorListener cellEditorListener = new ICellEditorListener() {
-                @Override
-                public void applyEditorValue()
-                {
-                    try {
-                        //editorValueChanged(true, true);
-                        final Object value = cellEditor.getValue();
-                        final Object oldValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
-                        if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
-                            // The same empty string
-                            return;
-                        }
-                        if (DBUtils.compareDataValues(oldValue, value) != 0) {
-                            if (columnIndex == 0) {
-                                String newName = CommonUtils.toString(value);
-                                String oldPropId = prop.property.getId();
-                                Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
-                                ((DBPNamedObject2) prop.property).setName(newName);
-                                if (oldPropValue != null) {
-                                    prop.propertySource.resetPropertyValueToDefault(oldPropId);
-                                    prop.propertySource.setPropertyValue(null, prop.property.getId(), oldPropValue);
-                                }
-                            } else {
-                                prop.propertySource.setPropertyValue(
-                                    null,
-                                    prop.property.getId(),
-                                    value);
-                            }
-                            handlePropertyChange(prop);
-                        }
 
-                        disposeOldEditor();
-                    } catch (Exception e) {
-                        DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
-                    }
-                }
-
-                @Override
-                public void cancelEditor()
-                {
-                    disposeOldEditor();
-                }
-
-                @Override
-                public void editorValueChanged(boolean oldValidState, boolean newValidState)
-                {
-                }
-            };
-            cellEditor.addListener(cellEditorListener);
+            cellEditor.addListener(new CellEditorListener(cellEditor, columnIndex, prop));
             if (propertyValue != null) {
                 cellEditor.setValue(UIUtils.normalizePropertyValue(propertyValue));
             }
@@ -638,19 +595,33 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             final Control editorControl = cellEditor.getControl();
             if (editorControl != null) {
-                editorControl.addTraverseListener(e -> {
+                Control traverseControl = editorControl;
+                if (editorControl instanceof Composite) {
+                    for (Control child : ((Composite) editorControl).getChildren()) {
+                        if (child instanceof Text || child instanceof StyledText) {
+                            traverseControl = child;
+                            break;
+                        }
+                    }
+                }
+                traverseControl.addTraverseListener(e -> {
                     /*if (e.detail == SWT.TRAVERSE_RETURN) {
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
                         cellEditorListener.applyEditorValue();
                         disposeOldEditor();
-                    } else */if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                    } else */
+                    if (e.detail == SWT.TRAVERSE_ESCAPE) {
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
                         disposeOldEditor();
                         if (prop.isEditable()) {
                             new ActionResetProperty(prop, false).run();
                         }
+                    } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                        e.doit = false;
+                        applyEditorValue();
+                        showNextEditor(item, e.detail == SWT.TRAVERSE_TAB_NEXT);
                     }
                 });
                 treeEditor.verticalAlignment = cellEditor.getLayoutData().verticalAlignment;
@@ -665,6 +636,26 @@ public class PropertyTreeViewer extends TreeViewer {
                 cellEditor.setFocus();
             }
         }
+    }
+
+    private void showNextEditor(TreeItem item, boolean next) {
+        TreeItem parentItem = item.getParentItem();
+        TreeItem[] items = parentItem == null ? super.getTree().getItems() : parentItem.getItems();
+        int index = ArrayUtils.indexOf(items, item);
+        if (index < 0) {
+            return;
+        }
+        int nextIndex = index;
+        if (next) {
+            nextIndex++;
+            if (nextIndex >= items.length) nextIndex = 0;
+        } else {
+            nextIndex--;
+            if (nextIndex < 0) nextIndex = items.length - 1;
+        }
+        TreeItem nextItem = items[nextIndex];
+        getTree().showItem(nextItem);
+        showEditor(nextItem, true);
     }
 
     private void registerContextMenu()
@@ -1334,6 +1325,65 @@ public class PropertyTreeViewer extends TreeViewer {
                     break;
                 }
             }
+        }
+    }
+
+    private class CellEditorListener implements ICellEditorListener {
+        private final CellEditor cellEditor;
+        private final int columnIndex;
+        private final TreeNode prop;
+
+        public CellEditorListener(CellEditor cellEditor, int columnIndex, TreeNode prop) {
+            this.cellEditor = cellEditor;
+            this.columnIndex = columnIndex;
+            this.prop = prop;
+        }
+
+        @Override
+        public void applyEditorValue()
+        {
+            try {
+                //editorValueChanged(true, true);
+                final Object value = cellEditor.getValue();
+                final Object oldValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
+                if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
+                    // The same empty string
+                    return;
+                }
+                if (DBUtils.compareDataValues(oldValue, value) != 0) {
+                    if (columnIndex == 0) {
+                        String newName = CommonUtils.toString(value);
+                        String oldPropId = prop.property.getId();
+                        Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
+                        ((DBPNamedObject2) prop.property).setName(newName);
+                        if (oldPropValue != null) {
+                            prop.propertySource.resetPropertyValueToDefault(oldPropId);
+                            prop.propertySource.setPropertyValue(null, prop.property.getId(), oldPropValue);
+                        }
+                    } else {
+                        prop.propertySource.setPropertyValue(
+                            null,
+                            prop.property.getId(),
+                            value);
+                    }
+                    handlePropertyChange(prop);
+                }
+
+                disposeOldEditor();
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
+            }
+        }
+
+        @Override
+        public void cancelEditor()
+        {
+            disposeOldEditor();
+        }
+
+        @Override
+        public void editorValueChanged(boolean oldValidState, boolean newValidState)
+        {
         }
     }
 }

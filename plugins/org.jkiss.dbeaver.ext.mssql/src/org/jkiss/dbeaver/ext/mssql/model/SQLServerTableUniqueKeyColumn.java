@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
 /**
  * SQLServerTableUniqueKeyColumn.
@@ -28,11 +29,11 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
 {
-    private AbstractTableConstraint<SQLServerTableBase> constraint;
+    private AbstractTableConstraint<SQLServerTableBase, ? extends DBSTableConstraintColumn> constraint;
     private SQLServerTableColumn tableColumn;
     private int ordinalPosition;
 
-    public SQLServerTableUniqueKeyColumn(AbstractTableConstraint<SQLServerTableBase> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
+    public SQLServerTableUniqueKeyColumn(AbstractTableConstraint<SQLServerTableBase, ? extends DBSTableConstraintColumn> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -70,7 +71,7 @@ public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
     }
 
     @Override
-    public AbstractTableConstraint<SQLServerTableBase> getParentObject()
+    public AbstractTableConstraint<SQLServerTableBase, ? extends DBSTableConstraintColumn> getParentObject()
     {
         return constraint;
     }

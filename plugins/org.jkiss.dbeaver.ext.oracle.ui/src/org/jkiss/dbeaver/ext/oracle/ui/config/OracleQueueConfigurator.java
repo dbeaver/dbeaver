@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleQueue;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -28,7 +31,7 @@ import java.util.Map;
 public class OracleQueueConfigurator implements DBEObjectConfigurator<OracleQueue> {
 
     @Override
-    public OracleQueue configureObject(DBRProgressMonitor monitor, Object container, OracleQueue queue, Map<String, Object> options) {
+    public OracleQueue configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull OracleQueue queue, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage page = new EntityEditPage(queue.getDataSource(), DBSEntityType.SEQUENCE);
             if (!page.edit()) {

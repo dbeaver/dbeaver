@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -27,13 +25,14 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class EntityEditPage extends BaseObjectEditPage {
 
-    private DBPDataSource dataSource;
+    private final DBPDataSource dataSource;
     private String name;
 
     public EntityEditPage(DBPDataSource dataSource, DBSEntityType entityType)
@@ -50,16 +49,17 @@ public class EntityEditPage extends BaseObjectEditPage {
         propsGroup.setLayoutData(gd);
 
         final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_entity_group_name, null); //$NON-NLS-2$
-        nameText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                name = nameText.getText().trim();
-                updatePageState();
-            }
+        nameText.addModifyListener(e -> {
+            name = nameText.getText().trim();
+            updatePageState();
         });
 
         return propsGroup;
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return null;
     }
 
     @Override
