@@ -317,8 +317,8 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(
-            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, ExasolTableUniqueKey.class),
-            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, ExasolTableUniqueKey.class)
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, ExasolTableUniqueKey.class)
+            //DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, ExasolTableUniqueKey.class)
         );
     }
 
