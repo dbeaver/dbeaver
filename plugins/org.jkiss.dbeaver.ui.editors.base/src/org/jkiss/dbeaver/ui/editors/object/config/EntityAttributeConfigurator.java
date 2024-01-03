@@ -15,33 +15,40 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.dameng.ui.config;
+package org.jkiss.dbeaver.ui.editors.object.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditAttributePage;
 
 import java.util.Map;
 
 /**
- * @author Shengkai Bai
+ * Property object configurator
  */
-public class DamengSequenceConfigurator implements DBEObjectConfigurator<GenericSequence> {
+public class EntityAttributeConfigurator extends PropertyObjectConfigurator {
     @Override
-    public GenericSequence configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull GenericSequence sequence, @NotNull Map<String, Object> options) {
+    public DBSObject configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object table,
+        @NotNull DBSObject object,
+        @NotNull Map<String, Object> options
+    ) {
         return UITask.run(() -> {
-            EntityEditPage editPage = new EntityEditPage(sequence.getDataSource(), DBSEntityType.SEQUENCE);
-            if (!editPage.edit()) {
-                return null;
+            if (object instanceof DBSTableColumn attr) {
+                final EditAttributePage page = new EditAttributePage(commandContext, attr, options);
+                if (!page.edit()) {
+                    return null;
+                }
             }
-            sequence.setName(editPage.getEntityName());
-            return sequence;
+            return object;
         });
     }
+
 }

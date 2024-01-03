@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ext.exasol.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -27,7 +30,7 @@ import java.util.Map;
 
 public class ExasolRoleConfigurator implements DBEObjectConfigurator<ExasolRole> {
     @Override
-    public ExasolRole configureObject(DBRProgressMonitor monitor, Object container, ExasolRole role, Map<String, Object> options) {
+    public ExasolRole configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull ExasolRole role, @NotNull Map<String, Object> options) {
         return new UITask<ExasolRole>() {
             @Override
             protected ExasolRole runTask() {
