@@ -812,7 +812,6 @@
                                 <adapt type="org.eclipse.core.resources.IResource">
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
                                 </adapt>
-                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
                             </and>
                         </iterate>
                     </with>

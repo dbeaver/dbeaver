@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql;
-
-import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
+package org.jkiss.dbeaver.ui.screenreaders;
 
 /**
- * PostgreServerHome
+ * Preferences of screen reader
  */
-class PostgreServerHome extends LocalNativeClientLocation {
-    PostgreServerHome(String id, String path, String branding) {
-        super(id, path, branding);
-    }
+public class ScreenReaderPreferences {
+    public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
 }

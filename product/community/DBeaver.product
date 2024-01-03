@@ -10,7 +10,7 @@
 
     <launcherArgs>
         <programArgs></programArgs>
-        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
+        <programArgsMac>-nosplash -vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions

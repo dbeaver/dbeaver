@@ -323,15 +323,12 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
+    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
+            throws DBException {
         List<DBSEntityAssociation> result = new ArrayList<>();
-        try {
-            final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
-            if (!CommonUtils.isEmpty(realConstraints)) {
-                result.addAll(realConstraints);
-            }
-        } catch (DBException e) {
-            log.debug("Error reading entity associations", e);
+        final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
+        if (!CommonUtils.isEmpty(realConstraints)) {
+            result.addAll(realConstraints);
         }
         if (!(entity instanceof DBVEntity)) {
             DBVEntity vEntity = getVirtualEntity(entity, false);
@@ -342,7 +339,6 @@ public abstract class DBVUtils {
                 }
             }
         }
-
         return result;
     }
 
