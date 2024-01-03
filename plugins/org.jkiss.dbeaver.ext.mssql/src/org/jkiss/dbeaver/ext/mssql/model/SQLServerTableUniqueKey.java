@@ -61,6 +61,9 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTableB
         if (!CommonUtils.isEmpty(columns)) {
             return new ArrayList<>(columns);
         }
+        if (index == null) {
+            return null;
+        }
         List<SQLServerTableIndexColumn> indexAttrs = index.getAttributeReferences(monitor);
         return indexAttrs == null ? null : new ArrayList<>(indexAttrs);
     }
