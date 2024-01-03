@@ -136,7 +136,8 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
 
-        needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
+        DBPDriver driver = getSite().getDriver();
+        needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
 
         Label hostLabel = UIUtils.createControlLabel(serverGroup,
             needsPort ? MySQLUIMessages.dialog_connection_host : MySQLUIMessages.dialog_connection_instance);
@@ -194,7 +195,8 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             serverTimezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
-        if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION)) {
+        boolean supportsClients = CommonUtils.getBoolean(driver.getDriverParameter(MySQLConstants.DRIVER_PARAM_CLIENTS), true);
+        if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION) && supportsClients) {
             homesSelector = new ClientHomesSelector(advancedGroup, MySQLUIMessages.dialog_connection_local_client, false);
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             homesSelector.getPanel().setLayoutData(gd);
