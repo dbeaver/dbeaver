@@ -24,5 +24,7 @@ public class DPIConstants {
 
     public static final String PARAM_SERVER_PORT = "serverPort";
 
+    public static final String ARG_ENABLE_ENV = "-envVariablesEnabled";
+
     public static final String SERVER_INI_FILE = "server.ini";
 }

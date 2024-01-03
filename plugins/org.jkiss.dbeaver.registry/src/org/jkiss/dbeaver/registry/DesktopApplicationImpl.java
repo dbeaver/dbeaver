@@ -32,4 +32,9 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
         return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
     }
 
+    @Override
+    public boolean isEnvironmentVariablesAccessible() {
+        return true;
+    }
+
 }
