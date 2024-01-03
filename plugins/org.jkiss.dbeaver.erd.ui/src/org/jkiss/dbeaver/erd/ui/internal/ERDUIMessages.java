@@ -143,6 +143,8 @@ public class ERDUIMessages extends NLS {
     public static String erd_accessibility_attribute_part_type;
     public static String erd_accessibility_attribute_part_nullability;
     public static String erd_accessibility_attribute_part_comments;
+    public static String erd_error_of_loading_diagram_label;
+    public static String erd_error_of_loading_diagram_title;
 
     private ERDUIMessages() {
     }
