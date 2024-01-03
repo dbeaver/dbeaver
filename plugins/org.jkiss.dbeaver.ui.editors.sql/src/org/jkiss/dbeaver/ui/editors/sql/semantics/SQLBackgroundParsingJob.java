@@ -126,8 +126,16 @@ public class SQLBackgroundParsingJob {
         
         IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), insertedLength);
         int reparseStart = regionToReparse.getOffset();
-        int reparseLength = regionToReparse.getLength() < Integer.MAX_VALUE ? regionToReparse.getLength() 
-                : this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
+        int reparseLength = 0;
+        if (regionToReparse.getLength() < Integer.MAX_VALUE) {
+            reparseLength = regionToReparse.getLength();
+        } else {
+            if (event.getOffset() + insertedLength > this.editor.getTextViewer().getBottomIndexEndOffset()) {
+                reparseLength = event.getOffset() + insertedLength;
+            } else {
+                reparseLength = this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
+            }
+        }
         if (DEBUG) {
             log.debug("reparse region @" + reparseStart + "+" + reparseLength);
         }

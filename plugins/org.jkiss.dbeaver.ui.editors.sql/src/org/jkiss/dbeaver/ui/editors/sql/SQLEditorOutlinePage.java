@@ -64,6 +64,13 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private List<OutlineNode> rootNodes;
     private SelectionSyncOperation currentSelectionSyncOp = SelectionSyncOperation.NONE;
     private SQLOutlineNodeBuilder currentNodeBuilder = new SQLOutlineNodeFullBuilder();
+    private AbstractUIJob refreshJob = new AbstractUIJob("SQL editor outline refresh") {
+        @Override
+        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+            treeViewer.refresh();
+            return Status.OK_STATUS;
+        }
+    };
     
     private final CaretListener caretListener = event -> {
         if (currentSelectionSyncOp == SelectionSyncOperation.NONE) {
@@ -163,6 +170,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
         
         SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
+        scheduleRefresh();
     }
 
     @Override
@@ -181,6 +189,13 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         super.selectionChanged(event);
     }
 
+    private void scheduleRefresh() {
+        switch (this.refreshJob.getState()) {
+            case Job.WAITING, Job.SLEEPING -> this.refreshJob.cancel();
+        }
+        this.refreshJob.schedule(500);
+    }
+    
     @NotNull
     private String prepareQueryPreview(@NotNull SQLDocumentScriptItemSyntaxContext scriptElement) {
         return this.prepareQueryPreview(scriptElement.getOriginalText());
@@ -343,13 +358,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         Map<SQLDocumentScriptItemSyntaxContext, OutlineNode> elements = new HashMap<>();
         List<OutlineNode> children = Collections.emptyList();
-        AbstractUIJob refreshJob = new AbstractUIJob("SQL editor outline refresh") {
-            @Override
-            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
-                treeViewer.refresh();
-                return Status.OK_STATUS;
-            }
-        };
         final SQLDocumentSyntaxContextListener syntaxContextListener = new SQLDocumentSyntaxContextListener() {
             @Override
             public void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item) {
@@ -391,13 +399,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public IRegion getTextRange() {
             return new Region(0, 0);
-        }
-
-        private void scheduleRefresh() {
-            switch (this.refreshJob.getState()) {
-                case Job.WAITING, Job.SLEEPING -> this.refreshJob.cancel();
-            }
-            this.refreshJob.schedule(500);
         }
 
         private void updateElements() {
