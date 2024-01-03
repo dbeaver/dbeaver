@@ -97,9 +97,13 @@ public class ConstraintNameGenerator {
                 if (matcher.find() && matcher.end() == testName.length()) {
                     testName = testName.substring(0, matcher.start());
                 }
-                if (testName.endsWith(oldPrefix)) {
+                if (testName.toLowerCase().endsWith(oldPrefix.toLowerCase())) {
                     String newPrefix = TYPE_PREFIX.get(newType);
                     if (newPrefix != null) {
+                        if (Character.isLowerCase(constraintName.charAt(0))) {
+                            newPrefix = newPrefix.toLowerCase(Locale.ENGLISH);
+                        }
+
                         constraintName = testName.substring(0, testName.length() - oldPrefix.length()) + newPrefix;
                         nameUpdated = true;
                     }
