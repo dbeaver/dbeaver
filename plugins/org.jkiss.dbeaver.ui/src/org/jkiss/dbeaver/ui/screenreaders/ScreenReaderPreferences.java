@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors;
+package org.jkiss.dbeaver.ui.screenreaders;
 
 /**
- * DatabaseEditorPreferences
+ * Preferences of screen reader
  */
-public class DatabaseEditorPreferences {
-    public static final String PROP_TITLE_SHOW_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
-    public static final String PROP_SAVE_EDITORS_STATE = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
-    public static final String PROP_KEEP_EDITORS_ON_DISCONNECT = "ui.editors.keep-editors-on-disconnect"; //$NON-NLS-1$
+public class ScreenReaderPreferences {
+    public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
 }
