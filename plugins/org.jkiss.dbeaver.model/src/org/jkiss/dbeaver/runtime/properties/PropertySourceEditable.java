@@ -102,8 +102,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             return;
         }
         if (commandContext != null) {
-            if (editableValue instanceof DBSObject dbo && !dbo.isPersisted()) {
-                // Property change for a new object. No need to create a new command
+            if (editableValue instanceof DBSObject dbo && !dbo.isPersisted() && !commandContext.isDirty()) {
+                // Property change for a new object (command list is empty).
+                // No need to create a new command
                 // Do nothing
             } else if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop || !commandContext.isDirty()) {
                 // Last command is not applicable (check for isDirty because command queue might be reverted)
