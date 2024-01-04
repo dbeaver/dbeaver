@@ -14,21 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.stm.STMErrorListener;
-import org.jkiss.dbeaver.model.stm.STMSource;
 
-public class SQLServerSQLAnalyzer extends SQLStandardAnalyzer {
-    @NotNull
-    @Override
-    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        SQLStandardParser parser = super.prepareParser(source, errorListener);
-        parser.setIsSupportSquareBracketQuotation(true);
-        return parser;
+public abstract class SQLQueryNodeModel {
+
+    private final Interval region;
+
+    protected SQLQueryNodeModel(@NotNull Interval region) {
+        this.region = region;
     }
+
+    @NotNull
+    public final Interval getInterval() {
+        return this.region;
+    }
+
+    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return this.applyImpl(visitor, node);
+    }
+
+    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node);
 }

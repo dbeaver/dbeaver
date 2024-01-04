@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.model;
+package org.jkiss.dbeaver.model.dpi;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.stm.STMErrorListener;
-import org.jkiss.dbeaver.model.stm.STMSource;
 
-public class SQLiteSQLAnalyzer extends SQLStandardAnalyzer {
+import java.nio.file.Path;
+import java.util.List;
+
+public interface DBPApplicationDPI {
     @NotNull
-    @Override
-    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        SQLStandardParser parser = super.prepareParser(source, errorListener);
-        parser.setIsSupportSquareBracketQuotation(true);
-        return parser;
-    }
+    List<Path> getDriverLibsLocation(@NotNull String driverId);
 }

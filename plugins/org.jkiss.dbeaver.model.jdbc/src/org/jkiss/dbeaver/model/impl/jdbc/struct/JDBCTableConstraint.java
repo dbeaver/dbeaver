@@ -24,12 +24,13 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
 /**
  * JDBC abstract constraint
  */
-public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
-    extends AbstractTableConstraint<TABLE>
+public abstract class JDBCTableConstraint<TABLE extends JDBCTable, COLUMN extends DBSTableConstraintColumn>
+    extends AbstractTableConstraint<TABLE, COLUMN>
     implements DBPSaveableObject
 {
     private boolean persisted;

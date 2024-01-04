@@ -79,4 +79,9 @@ public class Pair<T1, T2> {
     public int hashCode() {
         return (first == null ? 0 : first.hashCode()) ^ (second == null ? 0 : second.hashCode());
     }
+
+    public static <T1, T2> Pair<T1, T2> of(T1 t1, T2 t2) {
+        return new Pair<>(t1, t2);
+    }
+
 }

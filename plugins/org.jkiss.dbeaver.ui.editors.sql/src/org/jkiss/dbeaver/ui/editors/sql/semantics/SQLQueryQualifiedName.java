@@ -109,7 +109,18 @@ public class SQLQueryQualifiedName { // qualifier
             return List.of(entityName.getName());
         }
     }
-    
+
+    @NotNull
+    public String toIdentifierString() {
+        if (catalogName != null && schemaName != null) {
+            return String.join(".", catalogName.getRawName(), schemaName.getRawName(), entityName.getRawName());
+        } else if (schemaName != null) {
+            return String.join(".", schemaName.getRawName(), entityName.getRawName());
+        } else {
+            return entityName.getRawName();
+        }
+    }
+
     @Override
     public String toString() {
         return super.toString() + "[" + String.join(".", this.toListOfStrings()) + "]";
@@ -123,5 +134,9 @@ public class SQLQueryQualifiedName { // qualifier
     @Override
     public boolean equals(Object obj) {
         return obj instanceof SQLQueryQualifiedName other && this.toListOfStrings().equals(other.toListOfStrings());
+    }
+
+    public boolean isNotClassified() {
+        return this.entityName.isNotClassified();
     }
 }

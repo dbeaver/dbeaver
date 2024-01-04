@@ -18,12 +18,16 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
@@ -36,15 +40,12 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class SQLBackgroundParsingJob {
 
     private static final Log log = Log.getLog(SQLBackgroundParsingJob.class);
     private static final boolean DEBUG = false;
 
-    private static final Timer schedulingTimer = new Timer("SQLBackgroundParsingJob.schedulingTimer.thread", true); //$NON-NLS-1
     private static final long schedulingTimeoutMilliseconds = 500;
     
     private static class QueuedRegionInfo {
@@ -62,7 +63,7 @@ public class SQLBackgroundParsingJob {
     private final SQLEditorBase editor;
     private final SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext();
     private IDocument document = null;
-    private volatile TimerTask task = null;
+    private volatile AbstractJob task = null;
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
@@ -122,17 +123,27 @@ public class SQLBackgroundParsingJob {
     private void beforeDocumentModification(DocumentEvent event) {
         this.cancel();
         
-        IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), event.getText().length());
+        int insertedLength = event.getText() == null ? 0 : event.getText().length();
+        
+        IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), insertedLength);
         int reparseStart = regionToReparse.getOffset();
-        int reparseLength = regionToReparse.getLength() < Integer.MAX_VALUE ? regionToReparse.getLength() 
-                : this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
+        int reparseLength = 0;
+        if (regionToReparse.getLength() < Integer.MAX_VALUE) {
+            reparseLength = regionToReparse.getLength();
+        } else {
+            if (event.getOffset() + insertedLength > this.editor.getTextViewer().getBottomIndexEndOffset()) {
+                reparseLength = event.getOffset() + insertedLength;
+            } else {
+                reparseLength = this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
+            }
+        }
         if (DEBUG) {
             log.debug("reparse region @" + reparseStart + "+" + reparseLength);
         }
 
         // TODO if these further actions are heavy, maybe use background thread for them too
-        synchronized (this.syncRoot) {            
-            int delta = event.getText().length() - event.getLength();
+        synchronized (this.syncRoot) {
+            int delta = insertedLength - event.getLength();
             if (delta > 0) { // just expand the region to reparse
                 this.queuedForReparse.applyOffset(event.getOffset(), delta);
                 this.enqueueToReparse(reparseStart, reparseLength);
@@ -146,7 +157,7 @@ public class SQLBackgroundParsingJob {
                 if (it.getCurrValue() != null || it.prev()) {
                     firstAffectedReparseOffset = it.getCurrOffset();
                     if (firstAffectedReparseOffset < reparseStart &&
-                        firstAffectedReparseOffset + it.getCurrValue().length > event.getText().length()
+                        firstAffectedReparseOffset + it.getCurrValue().length > insertedLength
                     ) {
                         return; // modified region is a subrange of already queued for reparse 
                     }
@@ -212,17 +223,19 @@ public class SQLBackgroundParsingJob {
             }
 
             // TODO should we really schedule a new task each time this method called? or maybe at least cancel it at first
-            this.task = new TimerTask() {
+            this.task = new AbstractJob("Background parsing job") {
                 @Override
-                public void run() {
+                protected IStatus run(DBRProgressMonitor monitor) {
                     try {
                         SQLBackgroundParsingJob.this.doWork();
+                        return Status.OK_STATUS;
                     } catch (BadLocationException e) {
                         log.debug(e);
+                        return Status.CANCEL_STATUS;
                     }
                 }
             };
-            schedulingTimer.schedule(this.task, schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1));
+            this.task.schedule(schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1));
         }
     }
 
@@ -369,6 +382,9 @@ public class SQLBackgroundParsingJob {
             
             {
                 SQLScriptElement lastElement = elements.get(elements.size() - 1);
+                if (lastElement == null) {
+                    return;
+                }
                 workOffset = elements.get(0).getOffset();
                 workLength = lastElement.getOffset() + lastElement.getLength() - workOffset;
                 if (DEBUG) {
@@ -395,7 +411,12 @@ public class SQLBackgroundParsingJob {
                         if (DEBUG) {
                             log.debug("registering script item @" + element.getOffset() + "+" + element.getLength());
                         }
-                        SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(element.getOffset(), element.getLength());
+                        SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(
+                            element.getOriginalText(), 
+                            queryModel,
+                            element.getOffset(),
+                            element.getLength()
+                        );
                         itemContext.clear();
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);

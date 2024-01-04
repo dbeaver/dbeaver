@@ -196,9 +196,9 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     }
     
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command,
+                                          @NotNull Map<String, Object> options) {
     	final ExasolTableColumn exasolColumn = command.getObject();
     	
     	// build nullability string

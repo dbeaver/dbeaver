@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
@@ -158,6 +159,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     }
 
     private static final Log log = Log.getLog(StreamConsumerPageOutput.class);
+    private static final String HELP_DT_EXTERNAL_LINK = "Data-transfer-external-storage";
     
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
@@ -384,7 +386,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         UIUtils.createLink(
             composite,
             DTMessages.data_transfer_wizard_output_export_to_external_storage_link,
-            SelectionListener.widgetSelectedAdapter(e -> ShellUtils.launchProgram(e.text))
+            SelectionListener.widgetSelectedAdapter(
+                e -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DT_EXTERNAL_LINK)))
         );
 
         setControl(composite);
