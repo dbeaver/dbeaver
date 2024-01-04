@@ -77,6 +77,7 @@ public class OracleBaseTableTest {
         objectMaker = OracleTestUtils.getManagerForClass(OracleTable.class);
 
         oracleTable = new OracleTable(testSchema, "TEST_TABLE");
+        oracleTable.setPersisted(true);
         OracleTableColumn tableColumn = OracleTestUtils.addColumn(oracleTable, "COLUMN1", "VARCHAR", 1);
         tableColumn.setMaxLength(100);
         OracleTableColumn tableColumn1 = OracleTestUtils.addColumn(oracleTable, "COLUMN2", "NUMBER", 2);
