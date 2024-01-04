@@ -118,8 +118,8 @@ public class MetadataProcessor {
         final StringBuilder sb = new StringBuilder();
 
         if (model.isChatAPI()) {
-            sb.append("You must perform SQL completion against a SQLite database. " +
-                "Your query must start with \"SELECT\" and be enclosed with ``` (triple backslash). " +
+            sb.append("You must perform SQL completion. " +
+                "Your query must start with \"SELECT\" and be enclosed with triple backslash on new lines. " +
                 "Talk naturally, as if you were talking to a human.");
         } else {
             sb.append("Perform SQL completion.");
