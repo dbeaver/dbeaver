@@ -790,6 +790,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return filtered;
     }
 
+    @NotNull
+    @Override
+    public String getNodeId() {
+        String id = this.getMeta().getId();
+        if (CommonUtils.isNotEmpty(id)) {
+            return id;
+        }
+        return super.getNodeId();
+    }
+
     @Deprecated
     @Override
     public String getNodeItemPath() {
