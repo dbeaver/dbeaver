@@ -202,8 +202,8 @@
                         </folder>
                     </items> <!--</items>-->
                 </folder> <!-- Schemas -->
-                  <folder label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
+                  <folder label="%tree.global_metadata.node.name" id="globalMetadataObjects" icon="#logical" description="Global metadata objects">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                         <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                     </folder>
                     
@@ -219,7 +219,7 @@
                         </items>
                     </folder>
                 </folder> <!-- Global metadata -->
-                <folder label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                <folder label="%tree.storage.node.name" id="storageManagement" icon="#storage" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
                         <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
@@ -228,45 +228,38 @@
                         </items>
                     </folder>
                 </folder>
-                <folder label="%tree.security.node.name" icon="#security" description="Security management">
+                <folder label="%tree.security.node.name" id="securityManagement" icon="#security" description="Security management">
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="users" property="users" icon="#user">
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
-                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
-                                </items>
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivObject" label="%tree.object_privileges.node.name" icon="#permissions" description="Objects" navigable="false">
-                                <items label="%tree.privilege.node.name" path="objPrivs" property="objectPrivs" icon="#privilege">
-                                </items>
+                                <items label="%tree.privilege.node.name" path="objPrivs" property="objectPrivs" icon="#privilege"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
-                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group">
-                                </items>
+                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group"/>
                             </folder>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
                         <items label="%tree.role.node.name" path="roles" property="roles" icon="#user_group">
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivUser" label="%tree.users.node.name" icon="#folder_user" description="Users" navigable="false">
-                                <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user">
-                                </items>
+                                <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles" navigable="false">
-                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group">
-                                </items>
+                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
-                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
-                                </items>
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivObject" label="%tree.object_privileges.node.name" icon="#permissions" description="Objects" navigable="false">
-                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege">
-                                </items>
+                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege"/>
                             </folder>
                         </items>
                     </folder>
                 </folder>
-                <folder label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                <folder label="%tree.administer.node.name"  id="maintenanceSettings" icon="#folder_admin" description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
              </tree>
