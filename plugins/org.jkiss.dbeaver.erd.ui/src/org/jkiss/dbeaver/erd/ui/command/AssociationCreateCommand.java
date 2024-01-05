@@ -188,6 +188,7 @@ public class AssociationCreateCommand extends Command {
                 association = new ERDAssociation(sourceEntity, targetEntity, true);
             }
         }
+        association.resolveAttributes();
         return association;
     }
 

@@ -156,9 +156,27 @@ public class ERDContentProviderDefault implements ERDContentProvider {
     }
 
     @Override
-    public ERDAssociation createAutoAssociation(ERDContainer diagram, @NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect) {
+    public ERDAssociation createAutoAssociation(ERDContainer diagram, 
+        @NotNull DBSEntityAssociation association,
+        @NotNull ERDEntity sourceEntity, 
+        @NotNull ERDEntity targetEntity,
+        boolean reflect) {
         // Allow all auto-associations
-        return new ERDAssociation(association, sourceEntity, targetEntity, reflect);
+        ERDAssociation erdAssociation = new ERDAssociation(association, sourceEntity, targetEntity, reflect);
+        erdAssociation.resolveAttributes();
+        return erdAssociation;
+    }
+
+    @Override
+    public ERDAssociation createAssociation(ERDContainer diagram,
+        DBSEntityAssociation association,
+        ERDEntity sourceEntity,
+        ERDEntityAttribute sourceAttribute,
+        ERDEntity targetEntity,
+        ERDEntityAttribute targetAttribute, boolean reflect) {
+        ERDAssociation erdAssociation = new ERDAssociation(association, sourceEntity, targetEntity, reflect);
+        erdAssociation.addCondition(sourceAttribute, targetAttribute);
+        return erdAssociation;
     }
 
     @Override
