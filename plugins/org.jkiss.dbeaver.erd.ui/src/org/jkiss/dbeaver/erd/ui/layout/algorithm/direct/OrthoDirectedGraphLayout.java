@@ -136,30 +136,10 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         for (Node nodeSource : islands) {
             currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
         }
-        int virtColumns = 0;
-        offsetX = currentX;
-        int offsetY = currentY;
-        int width = DEFAULT_OFFSET_BY_X;
-        int height = DEFAULT_OFFSET_BY_Y;
         for (Node node : missedNodes) {
-            if (width < node.width) {
-                width = node.width;
-            }
-            if (height < node.height) {
-                height = node.height;
-            }
-            node.x = offsetX;
-            node.y = offsetY;
-            virtColumns++;
-            if (virtColumns % 5 == 0) {
-                // next row
-                offsetY += height + DEFAULT_OFFSET_BY_Y;
-                offsetX = currentX;
-                width = DEFAULT_OFFSET_BY_X;
-                height = DEFAULT_OFFSET_BY_Y;
-            } else {
-                offsetX += DEFAULT_OFFSET_BY_X;
-            }
+            node.x = currentX;
+            node.y = currentY;
+            currentY += node.height + DEFAULT_OFFSET_BY_Y;
         }
     }
 
