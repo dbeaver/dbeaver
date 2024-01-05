@@ -84,6 +84,13 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation> {
         this.sourceEntity.addAssociation(this, reflect);
     }
 
+    /**
+     * The method identify associating attributes for entities
+     * 
+     * @param association - container
+     * @param sourceEntity - source
+     * @param targetEntity - target
+     */
     public void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
         try {
             List<? extends DBSEntityAttributeRef> attrRefs = association.getAttributeReferences(new VoidProgressMonitor());

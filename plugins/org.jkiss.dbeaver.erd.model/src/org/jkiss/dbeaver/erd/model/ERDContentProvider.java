@@ -57,18 +57,17 @@ public interface ERDContentProvider {
         @NotNull ERDEntity sourceEntity,
         @NotNull ERDEntity targetEntity, 
         boolean reflect);
-    
+
     /**
      * Create entity associating according to specified attributes.
      *
-     * @param diagram
-     * @param association
-     * @param sourceEntity
-     * @param sourceAttribute
-     * @param targetEntity
-     * @param targetAttribute
-     * @param reflect
-     * @return
+     * @param diagram - Diagram
+     * @param association - container
+     * @param sourceEntity - source
+     * @param sourceAttribute - source attribute
+     * @param targetEntity - target
+     * @param targetAttribute - target attribute
+     * @param reflect - additional for pk
      */
     @Nullable
     ERDAssociation createAssociation(ERDContainer diagram, 
