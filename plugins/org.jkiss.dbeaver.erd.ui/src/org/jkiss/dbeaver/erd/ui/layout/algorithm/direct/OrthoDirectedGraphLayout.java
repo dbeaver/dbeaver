@@ -44,6 +44,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private static final int DEFAULT_ISO_OFFSET_HORZ = 100;
     private static final int DEFAULT_OFFSET_BY_X = 250;
     private static final int DEFAULT_OFFSET_BY_Y = 75;
+    private static final int VIRTUAL_COLUMNS = 5;
 
     public OrthoDirectedGraphLayout(AbstractGraphicalEditPart diagram) {
         this.diagram = diagram;
@@ -151,7 +152,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             node.x = offsetX;
             node.y = offsetY;
             virtColumns++;
-            if (virtColumns % 5 == 0) {
+            if (virtColumns % VIRTUAL_COLUMNS == 0) {
                 // next row
                 offsetY += height + DEFAULT_OFFSET_BY_Y;
                 offsetX = currentX;
