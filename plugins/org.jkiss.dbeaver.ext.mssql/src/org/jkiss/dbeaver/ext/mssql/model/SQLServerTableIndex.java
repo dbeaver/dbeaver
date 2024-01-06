@@ -266,7 +266,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 "   GROUP BY IC2.object_id ,IC2.index_id) tmp1   \n" +
                 "   WHERE IncludedColumns IS NOT NULL ) tmp2    \n" +
                 "ON tmp2.object_id = I.object_id AND tmp2.index_id = I.index_id   \n" +
-                "WHERE I.is_primary_key = 0 AND I.is_unique_constraint = 0 \n" +
+                "WHERE I.is_primary_key IN (0,1) AND I.is_unique_constraint = 0 \n" +
                 "AND I.Object_id = " + getTable().getObjectId() + "\n" +
                 "AND I.name = '" + SQLUtils.escapeString(getDataSource(), getName()) + "'";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read SQL Server index definition")) {
