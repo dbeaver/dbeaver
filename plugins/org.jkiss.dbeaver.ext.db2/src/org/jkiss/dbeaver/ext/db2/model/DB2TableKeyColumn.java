@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public class DB2TableKeyColumn extends AbstractTableConstraintColumn {
 
-    private AbstractTableConstraint<DB2Table> constraint;
+    private AbstractTableConstraint<DB2Table, ? extends DB2TableKeyColumn> constraint;
     private DB2TableColumn tableColumn;
     private Integer ordinalPosition;
 
@@ -38,7 +38,7 @@ public class DB2TableKeyColumn extends AbstractTableConstraintColumn {
     // Constructors
     // -----------------
 
-    public DB2TableKeyColumn(AbstractTableConstraint<DB2Table> constraint, DB2TableColumn tableColumn, Integer ordinalPosition)
+    public DB2TableKeyColumn(AbstractTableConstraint<DB2Table, ? extends DB2TableKeyColumn> constraint, DB2TableColumn tableColumn, Integer ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -46,7 +46,7 @@ public class DB2TableKeyColumn extends AbstractTableConstraintColumn {
     }
 
     @Override
-    public AbstractTableConstraint<DB2Table> getParentObject()
+    public AbstractTableConstraint<DB2Table, ? extends DB2TableKeyColumn> getParentObject()
     {
         return constraint;
     }

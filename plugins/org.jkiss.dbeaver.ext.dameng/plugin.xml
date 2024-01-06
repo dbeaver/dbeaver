@@ -192,6 +192,16 @@
                         </folder>
                     </items>
                 </folder>
+                <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengTablespace"
+                        label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
+                    <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces"
+                           icon="#tablespace">
+                        <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengDataFile"
+                                label="%tree.files.node.name" icon="#files" description="Data Files">
+                            <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
+                        </folder>
+                    </items>
+                </folder>
             </tree>
 
             <drivers managable="true">

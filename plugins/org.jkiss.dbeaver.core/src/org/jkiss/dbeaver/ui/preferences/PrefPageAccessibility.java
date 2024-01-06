@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
-import org.jkiss.dbeaver.ui.editors.ScreenReader;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 
 public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.user.interface.accessibility";
@@ -72,7 +72,7 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
         for (ScreenReader reader : ScreenReader.values()) {
             cmbScreenReaderSupport.add(reader.getScreenReaderName());
         }
-        String storedScreenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
+        String storedScreenReader = store.getString(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
         ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
         cmbScreenReaderSupport.select(screenReader.ordinal());
     }
@@ -95,7 +95,7 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
     @Override
     public boolean performOk() {
         ScreenReader screenReader = ScreenReader.getScreenReader(cmbScreenReaderSupport.getText());
-        store.setValue(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY, screenReader.name());
+        store.setValue(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY, screenReader.name());
         return true;
     }
 

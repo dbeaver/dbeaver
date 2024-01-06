@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -30,7 +33,7 @@ import java.util.Map;
 public class PostgreTriggerConfigurator implements DBEObjectConfigurator<PostgreTrigger> {
 
     @Override
-    public PostgreTrigger configureObject(DBRProgressMonitor monitor, Object parent, PostgreTrigger trigger, Map<String, Object> options) {
+    public PostgreTrigger configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreTrigger trigger, @NotNull Map<String, Object> options) {
         return new UITask<PostgreTrigger>() {
 
             @Override
