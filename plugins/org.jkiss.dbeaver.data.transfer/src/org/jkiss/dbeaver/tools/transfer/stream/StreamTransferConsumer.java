@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -238,7 +239,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 targetRow[i] = value;
             }
             // Export row
-            processor.exportRow(session, resultSet, targetRow);
+            if (!(resultSet instanceof StatResultSet)) {
+                processor.exportRow(session, resultSet, targetRow);
+            }
             firstRow = false;
         } catch (IOException e) {
             throw new DBCException("IO error", e);
