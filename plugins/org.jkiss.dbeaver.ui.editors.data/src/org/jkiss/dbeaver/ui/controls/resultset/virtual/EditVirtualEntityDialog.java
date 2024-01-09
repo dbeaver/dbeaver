@@ -77,7 +77,7 @@ public class EditVirtualEntityDialog extends TitleAreaDialog implements IDialogP
     private EditDictionaryPage editDictionaryPage;
     private EditConstraintPage editUniqueKeyPage;
     private DBVEntityConstraint uniqueConstraint;
-    private InitPage initPage = InitPage.UNIQUE_KEY;
+    private InitPage initPage = InitPage.ATTRIBUTES;
 
     private EditVirtualColumnsPage columnsPage;
 
@@ -234,7 +234,13 @@ public class EditVirtualEntityDialog extends TitleAreaDialog implements IDialogP
 
         editUniqueKeyPage = new EditConstraintPage(
             "Define unique identifier",
-            uniqueConstraint);
+            uniqueConstraint)
+        {
+            @Override
+            protected boolean isColumnsRequired() {
+                return initPage == InitPage.UNIQUE_KEY && super.isColumnsRequired();
+            }
+        };
         editUniqueKeyPage.setContainer(this);
         ukItem.setData(DATA_PAGE, editUniqueKeyPage);
         editUniqueKeyPage.createControl(tabFolder);
