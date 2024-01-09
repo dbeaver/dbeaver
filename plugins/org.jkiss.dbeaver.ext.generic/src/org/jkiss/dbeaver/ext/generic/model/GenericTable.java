@@ -105,7 +105,7 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
         result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, GenericUniqueKey.class));
         result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, GenericUniqueKey.class));
         if (isSupportCheckConstraint) {
-            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.INDEX, GenericTableConstraint.class));
+            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, GenericTableConstraint.class));
         }
         return result;
     }

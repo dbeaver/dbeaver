@@ -287,8 +287,8 @@ public class SQLServerTable extends SQLServerTableBase
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(
             DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, SQLServerTableUniqueKey.class),
-            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, SQLServerTableUniqueKey.class),
-            DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, SQLServerTableCheckConstraint.class)
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, SQLServerTableUniqueKey.class)
+            // DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, SQLServerTableCheckConstraint.class) only as a separate key class
         );
     }
 
