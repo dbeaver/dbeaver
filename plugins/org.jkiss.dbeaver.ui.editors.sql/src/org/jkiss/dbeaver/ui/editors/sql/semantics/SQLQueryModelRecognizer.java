@@ -291,19 +291,6 @@ public class SQLQueryModelRecognizer {
                     return source;
                 }
             }),
-            Map.entry(STMKnownRuleNames.tableExpression, (n, cc, r) -> {
-                // tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
-                SQLQueryValueExpression whereExpr = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.whereClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression havingClause = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.havingClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression groupByClause = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.groupByClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression orderByClause = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.orderByClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryRowsSourceModel source = cc.isEmpty() ? r.queryDataContext.getDefaultTable(n.getRealInterval()) : cc.get(0);
-                return new SQLQueryRowsSelectionFilterModel(n.getRealInterval(), source, whereExpr, havingClause, groupByClause, orderByClause);
-            }),
             Map.entry(STMKnownRuleNames.querySpecification, (n, cc, r) -> {
                 STMTreeNode selectListNode = n.findChildOfName(STMKnownRuleNames.selectList);
                 SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(
@@ -344,7 +331,21 @@ public class SQLQueryModelRecognizer {
                     }
                 }
                 SQLQueryRowsSourceModel source = cc.isEmpty() ? r.queryDataContext.getDefaultTable(n.getRealInterval()) : cc.get(0);
-                return new SQLQueryRowsProjectionModel(n.getRealInterval(), source, resultModel);
+                STMTreeNode tableExpr = n.findChildOfName(STMKnownRuleNames.tableExpression);
+                if (tableExpr != null) {
+                    // tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
+                    SQLQueryValueExpression whereExpr = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.whereClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    SQLQueryValueExpression havingClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.havingClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    SQLQueryValueExpression groupByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.groupByClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    SQLQueryValueExpression orderByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.orderByClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    return new SQLQueryRowsProjectionModel(n.getRealInterval(), source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
+                } else {
+                    return new SQLQueryRowsProjectionModel(n.getRealInterval(), source, resultModel);
+                }
             }),
             Map.entry(STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
                 // can they both be missing?
