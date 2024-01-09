@@ -31,7 +31,10 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -219,9 +222,8 @@ public class ERDEntity extends ERDElement<DBSEntity> {
                 if (fk instanceof DBSEntityReferrer) {
                     fkAttrs.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) fk));
                 }
-                ERDEntity entity2 = diagram.getEntityMap().get(
-                        DBVUtils.getRealEntity(monitor, fk.getAssociatedEntity()));
-                if (entity2 == null) {
+                ERDEntity targetEntity = diagram.getEntityMap().get(DBVUtils.getRealEntity(monitor, fk.getAssociatedEntity()));
+                if (targetEntity == null) {
                     if (unresolvedKeys == null) {
                         unresolvedKeys = new ArrayList<>();
                     }
@@ -231,7 +233,32 @@ public class ERDEntity extends ERDElement<DBSEntity> {
                         if (DBUtils.isInheritedObject(fk)) {
                             continue;
                         }
-                        diagram.getContentProvider().createAutoAssociation(diagram, fk, this, entity2, reflect);
+                        if (fk instanceof DBSTableForeignKey) {
+                            DBSTableForeignKey dbstfk = (DBSTableForeignKey) fk;
+                            List<? extends DBSEntityAttributeRef> attributeReferences = dbstfk.getAttributeReferences(monitor);
+                            for (DBSEntityAttributeRef attrRef : attributeReferences) {
+                                if (attrRef instanceof DBSTableForeignKeyColumn) {
+                                    DBSEntityAttribute targetAttr = ((DBSTableForeignKeyColumn) attrRef).getReferencedColumn();
+                                    DBSEntityAttribute sourceAttr = attrRef.getAttribute();
+                                    if (sourceAttr != null && targetAttr != null) {
+                                        ERDEntityAttribute erdSourceAttr = ERDUtils.getAttributeByModel(this, sourceAttr);
+                                        ERDEntityAttribute erdTargetAttr = ERDUtils.getAttributeByModel(targetEntity, targetAttr);
+                                        if (erdSourceAttr != null || erdTargetAttr != null) {
+                                            diagram.getContentProvider().createAssociation(
+                                                diagram,
+                                                fk,
+                                                this,
+                                                erdSourceAttr,
+                                                targetEntity,
+                                                erdTargetAttr,
+                                                reflect);
+                                        } else {
+                                            log.error("Error resolving ERD association attributes (source/target attribute is null)");
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
