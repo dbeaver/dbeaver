@@ -400,7 +400,8 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                             erdEntity.getReferenceAssociation(addedAssociation) == null &&
                             erdEntity != null &&
                             targetEntity != null) {
-                            new ERDAssociation(addedAssociation, erdEntity, targetEntity, true);
+                            ERDAssociation erdAssociation = new ERDAssociation(addedAssociation, erdEntity, targetEntity, true);
+                            erdAssociation.resolveAttributes();
                         }
                     });
                 } else {

@@ -52,7 +52,31 @@ public interface ERDContentProvider {
     void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity, @NotNull ERDAttributeSettings settings);
 
     @Nullable
-    ERDAssociation createAutoAssociation(ERDContainer diagram, @NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect);
+    ERDAssociation createAutoAssociation(ERDContainer diagram, 
+        @NotNull DBSEntityAssociation association, 
+        @NotNull ERDEntity sourceEntity,
+        @NotNull ERDEntity targetEntity, 
+        boolean reflect);
+
+    /**
+     * Create entity associating according to specified attributes.
+     *
+     * @param diagram - Diagram
+     * @param association - container
+     * @param sourceEntity - source
+     * @param sourceAttribute - source attribute
+     * @param targetEntity - target
+     * @param targetAttribute - target attribute
+     * @param reflect - additional for pk
+     */
+    @Nullable
+    ERDAssociation createAssociation(ERDContainer diagram, 
+        @NotNull DBSEntityAssociation association, 
+        @NotNull ERDEntity sourceEntity,
+        @NotNull ERDEntityAttribute sourceAttribute,
+        @NotNull ERDEntity targetEntity,
+        @NotNull ERDEntityAttribute targetAttribute,
+        boolean reflect);
 
     <T> T getAttribute(String name);
 
