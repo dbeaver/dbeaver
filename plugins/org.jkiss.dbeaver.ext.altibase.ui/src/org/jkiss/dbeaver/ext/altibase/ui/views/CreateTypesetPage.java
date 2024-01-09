@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.altibase.ui.internal.AltibaseUIMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -87,4 +88,9 @@ public class CreateTypesetPage extends BaseObjectEditPage {
     public boolean isPageComplete() {
         return !CommonUtils.isEmpty(name);
     }
+
+	@Override
+	public DBSObject getObject() {
+		return null;
+	}
 }

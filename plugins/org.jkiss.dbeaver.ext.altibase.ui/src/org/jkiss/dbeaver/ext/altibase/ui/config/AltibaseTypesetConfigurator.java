@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.ui.config;
 
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset;
 import org.jkiss.dbeaver.ext.altibase.ui.views.CreateTypesetPage;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -31,9 +32,9 @@ import java.util.Map;
  */
 public class AltibaseTypesetConfigurator implements DBEObjectConfigurator<AltibaseTypeset> {
 
-    @Override
-    public AltibaseTypeset configureObject(DBRProgressMonitor monitor, Object container, 
-            AltibaseTypeset procedure, Map<String, Object> options) {
+	@Override
+    public AltibaseTypeset configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
+    		Object container, AltibaseTypeset procedure, Map<String, Object> options) {
         return new UITask<AltibaseTypeset>() {
             @Override
             protected AltibaseTypeset runTask() {
@@ -58,5 +59,4 @@ public class AltibaseTypesetConfigurator implements DBEObjectConfigurator<Altiba
             }
         }.execute();
     }
-
 }

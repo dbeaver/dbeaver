@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.ui.config;
 
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -28,8 +29,8 @@ import java.util.Map;
 public class AltibaseSequenceConfigurator implements DBEObjectConfigurator<AltibaseSequence> {
 
     @Override
-    public AltibaseSequence configureObject(DBRProgressMonitor monitor, Object container, 
-            AltibaseSequence sequence, Map<String, Object> options) {
+    public AltibaseSequence configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
+    		Object container, AltibaseSequence sequence, Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage page = new EntityEditPage(sequence.getDataSource(), DBSEntityType.SEQUENCE);
             if (!page.edit()) {
@@ -41,5 +42,4 @@ public class AltibaseSequenceConfigurator implements DBEObjectConfigurator<Altib
             return sequence;
         });
     }
-
 }

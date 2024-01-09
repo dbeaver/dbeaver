@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.ui.config;
 
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -32,8 +33,8 @@ import java.util.Map;
 public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<AltibaseProcedureStandAlone> {
 
     @Override
-    public AltibaseProcedureStandAlone configureObject(DBRProgressMonitor monitor, Object container, 
-            AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
+    public AltibaseProcedureStandAlone configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
+    		Object container, AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
         return new UITask<AltibaseProcedureStandAlone>() {
             @Override
             protected AltibaseProcedureStandAlone runTask() {
@@ -60,5 +61,4 @@ public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<Alti
             }
         }.execute();
     }
-
 }
