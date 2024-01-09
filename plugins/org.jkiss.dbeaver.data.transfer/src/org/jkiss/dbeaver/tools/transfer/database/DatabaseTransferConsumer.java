@@ -188,12 +188,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBSDataManipulator targetObject = getTargetObject();
         if (targetObject != null && !isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
-            if (targetObject.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_TRUNCATE)) {
-                targetObject.truncateData(
-                    targetSession,
-                    executionSource);
-            } else {
-                log.error("Table '" + targetObject.getName() + "' doesn't support truncate operation");
+            try {
+                targetObject.truncateData(targetSession, executionSource);
+            } catch (DBCFeatureNotSupportedException e) {
+                log.warn("Table '" + targetObject.getName() + "' doesn't support truncate operation");
+            } catch (DBException e) {
+                log.error("Failed to truncate '" + targetObject.getName() + "'", e);
             }
         }
 
