@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -731,7 +732,7 @@ public class SQLQueryJob extends DataSourceJob
             }
             query.setData(STATS_RESULTS); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
-            if (dataReceiver != null) {
+            if (dataReceiver != null && !(dataReceiver instanceof IDataTransferConsumer)) {
                 try {
                     fetchExecutionResult(session, dataReceiver, query);
                 } catch (DBCException e) {
