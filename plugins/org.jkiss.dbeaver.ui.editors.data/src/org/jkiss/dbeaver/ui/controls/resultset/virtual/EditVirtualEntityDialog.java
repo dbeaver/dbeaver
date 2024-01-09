@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -47,6 +46,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.dialogs.BaseTitleDialog;
 import org.jkiss.dbeaver.ui.dialogs.IDialogPageContainer;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
@@ -59,7 +59,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-public class EditVirtualEntityDialog extends TitleAreaDialog implements IDialogPageContainer {
+public class EditVirtualEntityDialog extends BaseTitleDialog implements IDialogPageContainer {
 
     private static final Log log = Log.getLog(EditVirtualEntityDialog.class);
 
@@ -92,7 +92,7 @@ public class EditVirtualEntityDialog extends TitleAreaDialog implements IDialogP
     }
 
     public EditVirtualEntityDialog(ResultSetViewer viewer, @Nullable DBSEntity entity, @NotNull DBVEntity vEntity) {
-        super(viewer.getControl().getShell());
+        super(viewer.getControl().getShell(), null);
         this.viewer = viewer;
         this.entity = entity;
         this.vEntity = vEntity;
@@ -132,7 +132,7 @@ public class EditVirtualEntityDialog extends TitleAreaDialog implements IDialogP
         } catch (InterruptedException e) {
             // ignore
         }
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         TabFolder tabFolder = new TabFolder(composite, SWT.TOP);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
