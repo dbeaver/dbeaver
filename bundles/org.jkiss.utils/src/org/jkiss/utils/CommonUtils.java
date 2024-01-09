@@ -181,8 +181,12 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static <T> T getFirstOrNull(@NotNull List<T> list) {
-        return list.isEmpty() ? null : list.get(0);
+    public static <T> T getFirstOrNull(@NotNull Iterable<T> iterable) {
+        Iterator<T> iterator = iterable.iterator();
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
     }
 
     @NotNull

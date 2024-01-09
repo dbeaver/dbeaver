@@ -16,20 +16,42 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.List;
+
 public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
     private final List<SQLQueryValueExpression> operands;
+    private final String content;
 
-    public SQLQueryValueFlattenedExpression(@NotNull List<SQLQueryValueExpression> operands) {
+    public SQLQueryValueFlattenedExpression(
+        @NotNull Interval range,
+        @NotNull String content,
+        @NotNull List<SQLQueryValueExpression> operands
+    ) {
+        super(range);
+        this.content = content;
         this.operands = operands;
     }
-    
+
+    public String getContent() {
+        return this.content;
+    }
+
+    public List<SQLQueryValueExpression> getOperands() {
+        return operands;
+    }
+
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.operands.forEach(opnd -> opnd.propagateContext(context, statistics));
+    }
+
+    @Override
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitValueFlatExpr(this, node);
     }
 }

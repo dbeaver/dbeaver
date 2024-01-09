@@ -16,50 +16,34 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
 import java.util.Map;
 
 /**
- * SQL server unique constraint manager
+ * SQL server check constraint manager
  */
 public class SQLServerCheckConstraintConfigurator implements DBEObjectConfigurator<SQLServerTableCheckConstraint> {
 
     @Override
-    public SQLServerTableCheckConstraint configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableCheckConstraint constraint, Map<String, Object> options) {
+    public SQLServerTableCheckConstraint configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableCheckConstraint constraint, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
-                "Create CHECK constraint",
-                constraint,
-                new DBSEntityConstraintType[] {DBSEntityConstraintType.CHECK} );
+                "CHECK constraint",
+                constraint);
             if (!editPage.edit()) {
                 return null;
             }
+            constraint.setCheckConstraintDefinition(editPage.getConstraintExpression());
 
-            return null;
-/*
-            final SQLServerTableUniqueKey primaryKey = new SQLServerTableUniqueKey(
-                parent,
-                null,
-                null,
-                editPage.getConstraintType(),
-                false);
-            primaryKey.setName(editPage.getConstraintName());
-            int colIndex = 1;
-            for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                primaryKey.addColumn(
-                    new SQLServerTableConstraintColumn(
-                        primaryKey,
-                        (SQLServerTableColumn) tableColumn,
-                        colIndex++));
-            }
-            return primaryKey;
-*/
+            return constraint;
         });
     }
 

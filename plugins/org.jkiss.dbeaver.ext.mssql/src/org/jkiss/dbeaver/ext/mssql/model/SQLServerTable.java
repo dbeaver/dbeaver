@@ -33,9 +33,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCheckConstraintContainer;
 
 import java.sql.ResultSet;
@@ -49,13 +47,13 @@ import java.util.Map;
  * SQLServerTable
  */
 public class SQLServerTable extends SQLServerTableBase
-        implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController {
+        implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController, DBSEntityConstrainable {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
     private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
     private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
 
-    private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
+    private final CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
 
     private transient volatile List<SQLServerTableForeignKey> references;
 
@@ -283,6 +281,15 @@ public class SQLServerTable extends SQLServerTableBase
             return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, SQLServerTableUniqueKey.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, SQLServerTableUniqueKey.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, SQLServerTableCheckConstraint.class)
+        );
     }
 
     /**

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -134,6 +135,11 @@ public class EditDictionaryPage extends AttributesSelectorPage {
             custom.append(DBUtils.getQuotedIdentifier(column));
         }
         criteriaText.setText(custom.toString());
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return entity;
     }
 
     @Override

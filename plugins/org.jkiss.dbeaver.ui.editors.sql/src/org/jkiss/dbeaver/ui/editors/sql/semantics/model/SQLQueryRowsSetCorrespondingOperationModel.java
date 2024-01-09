@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.ArrayList;
@@ -29,14 +33,22 @@ import java.util.List;
  */
 public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetOperationModel {
     private final List<SQLQuerySymbolEntry> correspondingColumnNames;
-    
+    private final SQLQueryRowsSetCorrespondingOperationKind kind;
+
     public SQLQueryRowsSetCorrespondingOperationModel(
+        @NotNull Interval range,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
-        @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames
+        @NotNull List<SQLQuerySymbolEntry> correspondingColumnNames,
+        @NotNull SQLQueryRowsSetCorrespondingOperationKind kind
     ) {
-        super(left, right);
+        super(range, left, right);
         this.correspondingColumnNames = correspondingColumnNames;
+        this.kind = kind;
+    }
+
+    public SQLQueryRowsSetCorrespondingOperationKind getKind() {
+        return this.kind;
     }
 
     @NotNull
@@ -54,7 +66,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
             List<SQLQuerySymbol> leftColumns = left.getColumnsList();
             List<SQLQuerySymbol> rightColumns = right.getColumnsList();
             resultColumns = new ArrayList<>(Math.max(leftColumns.size(), rightColumns.size()));
-            
+
             for (int i = 0; i < resultColumns.size(); i++) {
                 if (i >= leftColumns.size()) {
                     resultColumns.add(rightColumns.get(i));
@@ -73,22 +85,27 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                 if (column.isNotClassified()) {
                     SQLQuerySymbolDefinition leftDef = left.resolveColumn(column.getName());
                     SQLQuerySymbolDefinition rightDef = right.resolveColumn(column.getName());
-                    
+
                     if (leftDef == null || rightDef == null) {
                         nonMatchingColumnSets = true;
                     }
-                    
+
                     column.getSymbol().setDefinition(column); // TODO combine multiple definitions
                     resultColumns.add(column.getSymbol());
                 }
             }
         }
-        
+
         if (nonMatchingColumnSets) {
             statistics.appendError((STMTreeNode) null, "UNION, EXCEPT and INTERSECT require subsets column tuples to match"); // TODO detailed messages per column
         }
 
         return correspondingColumnNames.isEmpty() ? left : context.overrideResultTuple(resultColumns); // TODO multiple definitions per symbol
+    }
+
+    @Override
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitRowsSetCorrespondingOp(this, node);
     }
 }
 

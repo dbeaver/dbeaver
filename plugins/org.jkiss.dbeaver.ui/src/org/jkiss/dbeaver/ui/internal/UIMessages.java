@@ -113,6 +113,8 @@ public class UIMessages extends NLS {
     public static String text_with_open_dialog_browse_remote;
     public static String text_with_open_dialog_edit_file;
 
+    public static String notification_popup_context_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);

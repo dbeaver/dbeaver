@@ -30,15 +30,15 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public class ExasolTableKeyColumn extends AbstractTableConstraintColumn {
 
-    private AbstractTableConstraint<ExasolTable> constraint;
-    private ExasolTableColumn tableColumn;
-    private Integer ordinalPosition;
+    private final AbstractTableConstraint<ExasolTable, ? extends ExasolTableKeyColumn> constraint;
+    private final ExasolTableColumn tableColumn;
+    private final Integer ordinalPosition;
 
 
     // -----------------
     // Constructors
     // -----------------
-    public ExasolTableKeyColumn(AbstractTableConstraint<ExasolTable> constraint, ExasolTableColumn tableColumn, Integer ordinalPosition) {
+    public ExasolTableKeyColumn(AbstractTableConstraint<ExasolTable, ? extends ExasolTableKeyColumn> constraint, ExasolTableColumn tableColumn, Integer ordinalPosition) {
 
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -46,7 +46,7 @@ public class ExasolTableKeyColumn extends AbstractTableConstraintColumn {
     }
 
     @Override
-    public AbstractTableConstraint<ExasolTable> getParentObject() {
+    public AbstractTableConstraint<ExasolTable, ? extends ExasolTableKeyColumn> getParentObject() {
         return constraint;
     }
 

@@ -58,9 +58,9 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
                 Integer precision = column.getPrecision();
                 if (OracleConstants.TYPE_INTERVAL_YEAR_MONTH.equals(typeName) && precision != null) {
                     if (precision != OracleConstants.INTERVAL_DEFAULT_YEAR_DAY_PRECISION) {
-                       String patchedName = " INTERVAL YEAR(" + precision + ") TO MONTH";
-                       sql.append(patchedName);
-                       return;
+                        String patchedName = " INTERVAL YEAR(" + precision + ") TO MONTH";
+                        sql.append(patchedName);
+                        return;
                     }
                 } else {
                     Integer scale = column.getScale(); // fractional seconds precision
@@ -77,8 +77,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleTableColumn> getObjectsCache(OracleTableColumn object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleTableColumn> getObjectsCache(OracleTableColumn object) {
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
@@ -92,8 +91,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
-    {
+    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         OracleTableBase table = (OracleTableBase) container;
 
         DBSDataType columnType = findBestDataType(table, "varchar2"); //$NON-NLS-1$
@@ -109,7 +107,13 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject(), command.getObject().getParentObject());
@@ -117,15 +121,20 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actionList,
+        ObjectChangeCommand command,
+        Map<String, Object> options
+    ) {
         final OracleTableColumn column = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
             actionList.add(new SQLDatabasePersistAction(
                 "Modify column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
+                    " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
         if (hasComment) {
             addColumnCommentAction(actionList, column, column.getTable());
@@ -138,8 +147,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         final OracleTableColumn column = command.getObject();
 
         actions.add(

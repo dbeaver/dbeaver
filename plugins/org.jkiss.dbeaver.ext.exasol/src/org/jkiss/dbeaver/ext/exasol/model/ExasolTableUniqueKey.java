@@ -28,23 +28,25 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author Karl Griesser
  */
-public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> implements DBSEntityReferrer,DBPScriptObject, DBPNamedObject2 {
+public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable, ExasolTableKeyColumn>
+    implements DBSEntityReferrer,DBPScriptObject, DBPNamedObject2 {
 
     private String owner;
     private Boolean enabled;
 
-    private List<ExasolTableKeyColumn> columns;
+    private final List<ExasolTableKeyColumn> columns = new ArrayList<>();
 
 
     // CONSTRUCTOR
@@ -88,12 +90,18 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
     // -----------------
 
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
-    public void setColumns(List<ExasolTableKeyColumn> columns) {
-        this.columns = columns;
+    @Override
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        this.columns.add(new ExasolTableKeyColumn(this, (ExasolTableColumn) column, columns.size()));
+    }
+
+    public void setAttributeReferences(List<ExasolTableKeyColumn> columns) {
+        this.columns.clear();
+        this.columns.addAll(columns);
     }
 
     // -----------------
