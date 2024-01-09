@@ -54,12 +54,6 @@
    <plugin id="org.jkiss.wmi" os="win32" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.denodo" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.databricks" version="0.0.0"  />
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.altibase"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.ext.altibase" version="0.0.0" />
 
 </feature>
