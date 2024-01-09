@@ -119,6 +119,11 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     }
 
     @Override
+    protected boolean isColumnsRequired() {
+        return false;
+    }
+
+    @Override
     public boolean isColumnSelected(DBSEntityAttribute attribute)
     {
         return descColumns.contains(attribute);

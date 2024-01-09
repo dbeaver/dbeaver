@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -45,7 +47,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.IDialogPageContainer;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
@@ -57,7 +59,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-public class EditVirtualEntityDialog extends BaseDialog {
+public class EditVirtualEntityDialog extends TitleAreaDialog implements IDialogPageContainer {
 
     private static final Log log = Log.getLog(EditVirtualEntityDialog.class);
 
@@ -67,10 +69,11 @@ public class EditVirtualEntityDialog extends BaseDialog {
     public static final int ID_REMOVE_UNIQUE_KEY = 1001;
     public static final int ID_CREATE_FOREIGN_KEY = 2000;
     public static final int ID_REMOVE_FOREIGN_KEY = 2001;
+    private static final String DATA_PAGE = "dialogPage";
 
-    private ResultSetViewer viewer;
-    private DBSEntity entity;
-    private DBVEntity vEntity;
+    private final ResultSetViewer viewer;
+    private final DBSEntity entity;
+    private final DBVEntity vEntity;
     private EditDictionaryPage editDictionaryPage;
     private EditConstraintPage editUniqueKeyPage;
     private DBVEntityConstraint uniqueConstraint;
@@ -79,6 +82,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
     private EditVirtualColumnsPage columnsPage;
 
     private boolean structChanged = false;
+    private Object selectedPage;
 
     public enum InitPage {
         ATTRIBUTES,
@@ -88,7 +92,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
     }
 
     public EditVirtualEntityDialog(ResultSetViewer viewer, @Nullable DBSEntity entity, @NotNull DBVEntity vEntity) {
-        super(viewer.getControl().getShell(), ResultSetMessages.controls_resultset_edit_logical_structure, null);
+        super(viewer.getControl().getShell());
         this.viewer = viewer;
         this.entity = entity;
         this.vEntity = vEntity;
@@ -109,8 +113,9 @@ public class EditVirtualEntityDialog extends BaseDialog {
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
+        getShell().setText(ResultSetMessages.controls_resultset_edit_logical_structure);
+        setTitle(ResultSetMessages.controls_resultset_edit_logical_structure);
         try {
             UIUtils.runInProgressService(monitor -> {
                 for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
@@ -127,7 +132,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
         } catch (InterruptedException e) {
             // ignore
         }
-        Composite composite = super.createDialogArea(parent);
+        Composite composite = (Composite) super.createDialogArea(parent);
 
         TabFolder tabFolder = new TabFolder(composite, SWT.TOP);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -140,9 +145,12 @@ public class EditVirtualEntityDialog extends BaseDialog {
         for (TabItem item : tabFolder.getItems()) {
             if (item.getData() == initPage) {
                 tabFolder.setSelection(item);
+                selectedPage = item.getData(DATA_PAGE);
                 break;
             }
         }
+
+        tabFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> selectedPage = e.item.getData(DATA_PAGE)));
 
         UIUtils.createInfoLabel(composite, ResultSetMessages.controls_resultset_virtual_keys_info_label);
         
@@ -152,12 +160,14 @@ public class EditVirtualEntityDialog extends BaseDialog {
     private void createDictionaryPage(TabFolder tabFolder) {
         if (entity != null) {
             editDictionaryPage = new EditDictionaryPage(entity);
+            editDictionaryPage.setContainer(this);
             editDictionaryPage.createControl(tabFolder);
             TabItem dictItem = new TabItem(tabFolder, SWT.NONE);
             dictItem.setText(ResultSetMessages.controls_resultset_virtual_dictionary_page_text);
             dictItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_PACKAGE));
             dictItem.setControl(editDictionaryPage.getControl());
             dictItem.setData(InitPage.DICTIONARY);
+            dictItem.setData(DATA_PAGE, editDictionaryPage);
         }
     }
 
@@ -167,15 +177,11 @@ public class EditVirtualEntityDialog extends BaseDialog {
         attrsItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_COLUMN));
         attrsItem.setData(InitPage.ATTRIBUTES);
 
-        Composite panel = createColumnsEditPanel(tabFolder);
-
-        attrsItem.setControl(panel);
-    }
-
-    @NotNull
-    private Composite createColumnsEditPanel(TabFolder tabFolder) {
         columnsPage = new EditVirtualColumnsPage(viewer, vEntity);
-        return columnsPage.createPageContents(tabFolder);
+        attrsItem.setData(DATA_PAGE, columnsPage);
+        Composite pageContents = columnsPage.createPageContents(tabFolder);
+
+        attrsItem.setControl(pageContents);
     }
 
     private void updateColumnItem(TableItem attrItem) {
@@ -229,6 +235,8 @@ public class EditVirtualEntityDialog extends BaseDialog {
         editUniqueKeyPage = new EditConstraintPage(
             "Define unique identifier",
             uniqueConstraint);
+        editUniqueKeyPage.setContainer(this);
+        ukItem.setData(DATA_PAGE, editUniqueKeyPage);
         editUniqueKeyPage.createControl(tabFolder);
         ukItem.setControl(editUniqueKeyPage.getControl());
     }
@@ -367,6 +375,29 @@ public class EditVirtualEntityDialog extends BaseDialog {
             viewer.refreshData(null);
         }
         super.okPressed();
+    }
+
+    @Override
+    public void updateMessage() {
+        if (editDictionaryPage != null) {
+            String errorMessage = editDictionaryPage.getErrorMessage();
+            setErrorMessage(errorMessage);
+            if (errorMessage != null) {
+                return;
+            }
+        }
+        if (editUniqueKeyPage != null) {
+            setErrorMessage(editUniqueKeyPage.getErrorMessage());
+            return;
+        }
+    }
+
+    @Override
+    public void updateButtons() {
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        if (okButton != null) {
+            okButton.setEnabled(CommonUtils.isEmpty(getErrorMessage()));
+        }
     }
 
 }

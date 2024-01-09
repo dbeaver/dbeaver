@@ -33,9 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.IDialogPageContainer;
 import org.jkiss.utils.CommonUtils;
 
-class EditObjectDialog extends TitleAreaDialog {
+class EditObjectDialog extends TitleAreaDialog implements IDialogPageContainer {
 
     private final IDialogPage dialogPage;
 
@@ -124,7 +125,7 @@ class EditObjectDialog extends TitleAreaDialog {
         super.okPressed();
     }
 
-    void updateButtons() {
+    public void updateButtons() {
         boolean enabled = false;
         if (dialogPage instanceof BaseObjectEditPage) {
             enabled = ((BaseObjectEditPage) dialogPage).isPageComplete();
