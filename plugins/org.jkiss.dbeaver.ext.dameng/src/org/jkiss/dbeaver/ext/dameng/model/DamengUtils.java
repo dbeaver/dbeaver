@@ -17,14 +17,19 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
+import org.jkiss.dbeaver.model.DBPObjectWithLongId;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 
 import java.sql.SQLException;
 
@@ -32,19 +37,16 @@ import java.sql.SQLException;
  * @author Shengkai Bai
  */
 public class DamengUtils {
+
+    private static final Log log = Log.getLog(DamengUtils.class);
+
     public static String getDDL(DBRProgressMonitor monitor, DBSObject object, DamengConstants.ObjectType objectType, String schema) throws DBException {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + object.getName() + "'")) {
-            JDBCPreparedStatement dbStat;
-            if (schema != null) {
-                dbStat = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?,?)");
-                dbStat.setString(3, schema);
-            } else {
-                dbStat = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?)");
-            }
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?,?)");
             dbStat.setString(1, objectType.name());
             dbStat.setString(2, object.getName());
-
+            dbStat.setString(3, schema);
             JDBCResultSet dbResult = dbStat.executeQuery();
             if (dbResult.next()) {
                 return dbResult.getString(1);
@@ -54,4 +56,20 @@ public class DamengUtils {
         }
         return null;
     }
+
+    @Nullable
+    public static <OWNER extends DBSObject, OBJECT extends DBPObjectWithLongId & DBSObject> OBJECT getObjectById(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull AbstractObjectCache<OWNER, OBJECT> cache,
+            @NotNull OWNER owner,
+            long objectId)
+            throws DBException {
+        for (OBJECT object : cache.getAllObjects(monitor, owner)) {
+            if (object.getObjectId() == objectId) {
+                return object;
+            }
+        }
+        return null;
+    }
+
 }

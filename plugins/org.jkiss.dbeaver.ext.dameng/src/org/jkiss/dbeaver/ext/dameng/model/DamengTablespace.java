@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.dameng.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
+import org.jkiss.dbeaver.model.DBPObjectWithLongId;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -42,9 +43,11 @@ import java.util.Map;
 /**
  * @author Shengkai Bai
  */
-public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject {
+public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject, DBPObjectWithLongId {
 
     private final DamengDataSource dataSource;
+
+    private long id;
 
     private final String name;
 
@@ -75,6 +78,7 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
 
     public DamengTablespace(DamengDataSource dataSource, JDBCResultSet dbResult) {
         this.dataSource = dataSource;
+        this.id = JDBCUtils.safeGetInt(dbResult, "ID");
         this.name = JDBCUtils.safeGetString(dbResult, "NAME");
         this.cache = CommonUtils.valueOf(
                 Cache.class,
@@ -98,6 +102,12 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
     @Association
     public Collection<DamengDataFile> getFiles(DBRProgressMonitor monitor) throws DBException {
         return fileCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    @Property(viewable = true)
+    public long getObjectId() {
+        return id;
     }
 
     @Override
