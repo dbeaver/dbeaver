@@ -149,6 +149,11 @@ public class DB2IMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DB2 for i procedure source")) {

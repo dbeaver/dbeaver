@@ -192,6 +192,11 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @Override
     public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }

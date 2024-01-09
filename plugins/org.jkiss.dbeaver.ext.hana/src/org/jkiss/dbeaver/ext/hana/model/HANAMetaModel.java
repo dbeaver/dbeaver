@@ -363,6 +363,11 @@ public class HANAMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @Override
     public String getAutoIncrementClause(GenericTableColumn column) {
         return "GENERATED ALWAYS AS IDENTITY";
     }
