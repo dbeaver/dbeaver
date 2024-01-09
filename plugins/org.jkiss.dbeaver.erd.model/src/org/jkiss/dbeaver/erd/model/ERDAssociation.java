@@ -36,11 +36,10 @@ import java.util.stream.Collectors;
  * 
  * @author Serge Rider
  */
-public class ERDAssociation extends ERDObject<DBSEntityAssociation>
-{
+public class ERDAssociation extends ERDObject<DBSEntityAssociation> {
     private static final Log log = Log.getLog(ERDAssociation.class);
 
-	private ERDElement<?> sourceEntity;
+    private ERDElement<?> sourceEntity;
     private ERDElement<?> targetEntity;
     private List<ERDEntityAttribute> sourceAttributes;
     private List<ERDEntityAttribute> targetAttributes;
@@ -53,8 +52,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
      * @param targetEntity pk table
      * @param reflect reflect flag
      */
-    public ERDAssociation(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, boolean reflect)
-    {
+    public ERDAssociation(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, boolean reflect) {
         super(new ERDLogicalAssociation(
             sourceEntity,
             sourceEntity.getName() + " -> " + targetEntity.getName(),
@@ -78,25 +76,24 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         DBSEntityAssociation association,
         @NotNull ERDEntity sourceEntity,
         @NotNull ERDEntity targetEntity,
-        boolean reflect
-    ) {
+        boolean reflect) {
         super(association);
         this.targetEntity = targetEntity;
         this.sourceEntity = sourceEntity;
-        // Resolve association attributes
-        if (association instanceof DBSEntityReferrer) {
-            resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity);
-        }
         this.targetEntity.addReferenceAssociation(this, reflect);
         this.sourceEntity.addAssociation(this, reflect);
     }
 
     /**
+     * The method identify associating attributes for entities
+     * 
+     * @param association - container
+     * @param sourceEntity - source
+     * @param targetEntity - target
      */
-    protected void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
+    public void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
         try {
             List<? extends DBSEntityAttributeRef> attrRefs = association.getAttributeReferences(new VoidProgressMonitor());
-
             if (!CommonUtils.isEmpty(attrRefs)) {
                 for (DBSEntityAttributeRef attrRef : attrRefs) {
                     if (attrRef instanceof DBSTableForeignKeyColumn) {
@@ -119,8 +116,15 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         }
     }
 
-    public boolean isLogical()
-    {
+    public void resolveAttributes() {
+        if (object instanceof DBSEntityReferrer) {
+            resolveAttributes((DBSEntityReferrer) object, (ERDEntity) sourceEntity, (ERDEntity) targetEntity);
+        } else {
+            log.error("Error resolving ERD association attributes, object is not a type of DBSEntityReferrer");
+        }
+    }
+
+    public boolean isLogical() {
         return getObject() instanceof ERDLogicalAssociation;
     }
 
