@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
-Bundle-Version: 5.1.136.qualifier
-Bundle-Release-Date: 20231225
+Bundle-Version: 5.1.137.qualifier
+Bundle-Release-Date: 20240108
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
@@ -27,6 +27,7 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.preferences,
  org.jkiss.dbeaver.ui.properties,
  org.jkiss.dbeaver.ui.registry,
+ org.jkiss.dbeaver.ui.screenreaders,
  org.jkiss.dbeaver.ui.svg
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,

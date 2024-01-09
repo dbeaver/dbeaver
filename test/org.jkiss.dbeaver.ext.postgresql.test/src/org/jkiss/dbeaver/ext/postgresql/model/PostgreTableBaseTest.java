@@ -99,11 +99,13 @@ public class PostgreTableBaseTest {
         };
         testTableRegular.setName("test_table_regular");
         testTableRegular.setPartition(false);
+        testTableRegular.setPersisted(true);
         PostgreTestUtils.addColumn(testTableRegular, "column1", "int4", 1);
 
         // Test View
         testView = new PostgreView(testSchema);
         testView.setName("testView");
+        testView.setPersisted(true);
     }
 
     // Tables DDL tests
@@ -176,6 +178,7 @@ public class PostgreTableBaseTest {
 
         PostgreTableForeign tableForeign = new PostgreTableForeign(testSchema);
         tableForeign.setName("testForeignTable");
+        tableForeign.setPersisted(true);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, tableForeign, tableForeign);
         pse.collectProperties();
@@ -211,6 +214,7 @@ public class PostgreTableBaseTest {
 
         PostgreMaterializedView testMView = new PostgreMaterializedView(testSchema);
         testMView.setName("testMView");
+        testMView.setPersisted(true);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, testMView, testMView);
         pse.collectProperties();

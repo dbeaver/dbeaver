@@ -217,6 +217,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     @Override
+    public DBSObject getObject() {
+        return foreignKey;
+    }
+
+    @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
         updateControlsVisibility();

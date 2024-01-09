@@ -267,6 +267,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
             monitor.beginTask(UINavigatorMessages.editors_entity_monitor_preview_changes, 1);
             previewResult = showChanges(true);
+            monitor.done();
         }
 
         if (previewResult == IDialogConstants.IGNORE_ID) {

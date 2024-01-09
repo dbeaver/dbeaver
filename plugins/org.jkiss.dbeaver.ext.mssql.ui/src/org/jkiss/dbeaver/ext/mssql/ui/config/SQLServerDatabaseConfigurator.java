@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
 import org.jkiss.dbeaver.ext.mssql.ui.SQLServerCreateDatabaseDialog;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -29,7 +32,7 @@ import java.util.Map;
 public class SQLServerDatabaseConfigurator implements DBEObjectConfigurator<SQLServerDatabase> {
 
     @Override
-    public SQLServerDatabase configureObject(DBRProgressMonitor monitor, Object container, SQLServerDatabase database, Map<String, Object> options) {
+    public SQLServerDatabase configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerDatabase database, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             SQLServerCreateDatabaseDialog dialog = new SQLServerCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), database.getDataSource());
 

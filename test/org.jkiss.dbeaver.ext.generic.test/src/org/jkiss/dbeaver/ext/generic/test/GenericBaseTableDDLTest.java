@@ -181,7 +181,7 @@ public class GenericBaseTableDDLTest {
         constraint.setName("NEWTABLE_PK");
         constraint.setConstraintType(DBSEntityConstraintType.PRIMARY_KEY);
         GenericTableConstraintColumn constraintColumn = new GenericTableConstraintColumn(constraint, column1, 1);
-        constraint.setColumns(Collections.singletonList(constraintColumn));
+        constraint.setAttributeReferences(Collections.singletonList(constraintColumn));
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
             mockMonitor,

@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.ui.editors.entity.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -372,7 +373,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         // If accessibility is active, set focus to the page control rather the active editor so
         // the tab names can be read correctly
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        if (store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
+        if (store.getBoolean(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             pageControl.setFocus();
         } else {
             if (folderComposite != null) {

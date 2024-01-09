@@ -372,9 +372,10 @@ UnsignedInteger: (Digit)+;
 ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
 fragment SignedInteger: (PlusSign|MinusSign)? UnsignedInteger;
 
-LineComment
-   : ('--'|'#') ~ [\r\n]* -> channel (HIDDEN)
-   ;
+
+Comment: (LineComment | MultilineComment) -> channel (HIDDEN);
+LineComment : ('--'|'#') ~ [\r\n]*;
+MultilineComment: ('/*' .*? '*/');
 
 // special characters and character sequences
 fragment NonquoteCharacter: ~'\'';

@@ -25,6 +25,10 @@ public class DBCFeatureNotSupportedException extends DBCException
     private static final long serialVersionUID = 1L;
 
     public DBCFeatureNotSupportedException() {
-        super("Not supported");
+        this("Not supported");
+    }
+
+    public DBCFeatureNotSupportedException(String message) {
+        super(message);
     }
 }

@@ -176,6 +176,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             public void widgetSelected(SelectionEvent e)
             {
                 handleItemSelect((TableItem) e.item, true);
+                validateProperties();
             }
         });
 
@@ -438,12 +439,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     public List<DBSEntityAttribute> getSelectedAttributes()
     {
         List<DBSEntityAttribute> tableColumns = new ArrayList<>();
-        Set<AttributeInfo> orderedAttributes = new TreeSet<>(new Comparator<AttributeInfo>() {
-            @Override
-            public int compare(AttributeInfo o1, AttributeInfo o2) {
-                return o1.position - o2.position;
-            }
-        });
+        Set<AttributeInfo> orderedAttributes = new TreeSet<>(Comparator.comparingInt(o -> o.position));
         orderedAttributes.addAll(attributes);
         for (AttributeInfo col : orderedAttributes) {
             if (col.position >= 0) {
@@ -461,6 +457,10 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     protected void createContentsAfterColumns(Composite panel)
     {
 
+    }
+
+    protected boolean isColumnsRequired() {
+        return true;
     }
 
     public void updateColumnSelection(@NotNull Predicate<DBSEntityAttribute> predicate) {
@@ -489,6 +489,14 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     protected void handleColumnsChange()
     {
 
+    }
+
+    @Override
+    protected String getEditError() {
+        if (isColumnsRequired() && !hasCheckedColumns()) {
+            return "You must select at least one column";
+        }
+        return super.getEditError();
     }
 
     @Override
