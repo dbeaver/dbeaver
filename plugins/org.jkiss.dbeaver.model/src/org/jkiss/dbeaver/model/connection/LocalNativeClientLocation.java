@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,24 @@ import java.io.File;
 public class LocalNativeClientLocation implements DBPNativeClientLocation {
     private final String id;
     private final File path;
+    private final String displayName;
+
+    public LocalNativeClientLocation(String id, File path, String displayName) {
+        this.id = id;
+        this.path = path;
+        this.displayName = displayName;
+    }
+
+    public LocalNativeClientLocation(String id, String path, String displayName) {
+        this(id, new File(path != null ? path : id), displayName);
+    }
+
+    private LocalNativeClientLocation(String id, @NotNull File path) {
+        this(id, path, path.getAbsolutePath());
+    }
 
     public LocalNativeClientLocation(String id, String path) {
-        this.id = id;
-        this.path = new File(path != null ? path : id);
+        this(id, new File(path != null ? path : id));
     }
 
     @NotNull
@@ -48,7 +62,7 @@ public class LocalNativeClientLocation implements DBPNativeClientLocation {
     @NotNull
     @Override
     public String getDisplayName() {
-        return path.getAbsolutePath();
+        return displayName;
     }
 
     @Override
@@ -64,11 +78,14 @@ public class LocalNativeClientLocation implements DBPNativeClientLocation {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof DBPNativeClientLocation && ((DBPNativeClientLocation) obj).getName().equals(getName());
+        if (obj instanceof DBPNativeClientLocation otherNativeClientLocation) {
+            return this.path.equals(otherNativeClientLocation.getPath());
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        return path.hashCode();
     }
 }

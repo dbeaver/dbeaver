@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.eclipse.osgi.container.ModuleWiring;
 import org.eclipse.osgi.storage.BundleInfo;
 import org.eclipse.osgi.storage.bundlefile.BundleFile;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.dpi.model.DPIConstants;
+import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -212,7 +214,7 @@ class BundleProcessConfig {
         }
         String debugParams = System.getProperty("dbeaver.debug.dpi.launch.parameters");
         if (CommonUtils.isNotEmpty(debugParams)) {
-            //"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:15005"
+            //-Ddbeaver.debug.dpi.launch.parameters=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:15005
             cmd.add(debugParams);
         }
         cmd.add("org.eclipse.equinox.launcher.Main");
@@ -230,6 +232,10 @@ class BundleProcessConfig {
         }
         cmd.add("-data");
         cmd.add(workspaceDir.toString());
+
+        cmd.add(DPIConstants.ARG_ENABLE_ENV);
+        cmd.add(String.valueOf(DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop));
+
         ProcessBuilder pb = new ProcessBuilder();
         pb.directory(dataPath.toFile());
         pb.command(cmd);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -119,7 +119,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableBase owner, @NotNull DBECommandAbstract<MySQLTableColumn> command, @NotNull Map<String, Object> options)
     {
         StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final MySQLTableColumn column = command.getObject();

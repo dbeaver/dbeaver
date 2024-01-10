@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerFactory;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
-import java.nio.file.Path;
-import java.util.List;
+public class SQLStandardAnalyzerFactory implements LSMAnalyzerFactory {
 
-public interface DPIDriverLibrariesProvider {
-    @NotNull
-    List<Path> getDriverLibsLocation(@NotNull String driverId);
+    public SQLStandardAnalyzerFactory() {
+        // do nothing
+    }
+
+    @Override
+    public LSMAnalyzer createAnalyzer(SQLDialect dialect) {
+        return new SQLStandardAnalyzer(dialect);
+    }
 }

@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -666,10 +666,4 @@
         </authModel>
     </extension>
 
-
-    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
-        <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSQLAnalyzer">
-            <appliesTo dialectClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect"/>
-        </lsmDialect>
-    </extension>
 </plugin>

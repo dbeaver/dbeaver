@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2179,20 +2179,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException {
-        // Check for file existence
-        try {
-            if (editorInput instanceof IFileEditorInput) {
-                final IFile file = ((IFileEditorInput) editorInput).getFile();
-                if (!file.exists()) {
-                    file.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
-                }
-                if (!file.exists()) {
-                    file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error checking SQL file", e);
-        }
+        checkInputFileExistence(editorInput);
         try {
             super.doSetInput(editorInput);
         } catch (Throwable e) {
@@ -2237,6 +2224,23 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+    }
+
+    private void checkInputFileExistence(IEditorInput editorInput) {
+        // Check for file existence
+        try {
+            if (editorInput instanceof IFileEditorInput) {
+                final IFile file = ((IFileEditorInput) editorInput).getFile();
+                if (!file.exists()) {
+                    file.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
+                }
+                if (!file.exists()) {
+                    file.create(new ByteArrayInputStream(new byte[]{}), true, new NullProgressMonitor());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error checking SQL file", e);
+        }
     }
 
     protected boolean isDetectTitleImageFromInput() {
