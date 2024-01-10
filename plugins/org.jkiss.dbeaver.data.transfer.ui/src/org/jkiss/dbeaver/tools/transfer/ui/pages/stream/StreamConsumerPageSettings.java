@@ -71,7 +71,6 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private static final int LOB_ENCODING_BINARY = 2;
     private static final int LOB_ENCODING_NATIVE = 3;
 
-    private final List<StreamMappingContainer> mappings = new ArrayList<>();
     private PropertyTreeViewer propsEditor;
     private Combo lobExtractType;
     private Label lobEncodingLabel;
@@ -195,22 +194,19 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 final Button button = UIUtils.createDialogButton(generalSettings, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent event) {
-                        if (mappings.isEmpty()) {
-                            try {
-                                getWizard().getRunnableContext().run(true, true, monitor -> refreshMappings(monitor));
-                            } catch (InvocationTargetException e) {
-                                DBWorkbench.getPlatformUI().showError(
-                                    DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                                    DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
-                                    e
-                                );
-                            } catch (InterruptedException e) {
-                                log.debug("Canceled by user", e);
-                                return;
-                            }
+                        final List<StreamMappingContainer> mappings = new ArrayList<>();
+
+                        try {
+                            UIUtils.runInProgressDialog(monitor -> refreshMappings(monitor, mappings));
+                        } catch (InvocationTargetException e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                                DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                                e
+                            );
                         }
 
-                        new ConfigureColumnsPopup(getShell()).open();
+                        new ConfigureColumnsPopup(getShell(), mappings, settings).open();
                     }
                 });
                 ((GridData) button.getLayoutData()).horizontalSpan = 4;
@@ -308,13 +304,18 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         return true;
     }
 
-    private final class ConfigureColumnsPopup extends BaseDialog {
+    private static class ConfigureColumnsPopup extends BaseDialog {
+        private final List<StreamMappingContainer> mappings;
+        private final StreamConsumerSettings settings;
+
         private TreeViewer viewer;
         private CLabel errorLabel;
 
-        public ConfigureColumnsPopup(@NotNull Shell shell) {
+        public ConfigureColumnsPopup(@NotNull Shell shell, @NotNull List<StreamMappingContainer> mappings, @NotNull StreamConsumerSettings settings) {
             super(shell, DTUIMessages.stream_consumer_page_mapping_title, null);
+            this.settings = settings;
             this.setShellStyle(SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL);
+            this.mappings = mappings;
         }
 
         @Override
@@ -444,14 +445,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        }
-
-        @Override
         protected void okPressed() {
-            final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
-
             settings.getDataMappings().clear();
 
             for (StreamMappingContainer mapping : mappings) {
@@ -469,11 +463,9 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         }
     }
 
-    private void refreshMappings(@NotNull DBRProgressMonitor monitor) {
+    private void refreshMappings(@NotNull DBRProgressMonitor monitor, @NotNull List<StreamMappingContainer> mappings) {
         final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
         final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
-
-        mappings.clear();
 
         try {
             monitor.beginTask("Load mappings", pipes.size());
