@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,6 +189,16 @@
                                 icon="#data_types" description="%tree.dataTypes.node.tip">
                             <items label="%tree.dataType.node.name" path="dataType" property="dataTypes"
                                    icon="#data_type"/>
+                        </folder>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengTablespace"
+                        label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
+                    <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces"
+                           icon="#tablespace">
+                        <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengDataFile"
+                                label="%tree.files.node.name" icon="#files" description="Data Files">
+                            <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
                         </folder>
                     </items>
                 </folder>

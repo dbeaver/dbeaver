@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ public class OracleBaseTableTest {
         objectMaker = OracleTestUtils.getManagerForClass(OracleTable.class);
 
         oracleTable = new OracleTable(testSchema, "TEST_TABLE");
+        oracleTable.setPersisted(true);
         OracleTableColumn tableColumn = OracleTestUtils.addColumn(oracleTable, "COLUMN1", "VARCHAR", 1);
         tableColumn.setMaxLength(100);
         OracleTableColumn tableColumn1 = OracleTestUtils.addColumn(oracleTable, "COLUMN2", "NUMBER", 2);
@@ -154,7 +155,7 @@ public class OracleBaseTableTest {
         constraint.setName("NEWTABLE_PK");
         constraint.setConstraintType(DBSEntityConstraintType.PRIMARY_KEY);
         OracleTableConstraintColumn constraintColumn = new OracleTableConstraintColumn(constraint, column1, 1);
-        constraint.setColumns(Collections.singletonList(constraintColumn));
+        constraint.setAttributeReferences(Collections.singletonList(constraintColumn));
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);

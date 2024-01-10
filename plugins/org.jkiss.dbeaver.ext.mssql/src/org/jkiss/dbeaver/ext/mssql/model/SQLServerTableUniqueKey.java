@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +36,9 @@ import java.util.List;
 /**
  * SQLServerTableUniqueKey
  */
-public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTableBase> {
-    private SQLServerTableIndex index;
-    private List<SQLServerTableUniqueKeyColumn> columns;
+public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTableBase, DBSTableConstraintColumn> {
+    private final SQLServerTableIndex index;
+    private final List<SQLServerTableUniqueKeyColumn> columns = new ArrayList<>();
 
     public SQLServerTableUniqueKey(SQLServerTableBase table, String name, String remarks, DBSEntityConstraintType constraintType, SQLServerTableIndex index, boolean persisted) {
         super(table, name, remarks, constraintType, persisted);
@@ -54,11 +57,27 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTableB
     }
 
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) {
-        if (columns != null) {
-            return columns;
+    public List<DBSTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+        if (!CommonUtils.isEmpty(columns)) {
+            return new ArrayList<>(columns);
         }
-        return index.getAttributeReferences(monitor);
+        if (index == null) {
+            return null;
+        }
+        List<SQLServerTableIndexColumn> indexAttrs = index.getAttributeReferences(monitor);
+        return indexAttrs == null ? null : new ArrayList<>(indexAttrs);
+    }
+
+    @Override
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        this.columns.add(new SQLServerTableUniqueKeyColumn(this, (SQLServerTableColumn) column, columns.size()));
+    }
+
+    public void setAttributeReferences(List<DBSTableConstraintColumn> columns) {
+        this.columns.clear();
+        for (DBSEntityAttributeRef ar : columns) {
+            this.columns.add((SQLServerTableUniqueKeyColumn)ar);
+        }
     }
 
     @NotNull
@@ -78,14 +97,8 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTableB
     }
 
     public void addColumn(SQLServerTableUniqueKeyColumn column) {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
         this.columns.add(column);
     }
 
-    void setColumns(List<SQLServerTableUniqueKeyColumn> columns) {
-        this.columns = columns;
-    }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +39,10 @@ import java.util.List;
  * GenericPrimaryKey
  */
 public class MySQLTableConstraint extends MySQLTableConstraintBase {
-    private List<MySQLTableConstraintColumn> columns;
+    private final List<MySQLTableConstraintColumn> columns = new ArrayList<>();
     private String checkClause;
 
-    public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
-    {
+    public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, remarks, constraintType, persisted);
     }
 
@@ -57,7 +57,7 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
         if (source instanceof DBSEntityReferrer) {
             List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
             if (columns != null) {
-                this.columns = new ArrayList<>(columns.size());
+                this.columns.clear();
                 for (DBSEntityAttributeRef col : columns) {
                     if (col.getAttribute() != null) {
                         MySQLTableColumn ownCol = table.getAttribute(monitor, col.getAttribute().getName());
@@ -69,9 +69,18 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
     }
 
     @Override
-    public List<MySQLTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
-    {
+    public List<MySQLTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
         return columns;
+    }
+
+    @Override
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        this.columns.add(new MySQLTableConstraintColumn(this, (MySQLTableColumn) column, columns.size()));
+    }
+
+    public void setAttributeReferences(List<MySQLTableConstraintColumn> columns) {
+        this.columns.clear();
+        this.columns.addAll(columns);
     }
 
     public void setCheckClause(String clause) {
@@ -83,23 +92,13 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
         return checkClause;
     }
 
-    public void addColumn(MySQLTableConstraintColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
+    public void addColumn(MySQLTableConstraintColumn column) {
         this.columns.add(column);
-    }
-
-    void setColumns(List<MySQLTableConstraintColumn> columns)
-    {
-        this.columns = columns;
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             getTable(),
@@ -108,8 +107,7 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
 
     @NotNull
     @Override
-    public MySQLDataSource getDataSource()
-    {
+    public MySQLDataSource getDataSource() {
         return getTable().getDataSource();
     }
 

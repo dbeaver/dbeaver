@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin;
 import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -30,7 +33,7 @@ import java.util.Map;
 public class SQLServerLoginConfigurator implements DBEObjectConfigurator<SQLServerLogin> {
 
     @Override
-    public SQLServerLogin configureObject(DBRProgressMonitor monitor, Object container, SQLServerLogin login, Map<String, Object> options) {
+    public SQLServerLogin configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerLogin login, @NotNull Map<String, Object> options) {
         return new UITask<SQLServerLogin>() {
             @Override
             protected SQLServerLogin runTask() {

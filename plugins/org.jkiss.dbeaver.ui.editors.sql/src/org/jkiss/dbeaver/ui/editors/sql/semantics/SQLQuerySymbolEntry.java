@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,8 +59,11 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
         if (this.definition != null) {
             throw new UnsupportedOperationException("Symbol entry definition has already been set");
         } else {
-            this.definition = definition;
-            this.getSymbol().setSymbolClass(definition.getSymbolClass());
+            if (this.symbol != null && this.symbol.getDefinition() != null) {
+                this.definition = definition;
+            } else {
+                this.getSymbol().setDefinition(definition);
+            }
         }
     }
 
@@ -79,9 +82,9 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
         return this.getSymbol().getSymbolClass();
     }
     
-    public void merge(@Nullable SQLQuerySymbol symbol) {
+    public void merge(@NotNull SQLQuerySymbol symbol) {
         if (this.symbol != null) {
-            
+            // TODO: illegal operation?
         } else {
             this.symbol = symbol;
             this.symbol.registerEntry(this);

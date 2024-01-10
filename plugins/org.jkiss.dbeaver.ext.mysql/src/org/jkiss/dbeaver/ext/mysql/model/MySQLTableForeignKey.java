@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableConstraint>
+public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableForeignKeyColumn, MySQLTableConstraint>
 {
     private List<MySQLTableForeignKeyColumn> columns;
 
@@ -80,6 +80,11 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     public List<MySQLTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
+    }
+
+    @Override
+    public void setAttributeReferences(List<MySQLTableForeignKeyColumn> columns) throws DBException {
+        this.columns = columns;
     }
 
     @NotNull

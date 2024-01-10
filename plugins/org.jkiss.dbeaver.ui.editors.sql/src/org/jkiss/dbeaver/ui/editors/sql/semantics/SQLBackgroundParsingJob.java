@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,8 +127,16 @@ public class SQLBackgroundParsingJob {
         
         IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), insertedLength);
         int reparseStart = regionToReparse.getOffset();
-        int reparseLength = regionToReparse.getLength() < Integer.MAX_VALUE ? regionToReparse.getLength() 
-                : this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
+        int reparseLength = 0;
+        if (regionToReparse.getLength() < Integer.MAX_VALUE) {
+            reparseLength = regionToReparse.getLength();
+        } else {
+            if (event.getOffset() + insertedLength > this.editor.getTextViewer().getBottomIndexEndOffset()) {
+                reparseLength = event.getOffset() + insertedLength;
+            } else {
+                reparseLength = this.editor.getTextViewer().getBottomIndexEndOffset() - reparseStart;
+            }
+        }
         if (DEBUG) {
             log.debug("reparse region @" + reparseStart + "+" + reparseLength);
         }
@@ -403,7 +411,12 @@ public class SQLBackgroundParsingJob {
                         if (DEBUG) {
                             log.debug("registering script item @" + element.getOffset() + "+" + element.getLength());
                         }
-                        SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(element.getOffset(), element.getLength());
+                        SQLDocumentScriptItemSyntaxContext itemContext = this.context.registerScriptItemContext(
+                            element.getOriginalText(), 
+                            queryModel,
+                            element.getOffset(),
+                            element.getLength()
+                        );
                         itemContext.clear();
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);
