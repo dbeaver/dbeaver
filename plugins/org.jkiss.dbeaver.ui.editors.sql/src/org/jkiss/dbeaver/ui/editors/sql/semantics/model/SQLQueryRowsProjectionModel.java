@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
@@ -92,22 +94,37 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryDataContext result = fromSource.propagateContext(context, statistics);
-        List<SQLQuerySymbol> resultColumns = this.result.expandColumns(result, statistics);
-        result = result.overrideResultTuple(resultColumns);
+        SQLQueryDataContext unresolvedResult = fromSource.propagateContext(context, statistics);
+        EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
+
+        List<SQLQuerySymbol> resultColumns = this.result.expandColumns(unresolvedResult, statistics);
+        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns);
+
         if (this.whereClause != null) {
-            this.whereClause.propagateContext(result, statistics);
+            this.whereClause.propagateContext(
+                aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? resolvedResult : unresolvedResult,
+                statistics
+            );
         }
         if (this.havingClause != null) {
-            this.havingClause.propagateContext(result, statistics);
+            this.havingClause.propagateContext(
+                aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? resolvedResult : unresolvedResult,
+                statistics
+            );
         }
         if (this.groupByClause != null) {
-            this.groupByClause.propagateContext(result, statistics);
+            this.groupByClause.propagateContext(
+                aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? resolvedResult : unresolvedResult,
+                statistics
+            );
         }
         if (this.orderByClause != null) {
-            this.orderByClause.propagateContext(result, statistics);
+            this.orderByClause.propagateContext(
+                aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? resolvedResult : unresolvedResult,
+                statistics
+            );
         }
-        return result.hideSources();
+        return resolvedResult.hideSources();
     }
 
     @Override
