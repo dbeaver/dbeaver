@@ -91,6 +91,6 @@ public class CreateTypesetPage extends BaseObjectEditPage {
 
 	@Override
 	public DBSObject getObject() {
-		return null;
+		return procedure;
 	}
 }
