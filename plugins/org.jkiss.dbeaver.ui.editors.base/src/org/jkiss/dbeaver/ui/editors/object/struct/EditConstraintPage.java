@@ -167,6 +167,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 public void widgetSelected(SelectionEvent e) {
                     useAllColumns = useAllColumnsCheck.getSelection();
                     columnsTable.setEnabled(!useAllColumns);
+                    validateProperties();
                     updatePageState();
                 }
             });
@@ -190,7 +191,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     @Override
     protected boolean isColumnsRequired() {
-        return !selectedConstraintType.isCustom();
+        return !selectedConstraintType.isCustom() && !useAllColumns;
     }
 
     public String getConstraintName() {

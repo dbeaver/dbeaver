@@ -29,10 +29,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.IDialogPageContainer;
 
 public abstract class BaseObjectEditPage extends DialogPage {
 
-    private EditObjectDialog container;
+    private IDialogPageContainer container;
 
     public BaseObjectEditPage(String title)
     {
@@ -48,7 +49,9 @@ public abstract class BaseObjectEditPage extends DialogPage {
     @Override
     public void setErrorMessage(String newMessage) {
         super.setErrorMessage(newMessage);
-        container.updateMessage();
+        if (container != null) {
+            container.updateMessage();
+        }
     }
 
     protected String getEditError() {
@@ -107,11 +110,14 @@ public abstract class BaseObjectEditPage extends DialogPage {
 
     protected void updatePageState() {
         if (container != null) {
-            UIUtils.asyncExec(() -> container.updateButtons());
+            UIUtils.asyncExec(() -> {
+                container.updateMessage();
+                container.updateButtons();
+            });
         }
     }
 
-    void setContainer(EditObjectDialog container) {
+    public void setContainer(IDialogPageContainer container) {
         this.container = container;
     }
 

@@ -220,6 +220,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                         }
                     }
                 }
+                validateProperties();
             }
         });
     }
