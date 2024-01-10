@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -68,6 +69,14 @@ public class BigQueryDataSource extends GenericDataSource {
             props.put(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, additionalProjects);
         }
         return props;
+    }
+
+    @NotNull
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        if (typeName.equals("STRUCT")) {
+            return DBPDataKind.STRUCT;
+        }
+        return super.resolveDataKind(typeName, valueType);
     }
 
 }
