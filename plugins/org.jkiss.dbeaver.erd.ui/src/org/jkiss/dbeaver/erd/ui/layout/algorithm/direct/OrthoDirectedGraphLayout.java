@@ -34,7 +34,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private AbstractGraphicalEditPart diagram;
     private TreeMap<String, List<Node>> nodeByLevels;
     private List<Node> isolatedNodes = new LinkedList<>();
-    private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 40;
+    private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 20;
     private static final int DEFAULT_ISO_OFFSET_HORZ = 140;
     private static final int DEFAULT_OFFSET_BY_X = 250;
     private static final int DEFAULT_OFFSET_BY_Y = 80;
@@ -168,7 +168,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             for (Node n : nodes) {
                 n.x = currentX;
                 n.y = currentY;
-                currentY += n.height + DEFAULT_OFFSET_BY_Y / 2 + (DEFAULT_OFFSET_BY_Y * (index % 3)); // + DEFAULT_OFFSET_BY_Y
+                currentY += n.height + DEFAULT_OFFSET_BY_Y / 2 + (DEFAULT_OFFSET_BY_Y / VIRTUAL_COLUMNS * (index % VIRTUAL_COLUMNS));
                 if (offsetX < n.width) {
                     offsetX = n.width;
                 }
