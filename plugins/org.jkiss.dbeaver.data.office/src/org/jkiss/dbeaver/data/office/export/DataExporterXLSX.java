@@ -498,7 +498,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
-        if (wb != null && sheetIndex != 0) { // if any sheets are present, then sheetIndex != 0
+        if (wb != null && sheetIndex > 0) { // if any sheets are present, then sheetIndex > 0
             // Do it here because we can have a few sheets
             SXSSFSheet sheet = wb.getSheetAt(sheetIndex);
             HSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
