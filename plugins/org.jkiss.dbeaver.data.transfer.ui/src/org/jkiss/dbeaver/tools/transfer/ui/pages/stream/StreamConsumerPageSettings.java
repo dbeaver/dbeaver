@@ -183,41 +183,37 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
                 valueFormatSelector = new ValueFormatSelector(generalSettings);
                 valueFormatSelector.select(settings.getValueFormat());
-                valueFormatSelector.addSelectionListener(new SelectionAdapter() {
+                valueFormatSelector.getCombo().addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         settings.setValueFormat(valueFormatSelector.getSelection());
                     }
                 });
+                valueFormatSelector.getCombo().setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 4, 1));
 
-                {
-                    Composite columnsPanel = UIUtils.createComposite(generalSettings, 5);
-                    columnsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 5, 1));
-
-                    UIUtils.createDialogButton(columnsPanel, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent event) {
-                            if (mappings.isEmpty()) {
-                                try {
-                                    getWizard().getRunnableContext().run(true, true, monitor -> {
-                                        refreshMappings(monitor);
-                                        UIUtils.asyncExec(() -> new ConfigureColumnsPopup(getShell()).open());
-                                    });
-                                } catch (InvocationTargetException e) {
-                                    DBWorkbench.getPlatformUI().showError(
-                                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                                        DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
-                                        e
-                                    );
-                                } catch (InterruptedException e) {
-                                    log.debug("Canceled by user", e);
-                                }
-                            } else {
-                                new ConfigureColumnsPopup(getShell()).open();
+                UIUtils.createControlLabel(generalSettings, DTUIMessages.stream_consumer_page_mapping_label_configure);
+                final Button button = UIUtils.createDialogButton(generalSettings, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent event) {
+                        if (mappings.isEmpty()) {
+                            try {
+                                getWizard().getRunnableContext().run(true, true, monitor -> refreshMappings(monitor));
+                            } catch (InvocationTargetException e) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                                    DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                                    e
+                                );
+                            } catch (InterruptedException e) {
+                                log.debug("Canceled by user", e);
+                                return;
                             }
                         }
-                    });
-                }
+
+                        new ConfigureColumnsPopup(getShell()).open();
+                    }
+                });
+                ((GridData) button.getLayoutData()).horizontalSpan = 4;
             }
         }
 
@@ -371,10 +367,13 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     @Override
                     public void update(ViewerCell cell) {
                         final Object element = cell.getElement();
-                        if (element instanceof StreamMappingAttribute) {
-                            final StreamMappingAttribute attribute = (StreamMappingAttribute) element;
+                        if (element instanceof StreamMappingAttribute attribute) {
                             cell.setText(attribute.getMappingType().name());
                             cell.setBackground(attribute.getContainer().isComplete() ? null : UIUtils.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
+                        } else if (element instanceof StreamMappingContainer container) {
+                            final StreamMappingType type = container.getMappingType();
+                            cell.setText(type != null ? type.name() : "");
+                            cell.setBackground(container.isComplete() ? null : UIUtils.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
                         }
                     }
                 });
@@ -396,17 +395,32 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
                     @Override
                     protected boolean canEdit(Object element) {
-                        return element instanceof StreamMappingAttribute;
+                        return true;
                     }
 
                     @Override
                     protected Object getValue(Object element) {
-                        return ((StreamMappingAttribute) element).getMappingType().name();
+                        if (element instanceof StreamMappingAttribute attribute) {
+                            return attribute.getMappingType().name();
+                        } else if (element instanceof StreamMappingContainer container) {
+                            final StreamMappingType type = container.getMappingType();
+                            return type != null ? type.name() : null;
+                        } else {
+                            return null;
+                        }
                     }
 
                     @Override
                     protected void setValue(Object element, Object value) {
-                        ((StreamMappingAttribute) element).setMappingType(StreamMappingType.valueOf(value.toString()));
+                        if (((String) value).isEmpty()) {
+                            return;
+                        }
+                        final StreamMappingType type = StreamMappingType.valueOf(value.toString());
+                        if (element instanceof StreamMappingAttribute attribute) {
+                            attribute.setMappingType(type);
+                        } else if (element instanceof StreamMappingContainer container) {
+                            container.setMappingType(type);
+                        }
                         viewer.refresh();
                         updateCompletion();
                     }
@@ -432,7 +446,6 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         }
 
         @Override
