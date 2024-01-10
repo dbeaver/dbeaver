@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.notations.ERDAssociationType;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,18 +63,13 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                 VoidProgressMonitor monitor = new VoidProgressMonitor();
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
-                    for (DBSTableIndex index : indexes) {
-                        if (DBUtils.isIdentifierIndex(monitor, index)) {
-                            List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
-                            List<DBSEntityAttribute> sourceAttributes = association.getSourceAttributes().stream().map(s -> {
-                                return s.getObject();
-                            }).collect(Collectors.toList());
-                            if (sourceAttributes.containsAll(entityIdentifierAttributes)) {
-                                createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
-                            } else {
-                                createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
-                            }
-                        }
+                    // get index(s) for require source attributes
+                    List<DBSTableIndex> indexForSourceAttributes = getIndexForSourceAttributes(indexes, association.getSourceAttributes());
+                    if (indexForSourceAttributes.isEmpty()) {
+                        // no constraints exists
+                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                    } else {
+                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
                     }
                 } else {
                     createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
@@ -113,6 +110,30 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         trgEndpointLocator.setUDistance(LBL_U_DISTANCE);
         conn.add(getLabel(label, frgColor), trgEndpointLocator);
         conn.setTargetDecoration(targetDecor);
+    }
+
+    private List<DBSTableIndex> getIndexForSourceAttributes(
+        Collection<? extends DBSTableIndex> indexes,
+        List<ERDEntityAttribute> sourceAttr)
+        throws DBException {
+        List<DBSTableIndex> sourceAttributeIndexes = new ArrayList<>();
+        for (DBSTableIndex index : indexes) {
+            if (index.isPrimary()) {
+                // primary key index
+                continue;
+            }
+            VoidProgressMonitor monitor = new VoidProgressMonitor();
+            if (DBUtils.isIdentifierIndex(monitor, index)) {
+                List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
+                List<DBSEntityAttribute> sourceAttributes = sourceAttr.stream().map(s -> {
+                    return s.getObject();
+                }).collect(Collectors.toList());
+                if (sourceAttributes.containsAll(entityIdentifierAttributes)) {
+                    sourceAttributeIndexes.add(index);
+                }
+            }
+        }
+        return sourceAttributeIndexes;
     }
 
     @Override
