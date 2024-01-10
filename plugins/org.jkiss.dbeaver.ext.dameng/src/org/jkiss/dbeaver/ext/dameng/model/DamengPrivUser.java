@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -39,8 +40,8 @@ public class DamengPrivUser implements DBAPrivilege {
 
     public DamengPrivUser(DamengRole damengRole, JDBCResultSet dbResult) {
         this.damengRole = damengRole;
-        this.name = JDBCUtils.safeGetString(dbResult, "NAME");
-        this.userId = JDBCUtils.safeGetLong(dbResult, "ID");
+        this.name = JDBCUtils.safeGetString(dbResult, DamengConstants.NAME);
+        this.userId = JDBCUtils.safeGetLong(dbResult, DamengConstants.ID);
     }
 
     @Override

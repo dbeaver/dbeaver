@@ -52,12 +52,12 @@ public class DamengUser implements DBAUser, DBPScriptObject, DBPObjectWithLongId
 
     public DamengUser(DamengDataSource dataSource, JDBCResultSet dbResult) {
         this.dataSource = dataSource;
-        this.id = JDBCUtils.safeGetLong(dbResult, "ID");
-        this.name = JDBCUtils.safeGetString(dbResult, "NAME");
-        int typeValue = JDBCUtils.safeGetInt(dbResult, "INFO1");
+        this.id = JDBCUtils.safeGetLong(dbResult, DamengConstants.ID);
+        this.name = JDBCUtils.safeGetString(dbResult, DamengConstants.NAME);
+        int typeValue = JDBCUtils.safeGetInt(dbResult, DamengConstants.INFO1);
         this.type = Type.values()[typeValue];
         this.tablespaceId = JDBCUtils.safeGetInt(dbResult, "TABLESPACE_ID");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CRTDATE");
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DamengConstants.CRTDATE);
         this.lockedStatus = JDBCUtils.safeGetInt(dbResult, "LOCKED_STATUS") == 2 ? LockedStatus.UNLOCKED : LockedStatus.LOCKED;
     }
 

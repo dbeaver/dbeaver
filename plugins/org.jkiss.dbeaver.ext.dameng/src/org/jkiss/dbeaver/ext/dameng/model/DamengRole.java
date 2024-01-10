@@ -61,9 +61,9 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
 
     public DamengRole(DamengDataSource damengDataSource, JDBCResultSet resultSet) {
         this.dataSource = damengDataSource;
-        this.id = JDBCUtils.safeGetLong(resultSet, "ID");
-        this.name = JDBCUtils.safeGetString(resultSet, "NAME");
-        this.createTime = JDBCUtils.safeGetTimestamp(resultSet, "CRTDATE");
+        this.id = JDBCUtils.safeGetLong(resultSet, DamengConstants.ID);
+        this.name = JDBCUtils.safeGetString(resultSet, DamengConstants.NAME);
+        this.createTime = JDBCUtils.safeGetTimestamp(resultSet, DamengConstants.CRTDATE);
     }
 
     @Override

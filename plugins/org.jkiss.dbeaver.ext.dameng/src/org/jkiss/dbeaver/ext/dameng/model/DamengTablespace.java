@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,15 +78,15 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
 
     public DamengTablespace(DamengDataSource dataSource, JDBCResultSet dbResult) {
         this.dataSource = dataSource;
-        this.id = JDBCUtils.safeGetInt(dbResult, "ID");
-        this.name = JDBCUtils.safeGetString(dbResult, "NAME");
+        this.id = JDBCUtils.safeGetInt(dbResult, DamengConstants.ID);
+        this.name = JDBCUtils.safeGetString(dbResult, DamengConstants.NAME);
         this.cache = CommonUtils.valueOf(
                 Cache.class,
                 JDBCUtils.safeGetString(dbResult, "CACHE"),
                 Cache.NORMAL);
-        int typeValue = JDBCUtils.safeGetInt(dbResult, "TYPE$");
+        int typeValue = JDBCUtils.safeGetInt(dbResult, DamengConstants.TYPE$);
         this.type = Type.values()[typeValue - 1];
-        int statusValue = JDBCUtils.safeGetInt(dbResult, "STATUS$");
+        int statusValue = JDBCUtils.safeGetInt(dbResult, DamengConstants.STATUS$);
         this.status = Status.values()[statusValue];
         this.maxSize = JDBCUtils.safeGetLong(dbResult, "MAX_SIZE");
         this.totalSize = JDBCUtils.safeGetLong(dbResult, "TOTAL_SIZE");

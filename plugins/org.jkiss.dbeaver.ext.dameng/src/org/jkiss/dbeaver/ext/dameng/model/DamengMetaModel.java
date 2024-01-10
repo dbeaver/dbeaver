@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ public class DamengMetaModel extends GenericMetaModel {
 
     @Override
     public GenericTrigger createContainerTriggerImpl(GenericStructContainer container, JDBCResultSet resultSet) throws DBException {
-        String name = JDBCUtils.safeGetStringTrimmed(resultSet, "NAME");
+        String name = JDBCUtils.safeGetStringTrimmed(resultSet, DamengConstants.NAME);
         if (name == null) {
             return null;
         }
