@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,9 +156,27 @@ public class ERDContentProviderDefault implements ERDContentProvider {
     }
 
     @Override
-    public ERDAssociation createAutoAssociation(ERDContainer diagram, @NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect) {
+    public ERDAssociation createAutoAssociation(ERDContainer diagram, 
+        @NotNull DBSEntityAssociation association,
+        @NotNull ERDEntity sourceEntity, 
+        @NotNull ERDEntity targetEntity,
+        boolean reflect) {
         // Allow all auto-associations
-        return new ERDAssociation(association, sourceEntity, targetEntity, reflect);
+        ERDAssociation erdAssociation = new ERDAssociation(association, sourceEntity, targetEntity, reflect);
+        erdAssociation.resolveAttributes();
+        return erdAssociation;
+    }
+
+    @Override
+    public ERDAssociation createAssociation(ERDContainer diagram,
+        DBSEntityAssociation association,
+        ERDEntity sourceEntity,
+        ERDEntityAttribute sourceAttribute,
+        ERDEntity targetEntity,
+        ERDEntityAttribute targetAttribute, boolean reflect) {
+        ERDAssociation erdAssociation = new ERDAssociation(association, sourceEntity, targetEntity, reflect);
+        erdAssociation.addCondition(sourceAttribute, targetAttribute);
+        return erdAssociation;
     }
 
     @Override
