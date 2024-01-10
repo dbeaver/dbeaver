@@ -30,6 +30,8 @@ import java.util.Arrays;
  */
 public class DamengSQLDialect extends GenericSQLDialect {
 
+    private static final String[] EXEC_KEYWORDS = new String[]{"CALL"};
+
     private static final String[][] DM_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
             {"IF", SQLConstants.BLOCK_END + " IF"},
@@ -70,6 +72,11 @@ public class DamengSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsAliasInSelect() {
         return true;
+    }
+
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @Override
