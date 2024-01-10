@@ -115,7 +115,10 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         conn.setTargetDecoration(targetDecor);
     }
 
-    private List<DBSTableIndex> getIndexSourceAttributes(Collection<? extends DBSTableIndex> indexes, List<ERDEntityAttribute> sourceAttr, DBRProgressMonitor monitor) throws DBException {
+    private List<DBSTableIndex> getIndexSourceAttributes(
+        Collection<? extends DBSTableIndex> indexes,
+        List<ERDEntityAttribute> sourceAttr,
+        DBRProgressMonitor monitor) throws DBException {
         List<DBSTableIndex> sourceAttributeIndexes = new ArrayList<>();
         for (DBSTableIndex index : indexes) {
             if (index.isPrimary()) {
