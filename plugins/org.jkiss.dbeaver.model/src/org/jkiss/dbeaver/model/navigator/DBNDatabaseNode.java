@@ -795,7 +795,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     public String getNodeId() {
         String nodeId = super.getNodeId();
         if (getObject() instanceof DBPObjectWithLongId longObject) {
-            nodeId = "_" + longObject.getObjectId();
+            nodeId += "_" + longObject.getObjectId();
         }
         return nodeId;
     }
