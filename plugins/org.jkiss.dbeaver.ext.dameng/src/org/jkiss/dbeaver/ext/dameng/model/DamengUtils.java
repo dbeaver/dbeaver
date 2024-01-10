@@ -38,8 +38,6 @@ import java.sql.SQLException;
  */
 public class DamengUtils {
 
-    private static final Log log = Log.getLog(DamengUtils.class);
-
     public static String getDDL(DBRProgressMonitor monitor, DBSObject object, DamengConstants.ObjectType objectType, String schema) throws DBException {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + object.getName() + "'")) {

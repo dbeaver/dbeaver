@@ -173,6 +173,7 @@ public class DamengDataSource extends GenericDataSource {
                     "LEFT JOIN SYSUSERS ON\n" +
                     "SYSUSERS.ID = USER_OBJ.ID\n" +
                     "LEFT JOIN SYS.V$TABLESPACE TS ON\n" +
+                    // INFO3 BYTE(0-1) default tablespace id
                     "USER_OBJ.INFO3 & 0x000000000000FFFF = TS.ID\n" +
                     "WHERE\n" +
                     "USER_OBJ.SUBTYPE$ = 'USER'");
