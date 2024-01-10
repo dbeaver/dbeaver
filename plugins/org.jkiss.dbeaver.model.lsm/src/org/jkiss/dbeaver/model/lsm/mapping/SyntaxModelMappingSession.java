@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode.BindingInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.*;
 import org.w3c.dom.Node;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.stream.Collectors;
 import javax.xml.xpath.XPathEvaluationResult;
 import javax.xml.xpath.XPathEvaluationResult.XPathResultType;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathNodes;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SyntaxModelMappingSession {
     
