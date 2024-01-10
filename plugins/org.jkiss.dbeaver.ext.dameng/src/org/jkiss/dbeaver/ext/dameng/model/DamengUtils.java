@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.dameng.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPObjectWithLongId;
 import org.jkiss.dbeaver.model.DBUtils;
