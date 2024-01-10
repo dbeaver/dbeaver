@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 
 public class ExasolSQLDialect extends JDBCSQLDialect {
 
@@ -205,6 +206,13 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean supportsAliasInConditions() {
         return false;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 
 }

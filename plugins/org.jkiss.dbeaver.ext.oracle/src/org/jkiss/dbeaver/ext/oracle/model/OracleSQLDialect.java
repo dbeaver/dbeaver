@@ -48,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -780,5 +781,12 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE USER \"" + schemaName + "\" IDENTIFIED BY \"" + SecurityUtils.generatePassword(10) + "\"";
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }

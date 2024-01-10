@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -356,5 +357,14 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE DATABASE " + schemaName;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.HAVING,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }

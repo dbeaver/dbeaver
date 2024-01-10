@@ -42,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Locale;
 
 /**
@@ -1089,5 +1090,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE SCHEMA " + schemaName;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }

@@ -445,4 +445,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE SCHEMA " + schemaName;
     }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
+    }
 }
