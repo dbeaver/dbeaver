@@ -793,11 +793,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @NotNull
     @Override
     public String getNodeId() {
-        String id = this.getMeta().getId();
-        if (CommonUtils.isNotEmpty(id)) {
-            return id;
+        String nodeId = super.getNodeId();
+        if (getObject() instanceof DBPObjectWithLongId longObject) {
+            nodeId = "_" + longObject.getObjectId();
         }
-        return super.getNodeId();
+        return nodeId;
     }
 
     @Deprecated
