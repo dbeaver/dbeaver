@@ -108,7 +108,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
             if (connectionType == null) {
                 connectionType = conConfig.getConnectionType();
-                autoCloseIdleConnectionsText.setSelection((int) connectionType.getCloseIdleConnectionPeriod());
             }
             if (!activated) {
                 // Get settings from data source descriptor
@@ -125,6 +124,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
                 activated = true;
             }
+            autoCloseIdleConnectionsText.setSelection((int) connectionType.getCloseIdleConnectionPeriod());
         } else {
             // Default settings
             isolationLevel.setEnabled(false);
