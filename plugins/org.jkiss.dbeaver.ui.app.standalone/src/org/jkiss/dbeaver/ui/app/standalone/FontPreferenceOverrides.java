@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,7 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.preference.IPreferenceNode;
-import org.eclipse.jface.preference.IPreferencePage;
-import org.eclipse.jface.preference.IPreferencePageContainer;
-import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.jface.preference.PreferenceNode;
-import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.preference.*;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -37,25 +32,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.themes.ColorDefinition;
-import org.eclipse.ui.internal.themes.FontDefinition;
-import org.eclipse.ui.internal.themes.ICategorizedThemeElementDefinition;
-import org.eclipse.ui.internal.themes.IHierarchalThemeElementDefinition;
-import org.eclipse.ui.internal.themes.IThemeElementDefinition;
-import org.eclipse.ui.internal.themes.IThemeRegistry;
-import org.eclipse.ui.internal.themes.ThemeElementCategory;
-import org.eclipse.ui.internal.themes.WorkbenchThemeManager;
+import org.eclipse.ui.internal.themes.*;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.ui.DBIconBinary;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class FontPreferenceOverrides {
 

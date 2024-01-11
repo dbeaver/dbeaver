@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -968,7 +968,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (name != null && CommonUtils.isNotEmpty(name.getKey())) {
                 final String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
                 final String[] allNames = SQLUtils.splitFullIdentifier(name.getKey(), catalogSeparator, quoteStrings, false);
-                objects.add(SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames)));
+                DBSObject obj = SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames));
+                if (obj != null) {
+                    objects.add(obj);
+                }
             }
         }
         return objects;

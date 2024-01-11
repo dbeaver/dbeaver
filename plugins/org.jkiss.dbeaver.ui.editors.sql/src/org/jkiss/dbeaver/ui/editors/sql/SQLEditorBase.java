@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -628,9 +629,21 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
         if (ITemplatesPage.class.equals(required)) {
             return (T) getTemplatesPage();
+        } else if (IContentOutlinePage.class.equals(required)) {
+            return (T) getOverviewOutlinePage();
         }
-
+    
         return super.getAdapter(required);
+    }
+    
+    private SQLEditorOutlinePage outlinePage;
+
+    @NotNull
+    private IContentOutlinePage getOverviewOutlinePage() {
+        if ((null == outlinePage || outlinePage.getControl().isDisposed()) && this.getSyntaxContext() != null) {
+            outlinePage = new SQLEditorOutlinePage(this);
+        }
+        return outlinePage;
     }
 
     public SQLTemplatesPage getTemplatesPage() {
@@ -771,7 +784,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(getDataSource(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
-        ruleScanner.refreshRules(getDataSource(), ruleManager, backgroundParsingJob);
+        ruleScanner.refreshRules(getDataSource(), ruleManager, this);
         parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
 
         if (document instanceof IDocumentExtension3) {

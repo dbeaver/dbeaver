@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
@@ -50,7 +51,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
 
     @Override
     public boolean canCreateObject(Object container) {
-        return false;
+        return true;
     }
 
     @Nullable
@@ -61,9 +62,12 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
 
     @Override
     protected SQLServerTableCheckConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
-    {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        final Object container,
+        Object from,
+        @NotNull Map<String, Object> options
+    ) {
         return new SQLServerTableCheckConstraint((SQLServerTable) container);
     }
 
@@ -76,7 +80,13 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final SQLServerTableCheckConstraint constraint = command.getObject();
 
         actions.add(
@@ -85,12 +95,18 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
                 "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " WITH NOCHECK" +
                     " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) +
-                    " CHECK " + constraint.getCheckConstraintDefinition()
+                    " CHECK (" + constraint.getCheckConstraintDefinition() + ")"
             ));
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final SQLServerTableCheckConstraint constraint = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(

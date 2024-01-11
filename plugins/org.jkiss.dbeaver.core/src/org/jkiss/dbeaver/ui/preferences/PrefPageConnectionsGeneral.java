@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
-    private static final String HELP_CONNECTIONS_LINK = "Database-Connections";
+    private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;

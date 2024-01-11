@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -323,7 +323,7 @@ public class CompareObjectsExecutor {
                     // Skip system objects
                     continue;
                 }
-                allChildNames.add(child.getNodeName());
+                allChildNames.add(child.getNodeDisplayName());
             }
         }
 
@@ -335,7 +335,7 @@ public class CompareObjectsExecutor {
                 if (childList == null) continue;
                 for (int k = 0; k < childList.length; k++) {
                     DBNDatabaseNode child = childList[k];
-                    if (child.getNodeName().equals(childName)) {
+                    if (child.getNodeDisplayName().equals(childName)) {
                         childIndexes[i] = k;
                         break;
                     }

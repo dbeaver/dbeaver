@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
 /**
  * SQLServerTableUniqueKeyColumn.
@@ -28,11 +29,11 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
 {
-    private AbstractTableConstraint<SQLServerTableBase> constraint;
+    private AbstractTableConstraint<SQLServerTableBase, ? extends DBSTableConstraintColumn> constraint;
     private SQLServerTableColumn tableColumn;
     private int ordinalPosition;
 
-    public SQLServerTableUniqueKeyColumn(AbstractTableConstraint<SQLServerTableBase> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
+    public SQLServerTableUniqueKeyColumn(AbstractTableConstraint<SQLServerTableBase, ? extends DBSTableConstraintColumn> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -70,7 +71,7 @@ public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
     }
 
     @Override
-    public AbstractTableConstraint<SQLServerTableBase> getParentObject()
+    public AbstractTableConstraint<SQLServerTableBase, ? extends DBSTableConstraintColumn> getParentObject()
     {
         return constraint;
     }

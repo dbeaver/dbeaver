@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * GenericTableForeignKey
  */
-public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase, DBSEntityReferrer> {
+public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase, GenericTableForeignKeyColumnTable, DBSEntityReferrer> {
     private static final Log log = Log.getLog(GenericTableForeignKey.class);
 
     private DBSForeignKeyDeferability deferability;
@@ -74,6 +74,11 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase
     @Override
     public List<GenericTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor) {
         return columns;
+    }
+
+    @Override
+    public void setAttributeReferences(List<GenericTableForeignKeyColumnTable> columns) throws DBException {
+        this.columns = columns;
     }
 
     public void addColumn(GenericTableForeignKeyColumnTable column) {

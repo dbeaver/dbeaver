@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,7 +174,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         if (ownerTableNode != null) {
             setImageDescriptor(DBeaverIcons.getImageDescriptor(ownerTableNode.getNodeIcon()));
-            setTitle(title + " | " + NLS.bind(EditorsMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
+            setTitle(title + " | " + NLS.bind(EditorsMessages.dialog_struct_edit_fk_title,
+                title,
+                ownerTableNode.getNodeDisplayName()));
         }
 
         if (!(foreignKey.getParentObject() instanceof DBVEntity)) {
@@ -212,6 +214,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
     protected void addPhysicalKeyComponent(Control control) {
         physicalKeyComponents.add(control);
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return foreignKey;
     }
 
     @Override
@@ -445,7 +452,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
                 @Override
                 public String getText(Object element) {
-                    return ((DBNDatabaseNode) element).getNodeName();
+                    return ((DBNDatabaseNode) element).getNodeDisplayName();
                 }
             };
 
@@ -589,7 +596,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         for (DBNDatabaseNode entityNode : entities) {
             TableItem tableItem = new TableItem(tableList, SWT.LEFT);
-            tableItem.setText(entityNode.getNodeName());
+            tableItem.setText(entityNode.getNodeDisplayName());
             tableItem.setImage(DBeaverIcons.getImage(entityNode.getNodeIconDefault()));
             tableItem.setData(entityNode);
         }

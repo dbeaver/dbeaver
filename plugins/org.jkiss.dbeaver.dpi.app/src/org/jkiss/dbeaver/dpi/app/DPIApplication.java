@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.dpi.app;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.internal.location.EquinoxLocations;
 import org.jkiss.code.NotNull;
@@ -26,8 +27,10 @@ import org.jkiss.dbeaver.dpi.model.client.ConfigUtils;
 import org.jkiss.dbeaver.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedWriter;
@@ -35,16 +38,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * DPI application
  */
-public class DPIApplication extends DesktopApplicationImpl {
+public class DPIApplication extends DesktopApplicationImpl implements DBPApplicationDPI {
 
     private static final Log log = Log.getLog(DPIApplication.class);
+
+    private final Map<String, String[]> driverLibsLocation = new ConcurrentHashMap<>();
+
+    private boolean environmentVariablesAccessible = false;
+
+    public DPIApplication() {
+    }
 
     @Override
     public boolean isHeadlessMode() {
@@ -60,8 +70,12 @@ public class DPIApplication extends DesktopApplicationImpl {
     public Object start(IApplicationContext context) {
         initializeApplicationServices();
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-
         try {
+            String enableEnvVariablesArgument = getCommandLineArgument(DPIConstants.ARG_ENABLE_ENV);
+            if (CommonUtils.isNotEmpty(enableEnvVariablesArgument)) {
+                // allow access to env variables only if the main application has them
+                this.environmentVariablesAccessible = Boolean.parseBoolean(enableEnvVariablesArgument);
+            }
             runServer(context, application);
         } catch (IOException e) {
             log.error(e);
@@ -146,8 +160,35 @@ public class DPIApplication extends DesktopApplicationImpl {
     }
 
     @Override
+    public boolean isEnvironmentVariablesAccessible() {
+        return environmentVariablesAccessible;
+    }
+
+    @Override
     public String getDefaultProjectName() {
         return "default";
     }
 
+    @Nullable
+    private String getCommandLineArgument(@NotNull String argName) {
+        String[] args = Platform.getCommandLineArgs();
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals(argName) && args.length > i + 1) {
+                return args[i + 1];
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public synchronized List<Path> getDriverLibsLocation(@NotNull String driverId) {
+        return Arrays.stream(driverLibsLocation.getOrDefault(driverId, new String[0]))
+            .map(Path::of)
+            .collect(Collectors.toList());
+    }
+
+    public void addDriverLibsLocation(@NotNull String driverId, @NotNull String[] driverLibsLocation) {
+        this.driverLibsLocation.put(driverId, driverLibsLocation);
+    }
 }

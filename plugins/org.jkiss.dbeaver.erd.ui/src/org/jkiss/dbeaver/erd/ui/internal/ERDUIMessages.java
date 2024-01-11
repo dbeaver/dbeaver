@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -143,6 +143,8 @@ public class ERDUIMessages extends NLS {
     public static String erd_accessibility_attribute_part_type;
     public static String erd_accessibility_attribute_part_nullability;
     public static String erd_accessibility_attribute_part_comments;
+    public static String erd_error_of_loading_diagram_label;
+    public static String erd_error_of_loading_diagram_title;
 
     private ERDUIMessages() {
     }

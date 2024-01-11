@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,13 +57,26 @@ import java.util.*;
 public final class RuntimeUtils {
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
-    private static final boolean IS_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
-    private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
-    private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
+    private static final boolean IS_OS_ARCH_AARCH64;
+    private static final boolean IS_OS_ARCH_AMD64;
+    private static final boolean IS_LINUX;
+    private static final boolean IS_MACOS;
+    private static final boolean IS_WINDOWS;
 
     private static final boolean IS_GTK = Platform.getWS().equals(Platform.WS_GTK);
 
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
+
+    static {
+        String arch = Platform.getOSArch();
+        IS_OS_ARCH_AARCH64 = Platform.ARCH_AARCH64.equals(arch);
+        IS_OS_ARCH_AMD64 = Platform.ARCH_X86_64.equals(arch);
+
+        String os = Platform.getOS();
+        IS_LINUX = Platform.OS_LINUX.equals(os);
+        IS_MACOS = Platform.OS_MACOSX.equals(os);
+        IS_WINDOWS = Platform.OS_WIN32.equals(os);
+    }
 
     private RuntimeUtils() {
         //intentionally left blank
@@ -169,29 +182,24 @@ public final class RuntimeUtils {
     }
 
     public static String formatExecutionTime(long ms) {
-        if (ms < 1000) {
-            // Less than a second, show just ms
-            return ms + "ms";
-        }
-        if (ms < 60000) {
-            // Less than a minute, show sec and ms
-            return ms / 1000 + "." + ms % 1000 + "s";
-        }
-        long sec = ms / 1000;
-        long min = sec / 60;
-        sec -= min * 60;
-        return min + "m " + sec + "s";
+        return formatExecutionTime(Duration.ofMillis(ms));
     }
 
     @NotNull
-    public static String formatExecutionTimeShort(@NotNull Duration duration) {
-        final long min = duration.toMinutes();
-        final long sec = duration.toSecondsPart();
+    public static String formatExecutionTime(@NotNull Duration duration) {
+        final long hours = duration.toHours();
+        final int minutes = duration.toMinutesPart();
+        final int seconds = duration.toSecondsPart();
+        final int millis = duration.toMillisPart();
 
-        if (min > 0) {
-            return "%dm %ds".formatted(min, sec);
+        if (hours > 0) {
+            return String.format("%dh %dm %ds", hours, minutes, seconds);
+        } else if (minutes > 0) {
+            return String.format("%dm %ds", minutes, seconds);
+        } else if (seconds > 0) {
+            return String.format("%ds", seconds);
         } else {
-            return "%ds".formatted(sec);
+            return String.format("%.03fs", millis / 1000.0);
         }
     }
 
@@ -268,6 +276,8 @@ public final class RuntimeUtils {
 
         monitorJob.schedule();
 
+        // Short pause. Eclipse 2023-12 seems to have an issue which locks readAndDispatchEvents
+        pause(10);
         // Wait for job to finish
         boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         long startTime = System.currentTimeMillis();
@@ -384,6 +394,28 @@ public final class RuntimeUtils {
 
     public static boolean isGtk() {
         return IS_GTK;
+    }
+
+    /**
+     * Determines whether the <i>OS</i> ISA is AArch64.
+     *
+     * <p>Note that this method is designed to tell the <i>OS</i> ISA, not <i>JVM</i> ISA.
+     *
+     * @return {@code true} if the OS ISA is AArch64
+     */
+    public static boolean isOSArchAArch64() {
+        return IS_OS_ARCH_AARCH64;
+    }
+
+    /**
+     * Determines whether the <i>OS</i> ISA is AMD64.
+     *
+     * <p>Note that this method is designed to tell the <i>OS</i> ISA, not <i>JVM</i> ISA.
+     *
+     * @return {@code true} if the OS ISA is AMD64
+     */
+    public static boolean isOSArchAMD64() {
+        return IS_OS_ARCH_AMD64;
     }
 
     public static void setThreadName(String name) {

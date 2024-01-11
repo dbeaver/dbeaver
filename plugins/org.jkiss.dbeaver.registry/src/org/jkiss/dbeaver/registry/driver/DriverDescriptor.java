@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.*;
+import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
@@ -1326,6 +1328,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(new LoggingProgressMonitor(log), true);
     }
 
+    public void downloadRequiredDependencies(@NotNull DBRProgressMonitor monitor) {
+        validateFilesPresence(monitor, false);
+    }
+
     @Override
     public boolean needsExternalDependencies() {
         for (DBPDriverLibrary library : libraries) {
@@ -1345,7 +1351,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // We are in distributed mode
             return syncDistributedDependencies(monitor);
         }
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        if (application.isDetachedProcess()) {
+            return syncDpiDependencies(application);
+        }
 
+        if (application.isDetachedProcess()) {
+            log.error("Detached process has no ability to find/download driver libraries, " +
+                "it must be specified directly"
+            );
+        }
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
         for (DBPDriverLibrary library : libraries) {
@@ -1435,6 +1450,28 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         // Check if local files are zip archives with jars inside
         return DriverUtils.extractZipArchives(result);
+    }
+
+    private List<Path> syncDpiDependencies(DBPApplication application) {
+        if (application instanceof DBPApplicationDPI driversProvider) {
+            List<Path> result = new ArrayList<>();
+            List<Path> librariesPath = driversProvider.getDriverLibsLocation(getId());
+            for (Path path : librariesPath) {
+                if (Files.isDirectory(path)) {
+                    result.addAll(readJarsFromDir(path));
+                } else {
+                    if (!result.contains(path)) {
+                        result.add(path);
+                    }
+                }
+            }
+            return DriverUtils.extractZipArchives(result);
+        } else {
+            log.error("Detached process has no ability to find/download driver libraries, " +
+                "it must be specified directly"
+            );
+        }
+        return List.of();
     }
 
     private Collection<? extends Path> readJarsFromDir(Path localFile) {

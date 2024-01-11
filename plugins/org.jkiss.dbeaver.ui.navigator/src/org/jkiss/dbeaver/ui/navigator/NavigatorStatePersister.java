@@ -177,8 +177,9 @@ public class NavigatorStatePersister {
 
     private static String createNodeIdentifier(DBNNode node) {
         StringBuilder identifier = new StringBuilder();
-        for (DBNNode currentNode = node; currentNode != null; currentNode = currentNode.getParentNode())
-            identifier.append(currentNode.getNodeName()).append("/");
+        for (DBNNode currentNode = node; currentNode != null; currentNode = currentNode.getParentNode()) {
+            identifier.append(currentNode.getNodeDisplayName()).append("/");
+        }
         return identifier.toString();
     }
 

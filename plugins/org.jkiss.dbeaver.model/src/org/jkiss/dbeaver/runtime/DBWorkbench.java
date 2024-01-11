@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplicationWorkbench;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.impl.app.AbstractApplication;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -36,6 +37,11 @@ public class DBWorkbench {
 
     private static DBPApplicationWorkbench getApplicationWorkbench() {
         if (applicationWorkbench == null) {
+            try {
+                AbstractApplication.getInstance();
+            } catch (Exception e) {
+                log.debug("Error checking application instance", e);
+            }
             applicationWorkbench = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
         }
         return applicationWorkbench;
