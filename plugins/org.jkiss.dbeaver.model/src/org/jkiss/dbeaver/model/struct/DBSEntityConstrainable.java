@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.dpi.model;
+package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.code.NotNull;
-
-import java.nio.file.Path;
 import java.util.List;
 
-public interface DPIDriverLibrariesProvider {
-    @NotNull
-    List<Path> getDriverLibsLocation(@NotNull String driverId);
+/**
+ * DBSEntityAttributeConstrainable
+ */
+public interface DBSEntityConstrainable {
+
+    List<DBSEntityConstraintInfo> getSupportedConstraints();
+
 }

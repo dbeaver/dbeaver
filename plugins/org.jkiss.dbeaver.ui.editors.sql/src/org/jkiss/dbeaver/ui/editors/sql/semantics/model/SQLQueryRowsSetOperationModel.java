@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,26 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 
-abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceModel {
+public abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceModel {
     protected final SQLQueryRowsSourceModel left;
     protected final SQLQueryRowsSourceModel right;
-    
-    public SQLQueryRowsSetOperationModel(@NotNull SQLQueryRowsSourceModel left, @NotNull SQLQueryRowsSourceModel right) {
+
+    public SQLQueryRowsSetOperationModel(@NotNull Interval range, @NotNull SQLQueryRowsSourceModel left, @NotNull SQLQueryRowsSourceModel right) {
+        super(range);
         this.left = left;
         this.right = right;
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceModel getLeft() {
+        return left;
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceModel getRight() {
+        return right;
     }
 }

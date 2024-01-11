@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,43 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 
-class SQLDocumentScriptItemSyntaxContext {
+public class SQLDocumentScriptItemSyntaxContext {
     public static class TokenEntryAtOffset {
         public final int offset;
         public final SQLQuerySymbolEntry entry;
 
-        public TokenEntryAtOffset(int offset, SQLQuerySymbolEntry entry) {
+        public TokenEntryAtOffset(int offset, @NotNull SQLQuerySymbolEntry entry) {
             this.offset = offset;
             this.entry = entry;
         }
     }
 
     private final OffsetKeyedTreeMap<SQLQuerySymbolEntry> entries = new OffsetKeyedTreeMap<>();
+    private final String originalText;
+    private final SQLQuerySelectionModel queryModel;
     private int length;
 
-    public SQLDocumentScriptItemSyntaxContext(int length) {
+    public SQLDocumentScriptItemSyntaxContext(
+        @NotNull String originalText,
+        @NotNull SQLQuerySelectionModel queryModel,
+        int length
+    ) {
+        this.originalText = originalText;
+        this.queryModel = queryModel;
         this.length = length;
+    }
+
+    @NotNull
+    public String getOriginalText() {
+        return this.originalText;
+    }
+
+    @NotNull
+    public SQLQuerySelectionModel getQueryModel() {
+        return this.queryModel;
     }
 
     public int length() {

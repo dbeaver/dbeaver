@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,8 +181,12 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static <T> T getFirstOrNull(@NotNull List<T> list) {
-        return list.isEmpty() ? null : list.get(0);
+    public static <T> T getFirstOrNull(@NotNull Iterable<T> iterable) {
+        Iterator<T> iterator = iterable.iterator();
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
     }
 
     @NotNull

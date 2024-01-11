@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ lexer grammar SQLStandardLexer;
 @header {
     /*
      * DBeaver - Universal Database Manager
-     * Copyright (C) 2010-2023 DBeaver Corp and others
+     * Copyright (C) 2010-2024 DBeaver Corp and others
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -372,9 +372,10 @@ UnsignedInteger: (Digit)+;
 ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
 fragment SignedInteger: (PlusSign|MinusSign)? UnsignedInteger;
 
-LineComment
-   : ('--'|'#') ~ [\r\n]* -> channel (HIDDEN)
-   ;
+
+Comment: (LineComment | MultilineComment) -> channel (HIDDEN);
+LineComment : ('--'|'#') ~ [\r\n]*;
+MultilineComment: ('/*' .*? '*/');
 
 // special characters and character sequences
 fragment NonquoteCharacter: ~'\'';

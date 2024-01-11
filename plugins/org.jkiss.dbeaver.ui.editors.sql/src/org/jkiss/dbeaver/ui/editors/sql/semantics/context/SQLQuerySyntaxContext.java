@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -53,11 +54,6 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
         return this.parent.findRealSource(table);
     }
 
-//    @Override
-//    public SQLQuerySymbolDefinition resolveColumn(List<String> tableName, String columnName) {
-//        return this.parent.resolveColumn(tableName, columnName);
-//    }
-
     @NotNull
     @Override
     public SQLQuerySymbolDefinition resolveColumn(@NotNull String columnName) {
@@ -77,9 +73,10 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
         return this.parent.getDialect();
     }
     
+    @NotNull
     @Override
-    public SQLQueryRowsSourceModel getDefaultTable() {
-        return this.parent.getDefaultTable();
+    public SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range) {
+        return this.parent.getDefaultTable(range);
     }
 }
 

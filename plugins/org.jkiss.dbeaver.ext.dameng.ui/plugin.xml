@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
   ~ DBeaver - Universal Database Manager
-  ~ Copyright (C) 2010-2023 DBeaver Corp and others
+  ~ Copyright (C) 2010-2024 DBeaver Corp and others
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,5 +25,17 @@
         <configurator class="org.jkiss.dbeaver.ext.dameng.ui.config.DamengSequenceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericSequence"/>
         </configurator>
+
+        <editor id="source.ddl"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                label="%editor.source.ddl.name"
+                description="%editor.source.ddl.description"
+                icon="#sql_text"
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+                type="folder"
+                embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengTablespace"/>
+        </editor>
     </extension>
 </plugin>

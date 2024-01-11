@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.BeanUtils;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -91,14 +90,12 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
             }
         }
 
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            final IStructuredSelection structSelection = (IStructuredSelection)selection;
+        if (selection instanceof IStructuredSelection structSelection && !selection.isEmpty()) {
             List<DBNNode> selectedNodes = new ArrayList<>();
             List<DBPNamedObject> selectedObjects = new ArrayList<>();
             List<String> selectedFiles = new ArrayList<>();
             StringBuilder buf = new StringBuilder();
-            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
-                Object object = iter.next();
+            for (Object object : structSelection) {
                 String objectValue = getObjectDisplayString(object);
                 if (objectValue == null) {
                     continue;
@@ -114,25 +111,22 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                 if (node != null) {
                     selectedNodes.add(node);
                 }
-                if (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFile) {
-                    final IFile file = (IFile) ((DBNResource) node).getResource();
-                    if (file != null) {
-                        IPath location = file.getLocation();
-                        if (location != null) {
-                            selectedFiles.add(location.makeAbsolute().toFile().getAbsolutePath());
-                        }
+                if (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFile file) {
+                    IPath location = file.getLocation();
+                    if (location != null) {
+                        selectedFiles.add(location.makeAbsolute().toFile().getAbsolutePath());
                     }
                 }
                 if (dbObject != null) {
                     selectedObjects.add(dbObject);
                 }
-                if (buf.length() > 0) {
+                if (!buf.isEmpty()) {
                     buf.append(GeneralUtils.getDefaultLineSeparator());
                 }
                 buf.append(objectValue);
             }
             {
-                if (buf.length() > 0 && !clipboardData.hasTransfer(TextTransfer.getInstance())) {
+                if (!buf.isEmpty() && !clipboardData.hasTransfer(TextTransfer.getInstance())) {
                     clipboardData.addTransfer(TextTransfer.getInstance(), buf.toString());
                 }
                 if (!selectedNodes.isEmpty() && !clipboardData.hasTransfer(TreeNodeTransfer.getInstance())) {

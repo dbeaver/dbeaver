@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import java.util.Map;
 
 /**
  * DB2 Table Column Manager
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn, DB2TableBase> implements DBEObjectRenamer<DB2TableColumn> {
@@ -66,14 +66,12 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // -----------------
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, DB2TableColumn> getObjectsCache(DB2TableColumn object)
-    {
+    public DBSObjectCache<? extends DBSObject, DB2TableColumn> getObjectsCache(DB2TableColumn object) {
         return object.getParentObject().getContainer().getTableCache().getChildrenCache((DB2Table) object.getParentObject());
     }
 
     @Override
-    public boolean canEditObject(DB2TableColumn object)
-    {
+    public boolean canEditObject(DB2TableColumn object) {
         // Edit is only available for DB2Table and not for other kinds of tables (View, MQTs, Nicknames..)
         DB2TableBase db2TableBase = object.getParentObject();
         if ((db2TableBase != null) & (db2TableBase.getClass().equals(DB2Table.class))) {
@@ -89,8 +87,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
 
     @Override
     protected DB2TableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
-                                                  Object copyFrom, Map<String, Object> options) throws DBException
-    {
+                                                  Object copyFrom, Map<String, Object> options) throws DBException {
         DB2TableColumn column = new DB2TableColumn((DB2TableBase) container);
         column.setName(getNewColumnName(monitor, context, (DB2TableBase) container));
         return column;
@@ -100,8 +97,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // Alter
     // -----
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         DB2TableColumn db2Column = command.getObject();
 
         boolean hasColumnChanges = false;
@@ -126,7 +122,13 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
             actions.add(buildCommentAction(command.getObject()));
@@ -136,12 +138,10 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // -------
     // Helpers
     // -------
-    private String computeDeltaSQL(DBRProgressMonitor monitor, ObjectChangeCommand command)
-    {
+    private String computeDeltaSQL(DBRProgressMonitor monitor, ObjectChangeCommand command) {
 
         if (command.getProperties().isEmpty() ||
-            (command.getProperties().size() == 1 && command.getProperty("description") != null))
-        {
+            (command.getProperties().size() == 1 && command.getProperty("description") != null)) {
             return "";
         }
 
@@ -177,8 +177,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         return sb.toString();
     }
 
-    private DBEPersistAction buildCommentAction(DB2TableColumn db2Column)
-    {
+    private DBEPersistAction buildCommentAction(DB2TableColumn db2Column) {
         String tableName = db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
         String columnName = db2Column.getName();
         String comment = db2Column.getDescription();
@@ -186,8 +185,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);
     }
 
-    private DBEPersistAction buildReorgAction(DB2TableColumn db2Column)
-    {
+    private DBEPersistAction buildReorgAction(DB2TableColumn db2Column) {
         String tableName = db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
         String reorgSQL = String.format(SQL_REORG, tableName);
         return new SQLDatabasePersistAction(CMD_REORG, reorgSQL);
@@ -199,8 +197,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         final DB2TableColumn column = command.getObject();
 
         actions.add(
