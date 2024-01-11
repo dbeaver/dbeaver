@@ -34,10 +34,11 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private AbstractGraphicalEditPart diagram;
     private TreeMap<String, List<Node>> nodeByLevels;
     private List<Node> isolatedNodes = new LinkedList<>();
-    private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 40;
-    private static final int DEFAULT_ISO_OFFSET_HORZ = 100;
+    private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 20;
+    private static final int DEFAULT_ISO_OFFSET_HORZ = 140;
     private static final int DEFAULT_OFFSET_BY_X = 250;
-    private static final int DEFAULT_OFFSET_BY_Y = 75;
+    private static final int DEFAULT_OFFSET_BY_Y = 80;
+    private static final int VIRTUAL_COLUMNS = 5;
 
     public OrthoDirectedGraphLayout(AbstractGraphicalEditPart diagram) {
         this.diagram = diagram;
@@ -50,25 +51,16 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     public void visit(DirectedGraph graph) {
         nodeByLevels = computeRootNodes(graph);
         isolatedNodes = computeIsolatedNodes(graph);
-        nodeByLevels = balanceRoots(isolatedNodes, nodeByLevels);
-        nodeByLevels = computeGraph(nodeByLevels);
-        nodeByLevels = verifyDirectedGraph(graph, nodeByLevels);
+        nodeByLevels = removeIslandNodesFromRoots(isolatedNodes, nodeByLevels);
+        nodeByLevels = recomputeGraph(nodeByLevels);
+        nodeByLevels = verifyNodesOnGraph(graph, nodeByLevels);
         drawGraphNodes(nodeByLevels);
         drawIsolatedNodes(isolatedNodes, nodeByLevels);
         List<Node> nodeMissed = findMissedGraphNodes(graph, nodeByLevels);
         drawMissedNodes(isolatedNodes, nodeMissed, nodeByLevels);
     }
 
-    private TreeMap<String, List<Node>> verifyDirectedGraph(DirectedGraph graph, TreeMap<String, List<Node>> nodeByLevels) {
-        if (nodeByLevels.isEmpty() && !graph.nodes.isEmpty()) {
-            // still no roots but elements exists in graph add all elements as possible
-            // roots.
-            nodeByLevels.put(String.valueOf(0), graph.nodes);
-        }
-        return nodeByLevels;
-    }
-
-    private TreeMap<String, List<Node>> balanceRoots(List<Node> islands, TreeMap<String, List<Node>> nodeByLevels) {
+    private TreeMap<String, List<Node>> removeIslandNodesFromRoots(List<Node> islands, TreeMap<String, List<Node>> nodeByLevels) {
         List<Node> listOfNodes = nodeByLevels.get(String.valueOf(0));
         if (listOfNodes != null) {
             listOfNodes.removeAll(islands);
@@ -100,7 +92,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             nodeSource.y = currentY;
             for (Edge edge : nodeSource.outgoing) {
                 Node nodeTarget = edge.target;
-                nodeTarget.x = currentX + nodeSource.width+ DEFAULT_OFFSET_BY_X/2;
+                nodeTarget.x = currentX + nodeSource.width + DEFAULT_OFFSET_BY_X / 2;
                 nodeTarget.y = currentY;
                 if (nodeSource.height > nodeTarget.height) {
                     currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
@@ -130,10 +122,30 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         for (Node nodeSource : islands) {
             currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
         }
+        int virtColumns = 0;
+        offsetX = currentX;
+        int offsetY = currentY;
+        int width = DEFAULT_OFFSET_BY_X;
+        int height = DEFAULT_OFFSET_BY_Y;
         for (Node node : missedNodes) {
-            node.x = currentX;
-            node.y = currentY;
-            currentY += node.height + DEFAULT_OFFSET_BY_Y;
+            if (width < node.width) {
+                width = node.width;
+            }
+            if (height < node.height) {
+                height = node.height;
+            }
+            node.x = offsetX;
+            node.y = offsetY;
+            virtColumns++;
+            if (virtColumns % VIRTUAL_COLUMNS == 0) {
+                // next row
+                offsetY += height + DEFAULT_OFFSET_BY_Y;
+                offsetX = currentX;
+                width = DEFAULT_OFFSET_BY_X;
+                height = DEFAULT_OFFSET_BY_Y;
+            } else {
+                offsetX += width + DEFAULT_ISO_OFFSET_HORZ / 7;
+            }
         }
     }
 
@@ -146,17 +158,17 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         int index = 0;
         for (Entry<String, List<Node>> entry : nodeByEdges.entrySet()) {
             Integer height = height2Level.get(String.valueOf(index));
-            if(height/2 > middle) {
+            if (height / 2 > middle) {
                 currentY = DEFAUL_OFFSET_FROM_TOP_LINE;
-            }else {
-                currentY = DEFAUL_OFFSET_FROM_TOP_LINE +  middle - height/2;
+            } else {
+                currentY = DEFAUL_OFFSET_FROM_TOP_LINE + middle - height / 2;
             }
             List<Node> nodes = entry.getValue();
             int offsetX = DEFAULT_ISO_OFFSET_HORZ;
             for (Node n : nodes) {
                 n.x = currentX;
                 n.y = currentY;
-                currentY += n.height + DEFAULT_OFFSET_BY_Y;
+                currentY += n.height + DEFAULT_OFFSET_BY_Y / 2 + (DEFAULT_OFFSET_BY_Y / VIRTUAL_COLUMNS * (index % VIRTUAL_COLUMNS));
                 if (offsetX < n.width) {
                     offsetX = n.width;
                 }
@@ -209,7 +221,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         return nodeByLevels;
     }
 
-    private TreeMap<String, List<Node>> computeGraph(TreeMap<String, List<Node>> graph) {
+    private TreeMap<String, List<Node>> recomputeGraph(TreeMap<String, List<Node>> graph) {
         int idx = 0;
         while (idx < graph.keySet().size()) {
             createGraphLayers(graph, idx);
@@ -246,6 +258,16 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         return missedNodes;
     }
 
+    private TreeMap<String, List<Node>> verifyNodesOnGraph(DirectedGraph graph, TreeMap<String, List<Node>> nodeByLevels) {
+        if (nodeByLevels.isEmpty() && !graph.nodes.isEmpty()) {
+            // still no roots but elements exists in graph add all elements as possible
+            // roots.
+            nodeByLevels.put(String.valueOf(0), graph.nodes);
+        }
+        // 
+        return nodeByLevels;
+    }
+
     private void createGraphLayers(TreeMap<String, List<Node>> nodeByEdges, int idx) {
         Map<Node, String> duplicationNode2index = new HashMap<>();
         List<Node> nodesLine = nodeByEdges.get(String.valueOf(idx));
@@ -257,12 +279,9 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                     String nodeIndex = getNodeIndex(nodeByEdges, src);
                     if (!nodeIndex.isEmpty()) {
                         duplicationNode2index.put(src, nodeIndex);
-                        String index = String.valueOf(idx + 2);
-                        nodeByEdges.computeIfAbsent(index, n -> new ArrayList<Node>()).add(src);
-                    } else {
-                        String index = String.valueOf(idx + 2);
-                        nodeByEdges.computeIfAbsent(index, n -> new ArrayList<Node>()).add(src);
                     }
+                    String index = String.valueOf(idx + 2);
+                    nodeByEdges.computeIfAbsent(index, n -> new ArrayList<Node>()).add(src);
                 }
                 // next
                 Node trg = edge.target;
@@ -270,12 +289,9 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                     String nodeIndex = getNodeIndex(nodeByEdges, trg);
                     if (!nodeIndex.isEmpty()) {
                         duplicationNode2index.put(trg, nodeIndex);
-                        String index = String.valueOf(idx + 1);
-                        nodeByEdges.computeIfAbsent(index, n -> new ArrayList<Node>()).add(trg);
-                    } else {
-                        String index = String.valueOf(idx + 1);
-                        nodeByEdges.computeIfAbsent(index, n -> new ArrayList<Node>()).add(trg);
                     }
+                    String index = String.valueOf(idx + 1);
+                    nodeByEdges.computeIfAbsent(index, n -> new ArrayList<Node>()).add(trg);
                 }
             }
         }
