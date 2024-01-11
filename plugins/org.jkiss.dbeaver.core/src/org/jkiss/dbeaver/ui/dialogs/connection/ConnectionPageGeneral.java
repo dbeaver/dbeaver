@@ -179,7 +179,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 setConnectionType(connectionTypeCombo, conConfig.getConnectionType());
-                getWizard().setConnectionType(conConfig.getConnectionType());
                 updateNavigatorSettingsPreset(navigatorSettingsCombo, dataSourceDescriptor.getNavigatorSettings());
 
                 folderSelector.setFolder(dataSourceDescriptor.getFolder());
@@ -319,11 +318,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DBPConnectionType type = connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex());
-                        getWizard().setConnectionType(type);
+                        getActiveDataSource().getConnectionConfiguration().setCloseIdleInterval((int) type.getCloseIdleConnectionPeriod());
                         getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, getActiveDataSource().getConnectionConfiguration().getConnectionType(), type);
                     }
                 });
-                getWizard().setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
 
                 Composite ctGroup = connectionTypeCombo.getParent();
                 ((GridLayout)ctGroup.getLayout()).numColumns++;

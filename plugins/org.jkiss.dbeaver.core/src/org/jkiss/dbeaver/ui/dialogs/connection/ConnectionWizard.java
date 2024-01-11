@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
@@ -66,7 +65,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
     private DBPDriverSubstitutionDescriptor driverSubstitution;
-    private DBPConnectionType connectionType;
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
@@ -274,13 +272,5 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     @NotNull
     protected DBPConnectionConfiguration getDefaultConnectionConfiguration() {
         return new DBPConnectionConfiguration();
-    }
-
-    protected void setConnectionType(DBPConnectionType connType) {
-        this.connectionType = connType;
-    }
-
-    protected DBPConnectionType getConnectionType() {
-        return connectionType;
     }
 }
