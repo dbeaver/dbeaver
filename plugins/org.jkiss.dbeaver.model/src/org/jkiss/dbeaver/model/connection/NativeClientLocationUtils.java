@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,12 +66,12 @@ public final class NativeClientLocationUtils {
             try {
                 Files.walkFileTree(folderPath, new SimpleFileVisitor<>() {
                     @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         if (!somethingEndsWith(file, fileEndings)) {
                             return FileVisitResult.CONTINUE;
                         }
                         if (Files.isExecutable(file)) {
-                            Path grandparent = getGrandparent(file);
+                            Path grandparent = getGrandparent(file.toRealPath());
                             if (grandparent != null) {
                                 result.put(grandparent.toString(), grandparentPathToClientLocationMapper.apply(grandparent));
                             }
@@ -92,6 +92,7 @@ public final class NativeClientLocationUtils {
         foldersToExamine.add("/usr/bin");
         foldersToExamine.add("/usr/local/bin");
         if (RuntimeUtils.isLinux()) {
+            foldersToExamine.add("/usr/lib"); // it seems like native clients never appear in this folder on macOS
             foldersToExamine.add("/etc/alternatives");
         } else if (RuntimeUtils.isMacOS()) {
             if (RuntimeUtils.isOSArchAMD64()) {
