@@ -220,7 +220,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             initSSL(monitor, properties, sslConfig);
-        } else {
+        } else if (CommonUtils.isEmpty(PROP_ENCRYPT_SSL)) {
             properties.setProperty(PROP_ENCRYPT_SSL, "false");
         }
 
