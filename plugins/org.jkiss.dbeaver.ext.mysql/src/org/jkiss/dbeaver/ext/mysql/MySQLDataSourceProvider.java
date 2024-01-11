@@ -208,6 +208,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                     File binFolder = mysqlFile.getAbsoluteFile().getParentFile();
                     if (binFolder.getName().equalsIgnoreCase("bin")) {
                         String homeId = CommonUtils.removeTrailingSlash(binFolder.getParentFile().getAbsolutePath());
+                        log.debug("Found a client location in PATH. token=%s mysqlFile=%s binFolder=%s homeId=%s".formatted(token, mysqlFile, binFolder, homeId));
                         result.put(homeId, new LocalNativeClientLocation(homeId, homeId));
                     }
                 }
@@ -234,6 +235,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                     if (installDirKey.equalsIgnoreCase(entry.getKey())) {
                         String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(entry.getValue()));
                         if (new File(serverPath, "bin").exists()) {
+                            log.debug("Found a client location in registry. homeKey=%s entry.key=%s entry.value=%s serverPath=%s registryRoot=%s installDirKey=%s".formatted(homeKey, entry.getKey(), entry.getValue(), serverPath, registryRoot, installDirKey));
                             locationMap.put(serverPath, new LocalNativeClientLocation(serverPath, homeKey));
                         }
                     }
