@@ -42,7 +42,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNotation {
 
@@ -120,6 +119,7 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         List<ERDEntityAttribute> sourceAttr,
         DBRProgressMonitor monitor) throws DBException {
         List<DBSTableIndex> sourceAttributeIndexes = new ArrayList<>();
+        List<DBSEntityAttribute> sourceAttributes = sourceAttr.stream().map(ERDEntityAttribute::getObject).toList();
         for (DBSTableIndex index : indexes) {
             if (index.isPrimary()) {
                 // primary key index
@@ -127,9 +127,6 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
             }
             if (DBUtils.isIdentifierIndex(monitor, index)) {
                 List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
-                List<DBSEntityAttribute> sourceAttributes = sourceAttr.stream().map(s -> {
-                    return s.getObject();
-                }).collect(Collectors.toList());
                 if (sourceAttributes.containsAll(entityIdentifierAttributes)) {
                     sourceAttributeIndexes.add(index);
                 }
