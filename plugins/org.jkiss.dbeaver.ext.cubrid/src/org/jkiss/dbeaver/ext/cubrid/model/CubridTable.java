@@ -43,7 +43,6 @@ public class CubridTable extends GenericTable {
 	private static final Log log = Log.getLog(CubridTable.class);
 	private String ddl;
 	private CubridUser owner;
-	private CubridObjectContainer container;
 	private boolean isSystemTable;
 	private Collection<? extends CubridUser> owners;
 
@@ -117,12 +116,12 @@ public class CubridTable extends GenericTable {
 	}
 
 	public CubridObjectContainer getContainer() {
-		return this.container;
+		return (CubridObjectContainer) super.getContainer();
 	}
 
 	public Collection<? extends CubridUser> getUsers(DBRProgressMonitor monitor) {
 		try {
-			return container.getDataSource().getCubridUsers(monitor);
+			return getContainer().getDataSource().getCubridUsers(monitor);
 		} catch (DBException e) {
 			log.error("Cannot get user", e);
 		}
@@ -150,7 +149,7 @@ public class CubridTable extends GenericTable {
 	@Override
 	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
 		super.refreshObject(monitor);
-		return this.getContainer().getCubridTableCache().refreshObject(monitor, container, this);
+		return this.getContainer().getCubridTableCache().refreshObject(monitor, getContainer(), this);
 	}
 
 	@NotNull
