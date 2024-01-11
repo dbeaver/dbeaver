@@ -104,9 +104,14 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     @Override
     public void activatePage() {
         if (dataSourceDescriptor != null) {
+            DBPConnectionType connectionType = getWizard().getConnectionType();
+            final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
+            if (connectionType == null) {
+                connectionType = conConfig.getConnectionType();
+                autoCloseIdleConnectionsText.setSelection((int) connectionType.getCloseIdleConnectionPeriod());
+            }
             if (!activated) {
                 // Get settings from data source descriptor
-                final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 isolationLevel.add("");
 
@@ -118,7 +123,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
-                autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
                 activated = true;
             }
         } else {
