@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -49,7 +48,8 @@ public class ValueFormatSelector {
         }
     }
 
-    public void addSelectionListener(@NotNull SelectionListener selectionListener) {
-        formatCombo.addSelectionListener(selectionListener);
+    @NotNull
+    public Combo getCombo() {
+        return formatCombo;
     }
 }
