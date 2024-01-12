@@ -20,6 +20,7 @@ import org.eclipse.draw2d.ConnectionEndpointLocator;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
@@ -115,9 +116,10 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
     }
 
     private List<DBSTableIndex> getIndexSourceAttributes(
-        Collection<? extends DBSTableIndex> indexes,
-        List<ERDEntityAttribute> sourceAttr,
-        DBRProgressMonitor monitor) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Collection<? extends DBSTableIndex> indexes,
+        @NotNull List<ERDEntityAttribute> sourceAttr
+    ) throws DBException {
         List<DBSTableIndex> sourceAttributeIndexes = new ArrayList<>();
         List<DBSEntityAttribute> sourceAttributes = sourceAttr.stream().map(ERDEntityAttribute::getObject).toList();
         for (DBSTableIndex index : indexes) {
