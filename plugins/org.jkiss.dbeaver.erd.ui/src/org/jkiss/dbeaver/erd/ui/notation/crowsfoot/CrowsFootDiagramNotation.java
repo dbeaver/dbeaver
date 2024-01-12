@@ -122,10 +122,6 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         List<DBSTableIndex> sourceAttributeIndexes = new ArrayList<>();
         List<DBSEntityAttribute> sourceAttributes = sourceAttr.stream().map(ERDEntityAttribute::getObject).toList();
         for (DBSTableIndex index : indexes) {
-            if (index.isPrimary()) {
-                // primary key index
-                continue;
-            }
             if (DBUtils.isIdentifierIndex(monitor, index)) {
                 List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
                 if (sourceAttributes.containsAll(entityIdentifierAttributes)) {
