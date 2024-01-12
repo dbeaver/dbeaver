@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.router.shortpath;
 
-import org.eclipse.draw2d.Bendpoint;
-import org.eclipse.draw2d.Connection;
-import org.eclipse.draw2d.FigureListener;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.LayoutListener;
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.PrecisionPoint;
@@ -30,13 +26,7 @@ import org.eclipse.draw2d.graph.ShortestPathRouter;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ShortPathRouting extends ERDConnectionRouter {
 

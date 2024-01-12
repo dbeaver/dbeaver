@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.ui.feature"
       label="%featureName"
-      version="1.0.113.qualifier"
+      version="1.0.114.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -34,5 +34,6 @@
    <plugin id="org.jkiss.dbeaver.ext.snowflake.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.sqlite.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.wmi" os="win32" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.altibase.ui" version="0.0.0" />
 
 </feature>

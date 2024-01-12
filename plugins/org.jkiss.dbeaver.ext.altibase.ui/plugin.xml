@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+  
+<plugin>
+    
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor id="source.declaration" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                label="%editor.package.declaration.name" description="%editor.package.declaration.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
+        </editor>
+	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
+	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
+	    </configurator>
+	    	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
+	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
+	    </configurator>
+	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseSequenceConfigurator">
+	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+	    </configurator>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.altibase.general" 
+        class="org.jkiss.dbeaver.ext.altibase.ui.views.PrefPageAltibase" name="Altibase">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
+    </extension>
+    
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.altibase.main" class="org.jkiss.dbeaver.ext.altibase.ui.views.PrefPageAltibase" 
+        name="%page.org.jkiss.dbeaver.preferences.altibase.main.name">
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                    <test property="org.jkiss.dbeaver.core.datasourceContainer.driverId" value="Altibase"/>
+                </adapt>
+            </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="Session Manager"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
+                class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor"
+                id="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor"
+                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+            <supports dataSource="altibase"/>
+        </editorContribution>
+    </extension>
+        
+</plugin>
