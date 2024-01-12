@@ -116,6 +116,26 @@ public class StreamMappingContainer implements DBPNamedObject, DBPImageProvider 
         return attributes;
     }
 
+    @Nullable
+    public StreamMappingType getMappingType() {
+        final StreamMappingType[] types = attributes.stream()
+            .map(StreamMappingAttribute::getMappingType)
+            .distinct()
+            .toArray(StreamMappingType[]::new);
+
+        if (types.length == 1) {
+            return types[0];
+        } else {
+            return null;
+        }
+    }
+
+    public void setMappingType(@NotNull StreamMappingType type) {
+        for (StreamMappingAttribute attribute : attributes) {
+            attribute.setMappingType(type);
+        }
+    }
+
     public void loadSettings(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> containerSettings) {
         final Map<String, Object> attributes = JSONUtils.getObject(containerSettings, "attributes");
         for (StreamMappingAttribute attribute : getAttributes(monitor)) {
