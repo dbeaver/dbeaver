@@ -20,7 +20,6 @@ import org.eclipse.draw2d.ConnectionEndpointLocator;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDAssociationType;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -40,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -65,13 +62,23 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     // get index(s) for require source attributes
-                    List<DBSTableIndex> sourceAttributeIndexes = getIndexSourceAttributes(monitor, indexes,
-                        association.getSourceAttributes());
-                    if (sourceAttributeIndexes.isEmpty()) {
-                        // no constraints exists
-                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
-                    } else {
+                    List<ERDEntityAttribute> erdSourceAttributes = association.getSourceAttributes();
+                    List<DBSEntityAttribute> columns = erdSourceAttributes.stream()
+                        .map(ERDEntityAttribute::getObject)
+                        .toList();
+                    boolean isUnique = true;
+                    for (DBSEntityAttribute column : columns) {
+                        if (!DBUtils.isUniqueColumn(monitor, column)) {
+                            // if at least one column match index is not unique
+                            // it is many to one relation
+                            isUnique = false;
+                            break;
+                        }
+                    }
+                    if (isUnique) {
                         createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
+                    } else {
+                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
                     }
                 } else {
                     createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
@@ -84,6 +91,8 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                     createTargetDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
                 }
             } catch (DBException e) {
+                log.error(e.getMessage(), e);
+            } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
             }
         }
@@ -114,23 +123,7 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         conn.setTargetDecoration(targetDecor);
     }
 
-    private List<DBSTableIndex> getIndexSourceAttributes(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull Collection<? extends DBSTableIndex> indexes,
-        @NotNull List<ERDEntityAttribute> sourceAttr
-    ) throws DBException {
-        List<DBSTableIndex> sourceAttributeIndexes = new ArrayList<>();
-        List<DBSEntityAttribute> sourceAttributes = sourceAttr.stream().map(ERDEntityAttribute::getObject).toList();
-        for (DBSTableIndex index : indexes) {
-            if (DBUtils.isIdentifierIndex(monitor, index)) {
-                List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
-                if (sourceAttributes.containsAll(entityIdentifierAttributes)) {
-                    sourceAttributeIndexes.add(index);
-                }
-            }
-        }
-        return sourceAttributeIndexes;
-    }
+
 
     @Override
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {

@@ -2571,4 +2571,27 @@ public final class DBUtils {
         @Nullable
         CHILD extract(@NotNull PARENT parent, @NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException;
     }
+
+    /**
+     * The method returns true if column is UNIQUE
+     */
+    public static boolean isUniqueColumn(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute column
+    ) throws DBException, InterruptedException {
+        Collection<? extends DBSTableIndex> indexes = ((DBSTable) column.getParentObject()).getIndexes(monitor);
+        List<DBSTableIndex> columnIndexes = new ArrayList<>();
+        for (DBSTableIndex index : indexes) {
+            if (monitor.isCanceled()) {
+                break;
+            }
+            if (DBUtils.isIdentifierIndex(monitor, index)) {
+                List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
+                if (entityIdentifierAttributes.contains(column)) {
+                    columnIndexes.add(index);
+                }
+            }
+        }
+        return !columnIndexes.isEmpty();
+    }
 }
