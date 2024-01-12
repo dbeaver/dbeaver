@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,15 +128,16 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                 }
                                 String script = action.getScript();
                                 if (!CommonUtils.isEmpty(script)) {
-                                    long startTime = System.currentTimeMillis();
                                     try (final DBCStatement statement = session.prepareStatement(
                                         DBCStatementType.SCRIPT,
                                         script,
                                         false,
                                         false,
-                                        false)) {
-                                        long execTime = System.currentTimeMillis() - startTime;
+                                        false
+                                    )) {
+                                        long startTime = System.currentTimeMillis();
                                         statement.executeStatement();
+                                        long execTime = System.currentTimeMillis() - startTime;
                                         if (listener instanceof SQLToolRunListener) {
                                             if (action.getType() != DBEPersistAction.ActionType.INITIALIZER && action.getType() != DBEPersistAction.ActionType.FINALIZER) {
                                                 SQLToolStatisticsSimple statisticsSimple = new SQLToolStatisticsSimple(object, false);
