@@ -35,4 +35,43 @@ public interface InternalDatabaseConfig {
 
     String getSchema();
 
+    Pool getPool();
+
+    class Pool {
+        private int minIdleConnections = 2;
+        private int maxIdleConnections = 10;
+        private int maxConnections = 1000;
+        private String validationQuery = "SELECT 1";
+
+        public Pool() {
+        }
+
+        public Pool(
+            int minIdleConnections,
+            int maxIdleConnections,
+            int maxConnections,
+            String validationQuery
+        ) {
+            this.minIdleConnections = minIdleConnections;
+            this.maxIdleConnections = maxIdleConnections;
+            this.maxConnections = maxConnections;
+            this.validationQuery = validationQuery;
+        }
+
+        public int getMinIdleConnections() {
+            return minIdleConnections;
+        }
+
+        public int getMaxIdleConnections() {
+            return maxIdleConnections;
+        }
+
+        public int getMaxConnections() {
+            return maxConnections;
+        }
+
+        public String getValidationQuery() {
+            return validationQuery;
+        }
+    }
 }
