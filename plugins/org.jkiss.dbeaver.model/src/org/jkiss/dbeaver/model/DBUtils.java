@@ -2573,25 +2573,27 @@ public final class DBUtils {
     }
 
     /**
-     * The method returns true if column is UNIQUE
+     * The method returns true if index based by source attributes is UNIQUE
      */
-    public static boolean isUniqueColumn(
+    public static boolean isUniqueIndexForAttributes(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntityAttribute column
+        @NotNull List<DBSEntityAttribute> attributes,
+        @NotNull DBSEntity entity
     ) throws DBException, InterruptedException {
-        Collection<? extends DBSTableIndex> indexes = ((DBSTable) column.getParentObject()).getIndexes(monitor);
+        Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
         List<DBSTableIndex> columnIndexes = new ArrayList<>();
         for (DBSTableIndex index : indexes) {
             if (monitor.isCanceled()) {
                 break;
             }
-            if (DBUtils.isIdentifierIndex(monitor, index)) {
-                List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
-                if (entityIdentifierAttributes.contains(column)) {
-                    columnIndexes.add(index);
-                }
+            // find composite index that base as compositions of multicolumns (sourceattributes)
+            List<DBSEntityAttribute> indexAttributes = DBUtils.getEntityAttributes(monitor, index);
+            Set<DBSEntityAttribute> setOfAttributes = new TreeSet<>(attributes);
+            Set<DBSEntityAttribute> setOfIndexAttributes = new TreeSet<>(indexAttributes);
+            if (setOfAttributes.equals(setOfIndexAttributes) && index.isUnique()) {
+                return true;
             }
         }
-        return !columnIndexes.isEmpty();
+        return false;
     }
 }

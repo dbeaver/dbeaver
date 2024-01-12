@@ -63,19 +63,10 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                 if (!CommonUtils.isEmpty(indexes)) {
                     // get index(s) for require source attributes
                     List<ERDEntityAttribute> erdSourceAttributes = association.getSourceAttributes();
-                    List<DBSEntityAttribute> columns = erdSourceAttributes.stream()
+                    List<DBSEntityAttribute> attributes = erdSourceAttributes.stream()
                         .map(ERDEntityAttribute::getObject)
                         .toList();
-                    boolean isUnique = true;
-                    for (DBSEntityAttribute column : columns) {
-                        if (!DBUtils.isUniqueColumn(monitor, column)) {
-                            // if at least one column match index is not unique
-                            // it is many to one relation
-                            isUnique = false;
-                            break;
-                        }
-                    }
-                    if (isUnique) {
+                    if (DBUtils.isUniqueIndexForAttributes(monitor, attributes, entity)) {
                         createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
                     } else {
                         createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
