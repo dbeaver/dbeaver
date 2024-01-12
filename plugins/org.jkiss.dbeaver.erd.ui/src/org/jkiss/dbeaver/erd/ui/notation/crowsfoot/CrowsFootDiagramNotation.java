@@ -61,7 +61,7 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                 VoidProgressMonitor monitor = new VoidProgressMonitor();
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
-                    // get index(s) for require source attributes
+                    // get index for require source attributes
                     List<ERDEntityAttribute> erdSourceAttributes = association.getSourceAttributes();
                     List<DBSEntityAttribute> attributes = erdSourceAttributes.stream()
                         .map(ERDEntityAttribute::getObject)
