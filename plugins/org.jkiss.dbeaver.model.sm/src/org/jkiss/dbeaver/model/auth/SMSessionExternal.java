@@ -17,10 +17,14 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
+
+import java.util.Map;
+
 /**
  * Federated session
  */
 public interface SMSessionExternal extends SMSession {
-
-
+    @NotNull
+    Map<String, Object> getAuthParameters();
 }
