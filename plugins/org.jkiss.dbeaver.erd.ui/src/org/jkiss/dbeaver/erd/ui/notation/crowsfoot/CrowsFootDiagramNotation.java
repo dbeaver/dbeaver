@@ -65,9 +65,8 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     // get index(s) for require source attributes
-                    List<DBSTableIndex> sourceAttributeIndexes = getIndexSourceAttributes(indexes,
-                        association.getSourceAttributes(),
-                        monitor);
+                    List<DBSTableIndex> sourceAttributeIndexes = getIndexSourceAttributes(monitor, indexes,
+                        association.getSourceAttributes());
                     if (sourceAttributeIndexes.isEmpty()) {
                         // no constraints exists
                         createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
