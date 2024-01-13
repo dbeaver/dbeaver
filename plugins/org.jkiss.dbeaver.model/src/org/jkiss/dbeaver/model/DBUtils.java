@@ -2580,17 +2580,14 @@ public final class DBUtils {
         @NotNull List<DBSEntityAttribute> attributes,
         @NotNull DBSEntity entity
     ) throws DBException, InterruptedException {
-        Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
-        List<DBSTableIndex> columnIndexes = new ArrayList<>();
-        for (DBSTableIndex index : indexes) {
+        Collection<? extends DBSTableIndex> tableIndexes = ((DBSTable) entity).getIndexes(monitor);
+        for (DBSTableIndex tableIndex : tableIndexes) {
             if (monitor.isCanceled()) {
                 break;
             }
-            // find composite index that base as compositions of multicolumns (sourceattributes)
-            List<DBSEntityAttribute> indexAttributes = DBUtils.getEntityAttributes(monitor, index);
-            Set<DBSEntityAttribute> setOfAttributes = new TreeSet<>(attributes);
-            Set<DBSEntityAttribute> setOfIndexAttributes = new TreeSet<>(indexAttributes);
-            if (setOfAttributes.equals(setOfIndexAttributes) && index.isUnique()) {
+            // find composite index that presented as a compositions of columns (source attributes)
+            List<DBSEntityAttribute> indexAttributes = DBUtils.getEntityAttributes(monitor, tableIndex);
+            if (tableIndex.isUnique() && indexAttributes.equals(attributes)) {
                 return true;
             }
         }
