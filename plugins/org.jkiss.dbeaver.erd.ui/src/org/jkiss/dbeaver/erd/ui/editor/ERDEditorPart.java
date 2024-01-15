@@ -706,6 +706,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         if (isLoaded && force) {
             loadDiagram(refreshMetadata);
+            getDiagramPart().rearrangeDiagram();
         }
     }
 
@@ -1157,7 +1158,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void run() {
             setDiagramRouter(router);
             refreshDiagram(true, false);
-            getDiagramPart().rearrangeDiagram();
         }
     }
 
