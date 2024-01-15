@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.bigquery.model.data;
 
+import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -26,7 +27,8 @@ public class BigQueryValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject type) {
         return switch (type.getTypeName()) {
-            case "STRUCT", "ARRAY" -> new BigQueryStructValueHandler();
+            case BigQueryConstants.DATA_TYPE_STRUCT,
+                BigQueryConstants.DATA_TYPE_ARRAY -> new BigQueryStructValueHandler();
             default -> null;
         };
     }

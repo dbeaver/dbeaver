@@ -21,6 +21,7 @@ import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -75,9 +76,9 @@ public class BigQueryStructValueHandler extends JDBCStructValueHandler {
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         try {
             BigQueryDataSource dataSource = (BigQueryDataSource) session.getDataSource();
-            if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
-                structDataType = dataSource.getLocalDataType("STRUCT");
-                arrayDataType = dataSource.getLocalDataType("ARRAY");
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) && structDataType == null) {
+                structDataType = dataSource.getLocalDataType(BigQueryConstants.DATA_TYPE_STRUCT);
+                arrayDataType = dataSource.getLocalDataType(BigQueryConstants.DATA_TYPE_ARRAY);
 
                 ResultSet bqResultSet = resultSet.getOriginal();
                 if (bqResultSet.getClass().getName().startsWith("com.simba.googlebigquery.jdbc")) {
@@ -126,17 +127,20 @@ public class BigQueryStructValueHandler extends JDBCStructValueHandler {
         if (object == null) {
             return null;
         }
-        if (structDataType != null && object instanceof String strValue) {
-            try {
-                Map<String, Object> map = JSONUtils.parseMap(gson, new StringReader(strValue));
+        if (structDataType != null) {
+            if (object instanceof String strValue) {
+                try {
+                    Map<String, Object> map = JSONUtils.parseMap(gson, new StringReader(strValue));
 
-                return convertStructToValue(session, columnFields, map);
-            } catch (Exception e) {
-                throw new DBCException("Can't parse json: " + typeName, e);
+                    return convertStructToValue(session, columnFields, map);
+                } catch (Exception e) {
+                    throw new DBCException("Can't parse json: " + typeName, e);
+                }
+            } else {
+                return super.getValueFromObject(session, type, object, copy, validateValue);
             }
         }
-
-        return super.getValueFromObject(session, type, object, copy, validateValue);
+        return object;
     }
 
     private Object convertStructToValue(DBCSession session, ColumnFieldInfo[] columnFields, Map<String, Object> struct) throws DBCException {

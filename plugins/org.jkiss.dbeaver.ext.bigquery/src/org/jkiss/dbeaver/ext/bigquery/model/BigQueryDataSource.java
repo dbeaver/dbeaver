@@ -73,7 +73,7 @@ public class BigQueryDataSource extends GenericDataSource {
 
     @NotNull
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
-        if (typeName.equals("STRUCT")) {
+        if (typeName.equals(BigQueryConstants.DATA_TYPE_STRUCT)) {
             return DBPDataKind.STRUCT;
         }
         return super.resolveDataKind(typeName, valueType);
