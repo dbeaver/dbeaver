@@ -79,7 +79,20 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
         lastPingTime = System.currentTimeMillis();
 
+        doJob();
+
+        if (!platform.isShuttingDown()) {
+            scheduleMonitor();
+        }
+        return Status.OK_STATUS;
+    }
+
+    protected void doJob() {
         final DBPWorkspace workspace = platform.getWorkspace();
+        checkDataSourceAliveInWorkspace(workspace);
+    }
+
+    protected void checkDataSourceAliveInWorkspace(DBPWorkspace workspace) {
         for (DBPProject project : workspace.getProjects()) {
             if (project.isOpen() && project.isRegistryLoaded()) {
                 DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
@@ -88,10 +101,6 @@ public class DataSourceMonitorJob extends AbstractJob {
                 }
             }
         }
-        if (!platform.isShuttingDown()) {
-            scheduleMonitor();
-        }
-        return Status.OK_STATUS;
     }
 
     private void checkDataSourceAlive(final DBPDataSourceContainer dataSourceDescriptor) {
