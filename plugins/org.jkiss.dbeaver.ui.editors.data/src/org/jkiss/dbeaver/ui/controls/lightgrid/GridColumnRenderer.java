@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,9 +182,11 @@ class GridColumnRenderer extends AbstractRenderer {
             String text = getColumnDescription(element);
             if (!CommonUtils.isEmpty(text)) {
                 text = UITextUtils.getShortString(grid.fontMetrics, text, bounds.width);
+                bounds.y += TOP_MARGIN + grid.fontMetrics.getHeight();
+                gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
                 gc.setFont(grid.normalFont);
                 gc.setClipping(bounds.x, bounds.y, bounds.width, grid.fontMetrics.getHeight());
-                gc.drawString(text, bounds.x, bounds.y + TOP_MARGIN + grid.fontMetrics.getHeight(), isTransparent);
+                gc.drawString(text, bounds.x, bounds.y, isTransparent);
                 gc.setClipping((Rectangle) null);
             }
         }

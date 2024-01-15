@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -648,31 +648,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return null;
         }
 
-        @Nullable
-        @Override
-        public Object visitRowsSelectionFilter(SQLQueryRowsSelectionFilterModel selectionFilter, OutlineQueryNode node) {
-            selectionFilter.getFromSource().apply(this, node);
-
-            if (selectionFilter.getWhereClause() != null) {
-                this.makeNode(node, selectionFilter.getWhereClause(), "WHERE", UIIcon.FILTER, selectionFilter.getWhereClause());
-            }
-            if (selectionFilter.getHavingClause() != null) {
-                this.makeNode(node, selectionFilter.getHavingClause(), "HAVING", UIIcon.FILTER, selectionFilter.getHavingClause());
-            }
-            if (selectionFilter.getGroupByClause() != null) {
-                this.makeNode(
-                    node,
-                    selectionFilter.getGroupByClause(),
-                    "GROUP BY",
-                    UIIcon.GROUP_BY_ATTR,
-                    selectionFilter.getGroupByClause()
-                );
-            }
-            if (selectionFilter.getOrderByClause() != null) {
-                this.makeNode(node, selectionFilter.getOrderByClause(), "ORDER BY", UIIcon.SORT, selectionFilter.getOrderByClause());
-            }
-            return null;
-        }
 
         @Nullable
         @Override
@@ -751,12 +726,31 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
-        public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode arg) {
+        public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode node) {
             String suffix = projection.getDataContext().getColumnsList().stream()
                 .map(SQLQuerySymbol::getName)
                 .collect(Collectors.joining(", ", "(", ")"));
-            this.makeNode(arg, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());
-            this.makeNode(arg, projection.getFromSource(), "FROM", DBIcon.TREE_FOLDER_TABLE, projection.getFromSource());
+            this.makeNode(node, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());
+            this.makeNode(node, projection.getFromSource(), "FROM", DBIcon.TREE_FOLDER_TABLE, projection.getFromSource());
+
+            if (projection.getWhereClause() != null) {
+                this.makeNode(node, projection.getWhereClause(), "WHERE", UIIcon.FILTER, projection.getWhereClause());
+            }
+            if (projection.getGroupByClause() != null) {
+                this.makeNode(
+                    node,
+                    projection.getGroupByClause(),
+                    "GROUP BY",
+                    UIIcon.GROUP_BY_ATTR,
+                    projection.getGroupByClause()
+                );
+            }
+            if (projection.getHavingClause() != null) {
+                this.makeNode(node, projection.getHavingClause(), "HAVING", UIIcon.FILTER, projection.getHavingClause());
+            }
+            if (projection.getOrderByClause() != null) {
+                this.makeNode(node, projection.getOrderByClause(), "ORDER BY", UIIcon.SORT, projection.getOrderByClause());
+            }
             return null;
         }
 

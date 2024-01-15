@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,12 @@ import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
-import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
-import org.jkiss.dbeaver.model.stm.STMSource;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
-import org.jkiss.dbeaver.model.stm.STMUtils;
+import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataSourceContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
 import org.jkiss.utils.Pair;
 
@@ -291,19 +288,6 @@ public class SQLQueryModelRecognizer {
                     return source;
                 }
             }),
-            Map.entry(STMKnownRuleNames.tableExpression, (n, cc, r) -> {
-                // tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
-                SQLQueryValueExpression whereExpr = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.whereClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression havingClause = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.havingClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression groupByClause = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.groupByClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryValueExpression orderByClause = Optional.ofNullable(n.findChildOfName(STMKnownRuleNames.orderByClause))
-                        .map(r::collectValueExpression).orElse(null);
-                SQLQueryRowsSourceModel source = cc.isEmpty() ? r.queryDataContext.getDefaultTable(n.getRealInterval()) : cc.get(0);
-                return new SQLQueryRowsSelectionFilterModel(n.getRealInterval(), source, whereExpr, havingClause, groupByClause, orderByClause);
-            }),
             Map.entry(STMKnownRuleNames.querySpecification, (n, cc, r) -> {
                 STMTreeNode selectListNode = n.findChildOfName(STMKnownRuleNames.selectList);
                 SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(
@@ -344,7 +328,21 @@ public class SQLQueryModelRecognizer {
                     }
                 }
                 SQLQueryRowsSourceModel source = cc.isEmpty() ? r.queryDataContext.getDefaultTable(n.getRealInterval()) : cc.get(0);
-                return new SQLQueryRowsProjectionModel(n.getRealInterval(), source, resultModel);
+                STMTreeNode tableExpr = n.findChildOfName(STMKnownRuleNames.tableExpression);
+                if (tableExpr != null) {
+                    // tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
+                    SQLQueryValueExpression whereExpr = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.whereClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    SQLQueryValueExpression havingClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.havingClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    SQLQueryValueExpression groupByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.groupByClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    SQLQueryValueExpression orderByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.orderByClause))
+                        .map(r::collectValueExpression).orElse(null);
+                    return new SQLQueryRowsProjectionModel(n.getRealInterval(), source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
+                } else {
+                    return new SQLQueryRowsProjectionModel(n.getRealInterval(), source, resultModel);
+                }
             }),
             Map.entry(STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
                 // can they both be missing?

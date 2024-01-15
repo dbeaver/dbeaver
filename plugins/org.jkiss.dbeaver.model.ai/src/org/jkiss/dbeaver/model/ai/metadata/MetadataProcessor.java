@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,10 +116,13 @@ public class MetadataProcessor {
         final DBCExecutionContext executionContext = context.getExecutionContext();
 
         final StringBuilder sb = new StringBuilder();
-        sb.append("Perform SQL completion");
 
         if (model.isChatAPI()) {
-            sb.append(". Start response with SELECT keyword");
+            sb.append("You must perform SQL completion. " +
+                "Your query must start with \"SELECT\" and be enclosed with triple backslash on new lines. " +
+                "Talk naturally, as if you were talking to a human.");
+        } else {
+            sb.append("Perform SQL completion.");
         }
 
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
