@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -174,5 +175,12 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public boolean needsDefaultDataTypes() {
         return false;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }
