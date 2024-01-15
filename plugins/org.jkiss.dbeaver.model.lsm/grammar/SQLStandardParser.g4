@@ -333,7 +333,6 @@ sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
 deleteStatement: DELETE FROM tableName whereClause?;
 insertStatement: INSERT INTO nonjoinedTableReference? insertColumnsAndSource;
 insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
-insertValueSource: (DEFAULT VALUES)? | (VALUES LeftParen valueExpression? (Comma valueExpression)* RightParen*);
 insertColumnList: columnReference (Comma columnReference)*;
 
 // UPDATE
