@@ -1158,8 +1158,8 @@ public final class SQLUtils {
     public static boolean isLatinLetter(int codePoint) {
         return Character.isLetter(codePoint) && Character.UnicodeBlock.of(codePoint) == Character.UnicodeBlock.BASIC_LATIN;
     }
-    
-    /*
+
+    /**
      * Returns identifier in canonical form depends on dialect parameters. It's useful when we need to compare two identifiers.
      */
     public static String identifierToCanonicalForm(
