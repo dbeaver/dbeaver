@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -74,19 +75,21 @@ public class BigQueryStructValueHandler extends JDBCStructValueHandler {
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         try {
             BigQueryDataSource dataSource = (BigQueryDataSource) session.getDataSource();
-            structDataType = dataSource.getLocalDataType("STRUCT");
-            arrayDataType = dataSource.getLocalDataType("ARRAY");
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
+                structDataType = dataSource.getLocalDataType("STRUCT");
+                arrayDataType = dataSource.getLocalDataType("ARRAY");
 
-            ResultSet bqResultSet = resultSet.getOriginal();
-            if (bqResultSet.getClass().getName().startsWith("com.simba.googlebigquery.jdbc")) {
-                List<?> rsColumnsMeta = (List<?>) BeanUtils.invokeObjectDeclaredMethod(
-                    bqResultSet, "getResultSetColumns", new Class[0], new Object[0]);
-                Object columnMetaData = rsColumnsMeta.get(index - 1);  // BQColumnMetadata
+                ResultSet bqResultSet = resultSet.getOriginal();
+                if (bqResultSet.getClass().getName().startsWith("com.simba.googlebigquery.jdbc")) {
+                    List<?> rsColumnsMeta = (List<?>) BeanUtils.invokeObjectDeclaredMethod(
+                        bqResultSet, "getResultSetColumns", new Class[0], new Object[0]);
+                    Object columnMetaData = rsColumnsMeta.get(index - 1);  // BQColumnMetadata
 
-                List<?> nestedTypes = (List<?>) BeanUtils.invokeObjectDeclaredMethod(
-                    columnMetaData, "getNestedTypes", new Class[0], new Object[0]);
-                if (nestedTypes != null) {
-                    columnFields = collectNestedTypes(nestedTypes);
+                    List<?> nestedTypes = (List<?>) BeanUtils.invokeObjectDeclaredMethod(
+                        columnMetaData, "getNestedTypes", new Class[0], new Object[0]);
+                    if (nestedTypes != null) {
+                        columnFields = collectNestedTypes(nestedTypes);
+                    }
                 }
             }
         } catch (Throwable e) {
@@ -123,7 +126,7 @@ public class BigQueryStructValueHandler extends JDBCStructValueHandler {
         if (object == null) {
             return null;
         }
-        if (object instanceof String strValue) {
+        if (structDataType != null && object instanceof String strValue) {
             try {
                 Map<String, Object> map = JSONUtils.parseMap(gson, new StringReader(strValue));
 
