@@ -819,6 +819,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return null;
     }
 
+    /**
+     * Returns true if partitions creation is supported.
+     */
+    public boolean supportsPartitionsCreation() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-partitions-creation"), false);
+    }
+
     ///////////////////////////////////////////////
     // Statistics
 

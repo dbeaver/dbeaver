@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,8 +37,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Oracle table manager
@@ -48,7 +52,8 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         OracleTableColumn.class,
         OracleTableConstraint.class,
         OracleTableForeignKey.class,
-        OracleTableIndex.class
+        OracleTableIndex.class,
+        OracleTablePartition.class
     );
 
     @Nullable
@@ -58,7 +63,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+    protected OracleTable createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        Object container,
+        Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         OracleSchema schema = (OracleSchema) container;
 
         OracleTable table = new OracleTable(schema, ""); //$NON-NLS-1$
@@ -67,7 +78,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
@@ -77,7 +94,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        NestedObjectCommand<OracleTable, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         OracleTable table = command.getObject();
         if (command.getProperty("comment") != null) { //$NON-NLS-1$
             actions.add(new SQLDatabasePersistAction(
@@ -98,6 +121,64 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
 
     @Override
     protected void appendTableModifiers(DBRProgressMonitor monitor, OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+        String partitionedBy = table.getPartitionedBy(monitor);
+        if (table.getDataSource().supportsPartitionsCreation() && !table.isPersisted()) {
+            if (CommonUtils.isEmpty(partitionedBy)) {
+                log.error("Can't create partitioned table without partition key(s) condition.");
+            } else {
+                // Add table partitioning during creation.
+                // Parse partition keys first.
+                findKeysByColumnNames(table, partitionedBy, table.getPartitionKeys());
+                if (CommonUtils.isEmpty(table.getPartitionKeys())) {
+                    log.warn("Can't create partitioning without key columns.");
+                } else {
+                    Collection<OracleTablePartition> partitions = table.getCachedPartitions();
+                    if (CommonUtils.isEmpty(partitions)) {
+                        log.warn("Can't create partitioning without partitions. Create partitions first.");
+                    } else {
+                        OracleTablePhysical.PartitionInfo partitionInfo = table.getPartitionInfo();
+                        addMainPartitioning(ddl, partitionInfo, table.getPartitionKeys(), false);
+                        String subPartitionedBy = table.getSubPartitionedBy();
+                        if (CommonUtils.isNotEmpty(subPartitionedBy)) {
+                            findKeysByColumnNames(table, partitionedBy, table.getSubPartitionKeys());
+                            if (!CommonUtils.isEmpty(table.getSubPartitionKeys())) {
+                                addMainPartitioning(ddl, partitionInfo, table.getSubPartitionKeys(), true);
+                            } else {
+                                log.warn("Can't create subpartitioning without subpartitions. Create subpartitions first.");
+                            }
+                        }
+                        ddl.append(" (");
+                        boolean isFirst = true;
+                        for (OracleTablePartition partition : partitions) {
+                            if (partition.isSubPartition()) {
+                                continue;
+                            }
+                            if (!isFirst) {
+                                ddl.append(",");
+                            } else {
+                                isFirst = false;
+                            }
+                            addPartitionPart(ddl, partitionInfo, partition, false);
+                            List<OracleTablePartition> subPartitions = partition.getCachedSubPartitions();
+                            if (!CommonUtils.isEmpty(subPartitions)) {
+                                ddl.append(" (");
+                                isFirst = true;
+                                for (OracleTablePartition subPartition : subPartitions) {
+                                    if (!isFirst) {
+                                        ddl.append(",");
+                                    } else {
+                                        isFirst = false;
+                                    }
+                                    addPartitionPart(ddl, partitionInfo, subPartition, true);
+                                }
+                                ddl.append(")");
+                            }
+                        }
+                        ddl.append(")");
+                    }
+                }
+            }
+        }
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
             Object tablespace = table.getTablespace();
@@ -111,8 +192,86 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         }
     }
 
+    private void addPartitionPart(
+        @NotNull StringBuilder ddl,
+        @Nullable OracleTablePhysical.PartitionInfo partitionInfo,
+        @NotNull OracleTablePartition partition,
+        boolean isSubPartition
+    ) {
+        ddl.append("\n").append(isSubPartition ? "SUB" : "").append("PARTITION ")
+            .append(DBUtils.getQuotedIdentifier(partition))
+            .append(" VALUES ")
+            .append(partitionInfo != null && (isSubPartition ?
+                partitionInfo.getSubpartitionType() : partitionInfo.getPartitionType()) == OracleTablePartition.PartitionType.RANGE ?
+                "LESS THAN " : "")
+            .append("(").append(partition.getValuesForCreating()).append(")");
+    }
+
+    private void addMainPartitioning(
+        @NotNull StringBuilder ddl,
+        @Nullable OracleTablePhysical.PartitionInfo partitionInfo,
+        @NotNull Set<OracleTableColumn> partitionKeys,
+        boolean isSubPartition
+    ) {
+        ddl.append("\n").append(isSubPartition ? "SUB" : "").append("PARTITION BY ");
+        if (partitionInfo != null) {
+            ddl.append(isSubPartition ? partitionInfo.getSubpartitionType().name() : partitionInfo.getPartitionType().name());
+        } else {
+            ddl.append("RANGE");
+        }
+        String keyNames = partitionKeys.stream()
+            .map(JDBCTableColumn::getName)
+            .collect(Collectors.joining(",", "(", ")"));
+        ddl.append(" ").append(keyNames);
+    }
+
+    private void findKeysByColumnNames(@NotNull OracleTable table, @Nullable String value, @NotNull Set<OracleTableColumn> keysList) {
+        if (CommonUtils.isNotEmpty(value)) {
+            String columnsToParse = value.trim();
+            if (CommonUtils.isNotEmpty(columnsToParse)) {
+                List<? extends OracleTableColumn> cachedAttributes = table.getCachedAttributes();
+                if (!CommonUtils.isEmpty(cachedAttributes)) {
+                    if (columnsToParse.contains(",")) {
+                        String[] strings = columnsToParse.split(",");
+                        for (String string : strings) {
+                            if (CommonUtils.isNotEmpty(string)) {
+                                findCachedColumnByName(table, keysList, cachedAttributes, string.trim());
+                            }
+                        }
+                    } else {
+                        findCachedColumnByName(table, keysList, cachedAttributes, columnsToParse);
+                    }
+                }
+            }
+        }
+    }
+
+    private void findCachedColumnByName(
+        @NotNull OracleTable table,
+        @NotNull Set<OracleTableColumn> keysList,
+        @NotNull List<? extends OracleTableColumn> cachedAttributes,
+        @NotNull String string
+    ) {
+        OracleTableColumn column = cachedAttributes.stream()
+            .filter(e -> e.getName().equalsIgnoreCase(string))
+            .findFirst()
+            .orElse(null);
+        if (column == null) {
+            log.warn("Column '" + string + "' not found in table '" +
+                table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
+        } else {
+            keysList.add(column);
+        }
+    }
+
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",

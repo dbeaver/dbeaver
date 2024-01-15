@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -42,40 +44,38 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Oracle physical table
  */
-public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>, DBSPartitionContainer
-{
+public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>, DBSPartitionContainer {
     private static final Log log = Log.getLog(OracleTablePhysical.class);
+    private static final String SUB_PART_KEY_TYPE = "SUBPART";
 
     //private boolean valid;
     private long rowCount;
     private Long realRowCount;
     private Object tablespace;
     private boolean partitioned;
+    private String partitionedBy;
+    private String subPartitionedBy;
     private PartitionInfo partitionInfo;
-    private PartitionCache partitionCache;
+    private PartitionCache partitionCache = new PartitionCache();
+    private Set<OracleTableColumn> partitionKeys = new HashSet<>();
+    private Set<OracleTableColumn> subPartitionKeys = new HashSet<>();
 
-    protected OracleTablePhysical(OracleSchema schema, String name)
-    {
+    protected OracleTablePhysical(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name, false);
+        this.partitionInfo = new PartitionInfo();
     }
 
-    protected OracleTablePhysical(
-        OracleSchema schema,
-        ResultSet dbResult)
-    {
+    protected OracleTablePhysical(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
         readSpecialProperties(dbResult);
 
         this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", OracleConstants.RESULT_YES_VALUE);
-        this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 
     protected OracleTablePhysical(@NotNull OracleSchema schema, @NotNull ResultSet dbResult, @NotNull String name) {
@@ -164,7 +164,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     @LazyProperty(cacheValidator = PartitionInfoValidator.class)
     public PartitionInfo getPartitionInfo(DBRProgressMonitor monitor) throws DBException
     {
-        if (partitionInfo == null && partitioned) {
+        if (partitionInfo == null && partitioned && isPersisted()) {
             try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load partitioning info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?")) {
                     dbStat.setString(1, getContainer().getName());
@@ -182,18 +182,122 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return partitionInfo;
     }
 
+    @Nullable
+    public PartitionInfo getPartitionInfo() {
+        return partitionInfo;
+    }
+
     @Association
     @Property(viewable = true, order = 13)
     public boolean isPartitioned() {
         return partitioned;
     }
 
+    @Property(viewable = true, editableExpr = "object.getDataSource().supportsPartitionsCreation()", order = 16, visibleIf = PartitioningTablePropertyValidator.class)
+    @LazyProperty(cacheValidator = PartitionedValueLoadValidator.class)
+    public String getPartitionedBy(DBRProgressMonitor monitor) {
+        if (isPersisted() && partitionedBy == null) {
+            // Load partition key info
+            loadPartitionKeys(monitor);
+            if (!CommonUtils.isEmpty(partitionKeys)) {
+                partitionedBy = partitionKeys.stream()
+                    .map(JDBCTableColumn::getName)
+                    .collect(Collectors.joining(","));
+            }
+        }
+        return partitionedBy;
+    }
+
+    public void setPartitionedBy(String partitionedBy) {
+        if (CommonUtils.isNotEmpty(partitionedBy) && partitionInfo == null) {
+            partitionInfo = new PartitionInfo();
+        }
+        this.partitionedBy = partitionedBy;
+    }
+
+    public Set<OracleTableColumn> getPartitionKeys() {
+        return partitionKeys;
+    }
+
+    @Property(viewable = true, editableExpr = "object.getDataSource().supportsPartitionsCreation()", order = 17, visibleIf = PartitioningTablePropertyValidator.class)
+    public String getSubPartitionedBy() {
+        if (CommonUtils.isEmpty(subPartitionedBy) && !CommonUtils.isEmpty(subPartitionKeys)) {
+            subPartitionedBy = subPartitionKeys.stream()
+                .map(JDBCTableColumn::getName)
+                .collect(Collectors.joining(","));
+        }
+        return subPartitionedBy;
+    }
+
+    public void setSubPartitionedBy(String subPartitionedBy) {
+        this.subPartitionedBy = subPartitionedBy;
+    }
+
+    public Set<OracleTableColumn> getSubPartitionKeys() {
+        return subPartitionKeys;
+    }
+
+    private void loadPartitionKeys(@NotNull DBRProgressMonitor monitor) {
+        String tableName = getName();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load partition key info for table")) {
+            try (JDBCPreparedStatement stat = session.prepareStatement("SELECT COLUMN_NAME, 'PART' AS TYPE\n" +
+                "FROM SYS.ALL_PART_KEY_COLUMNS\n" +
+                "WHERE OBJECT_TYPE = 'TABLE'\n" +
+                "  AND OWNER = ?\n" +
+                "  AND NAME = ?\n" +
+                "  UNION ALL\n" +
+                "SELECT COLUMN_NAME, '" + SUB_PART_KEY_TYPE + "' AS TYPE\n" +
+                "FROM SYS.ALL_SUBPART_KEY_COLUMNS\n" +
+                "WHERE OBJECT_TYPE = 'TABLE'\n" +
+                "  AND OWNER = ?\n" +
+                "  AND NAME = ?")
+            ) {
+                String schemaName = getSchema().getName();
+                stat.setString(1, schemaName);
+                stat.setString(2, tableName);
+                stat.setString(3, schemaName);
+                stat.setString(4, tableName);
+                try (JDBCResultSet resultSet = stat.executeQuery()) {
+                    while (resultSet.next()) {
+                        String colName = resultSet.getString(1);
+                        String keyType = resultSet.getString(2);
+                        OracleTableColumn col = getAttribute(monitor, colName);
+                        if (col == null) {
+                            log.warn("Column '" + colName + "' not found in table '" +
+                                getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
+                        } else {
+                            if (SUB_PART_KEY_TYPE.equals(keyType)) {
+                                subPartitionKeys.add(col);
+                            } else {
+                                partitionKeys.add(col);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error fetching table '" + tableName + "' partition keys info.", e);
+        }
+    }
+
+    @NotNull
     @Association
     public Collection<OracleTablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException {
         if (partitionCache == null) {
             return Collections.emptyList();
         }
+        if (!isPersisted()) {
+            return getCachedPartitions();
+        }
         return partitionCache.getAllObjects(monitor, this);
+    }
+
+    @NotNull
+    public Collection<OracleTablePartition> getCachedPartitions() {
+        if (partitionCache == null) {
+            return Collections.emptyList();
+        }
+        return partitionCache.getCachedObjects();
     }
 
     @Override
@@ -202,8 +306,10 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         this.getContainer().indexCache.clearObjectCache(this);
         if (partitionCache != null) {
             partitionCache.clearCache();
-            partitionInfo = null;
         }
+        partitionInfo = null;
+        partitionKeys.clear();
+        subPartitionKeys.clear();
         return super.refreshObject(monitor);
     }
 
@@ -255,6 +361,10 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         public PartitionInfo(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) {
             super(monitor, dataSource, dbResult);
         }
+
+        PartitionInfo() {
+            super();
+        }
     }
 
     public static class PartitionInfoValidator implements IPropertyCacheValidator<OracleTablePhysical> {
@@ -282,6 +392,20 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
             }
             tablespaces.sort(DBUtils.<OracleTablespace>nameComparator());
             return tablespaces.toArray(new OracleTablespace[tablespaces.size()]);
+        }
+    }
+
+    public static class PartitionedValueLoadValidator implements IPropertyCacheValidator<OracleTablePhysical> {
+        @Override
+        public boolean isPropertyCached(OracleTablePhysical object, Object propertyId) {
+            return object.partitionedBy != null;
+        }
+    }
+
+    public static class PartitioningTablePropertyValidator implements IPropertyValueValidator<OracleTablePhysical, Object> {
+        @Override
+        public boolean isValidValue(OracleTablePhysical object, Object value) throws IllegalArgumentException {
+            return !(object instanceof OracleTablePartition) && (!object.isPersisted() || object.isPartitioned());
         }
     }
 }
