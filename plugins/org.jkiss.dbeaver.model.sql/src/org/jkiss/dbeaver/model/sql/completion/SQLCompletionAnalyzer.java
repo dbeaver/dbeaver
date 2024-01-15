@@ -464,7 +464,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor(wordPartDetector);
         String[] displayNames = hippieProposalProcessor.computeCompletionStrings(request.getDocument(), request.getDocumentOffset() - 1);
         for (String word : displayNames) {
-            if (!hasProposal(proposals, word)) {
+            if (!hasProposal(proposals, word) && !word.contains(".")) {
                 proposals.add(request.getContext().createProposal(
                     request,
                     word,
