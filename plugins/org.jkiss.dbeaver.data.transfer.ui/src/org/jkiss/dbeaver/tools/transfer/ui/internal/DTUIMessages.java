@@ -125,6 +125,7 @@ public class DTUIMessages extends NLS {
     public static String stream_consumer_page_settings_item_text_none;
     public static String stream_consumer_page_warning_not_enough_sources_chosen;
     public static String stream_consumer_page_mapping_title;
+    public static String stream_consumer_page_mapping_label_configure;
     public static String stream_consumer_page_mapping_button_configure;
     public static String stream_consumer_page_mapping_name_column_name;
     public static String stream_consumer_page_mapping_mapping_column_name;
