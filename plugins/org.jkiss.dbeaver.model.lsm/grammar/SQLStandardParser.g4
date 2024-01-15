@@ -331,9 +331,10 @@ selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetLi
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
 deleteStatement: DELETE FROM tableName whereClause?;
-insertStatement: INSERT INTO tableName insertColumnsAndSource;
-insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
-insertColumnList: columnNameList;
+insertStatement: INSERT INTO nonjoinedTableReference? insertColumnsAndSource;
+insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
+insertValueSource: (DEFAULT VALUES)? | (VALUES LeftParen valueExpression? (Comma valueExpression)* RightParen*);
+insertColumnList: columnReference (Comma columnReference)*;
 
 // UPDATE
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;

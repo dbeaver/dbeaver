@@ -28,8 +28,10 @@ public class TableReferencesRules {
     public static final Set<String> expandRulesToTableRef = Set.of(
         STMKnownRuleNames.sqlQuery,
         STMKnownRuleNames.directSqlDataStatement,
+        STMKnownRuleNames.insertStatement,
         STMKnownRuleNames.selectStatement,
         STMKnownRuleNames.updateStatement,
+        STMKnownRuleNames.insertColumnsAndSource,
         STMKnownRuleNames.queryExpression,
         STMKnownRuleNames.nonJoinQueryTerm,
         STMKnownRuleNames.queryPrimary,
