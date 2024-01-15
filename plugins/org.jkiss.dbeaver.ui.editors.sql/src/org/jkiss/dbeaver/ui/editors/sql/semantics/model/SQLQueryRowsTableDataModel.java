@@ -57,7 +57,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
 
     @NotNull
     private SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
-        String name = SQLSemanticsUtils.identifierToCanonicalForm(context.getDialect(), attr.getName(), false);
+        String name = SQLUtils.identifierToCanonicalForm(context.getDialect(), attr.getName(), false);
         SQLQuerySymbol symbol = new SQLQuerySymbol(name);
         symbol.setDefinition(new SQLQuerySymbolByDbObjectDefinition(attr, SQLQuerySymbolClass.COLUMN));
         return symbol;
