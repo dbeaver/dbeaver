@@ -792,18 +792,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 return null;
             }
             final String data = loadConfigFile(is, true);
-            return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {}.getType());
+            return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
+            }.getType());
         } catch (Exception e) {
             if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                 if (DBWorkbench.getPlatformUI().confirmAction(
-                    RegistryMessages.project_open_cannot_read_credentials_title,
-                    NLS.bind(
-                        RegistryMessages.project_open_cannot_read_credentials_message,
-                        registry.getProject().getName()
-                    ),
-                    RegistryMessages.project_open_cannot_read_credentials_button_text,
-                    true
-                )) {
+                        RegistryMessages.project_open_cannot_read_credentials_title,
+                        NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
+                                registry.getProject().getName()),
+                        RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                     final String backupName = name + ".bak";
                     try (InputStream is = configurationManager.readConfiguration(backupName, dataSourceIds)) {
                         if (is != null) { // just sanity check
@@ -814,7 +811,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         log.error("Error backing up secure credentials", e1);
                     }
                 } else {
-                    throw new DBException("Project opening canceled by user");
+                    log.error("Project opening canceled by user");
                 }
             }
             log.error("Error reading secure credentials", e);
