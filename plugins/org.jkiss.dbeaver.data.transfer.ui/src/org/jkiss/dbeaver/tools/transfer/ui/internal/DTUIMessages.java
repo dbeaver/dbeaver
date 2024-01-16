@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -125,6 +125,7 @@ public class DTUIMessages extends NLS {
     public static String stream_consumer_page_settings_item_text_none;
     public static String stream_consumer_page_warning_not_enough_sources_chosen;
     public static String stream_consumer_page_mapping_title;
+    public static String stream_consumer_page_mapping_label_configure;
     public static String stream_consumer_page_mapping_button_configure;
     public static String stream_consumer_page_mapping_name_column_name;
     public static String stream_consumer_page_mapping_mapping_column_name;

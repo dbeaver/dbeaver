@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import java.util.Arrays;
  * @author Shengkai Bai
  */
 public class DamengSQLDialect extends GenericSQLDialect {
+
+    private static final String[] EXEC_KEYWORDS = new String[]{"CALL"};
 
     private static final String[][] DM_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
@@ -70,6 +72,11 @@ public class DamengSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsAliasInSelect() {
         return true;
+    }
+
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @Override

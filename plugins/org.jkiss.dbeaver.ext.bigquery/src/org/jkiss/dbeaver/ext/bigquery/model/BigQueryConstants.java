@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 /**
  * Snowflake constants
  */
-public class BigQueryConstants
-{
+public class BigQueryConstants {
 
     //public static final String PROP_OAUTH_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "oauth-type@";
     //public static final String PROP_OAUTH_KEY_PATH = DBConstants.INTERNAL_PROP_PREFIX + "oauth-key-path@";
@@ -35,5 +34,8 @@ public class BigQueryConstants
 
     public static final String DRIVER_PROP_ACCOUNT = "OAuthServiceAcctEmail";
     public static final String DRIVER_PROP_PROJECT_ID = "ProjectId";
+
+    public static final String DATA_TYPE_STRUCT = "STRUCT";
+    public static final String DATA_TYPE_ARRAY = "ARRAY";
 
 }

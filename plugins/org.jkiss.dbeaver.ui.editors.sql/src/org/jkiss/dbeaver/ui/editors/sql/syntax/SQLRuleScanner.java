@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
-import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
-import org.jkiss.dbeaver.model.text.parser.TPPredicateRule;
-import org.jkiss.dbeaver.model.text.parser.TPRule;
-import org.jkiss.dbeaver.model.text.parser.TPToken;
-import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
-import org.jkiss.dbeaver.model.text.parser.TPTokenType;
+import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;

@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,6 +202,38 @@
                         </folder>
                     </items>
                 </folder>
+                <folder id="securityManagement" label="%tree.security.node.name" icon="#security"
+                        description="Security management">
+                    <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengUser" label="%tree.users.node.name"
+                            icon="#folder_user" description="Users">
+                        <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengRole" label="%tree.roles.node.name"
+                            icon="#folder_role" description="Roles">
+                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#user_group">
+                            <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengPrivUser"
+                                    label="%tree.users.node.name" icon="#folder_user" description="Users"
+                                    navigable="false">
+                                <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengPrivSystem"
+                                    label="%tree.system_privileges.node.name" icon="#permissions"
+                                    description="System Privileges" navigable="false">
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs"
+                                       icon="#privilege">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengPrivObject"
+                                    label="%tree.objects.node.name" icon="#permissions" description="Objects"
+                                    navigable="false">
+                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs"
+                                       icon="#privilege">
+                                </items>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder>
             </tree>
 
             <drivers managable="true">
@@ -211,14 +243,15 @@
                         icon="icons/dm_icon.png"
                         iconBig="icons/dm_icon_big.png"
                         class="dm.jdbc.driver.DmDriver"
-                        sampleURL="jdbc:dm://{host}:{port}"
+                        sampleURL="jdbc:dm://{host}[:{port}]"
                         useURL="false"
                         defaultPort="5236"
                         defaultDataBase="SYSDBA"
                         defaultUser="SYSDBA"
                         webURL="https://eco.dameng.com/document/dm/zh-cn/pm/jdbc-rogramming-guide.html"
-                        description="%driver.dameng.description">
-                    <file type="jar" path="maven:/com.dameng:DmJdbcDriver18:RELEASE[8.1.2.192]" bundle="!drivers.dameng"/>
+                        description="%driver.dameng.description"
+                        categories="sql">
+                    <file type="jar" path="maven:/com.dameng:DmJdbcDriver18:RELEASE[8.1.3.62]" bundle="!drivers.dameng"/>
                     <file type="license" path="http://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.dameng"/>
                     <file type="jar" path="drivers/dameng" bundle="drivers.dameng"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.dameng"/>

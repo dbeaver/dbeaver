@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -788,6 +788,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @Override
     public boolean isFiltered() {
         return filtered;
+    }
+
+    @NotNull
+    @Override
+    public String getNodeId() {
+        String nodeId = super.getNodeId();
+        if (getObject() instanceof DBPObjectWithLongId longObject) {
+            nodeId += "_" + longObject.getObjectId();
+        }
+        return nodeId;
     }
 
     @Deprecated

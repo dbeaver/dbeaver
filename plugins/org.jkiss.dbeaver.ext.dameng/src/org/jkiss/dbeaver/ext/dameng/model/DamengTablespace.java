@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.dameng.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
+import org.jkiss.dbeaver.model.DBPObjectWithLongId;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -42,9 +43,11 @@ import java.util.Map;
 /**
  * @author Shengkai Bai
  */
-public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject {
+public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject, DBPObjectWithLongId {
 
     private final DamengDataSource dataSource;
+
+    private long id;
 
     private final String name;
 
@@ -75,14 +78,15 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
 
     public DamengTablespace(DamengDataSource dataSource, JDBCResultSet dbResult) {
         this.dataSource = dataSource;
-        this.name = JDBCUtils.safeGetString(dbResult, "NAME");
+        this.id = JDBCUtils.safeGetInt(dbResult, DamengConstants.ID);
+        this.name = JDBCUtils.safeGetString(dbResult, DamengConstants.NAME);
         this.cache = CommonUtils.valueOf(
                 Cache.class,
                 JDBCUtils.safeGetString(dbResult, "CACHE"),
                 Cache.NORMAL);
-        int typeValue = JDBCUtils.safeGetInt(dbResult, "TYPE$");
+        int typeValue = JDBCUtils.safeGetInt(dbResult, DamengConstants.TYPE$);
         this.type = Type.values()[typeValue - 1];
-        int statusValue = JDBCUtils.safeGetInt(dbResult, "STATUS$");
+        int statusValue = JDBCUtils.safeGetInt(dbResult, DamengConstants.STATUS$);
         this.status = Status.values()[statusValue];
         this.maxSize = JDBCUtils.safeGetLong(dbResult, "MAX_SIZE");
         this.totalSize = JDBCUtils.safeGetLong(dbResult, "TOTAL_SIZE");
@@ -98,6 +102,12 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
     @Association
     public Collection<DamengDataFile> getFiles(DBRProgressMonitor monitor) throws DBException {
         return fileCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    @Property(viewable = true)
+    public long getObjectId() {
+        return id;
     }
 
     @Override

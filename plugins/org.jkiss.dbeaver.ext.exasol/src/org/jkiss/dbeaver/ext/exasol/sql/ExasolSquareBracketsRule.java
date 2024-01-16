@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2021 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,9 @@
 package org.jkiss.dbeaver.ext.exasol.sql;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
-
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBlockToggleToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
-import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
-import org.jkiss.dbeaver.model.text.parser.TPPredicateRule;
-import org.jkiss.dbeaver.model.text.parser.TPToken;
-import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
-import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+import org.jkiss.dbeaver.model.text.parser.*;
 
 public class ExasolSquareBracketsRule implements TPPredicateRule {
     private final boolean partitionRule;

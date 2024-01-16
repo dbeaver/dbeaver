@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.Collection;
 public class EditConstraintPage extends AttributesSelectorPage {
     private static final Log log = Log.getLog(EditConstraintPage.class);
 
-    private final DBSEntityConstraintType[] constraintTypes;
+    private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
     private String constraintExpression;
     private DBSEntityReferrer constraint;
@@ -88,6 +88,10 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     private boolean isUniqueVirtualKeyEdit() {
         return this.constraintTypes.length == 1 && this.constraintTypes[0] == DBSEntityConstraintType.VIRTUAL_KEY;
+    }
+
+    public void setConstraintTypes(DBSEntityConstraintType[] constraintTypes) {
+        this.constraintTypes = constraintTypes;
     }
 
     @Override
@@ -167,6 +171,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 public void widgetSelected(SelectionEvent e) {
                     useAllColumns = useAllColumnsCheck.getSelection();
                     columnsTable.setEnabled(!useAllColumns);
+                    validateProperties();
                     updatePageState();
                 }
             });
@@ -190,7 +195,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     @Override
     protected boolean isColumnsRequired() {
-        return !selectedConstraintType.isCustom();
+        return !selectedConstraintType.isCustom() && !useAllColumns;
     }
 
     public String getConstraintName() {
