@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -239,9 +240,13 @@ public class CustomFormEditor {
                 items = new Object[0];
             }
             if (items != null) {
-                final String[] strings = new String[items.length];
+                String[] strings = new String[items.length];
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = objectValueToString(items[i]);
+                }
+                if (!property.isRequired()) {
+                    // Add null value
+                    strings = ArrayUtils.insertArea(String.class, strings, 0, new Object[] { "" });
                 }
                 Combo combo = UIUtils.createLabelCombo(
                     parent,
