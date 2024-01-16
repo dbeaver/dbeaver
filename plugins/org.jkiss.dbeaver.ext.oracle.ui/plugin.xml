@@ -28,7 +28,6 @@
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ext.oracle.code.compile" icon="icons/compile.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.oracle.code.package.navigate" icon="icons/source_navigate.png"/>
         <image commandId="org.jkiss.dbeaver.ext.oracle.job.run" icon="icons/run.png"/>
     </extension>
 
