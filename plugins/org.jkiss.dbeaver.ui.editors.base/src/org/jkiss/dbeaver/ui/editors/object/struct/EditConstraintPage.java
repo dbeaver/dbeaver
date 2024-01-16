@@ -43,7 +43,7 @@ import java.util.Collection;
 public class EditConstraintPage extends AttributesSelectorPage {
     private static final Log log = Log.getLog(EditConstraintPage.class);
 
-    private final DBSEntityConstraintType[] constraintTypes;
+    private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
     private String constraintExpression;
     private DBSEntityReferrer constraint;
@@ -88,6 +88,10 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     private boolean isUniqueVirtualKeyEdit() {
         return this.constraintTypes.length == 1 && this.constraintTypes[0] == DBSEntityConstraintType.VIRTUAL_KEY;
+    }
+
+    public void setConstraintTypes(DBSEntityConstraintType[] constraintTypes) {
+        this.constraintTypes = constraintTypes;
     }
 
     @Override
