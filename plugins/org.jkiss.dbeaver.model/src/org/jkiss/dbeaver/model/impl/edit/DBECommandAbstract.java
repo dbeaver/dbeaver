@@ -32,6 +32,7 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     private final OBJECT_TYPE object;
     private final String title;
     private boolean isDisableSessionLogging = false;
+    private boolean avoidNestedCommands;
 
     public DBECommandAbstract(OBJECT_TYPE object, String title)
     {
@@ -64,6 +65,14 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
 
     public void setDisableSessionLogging(boolean disableSessionLogging) {
         isDisableSessionLogging = disableSessionLogging;
+    }
+
+    public boolean isAvoidNestedCommands() {
+        return avoidNestedCommands;
+    }
+
+    public void setAvoidNestedCommands(boolean avoidNestedCommands) {
+        this.avoidNestedCommands = avoidNestedCommands;
     }
 
     @Override

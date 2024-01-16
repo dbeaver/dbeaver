@@ -16,6 +16,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.native;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.oracle,
+ org.jkiss.dbeaver.ext.oracle.data,
+ org.jkiss.dbeaver.ext.oracle.edit,
  org.jkiss.dbeaver.ext.oracle.model,
  org.jkiss.dbeaver.ext.oracle.model.auth,
  org.jkiss.dbeaver.ext.oracle.model.dict,
@@ -24,7 +26,6 @@ Export-Package: org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.oracle.model.session,
  org.jkiss.dbeaver.ext.oracle.model.source,
  org.jkiss.dbeaver.ext.oracle.oci,
- org.jkiss.dbeaver.ext.oracle.data,
  org.jkiss.dbeaver.ext.oracle.tasks
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17

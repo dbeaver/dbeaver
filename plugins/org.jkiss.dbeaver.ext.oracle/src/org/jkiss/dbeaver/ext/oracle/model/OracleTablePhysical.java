@@ -62,13 +62,14 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     private String partitionedBy;
     private String subPartitionedBy;
     private PartitionInfo partitionInfo;
-    private PartitionCache partitionCache = new PartitionCache();
+    private PartitionCache partitionCache;
     private Set<OracleTableColumn> partitionKeys = new HashSet<>();
     private Set<OracleTableColumn> subPartitionKeys = new HashSet<>();
 
     protected OracleTablePhysical(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name, false);
         this.partitionInfo = new PartitionInfo();
+        this.partitionCache = new PartitionCache();
     }
 
     protected OracleTablePhysical(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
@@ -76,6 +77,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         readSpecialProperties(dbResult);
 
         this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", OracleConstants.RESULT_YES_VALUE);
+        this.partitionCache = partitioned ? partitionCache == null ? new PartitionCache() : partitionCache : null;
     }
 
     protected OracleTablePhysical(@NotNull OracleSchema schema, @NotNull ResultSet dbResult, @NotNull String name) {
@@ -211,6 +213,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public void setPartitionedBy(String partitionedBy) {
         if (CommonUtils.isNotEmpty(partitionedBy) && partitionInfo == null) {
             partitionInfo = new PartitionInfo();
+        }
+        if (partitionCache == null) {
+            partitionCache = new PartitionCache();
         }
         this.partitionedBy = partitionedBy;
     }

@@ -40,6 +40,8 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
      */
     boolean isDisableSessionLogging();
 
+    boolean isAvoidNestedCommands();
+
     /**
      * Validates command.
      * If command is fine then just returns, otherwise throws an exception
