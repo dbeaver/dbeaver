@@ -61,6 +61,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
 
     @NotNull
     private final IProject project;
+    private volatile boolean projectInvalidated;
 
     public LocalProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
@@ -122,27 +123,34 @@ public class LocalProjectImpl extends BaseProjectImpl {
                 }
             }
         }
-        if (isInMemory()) {
-            setFormat(ProjectFormat.MODERN);
-            return;
+        if (!projectInvalidated) {
+            try {
+                if (isInMemory()) {
+                    setFormat(ProjectFormat.MODERN);
+                    return;
+                }
+
+                if (DBWorkbench.getPlatform().getApplication() instanceof DesktopApplicationImpl && !DBWorkbench.isDistributed()) {
+                    // Validate project structure only for local desktop apps
+                    Path mdFolder = getMetadataFolder(false);
+
+                    Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
+                    if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
+                        setFormat(ProjectFormat.LEGACY);
+                    } else {
+                        setFormat(ProjectFormat.MODERN);
+                    }
+
+                    // Check project structure and migrate
+                    checkAndUpdateProjectStructure();
+                }
+
+                // Now project is in modern format
+                setFormat(ProjectFormat.MODERN);
+            } finally {
+                projectInvalidated = true;
+            }
         }
-
-        Path mdFolder = getMetadataFolder(false);
-
-        Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
-        if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
-            setFormat(ProjectFormat.LEGACY);
-        } else {
-            setFormat(ProjectFormat.MODERN);
-        }
-
-
-        // Check project structure and migrate
-        checkAndUpdateProjectStructure();
-
-        // Now project is in modern format
-        setFormat(ProjectFormat.MODERN);
-
     }
 
     @Override
