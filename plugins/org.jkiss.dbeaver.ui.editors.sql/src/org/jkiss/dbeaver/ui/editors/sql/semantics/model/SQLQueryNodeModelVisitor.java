@@ -47,9 +47,6 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitRowsTableValue(SQLQueryRowsTableValueModel tableValue, T arg);
 
     @Nullable
-    R visitRowsSelectionFilter(SQLQueryRowsSelectionFilterModel selectionFilter, T arg);
-
-    @Nullable
     R visitRowsCrossJoin(SQLQueryRowsCrossJoinModel crossJoin, T arg);
 
     @Nullable

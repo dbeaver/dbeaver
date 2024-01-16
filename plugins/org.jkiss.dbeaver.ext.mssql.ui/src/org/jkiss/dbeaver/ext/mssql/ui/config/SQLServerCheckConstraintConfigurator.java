@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ext.mssql.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint;
+import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
@@ -36,8 +38,9 @@ public class SQLServerCheckConstraintConfigurator implements DBEObjectConfigurat
     public SQLServerTableCheckConstraint configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableCheckConstraint constraint, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
-                "CHECK constraint",
+                SQLServerUIMessages.dialog_create_check_constraint_title,
                 constraint);
+            editPage.setConstraintTypes(new DBSEntityConstraintType[]{DBSEntityConstraintType.CHECK});
             if (!editPage.edit()) {
                 return null;
             }

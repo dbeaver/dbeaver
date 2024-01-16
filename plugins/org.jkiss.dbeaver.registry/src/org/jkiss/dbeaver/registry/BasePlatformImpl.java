@@ -105,8 +105,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             // Activate plugin services
             activatePluginServices();
 
-            // Connections monitoring job
-            new DataSourceMonitorJob(this).scheduleMonitor();
+            if (!getApplication().isMultiuser()) {
+                // Connections monitoring job
+                new DataSourceMonitorJob(this).scheduleMonitor();
+            }
         }
     }
 
