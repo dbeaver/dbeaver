@@ -26,6 +26,14 @@ import java.util.List;
  */
 public class DamengConstants {
 
+    // SYSOBJECTS data dictionary constants
+    public static final String ID = "ID";
+    public static final String NAME = "NAME";
+    public static final String TYPE$ = "TYPE$";
+    public static final String CRTDATE = "CRTDATE";
+    public static final String INFO1 = "INFO1";
+    public static final String STATUS$ = "STATUS$";
+
 
     // 位图索引 BITMAP
     // 空间索引 SPATIAL
