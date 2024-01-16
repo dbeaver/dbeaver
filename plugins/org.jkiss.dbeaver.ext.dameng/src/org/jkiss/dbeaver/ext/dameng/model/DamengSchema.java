@@ -29,10 +29,14 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 /**
  * @author Shengkai Bai
@@ -45,6 +49,8 @@ public class DamengSchema extends GenericSchema implements DBPQualifiedObject, D
     private boolean persisted;
 
     private boolean hasStatistics;
+
+    private SequenceCache sequenceCache = new SequenceCache();
 
     public DamengSchema(GenericDataSource dataSource, String schemaName, boolean persisted) {
         super(dataSource, null, schemaName);
@@ -104,5 +110,47 @@ public class DamengSchema extends GenericSchema implements DBPQualifiedObject, D
     @Override
     public boolean isPersisted() {
         return persisted;
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        sequenceCache.clearCache();
+        return super.refreshObject(monitor);
+    }
+
+    public Collection<DamengSequence> getDamengSequences(DBRProgressMonitor monitor) throws DBException {
+        return sequenceCache.getAllObjects(monitor, this);
+    }
+
+
+    static class SequenceCache extends JDBCObjectCache<DamengSchema, DamengSequence> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengSchema damengSchema) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
+                    "SEQ_OBJ.NAME, " +
+                    "SEQ_OBJ.INFO4 AS INCREMENT, " +
+                    "SF_SEQUENCE_GET_MAX(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MAX_VALUE," +
+                    "SF_SEQUENCE_GET_MIN(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MIN_VALUE," +
+                    "SF_SEQ_CURRVAL(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS LAST_VALUE," +
+                    "SF_SEQUENCE_GET_CACHE_NUM(SCH_OBJ.NAME,SEQ_OBJ.NAME) CACHE_SIZE," +
+                    "SEQ_OBJ.INFO1 & 0x0000FF IS_CYCLE," +
+                    "SEQ_OBJ.INFO1 & 0x00FF00 IS_ORDER," +
+                    "SEQ_OBJ.INFO1 & 0xFF0000 IS_CACHE," +
+                    "SEQ_OBJ.INFO3 " +
+                    "FROM " +
+                    "SYSOBJECTS SEQ_OBJ, " +
+                    "SYSOBJECTS SCH_OBJ " +
+                    "WHERE SEQ_OBJ.SCHID = SCH_OBJ.ID " +
+                    "AND SEQ_OBJ.SUBTYPE$ = 'SEQ' " +
+                    "AND SCH_OBJ.NAME = ?");
+            dbStat.setString(1, damengSchema.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected DamengSequence fetchObject(JDBCSession session, DamengSchema damengSchema, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new DamengSequence(damengSchema, resultSet);
+        }
     }
 }

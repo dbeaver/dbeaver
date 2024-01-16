@@ -32,6 +32,7 @@ public class DamengConstants {
     public static final String TYPE$ = "TYPE$";
     public static final String CRTDATE = "CRTDATE";
     public static final String INFO1 = "INFO1";
+    public static final String INFO3 = "INFO3";
     public static final String STATUS$ = "STATUS$";
 
 
