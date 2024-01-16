@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,7 +37,7 @@ import java.util.Map;
 public class SQLServerForeignKeyConfigurator implements DBEObjectConfigurator<SQLServerTableForeignKey> {
 
     @Override
-    public SQLServerTableForeignKey configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableForeignKey foreignKey, Map<String, Object> options) {
+    public SQLServerTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return new UITask<SQLServerTableForeignKey>() {
             @Override
             protected SQLServerTableForeignKey runTask() {

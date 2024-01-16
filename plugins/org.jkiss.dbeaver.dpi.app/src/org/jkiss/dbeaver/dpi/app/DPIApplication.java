@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
-import org.jkiss.dbeaver.dpi.model.DPIDriverLibrariesProvider;
 import org.jkiss.dbeaver.dpi.model.client.ConfigUtils;
 import org.jkiss.dbeaver.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedWriter;
@@ -44,11 +45,13 @@ import java.util.stream.Collectors;
 /**
  * DPI application
  */
-public class DPIApplication extends DesktopApplicationImpl implements DPIDriverLibrariesProvider {
+public class DPIApplication extends DesktopApplicationImpl implements DBPApplicationDPI {
 
     private static final Log log = Log.getLog(DPIApplication.class);
 
     private final Map<String, String[]> driverLibsLocation = new ConcurrentHashMap<>();
+
+    private boolean environmentVariablesAccessible = false;
 
     public DPIApplication() {
     }
@@ -68,6 +71,11 @@ public class DPIApplication extends DesktopApplicationImpl implements DPIDriverL
         initializeApplicationServices();
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         try {
+            String enableEnvVariablesArgument = getCommandLineArgument(DPIConstants.ARG_ENABLE_ENV);
+            if (CommonUtils.isNotEmpty(enableEnvVariablesArgument)) {
+                // allow access to env variables only if the main application has them
+                this.environmentVariablesAccessible = Boolean.parseBoolean(enableEnvVariablesArgument);
+            }
             runServer(context, application);
         } catch (IOException e) {
             log.error(e);
@@ -149,6 +157,11 @@ public class DPIApplication extends DesktopApplicationImpl implements DPIDriverL
     @Override
     public Class<? extends DBPPlatform> getPlatformClass() {
         return DPIPlatform.class;
+    }
+
+    @Override
+    public boolean isEnvironmentVariablesAccessible() {
+        return environmentVariablesAccessible;
     }
 
     @Override

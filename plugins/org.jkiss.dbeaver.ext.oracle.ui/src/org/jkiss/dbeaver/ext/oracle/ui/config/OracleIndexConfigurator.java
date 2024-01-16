@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndexColumn;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,7 +41,7 @@ import java.util.Map;
 public class OracleIndexConfigurator implements DBEObjectConfigurator<OracleTableIndex> {
 
     @Override
-    public OracleTableIndex configureObject(DBRProgressMonitor monitor, Object container, OracleTableIndex index, Map<String, Object> options) {
+    public OracleTableIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull OracleTableIndex index, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditIndexPage editPage = new EditIndexPage(
                 OracleUIMessages.edit_oracle_index_manager_dialog_title,

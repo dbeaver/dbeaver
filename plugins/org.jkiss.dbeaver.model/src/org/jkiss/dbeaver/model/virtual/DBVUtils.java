@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -323,15 +323,12 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
+    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
+            throws DBException {
         List<DBSEntityAssociation> result = new ArrayList<>();
-        try {
-            final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
-            if (!CommonUtils.isEmpty(realConstraints)) {
-                result.addAll(realConstraints);
-            }
-        } catch (DBException e) {
-            log.debug("Error reading entity associations", e);
+        final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
+        if (!CommonUtils.isEmpty(realConstraints)) {
+            result.addAll(realConstraints);
         }
         if (!(entity instanceof DBVEntity)) {
             DBVEntity vEntity = getVirtualEntity(entity, false);
@@ -342,7 +339,6 @@ public abstract class DBVUtils {
                 }
             }
         }
-
         return result;
     }
 

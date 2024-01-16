@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,18 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
 import java.util.List;
 import java.util.Map;
@@ -36,50 +38,25 @@ import java.util.Map;
 /**
  * SQLServerTableCheckConstraint
  */
-public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLServerObject, DBPScriptObject, DBSTableCheckConstraint {
-    private final SQLServerTable table;
-    private boolean persisted;
-
+public class SQLServerTableCheckConstraint extends AbstractTableConstraint<SQLServerTable, DBSTableConstraintColumn>
+    implements SQLServerObject, DBPScriptObject, DBSTableCheckConstraint
+{
     private boolean disabled;
-    private String name;
     private String definition;
     private long objectId;
 
     public SQLServerTableCheckConstraint(SQLServerTable table, JDBCResultSet dbResult) {
-        this.table = table;
-        this.name = JDBCUtils.safeGetString(dbResult, "name");
+        super(table, JDBCUtils.safeGetString(dbResult, "name"), null, DBSEntityConstraintType.CHECK);
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled") != 0;
         this.definition = JDBCUtils.safeGetString(dbResult, "definition");
-        this.persisted = true;
     }
 
     public SQLServerTableCheckConstraint(SQLServerTable table) {
-        this.table = table;
-        this.name = "";
+        super(table, null, null, DBSEntityConstraintType.CHECK);
         this.objectId = -1;
         this.disabled = false;
         this.definition = null;
-        this.persisted = true;
-    }
-
-    @NotNull
-    @Override
-    public SQLServerTable getParentObject() {
-        return table;
-    }
-
-    @NotNull
-    @Override
-    public DBSEntityConstraintType getConstraintType() {
-        return DBSEntityConstraintType.CHECK;
-    }
-
-    @NotNull
-    @Property(viewable = true, editable = true, order = 1)
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Property(viewable = false, editable = true, order = 10)
@@ -87,20 +64,10 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
         return disabled;
     }
 
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
     @NotNull
     @Override
     public SQLServerDataSource getDataSource() {
-        return table.getDataSource();
+        return getTable().getDataSource();
     }
 
     @Property(viewable = false, editable = true, order = 80)
@@ -127,13 +94,24 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
 
     @Nullable
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<DBSTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return null;
+    }
+
+    @Override
+    public void setAttributeReferences(List<DBSTableConstraintColumn> dbsTableConstraintColumns) throws DBException {
+
     }
 
     @Nullable
     @Override
     public SQLServerDatabase getDatabase() {
-        return table.getDatabase();
+        return getTable().getDatabase();
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(), getTable(), this);
     }
 }

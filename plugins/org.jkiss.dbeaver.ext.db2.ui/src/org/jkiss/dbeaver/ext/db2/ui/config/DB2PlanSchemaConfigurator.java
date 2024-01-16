@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ext.db2.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2PlanConfig;
 import org.jkiss.dbeaver.ext.db2.ui.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -44,7 +47,7 @@ public class DB2PlanSchemaConfigurator implements DBEObjectConfigurator<DB2PlanC
     protected static final Log log = Log.getLog(DB2PlanSchemaConfigurator.class);
 
     @Override
-    public DB2PlanConfig configureObject(DBRProgressMonitor monitor, Object db2dataSource, DB2PlanConfig object, Map<String, Object> options) {
+    public DB2PlanConfig configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object db2dataSource, @NotNull DB2PlanConfig object, @NotNull Map<String, Object> options) {
         DB2DataSource db2source = (DB2DataSource) db2dataSource;
         try {
             JDBCSession session = DBUtils.openMetaSession(monitor, db2source, "Read EXPLAIN tables");

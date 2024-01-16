@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
 
     @NotNull
     private final IProject project;
+    private volatile boolean projectInvalidated;
 
     public LocalProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
@@ -122,27 +123,34 @@ public class LocalProjectImpl extends BaseProjectImpl {
                 }
             }
         }
-        if (isInMemory()) {
-            setFormat(ProjectFormat.MODERN);
-            return;
+        if (!projectInvalidated) {
+            try {
+                if (isInMemory()) {
+                    setFormat(ProjectFormat.MODERN);
+                    return;
+                }
+
+                if (DBWorkbench.getPlatform().getApplication() instanceof DesktopApplicationImpl && !DBWorkbench.isDistributed()) {
+                    // Validate project structure only for local desktop apps
+                    Path mdFolder = getMetadataFolder(false);
+
+                    Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
+                    if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
+                        setFormat(ProjectFormat.LEGACY);
+                    } else {
+                        setFormat(ProjectFormat.MODERN);
+                    }
+
+                    // Check project structure and migrate
+                    checkAndUpdateProjectStructure();
+                }
+
+                // Now project is in modern format
+                setFormat(ProjectFormat.MODERN);
+            } finally {
+                projectInvalidated = true;
+            }
         }
-
-        Path mdFolder = getMetadataFolder(false);
-
-        Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
-        if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
-            setFormat(ProjectFormat.LEGACY);
-        } else {
-            setFormat(ProjectFormat.MODERN);
-        }
-
-
-        // Check project structure and migrate
-        checkAndUpdateProjectStructure();
-
-        // Now project is in modern format
-        setFormat(ProjectFormat.MODERN);
-
     }
 
     @Override

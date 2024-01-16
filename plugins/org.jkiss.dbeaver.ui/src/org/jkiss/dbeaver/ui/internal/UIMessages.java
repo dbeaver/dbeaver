@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -112,6 +112,8 @@ public class UIMessages extends NLS {
     public static String text_with_open_dialog_browse;
     public static String text_with_open_dialog_browse_remote;
     public static String text_with_open_dialog_edit_file;
+
+    public static String notification_popup_context_message;
 
     static {
         // initialize resource bundle

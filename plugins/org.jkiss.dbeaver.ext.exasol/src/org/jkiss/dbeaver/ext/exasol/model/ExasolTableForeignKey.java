@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.Map;
 /**
  * @author Karl
  */
-public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable>
+public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, ExasolTableForeignKeyColumn>
     implements DBSTableForeignKey,DBPScriptObject
 {
 
@@ -129,7 +129,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable>
         return columns;
     }
 
-    public void setColumns(List<ExasolTableForeignKeyColumn> columns) {
+    public void setAttributeReferences(List<ExasolTableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 

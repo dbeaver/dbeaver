@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ public class DBIcon implements DBPImage {
     public static final DBIcon SMALL_QUESTION = new DBIcon("small_question", "status/question_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon AI = new DBIcon("ai", "misc/ai.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon AI = new DBIcon("ai", "misc/ai.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TINY_ERROR = new DBIcon("tiny_error", "status/error_tiny.png"); //$NON-NLS-1$ //$NON-NLS-2$
 

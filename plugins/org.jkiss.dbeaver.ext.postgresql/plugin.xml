@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
         <serverType id="yellowbrick" name="Yellowbrick" class="org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick" logo="icons/yellowbrick_logo.png" customURL="true"/>
         <serverType id="yugabytedb" name="YugabyteDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerYugabyteDB" logo="icons/yugabyte_logo.png" customURL="true"/>
         <serverType id="cockroach" name="CockroachDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" customURL="true"/>
-        <serverType id="gcloudpg" name="Google Cloud SQL - PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud" logo="icons/google_cloud_sql_logo.png" customURL="true" cloudServer="true" needsPort="false"/>
+        <serverType id="gcloudpg" name="Google Cloud SQL - PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud" logo="icons/google_cloud_sql_logo.png" customURL="true" cloudServer="true" needsPort="false" supportsClient="false"/>
         <serverType id="cratedb" name="CrateDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCrateDB" logo="icons/cratedb_logo.png" customURL="true"/>
         <serverType id="materialize" name="Materialize" class="org.jkiss.dbeaver.ext.postgresql.model.impls.materialize.PostgreServerMaterialize" logo="icons/materialize_logo.png" customURL="true"/>
     </extension>
@@ -165,7 +165,7 @@
                                         </folder>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreView" label="%tree.tviews.node.name" id="folderView" icon="#folder_view" description="%tree.tviews.node.tip">
                                     <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                             <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
@@ -237,14 +237,14 @@
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#folder_admin" description="%tree.extensions.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsExtensions()">
                             <items label="%tree.extension.node.name" path="extension" property="extensions" icon="#package"/>
                         </folder>
-                        <folder label="%tree.storage.node.name" icon="#folder_info" id="folder_info" description="%tree.storage.node.tip">
+                        <folder label="%tree.storage.node.name" icon="#folder_info" id="storage" description="%tree.storage.node.tip">
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="connected &amp;&amp; dataSource.serverType.supportsTablespaces()">
                                 <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
                             </folder>
                         </folder>
 
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name"
-                                icon="#folder_info" id="folder_info" description="%tree.information.node.tip">
+                                icon="#folder_info" id="information" description="%tree.information.node.tip">
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper" label="%tree.foreignDataWrappers.node.name" description="Foreign data wrappers" visibleIf="connected &amp;&amp; dataSource.serverType.supportsForeignServers()">
                                 <items label="%tree.foreignDataWrapper.node.name" path="foreignDataWrapper" property="foreignDataWrappers"/>
                             </folder>
