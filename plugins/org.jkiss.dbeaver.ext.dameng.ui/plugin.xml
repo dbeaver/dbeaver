@@ -36,6 +36,8 @@
                 type="folder"
                 embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengTablespace"/>
+            <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengUser"/>
+            <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengRole"/>
         </editor>
     </extension>
 </plugin>
