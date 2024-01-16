@@ -173,7 +173,7 @@ public class DamengMetaModel extends GenericMetaModel {
 
     @Override
     public GenericTrigger createContainerTriggerImpl(GenericStructContainer container, JDBCResultSet resultSet) throws DBException {
-        String name = JDBCUtils.safeGetStringTrimmed(resultSet, "NAME");
+        String name = JDBCUtils.safeGetStringTrimmed(resultSet, DamengConstants.NAME);
         if (name == null) {
             return null;
         }

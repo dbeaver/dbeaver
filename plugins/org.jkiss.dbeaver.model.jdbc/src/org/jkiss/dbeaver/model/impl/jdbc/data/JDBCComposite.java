@@ -254,6 +254,12 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             } else if (value instanceof byte[]) {
                 dataKind = DBPDataKind.BINARY;
                 setValueType(Types.BINARY);
+            } else if (value instanceof JDBCComposite) {
+                dataKind = DBPDataKind.STRUCT;
+                setValueType(Types.STRUCT);
+            } else if (value instanceof JDBCCollection) {
+                dataKind = DBPDataKind.ARRAY;
+                setValueType(Types.ARRAY);
             } else {
                 dataKind = DBPDataKind.OBJECT;
                 setValueType(Types.OTHER);
