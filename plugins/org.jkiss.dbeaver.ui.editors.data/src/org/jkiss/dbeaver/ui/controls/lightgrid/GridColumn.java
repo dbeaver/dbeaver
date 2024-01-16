@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,9 +133,6 @@ public class GridColumn implements IGridColumn {
         }
 
         Rectangle bounds = getBounds();
-        if (!bounds.contains(x, y)) {
-            return false;
-        }
 
         Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
         filterBounds.x = bounds.width - filterBounds.width - GridColumnRenderer.RIGHT_MARGIN;
@@ -145,14 +142,12 @@ public class GridColumn implements IGridColumn {
     }
 
     public boolean isOverSortArrow(int x, int y) {
-        if (isSortable() && !grid.getContentProvider().isElementSupportsSort(this)) {
+        IGridContentProvider contentProvider = grid.getContentProvider();
+        if (contentProvider.getSortOrder(this) <= 0 && !contentProvider.isElementSupportsSort(this)) {
             return false;
         }
 
         Rectangle bounds = getBounds();
-        if (!bounds.contains(x, y)) {
-            return false;
-        }
 
         Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
         sortBounds.x = bounds.width - sortBounds.width - GridColumnRenderer.RIGHT_MARGIN;
@@ -167,9 +162,6 @@ public class GridColumn implements IGridColumn {
 
     public boolean isOverIcon(int x, int y) {
         Rectangle bounds = getBounds();
-        if (!bounds.contains(x, y)) {
-            return false;
-        }
 
         Image image = grid.getLabelProvider().getImage(this);
         if (image == null) {

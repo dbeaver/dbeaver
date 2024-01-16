@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -464,7 +464,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor(wordPartDetector);
         String[] displayNames = hippieProposalProcessor.computeCompletionStrings(request.getDocument(), request.getDocumentOffset() - 1);
         for (String word : displayNames) {
-            if (!hasProposal(proposals, word)) {
+            if (!hasProposal(proposals, word) && !word.contains(".")) {
                 proposals.add(request.getContext().createProposal(
                     request,
                     word,

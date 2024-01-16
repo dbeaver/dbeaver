@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -33,14 +32,16 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.BaseTitleDialog;
+import org.jkiss.dbeaver.ui.dialogs.IDialogPageContainer;
 import org.jkiss.utils.CommonUtils;
 
-class EditObjectDialog extends TitleAreaDialog {
+class EditObjectDialog extends BaseTitleDialog implements IDialogPageContainer {
 
     private final IDialogPage dialogPage;
 
     public EditObjectDialog(Shell shell, IDialogPage dialogPage) {
-        super(shell);
+        super(shell, null);
         this.dialogPage = dialogPage;
         if (this.dialogPage instanceof BaseObjectEditPage editPage) {
             editPage.setContainer(this);
@@ -78,7 +79,7 @@ class EditObjectDialog extends TitleAreaDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         String title = dialogPage.getTitle();
         if (dialogPage instanceof BaseObjectEditPage editPage) {
@@ -89,7 +90,7 @@ class EditObjectDialog extends TitleAreaDialog {
         }
         getShell().setText(title);
         setTitle(dialogPage.getTitle());
-        Composite group = (Composite) super.createDialogArea(parent);
+        Composite group = super.createDialogArea(parent);
 
         Composite composite = new Composite(group, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
@@ -124,7 +125,7 @@ class EditObjectDialog extends TitleAreaDialog {
         super.okPressed();
     }
 
-    void updateButtons() {
+    public void updateButtons() {
         boolean enabled = false;
         if (dialogPage instanceof BaseObjectEditPage) {
             enabled = ((BaseObjectEditPage) dialogPage).isPageComplete();

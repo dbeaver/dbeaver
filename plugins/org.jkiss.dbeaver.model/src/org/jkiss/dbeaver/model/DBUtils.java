@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2570,5 +2570,27 @@ public final class DBUtils {
     public interface ChildExtractor<PARENT, CHILD> {
         @Nullable
         CHILD extract(@NotNull PARENT parent, @NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException;
+    }
+
+    /**
+     * The method returns true if index based by source attributes is UNIQUE
+     */
+    public static boolean isUniqueIndexForAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBSEntityAttribute> attributes,
+        @NotNull DBSEntity entity
+    ) throws DBException, InterruptedException {
+        Collection<? extends DBSTableIndex> tableIndexes = ((DBSTable) entity).getIndexes(monitor);
+        for (DBSTableIndex tableIndex : tableIndexes) {
+            if (monitor.isCanceled()) {
+                break;
+            }
+            // find composite index that presented as a compositions of columns (source attributes)
+            List<DBSEntityAttribute> indexAttributes = DBUtils.getEntityAttributes(monitor, tableIndex);
+            if (tableIndex.isUnique() && indexAttributes.equals(attributes)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

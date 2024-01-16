@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,15 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.sql.Driver;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
     private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
@@ -206,6 +208,10 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                     File binFolder = mysqlFile.getAbsoluteFile().getParentFile();
                     if (binFolder.getName().equalsIgnoreCase("bin")) {
                         String homeId = CommonUtils.removeTrailingSlash(binFolder.getParentFile().getAbsolutePath());
+                        log.trace(
+                            "Found a MySQL location in PATH. token=%s mysqlFile=%s binFolder=%s homeId=%s"
+                            .formatted(token, mysqlFile, binFolder, homeId)
+                        );
                         result.put(homeId, new LocalNativeClientLocation(homeId, homeId));
                     }
                 }
@@ -232,7 +238,12 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                     if (installDirKey.equalsIgnoreCase(entry.getKey())) {
                         String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(entry.getValue()));
                         if (new File(serverPath, "bin").exists()) {
-                            locationMap.put(serverPath, new LocalNativeClientLocation(serverPath, homeKey));
+                            log.trace(
+                                ("Found a MySQL location in registry. " +
+                                "homeKey=%s entry.key=%s entry.value=%s serverPath=%s registryRoot=%s installDirKey=%s")
+                                .formatted(homeKey, entry.getKey(), entry.getValue(), serverPath, registryRoot, installDirKey)
+                            );
+                            locationMap.put(serverPath, new LocalNativeClientLocation(homeKey, serverPath));
                         }
                     }
                 }
