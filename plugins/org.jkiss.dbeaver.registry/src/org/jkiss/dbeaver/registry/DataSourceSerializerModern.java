@@ -230,7 +230,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     // External configurations
-                    if (!DBWorkbench.isDistributed() && !CommonUtils.isEmpty(externalConfigurations)) {
+                    if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser() && !CommonUtils.isEmpty(externalConfigurations)) {
                         jsonWriter.name("external-configurations");
                         jsonWriter.beginObject();
                         for (Map.Entry<String, DBPExternalConfiguration> ecfg : externalConfigurations.entrySet()) {
