@@ -11,6 +11,7 @@ Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.bigquery
 Export-Package: org.jkiss.dbeaver.ext.bigquery,
  org.jkiss.dbeaver.ext.bigquery.model,
+ org.jkiss.dbeaver.ext.bigquery.model.data,
  org.jkiss.dbeaver.ext.bigquery.auth
 Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
  com.google.guava;resolution:=optional;visibility:=reexport,

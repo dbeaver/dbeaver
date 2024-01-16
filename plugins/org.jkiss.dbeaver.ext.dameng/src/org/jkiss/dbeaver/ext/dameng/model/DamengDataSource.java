@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -47,6 +48,10 @@ import java.util.Collection;
 public class DamengDataSource extends GenericDataSource {
 
     private final TablespaceCache tablespaceCache = new TablespaceCache();
+
+    private final UserCache userCache = new UserCache();
+
+    private final RoleCache roleCache = new RoleCache();
 
     public DamengDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel, new DamengSQLDialect());
@@ -97,13 +102,87 @@ public class DamengDataSource extends GenericDataSource {
 
     }
 
+    @Nullable
+    public DamengTablespace getTablespaceById(DBRProgressMonitor monitor, long tableSpaceId) throws DBException {
+        return DamengUtils.getObjectById(monitor, tablespaceCache, this, tableSpaceId);
+    }
+
+    @Nullable
+    public DamengUser getUserById(DBRProgressMonitor monitor, long userId) throws DBException {
+        return DamengUtils.getObjectById(monitor, userCache, this, userId);
+    }
+
     @Association
     public Collection<DamengTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
         return tablespaceCache.getAllObjects(monitor, this);
     }
 
+    @Association
+    public Collection<DamengUser> getUsers(DBRProgressMonitor monitor) throws DBException {
+        return userCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<DamengRole> getRoles(DBRProgressMonitor monitor) throws DBException {
+        return roleCache.getAllObjects(monitor, this);
+    }
+
     public TablespaceCache getTablespaceCache() {
         return tablespaceCache;
+    }
+
+    static class RoleCache extends JDBCObjectCache<DamengDataSource, DamengRole> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengDataSource damengDataSource) throws SQLException {
+            return session.prepareStatement("SELECT\n" +
+                    "ID,\n" +
+                    "NAME,\n" +
+                    "INFO1,\n" +
+                    "VALID,\n" +
+                    "CRTDATE\n" +
+                    "FROM\n" +
+                    "SYSOBJECTS\n" +
+                    "WHERE\n" +
+                    "TYPE$ = 'UR'\n" +
+                    "AND SUBTYPE$ = 'ROLE'\n" +
+                    "AND (INFO2 IS NULL\n" +
+                    "OR INFO2 != 1)\n" +
+                    "AND INFO1 = 0\n" +
+                    "ORDER BY\n" +
+                    "NAME");
+        }
+
+        @Override
+        protected DamengRole fetchObject(JDBCSession session, DamengDataSource damengDataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new DamengRole(damengDataSource, resultSet);
+        }
+    }
+
+    static class UserCache extends JDBCObjectCache<DamengDataSource, DamengUser> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, DamengDataSource dataSource) throws SQLException {
+            return session.prepareStatement("SELECT\n" +
+                    "USER_OBJ.*,\n" +
+                    "SYSUSERS.*,\n" +
+                    "TS.ID AS TABLESPACE_ID,\n" +
+                    "TS.NAME AS TABLESPACE\n" +
+                    "FROM\n" +
+                    "SYSOBJECTS USER_OBJ\n" +
+                    "LEFT JOIN SYSUSERS ON\n" +
+                    "SYSUSERS.ID = USER_OBJ.ID\n" +
+                    "LEFT JOIN SYS.V$TABLESPACE TS ON\n" +
+                    // INFO3 BYTE(0-1) default tablespace id
+                    "USER_OBJ.INFO3 & 0x000000000000FFFF = TS.ID\n" +
+                    "WHERE\n" +
+                    "USER_OBJ.SUBTYPE$ = 'USER'");
+        }
+
+        @Override
+        protected DamengUser fetchObject(JDBCSession session, DamengDataSource dataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new DamengUser(dataSource, resultSet);
+        }
     }
 
     public static class TablespaceCache extends JDBCObjectCache<DamengDataSource, DamengTablespace> {
