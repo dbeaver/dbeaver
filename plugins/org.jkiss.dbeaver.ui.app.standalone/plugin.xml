@@ -52,6 +52,8 @@
             <property name="versionInfoColor" value="208,72,39"/>
             <property name="startupMessageRect" value="73,270,240,21"/>
             <property name="startupProgressRect" value="0,295,601,6"/>
+            <property name="startupMessageRectOsMac" value="20,270,445,26"/>
+            <property name="startupProgressRectOsMac" value="0,274,445,26"/>
             <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
@@ -77,6 +79,8 @@
             <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="323,270,242,25"/>
             <property name="startupProgressRect" value="323,255,242,10"/>
+            <property name="startupMessageRectOsMac" value="20,270,445,26"/>
+            <property name="startupProgressRectOsMac" value="0,274,445,26"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>

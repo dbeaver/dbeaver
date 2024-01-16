@@ -91,8 +91,8 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
         if (Util.isMac() && System.getProperty("os.version").startsWith("14")) { //$NON-NLS-1$ //$NON-NLS-2$
-            progressRectString = "0,274,445,26"; //$NON-NLS-1$
-            messageRectString = "20,270,445,26"; //$NON-NLS-1$
+            progressRectString = product.getProperty("startupProgressRectOsMac");
+            messageRectString = product.getProperty("startupMessageRectOsMac");
         }
         setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275, 300, 280, 10)));
         setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25)));
