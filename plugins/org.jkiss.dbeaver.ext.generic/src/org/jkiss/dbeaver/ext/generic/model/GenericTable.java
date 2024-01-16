@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
         result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, GenericUniqueKey.class));
         result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, GenericUniqueKey.class));
         if (isSupportCheckConstraint) {
-            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.INDEX, GenericTableConstraint.class));
+            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, GenericTableConstraint.class));
         }
         return result;
     }

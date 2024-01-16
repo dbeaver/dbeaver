@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -243,14 +243,15 @@
                         icon="icons/dm_icon.png"
                         iconBig="icons/dm_icon_big.png"
                         class="dm.jdbc.driver.DmDriver"
-                        sampleURL="jdbc:dm://{host}:{port}"
+                        sampleURL="jdbc:dm://{host}[:{port}]"
                         useURL="false"
                         defaultPort="5236"
                         defaultDataBase="SYSDBA"
                         defaultUser="SYSDBA"
                         webURL="https://eco.dameng.com/document/dm/zh-cn/pm/jdbc-rogramming-guide.html"
-                        description="%driver.dameng.description">
-                    <file type="jar" path="maven:/com.dameng:DmJdbcDriver18:RELEASE[8.1.2.192]" bundle="!drivers.dameng"/>
+                        description="%driver.dameng.description"
+                        categories="sql">
+                    <file type="jar" path="maven:/com.dameng:DmJdbcDriver18:RELEASE[8.1.3.62]" bundle="!drivers.dameng"/>
                     <file type="license" path="http://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.dameng"/>
                     <file type="jar" path="drivers/dameng" bundle="drivers.dameng"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.dameng"/>
