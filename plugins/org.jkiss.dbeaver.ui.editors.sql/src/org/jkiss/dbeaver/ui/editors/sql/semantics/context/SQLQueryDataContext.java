@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
 import java.util.List;
@@ -39,11 +39,11 @@ import java.util.List;
 //}
 public abstract class SQLQueryDataContext {
     
-    public abstract List<SQLQuerySymbol> getColumnsList();
+    public abstract List<SQLQueryResultColumn> getColumnsList();
 
     public abstract DBSEntity findRealTable(List<String> tableName);
 
-    public abstract SQLQuerySymbolDefinition resolveColumn(String simpleName);  // TODO consider ambiguous column names
+    public abstract SQLQueryResultColumn resolveColumn(String simpleName);  // TODO consider ambiguous column names
     
     public SourceResolutionResult resolveSource(List<String> tableName) { // TODO consider ambiguous table names
         DBSEntity table = this.findRealTable(tableName);
@@ -53,7 +53,7 @@ public abstract class SQLQueryDataContext {
     
     public abstract SQLQueryRowsSourceModel findRealSource(DBSEntity table);
 
-    public final SQLQueryDataContext overrideResultTuple(List<SQLQuerySymbol> columns) {
+    public final SQLQueryDataContext overrideResultTuple(List<SQLQueryResultColumn> columns) {
         return new SQLQueryResultTupleContext(this, columns);
     }
     

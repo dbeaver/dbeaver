@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,15 +74,15 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
             }
 
             if (correlationColumNames.size() > 0) {
-                List<SQLQuerySymbol> columns = new ArrayList<>(context.getColumnsList());
+                List<SQLQueryResultColumn> columns = new ArrayList<>(context.getColumnsList());
                 for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
                     SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
                     if (correlatedNameDef.isNotClassified()) {
                         SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
                         correlatedName.setDefinition(correlatedNameDef);
                         correlatedName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
-                        correlatedNameDef.setDefinition(columns.get(i).getDefinition());
-                        columns.set(i, correlatedName);
+                        correlatedNameDef.setDefinition(columns.get(i).symbol.getDefinition());
+                        columns.set(i, new SQLQueryResultColumn(correlatedName, this, null, null));
                     }
                 }
                 context = context.overrideResultTuple(columns);
