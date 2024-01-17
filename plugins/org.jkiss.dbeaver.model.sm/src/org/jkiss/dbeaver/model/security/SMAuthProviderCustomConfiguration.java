@@ -31,7 +31,6 @@ public class SMAuthProviderCustomConfiguration {
     private String iconURL;
     private String description;
     private Map<String, Object> parameters = new LinkedHashMap<>();
-    private boolean isAutoConfiguration;
 
     private SMAuthProviderCustomConfiguration() {
     }
@@ -112,14 +111,6 @@ public class SMAuthProviderCustomConfiguration {
 
     public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
-    }
-
-    public boolean isAutoConfiguration() {
-        return isAutoConfiguration;
-    }
-
-    public void setAutoConfiguration(boolean autoConfiguration) {
-        isAutoConfiguration = autoConfiguration;
     }
 
     @Override
