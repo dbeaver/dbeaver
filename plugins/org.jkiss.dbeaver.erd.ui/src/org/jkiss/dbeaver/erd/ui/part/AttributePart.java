@@ -54,7 +54,7 @@ public class AttributePart extends NodePart {
     public static final String PROP_CHECKED = "CHECKED";
 
     private ERDHighlightingHandle associatedRelationsHighlighing = null;
-    private AccessibleGraphicalEditPart accPart;
+    protected AccessibleGraphicalEditPart accPart;
 
     public AttributePart() {
 

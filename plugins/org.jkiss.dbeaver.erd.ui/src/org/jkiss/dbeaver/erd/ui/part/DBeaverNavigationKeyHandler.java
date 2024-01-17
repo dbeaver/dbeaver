@@ -26,7 +26,7 @@ public class DBeaverNavigationKeyHandler extends GraphicalViewerKeyHandler {
         super(viewer);
     }
 
-    boolean additionalAcceptIntoContainer(KeyEvent event) {
+    protected boolean additionalAcceptIntoContainer(KeyEvent event) {
         return event.keyCode == SWT.CR;
     }
 
