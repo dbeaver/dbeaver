@@ -40,7 +40,10 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
      */
     boolean isDisableSessionLogging();
 
-    boolean isAvoidNestedCommands();
+    /**
+     * Some commands (like structCreate) support nested commands, but we may avoid this behavior for correct command merging with this flag
+     */
+    boolean ignoreNestedCommands();
 
     /**
      * Validates command.
