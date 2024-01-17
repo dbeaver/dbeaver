@@ -50,26 +50,6 @@
             <property name="versionInfoCoord" value="116,228"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="208,72,39"/>
-            <property
-                name="startupMessageRect"
-                value="7,265,320,25"/>
-            <property
-                name="startupProgressRect"
-                value="2,290,450,10"/>
-            <property
-                name="buildIdLocation"
-                value="108,222">
-            </property>
-            <property
-                name="buildIdSize"
-                value="293,40">
-            </property>
-            <property
-                name="startupMessageRectOsMac"
-                value="7,265,320,25"/>
-            <property
-                name="startupProgressRectOsMac"
-                value="2,290,450,10"/>
             <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
@@ -93,28 +73,6 @@
             <property name="versionInfoCoord" value="155,265"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="255,255,255"/>
-            
-            <property
-                name="startupMessageRect"
-                value="7,265,320,25"/>
-            <property
-                name="startupProgressRect"
-                value="2,290,450,10"/>
-            <property
-                name="buildIdLocation"
-                value="108,222">
-            </property>
-            <property
-                name="buildIdSize"
-                value="293,40">
-            </property>
-            <property
-                name="startupMessageRectOsMac"
-                value="7,265,320,25"/>
-            <property
-                name="startupProgressRectOsMac"
-                value="2,290,450,10"/>
-            
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -459,7 +417,7 @@
     <extension point="org.eclipse.ui.splashHandlers">
         <splashHandler class="org.jkiss.dbeaver.ui.app.standalone.DBeaverSplashHandler" id="org.jkiss.dbeaver.ui.splash.interactive"/>
         <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.product" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
-        <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.appstore" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
+        <!--splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.appstore" splashId="org.jkiss.dbeaver.ui.splash.interactive"/-->
     </extension>
 
     <extension point="org.eclipse.ui.helpSupport">
