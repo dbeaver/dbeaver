@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -73,6 +74,7 @@ import java.util.regex.Pattern;
  */
 public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector {
     private static final Log log = Log.getLog(MySQLDataSource.class);
+    private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+).+");
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
@@ -89,6 +91,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private boolean containsCheckConstraintTable;
 
     private transient boolean inServerTimezoneHandle;
+
+    private Boolean readeAllCaches;
+    private Version version;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         this(monitor, container, new MySQLDialect());
@@ -978,4 +983,34 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return true;
     }
 
+    private Version getVersion() {
+        if (version == null) {
+            String versionInfo = getInfo().getDatabaseProductVersion(); // getInfo().getDatabaseVersion() can return incorrect value
+            Matcher matcher = VERSION_PATTERN.matcher(versionInfo);
+            if (matcher.matches()) {
+                version = new Version(matcher.group(1));
+            }
+        }
+        return version;
+    }
+
+    /**
+     * Return true if a special setting about metadata cache reading was enabled in advanced driver parameters or by version number.
+     */
+    public boolean readKeysWithColumns() {
+        if (readeAllCaches == null) {
+            readeAllCaches = CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(
+                MySQLConstants.PROP_CACHE_META_DATA),
+                true);
+            if (readeAllCaches) {
+                if (isMariaDB()) {
+                    readeAllCaches = isServerVersionAtLeast(10, 4);
+                } else if (getVersion() != null) {
+                    Version version = getVersion();
+                    readeAllCaches = version.getMajor() >= 8 && version.getMinor() >= 0 && version.getMicro() >= 21;
+                }
+            }
+        }
+        return readeAllCaches;
+    }
 }

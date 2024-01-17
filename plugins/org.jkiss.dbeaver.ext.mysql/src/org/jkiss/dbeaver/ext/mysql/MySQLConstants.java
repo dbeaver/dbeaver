@@ -55,6 +55,8 @@ public class MySQLConstants {
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
     public static final String PROP_SSL_DEBUG = "ssl.debug";
 
+    public static final String PROP_CACHE_META_DATA = "cache-meta-data";
+
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
