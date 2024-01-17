@@ -1320,6 +1320,7 @@ public class DataSourceDescriptor
             monitor.subTask("Initialize data source");
             try {
                 dataSource.initialize(monitor);
+                dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
             } catch (Throwable e) {
                 log.error("Error initializing datasource", e);
                 throw e;
