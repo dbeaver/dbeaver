@@ -278,6 +278,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         }
         return dbStat;
     }
+
     @Override
     public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
         String type = JDBCUtils.safeGetString(dbResult, "constraint_type");
@@ -306,6 +307,11 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public boolean supportsCheckConstraints() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsUniqueKeys() {
         return true;
     }
 }
