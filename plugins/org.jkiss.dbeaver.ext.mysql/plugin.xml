@@ -165,7 +165,7 @@
 
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
-                    <property id="avoid-read-keys-cache-with-columns" label="%parameters.all.caches" description="%parameters.all.caches.tip" type="boolean" required="false" defaultValue="false"/>
+                    <property id="cache-meta-data" label="%parameters.all.caches" description="%parameters.all.caches.tip" type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
             </driver-properties>
             <drivers managable="true">

@@ -92,7 +92,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     private transient boolean inServerTimezoneHandle;
 
-    private Boolean avoidReadingAllCaches;
+    private Boolean readeAllCaches;
     private Version version;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
@@ -995,22 +995,22 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     /**
-     * Return true if a special setting about keys cache reading was enabled in advanced connection settings.
+     * Return true if a special setting about metadata cache reading was enabled in advanced driver parameters or by version number.
      */
-    public boolean avoidReadingKeysWithColumns() {
-        if (avoidReadingAllCaches == null) {
-            avoidReadingAllCaches = CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(
-                MySQLConstants.PROP_AVOID_READ_KEYS_CACHE_WITH_COLUMNS),
-                false);
-            if (!avoidReadingAllCaches) {
+    public boolean readKeysWithColumns() {
+        if (readeAllCaches == null) {
+            readeAllCaches = CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(
+                MySQLConstants.PROP_CACHE_META_DATA),
+                true);
+            if (readeAllCaches) {
                 if (isMariaDB()) {
-                    avoidReadingAllCaches = isServerVersionAtLeast(10, 4);
+                    readeAllCaches = isServerVersionAtLeast(10, 4);
                 } else if (getVersion() != null) {
                     Version version = getVersion();
-                    avoidReadingAllCaches = version.getMajor() >= 8 && version.getMinor() >= 0 && version.getMicro() >= 21;
+                    readeAllCaches = version.getMajor() >= 8 && version.getMinor() >= 0 && version.getMicro() >= 21;
                 }
             }
         }
-        return avoidReadingAllCaches;
+        return readeAllCaches;
     }
 }
