@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
 
@@ -31,6 +32,11 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
 
     @Nullable
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
+        return null;
+    }
+
+    @Nullable
+    public SQLQueryResultColumn getColumnIfTrivialExpression() {
         return null;
     }
 

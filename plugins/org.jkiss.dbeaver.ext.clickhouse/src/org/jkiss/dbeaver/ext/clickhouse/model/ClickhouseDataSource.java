@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -192,6 +193,11 @@ public class ClickhouseDataSource extends GenericDataSource {
             @NotNull JDBCSession session,
             @NotNull ClickhouseDataSource clickhouseDataSource) throws SQLException {
             return session.prepareStatement("SELECT name FROM system.table_engines");
+        }
+        
+        @Override
+        protected void detectCaseSensitivity(DBSObject object) {
+            this.setCaseSensitive(true);
         }
 
         @Nullable
