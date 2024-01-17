@@ -127,7 +127,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
-        this.closeIdleInterval = 0;
+        this.closeIdleInterval = (int) DBPConnectionType.DEFAULT_TYPE.getCloseIdleConnectionPeriod();
     }
 
     public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info) {
@@ -144,6 +144,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.authModelId = info.authModelId;
         this.authProperties = info.authProperties == null ? null : new LinkedHashMap<>(info.authProperties);
         this.connectionType = info.connectionType;
+        this.closeIdleInterval = (int) info.connectionType.getCloseIdleConnectionPeriod();
         this.configurationType = info.configurationType;
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);
