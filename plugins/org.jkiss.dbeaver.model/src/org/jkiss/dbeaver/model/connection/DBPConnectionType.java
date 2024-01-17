@@ -53,7 +53,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            1800,
+            1800, //30 minutes
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
@@ -67,7 +67,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            1800,
+            1800, //30 minutes
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         PROD = new DBPConnectionType(
@@ -81,7 +81,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            600,
+            600, //10 minutes
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
 
@@ -99,7 +99,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean smartCommit;
     private boolean smartCommitRecover;
     private boolean autoCloseTransactions;
-    private long closeIdleConnectionPeriod;
+    private long closeIdleTransactionPeriod;
 
     private final boolean predefined;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
@@ -116,7 +116,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             source.smartCommit,
             source.smartCommitRecover,
             source.autoCloseTransactions,
-            source.closeIdleConnectionPeriod,
+            source.closeIdleTransactionPeriod,
             source.predefined,
             source.connectionModifyRestrictions);
     }
@@ -132,7 +132,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommit,
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
-        long closeIdleConnectionPeriod)
+        long closeIdleTransactionPeriod)
     {
         this(
             id,
@@ -145,7 +145,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             smartCommit,
             smartCommitRecover,
             autoCloseTransactions,
-            closeIdleConnectionPeriod,
+            closeIdleTransactionPeriod,
             false,
             null);
     }
@@ -161,7 +161,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommit,
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
-        long closeIdleConnectionPeriod,
+        long closeIdleTransactionPeriod,
         boolean predefined,
         List<DBPDataSourcePermission> connectionModifyRestrictions)
     {
@@ -175,7 +175,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.smartCommit = smartCommit;
         this.smartCommitRecover = smartCommitRecover;
         this.autoCloseTransactions = autoCloseTransactions;
-        this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
+        this.closeIdleTransactionPeriod = closeIdleTransactionPeriod;
         this.predefined = predefined;
         if (connectionModifyRestrictions != null) {
             this.connectionModifyRestrictions = new ArrayList<>(connectionModifyRestrictions);
@@ -266,12 +266,12 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.autoCloseTransactions = autoCloseTransactions;
     }
 
-    public long getCloseIdleConnectionPeriod() {
-        return closeIdleConnectionPeriod;
+    public long getCloseIdleTransactionPeriod() {
+        return closeIdleTransactionPeriod;
     }
 
-    public void setCloseIdleConnectionPeriod(long closeIdleConnectionPeriod) {
-        this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
+    public void setCloseIdleTransactionPeriod(long closeIdleTransactionPeriod) {
+        this.closeIdleTransactionPeriod = closeIdleTransactionPeriod;
     }
 
     @Override
@@ -327,7 +327,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
                 smartCommit == ct.smartCommit &&
                 smartCommitRecover == ct.smartCommitRecover &&
                 autoCloseTransactions == ct.autoCloseTransactions &&
-                CommonUtils.equalObjects(closeIdleConnectionPeriod, ct.closeIdleConnectionPeriod) &&
+                CommonUtils.equalObjects(closeIdleTransactionPeriod, ct.closeIdleTransactionPeriod) &&
                 predefined == ct.predefined &&
                 CommonUtils.equalObjects(connectionModifyRestrictions, ct.connectionModifyRestrictions);
         }
