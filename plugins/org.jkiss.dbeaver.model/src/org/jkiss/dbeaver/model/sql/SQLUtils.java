@@ -1169,16 +1169,16 @@ public final class SQLUtils {
         boolean forceUnquotted,
         boolean prepared
     ) {
-      String actualIdentifierString;
-      String unquottedIdentifier;
-      if (prepared) {
-          unquottedIdentifier = rawIdentifierString;
-      } else {
-          boolean isQuoted = dialect.isQuotedIdentifier(rawIdentifierString);
-          DBPIdentifierCase identifierCase = isQuoted ? dialect.storesQuotedCase() : dialect.storesUnquotedCase();
-          unquottedIdentifier = identifierCase.transform(dialect.getUnquotedIdentifier(rawIdentifierString, true));
-      }
-      actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);         
-      return actualIdentifierString;
+        String actualIdentifierString;
+        String unquottedIdentifier;
+        if (prepared) {
+            unquottedIdentifier = rawIdentifierString;
+        } else {
+            boolean isQuoted = dialect.isQuotedIdentifier(rawIdentifierString);
+            DBPIdentifierCase identifierCase = isQuoted ? dialect.storesQuotedCase() : dialect.storesUnquotedCase();
+            unquottedIdentifier = identifierCase.transform(dialect.getUnquotedIdentifier(rawIdentifierString, true));
+        }
+        actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);
+        return actualIdentifierString;
     }
 }
