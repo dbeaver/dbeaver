@@ -22,16 +22,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,6 +47,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private final DummyDbObject dummyDataSource;
     private final DummyDbObject defaultDummyCatalog;
     private final DummyDbObject defaultDummySchema;
+    private final DummyDbObject defaultDummyTable;
     private final Set<String> knownColumnNames;
     private final Set<String> knownTableNames;
     private final Set<String> knownSchemaNames;
@@ -360,6 +364,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         this.dummyDataSource = this.prepareDataSource();
         this.defaultDummyCatalog = this.dummyDataSource.getChildrenMapImpl().values().stream().findFirst().get();
         this.defaultDummySchema = this.defaultDummyCatalog.getChildrenMapImpl().values().stream().findFirst().get();
+        this.defaultDummyTable = this.prepareTable(this.defaultDummySchema, "", -1);
     }
     
     private DummyDbObject prepareDataSource() {
@@ -423,7 +428,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public List<SQLQuerySymbol> getColumnsList() {
+    public List<SQLQueryResultColumn> getColumnsList() {
         return Collections.emptyList();
     }
     
@@ -443,7 +448,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public SQLQuerySymbolDefinition resolveColumn(String simpleName) {
+    public SQLQueryResultColumn resolveColumn(String simpleName) {
         return null;
     }
     
@@ -458,10 +463,10 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         return new DummyTableRowsSource(range);
     }
     
-    public class DummyTableRowsSource extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
+    public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
         
         public DummyTableRowsSource(@NotNull Interval range) {
-            super(range);
+            super(range, new SQLQueryQualifiedName(new SQLQuerySymbolEntry(range, "DummyTable", "DummyTable")));
         }
 
         @Override
@@ -471,8 +476,15 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @Override
         protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-            context = context.overrideResultTuple(knownColumnNames.stream().map(SQLQuerySymbol::new).collect(Collectors.toList()));
-            // statistics.appendError(this.name.entityName, "Rows source table not specified");
+            try {
+                List<? extends DBSEntityAttribute> attributes = defaultDummyTable.getAttributes(new VoidProgressMonitor());
+                if (attributes != null) {
+                    List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(context, attributes);
+                    context = context.overrideResultTuple(columns);
+                }
+            } catch (DBException ex) {
+                statistics.appendError(this.getName().entityName, "Failed to resolve table", ex);
+            }
             return context;
         }
         

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -1157,5 +1158,27 @@ public final class SQLUtils {
      */
     public static boolean isLatinLetter(int codePoint) {
         return Character.isLetter(codePoint) && Character.UnicodeBlock.of(codePoint) == Character.UnicodeBlock.BASIC_LATIN;
+    }
+
+    /**
+     * Returns identifier in canonical form depends on dialect parameters. It's useful when we need to compare two identifiers.
+     */
+    public static String identifierToCanonicalForm(
+        @NotNull SQLDialect dialect,
+        @NotNull String rawIdentifierString,
+        boolean forceUnquotted,
+        boolean prepared
+    ) {
+        String actualIdentifierString;
+        String unquottedIdentifier;
+        if (prepared) {
+            unquottedIdentifier = rawIdentifierString;
+        } else {
+            boolean isQuoted = dialect.isQuotedIdentifier(rawIdentifierString);
+            DBPIdentifierCase identifierCase = isQuoted ? dialect.storesQuotedCase() : dialect.storesUnquotedCase();
+            unquottedIdentifier = identifierCase.transform(dialect.getUnquotedIdentifier(rawIdentifierString, true));
+        }
+        actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);
+        return actualIdentifierString;
     }
 }

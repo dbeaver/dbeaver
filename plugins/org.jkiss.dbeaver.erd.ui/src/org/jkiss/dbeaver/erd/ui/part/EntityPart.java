@@ -56,7 +56,7 @@ import java.util.Map;
  */
 public class EntityPart extends NodePart {
     protected DirectEditManager manager;
-    private AccessibleGraphicalEditPart accPart;
+    protected AccessibleGraphicalEditPart accPart;
     
     public EntityPart() {
     }

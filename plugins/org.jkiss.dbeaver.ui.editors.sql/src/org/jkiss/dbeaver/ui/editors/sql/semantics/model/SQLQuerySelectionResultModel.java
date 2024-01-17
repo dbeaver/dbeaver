@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
 import java.util.ArrayList;
@@ -61,8 +62,12 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         this.sublists.add(new CompleteTupleSpec(range));
     }
 
-    public List<SQLQuerySymbol> expandColumns(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        return this.sublists.stream().flatMap(s -> s.expand(context, statistics)).collect(Collectors.toList());
+    public List<SQLQueryResultColumn> expandColumns(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        return this.sublists.stream().flatMap(s -> s.expand(context, rowsSourceModel, statistics)).collect(Collectors.toList());
     }
 
     @Override
@@ -77,7 +82,11 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         }
 
         @NotNull
-        protected abstract Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
+        protected abstract Stream<SQLQueryResultColumn> expand(
+            @NotNull SQLQueryDataContext context,
+            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+            @NotNull SQLQueryRecognitionContext statistics
+        );
     }
 
     public static class ColumnSpec extends ResultSublistSpec {
@@ -106,10 +115,15 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
         @NotNull
         @Override
-        protected Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        protected Stream<SQLQueryResultColumn> expand(
+            @NotNull SQLQueryDataContext context,
+            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+            @NotNull SQLQueryRecognitionContext statistics
+        ) {
             this.valueExpression.propagateContext(context, statistics);
 
             SQLQuerySymbol columnName;
+            SQLQueryResultColumn underlyingColumn;
             if (this.alias != null) {
                 if (this.alias.isNotClassified()) {
                     columnName = this.alias.getSymbol();
@@ -118,14 +132,19 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
                 } else {
                     return Stream.empty();
                 }
+                underlyingColumn = null;
             } else {
                 columnName = this.valueExpression.getColumnNameIfTrivialExpression();
+                underlyingColumn = this.valueExpression.getColumnIfTrivialExpression();
                 if (columnName == null) {
                     columnName = new SQLQuerySymbol("?");
                 }
             }
 
-            return Stream.of(columnName);
+            return Stream.of(underlyingColumn == null ?
+                new SQLQueryResultColumn(columnName, rowsSourceModel, null, null) :
+                new SQLQueryResultColumn(columnName, rowsSourceModel, underlyingColumn.realSource, underlyingColumn.realAttr)
+            );
         }
 
         @Override
@@ -155,7 +174,11 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
         @NotNull
         @Override
-        protected Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        protected Stream<SQLQueryResultColumn> expand(
+            @NotNull SQLQueryDataContext context,
+            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+            @NotNull SQLQueryRecognitionContext statistics
+        ) {
             if (this.tableName.isNotClassified()) {
                 // TODO consider multiple joins of one table
                 SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
@@ -187,7 +210,11 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
         @NotNull
         @Override
-        protected Stream<SQLQuerySymbol> expand(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        protected Stream<SQLQueryResultColumn> expand(
+            @NotNull SQLQueryDataContext context,
+            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+            @NotNull SQLQueryRecognitionContext statistics
+        ) {
             return context.getColumnsList().stream();
         }
 

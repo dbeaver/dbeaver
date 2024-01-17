@@ -29,8 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableValueModel;
 
@@ -54,7 +53,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
 
     @NotNull
     @Override
-    public List<SQLQuerySymbol> getColumnsList() {
+    public List<SQLQueryResultColumn> getColumnsList() {
         return Collections.emptyList();
     }
 
@@ -95,7 +94,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public SQLQuerySymbolDefinition resolveColumn(@NotNull String simpleName) {
+    public SQLQueryResultColumn resolveColumn(@NotNull String simpleName) {
         return null;
     }
 
