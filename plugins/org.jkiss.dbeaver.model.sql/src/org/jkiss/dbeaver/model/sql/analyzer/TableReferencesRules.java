@@ -28,8 +28,10 @@ public class TableReferencesRules {
     public static final Set<String> expandRulesToTableRef = Set.of(
         STMKnownRuleNames.sqlQuery,
         STMKnownRuleNames.directSqlDataStatement,
+        STMKnownRuleNames.insertStatement,
         STMKnownRuleNames.selectStatement,
         STMKnownRuleNames.updateStatement,
+        STMKnownRuleNames.insertColumnsAndSource,
         STMKnownRuleNames.queryExpression,
         STMKnownRuleNames.nonJoinQueryTerm,
         STMKnownRuleNames.queryPrimary,
@@ -44,7 +46,9 @@ public class TableReferencesRules {
         STMKnownRuleNames.tableReference);
 
     public static final Set<String> extractRulesToTableRef = Set.of(
-        STMKnownRuleNames.nonjoinedTableReference);
+        STMKnownRuleNames.nonjoinedTableReference,
+        STMKnownRuleNames.tableName
+    );
 
     public static final Set<String> expandRulesToTableName = Set.of(
         STMKnownRuleNames.nonjoinedTableReference,
