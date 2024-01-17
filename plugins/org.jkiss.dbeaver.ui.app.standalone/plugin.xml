@@ -50,10 +50,26 @@
             <property name="versionInfoCoord" value="116,228"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="208,72,39"/>
-            <property name="startupMessageRect" value="73,270,240,21"/>
-            <property name="startupProgressRect" value="0,295,601,6"/>
-            <property name="startupMessageRectOsMac" value="20,270,445,26"/>
-            <property name="startupProgressRectOsMac" value="0,274,445,26"/>
+            <property
+                name="startupMessageRect"
+                value="7,265,320,25"/>
+            <property
+                name="startupProgressRect"
+                value="2,290,450,10"/>
+            <property
+                name="buildIdLocation"
+                value="108,222">
+            </property>
+            <property
+                name="buildIdSize"
+                value="293,40">
+            </property>
+            <property
+                name="startupMessageRectOsMac"
+                value="7,265,320,25"/>
+            <property
+                name="startupProgressRectOsMac"
+                value="2,290,450,10"/>
             <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
@@ -77,10 +93,28 @@
             <property name="versionInfoCoord" value="155,265"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="255,255,255"/>
-            <property name="startupMessageRect" value="323,270,242,25"/>
-            <property name="startupProgressRect" value="323,255,242,10"/>
-            <property name="startupMessageRectOsMac" value="20,270,445,26"/>
-            <property name="startupProgressRectOsMac" value="0,274,445,26"/>
+            
+            <property
+                name="startupMessageRect"
+                value="7,265,320,25"/>
+            <property
+                name="startupProgressRect"
+                value="2,290,450,10"/>
+            <property
+                name="buildIdLocation"
+                value="108,222">
+            </property>
+            <property
+                name="buildIdSize"
+                value="293,40">
+            </property>
+            <property
+                name="startupMessageRectOsMac"
+                value="7,265,320,25"/>
+            <property
+                name="startupProgressRectOsMac"
+                value="2,290,450,10"/>
+            
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
