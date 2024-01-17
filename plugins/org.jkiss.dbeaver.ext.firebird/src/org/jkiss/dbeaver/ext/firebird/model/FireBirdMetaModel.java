@@ -449,4 +449,9 @@ public class FireBirdMetaModel extends GenericMetaModel
         String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
         return "PRIMARY KEY".equals(constraintType) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
     }
+
+    @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
 }

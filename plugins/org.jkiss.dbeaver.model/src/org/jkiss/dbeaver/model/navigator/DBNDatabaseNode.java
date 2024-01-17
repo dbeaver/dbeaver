@@ -790,6 +790,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return filtered;
     }
 
+    @NotNull
+    @Override
+    public String getNodeId() {
+        String nodeId = super.getNodeId();
+        if (getObject() instanceof DBPObjectWithLongId longObject) {
+            nodeId += "_" + longObject.getObjectId();
+        }
+        return nodeId;
+    }
+
     @Deprecated
     @Override
     public String getNodeItemPath() {

@@ -702,11 +702,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
-    public void refreshDiagram(boolean force, boolean refreshMetadata)
-    {
+    public void refreshDiagram(boolean force, boolean refreshMetadata) {
         if (isLoaded && force) {
             loadDiagram(refreshMetadata);
-            getDiagramPart().rearrangeDiagram();
+            DiagramPart diagramPart = getDiagramPart();
+            if (diagramPart != null) {
+                diagramPart.rearrangeDiagram();
+            }
         }
     }
 
