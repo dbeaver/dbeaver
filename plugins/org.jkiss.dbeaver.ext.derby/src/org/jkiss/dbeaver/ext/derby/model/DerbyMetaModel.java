@@ -199,6 +199,11 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new DerbyDataSource(monitor, container, this);
     }
