@@ -36,7 +36,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     private Button compareLazyProperties;
     private Button compareOnlyStructure;
     private Button compareScriptProperties;
-
+    
     CompareObjectsPageSettings() {
         super(CompareUIMessages.compare_objects_page_settings_page);
         setTitle(CompareUIMessages.compare_objects_page_settings_title);
@@ -115,7 +115,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                 {
                     settings.setCompareScripts(compareScriptProperties.getSelection());
                 }
-            });
+            });                      
         }
         
         setControl(composite);

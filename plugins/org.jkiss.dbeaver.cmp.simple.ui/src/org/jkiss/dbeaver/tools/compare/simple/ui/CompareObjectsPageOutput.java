@@ -35,6 +35,8 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
     private Button showOnlyDifference;
     private Combo reportTypeCombo;
     private Text outputFolderText;
+    private Button useExternalTool;
+    private Text externalToolPath;
 
     CompareObjectsPageOutput() {
         super(CompareUIMessages.compare_objects_page_settings_page);
@@ -111,6 +113,35 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
                 public void modifyText(ModifyEvent e)
                 {
                     settings.setOutputFolder(outputFolderText.getText());
+                }
+            });
+            Group additionalSettings = new Group(composite, SWT.NONE);
+            additionalSettings.setText(CompareUIMessages.compare_objects_page_additional_settings);
+            gl = new GridLayout(1, false);
+            additionalSettings.setLayout(gl);
+            additionalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            
+            useExternalTool = UIUtils.createCheckbox(additionalSettings, CompareUIMessages.compare_objects_page_settings_checkbox_external_tool, settings.isUseExternalTool());
+            useExternalTool.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    settings.setUseExternalTool(useExternalTool.getSelection());
+                }
+            });
+            
+            UIUtils.createControlLabel(additionalSettings, CompareUIMessages.compare_objects_page_settings_configuration_compare_tool);
+            externalToolPath = new Text(additionalSettings, SWT.BORDER);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 355;
+            externalToolPath.setLayoutData(gd);
+            externalToolPath.setText(settings.getExternalToolPath());
+            externalToolPath.addModifyListener(new ModifyListener() {                
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    settings.setExternalToolPath(externalToolPath.getText());                    
                 }
             });
         }

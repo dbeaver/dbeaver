@@ -46,9 +46,11 @@ public class CompareObjectsSettings {
     private boolean compareLazyProperties = false;
     private boolean compareOnlyStructure = false;
     private boolean compareScripts = false;
+    private boolean useExternalTool = false;
     private boolean showOnlyDifferences = false;
     private OutputType outputType = OutputType.BROWSER;
     private String outputFolder;
+    private String externalToolPath;
 
     public CompareObjectsSettings(List<DBNDatabaseNode> nodes) {
         this.nodes = nodes;
@@ -89,6 +91,14 @@ public class CompareObjectsSettings {
     public void setCompareScripts(boolean compareScripts) {
         this.compareScripts = compareScripts;
     }
+    
+    public boolean isUseExternalTool() {
+        return useExternalTool;
+    }
+
+    public void setUseExternalTool(boolean useExternalTool) {
+        this.useExternalTool = useExternalTool;
+    }
 
     public boolean isShowOnlyDifferences() {
         return showOnlyDifferences;
@@ -113,6 +123,15 @@ public class CompareObjectsSettings {
     public void setOutputFolder(String outputFolder) {
         this.outputFolder = outputFolder;
     }
+    
+    public String getExternalToolPath() {
+        if (externalToolPath == null) return "";
+        return externalToolPath;
+    }
+
+    public void setExternalToolPath(String externalToolPath) {
+        this.externalToolPath = externalToolPath;
+    }
 
     public void loadFrom(DBPSettingsSection dialogSettings) {
         if (dialogSettings.get("skipSystem") != null) {
@@ -130,11 +149,17 @@ public class CompareObjectsSettings {
         if (dialogSettings.get("compareScripts") != null) {
             compareScripts = dialogSettings.getBoolean("compareScripts");
         }
+        if (dialogSettings.get("useExternalTool") != null) {
+            useExternalTool = dialogSettings.getBoolean("useExternalTool");
+        }
         if (dialogSettings.get("outputType") != null) {
             outputType = OutputType.valueOf(dialogSettings.get("outputType"));
         }
         if (dialogSettings.get("outputFolder") != null) {
             outputFolder = dialogSettings.get("outputFolder");
+        }
+        if (dialogSettings.get("externalToolPath") != null) {
+            externalToolPath = dialogSettings.get("externalToolPath");
         }
     }
 
@@ -143,9 +168,11 @@ public class CompareObjectsSettings {
         dialogSettings.put("compareLazy", compareLazyProperties);
         dialogSettings.put("compareStructure", compareOnlyStructure);
         dialogSettings.put("compareScripts", compareScripts);
+        dialogSettings.put("useExternalTool", useExternalTool);
         dialogSettings.put("showDifference", showOnlyDifferences);
         dialogSettings.put("outputType", outputType.name());
         dialogSettings.put("outputFolder", outputFolder);
+        dialogSettings.put("externalToolPath", externalToolPath);
     }
 
 }

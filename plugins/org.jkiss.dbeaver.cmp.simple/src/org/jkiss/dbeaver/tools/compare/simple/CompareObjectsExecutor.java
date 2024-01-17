@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -33,7 +34,12 @@ import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.properties.*;
+import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 
 public class CompareObjectsExecutor {
@@ -236,13 +242,21 @@ public class CompareObjectsExecutor {
         if (onlyStruct && !compareScripts) {
             return;
         }
+        
+        boolean useExternalTool = settings.isUseExternalTool();
+        String externalToolPath = settings.getExternalToolPath();
 
-        // Load all properties
+        // Objects for external compare
+        Map<DBNDatabaseNode, DBPScriptObject> scriptObjects = new HashMap<>();         
+        // Load all properties        
         for (DBNDatabaseNode node : nodes) {
             if (monitor.isCanceled()) {
                 throw new InterruptedException();
             }
             DBSObject databaseObject = node.getObject();
+            if ((useExternalTool) && (databaseObject instanceof DBPScriptObject)) {
+                scriptObjects.put(node, (DBPScriptObject) databaseObject);
+            }
             Map<DBPPropertyDescriptor, Object> nodeProperties = propertyValues.get(databaseObject);
             if (nodeProperties == null) {
                 nodeProperties = new IdentityHashMap<>();
@@ -286,6 +300,56 @@ public class CompareObjectsExecutor {
         for (ObjectPropertyDescriptor prop : properties) {
             reportPropertyCompare(prop);
         }
+        // Call external compare
+        if (useExternalTool) {
+            ArrayList<String> filesToCompare = new ArrayList<String>();
+            for (Map.Entry<DBNDatabaseNode, DBPScriptObject> entry : scriptObjects.entrySet()) {
+                try {
+                    DBNDatabaseNode node = entry.getKey();
+                    DBPScriptObject sobj = entry.getValue();
+                    StringBuilder fileName = new StringBuilder("obj");
+                    fileName.append("-").append(CommonUtils.escapeIdentifier(node.getNodeFullName()));
+                    fileName.append("-ddl-");
+                    File objectFile = File.createTempFile(fileName.toString(), ".sql");                
+                    HashMap<String, Object> hmapOptions = new HashMap<>();
+                    hmapOptions.put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true);
+                    hmapOptions.put(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, true);
+                    hmapOptions.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true);
+                    hmapOptions.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, true);
+                    hmapOptions.put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, true);
+                    hmapOptions.put("ddl.includePermissions", true);
+                    String sqlText = sobj.getObjectDefinitionText(monitor, hmapOptions);
+                    try (OutputStream outputStream = new FileOutputStream(objectFile)) {
+                        outputStream.write(sqlText.getBytes());
+                    }
+                    filesToCompare.add(objectFile.getAbsolutePath());
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            if (filesToCompare.size() > 1) {
+                String[] params;
+                //new String[] {"C:\\Program Files\\WinMerge\\WinMergeU.exe",
+                if (filesToCompare.size() > 2) {
+                    params = new String[] {
+                            //"C:\\Program Files\\WinMerge\\WinMergeU.exe",
+                            //"c:\\Program Files\\KDiff3\\kdiff3.exe",
+                            externalToolPath,
+                            filesToCompare.get(0), filesToCompare.get(1), filesToCompare.get(2)};
+                } else {
+                    params = new String[] {
+                            externalToolPath,
+                            filesToCompare.get(0), filesToCompare.get(1)};
+                }
+                try {
+                    Runtime.getRuntime().exec(params);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }    
     }
 
     private void compareChildren(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes) throws DBException, InterruptedException
