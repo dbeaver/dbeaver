@@ -154,10 +154,6 @@ public final class MySQLUIMessages extends NLS {
     public static String controls_privilege_table_push_button_check_all;
     public static String controls_privilege_table_push_button_clear_all;
 
-    public static String connection_settings_advanced_group_performance;
-    public static String connection_settings_advanced_checkbox_read_keys;
-    public static String connection_settings_advanced_checkbox_read_keys_tip;
-
     private MySQLUIMessages() {
     }
 }

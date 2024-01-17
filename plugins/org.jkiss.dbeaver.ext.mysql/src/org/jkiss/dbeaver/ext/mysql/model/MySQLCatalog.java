@@ -331,7 +331,7 @@ public class MySQLCatalog implements
     @Association
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
         List<MySQLTable> tables = getTableCache().getTypedObjects(monitor, this, MySQLTable.class);
-        if (getDataSource().supportsReadingKeysWithColumns()) {
+        if (!getDataSource().avoidReadingKeysWithColumns()) {
             // Read constraints with columns
             uniqueKeyCache.getAllObjects(monitor, this);
         }
