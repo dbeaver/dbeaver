@@ -978,4 +978,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return true;
     }
 
+    /**
+     * Return true if a special setting about keys cache reading was enabled in advanced connection settings.
+     */
+    boolean supportsReadingKeysWithColumns() {
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(MySQLConstants.PROP_READ_KEYS_CACHE_WITH_COLUMNS));
+    }
 }
