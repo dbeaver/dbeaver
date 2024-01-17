@@ -22,8 +22,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -97,7 +97,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         SQLQueryDataContext unresolvedResult = fromSource.propagateContext(context, statistics);
         EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
 
-        List<SQLQuerySymbol> resultColumns = this.result.expandColumns(unresolvedResult, statistics);
+        List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
         SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns);
 
         if (this.whereClause != null) {

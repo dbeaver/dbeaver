@@ -66,7 +66,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     private Integer oldLineWidth;
 
     private ERDHighlightingHandle associatedAttributesHighlighing = null;
-    private AccessibleGraphicalEditPart accPart;
+    protected AccessibleGraphicalEditPart accPart;
     private final Color labelForegroundColor;
 
     public AssociationPart() {

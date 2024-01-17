@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -394,10 +395,10 @@ public class SQLQueryModelRecognizer {
         @NotNull Consumer<SQLQueryQualifiedName> entityAction,
         boolean forceUnquotted
     ) {
-        List<STMTreeNode> refs = STMUtils.expandSubtree(root, null, Set.of(STMKnownRuleNames.columnReference, STMKnownRuleNames.tableName));
+        List<STMTreeNode> refs = STMUtils.expandSubtree(root, null, Set.of(STMKnownRuleNames.columnReference, STMKnownRuleNames.columnName, STMKnownRuleNames.tableName));
         for (STMTreeNode ref : refs) {
             switch (ref.getNodeKindId()) {
-                case SQLStandardParser.RULE_columnReference -> {
+                case SQLStandardParser.RULE_columnReference, SQLStandardParser.RULE_columnName -> {
                     if (ref.getChildCount() > 1) {
                         SQLQueryQualifiedName tableName = this.collectTableName(ref.getStmChild(0), forceUnquotted);
                         if (tableName != null) {
@@ -697,11 +698,7 @@ public class SQLQueryModelRecognizer {
             return entry;
         } else {
             SQLDialect dialect = this.obtainSqlDialect();
-            boolean isQuotted = dialect.isQuotedIdentifier(rawIdentifierString);
-            String unquottedIdentifier = isQuotted ? dialect.getUnquotedIdentifier(rawIdentifierString) : rawIdentifierString;
-            String actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, true) 
-                ? (forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false)) 
-                : unquottedIdentifier.toLowerCase();
+            String actualIdentifierString = SQLUtils.identifierToCanonicalForm(dialect, rawIdentifierString, forceUnquotted, false);
             SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody.getRealInterval(), actualIdentifierString, rawIdentifierString);
             this.symbolEntries.add(entry);
             return entry;
