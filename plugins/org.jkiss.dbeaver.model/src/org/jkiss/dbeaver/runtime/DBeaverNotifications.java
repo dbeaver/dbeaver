@@ -28,6 +28,7 @@ public class DBeaverNotifications
 {
 
     public static final String NT_COMMIT = "commit";
+    public static final String NT_DISCONNECT_IDLE = "disconnect.idle";
     public static final String NT_ROLLBACK = "rollback";
     public static final String NT_ROLLBACK_IDLE = "rollback.idle";
     public static final String NT_RECONNECT_SUCCESS = "reconnect.success";

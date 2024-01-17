@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -173,8 +174,6 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     public void initBaseDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
-        this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
-        this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
 
         addTableQueryKeywords(SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
         addFunctions(List.of("SLEEP"));
@@ -198,6 +197,12 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
     }
 
+    @Override
+    public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
+        this.lowerCaseTableNames = ((MySQLDataSource) dataSource).getLowerCaseTableNames();
+        this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
+    }
+    
     @Nullable
     @Override
     public String[][] getIdentifierQuoteStrings() {

@@ -141,7 +141,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                         ex.getMessage(),
                         ex);
                     navigatorTree.getViewer().collapseToLevel(parent, 1);
-                    navigatorTree.getViewer().refresh(parent);
+                    //navigatorTree.getViewer().refresh(parent);
                 });
                 return EMPTY_CHILDREN;
             }

@@ -23,11 +23,14 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpression {
     private final SQLQueryQualifiedName tableName;
     private final SQLQuerySymbolEntry columnName;
-
+    
+    private SQLQueryResultColumn column = null;
+    
     public SQLQueryValueColumnReferenceExpression(@NotNull Interval range, @NotNull SQLQuerySymbolEntry columnName) {
         super(range);
         this.tableName = null;
@@ -53,11 +56,17 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
         return this.columnName.getSymbol();
     }
+    
+    @Override
+    public SQLQueryResultColumn getColumnIfTrivialExpression() {
+        return this.column;
+    }
 
-    void propagateColumnDefinition(@Nullable SQLQuerySymbolDefinition columnDef, @NotNull SQLQueryRecognitionContext statistics) {
+    void propagateColumnDefinition(@Nullable SQLQueryResultColumn resultColumn, @NotNull SQLQueryRecognitionContext statistics) {
         // TODO consider ambiguity
-        if (columnDef != null) {
-            this.columnName.setDefinition(columnDef);
+        if (resultColumn != null) {
+            this.column = resultColumn;
+            this.columnName.setDefinition(resultColumn.symbol.getDefinition());
         } else {
             this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
             statistics.appendError(this.columnName, "Column not found in dataset");
@@ -71,17 +80,17 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
-                SQLQuerySymbolDefinition columnDef = rr.source.getDataContext().resolveColumn(this.columnName.getName());
-                this.propagateColumnDefinition(columnDef, statistics);
+                SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(this.columnName.getName());
+                this.propagateColumnDefinition(resultColumn, statistics);
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
                 statistics.appendError(this.tableName.entityName, "Table or subquery not found");
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
-            SQLQuerySymbolDefinition columnDef = context.resolveColumn(this.columnName.getName());
+            SQLQueryResultColumn resultColumn = context.resolveColumn(this.columnName.getName());
 
             SQLQuerySymbolClass forcedClass = null;
-            if (columnDef == null) {
+            if (resultColumn == null) {
                 String rawString = columnName.getRawName();
                 if (dialect.isQuotedString(rawString)) {
                     forcedClass = SQLQuerySymbolClass.STRING;
@@ -89,7 +98,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     boolean isQuotedIdentifier = dialect.isQuotedIdentifier(this.columnName.getRawName());
                     char quoteChar = this.columnName.getRawName().charAt(0);
                     if ((!isQuotedIdentifier && (quoteChar == '"' || quoteChar == '`' || quoteChar == '\''))
-                        || (isQuotedIdentifier && columnDef == null)) {
+                        || (isQuotedIdentifier && resultColumn == null)) {
                         forcedClass = switch (quoteChar) {
                             case '\'' -> SQLQuerySymbolClass.STRING;
                             case '"', '`' -> SQLQuerySymbolClass.QUOTED;
@@ -102,7 +111,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             if (forcedClass != null) {
                 this.columnName.getSymbol().setSymbolClass(forcedClass);
             } else {
-                this.propagateColumnDefinition(columnDef, statistics);
+                this.propagateColumnDefinition(resultColumn, statistics);
             }
         }
     }
