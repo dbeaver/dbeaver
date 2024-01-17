@@ -55,6 +55,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             1800, //30 minutes
             true,
+            1800, //30 minutes
+            true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
             "test",
@@ -66,6 +68,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             false,
             false,
+            true,
+            1800, //30 minutes
             true,
             1800, //30 minutes
             true,
@@ -82,6 +86,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             true,
             600, //10 minutes
+            true,
+            900, //15 minutes
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
 
@@ -100,6 +106,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean smartCommitRecover;
     private boolean autoCloseTransactions;
     private long closeIdleTransactionPeriod;
+    private boolean autoCloseConnections;
+    private long closeIdleConnectionPeriod;
 
     private final boolean predefined;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
@@ -117,6 +125,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             source.smartCommitRecover,
             source.autoCloseTransactions,
             source.closeIdleTransactionPeriod,
+            source.autoCloseConnections,
+            source.closeIdleConnectionPeriod,
             source.predefined,
             source.connectionModifyRestrictions);
     }
@@ -132,7 +142,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommit,
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
-        long closeIdleTransactionPeriod)
+        long closeIdleTransactionPeriod,
+        boolean autoCloseConnections,
+        long closeIdleConnectionPeriod)
     {
         this(
             id,
@@ -146,6 +158,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             smartCommitRecover,
             autoCloseTransactions,
             closeIdleTransactionPeriod,
+            autoCloseConnections,
+            closeIdleConnectionPeriod,
             false,
             null);
     }
@@ -162,6 +176,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
         long closeIdleTransactionPeriod,
+        boolean autoCloseConnections,
+        long closeIdleConnectionPeriod,
         boolean predefined,
         List<DBPDataSourcePermission> connectionModifyRestrictions)
     {
@@ -176,6 +192,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.smartCommitRecover = smartCommitRecover;
         this.autoCloseTransactions = autoCloseTransactions;
         this.closeIdleTransactionPeriod = closeIdleTransactionPeriod;
+        this.autoCloseConnections = autoCloseConnections;
+        this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
         this.predefined = predefined;
         if (connectionModifyRestrictions != null) {
             this.connectionModifyRestrictions = new ArrayList<>(connectionModifyRestrictions);
@@ -272,6 +290,22 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     public void setCloseIdleTransactionPeriod(long closeIdleTransactionPeriod) {
         this.closeIdleTransactionPeriod = closeIdleTransactionPeriod;
+    }
+
+    public boolean isAutoCloseConnections() {
+        return autoCloseConnections;
+    }
+
+    public void setAutoCloseConnections(boolean autoCloseConnections) {
+        this.autoCloseConnections = autoCloseConnections;
+    }
+    
+    public long getCloseIdleConnectionPeriod() {
+        return closeIdleConnectionPeriod;
+    }
+
+    public void setCloseIdleConnectionPeriod(long closeIdleConnectionPeriod) {
+        this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
     }
 
     @Override

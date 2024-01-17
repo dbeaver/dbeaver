@@ -432,6 +432,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 Boolean smartCommitRecover = JSONUtils.getObjectProperty(ctConfig, "smart-commit-recover");
                 Boolean autoCloseTransactions = JSONUtils.getObjectProperty(ctConfig, "auto-close-transactions");
                 Object closeTransactionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-transactions-period");
+                Boolean autoCloseConnections = JSONUtils.getObjectProperty(ctConfig, "auto-close-connections");
+                Object closeConnectionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-connections-period");
                 DBPConnectionType ct = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(id, null);
                 if (ct == null) {
                     ct = new DBPConnectionType(
@@ -445,7 +447,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         CommonUtils.toBoolean(smartCommit),
                         CommonUtils.toBoolean(smartCommitRecover),
                         CommonUtils.toBoolean(autoCloseTransactions),
-                        CommonUtils.toLong(closeTransactionsPeriod, RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD));
+                        CommonUtils.toLong(closeTransactionsPeriod, RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD),
+                        CommonUtils.toBoolean(autoCloseConnections),
+                        CommonUtils.toLong(closeConnectionsPeriod, RegistryConstants.DEFAULT_IDLE_CONNECTION_PERIOD));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
                 deserializeModifyPermissions(ctConfig, ct);
