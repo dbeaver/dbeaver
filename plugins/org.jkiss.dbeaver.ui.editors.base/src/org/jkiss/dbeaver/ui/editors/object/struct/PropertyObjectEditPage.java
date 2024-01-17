@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,15 +34,16 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
-import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObjectEditPage {
 
     private final OBJECT object;
     private final PropertySourceEditable propertySource;
-    private PropertyTreeViewer propertyViewer;
+    //private PropertyTreeViewer propertyViewer;
+    private CustomFormEditor propertyEditor;
 
     public PropertyObjectEditPage(@Nullable DBECommandContext commandContext, @NotNull OBJECT object) {
         super("Edit " + object.getName());
@@ -111,14 +111,19 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
             }
         });
 
-        UIUtils
-            .createControlLabel(composite, EditorsMessages.dialog_struct_label_text_properties)
-            .setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+//        UIUtils
+//            .createControlLabel(composite, EditorsMessages.dialog_struct_label_text_properties)
+//            .setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-        propertyViewer = new PropertyTreeViewer(composite, SWT.BORDER);
-        propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
-        propertyViewer.loadProperties(propertySource);
-        propertyViewer.addPropertyChangeListener(event -> validateProperties());
+        propertyEditor = new CustomFormEditor(getObject(), getCommandContext(), propertySource);
+        for (DBPPropertyDescriptor prop : propertySource.getProperties()) {
+            propertyEditor.createPropertyEditor(composite, prop);
+        }
+
+//        propertyViewer = new PropertyTreeViewer(composite, SWT.BORDER);
+//        propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
+//        propertyViewer.loadProperties(propertySource);
+//        propertyViewer.addPropertyChangeListener(event -> validateProperties());
     }
 
     protected String getEditError() {
@@ -131,6 +136,6 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
     @Override
     public void performFinish() throws DBException {
         // Save any active editors
-        propertyViewer.saveEditorValues();
+        //propertyViewer.saveEditorValues();
     }
 }
