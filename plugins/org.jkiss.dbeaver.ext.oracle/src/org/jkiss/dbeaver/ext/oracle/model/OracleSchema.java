@@ -219,6 +219,9 @@ public class OracleSchema extends OracleGlobalObject implements
         return dataTypeCache.getAllObjects(monitor, this);
     }
 
+    /**
+     * OracleTable or its children classes can be created by this method.
+     */
     public OracleTable createTableImpl(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult) {
         return new OracleTable(monitor, owner, dbResult);
     }

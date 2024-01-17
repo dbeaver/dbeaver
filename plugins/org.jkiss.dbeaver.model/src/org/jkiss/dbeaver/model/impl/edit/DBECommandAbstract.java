@@ -67,6 +67,7 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
         isDisableSessionLogging = disableSessionLogging;
     }
 
+    @Override
     public boolean ignoreNestedCommands() {
         return ignoreNestedCommands;
     }

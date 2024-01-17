@@ -216,6 +216,9 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return subPartitions;
     }
 
+    /**
+     * Returns list of already cached subpartitions. First of all - for newly created tables.
+     */
     public List<OracleTablePartition> getCachedSubPartitions() {
         if (partitionParent != null) {
             return Collections.emptyList();
@@ -290,10 +293,13 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return parent;
     }
 
+    @Nullable
+    @Override
     public OracleTablePartition getPartitionParent() {
         return partitionParent;
     }
 
+    @Override
     public boolean isSubPartition() {
         return partitionParent != null;
     }

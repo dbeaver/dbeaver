@@ -195,7 +195,8 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return partitioned;
     }
 
-    @Property(viewable = true, editableExpr = "object.getDataSource().supportsPartitionsCreation()", order = 16, visibleIf = PartitioningTablePropertyValidator.class)
+    @Property(viewable = true, editableExpr = "object.getDataSource().supportsPartitionsCreation()", order = 16,
+        visibleIf = PartitioningTablePropertyValidator.class)
     @LazyProperty(cacheValidator = PartitionedValueLoadValidator.class)
     public String getPartitionedBy(DBRProgressMonitor monitor) {
         if (isPersisted() && partitionedBy == null) {
@@ -210,6 +211,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return partitionedBy;
     }
 
+    /**
+     * To provide partition keys as a string  via UI.
+     */
     public void setPartitionedBy(String partitionedBy) {
         if (CommonUtils.isNotEmpty(partitionedBy) && partitionInfo == null) {
             partitionInfo = new PartitionInfo();
@@ -224,7 +228,8 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return partitionKeys;
     }
 
-    @Property(viewable = true, editableExpr = "object.getDataSource().supportsPartitionsCreation()", order = 17, visibleIf = PartitioningTablePropertyValidator.class)
+    @Property(viewable = true, editableExpr = "object.getDataSource().supportsPartitionsCreation()", order = 17,
+        visibleIf = PartitioningTablePropertyValidator.class)
     public String getSubPartitionedBy() {
         if (CommonUtils.isEmpty(subPartitionedBy) && !CommonUtils.isEmpty(subPartitionKeys)) {
             subPartitionedBy = subPartitionKeys.stream()
@@ -285,6 +290,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
     }
 
+    /**
+     * Returns partitions list for partitioned tables, cached partitions for newly create tables and empty list for others.
+     */
     @NotNull
     @Association
     public Collection<OracleTablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException {
@@ -297,6 +305,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return partitionCache.getAllObjects(monitor, this);
     }
 
+    /**
+     * Returns cached partitions list (for newly created tables, basically).
+     */
     @NotNull
     public Collection<OracleTablePartition> getCachedPartitions() {
         if (partitionCache == null) {

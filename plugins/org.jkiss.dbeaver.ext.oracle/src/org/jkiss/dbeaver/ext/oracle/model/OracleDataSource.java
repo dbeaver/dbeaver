@@ -425,6 +425,9 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return schemaCache == null ? null : schemaCache.getObject(monitor, this, name);
     }
 
+    /**
+     * OracleSchema or its children classes can be created by this method.
+     */
     public OracleSchema createSchemaImpl(@NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) {
         return new OracleSchema(owner, resultSet);
     }

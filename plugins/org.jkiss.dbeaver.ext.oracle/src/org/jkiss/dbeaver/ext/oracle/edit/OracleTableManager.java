@@ -116,7 +116,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) throws DBException {
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        OracleTable table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter
+    ) throws DBException {
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
             Object tablespace = table.getTablespace();
