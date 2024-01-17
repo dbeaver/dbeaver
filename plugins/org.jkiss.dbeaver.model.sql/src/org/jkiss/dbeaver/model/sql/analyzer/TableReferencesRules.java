@@ -46,7 +46,9 @@ public class TableReferencesRules {
         STMKnownRuleNames.tableReference);
 
     public static final Set<String> extractRulesToTableRef = Set.of(
-        STMKnownRuleNames.nonjoinedTableReference);
+        STMKnownRuleNames.nonjoinedTableReference,
+        STMKnownRuleNames.tableName
+    );
 
     public static final Set<String> expandRulesToTableName = Set.of(
         STMKnownRuleNames.nonjoinedTableReference,
