@@ -62,7 +62,11 @@ public class MySQLCatalog implements
     DBPScriptObject, DBPScriptObjectExt2
 {
 
-    private final TableCache tableCache = new TableCache();
+    private final TableCache tableCache = new TableCache() {
+        protected void detectCaseSensitivity(DBSObject object) {
+            this.setCaseSensitive(!getDataSource().getSQLDialect().useCaseInsensitiveNameLookup());
+        }
+    };
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private final PackageCache packageCache = new PackageCache();
     final TriggerCache triggerCache = new TriggerCache();

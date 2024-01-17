@@ -521,4 +521,7 @@ public interface SQLDialect {
             ProjectionAliasVisibilityScope.ORDER_BY
         );
     }
+
+    default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
+    }
 }

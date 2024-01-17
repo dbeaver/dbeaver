@@ -629,9 +629,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {
                             dataSource.setSavePassword(true);
                         }
-                        if (!CommonUtils.isEmpty(creds.getProperties())) {
-                            dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
-                        }
+                        dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
                         dataSource.forgetSecrets();
                     }
                     {

@@ -18,6 +18,8 @@ public final class CustomCheckBoxFigure extends Toggle {
 
     public CustomCheckBoxFigure() {
         this("");
+        setFocusTraversable(false);
+        setRequestFocusEnabled(false);
     }
 
     public CustomCheckBoxFigure(String text) {

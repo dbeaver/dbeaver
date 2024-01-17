@@ -22,11 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,14 +58,23 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
 
     @NotNull
     private SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
-        SQLDialect dialect = context.getDialect();
-        String name = dialect.mustBeQuoted(attr.getName(), true)
-            ? dialect.getQuotedIdentifier(attr.getName(), true, false)
-            : attr.getName().toLowerCase();
+        String name = SQLUtils.identifierToCanonicalForm(context.getDialect(), attr.getName(), false, true);
         SQLQuerySymbol symbol = new SQLQuerySymbol(name);
         symbol.setDefinition(new SQLQuerySymbolByDbObjectDefinition(attr, SQLQuerySymbolClass.COLUMN));
         return symbol;
 
+    }
+
+    @NotNull
+    protected List<SQLQueryResultColumn> prepareResultColumnsList(
+        @NotNull SQLQueryDataContext attrsContext,
+        @NotNull List<? extends DBSEntityAttribute> attributes
+    ) {
+        List<SQLQueryResultColumn> columns = attributes.stream()
+            .filter(a -> !DBUtils.isHiddenObject(a))
+            .map(a -> new SQLQueryResultColumn(this.prepareColumnSymbol(attrsContext, a), this, this.table, a))
+            .collect(Collectors.toList());
+        return columns;
     }
 
     @NotNull
@@ -79,11 +89,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 try {
                     List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(new VoidProgressMonitor());
                     if (attributes != null) {
-                        final SQLQueryDataContext attrsContext = context;
-                        List<SQLQuerySymbol> columns = attributes.stream()
-                            .filter(a -> !DBUtils.isHiddenObject(a))
-                            .map(a -> this.prepareColumnSymbol(attrsContext, a))
-                            .collect(Collectors.toList());
+                        List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(context, attributes);
                         context = context.overrideResultTuple(columns);
                     }
                 } catch (DBException ex) {
