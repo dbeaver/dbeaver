@@ -373,8 +373,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
         var connectionConfigurationChanged = false;
 
         // Read in this particular order to handle configuration reading errors first, but process in reverse order later
+        Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
         final var configurationMap = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
-        final var secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        try {
+            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        } catch (DBException e) {
+            log.error(e);
+            return false;
+        }
 
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
