@@ -129,7 +129,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                                 }
                             }
                         }
-                        return firstFoundObject;
+                        return dataSource.getSQLDialect().useCaseInsensitiveNameLookup() ? firstFoundObject : null;
                     } finally {
                         dbResult.close();
                     }

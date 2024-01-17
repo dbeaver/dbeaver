@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -1165,13 +1166,19 @@ public final class SQLUtils {
     public static String identifierToCanonicalForm(
         @NotNull SQLDialect dialect,
         @NotNull String rawIdentifierString,
-        boolean forceUnquotted
+        boolean forceUnquotted,
+        boolean prepared
     ) {
-        boolean isQuotted = dialect.isQuotedIdentifier(rawIdentifierString);
-        String unquottedIdentifier = isQuotted ? dialect.getUnquotedIdentifier(rawIdentifierString) : rawIdentifierString;
-        String actualIdentifierString = dialect.mustBeQuoted(unquottedIdentifier, isQuotted) 
-            ? (forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, isQuotted, false)) 
-            : unquottedIdentifier.toLowerCase();
-        return actualIdentifierString;
+      String actualIdentifierString;
+      String unquottedIdentifier;
+      if (prepared) {
+          unquottedIdentifier = rawIdentifierString;
+      } else {
+          boolean isQuoted = dialect.isQuotedIdentifier(rawIdentifierString);
+          DBPIdentifierCase identifierCase = isQuoted ? dialect.storesQuotedCase() : dialect.storesUnquotedCase();
+          unquottedIdentifier = identifierCase.transform(dialect.getUnquotedIdentifier(rawIdentifierString, true));
+      }
+      actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);         
+      return actualIdentifierString;
     }
 }

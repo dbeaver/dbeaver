@@ -897,6 +897,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         }
 
         @Override
+        protected void detectCaseSensitivity(DBSObject object) {
+            this.setCaseSensitive(true);
+        }
+
+        @Override
         protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new GenericTableType(
                 GenericDataSource.this,

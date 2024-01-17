@@ -698,7 +698,7 @@ public class SQLQueryModelRecognizer {
             return entry;
         } else {
             SQLDialect dialect = this.obtainSqlDialect();
-            String actualIdentifierString = SQLUtils.identifierToCanonicalForm(dialect, rawIdentifierString, forceUnquotted);
+            String actualIdentifierString = SQLUtils.identifierToCanonicalForm(dialect, rawIdentifierString, forceUnquotted, false);
             SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody.getRealInterval(), actualIdentifierString, rawIdentifierString);
             this.symbolEntries.add(entry);
             return entry;
