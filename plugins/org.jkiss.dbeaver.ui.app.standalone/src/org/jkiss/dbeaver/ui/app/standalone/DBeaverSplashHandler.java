@@ -68,7 +68,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
         if (Util.isMac() && System.getProperty("os.version").startsWith("14")) { //$NON-NLS-1$ //$NON-NLS-2$
-           return; 
+            return;
         }
         try {
             initVisualization();
@@ -87,7 +87,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
         if (Util.isMac() && System.getProperty("os.version").startsWith("14")) { //$NON-NLS-1$ //$NON-NLS-2$
-           return null; 
+            return null;
         }
         return super.getBundleProgressMonitor();
     }
