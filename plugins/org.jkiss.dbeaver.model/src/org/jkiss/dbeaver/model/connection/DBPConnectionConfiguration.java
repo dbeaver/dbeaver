@@ -144,6 +144,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.authModelId = info.authModelId;
         this.authProperties = info.authProperties == null ? null : new LinkedHashMap<>(info.authProperties);
         this.connectionType = info.connectionType;
+        this.closeIdleInterval = info.closeIdleInterval;
         this.configurationType = info.configurationType;
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);

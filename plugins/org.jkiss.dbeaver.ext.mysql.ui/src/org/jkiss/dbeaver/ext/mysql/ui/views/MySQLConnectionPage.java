@@ -315,8 +315,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage(this),
-
+            new DriverPropertiesDialogPage(this)
         };
     }
 

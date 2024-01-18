@@ -332,7 +332,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(grd);
             autoCloseTransactionsTtlText.addModifyListener(e ->
-                getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
+                getSelectedType().setCloseIdleTransactionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
 
             Button epButton = UIUtils.createDialogButton(
                 placeholder,
@@ -403,7 +403,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         smartCommitCheck.setSelection(connectionType.isSmartCommit());
         smartCommitRecoverCheck.setSelection(connectionType.isSmartCommitRecover());
         autoCloseTransactionsCheck.setSelection(connectionType.isAutoCloseTransactions());
-        autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
+        autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleTransactionPeriod()));
 
         deleteButton.setEnabled(!connectionType.isPredefined());
     }
@@ -537,7 +537,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setSmartCommit(changed.isSmartCommit());
                 source.setSmartCommitRecover(changed.isSmartCommitRecover());
                 source.setAutoCloseTransactions(changed.isAutoCloseTransactions());
-                source.setCloseIdleConnectionPeriod(changed.getCloseIdleConnectionPeriod());
+                source.setCloseIdleTransactionPeriod(changed.getCloseIdleTransactionPeriod());
                 hasChanges = true;
             }
             if (hasChanges) {
