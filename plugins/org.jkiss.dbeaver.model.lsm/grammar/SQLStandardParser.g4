@@ -223,6 +223,8 @@ searchedWhenClause: WHEN searchCondition THEN result;
 castSpecification: CAST LeftParen castOperand AS dataType RightParen;
 castOperand: (valueExpression|NULL);
 
+overClause: OVER LeftParen (PARTITION BY valueExpression (Comma valueExpression)*)? orderByClause? ((ROWS|RANGE) anyUnexpected)? RightParen;
+
 // functions and operators
 //valueExpression: (numericValueExpression|characterValueExpression|datetimeValueExpression|intervalValueExpression);
 
@@ -372,7 +374,7 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-anyWordsWithProperty2: anyWord+ anyProperty;
+anyWordsWithProperty2: anyWord+ anyProperty overClause?;
 
 /*
 All the logical boundary terms between query construct levels should be explicitly mentioned here for the anyUnexpected to NOT cross them
