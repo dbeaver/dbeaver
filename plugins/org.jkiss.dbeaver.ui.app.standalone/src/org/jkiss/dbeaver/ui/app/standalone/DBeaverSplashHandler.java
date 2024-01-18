@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Shell;
@@ -62,7 +63,13 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     @Override
     public void init(Shell splash) {
         super.init(splash);
-
+        /*
+         * Related to a bug in MacOS Sonoma
+         * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
+         */
+        if (Util.isMac() && System.getProperty("os.version").startsWith("14")) { //$NON-NLS-1$ //$NON-NLS-2$
+           return; 
+        }
         try {
             initVisualization();
 
