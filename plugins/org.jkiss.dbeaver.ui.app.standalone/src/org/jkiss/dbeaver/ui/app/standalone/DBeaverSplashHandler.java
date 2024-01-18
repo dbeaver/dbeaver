@@ -67,7 +67,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * Related to a bug in MacOS Sonoma
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
-        if (isMacOsSamona()) { //$NON-NLS-1$ //$NON-NLS-2$
+        if (isMacOsSomona()) { //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
         try {
@@ -86,13 +86,13 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * Related to a bug in MacOS Sonoma
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
-        if (isMacOsSamona()) { //$NON-NLS-1$ //$NON-NLS-2$
+        if (isMacOsSomona()) { //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
         return super.getBundleProgressMonitor();
     }
 
-    private boolean isMacOsSamona() {
+    private boolean isMacOsSomona() {
         return Util.isMac() && System.getProperty("os.version").startsWith("14");
     }
 
