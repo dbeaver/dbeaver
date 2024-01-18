@@ -79,6 +79,18 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         }
 
     }
+    
+    @Override
+    public IProgressMonitor getBundleProgressMonitor() {
+        /*
+         * Related to a bug in MacOS Sonoma
+         * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
+         */
+        if (Util.isMac() && System.getProperty("os.version").startsWith("14")) { //$NON-NLS-1$ //$NON-NLS-2$
+           return null; 
+        }
+        return super.getBundleProgressMonitor();
+    }
 
     private void initVisualization() {
         String progressRectString = null, messageRectString = null, foregroundColorString = null,
