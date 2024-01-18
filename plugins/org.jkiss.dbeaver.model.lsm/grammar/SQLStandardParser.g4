@@ -331,8 +331,8 @@ selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetLi
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
 deleteStatement: DELETE FROM tableName whereClause?;
-insertStatement: INSERT INTO tableName insertColumnsAndSource;
-insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
+insertStatement: INSERT INTO tableName? insertColumnsAndSource;
+insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
 insertColumnList: columnNameList;
 
 // UPDATE

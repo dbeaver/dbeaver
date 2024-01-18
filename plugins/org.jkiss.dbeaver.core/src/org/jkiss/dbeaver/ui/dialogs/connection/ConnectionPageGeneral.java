@@ -318,6 +318,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DBPConnectionType type = connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex());
+                        getActiveDataSource().getConnectionConfiguration().setCloseIdleInterval((int) type.getCloseIdleTransactionPeriod());
                         getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, getActiveDataSource().getConnectionConfiguration().getConnectionType(), type);
                     }
                 });

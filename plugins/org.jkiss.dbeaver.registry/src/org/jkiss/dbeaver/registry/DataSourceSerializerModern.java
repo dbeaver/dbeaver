@@ -206,7 +206,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.field(jsonWriter, "smart-commit", ct.isSmartCommit());
                             JSONUtils.field(jsonWriter, "smart-commit-recover", ct.isSmartCommitRecover());
                             JSONUtils.field(jsonWriter, "auto-close-transactions", ct.isAutoCloseTransactions());
-                            JSONUtils.field(jsonWriter, "close-transactions-period", ct.getCloseIdleConnectionPeriod());
+                            JSONUtils.field(jsonWriter, "close-transactions-period", ct.getCloseIdleTransactionPeriod());
                             serializeModifyPermissions(jsonWriter, ct);
                             jsonWriter.endObject();
                         }

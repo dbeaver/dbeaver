@@ -395,10 +395,10 @@ public class SQLQueryModelRecognizer {
         @NotNull Consumer<SQLQueryQualifiedName> entityAction,
         boolean forceUnquotted
     ) {
-        List<STMTreeNode> refs = STMUtils.expandSubtree(root, null, Set.of(STMKnownRuleNames.columnReference, STMKnownRuleNames.tableName));
+        List<STMTreeNode> refs = STMUtils.expandSubtree(root, null, Set.of(STMKnownRuleNames.columnReference, STMKnownRuleNames.columnName, STMKnownRuleNames.tableName));
         for (STMTreeNode ref : refs) {
             switch (ref.getNodeKindId()) {
-                case SQLStandardParser.RULE_columnReference -> {
+                case SQLStandardParser.RULE_columnReference, SQLStandardParser.RULE_columnName -> {
                     if (ref.getChildCount() > 1) {
                         SQLQueryQualifiedName tableName = this.collectTableName(ref.getStmChild(0), forceUnquotted);
                         if (tableName != null) {
