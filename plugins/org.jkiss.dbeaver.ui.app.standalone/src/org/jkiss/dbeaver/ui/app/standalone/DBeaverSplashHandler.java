@@ -86,7 +86,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * Related to a bug in MacOS Sonoma
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
-        if (isMacOsSomona()) { //$NON-NLS-1$ //$NON-NLS-2$
+        if (isMacOsSomona()) {
             return null;
         }
         return super.getBundleProgressMonitor();
