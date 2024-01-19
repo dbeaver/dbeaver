@@ -200,11 +200,11 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     public void rearrangeDiagram() {
-        Job job = new Job("Rearrange entity relation diagram") {
+        Job job = new Job(ERDUIMessages.erd_job_rearrange_diagram_title) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 monitor.beginTask(ERDUIMessages.erd_job_rearrange_diagram_title, 10);
-                monitor.subTask("Rearrange connections");
+                monitor.subTask(ERDUIMessages.erd_job_rearrange_connection_lbl);
                 for (Object part : getChildren()) {
                     if (part instanceof NodePart) {
                         Display.getDefault().syncExec(() -> {
