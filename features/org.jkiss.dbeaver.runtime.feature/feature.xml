@@ -6,23 +6,23 @@
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
-   <description>
-      %description
-   </description>
+    <description>
+        %description
+    </description>
 
-   <copyright>
-      %copyright
-   </copyright>
+    <copyright>
+        %copyright
+    </copyright>
 
-   <license url="%licenseURL">
-      %license
-   </license>
+    <license url="%licenseURL">
+        %license
+    </license>
 
-   <requires>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.core.expressions"/>
-   </requires>
+    <requires>
+       <import plugin="org.eclipse.core.runtime"/>
+       <import plugin="org.eclipse.core.resources"/>
+       <import plugin="org.eclipse.core.expressions"/>
+    </requires>
 
     <!-- 3rd party -->
     <plugin id="slf4j.api" version="0.0.0" />
@@ -39,6 +39,9 @@
     <plugin id="org.objectweb.asm.tree" version="0.0.0" />
     <plugin id="org.objectweb.asm.util" version="0.0.0" />
     <plugin id="org.apache.aries.spifly.dynamic.bundle" version="0.0.0" />
+    
+    <!-- Our plugins -->
+    
     <plugin id="org.jkiss.utils" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.jdbc" version="0.0.0" />
