@@ -146,6 +146,11 @@ public class ERDUIMessages extends NLS {
     public static String erd_error_of_loading_diagram_label;
     public static String erd_error_of_loading_diagram_title;
 
+    public static String erd_job_rearrange_diagram_title;
+    public static String erd_job_rearrange_entity_lbl;
+    public static String erd_job_rearrange_connection_lbl;
+    public static String erd_job_repaint_diagram_lbl;
+
     private ERDUIMessages() {
     }
 }
