@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
@@ -27,11 +27,15 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStackEvent;
 import org.eclipse.gef.commands.CommandStackEventListener;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -54,6 +58,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +69,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-    
+
+    private static final Log log = Log.getLog(DiagramPart.class);
     private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
@@ -190,19 +196,38 @@ public class DiagramPart extends PropertyAwarePart {
         return boldItalicFont;
     }
 
-    public void rearrangeDiagram()
-    {
-        for (Object part : getChildren()) {
-            if (part instanceof NodePart) {
-                resetConnectionConstraints(((NodePart) part).getSourceConnections());
-            }
+    public void rearrangeDiagram() {
+        ProgressMonitorDialog progress = new ProgressMonitorDialog(Display.getDefault().getActiveShell());
+        try {
+            progress.run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor) throws InterruptedException {
+                    monitor.beginTask("Rearrange entity relation diagram", 10);
+                    monitor.subTask("Rearrange connections");
+                    for (Object part : getChildren()) {
+                        if (part instanceof NodePart) {
+                            Display.getDefault().syncExec(() -> {
+                                resetConnectionConstraints(((NodePart) part).getSourceConnections());
+                            });
+                        }
+                    }
+                    monitor.worked(3);
+                    monitor.subTask("Rearrange entities");
+                    Display.getDefault().syncExec(() -> {
+                        delegatingLayoutManager.rearrange(getFigure());
+                    });
+                    monitor.worked(3);
+                    monitor.subTask("Repaint entity relation diagram");
+                    Display.getDefault().syncExec(() -> {
+                        getFigure().repaint();
+                    });
+                    monitor.worked(4);
+                    monitor.done();
+                }
+            });
+        } catch (InvocationTargetException | InterruptedException e) {
+            log.error(e);
         }
-        //delegatingLayoutManager.set
-        delegatingLayoutManager.rearrange(getFigure());
-
-        //getFigure().setLayoutManager(delegatingLayoutManager);
-        //getFigure().getLayoutManager().layout(getFigure());
-        getFigure().repaint();
     }
 
     private void resetConnectionConstraints(List<?> sourceConnections) {
