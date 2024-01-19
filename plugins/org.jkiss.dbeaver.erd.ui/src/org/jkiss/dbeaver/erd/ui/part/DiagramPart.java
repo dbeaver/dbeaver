@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -203,14 +205,16 @@ public class DiagramPart extends PropertyAwarePart {
         getFigure().repaint();
     }
 
-    private void resetConnectionConstraints(List sourceConnections) {
+    private void resetConnectionConstraints(List<?> sourceConnections) {
         if (!CommonUtils.isEmpty(sourceConnections)) {
             for (Object sc : sourceConnections) {
                 if (sc instanceof AbstractConnectionEditPart) {
                     ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
                     if (sc instanceof AssociationPart) {
                         ((AssociationPart) sc).getAssociation().setInitBends(null);
-                        ((AssociationPart) sc).setConnectionRouting((PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                        ((AssociationPart) sc)
+                                .setConnectionRouting(new VoidProgressMonitor(),
+                                        (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
                     }
                 }
             }

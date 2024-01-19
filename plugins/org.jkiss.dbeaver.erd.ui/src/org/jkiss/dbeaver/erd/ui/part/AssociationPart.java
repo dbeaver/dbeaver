@@ -47,6 +47,8 @@ import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -104,6 +106,15 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
+        DBRProgressMonitor monitor = new VoidProgressMonitor();
+        PolylineConnection conn = createConnectionFigure(monitor);
+        setConnectionStyles(monitor, conn);
+        setConnectionRouting(monitor, conn);
+        setConnectionToolTip(monitor, conn);
+        return conn;
+    }
+
+    private PolylineConnection createConnectionFigure(DBRProgressMonitor monitor) {
         PolylineConnection conn;
         ERDConnectionRouter router = getDiagramPart().getActiveRouter();
         if (router != null) {
@@ -122,13 +133,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 conn.add(descLabel, descLabelLocator);
             }
         }
-        setConnectionStyles(conn);
-        setConnectionRouting(conn);
-        setConnectionToolTip(conn);
         return conn;
     }
 
-    protected void setConnectionRouting(PolylineConnection conn) {
+    protected void setConnectionRouting(DBRProgressMonitor monitor, PolylineConnection conn) {
         ERDAssociation association = getAssociation();
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
@@ -176,7 +184,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
     }
 
-    protected void setConnectionStyles(PolylineConnection conn) {
+    protected void setConnectionStyles(DBRProgressMonitor monitor, PolylineConnection conn) {
         ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
         if (diagramNotationDescriptor == null) {
             log.error("ERD notation descriptor is not defined");
@@ -185,14 +193,14 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             Color background = getParent().getViewer().getControl().getBackground();
             ERDNotation notation = diagramNotationDescriptor.getNotation();
             if (notation != null) {
-                notation.applyNotationForArrows(conn, getAssociation(), background, labelForegroundColor);
+                notation.applyNotationForArrows(monitor, conn, getAssociation(), background, labelForegroundColor);
             } else {
                 log.error("ERD notation instance not created for id: " + diagramNotationDescriptor.getId());
             }
         }
     }
 
-    protected void setConnectionToolTip(PolylineConnection conn) {
+    protected void setConnectionToolTip(DBRProgressMonitor monitor, PolylineConnection conn) {
         // Set tool tip
         Label toolTip = new Label(getAssociation().getObject().getName() + " [" + getAssociation().getObject().getConstraintType().getName() + "]");
         toolTip.setIcon(DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
