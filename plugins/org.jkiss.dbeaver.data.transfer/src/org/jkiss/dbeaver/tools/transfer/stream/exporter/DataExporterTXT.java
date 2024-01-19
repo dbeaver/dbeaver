@@ -169,6 +169,18 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private static final String PROP_DELIM_BETWEEN = "delimBetween";
     private static final String PROP_SHOW_HEADER = "showHeader";
 
+    enum InBetweenChar {
+        pipe("|"),
+        space(" "),
+        nothing("");
+
+        String character;
+
+        InBetweenChar(String character) {
+            this.character = character;
+        }
+    }
+
     private int batchSize = 200;
     private int maxColumnSize = 0;
     private int minColumnSize = 1;
@@ -177,7 +189,7 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private boolean delimLeading;
     private boolean delimHeader;
     private boolean delimTrailing;
-    private boolean delimBetween;
+    private String delimBetween;
     private Deque<CellValue[]> batchQueue;
 
     // The followings may be a setting some time
@@ -205,7 +217,14 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
-        this.delimBetween = CommonUtils.getBoolean(properties.get(PROP_DELIM_BETWEEN), true);
+        String prop = CommonUtils.toString(properties.get(PROP_DELIM_BETWEEN));
+        if (Boolean.FALSE.toString().equals(prop)) {
+            // Backward compatibility - use space.
+            delimBetween = InBetweenChar.space.character;
+        } else {
+            InBetweenChar inBetweenChar = CommonUtils.valueOf(InBetweenChar.class, CommonUtils.toString(prop), InBetweenChar.pipe);
+            delimBetween = inBetweenChar.character;
+        }
         this.showHeader = CommonUtils.getBoolean(properties.get(PROP_SHOW_HEADER), true);
         this.batchQueue = new ArrayDeque<>(this.batchSize);
         if (this.maxColumnSize > 0) {
@@ -412,7 +431,7 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
             }
 
             if (index < length - 1) {
-                target.append(delimBetween ? '|' : ' ');
+                target.append(delimBetween);
             }
         }
 
