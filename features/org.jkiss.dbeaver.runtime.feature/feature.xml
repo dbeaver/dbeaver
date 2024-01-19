@@ -67,6 +67,6 @@
     <plugin id="org.jkiss.bundle.jsvg" version="0.0.0" />
 
     <!-- Launcher -->
-    <plugin id="org.jkiss.bundle.launcher" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.launcher" version="0.0.0"/>
 
 </feature>
