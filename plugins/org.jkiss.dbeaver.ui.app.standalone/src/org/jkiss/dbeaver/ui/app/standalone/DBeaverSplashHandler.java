@@ -21,13 +21,18 @@ import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * @since 3.3
@@ -67,7 +72,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * Related to a bug in MacOS Sonoma
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
-        if (isMacOsSomona()) { //$NON-NLS-1$ //$NON-NLS-2$
+        if (RuntimeUtils.isMacOsSomona()) {
             return;
         }
         try {
@@ -86,14 +91,10 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
          * Related to a bug in MacOS Sonoma
          * (https://github.com/eclipse-platform/eclipse.platform.swt/issues/772)
          */
-        if (isMacOsSomona()) {
+        if (RuntimeUtils.isMacOsSomona()) {
             return null;
         }
         return super.getBundleProgressMonitor();
-    }
-
-    private boolean isMacOsSomona() {
-        return Util.isMac() && System.getProperty("os.version").startsWith("14");
     }
 
     private void initVisualization() {

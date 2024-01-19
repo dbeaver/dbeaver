@@ -20,7 +20,6 @@ import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.jface.util.Util;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
@@ -252,10 +251,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         writeWorkspaceInfo();
 
         // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
-        if (!(Util.isMac() && System.getProperty("os.version").startsWith("14"))) { //$NON-NLS-1$ //$NON-NLS-2$
+        if (!RuntimeUtils.isMacOsSomona()) {
             updateSplashHandler();
         }
-        
+
         if (RuntimeUtils.isWindows() && isStandalone()) {
             SWTBrowserRegistry.overrideBrowser();
         }
