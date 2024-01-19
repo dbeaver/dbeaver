@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.erd.ui.part;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.IFigure;
@@ -39,7 +40,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -57,6 +57,8 @@ import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -207,7 +209,8 @@ public class DiagramPart extends PropertyAwarePart {
                 for (Object part : getChildren()) {
                     if (part instanceof NodePart) {
                         Display.getDefault().syncExec(() -> {
-                            resetConnectionConstraints(((NodePart) part).getSourceConnections());
+                            resetConnectionConstraints(SubMonitor.convert(monitor),
+                                    ((NodePart) part).getSourceConnections());
                         });
                     }
                 }
@@ -234,16 +237,16 @@ public class DiagramPart extends PropertyAwarePart {
         job.schedule();
     }
 
-    private void resetConnectionConstraints(List<?> sourceConnections) {
+    private void resetConnectionConstraints(IProgressMonitor monitor, List<?> sourceConnections) {
         if (!CommonUtils.isEmpty(sourceConnections)) {
             for (Object sc : sourceConnections) {
                 if (sc instanceof AbstractConnectionEditPart) {
                     ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
                     if (sc instanceof AssociationPart) {
                         ((AssociationPart) sc).getAssociation().setInitBends(null);
-                        ((AssociationPart) sc)
-                                .setConnectionRouting(new VoidProgressMonitor(),
-                                        (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                        DBRProgressMonitor dbMonitor = new DefaultProgressMonitor(monitor);
+                        ((AssociationPart) sc).setConnectionRouting(dbMonitor,
+                                (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
                     }
                 }
             }
