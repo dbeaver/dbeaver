@@ -19,9 +19,9 @@
     </license>
 
     <requires>
-       <import plugin="org.eclipse.core.runtime"/>
-       <import plugin="org.eclipse.core.resources"/>
-       <import plugin="org.eclipse.core.expressions"/>
+        <import plugin="org.eclipse.core.runtime"/>
+        <import plugin="org.eclipse.core.resources"/>
+        <import plugin="org.eclipse.core.expressions"/>
     </requires>
 
     <!-- 3rd party -->
@@ -68,6 +68,5 @@
 
     <!-- Launcher -->
     <plugin id="org.jkiss.bundle.launcher" version="0.0.0" />
-
 
 </feature>
