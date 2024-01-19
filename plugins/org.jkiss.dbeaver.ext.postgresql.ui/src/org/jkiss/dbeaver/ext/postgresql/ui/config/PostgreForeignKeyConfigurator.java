@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -44,7 +48,7 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
 
 
     @Override
-    public PostgreTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, PostgreTableForeignKey foreignKey, Map<String, Object> options) {
+    public PostgreTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull PostgreTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return new UITask<PostgreTableForeignKey>() {
             @Override
             protected PostgreTableForeignKey runTask() {
@@ -69,6 +73,7 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 }
                 foreignKey.setDeferrable(editPage.isDeferrable);
                 foreignKey.setDeferred(editPage.isDeferred);
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
                 return foreignKey;
             }
         }.execute();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,4 +79,9 @@ public class Pair<T1, T2> {
     public int hashCode() {
         return (first == null ? 0 : first.hashCode()) ^ (second == null ? 0 : second.hashCode());
     }
+
+    public static <T1, T2> Pair<T1, T2> of(T1 t1, T2 t2) {
+        return new Pair<>(t1, t2);
+    }
+
 }

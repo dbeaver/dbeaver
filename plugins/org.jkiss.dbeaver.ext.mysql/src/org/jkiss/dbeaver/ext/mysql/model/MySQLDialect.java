@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -172,8 +174,6 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     public void initBaseDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
-        this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
-        this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
 
         addTableQueryKeywords(SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
         addFunctions(List.of("SLEEP"));
@@ -197,6 +197,12 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
     }
 
+    @Override
+    public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
+        this.lowerCaseTableNames = ((MySQLDataSource) dataSource).getLowerCaseTableNames();
+        this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
+    }
+    
     @Nullable
     @Override
     public String[][] getIdentifierQuoteStrings() {
@@ -356,5 +362,14 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE DATABASE " + schemaName;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.HAVING,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -224,7 +224,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             return permissionMap.get(fqProcName);
         } else if (object instanceof DBNDatabaseFolder) {
             DBNDatabaseFolder folder = (DBNDatabaseFolder) object;
-            String parentNodeName = folder.getParentNode().getNodeName();
+            String parentNodeName = folder.getParentNode().getNodeDisplayName();
             Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
             String permissionKey = parentNodeName + ".";
             if (DBSSequence.class.isAssignableFrom(childrenClass)) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,12 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         ASC,
         DESC,
         NONE
+    }
+
+    enum RowPlacement {
+        BEFORE_SELECTION,
+        AFTER_SELECTION,
+        AT_END
     }
 
     @NotNull
@@ -153,7 +159,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     void setCurrentRow(@Nullable ResultSetRow row);
 
     @NotNull
-    ResultSetRow addNewRow(final boolean copyCurrent, boolean afterCurrent, boolean updatePresentation);
+    ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation);
 
     /**
      * Fills rows in current selection with values from row above/below it.

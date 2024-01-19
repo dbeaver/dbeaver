@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public class NavigatorDragSourceListener implements DragSourceListener {
             } else if (nextSelected instanceof DBNStreamData streamData && streamData.supportsStreamData()
                 && (EditorInputTransfer.getInstance().isSupportedType(event.dataType)
                     || FileTransfer.getInstance().isSupportedType(event.dataType))) {
-                String fileName = node.getNodeName();
+                String fileName = node.getNodeDisplayName();
                 try {
                     Path tmpFile = copyStreamToTempFile(streamData, fileName);
                     if (tmpFile == null) {

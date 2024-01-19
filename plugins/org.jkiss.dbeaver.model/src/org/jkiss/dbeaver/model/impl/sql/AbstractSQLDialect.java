@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -480,7 +480,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (!hasBadChars && forceCaseSensitive) {
             // Check for case of quoted indents. Do not check for unquoted case - we don't need to quote em anyway
             // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
-            // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
+            // unless database use case-insensitive search always (e.g. MySQL with lower_case_table_names <> 0)
             if (!this.useCaseInsensitiveNameLookup()) {
                 // See how unquoted identifiers are stored
                 // If passed identifier case differs from unquoted then we need to escape it

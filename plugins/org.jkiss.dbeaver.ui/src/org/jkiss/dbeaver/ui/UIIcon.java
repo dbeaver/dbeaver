@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,6 +154,7 @@ public class UIIcon {
     public static final DBIcon EDIT_TABLE = new DBIcon("edit_table", "misc/edit_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon EDIT_COLUMN = new DBIcon("edit_column", "misc/edit_column.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CONFIG_TABLE = new DBIcon("edit_table", "misc/config_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_TABLE = new DBIcon("edit_table", "sql/sql_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon OBJ_ADD = new DBIcon("object_add", "misc/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OBJ_REMOVE = new DBIcon("object_remove", "misc/object_remove.png"); //$NON-NLS-1$ //$NON-NLS-2$

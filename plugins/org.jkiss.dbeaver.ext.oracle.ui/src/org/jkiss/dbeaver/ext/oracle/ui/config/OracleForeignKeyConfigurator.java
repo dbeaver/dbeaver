@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -35,7 +39,7 @@ import java.util.Map;
 public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<OracleTableForeignKey> {
 
     @Override
-    public OracleTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, OracleTableForeignKey foreignKey, Map<String, Object> options) {
+    public OracleTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull OracleTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditForeignKeyPage editPage = new EditForeignKeyPage(
                 OracleUIMessages.edit_oracle_foreign_key_manager_dialog_title,
@@ -61,6 +65,7 @@ public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<Oracl
                         (OracleTableColumn) tableColumn.getOwnColumn(),
                         colIndex++));
             }
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
             return foreignKey;
         });
     }

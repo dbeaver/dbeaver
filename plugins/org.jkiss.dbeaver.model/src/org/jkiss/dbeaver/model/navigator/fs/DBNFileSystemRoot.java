@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return root.getName();
     }
 

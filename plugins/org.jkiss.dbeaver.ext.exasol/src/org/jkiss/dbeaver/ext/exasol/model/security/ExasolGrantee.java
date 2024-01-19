@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.ext.exasol.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.exasol.model.*;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;

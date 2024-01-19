@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.exasol.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
@@ -23,7 +25,9 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 
@@ -35,7 +39,7 @@ public class ExasolForeignKeyConfigurator implements DBEObjectConfigurator<Exaso
     protected static final Log log = Log.getLog(ExasolForeignKeyConfigurator.class);
 
     @Override
-    public ExasolTableForeignKey configureObject(DBRProgressMonitor monitor, Object container, ExasolTableForeignKey foreignKey, Map<String, Object> options) {
+    public ExasolTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull ExasolTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         ExasolTable table = (ExasolTable) container;
         return new UITask<ExasolTableForeignKey>() {
             @Override
@@ -65,7 +69,8 @@ public class ExasolForeignKeyConfigurator implements DBEObjectConfigurator<Exaso
                     }
                 }
 
-                foreignKey.setColumns(columns);
+                foreignKey.setAttributeReferences(columns);
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
 
                 return foreignKey;
             }

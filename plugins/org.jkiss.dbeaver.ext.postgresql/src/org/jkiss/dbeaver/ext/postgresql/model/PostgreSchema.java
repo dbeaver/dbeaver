@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -488,6 +489,7 @@ public class PostgreSchema implements
         return schema;
     }
 
+    @DPIElement(cache = true)
     @Override
     public boolean isSystem() {
         return
@@ -496,10 +498,12 @@ public class PostgreSchema implements
                 name.startsWith(PostgreConstants.SYSTEM_SCHEMA_PREFIX);
     }
 
+    @DPIElement(cache = true)
     public boolean isUtility() {
         return isUtilitySchema(name);
     }
 
+    @DPIElement(cache = true)
     public boolean isExternal() {
         return false;
     }
@@ -882,7 +886,7 @@ public class PostgreSchema implements
         protected PostgreTableColumn fetchChild(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @NotNull PostgreTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             try {
-                return container.getDataSource().getServerType().createTableColumn(session.getProgressMonitor(), PostgreSchema.this, table, dbResult);
+                return table.createTableColumn(session.getProgressMonitor(), PostgreSchema.this, dbResult);
             } catch (DBException e) {
                 log.warn("Error reading attribute info", e);
                 return null;
@@ -898,7 +902,7 @@ public class PostgreSchema implements
     /**
      * Constraint cache implementation
      */
-    public class ConstraintCache extends JDBCCompositeCache<PostgreTableContainer, PostgreTableBase, PostgreTableConstraintBase, PostgreTableConstraintColumn> {
+    public class ConstraintCache extends JDBCCompositeCache<PostgreTableContainer, PostgreTableBase, PostgreTableConstraintBase<?>, PostgreTableConstraintColumn> {
         protected ConstraintCache() {
             super(getTableCache(), PostgreTableBase.class, "tabrelname", "conname");
         }
@@ -931,7 +935,7 @@ public class PostgreSchema implements
 
         @Nullable
         @Override
-        protected PostgreTableConstraintBase fetchObject(JDBCSession session, PostgreTableContainer container, PostgreTableBase table, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected PostgreTableConstraintBase<?> fetchObject(JDBCSession session, PostgreTableContainer container, PostgreTableBase table, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "conname");
             String type = JDBCUtils.safeGetString(resultSet, "contype");
             if (type == null) {
@@ -976,7 +980,7 @@ public class PostgreSchema implements
 
         @Nullable
         @Override
-        protected PostgreTableConstraintColumn[] fetchObjectRow(JDBCSession session, PostgreTableBase table, PostgreTableConstraintBase constraint, JDBCResultSet resultSet)
+        protected PostgreTableConstraintColumn[] fetchObjectRow(JDBCSession session, PostgreTableBase table, PostgreTableConstraintBase<?> constraint, JDBCResultSet resultSet)
             throws SQLException, DBException {
             Number[] keyNumbers = PostgreUtils.safeGetNumberArray(resultSet, "conkey");
             if (keyNumbers == null) {
@@ -1038,12 +1042,12 @@ public class PostgreSchema implements
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, PostgreTableConstraintBase object, List<PostgreTableConstraintColumn> children) {
+        protected void cacheChildren(DBRProgressMonitor monitor, PostgreTableConstraintBase<?> object, List<PostgreTableConstraintColumn> children) {
             object.cacheAttributes(monitor, children, false);
         }
 
         @Override
-        protected void cacheChildren2(DBRProgressMonitor monitor, PostgreTableConstraintBase object, List<PostgreTableConstraintColumn> children) {
+        protected void cacheChildren2(DBRProgressMonitor monitor, PostgreTableConstraintBase<?> object, List<PostgreTableConstraintColumn> children) {
             object.cacheAttributes(monitor, children, true);
         }
     }

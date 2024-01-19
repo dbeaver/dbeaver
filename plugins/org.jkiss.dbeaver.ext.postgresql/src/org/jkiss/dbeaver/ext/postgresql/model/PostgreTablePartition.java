@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *               2017 Andrew Khitrin   (andrew@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -81,8 +81,6 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         options.put(OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, false);
         options.put(OPTION_INCLUDE_NESTED_OBJECTS, false);
         options.put(OPTION_INCLUDE_PERMISSIONS, false);
-        options.put(OPTION_SKIP_INDEXES, true);
-        options.put(DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS, true);
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 

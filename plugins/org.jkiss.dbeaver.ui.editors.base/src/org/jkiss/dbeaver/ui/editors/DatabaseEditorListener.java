@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ public class DatabaseEditorListener implements INavigatorListener
             return editorNode == other;
         } else {
             final String path = getEditorNodePath();
-            return path != null && path.equals(other.getNodeItemPath());
+            return path != null && path.equals(other.getNodeUri());
         }
     }
 
@@ -137,7 +137,7 @@ public class DatabaseEditorListener implements INavigatorListener
             return editorNode == node || editorNode.isChildOf(node);
         } else {
             final String path = getEditorNodePath();
-            return path != null && path.startsWith(node.getNodeItemPath());
+            return path != null && path.startsWith(node.getNodeUri());
         }
     }
 
@@ -159,7 +159,7 @@ public class DatabaseEditorListener implements INavigatorListener
         if (input instanceof DatabaseLazyEditorInput) {
             return ((DatabaseLazyEditorInput) input).getNodePath();
         } else if (input instanceof IDatabaseEditorInput) {
-            return ((DBNNode) ((IDatabaseEditorInput) input).getNavigatorNode()).getNodeItemPath();
+            return ((DBNNode) ((IDatabaseEditorInput) input).getNavigatorNode()).getNodeUri();
         } else {
             return null;
         }

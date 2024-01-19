@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@ public class ScopeConfigDialog extends BaseDialog {
                     new TreeItem(objectTree, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
                 item.setData(child);
                 item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
-                item.setText(node.getNodeName());
+                item.setText(node.getNodeDisplayName());
                 String objectId = DBUtils.getObjectFullId(child);
                 if (checkedObjectIds.contains(objectId)) {
                     item.setChecked(true);

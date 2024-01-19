@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
@@ -45,9 +44,12 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBPReferentialIntegrityController {
+public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBPReferentialIntegrityController, DBSEntityConstrainable {
     private static final CharSequence TABLE_NAME_PLACEHOLDER = "%table_name%";
     private static final CharSequence FOREIGN_KEY_NAME_PLACEHOLDER = "%foreign_key_name%";
     private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE " + TABLE_NAME_PLACEHOLDER + " MODIFY CONSTRAINT "
@@ -57,8 +59,8 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
 
     private long sizeRaw;
     private long sizeCompressed;
-    private String tablePrefix;
-    private ExasolTablePartitionColumnCache tablePartitionColumnCache = new ExasolTablePartitionColumnCache();
+    private final String tablePrefix;
+    private final ExasolTablePartitionColumnCache tablePartitionColumnCache = new ExasolTablePartitionColumnCache();
 
     public static class TableAdditionalInfo {
         volatile boolean loaded = false;
@@ -311,6 +313,16 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     // -----------------
     // Associations
     // -----------------
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, ExasolTableUniqueKey.class)
+            //DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, ExasolTableUniqueKey.class)
+        );
+    }
+
+
     @Nullable
     @Override
     @Association

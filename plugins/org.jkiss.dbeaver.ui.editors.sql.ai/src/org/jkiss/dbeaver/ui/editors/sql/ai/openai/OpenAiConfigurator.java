@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,9 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         if (isUsesModel()) {
             modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
             for (GPTModel model : GPTModel.values()) {
-                modelCombo.add(model.getName());
+                if (model.getDeprecationReplacementModel() == null) {
+                    modelCombo.add(model.getName());
+                }
             }
             modelCombo.addSelectionListener(new SelectionAdapter() {
                 @Override

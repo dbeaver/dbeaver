@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectInsertReplaceMethod;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,8 +48,8 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
-    private boolean isAbstract;
-    private boolean isHidden;
+    private final boolean isAbstract;
+    private final boolean isHidden;
     private SQLDialectDescriptor parentDialect;
     private List<SQLDialectDescriptor> subDialects = null;
 
@@ -63,7 +65,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     private List<String> insertMethodNames;
     private DBDInsertReplaceMethod[] insertReplaceMethods;
-    private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors;
+    private List<SQLDialectInsertReplaceMethod> insertMethodDescriptors;
 
     SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
@@ -83,36 +85,20 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                 continue;
             }
             switch (propName) {
-                case "keywords":
-                    this.keywords = loadList(propValue);
-                    break;
-                case "ddlKeywords":
-                    this.ddlKeywords = loadList(propValue);
-                    break;
-                case "dmlKeywords":
-                    this.dmlKeywords = loadList(propValue);
-                    break;
-                case "execKeywords":
-                    this.execKeywords = loadList(propValue);
-                    break;
-                case "txnKeywords":
-                    this.txnKeywords = loadList(propValue);
-                    break;
-                case "types":
-                    this.types = loadList(propValue);
-                    break;
-                case "functions":
-                    this.functions = loadList(propValue);
-                    break;
-                case "insertMethods":
-                    insertMethodNames = loadList(propValue);
-                    break;
-                default:
+                case "keywords" -> this.keywords = loadList(propValue);
+                case "ddlKeywords" -> this.ddlKeywords = loadList(propValue);
+                case "dmlKeywords" -> this.dmlKeywords = loadList(propValue);
+                case "execKeywords" -> this.execKeywords = loadList(propValue);
+                case "txnKeywords" -> this.txnKeywords = loadList(propValue);
+                case "types" -> this.types = loadList(propValue);
+                case "functions" -> this.functions = loadList(propValue);
+                case "insertMethods" -> insertMethodNames = loadList(propValue);
+                default -> {
                     if (properties == null) {
                         properties = new LinkedHashMap<>();
                     }
                     this.properties.put(propName, propValue);
-                    break;
+                }
             }
         }
     }
@@ -257,13 +243,13 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         return new DBDInsertReplaceMethod[0];
     }
 
-    public List<SQLInsertReplaceMethodDescriptor> getSupportedInsertReplaceMethodsDescriptors() {
+    public List<SQLDialectInsertReplaceMethod> getSupportedInsertReplaceMethodsDescriptors() {
         if (insertReplaceMethods == null && !CommonUtils.isEmpty(insertMethodNames)) {
             try {
                 insertMethodDescriptors = new ArrayList<>();
                 List<DBDInsertReplaceMethod> methodsList = new ArrayList<>();
                 for (String insertMethodId : insertMethodNames) {
-                    SQLInsertReplaceMethodDescriptor method = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                    SQLDialectInsertReplaceMethod method = DBWorkbench.getPlatform().getSQLDialectRegistry().getInsertReplaceMethod(insertMethodId);
                     insertMethodDescriptors.add(method);
                     methodsList.add(method.createInsertMethod());
                 }
@@ -273,7 +259,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             }
         }
 
-        return insertMethodDescriptors;
+        return new ArrayList<>(insertMethodDescriptors);
     }
 
     @Override

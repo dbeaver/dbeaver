@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ options {
 @header {
     /*
      * DBeaver - Universal Database Manager
-     * Copyright (C) 2010-2023 DBeaver Corp and others
+     * Copyright (C) 2010-2024 DBeaver Corp and others
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -40,12 +40,6 @@ options {
      * limitations under the License.
      */
     package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
-}
-
-@members {
-private boolean isSupportSquareBracketQuotation;
-public boolean isSupportSquareBracketQuotation() { return isSupportSquareBracketQuotation; }
-public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareBracketQuotation = value; }
 }
 
 // root rule for script
@@ -77,8 +71,7 @@ unqualifiedSchemaName: identifier;
 qualifiedName: (schemaName Period)? identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier|squareBracketIdentifier|nonReserved);
-squareBracketIdentifier: {isSupportSquareBracketQuotation()}? LeftBracket (~RightBracket|(RightBracket RightBracket))* RightBracket;
+actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted);
 
 // data types
 dataType: (datetimeType|intervalType|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
@@ -338,8 +331,8 @@ selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetLi
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
 deleteStatement: DELETE FROM tableName whereClause?;
-insertStatement: INSERT INTO tableName insertColumnsAndSource;
-insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
+insertStatement: INSERT INTO tableName? insertColumnsAndSource;
+insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
 insertColumnList: columnNameList;
 
 // UPDATE

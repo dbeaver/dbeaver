@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore"
-    application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="23.3.0.qualifier" useFeatures="true"
+    application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="23.3.3.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -30,6 +30,7 @@
             --add-opens=java.base/jdk.internal.vm=ALL-UNNAMED
             --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
             --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.fs=ALL-UNNAMED
             --add-opens=java.base/sun.security.ssl=ALL-UNNAMED
             --add-opens=java.base/sun.security.action=ALL-UNNAMED
             --add-opens=java.base/sun.security.util=ALL-UNNAMED
@@ -60,7 +61,7 @@
         <url>https://dbeaver.io/about/</url>
         <text>
             DBeaver - Universal Database Manager
-            Copyright (C) 2010-2023 DBeaver Corp and others
+            Copyright (C) 2010-2024 DBeaver Corp and others
 
             Licensed under the Apache License, Version 2.0 (the "License");
             you may not use this file except in compliance with the License.

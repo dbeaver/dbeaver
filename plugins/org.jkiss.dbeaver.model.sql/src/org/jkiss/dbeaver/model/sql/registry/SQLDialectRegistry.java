@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,36 +19,30 @@ package org.jkiss.dbeaver.model.sql.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.sql.SQLDialectInsertReplaceMethod;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.service.component.annotations.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SQLDialectRegistry
-{
+@Component
+public class SQLDialectRegistry implements SQLDialectMetadataRegistry {
     static final String TAG_DIALECT = "dialect"; //$NON-NLS-1$
-
-    private static SQLDialectRegistry instance = null;
-
-    public synchronized static SQLDialectRegistry getInstance()
-    {
-        if (instance == null) {
-            instance = new SQLDialectRegistry();
-            instance.loadExtensions(Platform.getExtensionRegistry());
-        }
-        return instance;
-    }
+    private static final String TAG_METHOD = "method"; //$NON-NLS-1$
 
     private final Map<String, SQLDialectDescriptor> dialects = new LinkedHashMap<>();
+    private final List<SQLInsertReplaceMethodDescriptor> insertMethods = new ArrayList<>();
 
-    private SQLDialectRegistry()
-    {
+    public SQLDialectRegistry() {
+        loadExtensions(Platform.getExtensionRegistry());
     }
 
-    private void loadExtensions(IExtensionRegistry registry)
-    {
+    private void loadExtensions(IExtensionRegistry registry) {
         IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLDialectDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extConfigs) {
             if (TAG_DIALECT.equals(ext.getName())) {
@@ -70,14 +64,20 @@ public class SQLDialectRegistry
                 }
             }
         }
+
+        for (IConfigurationElement ext : registry.getConfigurationElementsFor(SQLInsertReplaceMethodDescriptor.EXTENSION_ID)) {
+            // Load insert methods
+            if (TAG_METHOD.equals(ext.getName())) {
+                this.insertMethods.add(new SQLInsertReplaceMethodDescriptor(ext));
+            }
+        }
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         dialects.clear();
     }
 
-    public List<SQLDialectDescriptor> getDialects() {
+    public List<SQLDialectMetadata> getDialects() {
         return new ArrayList<>(dialects.values());
     }
 
@@ -85,8 +85,8 @@ public class SQLDialectRegistry
         return dialects.get(id);
     }
 
-    public List<SQLDialectDescriptor> getRootDialects() {
-        List<SQLDialectDescriptor> roots = new ArrayList<>();
+    public List<SQLDialectMetadata> getRootDialects() {
+        List<SQLDialectMetadata> roots = new ArrayList<>();
         for (SQLDialectDescriptor dd : dialects.values()) {
             if (dd.getParentDialect() == null) {
                 roots.add(dd);
@@ -94,4 +94,27 @@ public class SQLDialectRegistry
         }
         return roots;
     }
+
+    public List<SQLInsertReplaceMethodDescriptor> getInsertMethods() {
+        return new ArrayList<>(insertMethods);
+    }
+
+    public SQLDialectInsertReplaceMethod getInsertReplaceMethod(String insertMethodId) {
+        for (SQLInsertReplaceMethodDescriptor method : insertMethods) {
+            if (method.getId().equalsIgnoreCase(insertMethodId)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    public SQLInsertReplaceMethodDescriptor getInsertMethodOnLabel(String label) {
+        for (SQLInsertReplaceMethodDescriptor method : insertMethods) {
+            if (method.getLabel().equalsIgnoreCase(label)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
 }

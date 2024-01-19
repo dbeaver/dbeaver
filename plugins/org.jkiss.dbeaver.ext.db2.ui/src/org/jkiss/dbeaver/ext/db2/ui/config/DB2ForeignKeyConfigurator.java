@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -47,7 +51,7 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
     }
 
     @Override
-    public DB2TableForeignKey configureObject(DBRProgressMonitor monitor, Object container, DB2TableForeignKey foreignKey, Map<String, Object> options) {
+    public DB2TableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DB2TableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return new UITask<DB2TableForeignKey>() {
             @Override
             protected DB2TableForeignKey runTask() {
@@ -73,7 +77,8 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
                         columns.add(column);
                     }
 
-                    foreignKey.setColumns(columns);
+                    foreignKey.setAttributeReferences(columns);
+                    SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
 
                     return foreignKey;
             }

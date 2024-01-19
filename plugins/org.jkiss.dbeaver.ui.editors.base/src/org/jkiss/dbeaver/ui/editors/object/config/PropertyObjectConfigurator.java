@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.ui.editors.object.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -30,9 +33,15 @@ import java.util.Map;
  */
 public class PropertyObjectConfigurator implements DBEObjectConfigurator<DBSObject> {
     @Override
-    public DBSObject configureObject(DBRProgressMonitor monitor, Object table, DBSObject object, Map<String, Object> options) {
+    public DBSObject configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object table,
+        @NotNull DBSObject object,
+        @NotNull Map<String, Object> options
+    ) {
         return UITask.run(() -> {
-            final PropertyObjectEditPage page = new PropertyObjectEditPage(null, object);
+            final PropertyObjectEditPage<?> page = new PropertyObjectEditPage<>(commandContext, object);
             if (!page.edit()) {
                 return null;
             }

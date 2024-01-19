@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,14 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.Pair;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -55,6 +61,14 @@ public interface SQLDialect {
         PLAIN,
         INSERT_ALL
     }
+
+    enum ProjectionAliasVisibilityScope {
+        WHERE,
+        HAVING,
+        GROUP_BY,
+        ORDER_BY;
+    }
+
     @NotNull
     SQLDialectQueryGenerator getQueryGenerator();
 
@@ -498,4 +512,16 @@ public interface SQLDialect {
      * @return a set of SQLBlockCompletions with information about blocks for autoedit
      */
     SQLBlockCompletions getBlockCompletions();
+
+    default EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.WHERE,
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.HAVING,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
+    }
+
+    default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
+    }
 }

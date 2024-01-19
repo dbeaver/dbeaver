@@ -31,6 +31,7 @@ import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ui.svg.ImageConverter;
 
 import java.awt.*;
 import java.awt.geom.*;

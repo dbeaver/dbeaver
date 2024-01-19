@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ import java.util.List;
  * GenericTableConstraint
  */
 public class GenericUniqueKey extends GenericTableConstraint {
-    private List<GenericTableConstraintColumn> columns;
+    private final List<GenericTableConstraintColumn> columns = new ArrayList<>();
 
     public GenericUniqueKey(GenericTableBase table, String name, @Nullable String remarks, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, remarks, constraintType, persisted);
@@ -43,7 +45,7 @@ public class GenericUniqueKey extends GenericTableConstraint {
     GenericUniqueKey(GenericUniqueKey constraint) {
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
         if (constraint.columns != null) {
-            this.columns = new ArrayList<>(constraint.columns.size());
+            this.columns.clear();
             for (GenericTableConstraintColumn sourceColumn : constraint.columns) {
                 this.columns.add(new GenericTableConstraintColumn(this, sourceColumn));
             }
@@ -55,15 +57,18 @@ public class GenericUniqueKey extends GenericTableConstraint {
         return columns;
     }
 
+    @Override
+    public void addAttributeReference(DBSTableColumn column) throws DBException {
+        this.columns.add(new GenericTableConstraintColumn(this, (GenericTableColumn) column, columns.size()));
+    }
+
     public void addColumn(GenericTableConstraintColumn column) {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
         this.columns.add(column);
     }
 
-    public void setColumns(List<GenericTableConstraintColumn> columns) {
-        this.columns = columns;
+    public void setAttributeReferences(List<GenericTableConstraintColumn> columns) {
+        this.columns.clear();
+        this.columns.addAll(columns);
         if (!CommonUtils.isEmpty(this.columns) && this.columns.size() > 1) {
             columns.sort(Comparator.comparingInt(GenericTableConstraintColumn::getOrdinalPosition));
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -232,7 +232,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
             if (!parameters.isEmpty()) {
                 UIUtils.asyncExec(() -> {
-                    if (paramTable.getItemCount() > 0) {
+                    if (!paramTable.isDisposed() && paramTable.getItemCount() > 0) {
                         paramTable.select(0);
                         tableEditor.showEditor(paramTable.getItem(0), 2);
                     }
