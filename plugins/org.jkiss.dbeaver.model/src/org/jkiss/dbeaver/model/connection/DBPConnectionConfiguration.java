@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,6 +144,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.authModelId = info.authModelId;
         this.authProperties = info.authProperties == null ? null : new LinkedHashMap<>(info.authProperties);
         this.connectionType = info.connectionType;
+        this.closeIdleInterval = info.closeIdleInterval;
         this.configurationType = info.configurationType;
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);

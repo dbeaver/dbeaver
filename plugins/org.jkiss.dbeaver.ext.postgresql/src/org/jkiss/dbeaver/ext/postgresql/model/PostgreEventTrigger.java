@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
         sql_drop
     }
 
-    private final PostgreDatabase database;
     private long objectId;
     private long routineId;
     private TriggerEventTypes eventType;
@@ -57,7 +56,6 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
 
     PostgreEventTrigger(@NotNull PostgreDatabase database, @NotNull String name, @NotNull JDBCResultSet dbResult) {
         super(database, name, true);
-        this.database = database;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
         this.routineId = JDBCUtils.safeGetLong(dbResult, "evtfoid");
         String eventTypeName = JDBCUtils.safeGetString(dbResult, "evtevent");
@@ -68,7 +66,6 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
 
     public PostgreEventTrigger(@NotNull PostgreDatabase database, String name) {
         super(database, name, false);
-        this.database = database;
     }
 
     @Override
@@ -173,7 +170,7 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
     @NotNull
     @Override
     public DBSObject getParentObject() {
-        return database;
+        return getDatabase();
     }
 
     @Override

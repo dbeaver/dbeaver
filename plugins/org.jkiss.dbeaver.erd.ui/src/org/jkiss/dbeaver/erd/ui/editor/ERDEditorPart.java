@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,6 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.part.*;
-import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -472,16 +471,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // Set initial (empty) contents
         viewer.setContents(new EntityDiagram(null, "empty", getContentProvider(), getDecorator()));
+        ERDEditorContextMenuProvider provider = createContextProvider();
+        viewer.setContextMenu(provider);
 
         // Set context menu
-        ERDEditorContextMenuProvider provider = new ERDEditorContextMenuProvider(this);
-        viewer.setContextMenu(provider);
         IWorkbenchPartSite site = getSite();
         if (site instanceof IEditorSite) {
             ((IEditorSite)site).registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer, false);
         } else {
             site.registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer);
         }
+    }
+
+    @NotNull
+    protected ERDEditorContextMenuProvider createContextProvider() {
+        return new ERDEditorContextMenuProvider(this, true);
     }
 
     private GraphicalViewer createViewer(Composite parent)
@@ -493,7 +497,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // configure the viewer
         viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
         viewer.setRootEditPart(rootPart);
-        viewer.setKeyHandler(new DBeaverNavigationKeyHandler(viewer));
+        installKeyHandler(viewer);
 
         registerDropTargetListeners(viewer);
 
@@ -501,6 +505,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.setEditPartFactory(getDecorator().createPartFactory());
 
         return viewer;
+    }
+
+    protected void installKeyHandler(GraphicalViewer viewer) {
+        viewer.setKeyHandler(new DBeaverNavigationKeyHandler(viewer));
     }
 
     protected void registerDropTargetListeners(GraphicalViewer viewer) {
@@ -698,10 +706,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
-    public void refreshDiagram(boolean force, boolean refreshMetadata)
-    {
+    public void refreshDiagram(boolean force, boolean refreshMetadata) {
         if (isLoaded && force) {
             loadDiagram(refreshMetadata);
+            DiagramPart diagramPart = getDiagramPart();
+            if (diagramPart != null) {
+                diagramPart.rearrangeDiagram();
+            }
         }
     }
 
@@ -1155,8 +1166,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             refreshDiagram(true, false);
         }
     }
-    
-    
 
     private class ChangeAttributeVisibilityAction extends Action {
         private final boolean defStyle;
@@ -1650,6 +1659,4 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public void setDiagramRouter(ERDConnectionRouterDescriptor router) {
         this.routerStyle = router;
     }
-   
-    
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class SQLTokenAdapter extends Token {
                     style = SWT.NORMAL;
                     break;
                 case T_TABLE_ALIAS:
-                    colorKey = SQLConstants.CONFIG_COLOR_TABLE;
+                    colorKey = SQLConstants.CONFIG_COLOR_TABLE_ALIAS;
                     style = SWT.ITALIC;
                     break;
                 case T_COLUMN:
@@ -108,7 +108,7 @@ public class SQLTokenAdapter extends Token {
                     style = SWT.NORMAL;
                     break;
                 case T_COLUMN_DERIVED:
-                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN;
+                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN_DERIVED;
                     style = SWT.ITALIC;
                     break;
                 case T_SCHEMA:

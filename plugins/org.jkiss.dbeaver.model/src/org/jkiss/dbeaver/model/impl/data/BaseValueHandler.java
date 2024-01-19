@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public abstract class BaseValueHandler implements DBDValueHandler {
 
     @Override
     public Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type) throws DBCException {
-        throw new DBCException("New '" + type.getTypeName() + "' object create not supported");
+        return getValueFromObject(session, type, null, false, false);
     }
 
     @Override

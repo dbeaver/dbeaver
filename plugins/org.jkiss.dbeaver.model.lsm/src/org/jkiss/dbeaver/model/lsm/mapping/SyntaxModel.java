@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,14 @@ import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode.BindingInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.*;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo.SubnodeInfo;
 
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.*;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -33,14 +41,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.*;
 
 public class SyntaxModel {
 

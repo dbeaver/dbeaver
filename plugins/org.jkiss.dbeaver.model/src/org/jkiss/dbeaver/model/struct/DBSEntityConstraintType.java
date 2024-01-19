@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 /**
  * DBSEntityConstraintType
  */
-public class DBSEntityConstraintType
-{
+public class DBSEntityConstraintType {
+
     public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", "FOREIGN KEY", ModelMessages.model_struct_Foreign_Key, true, false, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", ModelMessages.model_struct_Primary_Key, false, true, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", ModelMessages.model_struct_Unique_Key, false, true, false, false); //$NON-NLS-1$

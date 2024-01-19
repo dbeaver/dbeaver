@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
@@ -44,10 +45,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import javax.net.ssl.SSLHandshakeException;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
 
@@ -199,7 +200,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                         protected Integer runTask() {
                             String message;
                             if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
-                                message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_cert_msg;
+                                if (DBWorkbench.getPlatform().getApplication()
+                                    .hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
+                                    message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_cert_msg;
+                                } else {
+                                    message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_cert_msg_advanced;
+                                }
                             } else {
                                 message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_msg;
                             }

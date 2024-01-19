@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,7 +199,7 @@ public class DBVModel extends DBVContainer {
     @Nullable
     public static List<DBVEntityForeignKey> getGlobalReferences(DBNDatabaseNode databaseNode) {
         synchronized (globalReferenceCache) {
-            return globalReferenceCache.get(databaseNode.getNodeItemPath());
+            return globalReferenceCache.get(databaseNode.getNodeUri());
         }
     }
 
@@ -272,7 +272,7 @@ public class DBVModel extends DBVContainer {
     private static void handleEntityRename(DBSEntity object, String oldName, String newName) {
         DBNDatabaseNode objectNode = DBNUtils.getNavigatorModel(object).getNodeByObject(object);
         if (objectNode != null) {
-            String objectNodePath = objectNode.getNodeItemPath();
+            String objectNodePath = objectNode.getNodeUri();
             renameEntityInGlobalCache(objectNodePath, oldName, newName);
         }
         if (object.getDataSource() != null) {

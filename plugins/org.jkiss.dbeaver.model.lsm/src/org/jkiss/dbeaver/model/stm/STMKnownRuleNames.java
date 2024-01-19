@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ public class STMKnownRuleNames {
     public static final String catalogName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_catalogName];
     public static final String identifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_identifier];
     public static final String actualIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_actualIdentifier];
-    public static final String squareBracketIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_squareBracketIdentifier];
 
     // data types
     public static final String dataType = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dataType];

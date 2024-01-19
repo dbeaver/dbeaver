@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.*;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -68,9 +69,13 @@ public class PropertyEditorUtils {
             final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
             final Object[] items = listProvider.getPossibleValues(object);
             if (items != null) {
-                final String[] strings = new String[items.length];
+                String[] strings = new String[items.length];
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject)items[i]).getName() : CommonUtils.toString(items[i]);
+                }
+                if (!property.isRequired()) {
+                    // Add null value
+                    strings = ArrayUtils.insertArea(String.class, strings, 0, new Object[] { "" });
                 }
                 final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
                     parent,

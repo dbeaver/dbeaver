@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -529,10 +529,10 @@ public class DBExecUtils {
                     } catch (Exception e) {
                         // Indexes are not supported or not available
                         // Just skip them
-                        log.debug(e);
+                        log.debug("Error reading table indexes: " + e.getMessage());
                     }
                 }
-                {
+                try {
                     // Check constraints
                     Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
                     if (constraints != null) {
@@ -545,6 +545,8 @@ public class DBExecUtils {
                             }*/
                         }
                     }
+                } catch (Exception e) {
+                    log.debug("Error reading table constraints: " + e.getMessage());
                 }
 
             }

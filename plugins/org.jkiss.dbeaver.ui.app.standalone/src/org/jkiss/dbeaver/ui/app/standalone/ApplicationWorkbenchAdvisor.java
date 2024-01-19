@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage"
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
+        "org.eclipse.jsch.ui.SSHPreferences"
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",

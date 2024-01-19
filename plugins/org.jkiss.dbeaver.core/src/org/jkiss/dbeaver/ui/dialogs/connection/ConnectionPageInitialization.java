@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,9 +104,10 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     @Override
     public void activatePage() {
         if (dataSourceDescriptor != null) {
+            final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
+            
             if (!activated) {
                 // Get settings from data source descriptor
-                final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 isolationLevel.add("");
 
@@ -118,9 +119,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
-                autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
                 activated = true;
             }
+            autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
         } else {
             // Default settings
             isolationLevel.setEnabled(false);

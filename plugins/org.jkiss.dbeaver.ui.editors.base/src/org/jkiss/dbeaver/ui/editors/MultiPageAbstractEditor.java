@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -225,7 +227,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     @Override
     public void setFocus() {
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        String storedScreenReader = store.getString(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
+        String storedScreenReader = store.getString(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
         ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
         switch (screenReader) {
             case JAWS -> {

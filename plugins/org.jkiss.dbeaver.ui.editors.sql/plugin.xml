@@ -240,6 +240,7 @@
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.output" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.output.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.output.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.log" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.show.outline" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.outline.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.outline.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.variables" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" name="Switch presentation to" description="Switch SQL editor presentation" categoryId="org.jkiss.dbeaver.core.sql">
@@ -303,6 +304,7 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/variable.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" icon="platform:/plugin/org.eclipse.ui.views/icons/full/eview16/outline_co.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate.png"/>
     </extension>
@@ -528,6 +530,9 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPanel">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPanel">
@@ -995,6 +1000,7 @@
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.output"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.log"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" style="toggle"/>
                     <separator name="panels_config" visible="true"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" style="toggle"/>
                 </menu>
@@ -1101,6 +1107,7 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.output"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.log"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" style="toggle"/>
                 <separator name="panels_config" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" style="toggle"/>
             </menu>
@@ -1190,6 +1197,7 @@
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,org.jkiss.dbeaver.ui.editors.sql.show.output"/>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,org.jkiss.dbeaver.ui.editors.sql.show.log"/>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,org.jkiss.dbeaver.ui.editors.sql.show.outline"/>
                     </or>
                 </visibleWhen>
             </dynamic>
@@ -1206,6 +1214,11 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" style="toggle">
                 <visibleWhen>
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" style="toggle">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,org.jkiss.dbeaver.ui.editors.sql.show.outline"/>
                 </visibleWhen>
             </command>
         </menuContribution>
@@ -1523,6 +1536,7 @@
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" defaultVisibility="true"/>
         </toolBar>
     </extension>
 

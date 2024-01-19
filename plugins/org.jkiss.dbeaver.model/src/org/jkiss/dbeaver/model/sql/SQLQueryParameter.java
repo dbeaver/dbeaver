@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ public class SQLQueryParameter {
 
     public static final String VARIABLE_NAME_GROUP_NAME = "pn";
 
-    private static final Pattern VARIABLE_PATTERN_SIMPLE = Pattern.compile("\\$\\{(?<pn>[a-z0-9_]+)\\}", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VARIABLE_PATTERN_FULL = Pattern.compile("\\$P?!?\\{(?<pn>[a-z0-9_]+)\\}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VARIABLE_PATTERN_SIMPLE = Pattern.compile("\\$\\{(?<pn>[a-z0-9_.\"]+)\\}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VARIABLE_PATTERN_FULL = Pattern.compile("\\$P?!?\\{(?<pn>[a-z0-9_.\"]+)\\}", Pattern.CASE_INSENSITIVE);
+    //private static final Pattern VARIABLE_PATTERN_QUOTED = Pattern.compile("\\$\\{(?<pn>\"[a-z0-9_.]+)\"\\}}", Pattern.CASE_INSENSITIVE);
 
 
     private final SQLSyntaxManager syntaxManager;

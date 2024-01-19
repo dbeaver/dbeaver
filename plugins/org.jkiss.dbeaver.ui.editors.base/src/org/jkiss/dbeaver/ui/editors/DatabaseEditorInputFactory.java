@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,8 +68,8 @@ public class DatabaseEditorInputFactory implements IElementFactory
         memento.putString(TAG_CLASS, input.getClass().getName());
         memento.putString(TAG_PROJECT, context.getDataSource().getContainer().getProject().getName());
         memento.putString(TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());
-        memento.putString(TAG_NODE, node.getNodeItemPath());
-        memento.putString(TAG_NODE_NAME, node.getNodeName());
+        memento.putString(TAG_NODE, node.getNodeUri());
+        memento.putString(TAG_NODE_NAME, node.getNodeDisplayName());
         if (!CommonUtils.isEmpty(input.getDefaultPageId())) {
             memento.putString(TAG_ACTIVE_PAGE, input.getDefaultPageId());
         }

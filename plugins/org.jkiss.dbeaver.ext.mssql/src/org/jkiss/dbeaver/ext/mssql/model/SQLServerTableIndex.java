@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
@@ -45,7 +46,8 @@ import java.util.Map;
 /**
  * SQLServerTableIndex
  */
-public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase> implements SQLServerObject, DBPNamedObject2, DBSObjectWithScript
+public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase>
+    implements SQLServerObject, DBSTableConstraint, DBPNamedObject2, DBSObjectWithScript
 {
     private boolean unique;
     private boolean primary;
@@ -264,8 +266,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 "   GROUP BY IC2.object_id ,IC2.index_id) tmp1   \n" +
                 "   WHERE IncludedColumns IS NOT NULL ) tmp2    \n" +
                 "ON tmp2.object_id = I.object_id AND tmp2.index_id = I.index_id   \n" +
-                "WHERE I.is_primary_key = 0 AND I.is_unique_constraint = 0 \n" +
-                "AND I.Object_id = " + getTable().getObjectId() + "\n" +
+                "WHERE I.Object_id = " + getTable().getObjectId() + "\n" +
                 "AND I.name = '" + SQLUtils.escapeString(getDataSource(), getName()) + "'";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read SQL Server index definition")) {
             return JDBCUtils.queryString(session, sql);

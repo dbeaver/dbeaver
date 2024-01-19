@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ import java.util.Collection;
 import java.util.List;
 
 public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<PostgreDatabaseBackupSettings, DBSObject, PostgreDatabaseBackupInfo> {
+
+    private static final Log log = Log.getLog(PostgreDatabaseBackupHandler.class);
+
     @Override
     public Collection<PostgreDatabaseBackupInfo> getRunInfo(PostgreDatabaseBackupSettings settings) {
         return settings.getExportObjects();
@@ -93,7 +96,11 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    public void fillProcessParameters(PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(
+        PostgreDatabaseBackupSettings settings,
+        PostgreDatabaseBackupInfo arg,
+        List<String> cmd
+    ) throws IOException {
         super.fillProcessParameters(settings, arg, cmd);
 
         cmd.add("--format=" + settings.getFormat().getId());
@@ -128,8 +135,10 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
 
         // Objects
         if (settings.getExportObjects().isEmpty()) {
-            // no dump
-        } else if (!CommonUtils.isEmpty(arg.getTables())) {
+            log.debug("Can't find specific schemas/tables for the backup");
+            return;
+        }
+        if (!CommonUtils.isEmpty(arg.getTables())) {
             for (PostgreTableBase table : arg.getTables()) {
                 cmd.add("-t");
                 // Use explicit quotes in case of quoted identifiers (#5950)

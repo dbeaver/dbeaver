@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.rm.RMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -168,7 +167,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 UIUtils.createToolItem(buttonsToolbar, UIMessages.text_with_open_dialog_browse_remote, UIIcon.OPEN_EXTERNAL, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        DBNPath selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                        DBNPathBase selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
                             UIMessages.text_with_open_dialog_browse_remote,
                             false,
                             SWT.OPEN,
@@ -241,7 +240,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             dataSourceViewer.setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    return ((DBNDataSource) element).getNodeName();
+                    return ((DBNDataSource) element).getNodeDisplayName();
                 }
                 @Override
                 public Image getImage(Object element) {

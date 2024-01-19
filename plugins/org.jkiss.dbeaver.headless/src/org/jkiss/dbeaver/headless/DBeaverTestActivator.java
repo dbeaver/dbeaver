@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,12 @@ public class DBeaverTestActivator extends Plugin {
         Bundle bundle = getBundle();
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
+
+        // Headless application is never started as it is used
+        // for integration tests only.
+        // But we need to instantiate it to initialize platform and UI.
+        // Headless plugin must be auto-started
+        DBeaverHeadlessApplication.getInstance();
     }
 
     @Override

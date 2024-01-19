@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -550,7 +550,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 xml.addAttribute(RegistryConstants.ATTR_SMART_COMMIT, connectionType.isSmartCommit());
                 xml.addAttribute(RegistryConstants.ATTR_SMART_COMMIT_RECOVER, connectionType.isSmartCommitRecover());
                 xml.addAttribute(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS, connectionType.isAutoCloseTransactions());
-                xml.addAttribute(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD, connectionType.getCloseIdleConnectionPeriod());
+                xml.addAttribute(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD, connectionType.getCloseIdleTransactionPeriod());
                 List<DBPDataSourcePermission> modifyPermission = connectionType.getModifyPermission();
                 if (modifyPermission != null) {
                     xml.addAttribute("modifyPermission",
@@ -702,7 +702,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         origType != null && origType.isAutoCloseTransactions()),
                     CommonUtils.toLong(
                         atts.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
-                        origType != null ? origType.getCloseIdleConnectionPeriod() : RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD));
+                        origType != null ? origType.getCloseIdleTransactionPeriod() : RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD));
                 String modifyPermissionList = atts.getValue("modifyPermission");
                 if (!CommonUtils.isEmpty(modifyPermissionList)) {
                     List<DBPDataSourcePermission> permList = new ArrayList<>();

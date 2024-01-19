@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.svg.SVGImageDescriptor;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -201,7 +202,12 @@ public class DBeaverIcons
         IconDescriptor icon = imageMap.get(location);
         if (icon == null) {
             try {
-                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(location));
+                ImageDescriptor imageDescriptor;
+                if (location.endsWith(".svg")) {
+                    imageDescriptor = SVGImageDescriptor.createFromURL(new URL(location));
+                } else {
+                    imageDescriptor = ImageDescriptor.createFromURL(new URL(location));
+                }
                 icon = new IconDescriptor(location, imageDescriptor);
                 if (icon.image == null) {
                     log.warn("Bad image: " + location);

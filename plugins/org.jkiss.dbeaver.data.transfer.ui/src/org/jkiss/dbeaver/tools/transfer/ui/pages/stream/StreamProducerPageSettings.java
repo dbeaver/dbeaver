@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -203,7 +203,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         DBPProject project = pipe.getConsumer().getProject();
         if (remoteFS && project != null) {
-            DBNPath selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+            DBNPathBase selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
                 DTUIMessages.stream_producer_select_input_file,
                 false,
                 SWT.OPEN,

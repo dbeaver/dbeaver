@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,13 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.*;
+import org.jkiss.dbeaver.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
-import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
@@ -66,7 +66,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     private Integer oldLineWidth;
 
     private ERDHighlightingHandle associatedAttributesHighlighing = null;
-    private AccessibleGraphicalEditPart accPart;
+    protected AccessibleGraphicalEditPart accPart;
     private final Color labelForegroundColor;
 
     public AssociationPart() {
@@ -105,7 +105,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     @Override
     protected IFigure createFigure() {
         PolylineConnection conn;
-        ERDConnectionRouter router = getDiagramPart().getRouter();
+        ERDConnectionRouter router = getDiagramPart().getActiveRouter();
         if (router != null) {
             conn = router.getConnectionInstance();
         } else {

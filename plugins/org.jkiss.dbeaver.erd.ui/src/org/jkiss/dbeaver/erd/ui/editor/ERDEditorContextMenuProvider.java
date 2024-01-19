@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,15 +44,15 @@ public class ERDEditorContextMenuProvider extends MenuManager implements IMenuLi
      *
      * @param editor the editor
      */
-    ERDEditorContextMenuProvider(ERDEditorPart editor) {
+    public ERDEditorContextMenuProvider(ERDEditorPart editor, boolean registerForNavigatorActions) {
         super("ERD Editor Context Menu", "#ERDEditorContext");
         this.editor = editor;
 
         this.addMenuListener(this);
         this.setRemoveAllWhenShown(true);
-
-        editor.getEditorSite().registerContextMenu(
-            "#ERDEditorContext", this, editor.getEditorSite().getSelectionProvider(), false);
+        if (registerForNavigatorActions) {
+            editor.getEditorSite().registerContextMenu("#ERDEditorContext", this, editor.getEditorSite().getSelectionProvider(), false);
+        }
     }
 
     public void menuAboutToShow(IMenuManager menu) {

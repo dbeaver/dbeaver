@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,7 +65,7 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
 
     protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject, DBNNode node, DBGBreakpointDescriptor breakpointDescriptor) {
         attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, databaseObject.getDataSource().getContainer().getId());
-        attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH, node.getNodeItemPath());
+        attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH, node.getNodeUri());
         attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_OBJECT_NAME, DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI));
         attributes.putAll(breakpointDescriptor.toMap());
     }
