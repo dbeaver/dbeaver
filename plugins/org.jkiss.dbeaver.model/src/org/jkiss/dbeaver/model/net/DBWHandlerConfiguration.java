@@ -38,6 +38,9 @@ public class DBWHandlerConfiguration {
 
     public static final String PROP_HOST = "host";
     public static final String PROP_PORT = "port";
+    public static final String PROP_USER = "user";
+    public static final String PROP_PASSWORD = "password";
+    public static final String PROP_PROPERTIES = "properties";
 
     @NotNull
     private String id;
@@ -225,44 +228,32 @@ public class DBWHandlerConfiguration {
         this.secureProperties.putAll(secureProperties);
     }
 
-    public Map<String, Object> saveToMap() {
-        return saveToMap(false);
-    }
-
-    public Map<String, Object> saveToSecret() {
-        return saveToMap(true);
-    }
-
-    private Map<String, Object> saveToMap(boolean ignoreSecureProperties) {
+    public Map<String, Object> saveSecretsToMap() {
         Map<String, Object> handlerProps = new LinkedHashMap<>();
-        if (!isSavePassword() && ignoreSecureProperties) {
-            return handlerProps;
-        }
         if (!CommonUtils.isEmpty(userName)) {
-            handlerProps.put("user", userName);
+            handlerProps.put(PROP_USER, userName);
         }
         if (!CommonUtils.isEmpty(password)) {
-            handlerProps.put("password", password);
+            handlerProps.put(PROP_PASSWORD, password);
         }
         if (!CommonUtils.isEmpty(secureProperties)) {
-            handlerProps.put("properties", secureProperties);
+            handlerProps.put(PROP_PROPERTIES, secureProperties);
         }
         return handlerProps;
     }
 
-    void loadFromMap(Map<String, Object> handlerMap) {
-        userName = JSONUtils.getString(handlerMap, "user");
-        password = JSONUtils.getString(handlerMap, "password");
+    void loadSecretsFromMap(Map<String, Object> handlerMap) {
+        userName = JSONUtils.getString(handlerMap, PROP_USER);
+        password = JSONUtils.getString(handlerMap, PROP_PASSWORD);
         secureProperties.clear();
-        secureProperties.putAll(JSONUtils.deserializeStringMap(handlerMap, "properties"));
+        secureProperties.putAll(JSONUtils.deserializeStringMap(handlerMap, PROP_PROPERTIES));
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof DBWHandlerConfiguration)) {
+        if (!(obj instanceof DBWHandlerConfiguration source)) {
             return false;
         }
-        DBWHandlerConfiguration source = (DBWHandlerConfiguration) obj;
         return
             CommonUtils.equalObjects(this.id, source.id) &&
                 CommonUtils.equalObjects(this.dataSource, source.dataSource) &&

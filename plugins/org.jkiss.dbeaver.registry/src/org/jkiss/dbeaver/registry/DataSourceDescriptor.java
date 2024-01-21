@@ -2068,10 +2068,12 @@ public class DataSourceDescriptor
             // Handlers. If config profile is set then props are saved there
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-                Map<String, Object> handlerProps = hc.saveToSecret();
-                if (!handlerProps.isEmpty()) {
-                    handlerProps.put(RegistryConstants.ATTR_ID, hc.getId());
-                    handlersConfigs.add(handlerProps);
+                if (hc.isSavePassword()) {
+                    Map<String, Object> handlerProps = hc.saveSecretsToMap();
+                    if (!handlerProps.isEmpty()) {
+                        handlerProps.put(RegistryConstants.ATTR_ID, hc.getId());
+                        handlersConfigs.add(handlerProps);
+                    }
                 }
             }
             if (!handlersConfigs.isEmpty()) {
