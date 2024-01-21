@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -97,7 +98,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
         // jump hosts, if supported and present
         if (isSupportsJumpServer()) {
-            final String prefix = getJumpServerSettingsPrefix(0);
+            final String prefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
             if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
                 hostConfigurations.add(0, loadConfiguration(configuration, prefix));
             }
@@ -205,11 +206,6 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         }
 
         return new SSHHostConfiguration(username, hostname, port, authentication);
-    }
-
-    @NotNull
-    public static String getJumpServerSettingsPrefix(int index) {
-        return SSHConstants.PROP_JUMP_SERVER + index + ".";
     }
 
     protected boolean isSupportsJumpServer() {
