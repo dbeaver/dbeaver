@@ -10,8 +10,6 @@
       <programArgsMac>-nosplash -vm ../Eclipse/jre/Contents/Home/bin/java
       </programArgsMac>
       <vmArgs>
-            -startup
-            org.jkiss.dbeaver.launcher.1.0.0.2024012211353.jar 
             -XX:+IgnoreUnrecognizedVMOptions
             -Dosgi.requiredJavaVersion=17
             -Dfile.encoding=UTF-8
