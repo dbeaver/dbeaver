@@ -227,9 +227,9 @@ public class Main {
     private static final String PROP_COMMANDS = "eclipse.commands"; //$NON-NLS-1$
     private static final String PROP_ECLIPSESECURITY = "eclipse.security"; //$NON-NLS-1$
 
-    private static final String PROP_XDG_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
-    private static final String PROP_XDG_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
-    private static final String PROP_XDG_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
+    private static final String ENV_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
+    private static final String LOCATION_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
+    private static final String LOCATION_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
     
     // Suffix for location properties - see LocationManager.
     private static final String READ_ONLY_AREA_SUFFIX = ".readOnly"; //$NON-NLS-1$
@@ -241,7 +241,7 @@ public class Main {
     private static final String USER_DIR = "@user.dir"; //$NON-NLS-1$
 
     // Placeholder of program configuration data, depends on OS
-    private static final String XDG_DATA_HOME = "@data.home"; //$NON-NLS-1$
+    private static final String DB_DATA_HOME = "@data.home"; //$NON-NLS-1$
 
     // Placeholder for hashcode of installation directory
     private static final String INSTALL_HASH_PLACEHOLDER = "@install.hash"; //$NON-NLS-1$
@@ -1254,14 +1254,14 @@ public class Main {
             else if (location.equalsIgnoreCase(NO_DEFAULT))
                 result = buildURL(location, true);
             else {
-                if (location.startsWith(XDG_DATA_HOME)) {
+                if (location.startsWith(DB_DATA_HOME)) {
                     String base = "";
                     if (Constants.OS_WIN32.equals(getOS())) {
-                    	base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_WIN);
+                    	base = resolveEnv(location, DB_DATA_HOME, ENV_DATA_HOME_WIN);
                     } else if (Constants.OS_MACOSX.equals(getOS())) {
-                        base = resolveLocation(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_MAC);
+                        base = resolveLocation(location, DB_DATA_HOME, LOCATION_DATA_HOME_MAC);
                     } else {
-                        base = resolveLocation(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_UNIX);
+                        base = resolveLocation(location, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
                     }
                     location = new File(base, userDefaultAppendage).getAbsolutePath();
                 }
