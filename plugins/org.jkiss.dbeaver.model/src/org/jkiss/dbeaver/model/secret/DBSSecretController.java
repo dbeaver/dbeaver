@@ -36,6 +36,23 @@ public interface DBSSecretController {
 
     void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
 
+    default String getSubjectSecretValue(@NotNull String subjectId, @NotNull String secretId) throws DBException { return null; }
+
+    default String setSubjectSecretValue(
+        @NotNull String subjectId,
+        @NotNull String secretId,
+        @Nullable String projectId,
+        @Nullable String objectType,
+        @Nullable String objectID
+    ) throws DBException { return null; }
+
+    default void deleteSubjectSecrets(@NotNull String subjectId) throws DBException {}
+
+    default void deleteObjectSecrets(
+        @NotNull String projectId,
+        @Nullable String objectType,
+        @Nullable String objectId) throws DBException {}
+
     /**
      * Syncs any changes with file system/server
      */
