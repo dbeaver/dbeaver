@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -139,6 +140,9 @@ public abstract class ObjectAttributeDescriptor {
 
     public boolean isLazy(Object object, boolean checkParent)
     {
+        if (object instanceof DBSObject dbso && !dbso.isPersisted()) {
+            //return false;
+        }
         if (isLazy && cacheValidator != null) {
             if (parent != null) {
                 if (parent.isLazy(object, true)) {
