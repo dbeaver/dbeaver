@@ -184,6 +184,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return false;
     }
 
+    @Override
+    public boolean isAutoCloseConnections() {
+        return false;
+    }
+
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {

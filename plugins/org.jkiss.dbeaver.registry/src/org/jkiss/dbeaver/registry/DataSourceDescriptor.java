@@ -531,6 +531,14 @@ public class DataSourceDescriptor
         return connectionInfo.getConnectionType().isAutoCloseTransactions();
     }
 
+    @Override
+    public boolean isAutoCloseConnections() {
+        if (getPreferenceStore().contains(ModelPreferences.CONNECTION_AUTO_CLOSE_ENABLED)) {
+            return getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_AUTO_CLOSE_ENABLED);
+        }
+        return connectionInfo.getConnectionType().isAutoCloseConnections();
+    }
+
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {

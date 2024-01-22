@@ -120,10 +120,15 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
 
         // End long transactions
-        if (dataSourceDescriptor.isAutoCloseTransactions() ||
-            dataSourceDescriptor.getConnectionConfiguration().getCloseIdleInterval() > 0)
-        {
+        if (dataSourceDescriptor.isAutoCloseTransactions()
+                || dataSourceDescriptor.getConnectionConfiguration().getCloseIdleInterval() > 0) {
             endIdleTransactions(dataSourceDescriptor);
+        }
+
+        // End connections
+        if (dataSourceDescriptor.isAutoCloseConnections()
+                || dataSourceDescriptor.getConnectionConfiguration().getCloseIdleInterval() > 0) {
+            endIdleConnections(dataSourceDescriptor);
         }
 
         // Perform keep alive request
@@ -181,6 +186,10 @@ public class DataSourceMonitorJob extends AbstractJob {
         if (!dsDescriptor.isConnected()) {
             return;
         }
+        DBPDataSource dataSource = dsDescriptor.getDataSource();
+        if (dataSource == null) {
+            return;
+        }
 
         final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
         if (lastUserActivityTime < 0) {
@@ -188,62 +197,70 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
 
         final long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
-        final long disconnectTimeoutSeconds = getDisconnectTimeoutSeconds(dsDescriptor);
         final long rollbackTimeoutSeconds = getTransactionTimeoutSeconds(dsDescriptor);
 
-        DBPDataSource dataSource = dsDescriptor.getDataSource();
-
-        if (dataSource != null && disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
-            if (DisconnectJob.isInProcess(dsDescriptor)) {
-                return;
-            }
-
-            // Kill idle connection
-            DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
-            disconnectJob.schedule();
-
-            DBeaverNotifications.showNotification(
-                dataSource,
-                DBeaverNotifications.NT_DISCONNECT_IDLE,
-                "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
-                DBPMessageType.ERROR);
-
-            return;
-        }
-
+        
         if (idleInterval < rollbackTimeoutSeconds) {
             return;
         }
         if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
             return;
         }
-
-        if (dataSource != null) {
-            try {
-                Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
-                for (DBSInstance instance : dataSource.getAvailableInstances()) {
-                    for (DBCExecutionContext ec : instance.getAllContexts()) {
-                        if (ec.isConnected()) {
-                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(ec);
-                            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
-                                QMTransactionState txnState = QMUtils.getTransactionState(ec);
-                                if (txnState.getUpdateCount() > 0 && txnState.getTransactionStartTime() <= lastUserActivityTime) {
-                                    txnToEnd.put(ec, txnManager);
-                                }
+        try {
+            Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
+            for (DBSInstance instance : dataSource.getAvailableInstances()) {
+                for (DBCExecutionContext ec : instance.getAllContexts()) {
+                    if (ec.isConnected()) {
+                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(ec);
+                        if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
+                            QMTransactionState txnState = QMUtils.getTransactionState(ec);
+                            if (txnState.getUpdateCount() > 0
+                                    && txnState.getTransactionStartTime() <= lastUserActivityTime) {
+                                txnToEnd.put(ec, txnManager);
                             }
                         }
                     }
                 }
-
-                if (!txnToEnd.isEmpty()) {
-                    new EndIdleTransactionsJob(dataSource, txnToEnd).schedule();
-                }
-            } catch (DBCException e) {
-                log.error(e);
             }
+
+            if (!txnToEnd.isEmpty()) {
+                new EndIdleTransactionsJob(dataSource, txnToEnd).schedule();
+            }
+        } catch (DBCException e) {
+            log.error(e);
         }
     }
 
+    private void endIdleConnections(DBPDataSourceContainer dsDescriptor) {
+        if (!dsDescriptor.isConnected()) {
+            return;
+        }
+        DBPDataSource dataSource = dsDescriptor.getDataSource();
+        if (dataSource == null) {
+            return;
+        }
+        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        if (lastUserActivityTime < 0) {
+            return;
+        }
+
+        final long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
+        final long disconnectTimeoutSeconds = getDisconnectTimeoutSeconds(dsDescriptor);
+
+        if (disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
+            if (DisconnectJob.isInProcess(dsDescriptor)) {
+                return;
+            }
+
+            // Close idle connections
+            DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
+            disconnectJob.schedule();
+            DBeaverNotifications.showNotification(dataSource, DBeaverNotifications.NT_DISCONNECT_IDLE,
+                    "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
+                    DBPMessageType.ERROR);
+        }
+    }
+    
     public void scheduleMonitor() {
         schedule(MONITOR_INTERVAL);
     }

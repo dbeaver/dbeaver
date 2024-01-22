@@ -67,8 +67,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     private Combo defaultCatalog;
     private Combo defaultSchema;
     private Spinner keepAliveInterval;
-
-    private Spinner autoCloseIdleConnectionsText;
+    private Spinner closeIdleConnections;
 
     private Font boldFont;
 
@@ -118,7 +117,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
-                autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
+                closeIdleConnections.setSelection(conConfig.getCloseIdleInterval());
                 activated = true;
             }
         } else {
@@ -267,7 +266,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
                 CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
            
-            autoCloseIdleConnectionsText = UIUtils.createLabelSpinner(txnGroup,
+            closeIdleConnections = UIUtils.createLabelSpinner(txnGroup,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
             UIUtils.createInfoLabel(txnGroup, CoreMessages.dialog_connection_wizard_connection_close_idle_hint,
@@ -350,11 +349,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         bootstrap.setInitQueries(bootstrapQueries);
 
         confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
-        if (autoCloseIdleConnectionsText.getSelection() == 0) {
-            confConfig.setCloseIdleInterval((int) confConfig.getConnectionType().getCloseIdleConnectionPeriod());
-        } else {
-            confConfig.setCloseIdleInterval(autoCloseIdleConnectionsText.getSelection());
-        }
+        confConfig.setCloseIdleInterval(closeIdleConnections.getSelection());
     }
 
     @Override

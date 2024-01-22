@@ -430,7 +430,6 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleTransactionPeriod()));
         autoCloseConnectionsCheck.setSelection(connectionType.isAutoCloseConnections());
         autoCloseConnectionsTtlText.setText(String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
- 
         deleteButton.setEnabled(!connectionType.isPredefined());
     }
 
@@ -562,8 +561,12 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setModifyPermissions(changed.getModifyPermission());
                 source.setSmartCommit(changed.isSmartCommit());
                 source.setSmartCommitRecover(changed.isSmartCommitRecover());
+                // transaction
                 source.setAutoCloseTransactions(changed.isAutoCloseTransactions());
                 source.setCloseIdleTransactionPeriod(changed.getCloseIdleTransactionPeriod());
+                // connections
+                source.setAutoCloseConnections(changed.isAutoCloseConnections());
+                source.setCloseIdleConnectionPeriod(changed.getCloseIdleConnectionPeriod());
                 hasChanges = true;
             }
             if (hasChanges) {

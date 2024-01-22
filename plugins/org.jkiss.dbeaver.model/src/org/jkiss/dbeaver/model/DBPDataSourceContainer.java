@@ -135,6 +135,8 @@ public interface DBPDataSourceContainer extends
 
     boolean isAutoCloseTransactions();
 
+    boolean isAutoCloseConnections();
+
     @Nullable
     DBPTransactionIsolation getActiveTransactionsIsolation();
 
