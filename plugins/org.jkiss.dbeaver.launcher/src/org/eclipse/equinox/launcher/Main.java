@@ -228,8 +228,9 @@ public class Main {
     private static final String PROP_ECLIPSESECURITY = "eclipse.security"; //$NON-NLS-1$
 
     private static final String PROP_XDG_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
-    private static final String PROP_XDG_DATA_HOME_UNIX = "XDG_DATA_HOME"; //$NON-NLS-1$
-
+    private static final String PROP_XDG_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
+    private static final String PROP_XDG_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
+    
     // Suffix for location properties - see LocationManager.
     private static final String READ_ONLY_AREA_SUFFIX = ".readOnly"; //$NON-NLS-1$
 
@@ -1254,12 +1255,15 @@ public class Main {
                 result = buildURL(location, true);
             else {
                 if (location.startsWith(XDG_DATA_HOME)) {
-                	String base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_UNIX);
+                    String base = "";
                     if (Constants.OS_WIN32.equals(getOS())) {
                     	base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_WIN);
+                    } else if (Constants.OS_MACOSX.equals(getOS())) {
+                        base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_MAC);
+                    } else {
+                        base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_UNIX);
                     }
                     location = new File(base, userDefaultAppendage).getAbsolutePath();
-                    System.out.println("Using data configuration location: " + location); //$NON-NLS-1$
                 }
                 if (location.startsWith(USER_HOME)) {
                     String base = substituteVar(location, USER_HOME, PROP_USER_HOME);
