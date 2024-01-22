@@ -266,8 +266,22 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
-        final int timeout = container.getConnectionConfiguration().getCloseIdleInterval();
-        return Math.max(0, timeout);
+        final DBPPreferenceStore pref = container.getPreferenceStore();
+        final DBPConnectionConfiguration config = container.getConnectionConfiguration();
+        long closePeriodSeconds = 0;
+
+        if (pref.contains(ModelPreferences.CONNECTION_AUTO_CLOSE_ENABLED)) {
+            closePeriodSeconds = pref.getLong(ModelPreferences.CONNECTION_CLOSE_TIMEOUT);
+        }
+
+        if (closePeriodSeconds == 0) {
+            // Or get this info from the current connection type
+            final DBPConnectionType connectionType = config.getConnectionType();
+            if (connectionType.isAutoCloseTransactions()) {
+                closePeriodSeconds = container.getConnectionConfiguration().getCloseIdleInterval();
+            }
+        }
+        return Math.max(0, closePeriodSeconds);
     }
 
     public static long getTransactionTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
