@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -31,12 +33,7 @@ import java.io.IOException;
 public class HTTPTunnelImpl implements DBWTunnel {
 
     @Override
-    public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration, String prefix) {
-        return AuthCredentials.NONE;
-    }
-
-    @Override
-    public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration) {
+    public AuthCredentials getRequiredCredentials(@NotNull DBWHandlerConfiguration configuration, @Nullable String prefix) {
         return AuthCredentials.NONE;
     }
 

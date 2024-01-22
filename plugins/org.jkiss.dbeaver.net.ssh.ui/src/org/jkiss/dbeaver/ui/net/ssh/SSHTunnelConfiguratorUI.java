@@ -30,7 +30,6 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -41,11 +40,11 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
-import org.jkiss.dbeaver.model.net.ssh.SSHImplementationAbstract;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.AbstractTrackingJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -67,7 +66,6 @@ import java.util.Locale;
  * SSH tunnel configuration
  */
 public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
-    private static final Log log = Log.getLog(SSHTunnelConfiguratorUI.class);
 
     private DBWHandlerConfiguration savedConfiguration;
 
@@ -291,17 +289,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     @Nullable
     private static DBPAuthInfo promptCredentialsDialog(
         @NotNull SSHConstants.AuthType type,
-        @NotNull String username, @NotNull String password
+        @Nullable String username,
+        @Nullable String password
     ) {
         try {
             return DBWorkbench.getPlatformUI().promptUserCredentials(
                 SSHUIMessages.model_ssh_dialog_credentials,
                 SSHUIMessages.model_ssh_dialog_credentials_username,
-                username,
+                CommonUtils.notEmpty(username),
                 type.equals(SSHConstants.AuthType.PUBLIC_KEY)
                     ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
                     : SSHUIMessages.model_ssh_dialog_credentials_password,
-                password,
+                CommonUtils.notEmpty(password),
                 false,
                 false
             );
@@ -339,16 +338,14 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 try {
                     monitor.subTask("Initialize tunnel");
                     String authTypeName = configuration.getStringProperty("authType");
-                    SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName);
+                    SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName, SSHConstants.AuthType.PASSWORD);
                     if (!configuration.isSavePassword() && tunnel.getRequiredCredentials(configuration, null) != DBWTunnel.AuthCredentials.NONE) {
-                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration.getUserName(),
-                            configuration.getPassword());
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration.getUserName(), configuration.getPassword());
                         if (dbpAuthInfo != null) {
                             configuration.setUserName(dbpAuthInfo.getUserName());
                             configuration.setPassword(dbpAuthInfo.getUserPassword());
                         }
                         checkJumpServerConfiguration(tunnel);
-
                     }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
                     try {
@@ -373,26 +370,25 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 String authTypeName;
                 // If we are not saving password and have jump server enabled we need to show dialog
                 // for user to write it
-                if (configuration.getBooleanProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_ENABLED)) {
-                    authTypeName = configuration.getStringProperty(getJumpServerSettingsPrefix() + SSHConstants.PROP_AUTH_TYPE);
+                String serverSettingsPrefix = getJumpServerSettingsPrefix();
+                if (configuration.getBooleanProperty(serverSettingsPrefix + DBConstants.PROP_ID_ENABLED)) {
+                    authTypeName = configuration.getStringProperty(serverSettingsPrefix + SSHConstants.PROP_AUTH_TYPE);
                     authType = CommonUtils.valueOf(SSHConstants.AuthType.class,
                         authTypeName,
                         SSHConstants.AuthType.PASSWORD
                     );
-                    if (tunnel.getRequiredCredentials(configuration, getJumpServerSettingsPrefix())
-                        != DBWTunnel.AuthCredentials.NONE) {
+                    if (tunnel.getRequiredCredentials(configuration, serverSettingsPrefix) != DBWTunnel.AuthCredentials.NONE) {
                         DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(
                             authType,
-                            configuration.getStringProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME),
-                            configuration.getSecureProperty(
-                                getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD)
+                            configuration.getStringProperty(serverSettingsPrefix + DBConstants.PROP_ID_NAME),
+                            configuration.getSecureProperty(serverSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD)
                         );
                         if (dbpAuthInfo != null) {
-                            configuration.setProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME,
+                            configuration.setProperty(serverSettingsPrefix + DBConstants.PROP_ID_NAME,
                                 dbpAuthInfo.getUserName()
                             );
                             configuration.setSecureProperty(
-                                getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD,
+                                serverSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD,
                                 dbpAuthInfo.getUserPassword()
                             );
                         }
@@ -418,7 +414,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
     @NotNull
     private String getJumpServerSettingsPrefix() {
-        return SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+        return DataSourceUtils.getJumpServerSettingsPrefix(0);
     }
 
     @Override
@@ -502,7 +498,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         if (jumpServersEnabled) {
             final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
             jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
-            configuration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED, jumpServersEnabled);
+            configuration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED, true);
         }
 
         String implLabel = tunnelImplCombo.getText();
@@ -725,20 +721,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         private void updateAuthMethodVisibility() {
             switch (authMethodCombo.getSelectionIndex()) {
-                case 0:
+                case 0 -> {
                     showPrivateKeyField(false);
                     showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_password);
-                    break;
-                case 1:
+                }
+                case 1 -> {
                     showPrivateKeyField(true);
                     showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_passphrase);
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     showPrivateKeyField(false);
                     showPasswordField(false, null);
-                    break;
-                default:
-                    break;
+                }
+                default -> {
+                }
             }
             authMethodCombo.getShell().layout(true, true);
         }

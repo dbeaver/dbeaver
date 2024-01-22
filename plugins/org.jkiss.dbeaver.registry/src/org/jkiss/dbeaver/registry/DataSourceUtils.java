@@ -52,6 +52,7 @@ public class DataSourceUtils {
     public static final String PARAM_SERVER = "server";
     public static final String PARAM_DATABASE = "database";
     public static final String PARAM_USER = "user";
+    public static final String PROP_JUMP_SERVER = "jumpServer";
 
     private static final String PARAM_PASSWORD = "password";
     private static final String PARAM_SAVE_PASSWORD = "savePassword";
@@ -411,5 +412,10 @@ public class DataSourceUtils {
     
     public static boolean isFolderHasTemporaryDataSources(DataSourceFolder folder) {
         return folder.getDataSourceRegistry().getDataSources().stream().anyMatch(d -> d.getFolder() == folder && d.isTemporary());
+    }
+
+    @NotNull
+    public static String getJumpServerSettingsPrefix(int index) {
+        return PROP_JUMP_SERVER + index + ".";
     }
 }

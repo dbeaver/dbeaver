@@ -31,7 +31,6 @@ public class SSHConstants {
     public static final String PROP_ALIVE_INTERVAL = "aliveInterval";
     public static final String PROP_ALIVE_COUNT = "aliveCount";
     public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";
-    public static final String PROP_JUMP_SERVER = "jumpServer";
 
     public static final String PROP_LOCAL_HOST = "localHost";
     public static final String PROP_LOCAL_PORT = "localPort";
