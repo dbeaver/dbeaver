@@ -1259,9 +1259,9 @@ public class Main {
                     if (Constants.OS_WIN32.equals(getOS())) {
                     	base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_WIN);
                     } else if (Constants.OS_MACOSX.equals(getOS())) {
-                        base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_MAC);
+                        base = resolveLocation(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_MAC);
                     } else {
-                        base = resolveEnv(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_UNIX);
+                        base = resolveLocation(location, XDG_DATA_HOME, PROP_XDG_DATA_HOME_UNIX);
                     }
                     location = new File(base, userDefaultAppendage).getAbsolutePath();
                 }
@@ -1288,15 +1288,19 @@ public class Main {
         return result;
     }
 
-	private String resolveEnv(String source, String var, String prop) {
-		String value = System.getenv(prop); // $NON-NLS-1$
-		if (value == null) {
-			value = "";
-		}
-		return value + source.substring(var.length());
-	}
+    private String resolveEnv(String source, String var, String prop) {
+        String value = System.getenv(prop); // $NON-NLS-1$
+        if (value == null) {
+            value = "";
+        }
+        return value + source.substring(var.length());
+    }
 
-	private String substituteVar(String source, String var, String prop) {
+    private String resolveLocation(String source, String var, String location) {
+        return location + source.substring(var.length());
+    }
+
+    private String substituteVar(String source, String var, String prop) {
         String value = System.getProperty(prop, ""); //$NON-NLS-1$
         return value + source.substring(var.length());
     }
