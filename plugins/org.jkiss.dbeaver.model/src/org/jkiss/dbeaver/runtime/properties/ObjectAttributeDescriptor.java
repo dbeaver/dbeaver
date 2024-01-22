@@ -141,7 +141,7 @@ public abstract class ObjectAttributeDescriptor {
     public boolean isLazy(Object object, boolean checkParent)
     {
         if (object instanceof DBSObject dbso && !dbso.isPersisted()) {
-            //return false;
+            return false;
         }
         if (isLazy && cacheValidator != null) {
             if (parent != null) {
