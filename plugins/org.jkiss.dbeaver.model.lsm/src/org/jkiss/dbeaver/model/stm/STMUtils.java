@@ -36,7 +36,7 @@ public class STMUtils {
         Stack<STMTreeNode> stack = new Stack<>();
         stack.add(root);
 
-        while (stack.size() > 0) {
+        while (!stack.isEmpty()) {
             STMTreeNode node = stack.pop();
             String nodeName = node.getNodeName();
             

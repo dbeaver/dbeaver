@@ -43,7 +43,23 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
     /**
      * Save credentials into connection configuration
      */
-    void saveCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials);
+    void saveCredentials(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull CREDENTIALS credentials
+    );
+
+    /**
+     * Provide credentials into connection configuration, always includes secured properties
+     */
+    default void provideCredentials(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull CREDENTIALS credentials
+    ) {
+        // backward compatibility
+        saveCredentials(dataSource, configuration, credentials);
+    }
 
     /**
      * Called before connection opening. May modify any connection configuration properties

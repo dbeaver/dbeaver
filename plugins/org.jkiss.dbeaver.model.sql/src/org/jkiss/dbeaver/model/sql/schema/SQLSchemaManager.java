@@ -187,15 +187,15 @@ public final class SQLSchemaManager {
             }
             try (Statement dbStat = connection.createStatement()) {
                 try {
-                    log.info("Execute migration query: " + line);
+                    log.debug("Execute migration query: " + line);
                     dbStat.execute(line);
                 } catch (SQLException e) {
                     //TODO: find a better way to avoid migration errors
                     // 11 migration version sometimes crashes in h2
                     log.error("Error during sql migration", e);
-                    log.info("Trying to apply the migration again");
+                    log.debug("Trying to apply the migration again");
                     dbStat.execute(line);
-                    log.error("The second attempt was successful");
+                    log.debug("The second schema migration attempt was successful");
                 }
             }
         }
