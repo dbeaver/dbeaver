@@ -28,6 +28,4 @@ public interface SMConstants {
     String DATA_SOURCE_ACCESS_PERMISSION = "access";
 
     String USER_AUTH_ROLE_PARAM = "authRole";
-
-    String SESSION_PARAM_LOGOUT_URL = "logoutUrl";
 }
