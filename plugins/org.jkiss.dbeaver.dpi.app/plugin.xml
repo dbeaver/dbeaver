@@ -9,12 +9,6 @@
         </application>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.runtime.DBWorkbench" class="org.jkiss.dbeaver.dpi.app.DPIPlatformAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
-        </factory>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.application">
         <application
                 id="dbeaver-dpi-app"

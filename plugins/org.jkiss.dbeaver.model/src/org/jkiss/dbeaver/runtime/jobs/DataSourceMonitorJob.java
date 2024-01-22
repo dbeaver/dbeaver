@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -38,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 
 import java.util.*;
 
@@ -78,7 +81,20 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
         lastPingTime = System.currentTimeMillis();
 
+        doJob();
+
+        if (!platform.isShuttingDown()) {
+            scheduleMonitor();
+        }
+        return Status.OK_STATUS;
+    }
+
+    protected void doJob() {
         final DBPWorkspace workspace = platform.getWorkspace();
+        checkDataSourceAliveInWorkspace(workspace);
+    }
+
+    protected void checkDataSourceAliveInWorkspace(DBPWorkspace workspace) {
         for (DBPProject project : workspace.getProjects()) {
             if (project.isOpen() && project.isRegistryLoaded()) {
                 DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
@@ -87,10 +103,6 @@ public class DataSourceMonitorJob extends AbstractJob {
                 }
             }
         }
-        if (!platform.isShuttingDown()) {
-            scheduleMonitor();
-        }
-        return Status.OK_STATUS;
     }
 
     private void checkDataSourceAlive(final DBPDataSourceContainer dataSourceDescriptor) {
@@ -170,32 +182,18 @@ public class DataSourceMonitorJob extends AbstractJob {
             return;
         }
 
-        DBPPreferenceStore preferenceStore = dsDescriptor.getPreferenceStore();
-        long ttlSeconds = 0;
-        if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
-            // First check datasource settings from the Transactions preference page
-            ttlSeconds = preferenceStore.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
-        }
-        DBPConnectionConfiguration conConfig = dsDescriptor.getConnectionConfiguration();
-        if (ttlSeconds == 0) {
-            // Or get this info from the current connection type
-            DBPConnectionType connectionType = conConfig.getConnectionType();
-            if (connectionType.isAutoCloseTransactions()) {
-                ttlSeconds = connectionType.getCloseIdleConnectionPeriod();
-            }
-        }
-        DBPApplication application = DBWorkbench.getPlatform().getApplication();
-
-        long lastUserActivityTime = -1;
-        if (application instanceof DBPApplicationDesktop) {
-            lastUserActivityTime = ((DBPApplicationDesktop) application).getLastUserActivityTime();
-        }
-        if (lastUserActivityTime <= 0) {
+        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        if (lastUserActivityTime < 0) {
             return;
         }
-        long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
 
-        if (conConfig.getCloseIdleInterval() > 0 && idleInterval > conConfig.getCloseIdleInterval()) {
+        final long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
+        final long disconnectTimeoutSeconds = getDisconnectTimeoutSeconds(dsDescriptor);
+        final long rollbackTimeoutSeconds = getTransactionTimeoutSeconds(dsDescriptor);
+
+        DBPDataSource dataSource = dsDescriptor.getDataSource();
+
+        if (dataSource != null && disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
             if (DisconnectJob.isInProcess(dsDescriptor)) {
                 return;
             }
@@ -203,17 +201,23 @@ public class DataSourceMonitorJob extends AbstractJob {
             // Kill idle connection
             DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
             disconnectJob.schedule();
+
+            DBeaverNotifications.showNotification(
+                dataSource,
+                DBeaverNotifications.NT_DISCONNECT_IDLE,
+                "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
+                DBPMessageType.ERROR);
+
             return;
         }
 
-        if (idleInterval < ttlSeconds) {
+        if (idleInterval < rollbackTimeoutSeconds) {
             return;
         }
         if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
             return;
         }
 
-        DBPDataSource dataSource = dsDescriptor.getDataSource();
         if (dataSource != null) {
             try {
                 Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
@@ -244,4 +248,39 @@ public class DataSourceMonitorJob extends AbstractJob {
         schedule(MONITOR_INTERVAL);
     }
 
+    public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
+        final int timeout = container.getConnectionConfiguration().getCloseIdleInterval();
+        return Math.max(0, timeout);
+    }
+
+    public static long getTransactionTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
+        final DBPPreferenceStore pref = container.getPreferenceStore();
+        final DBPConnectionConfiguration config = container.getConnectionConfiguration();
+        long ttlSeconds = 0;
+
+        if (pref.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+            // First check datasource settings from the "Transactions" preference page
+            ttlSeconds = pref.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
+        }
+
+        if (ttlSeconds == 0) {
+            // Or get this info from the current connection type
+            final DBPConnectionType connectionType = config.getConnectionType();
+            if (connectionType.isAutoCloseTransactions()) {
+                ttlSeconds = connectionType.getCloseIdleTransactionPeriod();
+            }
+        }
+
+        return Math.max(0, ttlSeconds);
+    }
+
+    public static long getLastUserActivityTime() {
+        long lastUserActivityTime = -1;
+
+        if (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop app) {
+            lastUserActivityTime = app.getLastUserActivityTime();
+        }
+
+        return lastUserActivityTime;
+    }
 }

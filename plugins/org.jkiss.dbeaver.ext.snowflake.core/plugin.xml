@@ -52,6 +52,9 @@
                         <property id="warehouse" label="Warehouse" type="string" description="Snowflake warehouse name"/>
                         <property id="schema" label="Schema" type="string" description="Default schema name"/>
                     </propertyGroup>
+                    <propertyGroup label="SQL">
+                        <property id="ddString" label="Show $$ quotes as String" type="boolean" supportedConfigurationTypes="MANUAL,URL"/>
+                    </propertyGroup>
                 </provider-properties>
 
             </drivers>

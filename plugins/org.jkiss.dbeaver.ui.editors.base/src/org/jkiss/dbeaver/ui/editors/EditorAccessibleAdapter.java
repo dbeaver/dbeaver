@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
 
     private static final String ACTIVE_NAME_EDITOR = "editor %s %s"; // $NON-NLS-0$
     private static final String ACTIVE_NAME_TAB = "active tab %s %s of %s"; // $NON-NLS-0$
+    private static final String ACTIVE_NAME_TAB_NO_TITLE = "active tab %s of %s"; // $NON-NLS-0$
     private final Control composite;
 
     EditorAccessibleAdapter(@NotNull Control composite) {
@@ -76,10 +77,20 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
         Composite parentTab = context.getParent();
         if (parentTab instanceof CTabFolder) {
             CTabFolder tabFoler = (CTabFolder) parentTab;
-            msg = String.format(ACTIVE_NAME_TAB,
-                tabFoler.getSelection().getToolTipText(),
-                tabFoler.getSelectionIndex() + 1,
-                tabFoler.getItemCount());
+            if (tabFoler.getSelection() == null) {
+                return msg;
+            }
+            String text = tabFoler.getSelection().getText();
+            if (text != null) {
+                msg = String.format(ACTIVE_NAME_TAB,
+                    text,
+                    tabFoler.getSelectionIndex() + 1,
+                    tabFoler.getItemCount());
+            } else {
+                msg = String.format(ACTIVE_NAME_TAB_NO_TITLE,
+                    tabFoler.getSelectionIndex() + 1,
+                    tabFoler.getItemCount());
+            }
             // level 3
             Composite parentEditor = parentTab.getParent();
             if (parentEditor != null && !parentEditor.isDisposed()) {

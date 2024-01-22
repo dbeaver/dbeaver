@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,10 +132,11 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (value == null) {
             return null;
         }
-        if (nativeSpecialValues && (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value))) {
-            return value.toString();
-        }
-        if (value instanceof Float || value instanceof Double) {
+        if (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value)) {
+            if (nativeSpecialValues) {
+                return value.toString();
+            }
+        } else if (value instanceof Float || value instanceof Double) {
             // Convert to BigDecimal so we don't have rounding issues with high minimum fraction digits set
             value = new BigDecimal(value.toString());
         }

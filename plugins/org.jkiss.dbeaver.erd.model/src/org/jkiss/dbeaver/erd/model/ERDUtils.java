@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -105,10 +106,21 @@ public class ERDUtils
         }
     }
 
+    /**
+     * The method designed to find attributes by name comparison for one entity
+     *
+     * @param entity - database entity (table)
+     * @param attr - attribute 
+     * @return - existing attribute or null
+     */
+    @Nullable
     public static ERDEntityAttribute getAttributeByModel(ERDEntity entity, DBSEntityAttribute attr) {
-	    for (ERDEntityAttribute erdAttr : entity.getAttributes()) {
-	        if (erdAttr.getObject() == attr) {
-	            return erdAttr;
+        if (entity == null) {
+            return null;
+        }
+        for (ERDEntityAttribute erdAttr : entity.getAttributes()) {
+            if (erdAttr.getObject().getName().equals(attr.getName())) {
+                return erdAttr;
             }
         }
         return null;

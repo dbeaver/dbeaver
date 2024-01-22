@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 /**
  * PostgreServerPostgreSQL
@@ -24,6 +28,8 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 public class PostgreServerEdb extends PostgreServerExtensionBase {
 
     public static final String TYPE_ID = "edb";
+
+    private Boolean isNspParentColumnExists;
 
     public PostgreServerEdb(PostgreDataSource dataSource) {
         super(dataSource);
@@ -57,6 +63,28 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
     @Override
     public boolean supportsRowLevelSecurity() {
         return dataSource.isServerVersionAtLeast(10, 0);
+    }
+
+    @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+        return new EDBSchemaCache();
+    }
+
+    private class EDBSchemaCache extends PostgreDatabase.SchemaCache {
+
+        @Override
+        protected boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
+            // First we need to check column existing
+            if (isNspParentColumnExists == null) {
+                isNspParentColumnExists = PostgreUtils.isMetaObjectExists(session, "pg_namespace", "nspparent");
+            }
+            if (isNspParentColumnExists) {
+                // To avoid packages and other non-schema objects (with parents)
+                query.append("WHERE n.nspparent = 0 ");
+                return true;
+            }
+            return false;
+        }
     }
 }
 

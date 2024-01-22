@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
+import org.antlr.v4.runtime.misc.Interval;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
-import java.util.*;
+import java.util.List;
 
 // // TODO
 //
@@ -37,13 +39,11 @@ import java.util.*;
 //}
 public abstract class SQLQueryDataContext {
     
-    public abstract List<SQLQuerySymbol> getColumnsList();
+    public abstract List<SQLQueryResultColumn> getColumnsList();
 
     public abstract DBSEntity findRealTable(List<String> tableName);
 
-    public abstract SQLQuerySymbolDefinition resolveColumn(String simpleName);  // TODO consider ambiguous column names
-
-    // abstract SQLQuerySymbolDefinition resolveColumn(List<String> tableName, String columnName);
+    public abstract SQLQueryResultColumn resolveColumn(String simpleName);  // TODO consider ambiguous column names
     
     public SourceResolutionResult resolveSource(List<String> tableName) { // TODO consider ambiguous table names
         DBSEntity table = this.findRealTable(tableName);
@@ -53,7 +53,7 @@ public abstract class SQLQueryDataContext {
     
     public abstract SQLQueryRowsSourceModel findRealSource(DBSEntity table);
 
-    public final SQLQueryDataContext overrideResultTuple(List<SQLQuerySymbol> columns) {
+    public final SQLQueryDataContext overrideResultTuple(List<SQLQueryResultColumn> columns) {
         return new SQLQueryResultTupleContext(this, columns);
     }
     
@@ -74,4 +74,7 @@ public abstract class SQLQueryDataContext {
     }
 
     public abstract SQLDialect getDialect();
+
+    @NotNull
+    public abstract SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range);
 }

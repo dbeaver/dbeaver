@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,12 @@
                     icon="icons/ob_icon.png"
                     iconBig="icons/ob_icon_big.png"
                     description="Driver for OceanBase-MySQL"
+                    supportedPageFields="host,port,database,server"
                     categories="sql">
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <parameter name="supports-events" value="false"/>
                     <parameter name="supports-plugins" value="false"/>
                     <parameter name="supports-triggers" value="false"/>

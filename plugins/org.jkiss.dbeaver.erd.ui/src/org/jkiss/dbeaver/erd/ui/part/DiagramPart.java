@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.ConnectionLayer;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
@@ -43,6 +45,7 @@ import org.jkiss.dbeaver.erd.ui.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -136,7 +139,12 @@ public class DiagramPart extends PropertyAwarePart {
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-        router = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().createRouter();
+        
+        ERDConnectionRouterDescriptor routerDescriptor = getEditor().getDiagramRouter(); 
+        if (routerDescriptor == null) {
+            routerDescriptor = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
+        }
+        router = routerDescriptor.createRouter();
         router.setContainer(figure);
         cLayer.setConnectionRouter(router);
         return figure;
@@ -411,9 +419,7 @@ public class DiagramPart extends PropertyAwarePart {
      *
      * @return - router
      */
-    public ERDConnectionRouter getRouter() {
+    public ERDConnectionRouter getActiveRouter() {
         return router;
     }
-
-
 }

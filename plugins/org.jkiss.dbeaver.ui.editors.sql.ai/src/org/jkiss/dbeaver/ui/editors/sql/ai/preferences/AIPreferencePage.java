@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,12 +166,19 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Service", SWT.DROP_DOWN | SWT.READ_ONLY);
         List<AIEngineRegistry.EngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
             .getCompletionEngines();
+        int defaultEngineSelection = -1;
         for (int i = 0; i < completionEngines.size(); i++) {
             serviceCombo.add(completionEngines.get(i).getLabel());
             serviceNameMappings.put(completionEngines.get(i).getLabel(), completionEngines.get(i).getId());
+            if (completionEngines.get(i).isDefault()) {
+                defaultEngineSelection = i;
+            }
             if (completionEngines.get(i).getId().equals(settings.getActiveEngine())) {
                 serviceCombo.select(i);
             }
+        }
+        if (serviceCombo.getSelectionIndex() == -1 && defaultEngineSelection != -1) {
+            serviceCombo.select(defaultEngineSelection);
         }
 
         final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);

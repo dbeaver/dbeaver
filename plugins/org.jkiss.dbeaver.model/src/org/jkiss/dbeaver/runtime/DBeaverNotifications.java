@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public class DBeaverNotifications
 {
 
     public static final String NT_COMMIT = "commit";
+    public static final String NT_DISCONNECT_IDLE = "disconnect.idle";
     public static final String NT_ROLLBACK = "rollback";
     public static final String NT_ROLLBACK_IDLE = "rollback.idle";
     public static final String NT_RECONNECT_SUCCESS = "reconnect.success";

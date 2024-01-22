@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,7 +207,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                 // Create new empty children cache
                 // This may happen only when invoked for newly created object (e.g. when we create new column
                 // in a new created table)
-                nestedCache = new SimpleObjectCache<>();
+                nestedCache = this.createNestedCache();
                 nestedCache.setCache(new ArrayList<>());
                 childrenCache.put(forObject, nestedCache);
             }
@@ -261,12 +261,18 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);
             if (nestedCache == null) {
-                nestedCache = new SimpleObjectCache<>();
-                nestedCache.setCaseSensitive(caseSensitive);
+                nestedCache = this.createNestedCache();
                 childrenCache.put(parent, nestedCache);
             }
             nestedCache.setCache(children);
         }
+    }
+    
+    @NotNull
+    protected SimpleObjectCache<OBJECT, CHILD> createNestedCache() {
+        SimpleObjectCache<OBJECT, CHILD> nestedCache = new SimpleObjectCache<>();
+        nestedCache.setCaseSensitive(caseSensitive);
+        return nestedCache;
     }
 
 }

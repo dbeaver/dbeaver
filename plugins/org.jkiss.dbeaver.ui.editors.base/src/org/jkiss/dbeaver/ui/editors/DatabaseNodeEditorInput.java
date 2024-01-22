@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,8 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     {
         super(dbnDatabaseNode, commandContext);
 
-        this.nodePath = dbnDatabaseNode.getNodeItemPath();
-        this.nodeName = dbnDatabaseNode.getNodeName();
+        this.nodePath = dbnDatabaseNode.getNodeUri();
+        this.nodeName = dbnDatabaseNode.getNodeDisplayName();
     }
     
     @Override
@@ -70,7 +70,7 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
             }
             toolTip.append(node.getNodeTypeLabel());
             toolTip.append(": ");
-            toolTip.append(node.getNodeName());
+            toolTip.append(node.getNodeDisplayName());
             toolTip.append(" \n");
             if (node instanceof DBNDataSource) {
                 break;

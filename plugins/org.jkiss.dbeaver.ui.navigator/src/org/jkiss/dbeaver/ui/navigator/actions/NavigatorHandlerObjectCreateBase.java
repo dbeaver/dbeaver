@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 }
             }
             if (container == null) {
-                throw new DBException("Can't detect container for '" + element.getNodeName() + "'");
+                throw new DBException("Can't detect container for '" + element.getNodeDisplayName() + "'");
             }
             if (container instanceof DBNDatabaseNode && ObjectPropertyTester.isMetadataChangeDisabled((DBNDatabaseNode) container)) {
                 throw new DBException("Object create not available in simple view mode");

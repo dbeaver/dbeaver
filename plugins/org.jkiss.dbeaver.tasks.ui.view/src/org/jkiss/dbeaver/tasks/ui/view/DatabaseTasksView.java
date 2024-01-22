@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite());
             }
         });
-        tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns());
+        tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns(false));
 
         DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
     }
@@ -353,7 +353,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 case TASK_UPDATE -> {
                     tasksTree.getViewer().refresh(task);
                     if (task == tasksTree.getSelectedTask()) {
-                        loadTaskRuns();
+                        loadTaskRuns(true);
                     }
                 }
                 case TASK_EXECUTE -> refresh();
@@ -390,7 +390,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             tasksTree.refresh();
         }
 
-        loadTaskRuns();
+        loadTaskRuns(true);
     }
 
     private void updateViewTitle() {
@@ -407,12 +407,12 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         tasksTree.loadTasks();
     }
 
-    private void loadTaskRuns() {
+    private void loadTaskRuns(boolean force) {
         if (tasksTree == null) {
             return;
         }
         DBTTask selectedTask = tasksTree.getSelectedTask();
-        if (selectedTask == currentTask) {
+        if (!force && selectedTask == currentTask) {
             return;
         }
         currentTask = selectedTask;

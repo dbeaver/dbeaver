@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -57,7 +57,7 @@ public interface DBPPlatformUI {
         RETRY,
     }
     
-    public class UserChoiceResponse {
+    class UserChoiceResponse {
         /**
          * index of the user's choice or out of range value (-1) on dialog failure
          */
@@ -175,7 +175,7 @@ public interface DBPPlatformUI {
 
     void showInSystemExplorer(@NotNull String path);
 
-    DBNPath openFileSystemSelector(
+    DBNPathBase openFileSystemSelector(
         @NotNull String title,
         boolean folder,
         int style,

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Types;
 import java.util.*;
 
 /**
@@ -724,6 +725,21 @@ public class GenericMetaModel {
         );
     }
 
+    /**
+     * Will set precision for type from length if type can have precision
+     *
+     * @param valueType type id
+     * @param columnSize length of the column
+     * @return precision of the numeric column or null
+     */
+    @Nullable
+    public Integer extractPrecisionOfNumericColumn(int valueType, long columnSize) {
+        if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
+            return Math.toIntExact(columnSize);
+        }
+        return null;
+    }
+
     //////////////////////////////////////////////////////
     // Constraints
 
@@ -738,6 +754,14 @@ public class GenericMetaModel {
 
     public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
         return DBSEntityConstraintType.PRIMARY_KEY;
+    }
+
+    public boolean supportsUniqueKeys() {
+        return false;
+    }
+
+    public boolean supportsCheckConstraints() {
+        return false;
     }
 
     @NotNull
@@ -922,10 +946,6 @@ public class GenericMetaModel {
 
     public boolean hasFunctionSupport() {
         return true;
-    }
-
-    public boolean supportsCheckConstraints() {
-        return false;
     }
 
     public boolean supportsViews(@NotNull GenericDataSource dataSource) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -398,7 +398,9 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_panel_output_filter_message;
     public static String sql_editor_panel_output_filter_hint;
     public static String sql_generator_dialog_title;
-    
+
+    public static String sql_editor_status_bar_rollback_label;
+    public static String sql_editor_status_bar_disconnect_label;
 
     static {
         // initialize resource bundle

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,9 @@ public enum WSEventType {
 
     TEMP_FOLDER_DELETED("cb_temp_folder_deleted", WSEventTopic.TEMP_FOLDER, WSDataSourceEvent.class),
 
-    DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class);
+    DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class),
+
+    USER_DELETED("cb_user_deleted", WSEventTopic.USER, WSUserDeletedEvent.class);
 
     private final String eventId;
     private final WSEventTopic topic;

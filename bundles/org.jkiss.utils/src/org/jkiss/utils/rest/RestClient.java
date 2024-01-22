@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,6 +191,10 @@ public class RestClient {
                     if (bounds.length > 0) {
                         returnType = bounds[0];
                     }
+                }
+                if (returnType instanceof ParameterizedType && ((ParameterizedType) returnType).getRawType() == Class.class) {
+                    // Convert to raw class type to force our serializer to work
+                    returnType = Class.class;
                 }
 
                 return gson.fromJson(contents, returnType);

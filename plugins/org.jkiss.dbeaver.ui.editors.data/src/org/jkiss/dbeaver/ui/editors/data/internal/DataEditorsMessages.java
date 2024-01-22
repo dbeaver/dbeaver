@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public class DataEditorsMessages extends NLS {
     // ResultSetPresentation
     public static String pref_page_database_resultsets_group_common;
     public static String pref_page_database_resultsets_label_switch_mode_on_rows;
+    public static String pref_page_database_resultsets_label_filters_panel_in_singletab_mode;
     public static String pref_page_database_resultsets_label_show_column_description;
     public static String pref_page_database_resultsets_label_show_connection_name;
     public static String pref_page_database_resultsets_label_calc_column_width_by_values;

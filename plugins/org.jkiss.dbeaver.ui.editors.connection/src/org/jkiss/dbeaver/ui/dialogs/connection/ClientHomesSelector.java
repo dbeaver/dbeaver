@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,7 +123,7 @@ public class ClientHomesSelector implements ISelectionProvider {
 
         Map<String, DBPNativeClientLocation> homes = new LinkedHashMap<>();
 
-        AbstractJob hlJob = new AbstractJob("Find native client homes") {
+        AbstractJob hlJob = new AbstractJob("Find local client homes") {
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {

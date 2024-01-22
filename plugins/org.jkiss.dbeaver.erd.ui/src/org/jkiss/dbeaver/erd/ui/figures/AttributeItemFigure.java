@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,11 +54,11 @@ public class AttributeItemFigure extends Figure
         this.part = part;
 
         ERDEntityAttribute attribute = part.getAttribute();
-        GridLayout layout = new GridLayout(1, false);
+        GridLayout layout = new GridLayout(3, false);
         layout.marginHeight = 2;
         layout.marginWidth = 5;
         layout.verticalSpacing = 0;
-        layout.horizontalSpacing = 0;
+        layout.horizontalSpacing = 3;
         setLayoutManager(layout);
 
         EntityDiagram diagram = part.getDiagramPart().getDiagram();

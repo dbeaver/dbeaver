@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -57,7 +56,7 @@ import java.util.Map;
  */
 public class EntityPart extends NodePart {
     protected DirectEditManager manager;
-    private AccessibleGraphicalEditPart accPart;
+    protected AccessibleGraphicalEditPart accPart;
     
     public EntityPart() {
     }
@@ -303,13 +302,13 @@ public class EntityPart extends NodePart {
     }
 
     private boolean supportsAttributeAssociations() {
-        return ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation()
+        return getEditor().getDiagramRouter().supportedAttributeAssociation()
             && !ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences());
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        if (!ERDConnectionRouterRegistry.getInstance().getActiveDescriptor().supportedAttributeAssociation() 
+        if (!getEditor().getDiagramRouter().supportedAttributeAssociation() 
             || ERDAttributeVisibility.isHideAttributeAssociations(ERDUIActivator.getDefault().getPreferences())) {
             return super.getModelTargetConnections();
         }

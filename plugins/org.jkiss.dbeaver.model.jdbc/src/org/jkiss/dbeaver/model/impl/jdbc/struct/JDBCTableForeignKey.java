@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 
 import java.util.List;
@@ -34,12 +35,13 @@ import java.util.List;
  */
 public abstract class JDBCTableForeignKey<
     TABLE extends JDBCTable,
+    COLUMN extends DBSTableConstraintColumn,
     PRIMARY_KEY extends DBSEntityConstraint>
-    extends JDBCTableConstraint<TABLE>
+    extends JDBCTableConstraint<TABLE, COLUMN>
     implements DBSTableForeignKey
 {
     @Nullable
-    protected PRIMARY_KEY referencedKey;
+    protected PRIMARY_KEY referencedConstraint;
     protected DBSForeignKeyModifyRule deleteRule;
     protected DBSForeignKeyModifyRule updateRule;
 
@@ -47,13 +49,13 @@ public abstract class JDBCTableForeignKey<
         @NotNull TABLE table,
         @NotNull String name,
         @Nullable String description,
-        @Nullable PRIMARY_KEY referencedKey,
+        @Nullable PRIMARY_KEY referencedConstraint,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         boolean persisted)
     {
         super(table, name, description, DBSEntityConstraintType.FOREIGN_KEY, persisted);
-        this.referencedKey = referencedKey;
+        this.referencedConstraint = referencedConstraint;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;
     }
@@ -71,15 +73,15 @@ public abstract class JDBCTableForeignKey<
             if (refEntity != null) {
                 if (srcRefConstraint instanceof JDBCTableConstraint && refEntity.getParentObject() == table.getParentObject()) {
                     // Referenced object in the same schema as we are - let's just use it
-                    this.referencedKey = (PRIMARY_KEY) srcRefConstraint;
+                    this.referencedConstraint = (PRIMARY_KEY) srcRefConstraint;
                 } else {
                     // Try to find table with the same name as referenced constraint owner
                     DBSObject tableContainer = table.getContainer();
                     if (tableContainer instanceof DBSObjectContainer) {
                         DBSObject refTable = ((DBSObjectContainer)tableContainer).getChild(monitor, refEntity.getName());
-                        if (refTable instanceof DBSEntity && referencedKey instanceof DBSEntityReferrer) {
-                            List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) referencedKey);
-                            this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
+                        if (refTable instanceof DBSEntity && referencedConstraint instanceof DBSEntityReferrer) {
+                            List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) referencedConstraint);
+                            this.referencedConstraint = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
                         }
                     }
                 }
@@ -99,11 +101,7 @@ public abstract class JDBCTableForeignKey<
     @Property(viewable = true, order = 3)
     public TABLE getReferencedTable()
     {
-        return referencedKey == null ? null : (TABLE) referencedKey.getParentObject();
-    }
-
-    public void setReferencedKey(PRIMARY_KEY referencedKey) {
-        this.referencedKey = referencedKey;
+        return referencedConstraint == null ? null : (TABLE) referencedConstraint.getParentObject();
     }
 
     @Nullable
@@ -111,7 +109,11 @@ public abstract class JDBCTableForeignKey<
     @Property(id = "reference", viewable = true, order = 4)
     public PRIMARY_KEY getReferencedConstraint()
     {
-        return referencedKey;
+        return referencedConstraint;
+    }
+
+    public void setReferencedConstraint(PRIMARY_KEY referencedConstraint) {
+        this.referencedConstraint = referencedConstraint;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,23 @@
 
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * EditConstraintPage
@@ -46,58 +41,46 @@ import java.util.Map;
  * @author Serge Rider
  */
 public class EditConstraintPage extends AttributesSelectorPage {
+    private static final Log log = Log.getLog(EditConstraintPage.class);
 
-    private DBSEntityConstraint entityConstraint;
-    private String constraintName;
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
     private String constraintExpression;
     private DBSEntityReferrer constraint;
     private Collection<? extends DBSEntityAttributeRef> attributes;
+    private final ConstraintNameGenerator nameGenerator;
 
-    private Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
     private Group expressionGroup;
     private Text expressionText;
     private boolean enableConstraint = true;
     private boolean showEnable = false;
     private boolean useAllColumns = false;
 
-    public EditConstraintPage(
-        String title,
-        DBSEntityConstraint constraint,
-        DBSEntityConstraintType[] constraintTypes)
-    {
-        super(title, constraint.getParentObject());
-        this.entityConstraint = constraint;
-        this.constraintTypes = constraintTypes;
-        Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
-    }
-
-    public EditConstraintPage(
-        String title,
-        DBSEntity entity,
-        DBSEntityConstraintType[] constraintTypes, Boolean showEnable)
-    {
-        super(title, entity);
-        this.entity = entity;
-        this.constraintTypes = constraintTypes;
-        this.showEnable = showEnable;
-        Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
-    }
-
-    public EditConstraintPage(
-        String title,
-        DBSEntityReferrer constraint)
-    {
+    public EditConstraintPage(String title, DBSEntityReferrer constraint) {
         super(title, constraint.getParentObject());
         this.constraint = constraint;
-        this.constraintTypes = new DBSEntityConstraintType[] {constraint.getConstraintType()};
+
+        if (entity instanceof DBSEntityConstrainable entityConstrainable) {
+            this.constraintTypes = entityConstrainable.getSupportedConstraints()
+                .stream()
+                .map(DBSEntityConstraintInfo::getType)
+                .filter(type -> type != DBSEntityConstraintType.INDEX)
+                .toArray(DBSEntityConstraintType[]::new);
+        } else {
+            this.constraintTypes = new DBSEntityConstraintType[]{constraint.getConstraintType()};
+        }
+        this.selectedConstraintType = constraint.getConstraintType();
+        this.constraint = constraint;
+
         try {
             this.attributes = constraint.getAttributeReferences(new VoidProgressMonitor());
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(EditorsMessages.edit_constraints_error_title, EditorsMessages.edit_constraints_error_message, e);
         }
-        this.constraintName = this.constraint.getName();
+        this.nameGenerator = new ConstraintNameGenerator(
+            constraint.getParentObject(),
+            this.constraint.isPersisted() ? this.constraint.getName() : null,
+            constraint.getConstraintType());
         if (constraint instanceof DBVEntityConstraint) {
             this.useAllColumns = ((DBVEntityConstraint) constraint).isUseAllColumns();
         }
@@ -107,11 +90,8 @@ public class EditConstraintPage extends AttributesSelectorPage {
         return this.constraintTypes.length == 1 && this.constraintTypes[0] == DBSEntityConstraintType.VIRTUAL_KEY;
     }
 
-    private void addTypePrefix(DBSEntityConstraintType type, String prefix) {
-        if (entity.getDataSource() != null) {
-            prefix = entity.getDataSource().getSQLDialect().storesUnquotedCase().transform(prefix);
-        }
-        TYPE_PREFIX.put(type, prefix);
+    public void setConstraintTypes(DBSEntityConstraintType[] constraintTypes) {
+        this.constraintTypes = constraintTypes;
     }
 
     @Override
@@ -124,36 +104,25 @@ public class EditConstraintPage extends AttributesSelectorPage {
     private void toggleEditAreas() {
         final boolean custom = selectedConstraintType.isCustom();
         columnsGroup.setVisible(!custom);
-        ((GridData)columnsGroup.getLayoutData()).exclude = custom;
+        ((GridData) columnsGroup.getLayoutData()).exclude = custom;
         expressionGroup.setVisible(custom);
-        ((GridData)expressionGroup.getLayoutData()).exclude = !custom;
+        ((GridData) expressionGroup.getLayoutData()).exclude = !custom;
         columnsGroup.getParent().layout();
     }
 
     @Override
-    protected void createContentsBeforeColumns(Composite panel)
-    {
-        if (entity != null) {
-            addTypePrefix(DBSEntityConstraintType.PRIMARY_KEY, "_PK");
-            addTypePrefix(DBSEntityConstraintType.UNIQUE_KEY, "_UN");
-            addTypePrefix(DBSEntityConstraintType.VIRTUAL_KEY, "_VK");
-            addTypePrefix(DBSEntityConstraintType.FOREIGN_KEY, "_FK");
-            addTypePrefix(DBSEntityConstraintType.CHECK, "_CHECK");
-
-            if (CommonUtils.isEmpty(this.constraintName)) {
-                String namePrefix = TYPE_PREFIX.get(constraintTypes[0]);
-                if (namePrefix == null) {
-                    namePrefix = "KEY";
-                }
-                this.constraintName = DBObjectNameCaseTransformer.transformName(entity.getDataSource(), CommonUtils.escapeIdentifier(entity.getName()) + namePrefix);
-            }
-        }
-
-        final Text nameText = entity != null ? UIUtils.createLabelText(panel, EditorsMessages.dialog_struct_edit_constrain_label_name, constraintName) : null;
+    protected void createContentsBeforeColumns(Composite panel) {
+        final Text nameText = entity != null ? UIUtils.createLabelText(
+            panel,
+            EditorsMessages.dialog_struct_edit_constrain_label_name,
+            nameGenerator.getConstraintName()) : null;
         if (nameText != null) {
             nameText.selectAll();
             nameText.setFocus();
-            nameText.addModifyListener(e -> constraintName = nameText.getText().trim());
+            nameText.addModifyListener(e -> {
+                nameGenerator.setConstraintName(nameText.getText().trim());
+                validateProperties();
+            });
         }
 
         UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_constrain_label_type);
@@ -162,30 +131,24 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
         for (DBSEntityConstraintType constraintType : constraintTypes) {
             typeCombo.add(constraintType.getName());
-            if (selectedConstraintType == null) {
+            if (selectedConstraintType == null || constraintType == selectedConstraintType) {
                 selectedConstraintType = constraintType;
+                typeCombo.select(typeCombo.getItemCount() - 1);
             }
         }
-        typeCombo.select(0);
-        //typeCombo.setEnabled(constraintTypes.length > 1);
+        if (selectedConstraintType == null) {
+            typeCombo.select(0);
+            selectedConstraintType = constraintTypes[0];
+        }
         typeCombo.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                DBSEntityConstraintType oldType = selectedConstraintType;
+            public void widgetSelected(SelectionEvent e) {
                 selectedConstraintType = constraintTypes[typeCombo.getSelectionIndex()];
-                if (constraintName != null) {
-                    String oldPrefix = TYPE_PREFIX.get(oldType);
-                    if (oldPrefix != null && constraintName.endsWith(oldPrefix)) {
-                        String newPrefix = TYPE_PREFIX.get(selectedConstraintType);
-                        if (newPrefix != null) {
-                            constraintName = constraintName.substring(0, constraintName.length() - oldPrefix.length()) + newPrefix;
-                            if (nameText != null) {
-                                nameText.setText(constraintName);
-                            }
-                        }
-                    }
+                nameGenerator.setConstraintType(selectedConstraintType);
+                if (nameText != null) {
+                    nameText.setText(nameGenerator.getConstraintName());
                 }
+                validateProperties();
                 toggleEditAreas();
             }
         });
@@ -208,10 +171,12 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 public void widgetSelected(SelectionEvent e) {
                     useAllColumns = useAllColumnsCheck.getSelection();
                     columnsTable.setEnabled(!useAllColumns);
+                    validateProperties();
                     updatePageState();
                 }
             });
         }
+        validateProperties();
     }
 
     @Override
@@ -221,27 +186,47 @@ public class EditConstraintPage extends AttributesSelectorPage {
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = expressionText.getLineHeight() * 3;
         expressionText.setLayoutData(gd);
-        expressionText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                constraintExpression = expressionText.getText();
-                updatePageState();
-            }
+        expressionText.addModifyListener(e -> {
+            constraintExpression = expressionText.getText();
+            updatePageState();
         });
         columnsTable.setEnabled(!useAllColumns);
     }
 
-    public String getConstraintName() {
-        return constraintName;
+    @Override
+    protected boolean isColumnsRequired() {
+        return !selectedConstraintType.isCustom() && !useAllColumns;
     }
 
-    public DBSEntityConstraintType getConstraintType()
-    {
+    public String getConstraintName() {
+        return nameGenerator.getConstraintName();
+    }
+
+    public DBSEntityConstraintType getConstraintType() {
         return selectedConstraintType;
     }
 
     public String getConstraintExpression() {
         return constraintExpression;
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return constraint;
+    }
+
+    @Override
+    protected String getEditError() {
+        // Constraint name may be empty (auto-generated)
+//        if (CommonUtils.isEmpty(constraint.getName())) {
+//            return "Constraint name cannot be empty";
+//        }
+
+        String error = nameGenerator.validateAllowedType(selectedConstraintType);
+        if (error != null) {
+            return error;
+        }
+        return super.getEditError();
     }
 
     @Override
@@ -257,8 +242,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
     }
 
     @Override
-    public boolean isColumnSelected(DBSEntityAttribute attribute)
-    {
+    public boolean isColumnSelected(DBSEntityAttribute attribute) {
         if (!CommonUtils.isEmpty(attributes)) {
             for (DBSEntityAttributeRef ref : attributes) {
                 if (ref.getAttribute() == attribute) {
@@ -268,13 +252,20 @@ public class EditConstraintPage extends AttributesSelectorPage {
         }
         return false;
     }
-    
-    public boolean isEnableConstraint()
-    {
-    	return this.enableConstraint;
+
+    public boolean isEnableConstraint() {
+        return this.enableConstraint;
     }
 
     public boolean isUseAllColumns() {
         return this.useAllColumns;
     }
+
+    public void performFinish() {
+        if (constraint instanceof AbstractTableConstraint<?,?> atc) {
+            atc.setConstraintType(this.getConstraintType());
+            atc.setName(this.getConstraintName());
+        }
+    }
+
 }

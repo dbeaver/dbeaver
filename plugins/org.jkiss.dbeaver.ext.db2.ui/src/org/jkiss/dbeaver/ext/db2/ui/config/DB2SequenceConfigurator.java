@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -29,7 +32,7 @@ import java.util.Map;
 public class DB2SequenceConfigurator implements DBEObjectConfigurator<DB2Sequence> {
 
     @Override
-    public DB2Sequence configureObject(DBRProgressMonitor monitor, Object container, DB2Sequence sequence, Map<String, Object> options) {
+    public DB2Sequence configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DB2Sequence sequence, @NotNull Map<String, Object> options) {
     	DB2Schema schema = (DB2Schema) container;
         return new UITask<DB2Sequence>() {
             @Override

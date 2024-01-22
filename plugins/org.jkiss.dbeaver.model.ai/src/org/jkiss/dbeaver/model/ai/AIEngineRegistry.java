@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,10 @@ public class AIEngineRegistry {
             return contributorConfig.getAttribute("replaces");
         }
 
+        public boolean isDefault() {
+            return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
+        }
+
         public List<DBPPropertyDescriptor> getProperties() {
             return properties;
         }
@@ -116,10 +120,19 @@ public class AIEngineRegistry {
         return list;
     }
 
+    public EngineDescriptor getDefaultCompletionEngineDescriptor() {
+        return getCompletionEngines().stream().filter(EngineDescriptor::isDefault).findFirst().orElse(null);
+    }
+
     public DAICompletionEngine<?> getCompletionEngine(String id) throws DBException {
         EngineDescriptor descriptor = getEngineDescriptor(id);
         if (descriptor == null) {
-            throw new DBException("AI engine '" + id + "' not found");
+            log.warn("Active engine is not present in the configuration, switching to default active engine");
+            EngineDescriptor defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
+            if (defaultCompletionEngineDescriptor == null) {
+                throw new DBException("AI engine '" + id + "' not found");
+            }
+            descriptor = defaultCompletionEngineDescriptor;
         }
         return descriptor.createInstance();
     }

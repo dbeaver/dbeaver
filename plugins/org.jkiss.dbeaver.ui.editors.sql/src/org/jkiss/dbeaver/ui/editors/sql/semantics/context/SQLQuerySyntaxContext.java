@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
 
     @NotNull
     @Override
-    public List<SQLQuerySymbol> getColumnsList() {
+    public List<SQLQueryResultColumn> getColumnsList() {
         return this.parent.getColumnsList();
     }
 
@@ -53,27 +54,29 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
         return this.parent.findRealSource(table);
     }
 
-//    @Override
-//    public SQLQuerySymbolDefinition resolveColumn(List<String> tableName, String columnName) {
-//        return this.parent.resolveColumn(tableName, columnName);
-//    }
-
-    @NotNull
+    @Nullable
     @Override
-    public SQLQuerySymbolDefinition resolveColumn(@NotNull String columnName) {
+    public SQLQueryResultColumn resolveColumn(@NotNull String columnName) {
         return this.parent.resolveColumn(columnName);
     }
 
     @NotNull
     @Override
     public SourceResolutionResult resolveSource(@NotNull List<String> tableName) {
-        return this.parent.resolveSource(tableName);
+        SourceResolutionResult result = super.resolveSource(tableName);
+        return result != null ? result : this.parent.resolveSource(tableName);
     }
 
     @NotNull
     @Override
     public SQLDialect getDialect() {
         return this.parent.getDialect();
+    }
+    
+    @NotNull
+    @Override
+    public SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range) {
+        return this.parent.getDefaultTable(range);
     }
 }
 

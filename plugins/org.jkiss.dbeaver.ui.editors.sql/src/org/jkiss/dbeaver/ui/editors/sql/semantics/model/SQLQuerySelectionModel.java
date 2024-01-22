@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,29 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
 
-public class SQLQuerySelectionModel {
+public class SQLQuerySelectionModel extends SQLQueryNodeModel {
 
     // TODO bring cte here apparently
-    
+
     private final HashSet<SQLQuerySymbolEntry> symbolEntries;
     private final SQLQueryRowsSourceModel resultSource;
-    
-    public SQLQuerySelectionModel(@Nullable SQLQueryRowsSourceModel resultSource, @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries) {
+
+    public SQLQuerySelectionModel(
+        @NotNull Interval range,
+        @Nullable SQLQueryRowsSourceModel resultSource,
+        @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries
+    ) {
+        super(range);
         this.resultSource = resultSource;
         this.symbolEntries = symbolEntries;
     }
@@ -40,9 +48,19 @@ public class SQLQuerySelectionModel {
         return symbolEntries;
     }
 
+    @Nullable
+    public SQLQueryRowsSourceModel getResultSource() {
+        return this.resultSource;
+    }
+
     public void propagateContex(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         if (this.resultSource != null) {
             this.resultSource.propagateContext(dataContext, recognitionContext);
         }
+    }
+
+    @Override
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
+        return visitor.visitSelectionModel(this, node);
     }
 }

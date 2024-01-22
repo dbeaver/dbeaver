@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -40,11 +43,12 @@ import java.util.Map;
 /**
  * @author Karl
  */
-public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> implements DBSTableForeignKey,DBPScriptObject, DBPNamedObject2 {
+public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, ExasolTableForeignKeyColumn>
+    implements DBSTableForeignKey,DBPScriptObject
+{
 
     private static final Log LOG = Log.getLog(ExasolTableForeignKey.class);
     private ExasolTable refTable;
-    private String constName;
     private Boolean enabled;
     private List<ExasolTableForeignKeyColumn> columns;
     
@@ -61,8 +65,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
 
         String refSchemaName = JDBCUtils.safeGetString(dbResult, "REFERENCED_SCHEMA");
         String refTableName = JDBCUtils.safeGetString(dbResult, "REFERENCED_TABLE");
-        this.constName = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME");
-        
+
         refTable = ExasolUtils.findTableBySchemaNameAndName(monitor, exasolTable.getDataSource(), refSchemaName, refTableName);
 
         enabled = JDBCUtils.safeGetBoolean(dbResult, "CONSTRAINT_ENABLED");
@@ -73,7 +76,6 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
         super(exasolTable, name, "", DBSEntityConstraintType.FOREIGN_KEY, true);
         this.referencedKey = referencedKey;
         this.enabled = enabled;
-        this.constName = name;
         setReferencedConstraint(referencedKey);
 
     }
@@ -127,7 +129,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
         return columns;
     }
 
-    public void setColumns(List<ExasolTableForeignKeyColumn> columns) {
+    public void setAttributeReferences(List<ExasolTableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 
@@ -177,19 +179,5 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
 	{
 		return ExasolUtils.getFKDdl(this, monitor);
 	}
-	
-	@Override
-    @Property(viewable = true)
-	public String getName()
-	{
-		return this.constName;
-	}
-	
-	@Override
-	public void setName(String name)
-	{
-		this.constName = name;
-	}
-		
 
 }

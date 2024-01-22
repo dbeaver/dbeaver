@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -77,7 +77,7 @@ public class RequestBuilder {
     public RequestResult prepare() throws DBException {
         final DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        final SQLDialectRegistry dialectRegistry = SQLDialectRegistry.getInstance();
+        final SQLDialectMetadataRegistry dialectRegistry = DBWorkbench.getPlatform().getSQLDialectRegistry();
 
         final DBPDataSourceContainer dataSourceContainer = mock(DBPDataSourceContainer.class);
         when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);

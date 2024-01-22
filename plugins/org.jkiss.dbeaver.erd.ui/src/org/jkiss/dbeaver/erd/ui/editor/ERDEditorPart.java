@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,8 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.part.*;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -167,6 +169,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private ERDHighlightingManager highlightingManager = new ERDHighlightingManager();
 
     private String exportMruFilename = null;
+    private ERDConnectionRouterDescriptor routerStyle;
+    private ERDNotationDescriptor notationStyle;
 
     /**
      * No-arg constructor
@@ -246,6 +250,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         configPropertyListener = new ConfigPropertyListener();
         ERDUIActivator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
+        if (routerStyle == null) {
+            routerStyle = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
+        }
+        if (notationStyle == null) {
+            notationStyle = ERDNotationRegistry.getInstance().getActiveDescriptor();
+        }
     }
 
     @Override
@@ -461,16 +471,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // Set initial (empty) contents
         viewer.setContents(new EntityDiagram(null, "empty", getContentProvider(), getDecorator()));
+        ERDEditorContextMenuProvider provider = createContextProvider();
+        viewer.setContextMenu(provider);
 
         // Set context menu
-        ERDEditorContextMenuProvider provider = new ERDEditorContextMenuProvider(this);
-        viewer.setContextMenu(provider);
         IWorkbenchPartSite site = getSite();
         if (site instanceof IEditorSite) {
             ((IEditorSite)site).registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer, false);
         } else {
             site.registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer);
         }
+    }
+
+    @NotNull
+    protected ERDEditorContextMenuProvider createContextProvider() {
+        return new ERDEditorContextMenuProvider(this, true);
     }
 
     private GraphicalViewer createViewer(Composite parent)
@@ -482,7 +497,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // configure the viewer
         viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
         viewer.setRootEditPart(rootPart);
-        viewer.setKeyHandler(new DBeaverNavigationKeyHandler(viewer));
+        installKeyHandler(viewer);
 
         registerDropTargetListeners(viewer);
 
@@ -490,6 +505,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.setEditPartFactory(getDecorator().createPartFactory());
 
         return viewer;
+    }
+
+    protected void installKeyHandler(GraphicalViewer viewer) {
+        viewer.setKeyHandler(new DBeaverNavigationKeyHandler(viewer));
     }
 
     protected void registerDropTargetListeners(GraphicalViewer viewer) {
@@ -687,10 +706,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
-    public void refreshDiagram(boolean force, boolean refreshMetadata)
-    {
+    public void refreshDiagram(boolean force, boolean refreshMetadata) {
         if (isLoaded && force) {
             loadDiagram(refreshMetadata);
+            DiagramPart diagramPart = getDiagramPart();
+            if (diagramPart != null) {
+                diagramPart.rearrangeDiagram();
+            }
         }
     }
 
@@ -847,12 +869,25 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * Fill ERD notations popup menu
      *
-     *@param menu - root node
+     * @param menu - root node
      */
     public void fillNotationsMenu(IMenuManager menu) {
         MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_notation_style);
         for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getNotations()) {
             ntMenu.add(new ChangeERDNotationStyleAction(ntType));
+        }
+        menu.add(ntMenu);
+    }
+
+    /**
+     * Fill ERD routers popup menu
+     *
+     * @param menu - root node
+     */
+    public void fillRoutersMenu(IMenuManager menu) {
+        MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_router_style);
+        for (ERDConnectionRouterDescriptor ntType : ERDConnectionRouterRegistry.getInstance().getDescriptors()) {
+            ntMenu.add(new ChangeERDRouterStyleAction(ntType));
         }
         menu.add(ntMenu);
     }
@@ -1082,6 +1117,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             getDiagram().setAttributeStyle(style, !isChecked());
             refreshEntityAndAttributes();
+            refreshDiagram(true, false);
         }
     }
     
@@ -1095,16 +1131,39 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         @Override
         public boolean isChecked() {
-            if (notation == null || getDiagram().getDiagramNotation() == null) {
+            if (notation == null || getDiagramNotation() == null) {
                 return false;
             }
-            return notation.getId().equals(getDiagram().getDiagramNotation().getId());
+            return notation.getId().equals(getDiagramNotation().getId());
         }
 
         @Override
         public void run() {
-            getDiagram().setDiagramNotation(notation);
-            refreshDiagram(true, true);
+            setDiagramNotation(notation);
+            refreshDiagram(true, false);
+        }
+    }
+
+    private class ChangeERDRouterStyleAction extends Action {
+        private final ERDConnectionRouterDescriptor router;
+
+        public ChangeERDRouterStyleAction(@NotNull ERDConnectionRouterDescriptor router) {
+            super(router.getName(), AS_CHECK_BOX);
+            this.router = router;
+        }
+
+        @Override
+        public boolean isChecked() {
+            if (router == null || getDiagramRouter() == null) {
+                return false;
+            }
+            return router.getId().equals(getDiagramRouter().getId());
+        }
+
+        @Override
+        public void run() {
+            setDiagramRouter(router);
+            refreshDiagram(true, false);
         }
     }
 
@@ -1166,6 +1225,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     }
                 }
             }
+            refreshDiagram(true, false);
         }
     }
 
@@ -1194,14 +1254,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshEntityAndAttributes();
             } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) ||
-                ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty()) ||
-                ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
+                ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
                 doSave(new NullProgressMonitor());
-                refreshDiagram(true, true);
+                refreshDiagram(true, false);
             } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
                 ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getActiveDescriptor();
-                getDiagram().setDiagramNotation(defaultNotation);
-                refreshDiagram(true, true);
+                setDiagramNotation(defaultNotation);
+                doSave(new NullProgressMonitor());
+                refreshDiagram(true, false);
+            } else if (ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
+                ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
+                setDiagramRouter(defaultRouter);
+                doSave(new NullProgressMonitor());
+                refreshDiagram(true, false);
             }
         }
     }
@@ -1577,5 +1642,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public boolean canUndo() {
             return false;
         }
+    }
+
+    public ERDNotationDescriptor getDiagramNotation() {
+        return notationStyle;
+    }
+
+    public void setDiagramNotation(ERDNotationDescriptor notation) {
+        this.notationStyle = notation;
+    }
+
+    public ERDConnectionRouterDescriptor getDiagramRouter() {
+        return routerStyle;
+    }
+
+    public void setDiagramRouter(ERDConnectionRouterDescriptor router) {
+        this.routerStyle = router;
     }
 }

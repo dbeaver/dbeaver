@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?eclipse version="3.2"?>
 <tips>
-	<!--        Tips below were reviewed on 30th of June 2023   -->
+	<!--        Tips below were reviewed on 28th of November 2023   -->
 	<tip>DBeaver can be customized to suit your needs. Learn detailed information about optional extensions <a href="https://dbeaver.com/docs/wiki/Optional-extensions"> here</a>.</tip>
 	<tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the menu bar and the list of menu items displayed</a> in the <b>Menu Visibility</b> tab.</tip>
 	<tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the toolbar </a> in the <b>Toolbar Visibility</b> tab.</tip>
@@ -111,6 +111,13 @@
 		 table by selecting the Replace method in the data load settings. Supported by Oracle, MySQL, PostgreSQL, Firebird, and SQLite.</tip>
 	<tip>You can improve data import performance by enabling <b>Use multi-row value</b> insert in the data transfer settings.
 		 Additionally, you can increase the rows count in the <b>multi-insert batch</b>.</tip>
+	<tip>You can jump to a column in the result set using the <commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.gotoColumn"/> command.</tip>
+	<tip>To view script execution results sequentially in one tab, enable the option from the SQL Editor context menu: <b>Execute -> Toggle execution results orientation</b>.</tip>
+	<tip>Would you like to use local clients in DBeaver for database backup/restore?<br/>
+		<a href="https://dbeaver.com/docs/dbeaver/Local-Client-Configuration/">Learn more about client configuring</a></tip>
+	<tip>You can enable additional support of screen readers for database editors <a href="prefs://org.jkiss.dbeaver.preferences.accessibility">here</a>.</tip>
+	<tip>In case you have a connection behind a proxy, you can specify the proxy setting during connection creation/editing using the <b>Network Configurations</b> button.</tip>
+	<tip>If you need the high contrast theme, enable it in your operating system, and DBeaver's high contrast theme will be activated.</tip>
 
 	<tip product="ce">DBeaver PRO is fully integrated with the
 		 <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Git version control system</a>.
@@ -158,6 +165,16 @@
 	<tip product="ce">With DBeaver PRO, you can compare schemas, including all metadata objects, in one or different databases.
 		 Learn more about the powerful schema comparison in DBeaver PRO
 		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ce">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — for example, Crows Foot.</tip>
+	<tip product="ce,le,ee,ue">DBeaver PRO offers a convenient way to configure Kubernetes settings for connecting to databases in a Kubernetes cluster.<br/>
+		Learn more about Kubernetes configuration <a href="https://dbeaver.com/docs/dbeaver/Kubernetes-configuration/">here</a>.</tip>
+	<tip product="ce">You can connect to almost any database by using native ODBC drivers in <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">DBeaver PRO</a>.</tip>
+	<tip product="ce,le,ee,ue"><a href="https://dbeaver.com/docs/dbeaver/AI-Smart-Assistance/">AI Chat</a> in DBeaver PRO is a new way to build SQL queries automatically.
+		To try it out, open the **AI Chat** tab on the right side of the SQL editor.</tip>
+	<tip product="ce,le,ee,ue">You can configure DBeaver's integration with Tableau to create database connections and edit custom SQL queries conveniently.<br/>
+		Learn more about Tableau integration in DBeaver PRO <a href="https://dbeaver.com/docs/dbeaver/Tableau-integration-in-DBeaver/">here</a>.</tip>
+	<tip product="ce">You can connect to a Salesforce database in DBeaver PRO using the
+		<a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce driver</a> created by the DBeaver team.</tip>
 
 	<tip product="le">If you are looking for a light web data manager for your team, try
 		 <a href="https://dbeaver.com/cloudbeaver-enterprise/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">CloudBeaver Enterprise</a>.</tip>
@@ -174,6 +191,11 @@
 	<tip product="le">With DBeaver Enterprise, you can group several tasks into
 		 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">one composite task</a>
 		 to easily execute a set of actions in one click.</tip>
+	<tip product="le,ee,ue">You can easily manage DBeaver's root certificates <a href="prefs://org.jkiss.dbeaver.preferences.main.truststore">here</a>.</tip>
+	<tip product="le,ee,ue">You can connect to almost any database by using native ODBC drivers <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">with the help of DBeaver ODBC</a>.</tip>
+	<tip product="le,ee,ue">You can connect to a Salesforce database using the
+		<a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce driver</a> created by the DBeaver team.</tip>
+	<tip product="le,ee,ue">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — Crows Foot or Bachman.</tip>
 
 	<tip product="ee">DBeaver Enterprise is fully integrated with the <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Git
 		 version control system</a>. Keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>

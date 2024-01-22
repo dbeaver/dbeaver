@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.ui.editors.entity.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -372,7 +373,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         // If accessibility is active, set focus to the page control rather the active editor so
         // the tab names can be read correctly
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        if (store.getBoolean(DatabaseEditorPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
+        if (store.getBoolean(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             pageControl.setFocus();
         } else {
             if (folderComposite != null) {
@@ -672,11 +673,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder)child;
-                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeName() + "'"); //$NON-NLS-2$
+                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeDisplayName() + "'"); //$NON-NLS-2$
                             tabList.add(
                                 new TabbedFolderInfo(
-                                    folder.getNodeName(),
-                                    folder.getNodeName(),
+                                    folder.getNodeDisplayName(),
+                                    folder.getNodeDisplayName(),
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
                                     false,//folder.getMeta().isInline(),
@@ -697,7 +698,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                         if (child instanceof DBXTreeItem) {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeName() + "'"); //$NON-NLS-2$
+                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeDisplayName() + "'"); //$NON-NLS-2$
                                     String nodeName = child.getChildrenTypeLabel(databaseNode.getObject().getDataSource(), null);
                                     tabList.add(
                                         new TabbedFolderInfo(

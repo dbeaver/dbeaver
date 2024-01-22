@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -390,6 +390,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     @Override
     public Collection<? extends GenericTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getMetaModel().supportsTriggers(getDataSource()) ? tableTriggerCache.getAllObjects(monitor, this) : Collections.emptyList();
+    }
+
+    @Association
+    @Nullable
+    public GenericTrigger getTableTrigger(@NotNull DBRProgressMonitor monitor, String triggerName) throws DBException {
+        return getDataSource().getMetaModel().supportsTriggers(getDataSource()) ?
+            tableTriggerCache.getObject(monitor, this, triggerName) : null;
     }
 
     @Association

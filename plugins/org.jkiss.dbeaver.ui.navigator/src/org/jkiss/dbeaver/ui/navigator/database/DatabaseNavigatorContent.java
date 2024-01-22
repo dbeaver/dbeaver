@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.navigator.INavigatorNodeContainer;
 
 /**
  * Tree content
  */
-public class DatabaseNavigatorContent {
+public class DatabaseNavigatorContent implements INavigatorNodeContainer {
 
     private final DBNNode rootNode;
 

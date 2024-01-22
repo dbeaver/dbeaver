@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -107,6 +108,11 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
         if (resource instanceof DBFFileStoreProvider) {
             IFileStore fileStore = ((DBFFileStoreProvider) resource).getFileStore();
+            long length = fileStore.fetchInfo().getLength();
+            if (!UIUtils.confirmAction(null, "Open resource '" + resource.getFullPath() +
+                "'?\nSize = " + ByteNumberFormat.getInstance().format(length))) {
+                return;
+            }
 
             // open the editor on the file
             IEditorDescriptor editorDesc;

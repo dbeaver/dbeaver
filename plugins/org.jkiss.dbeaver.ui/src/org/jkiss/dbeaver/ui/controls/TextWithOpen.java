@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,8 @@ public class TextWithOpen extends Composite {
         }
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
         if (useTextEditor) {
-            gd.heightHint = text.getLineHeight();
+            gd.heightHint = text.getLineHeight() * (secured ? 1 : 2);
+            gd.widthHint = 300;
         }
         text.setLayoutData(gd);
 

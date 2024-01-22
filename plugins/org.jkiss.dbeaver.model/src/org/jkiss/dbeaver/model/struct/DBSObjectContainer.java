@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -52,6 +53,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
+    @DPIElement
     Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
@@ -63,6 +65,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @return child object or null
      */
+    @DPIElement
     @Nullable
     DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
 
@@ -75,6 +78,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws org.jkiss.dbeaver.DBException on error
      * @see DBSEntityContainer
      */
+    @DPIElement
     @NotNull
     Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException;
 

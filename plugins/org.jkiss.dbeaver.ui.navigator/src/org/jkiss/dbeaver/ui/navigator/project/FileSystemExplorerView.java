@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -100,6 +101,11 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
         viewer.getTree().setHeaderVisible(true);
 
         UIExecutionQueue.queueExec(() -> createColumns(viewer));
+    }
+
+    @Override
+    protected void installDragAndDropSupport(DatabaseNavigatorTree navigatorTree) {
+        super.installDragAndDropSupport(navigatorTree);
     }
 
     @Override

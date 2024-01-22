@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDDataReceiverInteractive;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -60,6 +59,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -430,19 +430,13 @@ public class SQLQueryJob extends DataSourceJob
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask("Get data receiver", 1);
         monitor.subTask("Create results view");
-        DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
-        try {
-            if (dataReceiver instanceof DBDDataReceiverInteractive) {
-                ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(true);
-            }
-            if (!scriptContext.fillQueryParameters((SQLQuery) element, CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH))) {
-                // User canceled
-                return false;
-            }
-        } finally {
-            if (dataReceiver instanceof DBDDataReceiverInteractive) {
-                ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(false);
-            }
+        if (!scriptContext.fillQueryParameters(
+            originalQuery,
+            () -> resultsConsumer.getDataReceiver(originalQuery, resultSetNumber),
+            CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH)
+        )) {
+            // User canceled
+            return false;
         }
         monitor.done();
 
@@ -738,15 +732,13 @@ public class SQLQueryJob extends DataSourceJob
             }
             query.setData(STATS_RESULTS); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
-            if (dataReceiver != null) {
+            if (dataReceiver != null && !(dataReceiver instanceof IDataTransferConsumer)) {
                 try {
                     fetchExecutionResult(session, dataReceiver, query);
                 } catch (DBCException e) {
                     log.error("Error generating execution result stats", e);
                 }
             }
-        } else if (!CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH)) {
-            resultsConsumer.releaseDataReceiver(resultSetNumber);
         }
     }
 

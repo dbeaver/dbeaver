@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -190,15 +187,15 @@ public final class SQLSchemaManager {
             }
             try (Statement dbStat = connection.createStatement()) {
                 try {
-                    log.info("Execute migration query: " + line);
+                    log.debug("Execute migration query: " + line);
                     dbStat.execute(line);
                 } catch (SQLException e) {
                     //TODO: find a better way to avoid migration errors
                     // 11 migration version sometimes crashes in h2
                     log.error("Error during sql migration", e);
-                    log.info("Trying to apply the migration again");
+                    log.debug("Trying to apply the migration again");
                     dbStat.execute(line);
-                    log.error("The second attempt was successful");
+                    log.debug("The second schema migration attempt was successful");
                 }
             }
         }

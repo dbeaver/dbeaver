@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,11 @@ public class MySQLCatalog implements
     DBPScriptObject, DBPScriptObjectExt2
 {
 
-    private final TableCache tableCache = new TableCache();
+    private final TableCache tableCache = new TableCache() {
+        protected void detectCaseSensitivity(DBSObject object) {
+            this.setCaseSensitive(!getDataSource().getSQLDialect().useCaseInsensitiveNameLookup());
+        }
+    };
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private final PackageCache packageCache = new PackageCache();
     final TriggerCache triggerCache = new TriggerCache();
@@ -330,7 +334,12 @@ public class MySQLCatalog implements
 
     @Association
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return getTableCache().getTypedObjects(monitor, this, MySQLTable.class);
+        List<MySQLTable> tables = getTableCache().getTypedObjects(monitor, this, MySQLTable.class);
+        if (getDataSource().readKeysWithColumns()) {
+            // Read constraints with columns
+            uniqueKeyCache.getAllObjects(monitor, this);
+        }
+        return tables;
     }
 
     public MySQLTable getTable(DBRProgressMonitor monitor, String name)
@@ -812,7 +821,7 @@ public class MySQLCatalog implements
         @Override
         protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
         {
-            constraint.setColumns(rows);
+            constraint.setAttributeReferences(rows);
         }
     }
 

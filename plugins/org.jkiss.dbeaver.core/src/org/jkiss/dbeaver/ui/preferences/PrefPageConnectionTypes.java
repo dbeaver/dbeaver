@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,10 @@ import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -329,7 +332,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(grd);
             autoCloseTransactionsTtlText.addModifyListener(e ->
-                getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
+                getSelectedType().setCloseIdleTransactionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
 
             Button epButton = UIUtils.createDialogButton(
                 placeholder,
@@ -400,7 +403,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         smartCommitCheck.setSelection(connectionType.isSmartCommit());
         smartCommitRecoverCheck.setSelection(connectionType.isSmartCommitRecover());
         autoCloseTransactionsCheck.setSelection(connectionType.isAutoCloseTransactions());
-        autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
+        autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleTransactionPeriod()));
 
         deleteButton.setEnabled(!connectionType.isPredefined());
     }
@@ -534,7 +537,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setSmartCommit(changed.isSmartCommit());
                 source.setSmartCommitRecover(changed.isSmartCommitRecover());
                 source.setAutoCloseTransactions(changed.isAutoCloseTransactions());
-                source.setCloseIdleConnectionPeriod(changed.getCloseIdleConnectionPeriod());
+                source.setCloseIdleTransactionPeriod(changed.getCloseIdleTransactionPeriod());
                 hasChanges = true;
             }
             if (hasChanges) {

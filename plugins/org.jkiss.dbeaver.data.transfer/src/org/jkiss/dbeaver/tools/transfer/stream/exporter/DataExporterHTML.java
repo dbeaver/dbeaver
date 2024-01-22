@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -162,9 +162,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private void writeTableTitle(String value, int columns) {
         PrintWriter out = getWriter();
-        out.write(String.format("<th colspan=\"%d\">", columns));
+        out.write(String.format("<th colspan=\"%d\"><pre><code>", columns));
         out.write(CommonUtils.escapeHtml(value));
-        out.write("</th>");
+        out.write("</code></pre></th>");
     }
 
     private void writeTextCell(String value, boolean header) {

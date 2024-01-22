@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.INavigatorNodeContainer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.ArrayUtils;
@@ -152,6 +153,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
         DBWorkbench.getPlatform().getNavigatorModel().removeListener(this);
         super.disposeControl();
+    }
+
+    @Override
+    protected List<DBNNode> createViewerInput(Collection<DBNNode> objectList) {
+        return new NodeListInput(objectList);
     }
 
     @Override
@@ -488,5 +494,17 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         {
             this.original.removeSelectionChangedListener(this);
         }
+    }
+
+    private class NodeListInput extends ArrayList<DBNNode> implements INavigatorNodeContainer {
+        public NodeListInput(Collection<DBNNode> objectList) {
+            super(objectList);
+        }
+
+        @Override
+        public DBNNode getRootNode() {
+            return NodeListControl.this.getRootNode();
+        }
+
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,13 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,7 +140,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         if (refEntityId != null) {
             DBVModel.removeFromCache(this);
         }
-        this.refEntityId = refNode.getNodeItemPath();
+        this.refEntityId = refNode.getNodeUri();
         this.refConstraintId = constraint.getName();
         if (refEntityId != null) {
             DBVModel.addToCache(this);
@@ -253,7 +251,9 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             return null;
         }
         DBPProject project = getParentObject().getProject();
-        DBNDataSource dsNode = project.getNavigatorModel().getDataSourceByPath(project, refEntityId);
+        DBNModel navModel = DBWorkbench.getPlatform().getNavigatorModel();
+
+        DBNDataSource dsNode = navModel.getDataSourceByPath(project, refEntityId);
         return dsNode == null ? null : dsNode.getDataSourceContainer();
     }
 

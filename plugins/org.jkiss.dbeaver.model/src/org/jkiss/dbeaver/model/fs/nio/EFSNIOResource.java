@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@ public abstract class EFSNIOResource extends PlatformObject implements DBFFileSt
             Files.delete(getNioPath());
 
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
@@ -221,7 +221,7 @@ public abstract class EFSNIOResource extends PlatformObject implements DBFFileSt
     public long getLocalTimeStamp() {
         try {
             return Files.getLastModifiedTime(nioPath).toMillis();
-        } catch (IOException e) {
+        } catch (Exception e) {
             return 0;
         }
     }
@@ -378,7 +378,7 @@ public abstract class EFSNIOResource extends PlatformObject implements DBFFileSt
 
             EFSNIOMonitor.notifyResourceChange(new EFSNIOFile(root, targetPath), EFSNIOListener.Action.CREATE);
             EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }

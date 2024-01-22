@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -41,10 +40,10 @@ import java.util.List;
 
 /**
  * DB2 Table Foreign Key
- * 
+ *
  * @author Denis Forveille
  */
-public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements DBSTableForeignKey {
+public class DB2TableReference extends JDBCTableConstraint<DB2Table, DB2TableKeyColumn> implements DBSTableForeignKey {
     private static final Log log = Log.getLog(DB2TableReference.class);
 
     private DB2Table refTable;
@@ -60,8 +59,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
     // Constructors
     // -----------------
 
-    public DB2TableReference(DBRProgressMonitor monitor, DB2Table db2Table, ResultSet dbResult) throws DBException
-    {
+    public DB2TableReference(DBRProgressMonitor monitor, DB2Table db2Table, ResultSet dbResult) throws DBException {
         super(db2Table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.FOREIGN_KEY, true);
 
         String refSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
@@ -83,21 +81,18 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource()
-    {
+    public DBPDataSource getDataSource() {
         return getTable().getDataSource();
     }
 
     @Override
-    public DB2Table getAssociatedEntity()
-    {
+    public DB2Table getAssociatedEntity() {
         return refTable;
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }
 
@@ -105,13 +100,11 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
     // Columns
     // -----------------
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
-    {
+    public List<DB2TableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
-    public void setColumns(List<DB2TableKeyColumn> columns)
-    {
+    public void setAttributeReferences(List<DB2TableKeyColumn> columns) {
         this.columns = columns;
     }
 
@@ -120,32 +113,28 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
     // -----------------
 
     @Property(viewable = true, order = 3)
-    public DB2Table getReferencedTable()
-    {
+    public DB2Table getReferencedTable() {
         return refTable;
     }
 
     @Nullable
     @Override
     @Property(id = "reference", viewable = false)
-    public DB2TableForeignKey getReferencedConstraint()
-    {
+    public DB2TableForeignKey getReferencedConstraint() {
         return referencedKey;
     }
 
     @NotNull
     @Override
     @Property(viewable = true, editable = false)
-    public DBSForeignKeyModifyRule getUpdateRule()
-    {
+    public DBSForeignKeyModifyRule getUpdateRule() {
         return updateRule.getRule();
     }
 
     @NotNull
     @Override
     @Property(viewable = true, editable = false)
-    public DBSForeignKeyModifyRule getDeleteRule()
-    {
+    public DBSForeignKeyModifyRule getDeleteRule() {
         return deleteRule.getRule();
     }
 
