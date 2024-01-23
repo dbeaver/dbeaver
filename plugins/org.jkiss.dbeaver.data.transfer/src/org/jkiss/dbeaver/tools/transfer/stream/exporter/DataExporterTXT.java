@@ -169,18 +169,6 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private static final String PROP_DELIM_BETWEEN = "delimBetween";
     private static final String PROP_SHOW_HEADER = "showHeader";
 
-    enum InBetweenChar {
-        pipe("|"),
-        space(" "),
-        nothing("");
-
-        String character;
-
-        InBetweenChar(String character) {
-            this.character = character;
-        }
-    }
-
     private int batchSize = 200;
     private int maxColumnSize = 0;
     private int minColumnSize = 1;
@@ -220,10 +208,9 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         String prop = CommonUtils.toString(properties.get(PROP_DELIM_BETWEEN));
         if (Boolean.FALSE.toString().equals(prop)) {
             // Backward compatibility - use space.
-            delimBetween = InBetweenChar.space.character;
+            delimBetween = " ";
         } else {
-            InBetweenChar inBetweenChar = CommonUtils.valueOf(InBetweenChar.class, CommonUtils.toString(prop), InBetweenChar.pipe);
-            delimBetween = inBetweenChar.character;
+            delimBetween = prop;
         }
         this.showHeader = CommonUtils.getBoolean(properties.get(PROP_SHOW_HEADER), true);
         this.batchQueue = new ArrayDeque<>(this.batchSize);

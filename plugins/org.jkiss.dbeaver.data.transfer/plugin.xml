@@ -211,7 +211,7 @@
                     <property id="delimTrailing" label="%dataTransfer.processor.txt.property.delimTrailing.label" type="boolean"
                               description="%dataTransfer.processor.txt.property.delimTrailing.tip" defaultValue="true"/>
                     <property id="delimBetween" label="%dataTransfer.processor.txt.property.delimBetween.label" type="string"
-                              description="%dataTransfer.processor.txt.property.delimBetween.tip" defaultValue="pipe" required="true" validValues="pipe,space,nothing" allowCustomValues="false"/>
+                              description="%dataTransfer.processor.txt.property.delimBetween.tip" defaultValue="|" required="true" allowCustomValues="true"/>
                     <property id="showHeader" label="%dataTransfer.processor.txt.property.showHeader.label" description="%dataTransfer.processor.txt.property.showHeader.tip" type="boolean" defaultValue="true"/>
                 </propertyGroup>
             </processor>
