@@ -522,23 +522,6 @@ public class DataSourceDescriptor
         this.secretsContainsDatabaseCreds = false;
     }
 
-    @Override
-    public boolean isAutoCloseTransactions() {
-        if (getPreferenceStore().contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
-            // First check data source settings
-            return getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
-        }
-        return connectionInfo.getConnectionType().isAutoCloseTransactions();
-    }
-
-    @Override
-    public boolean isAutoCloseConnections() {
-        if (getPreferenceStore().contains(ModelPreferences.CONNECTION_AUTO_CLOSE_ENABLED)) {
-            return getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_AUTO_CLOSE_ENABLED);
-        }
-        return connectionInfo.getConnectionType().isAutoCloseConnections();
-    }
-
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {

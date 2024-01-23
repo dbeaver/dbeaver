@@ -55,7 +55,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             1800, //30 minutes
             true,
-            1800, //30 minutes
+            3600, //1 hour
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
@@ -69,7 +69,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            1800, //30 minutes
+            900, //30 minutes
             true,
             1800, //30 minutes
             true,

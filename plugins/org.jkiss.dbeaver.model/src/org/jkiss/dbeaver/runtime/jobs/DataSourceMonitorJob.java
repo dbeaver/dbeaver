@@ -120,15 +120,8 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
 
         // End long transactions
-        if (dataSourceDescriptor.isAutoCloseTransactions()
-                || dataSourceDescriptor.getConnectionConfiguration().getCloseIdleInterval() > 0) {
-            endIdleTransactions(dataSourceDescriptor);
-        }
-
-        // End connections
-        if (dataSourceDescriptor.isAutoCloseConnections()
-                || dataSourceDescriptor.getConnectionConfiguration().getCloseIdleInterval() > 0) {
-            endIdleConnections(dataSourceDescriptor);
+        if (isIdleMonitorEnabled(dataSourceDescriptor)) {
+            endIdleTransactionOrConnection(dataSourceDescriptor);
         }
 
         // Perform keep alive request
@@ -182,63 +175,22 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
     }
 
-    private void endIdleTransactions(DBPDataSourceContainer dsDescriptor) {
-        if (!dsDescriptor.isConnected()) {
-            return;
+    public boolean isIdleMonitorEnabled(DBPDataSourceContainer dsDescriptor) {
+        if (dsDescriptor.getConnectionConfiguration().getCloseIdleInterval() > 0) {
+            return true;
         }
-        DBPDataSource dataSource = dsDescriptor.getDataSource();
-        if (dataSource == null) {
-            return;
+        if (dsDescriptor.getPreferenceStore().contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+            // First check data source settings
+            return dsDescriptor.getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
         }
-
-        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
-        if (lastUserActivityTime < 0) {
-            return;
-        }
-
-        final long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
-        final long rollbackTimeoutSeconds = getTransactionTimeoutSeconds(dsDescriptor);
-
-        
-        if (idleInterval < rollbackTimeoutSeconds) {
-            return;
-        }
-        if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
-            return;
-        }
-        try {
-            Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
-            for (DBSInstance instance : dataSource.getAvailableInstances()) {
-                for (DBCExecutionContext ec : instance.getAllContexts()) {
-                    if (ec.isConnected()) {
-                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(ec);
-                        if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
-                            QMTransactionState txnState = QMUtils.getTransactionState(ec);
-                            if (txnState.getUpdateCount() > 0
-                                    && txnState.getTransactionStartTime() <= lastUserActivityTime) {
-                                txnToEnd.put(ec, txnManager);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!txnToEnd.isEmpty()) {
-                new EndIdleTransactionsJob(dataSource, txnToEnd).schedule();
-            }
-        } catch (DBCException e) {
-            log.error(e);
-        }
+        return dsDescriptor.getConnectionConfiguration().getConnectionType().isAutoCloseTransactions();
     }
 
-    private void endIdleConnections(DBPDataSourceContainer dsDescriptor) {
+    private void endIdleTransactionOrConnection(DBPDataSourceContainer dsDescriptor) {
         if (!dsDescriptor.isConnected()) {
             return;
         }
-        DBPDataSource dataSource = dsDescriptor.getDataSource();
-        if (dataSource == null) {
-            return;
-        }
+
         final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
         if (lastUserActivityTime < 0) {
             return;
@@ -246,42 +198,76 @@ public class DataSourceMonitorJob extends AbstractJob {
 
         final long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
         final long disconnectTimeoutSeconds = getDisconnectTimeoutSeconds(dsDescriptor);
+        final long rollbackTimeoutSeconds = getTransactionTimeoutSeconds(dsDescriptor);
 
-        if (disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
+        DBPDataSource dataSource = dsDescriptor.getDataSource();
+
+        if (dataSource != null && disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
             if (DisconnectJob.isInProcess(dsDescriptor)) {
                 return;
             }
 
-            // Close idle connections
+            // Kill idle connection
             DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
             disconnectJob.schedule();
-            DBeaverNotifications.showNotification(dataSource, DBeaverNotifications.NT_DISCONNECT_IDLE,
-                    "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
-                    DBPMessageType.ERROR);
+
+            DBeaverNotifications.showNotification(
+                dataSource,
+                DBeaverNotifications.NT_DISCONNECT_IDLE,
+                "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
+                DBPMessageType.ERROR);
+
+            return;
+        }
+
+        if (idleInterval < rollbackTimeoutSeconds) {
+            return;
+        }
+        if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
+            return;
+        }
+
+        if (dataSource != null) {
+            try {
+                Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
+                for (DBSInstance instance : dataSource.getAvailableInstances()) {
+                    for (DBCExecutionContext ec : instance.getAllContexts()) {
+                        if (ec.isConnected()) {
+                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(ec);
+                            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
+                                QMTransactionState txnState = QMUtils.getTransactionState(ec);
+                                if (txnState.getUpdateCount() > 0 && txnState.getTransactionStartTime() <= lastUserActivityTime) {
+                                    txnToEnd.put(ec, txnManager);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!txnToEnd.isEmpty()) {
+                    new EndIdleTransactionsJob(dataSource, txnToEnd).schedule();
+                }
+            } catch (DBCException e) {
+                log.error(e);
+            }
         }
     }
-    
+
     public void scheduleMonitor() {
         schedule(MONITOR_INTERVAL);
     }
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
-        final DBPPreferenceStore pref = container.getPreferenceStore();
-        final DBPConnectionConfiguration config = container.getConnectionConfiguration();
-        long closePeriodSeconds = 0;
-
-        if (pref.contains(ModelPreferences.CONNECTION_AUTO_CLOSE_ENABLED)) {
-            closePeriodSeconds = pref.getLong(ModelPreferences.CONNECTION_CLOSE_TIMEOUT);
+        DBPConnectionConfiguration config = container.getConnectionConfiguration();
+        final int timeout = config.getCloseIdleInterval();
+        if (timeout > 0) {
+            return timeout;
         }
-
-        if (closePeriodSeconds == 0) {
-            // Or get this info from the current connection type
-            final DBPConnectionType connectionType = config.getConnectionType();
-            if (connectionType.isAutoCloseTransactions()) {
-                closePeriodSeconds = container.getConnectionConfiguration().getCloseIdleInterval();
-            }
+        final DBPConnectionType connectionType = config.getConnectionType();
+        if (connectionType.isAutoCloseConnections()) {
+            return connectionType.getCloseIdleTransactionPeriod();
         }
-        return Math.max(0, closePeriodSeconds);
+        return 0;
     }
 
     public static long getTransactionTimeoutSeconds(@NotNull DBPDataSourceContainer container) {

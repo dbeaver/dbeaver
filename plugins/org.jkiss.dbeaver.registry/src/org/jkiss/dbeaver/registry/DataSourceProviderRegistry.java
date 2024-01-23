@@ -703,14 +703,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     CommonUtils.toLong(
                         atts.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
                         origType != null ? origType.getCloseIdleTransactionPeriod() : RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD),
-                    
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_CONNECTIONS),
+                        atts.getValue("autoCloseConnections"),
                         origType != null && origType.isAutoCloseConnections()),
-                    
                     CommonUtils.toLong(
-                        atts.getValue(RegistryConstants.ATTR_CLOSE_CONNECTIONS_PERIOD),
-                        origType != null ? origType.getCloseIdleConnectionPeriod() : RegistryConstants.DEFAULT_IDLE_CONNECTION_PERIOD)
+                        atts.getValue("closeConnectionsPeriod"),
+                        origType != null ? origType.getCloseIdleConnectionPeriod() : 0)
                     );
                 String modifyPermissionList = atts.getValue("modifyPermission");
                 if (!CommonUtils.isEmpty(modifyPermissionList)) {

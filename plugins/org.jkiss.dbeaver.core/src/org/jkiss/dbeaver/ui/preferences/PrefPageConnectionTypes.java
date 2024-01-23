@@ -339,8 +339,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             // connections
             autoCloseConnectionsCheck = UIUtils.createCheckbox(
                 placeholder,
-                CoreMessages.action_menu_connection_auto_close_enabled,
-                CoreMessages.action_menu_connection_auto_close_enabled_tooltip,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip,
                 true,
                 1);
             autoCloseConnectionsCheck.addSelectionListener(new SelectionAdapter() {
