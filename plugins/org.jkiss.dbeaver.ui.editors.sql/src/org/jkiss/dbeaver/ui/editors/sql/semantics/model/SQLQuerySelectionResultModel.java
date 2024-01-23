@@ -181,7 +181,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         ) {
             if (this.tableName.isNotClassified()) {
                 // TODO consider multiple joins of one table
-                SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
+                SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings(), statistics.getMonitor());
                 if (rr != null) {
                     this.tableName.setDefinition(rr);
                     this.resolutionResult = rr;

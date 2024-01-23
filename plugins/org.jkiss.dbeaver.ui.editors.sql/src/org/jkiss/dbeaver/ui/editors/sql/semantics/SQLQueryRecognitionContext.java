@@ -18,9 +18,13 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 public interface SQLQueryRecognitionContext {
+
+    DBRProgressMonitor getMonitor();
+
     void appendError(@NotNull STMTreeNode treeNode, @NotNull String error);
 
     void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error);

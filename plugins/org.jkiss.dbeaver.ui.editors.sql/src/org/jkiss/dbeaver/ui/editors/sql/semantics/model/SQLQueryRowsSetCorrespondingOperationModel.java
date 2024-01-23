@@ -82,8 +82,8 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
             for (int i = 0; i < resultColumns.size(); i++) {
                 SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
                 if (column.isNotClassified()) {
-                    SQLQueryResultColumn leftDef = left.resolveColumn(column.getName());
-                    SQLQueryResultColumn rightDef = right.resolveColumn(column.getName());
+                    SQLQueryResultColumn leftDef = left.resolveColumn(column.getName(), statistics.getMonitor());
+                    SQLQueryResultColumn rightDef = right.resolveColumn(column.getName(), statistics.getMonitor());
 
                     if (leftDef == null || rightDef == null) {
                         nonMatchingColumnSets = true;

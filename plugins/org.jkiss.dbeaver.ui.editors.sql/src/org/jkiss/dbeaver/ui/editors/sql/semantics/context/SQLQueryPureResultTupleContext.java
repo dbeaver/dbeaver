@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
@@ -37,7 +38,7 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
 
     @Nullable
     @Override
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName) {
+    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, DBRProgressMonitor monitor) {
         return null;
     }
 

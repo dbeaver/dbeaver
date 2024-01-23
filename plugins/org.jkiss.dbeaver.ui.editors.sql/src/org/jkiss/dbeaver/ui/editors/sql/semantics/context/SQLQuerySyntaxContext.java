@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
@@ -44,8 +45,8 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
 
     @NotNull
     @Override
-    public DBSEntity findRealTable(@NotNull List<String> tableName) {
-        return this.parent.findRealTable(tableName);
+    public DBSEntity findRealTable(List<String> tableName, DBRProgressMonitor monitor) {
+        return this.parent.findRealTable(tableName, monitor);
     }
 
     @NotNull
@@ -56,15 +57,15 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull String columnName) {
-        return this.parent.resolveColumn(columnName);
+    public SQLQueryResultColumn resolveColumn(@NotNull String columnName, DBRProgressMonitor monitor) {
+        return this.parent.resolveColumn(columnName, monitor);
     }
 
     @NotNull
     @Override
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName) {
-        SourceResolutionResult result = super.resolveSource(tableName);
-        return result != null ? result : this.parent.resolveSource(tableName);
+    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, DBRProgressMonitor monitor) {
+        SourceResolutionResult result = super.resolveSource(tableName, monitor);
+        return result != null ? result : this.parent.resolveSource(tableName, monitor);
     }
 
     @NotNull

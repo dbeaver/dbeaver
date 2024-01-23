@@ -405,7 +405,7 @@ public class SQLBackgroundParsingJob {
                 }
                 try {
                     SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, isReadMetadataForQueryAnalysis);
-                    SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(element.getOriginalText());
+                    SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(element.getOriginalText(), monitor);
                 
                     if (queryModel != null) {
                         if (DEBUG) {

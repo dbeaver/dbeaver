@@ -69,8 +69,8 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
             for (SQLQuerySymbolEntry column : columsToJoin) {
                 if (column.isNotClassified()) {
                     SQLQuerySymbol symbol = column.getSymbol();
-                    SQLQueryResultColumn leftColumnDef = left.resolveColumn(column.getName());
-                    SQLQueryResultColumn rightColumnDef = right.resolveColumn(column.getName());
+                    SQLQueryResultColumn leftColumnDef = left.resolveColumn(column.getName(), statistics.getMonitor());
+                    SQLQueryResultColumn rightColumnDef = right.resolveColumn(column.getName(), statistics.getMonitor());
                     if (leftColumnDef != null && rightColumnDef != null) {
                         symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         symbol.setDefinition(column); // TODO multiple definitions per symbol

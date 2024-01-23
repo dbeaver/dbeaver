@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.stm.*;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Field;
@@ -449,7 +452,17 @@ public class SQLQueryModelRecognizer {
      * A debugging facility
      */
 
-    private final SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext() {
+    private class RecognitionContext implements SQLQueryRecognitionContext {
+        private final DBRProgressMonitor monitor;
+
+        public RecognitionContext(IProgressMonitor monitor) {
+            this.monitor = RuntimeUtils.makeMonitor(monitor);
+        }
+
+        @Override
+        public DBRProgressMonitor getMonitor() {
+            return this.monitor;
+        }
 
         @Override
         public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
@@ -559,7 +572,7 @@ public class SQLQueryModelRecognizer {
     }
 
     @Nullable
-    public SQLQuerySelectionModel recognizeQuery(@NotNull String text) {
+    public SQLQuerySelectionModel recognizeQuery(@NotNull String text, IProgressMonitor monitor) {
         STMSource querySource = STMSource.fromString(text);
         LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(this.obtainSqlDialect());
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
@@ -571,7 +584,7 @@ public class SQLQueryModelRecognizer {
             if (source != null) {
                 SQLQuerySelectionModel model = new SQLQuerySelectionModel(tree.getRealInterval(), source, symbolEntries);
 
-                model.propagateContex(this.queryDataContext, recognitionContext);
+                model.propagateContex(this.queryDataContext, new RecognitionContext(monitor));
 
                 // var tt = new DebugGraphBuilder();
                 // tt.traverseObjs(model);
