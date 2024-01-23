@@ -53,7 +53,6 @@ public class CoreMessages extends NLS {
     public static String action_menu_transaction_auto_close_enabled;
     public static String action_menu_transaction_auto_close_enabled_tip;
     public static String action_menu_transaction_auto_close_ttl_tip;
-
     public static String action_menu_tools_find_in_navigator;
     public static String action_menu_transaction_pref_page_link;
     public static String action_menu_transaction_pref_page_link_extended;
