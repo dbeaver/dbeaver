@@ -433,7 +433,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public DBSEntity findRealTable(List<String> tableName, DBRProgressMonitor monitor) {
+    public DBSEntity findRealTable(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
         List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
         DummyDbObject catalog = rawTableName.size() > 2
             ? this.dummyDataSource.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
@@ -448,7 +448,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public SQLQueryResultColumn resolveColumn(String simpleName, DBRProgressMonitor monitor) {
+    public SQLQueryResultColumn resolveColumn(@NotNull String simpleName, @NotNull DBRProgressMonitor monitor) {
         return null;
     }
     

@@ -60,7 +60,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public DBSEntity findRealTable(@NotNull List<String> tableName, DBRProgressMonitor monitor) {
+    public DBSEntity findRealTable(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
         if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
@@ -95,7 +95,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull String simpleName, DBRProgressMonitor monitor) {
+    public SQLQueryResultColumn resolveColumn(@NotNull String simpleName, @NotNull DBRProgressMonitor monitor) {
         return null;
     }
 

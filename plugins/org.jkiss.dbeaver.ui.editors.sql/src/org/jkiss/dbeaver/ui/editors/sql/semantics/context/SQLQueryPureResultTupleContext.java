@@ -38,7 +38,7 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
 
     @Nullable
     @Override
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, DBRProgressMonitor monitor) {
+    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
         return null;
     }
 

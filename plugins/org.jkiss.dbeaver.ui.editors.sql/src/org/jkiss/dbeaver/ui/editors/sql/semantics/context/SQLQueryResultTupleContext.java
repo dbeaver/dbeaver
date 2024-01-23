@@ -75,7 +75,7 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
 
     @Nullable
     @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull String columnName, DBRProgressMonitor monitor) {  // TODO consider reporting ambiguity
+    public SQLQueryResultColumn resolveColumn(@NotNull String columnName, @NotNull DBRProgressMonitor monitor) {  // TODO consider reporting ambiguity
         SQLQueryResultColumn result = columns.stream()
             .filter(c -> c.symbol.getName().equals(columnName))
             .findFirst()

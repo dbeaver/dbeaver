@@ -45,7 +45,7 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
 
     @NotNull
     @Override
-    public DBSEntity findRealTable(List<String> tableName, DBRProgressMonitor monitor) {
+    public DBSEntity findRealTable(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
         return this.parent.findRealTable(tableName, monitor);
     }
 
@@ -57,13 +57,13 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull String columnName, DBRProgressMonitor monitor) {
+    public SQLQueryResultColumn resolveColumn(@NotNull String columnName, @NotNull DBRProgressMonitor monitor) {
         return this.parent.resolveColumn(columnName, monitor);
     }
 
     @NotNull
     @Override
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, DBRProgressMonitor monitor) {
+    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
         SourceResolutionResult result = super.resolveSource(tableName, monitor);
         return result != null ? result : this.parent.resolveSource(tableName, monitor);
     }
