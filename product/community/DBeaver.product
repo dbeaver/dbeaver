@@ -9,8 +9,7 @@
    <launcherArgs>
       <programArgsMac>-nosplash -vm ../Eclipse/jre/Contents/Home/bin/java
       </programArgsMac>
-      <vmArgs>
-            -XX:+IgnoreUnrecognizedVMOptions
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions
             -Dosgi.requiredJavaVersion=17
             -Dfile.encoding=UTF-8
             --add-modules=ALL-SYSTEM
@@ -93,9 +92,6 @@
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1" />
       <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10" />
-      <property name="osgi.configuration.area" value="@data.home/DBeaverData/install-data" os="win32" />
-      <property name="osgi.configuration.area" value="@data.home/DBeaverData/install-data" os="linux" />
-      <property name="osgi.configuration.area" value="@data.home/DBeaverData/install-data" os="macosx" />
    </configurations>
 
    <preferencesInfo>
