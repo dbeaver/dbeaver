@@ -651,7 +651,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 //boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
-                    String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows());
+                    String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows(), settings.isIgnoreQuotes());
 
                     // FIXME: do not create rows twice! Probably need to delete comment after testing. #9095
                     /*if (overNewRow) {
@@ -804,7 +804,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         };
     }
 
-    private String[][] parseGridLines(String strValue, boolean splitRows) {
+    private String[][] parseGridLines(String strValue, boolean splitRows, boolean ignoreQuotes) {
         final char columnDelimiter = '\t';
         final char rowDelimiter = '\n';
         final char trashDelimiter = '\r';
@@ -835,6 +835,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         // Ignore
                         continue;
                     case quote:
+                        if (ignoreQuotes) {
+                            cellValue.append(c);
+                            break;
+                        }
                         if (inQuote) {
                             if (i == length - 1 ||
                                 strValue.charAt(i + 1) == columnDelimiter ||
