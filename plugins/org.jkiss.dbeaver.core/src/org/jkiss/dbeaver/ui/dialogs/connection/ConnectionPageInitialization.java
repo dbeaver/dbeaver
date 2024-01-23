@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -269,8 +270,16 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             closeIdleConnections = UIUtils.createLabelSpinner(txnGroup,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
-            UIUtils.createInfoLabel(txnGroup, CoreMessages.dialog_connection_wizard_connection_close_idle_hint,
-                GridData.FILL_HORIZONTAL, 2);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            UIUtils.createPreferenceLink(
+                txnGroup,
+                CoreMessages.action_menu_transaction_pref_page_link_extended,
+                PrefPageConnectionTypes.PAGE_ID,
+                null,
+                null
+            ).setLayoutData(gd);
+
             {
                 String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
                 UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);

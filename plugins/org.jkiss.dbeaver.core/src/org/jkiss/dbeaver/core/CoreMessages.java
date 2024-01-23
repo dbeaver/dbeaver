@@ -628,8 +628,6 @@ public class CoreMessages extends NLS {
     public static String pref_page_accessibility_screen_reader_description;
     public static String pref_page_accessibility_screen_reader_group_lbl;
 
-    public static String dialog_connection_wizard_connection_close_idle_hint;
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

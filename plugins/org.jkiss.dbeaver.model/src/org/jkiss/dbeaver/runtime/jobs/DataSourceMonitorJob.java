@@ -119,9 +119,11 @@ public class DataSourceMonitorJob extends AbstractJob {
             }
         }
 
-        // End long transactions
-        if (isIdleMonitorEnabled(dataSourceDescriptor)) {
-            endIdleTransactionOrConnection(dataSourceDescriptor);
+        // End long transactions or connections
+        if (getDisconnectTimeoutSeconds(dataSourceDescriptor) > 0 || getTransactionTimeoutSeconds(dataSourceDescriptor) > 0) {
+            if (endIdleTransactionOrConnection(dataSourceDescriptor)) {
+                return;
+            }
         }
 
         // Perform keep alive request
@@ -175,25 +177,14 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
     }
 
-    public boolean isIdleMonitorEnabled(DBPDataSourceContainer dsDescriptor) {
-        if (dsDescriptor.getConnectionConfiguration().getCloseIdleInterval() > 0) {
-            return true;
-        }
-        if (dsDescriptor.getPreferenceStore().contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
-            // First check data source settings
-            return dsDescriptor.getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
-        }
-        return dsDescriptor.getConnectionConfiguration().getConnectionType().isAutoCloseTransactions();
-    }
-
-    private void endIdleTransactionOrConnection(DBPDataSourceContainer dsDescriptor) {
+    private boolean endIdleTransactionOrConnection(DBPDataSourceContainer dsDescriptor) {
         if (!dsDescriptor.isConnected()) {
-            return;
+            return false;
         }
 
         final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
         if (lastUserActivityTime < 0) {
-            return;
+            return false;
         }
 
         final long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
@@ -204,7 +195,7 @@ public class DataSourceMonitorJob extends AbstractJob {
 
         if (dataSource != null && disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
             if (DisconnectJob.isInProcess(dsDescriptor)) {
-                return;
+                return false;
             }
 
             // Kill idle connection
@@ -217,14 +208,14 @@ public class DataSourceMonitorJob extends AbstractJob {
                 "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
                 DBPMessageType.ERROR);
 
-            return;
+            return true;
         }
 
         if (idleInterval < rollbackTimeoutSeconds) {
-            return;
+            return false;
         }
         if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
-            return;
+            return false;
         }
 
         if (dataSource != null) {
@@ -250,7 +241,10 @@ public class DataSourceMonitorJob extends AbstractJob {
             } catch (DBCException e) {
                 log.error(e);
             }
+            return true;
         }
+
+        return false;
     }
 
     public void scheduleMonitor() {
