@@ -297,6 +297,7 @@ public class DPISerializer {
         @Override
         public void write(JsonWriter jsonWriter, Object t) throws IOException {
             if (t == null) {
+                jsonWriter.nullValue();
                 return;
             } else if (t instanceof DBPDataSourceContainer) {
                 jsonWriter.beginObject();
