@@ -31,10 +31,11 @@ import java.util.Map.Entry;
  */
 public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
 
+    private static final int DISTANCE_BTW_LEVELS = 2;
     private AbstractGraphicalEditPart diagram;
     private TreeMap<String, List<Node>> nodeByLevels;
     private List<Node> isolatedNodes = new LinkedList<>();
-    private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 20;
+    private static final int DEFAUL_OFFSET_FROM_TOP_LINE = 40;
     private static final int DEFAULT_ISO_OFFSET_HORZ = 140;
     private static final int DEFAULT_OFFSET_BY_X = 250;
     private static final int DEFAULT_OFFSET_BY_Y = 80;
@@ -59,6 +60,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         List<Node> nodeMissed = findMissedGraphNodes(graph, nodeByLevels);
         drawMissedNodes(isolatedNodes, nodeMissed, nodeByLevels);
     }
+ 
 
     private TreeMap<String, List<Node>> removeIslandNodesFromRoots(List<Node> islands, TreeMap<String, List<Node>> nodeByLevels) {
         List<Node> listOfNodes = nodeByLevels.get(String.valueOf(0));
@@ -168,7 +170,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             for (Node n : nodes) {
                 n.x = currentX;
                 n.y = currentY;
-                currentY += n.height + DEFAULT_OFFSET_BY_Y / 2 + (DEFAULT_OFFSET_BY_Y / VIRTUAL_COLUMNS * (index % VIRTUAL_COLUMNS));
+                currentY += n.height + DEFAULT_OFFSET_BY_Y / 3 + (DEFAULT_OFFSET_BY_Y / 3 * (index %  nodeByEdges.size()));
                 if (offsetX < n.width) {
                     offsetX = n.width;
                 }
@@ -225,6 +227,13 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         int idx = 0;
         while (idx < graph.keySet().size()) {
             createGraphLayers(graph, idx);
+            // catch empty nodes   
+            List<Node> nextLevelNodes = graph.get(String.valueOf(idx+1));
+            if(graph.get(String.valueOf(idx)).isEmpty() && !nextLevelNodes.isEmpty()) {
+                //shiftAllElements
+                graph.put(String.valueOf(idx), nextLevelNodes);
+                graph.remove(String.valueOf(idx+1));
+            }
             idx++;
         }
         return graph;
@@ -264,7 +273,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             // roots.
             nodeByLevels.put(String.valueOf(0), graph.nodes);
         }
-        // 
         return nodeByLevels;
     }
 
@@ -287,7 +295,26 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 Node trg = edge.target;
                 if (trg != null) {
                     String nodeIndex = getNodeIndex(nodeByEdges, trg);
+                    // skip by distance
+                    boolean skip = false;
+                    for (Edge e : trg.incoming) {
+                        Node incomingSourceNode = e.source;
+                        String childIndexStr = getNodeIndex(nodeByEdges, incomingSourceNode);
+                        if (!childIndexStr.isEmpty() && !childIndexStr.equals("0")) {
+                            Integer childIndex = Integer.valueOf(childIndexStr);
+                            if ((idx - childIndex) > DISTANCE_BTW_LEVELS) {
+                                skip = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(skip) {
+                        continue;
+                    }
                     if (!nodeIndex.isEmpty()) {
+                        if(duplicationNode2index.containsKey(trg)) {
+                            continue;
+                        }
                         duplicationNode2index.put(trg, nodeIndex);
                     }
                     String index = String.valueOf(idx + 1);
