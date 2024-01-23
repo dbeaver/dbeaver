@@ -150,7 +150,6 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             // Commented because in fact this doesn't work. Owner editor still hooks/suppresses all extra commands
             //UIUtils.enableHostEditorKeyBindingsSupport(((SubEditorSite) getSite()).getParentSite(), getTextViewer().getTextWidget());
         }
-        getTextViewer().getTextWidget().setFont(UIUtils.getMonospaceFont());
     }
 
     @Override
