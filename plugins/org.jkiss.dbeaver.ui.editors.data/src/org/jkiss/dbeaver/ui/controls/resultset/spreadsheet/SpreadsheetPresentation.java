@@ -636,8 +636,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (CommonUtils.isEmpty(strValue)) {
                     return;
                 }
-                final ArrayList<GridPos> selection = new ArrayList<>(spreadsheet.getSelection());
-                final Pair<GridPos, GridPos> targetRange = getContinuousRange(selection);
+                final Pair<GridPos, GridPos> targetRange;
+                if (spreadsheet.getItemCount() == 0) {
+                    // A special case when the grid is empty
+                    targetRange = new Pair<>(new GridPos(0, 0), null);
+                } else {
+                    targetRange = getContinuousRange(List.copyOf(spreadsheet.getSelection()));
+                }
                 if (targetRange == null) {
                     DBWorkbench.getPlatformUI().showWarningMessageBox(
                         "Advanced paste",
