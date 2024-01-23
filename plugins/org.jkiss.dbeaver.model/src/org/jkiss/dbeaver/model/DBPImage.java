@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.dpi.DPIObject;
+
 /**
  * Image reference
  */
+@DPIObject
 public interface DBPImage
 {
 
