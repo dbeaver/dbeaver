@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
-import java.util.Locale;
-
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -50,6 +48,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
 
 /**
  * PostgreConnectionPage
