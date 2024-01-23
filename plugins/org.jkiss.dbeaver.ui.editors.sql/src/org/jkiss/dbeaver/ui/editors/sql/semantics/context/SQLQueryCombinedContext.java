@@ -44,14 +44,14 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
 
     @NotNull
     @Override
-    public DBSEntity findRealTable(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
-        return anyOfTwo(parent.findRealTable(tableName, monitor), otherParent.findRealTable(tableName, monitor)); // TODO consider ambiguity
+    public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        return anyOfTwo(parent.findRealTable(monitor, tableName), otherParent.findRealTable(monitor, tableName)); // TODO consider ambiguity
     }
 
     @NotNull
     @Override
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
-        return anyOfTwo(parent.resolveSource(tableName, monitor), otherParent.resolveSource(tableName, monitor)); // TODO consider ambiguity
+    public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        return anyOfTwo(parent.resolveSource(monitor, tableName), otherParent.resolveSource(monitor, tableName)); // TODO consider ambiguity
     }
 
 

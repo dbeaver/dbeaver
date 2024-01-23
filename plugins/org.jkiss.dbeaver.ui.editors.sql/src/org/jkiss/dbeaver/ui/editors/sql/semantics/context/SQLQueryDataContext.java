@@ -42,12 +42,12 @@ public abstract class SQLQueryDataContext {
     
     public abstract List<SQLQueryResultColumn> getColumnsList();
 
-    public abstract DBSEntity findRealTable(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor);
+    public abstract DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName);
 
-    public abstract SQLQueryResultColumn resolveColumn(@NotNull String simpleName, @NotNull DBRProgressMonitor monitor);  // TODO consider ambiguous column names
+    public abstract SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName);  // TODO consider ambiguous column names
     
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) { // TODO consider ambiguous table names
-        DBSEntity table = this.findRealTable(tableName, monitor);
+    public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) { // TODO consider ambiguous table names
+        DBSEntity table = this.findRealTable(monitor, tableName);
         SQLQueryRowsSourceModel source = this.findRealSource(table);
         return source == null ? null : SourceResolutionResult.forRealTableByName(source, table); 
     }

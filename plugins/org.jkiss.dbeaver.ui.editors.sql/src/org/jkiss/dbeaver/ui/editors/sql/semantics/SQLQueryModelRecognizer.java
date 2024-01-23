@@ -455,10 +455,11 @@ public class SQLQueryModelRecognizer {
     private class RecognitionContext implements SQLQueryRecognitionContext {
         private final DBRProgressMonitor monitor;
 
-        public RecognitionContext(IProgressMonitor monitor) {
-            this.monitor = RuntimeUtils.makeMonitor(monitor);
+        public RecognitionContext(@NotNull DBRProgressMonitor monitor) {
+            this.monitor = monitor;
         }
 
+        @NotNull
         @Override
         public DBRProgressMonitor getMonitor() {
             return this.monitor;
@@ -572,7 +573,7 @@ public class SQLQueryModelRecognizer {
     }
 
     @Nullable
-    public SQLQuerySelectionModel recognizeQuery(@NotNull String text, IProgressMonitor monitor) {
+    public SQLQuerySelectionModel recognizeQuery(@NotNull String text, DBRProgressMonitor monitor) {
         STMSource querySource = STMSource.fromString(text);
         LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(this.obtainSqlDialect());
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());

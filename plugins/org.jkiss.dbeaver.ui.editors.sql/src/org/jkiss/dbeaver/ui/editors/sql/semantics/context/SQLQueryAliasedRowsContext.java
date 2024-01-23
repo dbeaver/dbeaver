@@ -42,10 +42,10 @@ public class SQLQueryAliasedRowsContext extends SQLQuerySyntaxContext {
 
     @NotNull
     @Override
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName, @NotNull DBRProgressMonitor monitor) {
+    public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         return tableName.size() == 1 && tableName.get(0).equals(this.alias.getName())
                 ? SourceResolutionResult.forSourceByAlias(this.source, this.alias)
-                : super.resolveSource(tableName, monitor);
+                : super.resolveSource(monitor, tableName);
     }
 }
 

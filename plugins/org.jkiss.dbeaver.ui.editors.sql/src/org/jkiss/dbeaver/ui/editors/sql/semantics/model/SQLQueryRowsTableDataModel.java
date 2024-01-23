@@ -81,7 +81,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.name.isNotClassified()) {
-            this.table = context.findRealTable(this.name.toListOfStrings(), statistics.getMonitor());
+            this.table = context.findRealTable(statistics.getMonitor(), this.name.toListOfStrings());
 
             if (this.table != null) {
                 this.name.setDefinition(table);
