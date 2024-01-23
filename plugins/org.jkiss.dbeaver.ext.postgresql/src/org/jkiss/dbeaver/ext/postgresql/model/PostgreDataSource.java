@@ -16,17 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -56,7 +45,6 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
@@ -67,6 +55,17 @@ import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * PostgreDataSource
@@ -185,6 +184,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             // ignore
         }
     }
+
     private void loadAvailableDatabases(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration configuration, List<PostgreDatabase> dbList) throws DBException {
         DBExecUtils.startContextInitiation(getContainer());
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
@@ -235,8 +235,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         String connectionDBName = getContainer().getConnectionConfiguration().getDatabaseName();
         {
             final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
-            final boolean showUnavailable =
-                CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
+            final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
 
             if (!showUnavailable) {
                 catalogQuery.append(" AND datallowconn");
@@ -309,8 +308,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         PostgreServerType serverType = getType();
         if (serverType.turnOffPreparedStatements()
-            && !CommonUtils.toBoolean(
-            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
+            && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
             props.put("prepareThreshold", "0");
         }
@@ -918,8 +916,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     public boolean supportReadingAllDataTypes() {
-        return CommonUtils.toBoolean(
-            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+        return CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
     }
 
     public boolean supportsReadingKeysWithColumns() {
@@ -929,9 +926,5 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean isSupportsEnumTable() {
         return supportsEnumTable;
-    }
-
-    private DBPPreferenceStore getGlobalPreferences() {
-        return DBWorkbench.getPlatform().getPreferenceStore();
     }
 }
