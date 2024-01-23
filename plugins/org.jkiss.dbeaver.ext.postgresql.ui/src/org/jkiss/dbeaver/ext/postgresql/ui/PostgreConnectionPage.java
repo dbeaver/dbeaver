@@ -271,7 +271,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        applyGlobalProperties(connectionInfo);
+        if (getSite().isNew()) {
+            applyGlobalProperties(connectionInfo);
+        }
         if (typeURLRadio != null) {
             connectionInfo.setConfigurationType(
                 typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
