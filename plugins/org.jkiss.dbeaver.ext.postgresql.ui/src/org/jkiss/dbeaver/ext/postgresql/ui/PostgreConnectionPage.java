@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
+import java.util.Locale;
+
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -47,8 +50,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Locale;
 
 /**
  * PostgreConnectionPage
@@ -270,6 +271,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+        applyGlobalProperties(connectionInfo);
         if (typeURLRadio != null) {
             connectionInfo.setConfigurationType(
                 typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
@@ -295,6 +297,24 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         }
 
         super.saveSettings(dataSource);
+    }
+
+    private static void applyGlobalProperties(DBPConnectionConfiguration connectionInfo) {
+        // Additional page can be not loaded at all, if this is the case just to be sure we need to apply global settings
+        String[] propertiesToCheck = {
+            PostgreConstants.PROP_SHOW_NON_DEFAULT_DB,
+            PostgreConstants.PROP_SHOW_UNAVAILABLE_DB,
+            PostgreConstants.PROP_SHOW_TEMPLATES_DB,
+            PostgreConstants.PROP_READ_ALL_DATA_TYPES,
+            PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS,
+            PostgreConstants.PROP_SHOW_DATABASE_STATISTICS
+        };
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        for (String property : propertiesToCheck) {
+            if (CommonUtils.isEmpty(connectionInfo.getProviderProperty(property))) {
+                connectionInfo.setProviderProperty(property, preferenceStore.getString(property));
+            }
+        }
     }
 
     @Override

@@ -99,17 +99,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
     private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
-    private final DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new PostgreDialect());
+
         // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(
-            container.getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS),
-            globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS)
-        );
+        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
+            PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
     // Constructor for tests
@@ -187,7 +185,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             // ignore
         }
     }
-
     private void loadAvailableDatabases(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration configuration, List<PostgreDatabase> dbList) throws DBException {
         DBExecUtils.startContextInitiation(getContainer());
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
@@ -223,10 +220,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
         // It is configurable by default
         return configuration.getConfigurationType() != DBPDriverConfigurationType.URL &&
-            CommonUtils.getBoolean(configuration.getProviderProperty(
-                    PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
-                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)
-            );
+            CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
     }
 
     protected PreparedStatement prepareReadDatabaseListStatement(
@@ -234,21 +228,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         @NotNull Connection bootstrapConnection,
         @NotNull DBPConnectionConfiguration configuration) throws SQLException
     {
-        DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
         // Make initial connection to read database list
         DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
         StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
         boolean addExclusionName = false;
         String connectionDBName = getContainer().getConnectionConfiguration().getDatabaseName();
         {
-            final boolean showTemplates = CommonUtils.getBoolean(configuration.getProviderProperty(
-                    PostgreConstants.PROP_SHOW_TEMPLATES_DB),
-                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)
-            );
-            final boolean showUnavailable = CommonUtils.getBoolean(
-                configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
-                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)
-            );
+            final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+            final boolean showUnavailable =
+                CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
 
             if (!showUnavailable) {
                 catalogQuery.append(" AND datallowconn");
@@ -321,7 +309,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         PostgreServerType serverType = getType();
         if (serverType.turnOffPreparedStatements()
-            && !CommonUtils.getBoolean(
+            && !CommonUtils.toBoolean(
             getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
             props.put("prepareThreshold", "0");
@@ -930,19 +918,20 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     public boolean supportReadingAllDataTypes() {
-        return CommonUtils.getBoolean(
-            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES),
-            globalPrefs.getBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
     }
 
     public boolean supportsReadingKeysWithColumns() {
-        return CommonUtils.getBoolean(
-            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
-            globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS)
-        );
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
     }
 
     public boolean isSupportsEnumTable() {
         return supportsEnumTable;
+    }
+
+    private DBPPreferenceStore getGlobalPreferences() {
+        return DBWorkbench.getPlatform().getPreferenceStore();
     }
 }
