@@ -169,7 +169,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Association
-    public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
+    public Collection<? extends OracleTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getTypedObjects(monitor, this, OracleTable.class);

@@ -199,7 +199,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         visibleIf = PartitioningTablePropertyValidator.class)
     @LazyProperty(cacheValidator = PartitionedValueLoadValidator.class)
     public String getPartitionedBy(DBRProgressMonitor monitor) {
-        if (isPersisted() && partitionedBy == null) {
+        if (isPersisted() && partitionedBy == null && isPartitioned()) {
             // Load partition key info
             loadPartitionKeys(monitor);
             if (!CommonUtils.isEmpty(partitionKeys)) {
