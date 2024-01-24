@@ -349,8 +349,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof DBPConnectionType) {
-            DBPConnectionType ct = (DBPConnectionType)obj;
+        if (obj instanceof DBPConnectionType ct) {
             return CommonUtils.equalObjects(id, ct.id) &&
                 CommonUtils.equalObjects(name, ct.name) &&
                 CommonUtils.equalObjects(color, ct.color) &&
@@ -362,6 +361,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
                 smartCommitRecover == ct.smartCommitRecover &&
                 autoCloseTransactions == ct.autoCloseTransactions &&
                 CommonUtils.equalObjects(closeIdleTransactionPeriod, ct.closeIdleTransactionPeriod) &&
+                autoCloseConnections == ct.autoCloseConnections &&
+                CommonUtils.equalObjects(closeIdleConnectionPeriod, ct.closeIdleConnectionPeriod) &&
                 predefined == ct.predefined &&
                 CommonUtils.equalObjects(connectionModifyRestrictions, ct.connectionModifyRestrictions);
         }
