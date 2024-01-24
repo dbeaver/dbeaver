@@ -48,119 +48,252 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         {"IF", SQLConstants.BLOCK_END}
     };
 
+    // Referenced & Categorized from https://docs.snowflake.com/en/sql-reference/functions-all 
+    private static final String[] SNOWFLAKE_NUMERIC_FUNCTIONS = new String[] {
+        "ABS",
+        "ACOS",
+        "ACOSH",
+        "ASIN",
+        "ASINH",
+        "ATAN",
+        "ATAN2",
+        "ATANH",
+        "CBRT",
+        "CEIL",
+        "COS",
+        "COSH",
+        "COT",
+        "DEGREES",
+        "EXP",
+        "FACTORIAL",
+        "FLOOR",
+        "LN",
+        "LOG",
+        "MOD",
+        "PI",
+        "RADIANS",
+        "ROUND",
+        "SIGN",
+        "SIN",
+        "SINH",
+        "SQRT",
+        "TAN",
+        "TANH",
+        "WIDTH_BUCKET"
+    };
+
+    private static final String[] SNOWFLAKE_DATE_AND_TIME_FUNCTIONS = new String[] {
+        "ADD_MONTHS",
+        "DATE_PART",
+        "DATE_TRUNC",
+        "DATEADD",
+        "DATEDIFF",
+        "DAYNAME",
+        "EXTRACT",
+        "LAST_DAY",
+        "MONTHNAME",
+        "MONTHS_BETWEEN",
+        "NEXT_DAY",
+        "TIMEDIFF",
+        "TIMESTAMPADD",
+        "TIMESTAMPDIFF",
+        "TRUNC"
+    };
+
+    private static final String[] SNOWFLAKE_CONTEXT_FUNCTIONS = new String[] {
+        "CURRENT_DATABASE",
+        "CURRENT_DATE",
+        "CURRENT_SCHEMA",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP",
+        "CURRENT_USER",
+        "CURRENT_VERSION",
+        "SYSDATE"
+    };
+
+    private static final String[] SNOWFLAKE_AGGREGATE_AND_WINDOW_FUNCTIONS = new String[] {
+        "ANY_VALUE",
+        "APPROX_COUNT_DISTINCT",
+        "APPROX_PERCENTILE",
+        "APPROX_TOP_K",
+        "AVG",
+        "CORR",
+        "COUNT",
+        "COUNT_IF",
+        "COVAR_POP",
+        "COVAR_SAMP",
+        "KURTOSIS",
+        "LISTAGG",
+        "MAX",
+        "MEDIAN",
+        "MIN",
+        "MODE",
+        "PERCENTILE_CONT",
+        "PERCENTILE_DISC",
+        "REGR_AVGX",
+        "REGR_AVGY",
+        "REGR_COUNT",
+        "REGR_INTERCEPT",
+        "REGR_R2",
+        "REGR_SLOPE",
+        "REGR_SXX",
+        "REGR_SXY",
+        "REGR_SYY",
+        "STDDEV",
+        "STDDEV_POP",
+        "STDDEV_SAMP",
+        "SUM",
+        "VAR_POP",
+        "VAR_SAMP",
+        "ARRAY_AGG",
+        "GROUPING",
+        "GROUPING_ID",
+        "MAX_BY",
+        "MIN_BY",
+        "CUME_DIST",
+        "DENSE_RANK",
+        "FIRST_VALUE",
+        "LAG",
+        "LAST_VALUE",
+        "LEAD",
+        "NTH_VALUE",
+        "NTILE",
+        "PERCENT_RANK",
+        "RANK",
+        "RATIO_TO_REPORT",
+        "ROW_NUMBER"
+    };
+
+    private static final String[] SNOWFLAKE_STRUCTURED_DATA_FUNCTIONS = new String[] {
+        "ARRAY_CONTAINS",
+        "ARRAY_DISTINCT",
+        "ARRAY_EXCEPT",
+        "ARRAY_MAX",
+        "ARRAY_MIN",
+        "ARRAY_POSITION",
+        "ARRAY_REMOVE",
+        "ARRAY_SIZE",
+        "ARRAY_SORT",
+        "ARRAYS_OVERLAP",
+        "GET",
+        "IS_BOOLEAN",
+        "MAP_CONTAINS_KEY",
+        "MAP_KEYS",
+        "TYPEOF"
+    };
+    
+    private static final String[] SNOWFLAKE_STRING_AND_BINARY_FUNCTIONS = new String[] {
+        "ASCII",
+        "BASE64_ENCODE",
+        "BIT_LENGTH",
+        "CHARINDEX",
+        "COLLATION",
+        "COMPRESS",
+        "CONCAT_WS",
+        "CONTAINS",
+        "ENDSWITH",
+        "HEX_ENCODE",
+        "INITCAP",
+        "INSERT",
+        "LEFT",
+        "LOWER",
+        "LPAD",
+        "LTRIM",
+        "OCTET_LENGTH",
+        "PARSE_URL",
+        "POSITION",
+        "REPEAT",
+        "REPLACE",
+        "REVERSE",
+        "RIGHT",
+        "RPAD",
+        "RTRIM",
+        "SOUNDEX",
+        "SPACE",
+        "SPLIT",
+        "SPLIT_PART",
+        "STARTSWITH",
+        "TRANSLATE",
+        "TRIM",
+        "UNICODE",
+        "UPPER",
+        "REGEXP",
+        "REGEXP_COUNT",
+        "REGEXP_INSTR",
+        "REGEXP_LIKE",
+        "REGEXP_REPLACE",
+        "REGEXP_SUBSTR",
+        "RLIKE"
+    };
+   
+    private static final String[] SNOWFLAKE_CONDITIONAL_FUNCTIONS = new String[] {
+        "COALESCE",
+        "DECODE",
+        "EQUAL_NULL",
+        "GREATEST",
+        "IFF",
+        "IFNULL",
+        "LEAST",
+        "NULLIF",
+        "NULLIFZERO",
+        "NVL",
+        "NVL2",
+        "ZEROIFNULL"
+    };
+    
+    private static final String[] SNOWFLAKE_BITWISE_FUNCTIONS = new String[] {
+        "BITAND",
+        "BITNOT",
+        "BITOR",
+        "BITXOR",
+        "GETBIT"
+    };
+
+    private static final String[] SNOWFLAKE_CONVERSION_FUNCTIONS = new String[] {
+        "TO_BINARY",
+        "TO_BOOLEAN",
+        "TO_DOUBLE",
+        "TRY_CAST",
+        "TRY_TO_BINARY"
+    };
+
+    private static final String[] SNOWFLAKE_GEOSPATIAL_FUNCTIONS = new String[] {
+        "ST_BUFFER",
+        "ST_CENTROID",
+        "ST_CONTAINS",
+        "ST_DIFFERENCE",
+        "ST_DIMENSION",
+        "ST_DISJOINT",
+        "ST_DISTANCE",
+        "ST_ENDPOINT",
+        "ST_ENVELOPE",
+        "ST_LENGTH",
+        "ST_POINTN",
+        "ST_SETSRID",
+        "ST_STARTPOINT",
+        "ST_SYMDIFFERENCE",
+        "ST_TRANSFORM",
+        "ST_UNION",
+        "ST_WITHIN",
+        "ST_X",
+        "ST_Y"
+    };
+
+    private static final String[] SNOWFLAKE_OTHER_FUNCTIONS = new String[] {
+        "ENCRYPT",
+        "FLATTEN",
+        "HASH",
+        "RANDOM",
+        "TO_JSON"
+    };
+
     public SnowflakeSQLDialect() {
         super("Snowflake", "snowflake");
     }
 
-    // Referenced from https://docs.snowflake.com/en/sql-reference/functions-all
-    public static final String[] SNOWFLAKE_FUNCTIONS = new String[] {
-        "ABS",                  "ACOS",
-        "ACOSH",                "ADD_MONTHS",
-        "ANY_VALUE",            "APPROX_COUNT_DISTINCT",
-        "APPROX_PERCENTILE",    "APPROX_TOP_K",
-        "ARRAY_AGG",            "ARRAY_CONTAINS",
-        "ARRAY_DISTINCT",       "ARRAY_EXCEPT",
-        "ARRAY_MAX",            "ARRAY_MIN",
-        "ARRAY_POSITION",       "ARRAY_REMOVE",
-        "ARRAY_SIZE",           "ARRAY_SORT",
-        "ARRAYS_OVERLAP",       "ASCII",
-        "ASIN",                 "ASINH",
-        "ATAN",                 "ATAN2",
-        "ATANH",                "AVG",
-        "BASE64_ENCODE",        "BIT_LENGTH",
-        "BITAND",               "BITNOT",
-        "BITOR",                "BITXOR",
-        "CBRT",                 "CEIL",
-        "CHARINDEX",            "COALESCE",
-        "COLLATION",            "COMPRESS",
-        "CONCAT_WS",            "CONTAINS",
-        "CORR",                 "COS",
-        "COSH",                 "COT",
-        "COUNT",                "COUNT_IF",
-        "COVAR_POP",            "COVAR_SAMP",
-        "CUME_DIST",            "CURRENT_DATABASE",
-        "CURRENT_DATE",         "CURRENT_SCHEMA",
-        "CURRENT_TIME",         "CURRENT_TIMESTAMP",
-        "CURRENT_USER",         "CURRENT_VERSION",
-        "DATE_PART",            "DATE_TRUNC",
-        "DATEADD",              "DATEDIFF",
-        "DAYNAME",              "DECODE",
-        "DEGREES",              "DENSE_RANK",
-        "ENCRYPT",              "ENDSWITH",
-        "EQUAL_NULL",           "EXP",
-        "EXTRACT",              "FACTORIAL",
-        "FIRST_VALUE",          "FLATTEN",
-        "FLOOR",                "GET",
-        "GETBIT",               "GREATEST",
-        "GROUPING",             "GROUPING_ID",
-        "HASH",                 "HEX_ENCODE",
-        "IFF",                  "IFNULL",
-        "INITCAP",              "INSERT",
-        "IS_BOOLEAN",           "KURTOSIS",
-        "LAG",                  "LAST_DAY",
-        "LAST_VALUE",           "LEAD",
-        "LEAST",                "LEFT",
-        "LISTAGG",              "LN",
-        "LOG",                  "LOWER",
-        "LPAD",                 "LTRIM",
-        "MAP_CONTAINS_KEY",     "MAP_KEYS",
-        "MAX",                  "MAX_BY",
-        "MEDIAN",               "MIN",
-        "MIN_BY",               "MOD",
-        "MODE",                 "MONTHNAME",
-        "MONTHS_BETWEEN",       "NEXT_DAY",
-        "NTH_VALUE",            "NTILE",
-        "NULLIF",               "NULLIFZERO",
-        "NVL",                  "NVL2",
-        "OCTET_LENGTH",         "PARSE_URL",
-        "PERCENT_RANK",         "PERCENTILE_CONT",
-        "PERCENTILE_DISC",      "PI",
-        "POSITION",             "RADIANS",
-        "RANDOM",               "RANK",
-        "RATIO_TO_REPORT",      "REGEXP",
-        "REGEXP_COUNT",         "REGEXP_INSTR",
-        "REGEXP_LIKE",          "REGEXP_REPLACE",
-        "REGEXP_SUBSTR",        "REGR_AVGX",
-        "REGR_AVGY",            "REGR_COUNT",
-        "REGR_INTERCEPT",       "REGR_R2",
-        "REGR_SLOPE",           "REGR_SXX",
-        "REGR_SXY",             "REGR_SYY",
-        "REPEAT",               "REPLACE",
-        "REVERSE",              "RIGHT",
-        "RLIKE",                "ROUND",
-        "ROW_NUMBER",           "RPAD",
-        "RTRIM",                "SIGN",
-        "SIN",                  "SINH",
-        "SOUNDEX",              "SPACE",
-        "SPLIT",                "SPLIT_PART",
-        "SQRT",                 "ST_BUFFER",
-        "ST_CENTROID",          "ST_CONTAINS",
-        "ST_DIFFERENCE",        "ST_DIMENSION",
-        "ST_DISJOINT",          "ST_DISTANCE",
-        "ST_ENDPOINT",          "ST_ENVELOPE",
-        "ST_LENGTH",            "ST_POINTN",
-        "ST_SETSRID",           "ST_STARTPOINT",
-        "ST_SYMDIFFERENCE",     "ST_TRANSFORM",
-        "ST_UNION",             "ST_WITHIN",
-        "ST_X",                 "ST_Y",
-        "STARTSWITH",           "STDDEV",
-        "STDDEV_POP",           "STDDEV_SAMP",
-        "SUM",                  "SYSDATE",
-        "TAN",                  "TANH",
-        "TIMEDIFF",             "TIMESTAMPADD",
-        "TIMESTAMPDIFF",        "TO_BINARY",
-        "TO_BOOLEAN",           "TO_DOUBLE",
-        "TO_JSON",              "TRANSLATE",
-        "TRIM",                 "TRUNC",
-        "TRY_CAST",             "TRY_TO_BINARY",
-        "TYPEOF",               "UNICODE",
-        "UPPER",                "VAR_POP",
-        "VAR_SAMP",             "WIDTH_BUCKET",
-        "ZEROIFNULL"
-    };
-
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
+
         addSQLKeywords(
             Arrays.asList(
                 "QUALIFY",
@@ -172,7 +305,18 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                 "TAG",
                 "TASK"
             ));
-        addFunctions(Arrays.asList(SNOWFLAKE_FUNCTIONS));
+        
+        addFunctions(Arrays.asList(SNOWFLAKE_AGGREGATE_AND_WINDOW_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_BITWISE_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_CONDITIONAL_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_CONTEXT_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_CONVERSION_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_NUMERIC_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_STRING_AND_BINARY_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_STRUCTURED_DATA_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_GEOSPATIAL_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_DATE_AND_TIME_FUNCTIONS));
+        addFunctions(Arrays.asList(SNOWFLAKE_OTHER_FUNCTIONS));
     }
 
     @NotNull
