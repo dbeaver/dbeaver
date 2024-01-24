@@ -259,7 +259,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
         final DBPConnectionType connectionType = config.getConnectionType();
         if (connectionType.isAutoCloseConnections()) {
-            return connectionType.getCloseIdleTransactionPeriod();
+            return connectionType.getCloseIdleConnectionPeriod();
         }
         return 0;
     }
