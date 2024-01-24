@@ -81,13 +81,13 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.name.isNotClassified()) {
-            this.table = context.findRealTable(this.name.toListOfStrings());
+            this.table = context.findRealTable(statistics.getMonitor(), this.name.toListOfStrings());
 
             if (this.table != null) {
                 this.name.setDefinition(table);
                 context = context.extendWithRealTable(this.table, this);
                 try {
-                    List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(new VoidProgressMonitor());
+                    List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(statistics.getMonitor());
                     if (attributes != null) {
                         List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(context, attributes);
                         context = context.overrideResultTuple(columns);
