@@ -77,17 +77,17 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLDialect dialect = context.getDialect();
         if (this.tableName != null && this.tableName.isNotClassified() && this.columnName.isNotClassified()) {
-            SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
+            SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
-                SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(this.columnName.getName());
+                SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
                 this.propagateColumnDefinition(resultColumn, statistics);
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
                 statistics.appendError(this.tableName.entityName, "Table or subquery not found");
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
-            SQLQueryResultColumn resultColumn = context.resolveColumn(this.columnName.getName());
+            SQLQueryResultColumn resultColumn = context.resolveColumn(statistics.getMonitor(), this.columnName.getName());
 
             SQLQuerySymbolClass forcedClass = null;
             if (resultColumn == null) {
