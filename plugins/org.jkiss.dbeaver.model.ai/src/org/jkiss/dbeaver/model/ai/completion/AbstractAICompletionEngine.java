@@ -64,12 +64,20 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull DAICompletionContext context,
         @NotNull DAICompletionSession session,
         @NotNull IAIFormatter formatter,
-        boolean sendAllMessages
+        boolean includeAssistantMessages
     ) throws DBException {
-        final String result = requestCompletion(monitor, context, session.getMessages(sendAllMessages), formatter);
+        final String result = requestCompletion(monitor, context, filterMessages(session.getMessages(), includeAssistantMessages), formatter);
         final DAICompletionResponse response = new DAICompletionResponse();
         response.setResultCompletion(result);
         return List.of(response);
+    }
+
+    @NotNull
+    private static List<DAICompletionMessage> filterMessages(List<DAICompletionMessage> messages, boolean includeAssistantMessages ) {
+        if (includeAssistantMessages) {
+            return messages;
+        }
+        return messages.stream().filter(it -> DAICompletionMessage.Role.USER.equals(it.role())).toList();
     }
 
     public abstract Map<String, SERVICE> getServiceMap();

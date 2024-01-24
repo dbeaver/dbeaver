@@ -16,52 +16,35 @@
  */
 package org.jkiss.dbeaver.model.ai.completion;
 
+import org.jkiss.code.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jkiss.code.NotNull;
 
 /**
  * Completion session
  */
 public class DAICompletionSession {
-    private final List<DAICompletionMessage> allMessages;
-    private final List<DAICompletionMessage> userMessages;
+    private final List<DAICompletionMessage> messages;
 
     public DAICompletionSession() {
-        this.allMessages = new ArrayList<>();
-        this.userMessages = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 
     public void add(@NotNull DAICompletionMessage message) {
-        if (message.role() == DAICompletionMessage.Role.USER) {
-            userMessages.add(message);
-        }
-        allMessages.add(message);
+        messages.add(message);
     }
 
     public void remove(@NotNull DAICompletionMessage message) {
-        if (message.role() == DAICompletionMessage.Role.USER) {
-            userMessages.remove(message);
-        }
-        allMessages.remove(message);
+        messages.remove(message);
     }
 
     public void clear() {
-        allMessages.clear();
-        userMessages.clear();
-    }
-
-    @Deprecated(forRemoval = true)
-    public List<DAICompletionMessage> getAllMessages() {
-        return getMessages(true);
+        messages.clear();
     }
 
     @NotNull
-    public List<DAICompletionMessage> getMessages(boolean sendAllMessages) {
-        if (sendAllMessages) {
-            return allMessages;
-        }
-        return userMessages;
+    public List<DAICompletionMessage> getMessages() {
+        return messages;
     }
 }
