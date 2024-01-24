@@ -22,18 +22,29 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.StandardConstants;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
 import java.util.function.Function;
 
 /**
  * Base data policy provider designed to provide specific policy property value.
- * The general logic catch policy value in .ini file as system property next in
- * windows registry under HKEY_CURRENT_USER and HKEY_LOCAL_MACHINE nodes.
+ * <p>
+ * For Windows, policy data is stored in the Windows registry under the {@code Software\DBeaver Corp\DBeaver\policy} key.
+ * <p>
+ * For Linux and macOS, policy data is stored in the {@code ~/.config/dbeaver/policy.properties} file.
  */
 public class BasePolicyDataProvider {
     private static final Log log = Log.getLog(BasePolicyDataProvider.class);
 
     private static final String DBEAVER_REGISTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
+    private static final String[] DBEAVER_CONFIG_PATH = {".config", "dbeaver", "policy.properties"};
+
     private static final BasePolicyDataProvider INSTANCE = new BasePolicyDataProvider();
 
     @NotNull
@@ -70,29 +81,54 @@ public class BasePolicyDataProvider {
     @Nullable
     public <T> T getPolicyValue(@NotNull String property, @NotNull Function<String, T> converter) {
         String value = System.getProperty(property);
-        if (value != null) {
-            return converter.apply(value);
+
+        if (value == null) {
+            if (RuntimeUtils.isWindows()) {
+                value = getPolicyValueFromRegistry(property);
+            } else {
+                value = getPolicyValueFromConfig(property);
+            }
         }
 
-        value = getRegistryPolicyValue(WinReg.HKEY_CURRENT_USER, property);
-        if (value != null) {
-            return converter.apply(value);
-        }
-
-        value = getRegistryPolicyValue(WinReg.HKEY_LOCAL_MACHINE, property);
-        if (value != null) {
-            return converter.apply(value);
-        }
-
-        return null;
-    }
-
-    @Nullable
-    private static String getRegistryPolicyValue(@NotNull WinReg.HKEY root, @NotNull String property) {
-        if (!RuntimeUtils.isWindows()) {
+        if (value == null) {
             return null;
         }
 
+        return converter.apply(value);
+    }
+
+    @Nullable
+    private static String getPolicyValueFromConfig(@NotNull String property) {
+        final Path path = Path.of(System.getProperty(StandardConstants.ENV_USER_HOME), DBEAVER_CONFIG_PATH);
+
+        if (Files.notExists(path)) {
+            return null;
+        }
+
+        final Properties properties = new Properties();
+
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            properties.load(reader);
+        } catch (IOException e) {
+            log.error("Error reading policy config file " + path + ": " + e.getMessage());
+        }
+
+        return properties.getProperty(property);
+    }
+
+    @Nullable
+    private static String getPolicyValueFromRegistry(@NotNull String property) {
+        String value = getPolicyValueFromRegistry(WinReg.HKEY_CURRENT_USER, property);
+
+        if (value == null) {
+            value = getPolicyValueFromRegistry(WinReg.HKEY_LOCAL_MACHINE, property);
+        }
+
+        return value;
+    }
+
+    @Nullable
+    private static String getPolicyValueFromRegistry(@NotNull WinReg.HKEY root, @NotNull String property) {
         try {
             if (Advapi32Util.registryKeyExists(root, DBEAVER_REGISTRY_POLICY_NODE) &&
                 Advapi32Util.registryValueExists(root, DBEAVER_REGISTRY_POLICY_NODE, property)
