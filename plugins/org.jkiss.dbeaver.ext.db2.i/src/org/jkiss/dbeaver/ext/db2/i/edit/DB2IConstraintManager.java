@@ -50,13 +50,4 @@ public class DB2IConstraintManager extends GenericPrimaryKeyManager {
             super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         }
     }
-
-    @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<GenericUniqueKey> command) {
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append("(").append(((DB2IConstraint) command.getObject()).getCheckConstraintDefinition()).append(")");
-        } else {
-            super.appendConstraintDefinition(decl, command);
-        }
-    }
 }

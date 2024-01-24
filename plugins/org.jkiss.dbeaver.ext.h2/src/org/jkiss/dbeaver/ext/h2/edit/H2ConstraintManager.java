@@ -82,13 +82,4 @@ public class H2ConstraintManager extends GenericPrimaryKeyManager {
             );
         }
     }
-
-    @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<GenericUniqueKey> command) {
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append("(").append(((H2Constraint)command.getObject()).getCheckConstraintDefinition()).append(")");
-        } else {
-            super.appendConstraintDefinition(decl, command);
-        }
-    }
 }

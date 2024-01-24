@@ -288,4 +288,9 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         }
         return super.mustBeQuoted(str, forceCaseSensitive);
     }
+    
+    @Override
+    public String[] getSingleLineComments() {
+        return new String[]{SQLConstants.SL_COMMENT, "//"};
+    }
 }
