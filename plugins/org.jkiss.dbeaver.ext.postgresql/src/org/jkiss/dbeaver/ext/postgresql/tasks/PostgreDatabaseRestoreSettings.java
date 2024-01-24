@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,12 +20,12 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -83,45 +83,53 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         inputFile = store.getString("pg.restore.inputFile");
         cleanFirst = store.getBoolean("pg.restore.cleanFirst");
         noOwner = store.getBoolean("pg.restore.noOwner");
         createDatabase = store.getBoolean("pg.restore.createDatabase");
 
+        super.loadSettings(runnableContext, store);
+        String catalogId = null;
         if (store instanceof DBPPreferenceMap) {
-            String catalogId = store.getString("pg.restore.database");
-
-            if (!CommonUtils.isEmpty(catalogId)) {
-                try {
-                    runnableContext.run(true, true, monitor -> {
-                        try {
-                            PostgreDatabase database = (PostgreDatabase) DBUtils.findObjectById(monitor, getProject(), catalogId);
-                            if (database == null) {
-                                throw new DBException("Database " + catalogId + " not found");
-                            }
-                            restoreInfo = new PostgreDatabaseRestoreInfo(database);
-                        } catch (Throwable e) {
-                            throw new InvocationTargetException(e);
+            catalogId = store.getString("pg.restore.database");
+        }
+        if (!CommonUtils.isEmpty(catalogId)) {
+            try {
+                String finalCatalogId = catalogId;
+                runnableContext.run(true, true, monitor -> {
+                    try {
+                        PostgreDatabase database = (PostgreDatabase) DBUtils.findObjectById(monitor, getProject(), finalCatalogId);
+                        if (database == null) {
+                            throw new DBException("Database " + finalCatalogId + " not found");
                         }
-                    });
-                } catch (InvocationTargetException e) {
-                    log.error("Error loading objects configuration", e);
-                } catch (InterruptedException e) {
-                    // Ignore
-                }
-            } else {
-                for (DBSObject object : getDatabaseObjects()) {
-                    if (object instanceof PostgreDatabase) {
-                        restoreInfo = new PostgreDatabaseRestoreInfo((PostgreDatabase) object);
-                        break;
+                        restoreInfo = new PostgreDatabaseRestoreInfo(database);
+                    } catch (Throwable e) {
+                        throw new InvocationTargetException(e);
                     }
-                }
+                });
+            } catch (InvocationTargetException e) {
+                log.error("Error loading objects configuration", e);
+            } catch (InterruptedException e) {
+                // Ignore
             }
+        } else {
+            findRestoreInfo();
         }
 
         if (restoreInfo == null) {
             throw new DBException("Cannot find database for restoring");
+        }
+    }
+
+    private void findRestoreInfo() {
+        for (DBSObject object : getDatabaseObjects()) {
+            if (object instanceof PostgreSchema) {
+                object = ((PostgreSchema) object).getDatabase();
+            }
+            if (object instanceof PostgreDatabase) {
+                restoreInfo = new PostgreDatabaseRestoreInfo((PostgreDatabase) object);
+                break;
+            }
         }
     }
 
@@ -132,6 +140,9 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         store.setValue("pg.restore.cleanFirst", cleanFirst);
         store.setValue("pg.restore.noOwner", noOwner);
         store.setValue("pg.restore.createDatabase", createDatabase);
+        if (restoreInfo == null) {
+            findRestoreInfo();
+        }
         store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
     }
 

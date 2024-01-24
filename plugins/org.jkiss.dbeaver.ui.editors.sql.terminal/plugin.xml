@@ -2,7 +2,7 @@
 <?eclipse version="3.4"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,22 @@
     </extension>
     
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top" >
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView">
+                <visibleWhen checkEnabled="false">
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute?after=plan">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
         </menuContribution >
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.toolBarConfiguration">
+        <toolBar key="sqlEditor.side.top">
+            <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" defaultVisibility="true"/>
+        </toolBar>
     </extension>
     
     <extension point="org.eclipse.ui.commandImages">
@@ -47,7 +57,7 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
-        <initializer class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesInitializer"/>
+        <initializer class="org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalPreferencesInitializer"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">

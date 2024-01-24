@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,11 +85,18 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (toggleMessage != null) {
-            String storeString = prefStore.getString(key);
-            if (ConfirmationDialog.ALWAYS.equals(storeString) || !CommonUtils.getBoolean(storeString, true)) {
+            if (ConfirmationDialog.ALWAYS.equals(prefStore.getString(key))) {
                 if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
                     return IDialogConstants.YES_ID;
                 } else {
+                    return IDialogConstants.OK_ID;
+                }
+            } else if (ConfirmationDialog.NEVER.equals(prefStore.getString(key))) {
+                if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
+                    return IDialogConstants.NO_ID;
+                } else {
+                    // These dialog all have OK and maybe CANCEL buttons.
+                    // It makes no sense to return CANCEL_ID here as it's not a valid decision like YES or NO
                     return IDialogConstants.OK_ID;
                 }
             }
@@ -215,10 +222,12 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         IPreferenceStore prefStore = getPrefStore();
         String prefKey = getPrefKey();
 
-        if (buttonId != IDialogConstants.CANCEL_ID && getToggleState()
-            && prefStore != null && CommonUtils.isNotEmpty(prefKey)) {
-            // Do not ask again in this case
-            prefStore.setValue(prefKey, Boolean.FALSE.toString());
+        if (buttonId != IDialogConstants.CANCEL_ID && getToggleState() && prefStore != null && CommonUtils.isNotEmpty(prefKey)) {
+            if (buttonId == IDialogConstants.NO_ID) {
+                prefStore.setValue(prefKey, ConfirmationDialog.NEVER);
+            } else {
+                prefStore.setValue(prefKey, ConfirmationDialog.ALWAYS);
+            }
         }
     }
 }

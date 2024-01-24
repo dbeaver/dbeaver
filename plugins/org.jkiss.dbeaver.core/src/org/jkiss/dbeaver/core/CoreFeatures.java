@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,27 @@ package org.jkiss.dbeaver.core;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 /**
- * DBeaver project nature
+ * DBeaver core features
  */
 public interface CoreFeatures {
 
-    DBRFeature ENTITY_EDITOR = DBRFeature.createCategory("Object Editor", "Object Editor features");
-    DBRFeature ENTITY_EDITOR_MODIFY = DBRFeature.createFeature(ENTITY_EDITOR, "Change object properties");
-    DBRFeature ENTITY_EDITOR_SAVE = DBRFeature.createFeature(ENTITY_EDITOR, "Save object properties");
-    DBRFeature ENTITY_EDITOR_REJECT = DBRFeature.createFeature(ENTITY_EDITOR, "Reject object properties changes");
+    DBRFeature CATEGORY_APPLICATION = DBRFeature.createCategory("Application", "Application lifecycle actions");
 
-    DBRFeature RESULT_SET = DBRFeature.createCategory("Result Set", "ResultSet operation");
-    //DBRFeature RESULT_SET_APPLY_CHANGES = DBRFeature.createCommandFeature(RESULT_SET, ResultSetHandlerMain.CMD_APPLY_CHANGES);
+    DBRFeature APP_OPEN = DBRFeature.createFeature(CATEGORY_APPLICATION, "Open application");
+    DBRFeature APP_CLOSE = DBRFeature.createFeature(CATEGORY_APPLICATION, "Close application");
+
+    DBRFeature CATEGORY_GENERAL = DBRFeature.createCategory("General", "General app actions");
+    DBRFeature GENERAL_VIEW_OPEN = DBRFeature.createFeature(CATEGORY_GENERAL, "Open view");
+    DBRFeature GENERAL_VIEW_CLOSE = DBRFeature.createFeature(CATEGORY_GENERAL, "Close view");
+    DBRFeature GENERAL_SHOW_PERSPECTIVE = DBRFeature.createFeature(CATEGORY_GENERAL, "Show perspective");
+
+    DBRFeature CATEGORY_CONNECTION = DBRFeature.createCategory("Connection", "Connection actions");
+    DBRFeature CONNECTION_OPEN = DBRFeature.createFeature(CATEGORY_CONNECTION, "Open connection");
+    DBRFeature CONNECTION_CLOSE = DBRFeature.createFeature(CATEGORY_CONNECTION, "Close connection");
+
+    DBRFeature CONNECTION_CREATE = DBRFeature.createFeature(CATEGORY_CONNECTION, "Create connection");
+    DBRFeature CONNECTION_EDIT = DBRFeature.createFeature(CATEGORY_CONNECTION, "Edit connection");
+    DBRFeature CONNECTION_TEST = DBRFeature.createFeature(CATEGORY_CONNECTION, "Test connection");
+    DBRFeature CONNECTION_DELETE = DBRFeature.createFeature(CATEGORY_CONNECTION, "Delete connection");
+
 }

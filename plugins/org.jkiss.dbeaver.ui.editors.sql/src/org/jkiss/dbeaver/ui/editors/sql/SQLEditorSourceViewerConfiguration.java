@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
@@ -69,9 +70,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     /**
      * The editor with which this configuration is associated.
      */
-    private SQLEditorBase editor;
-    private SQLRuleScanner ruleManager;
-    private SQLContextInformer contextInformer;
+    private final SQLEditorBase editor;
+    private final SQLRuleScanner ruleManager;
+    private final SQLContextInformer contextInformer;
+    private final IPreferenceStore preferenceStore;
 
     private IContentAssistProcessor completionProcessor;
     private SQLHyperlinkDetector hyperlinkDetector;
@@ -95,13 +97,22 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this(editor, preferenceStore, new SQLReconcilingStrategy(editor));
     }
 
-    public SQLEditorSourceViewerConfiguration(SQLEditorBase editor, IPreferenceStore preferenceStore, @Nullable SQLReconcilingStrategy reconcilingStrategy) {
+    public SQLEditorSourceViewerConfiguration(
+        SQLEditorBase editor,
+        IPreferenceStore preferenceStore,
+        @Nullable SQLReconcilingStrategy reconcilingStrategy
+    ) {
         super(preferenceStore);
         this.editor = editor;
+        this.preferenceStore = preferenceStore;
         this.ruleManager = editor.getRuleScanner();
         this.contextInformer = new SQLContextInformer(editor, editor.getSyntaxManager());
         this.hyperlinkDetector = new SQLHyperlinkDetector(editor, this.contextInformer);
         this.reconcilingStrategy = reconcilingStrategy;
+    }
+
+    public IPreferenceStore getPreferenceStore() {
+        return preferenceStore;
     }
 
     public SQLContextInformer getContextInformer() {
@@ -242,7 +253,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
-        return parent -> new DefaultInformationControl(parent, true);
+        return parent -> new DefaultInformationControl(parent, false);
     }
 
     /**
@@ -300,9 +311,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // Add a "damager-repairer" for changes within one-line SQL comments.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within string literals.
-        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING, SQLConstants.CONFIG_COLOR_STRING);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
         // Add a "damager-repairer" for changes within quoted literals.
-        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED, SQLConstants.CONFIG_COLOR_DATATYPE);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
         // Add a "damager-repairer" for changes within control commands.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
 
@@ -318,7 +329,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         @NotNull String contentType,
         @NotNull String colorId
     ) {
-        addContentTypeDamageRepairer(reconciler, contentType, new SingleTokenScanner(new TextAttribute(ruleManager.getColor(colorId))));
+        Color color = ruleManager.getColor(colorId);
+        if (UIStyles.isDarkHighContrastTheme()) {
+            color = UIUtils.getInvertedColor(color);
+        }
+        addContentTypeDamageRepairer(reconciler, contentType, new SingleTokenScanner(new TextAttribute(color)));
     }
 
     private void addContentTypeDamageRepairer(
@@ -417,6 +432,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         if (reconcilingStrategy == null) {
             return null;
         }
-        return new MonoReconciler(reconcilingStrategy, false);
+        return new MonoReconciler(reconcilingStrategy, true);
     }
 }

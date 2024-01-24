@@ -4,7 +4,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,12 +46,13 @@
             <property name="earlyAccessURL" value="https://dbeaver.io/files/ea"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
-            <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="455,105"/>
+            <property name="appEdition" value="ce"/>
+            <property name="versionInfoCoord" value="116,228"/>
             <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="255,255,255"/>
-            <property name="startupMessageRect" value="348,275,230,25"/>
-            <property name="startupProgressRect" value="348,260,230,10"/>
+            <property name="versionInfoColor" value="208,72,39"/>
+            <property name="startupMessageRect" value="73,270,240,21"/>
+            <property name="startupProgressRect" value="0,295,601,6"/>
+            <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -96,8 +97,8 @@
         <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Reset UI Settings..."
-            description="Reset UI settings and restart"/>
+            name="Reset Settings..."
+            description="Reset settings and restart"/>
         <command
             id="org.jkiss.dbeaver.core.util.clearHistory"
             categoryId="org.jkiss.dbeaver.core.util"
@@ -122,8 +123,8 @@
         <image commandId="org.eclipse.ui.edit.redo" icon="icons/eclipse/redo.png" disabledIcon="icons/eclipse/redo_d.png"/>
 
         <image commandId="org.eclipse.ui.newWizard" icon="icons/eclipse/new_object.png" disabledIcon="icons/eclipse/new_object_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.zoomIn" icon="icons/eclipse/zoom_in.png" disabledIcon="icons/eclipse/zoom_in.png"/>
-        <image commandId="org.eclipse.ui.edit.text.zoomOut" icon="icons/eclipse/zoom_out.png" disabledIcon="icons/eclipse/zoom_out.png"/>
+        <image commandId="org.eclipse.ui.edit.text.zoomIn" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in_d.png"/>
+        <image commandId="org.eclipse.ui.edit.text.zoomOut" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/icons/misc/zoom_out_d.png"/>
         <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="icons/eclipse/last_edit_location.png" disabledIcon="icons/eclipse/last_edit_location_d.png"/>
         <image commandId="org.eclipse.search.ui.openSearchDialog" icon="icons/eclipse/search.png" disabledIcon="icons/eclipse/search_d.png"/>
 
@@ -185,7 +186,7 @@
             </activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
-        <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
     </extension>
 
@@ -329,9 +330,9 @@
         <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SPACE"/>
         <key commandId="org.eclipse.ui.edit.text.hippieCompletion" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+SPACE"/>
         <key commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+SPACE"/>
+        <key commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+1"/>
 
         <!--<key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+BS"/>-->
-        <key commandId="org.eclipse.ui.edit.text.goto.line" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+G"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_UP"/>
         <!--<key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Y"/>-->
@@ -339,6 +340,10 @@
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
 
         <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <scheme id="org.jkiss.dbeaver.keyboardOnlyKeyScheme" parentId="org.jkiss.dbeaver.defaultKeyScheme" name="%keyboardOnlyKeyScheme.name" description="%keyboardOnlyKeyScheme.description"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
@@ -351,32 +356,6 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.errorLogs" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorLogs" name="%pref.page.name.errorLogs">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain" name="%pref.page.name.resultset">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.data"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.editors" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors" name="%pref.page.name.resultset.editors">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.content"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.presentation" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation" name="%pref.page.name.resultset.presentation">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset.presentation" id="org.jkiss.dbeaver.preferences.main.resultset.grid" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationGrid" name="%pref.page.name.resultset.grid">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.resultset.grid"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset.presentation" id="org.jkiss.dbeaver.preferences.main.resultset.plain.text" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationPlainText" name="%pref.page.name.resultset.plain.text">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat" name="%pref.page.name.data.formats">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataviewer" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataViewer" name="%pref.page.name.data.viewers">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
         <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral" name="%pref.page.name.connections">
@@ -422,13 +401,21 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.entity"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.notifications" class="org.jkiss.dbeaver.ui.preferences.PrefPageNotifications" name="%pref.page.name.notifications">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.misc" class="org.jkiss.dbeaver.ui.preferences.PrefPageMiscellaneous" name="%pref.page.name.miscellaneous">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.keyword.pref.ui.misc"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="holiday decoration christmas snow"/>
     </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">
@@ -484,6 +471,15 @@
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.natures"/>
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.linkedResourcesPage"/>
         <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.debug.ui/org.eclipse.debug.ui.properties.defaultLaunchConfigurations"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <editorOnboardingCommand id="org.jkiss.dbeaver.core.new.connection"/>
+            <editorOnboardingCommand id="org.jkiss.dbeaver.core.sql.editor.recent"/>
+            <editorOnboardingCommand id="org.eclipse.ui.window.showKeyAssist"/>
+            <editorOnboardingCommand id="org.eclipse.ui.window.quickAccess"/>
+        </perspectiveExtension>
     </extension>
 
 </plugin>

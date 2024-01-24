@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.eclipse.core.runtime.applications" id="application" name="DPI Application">
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.dpi.app.DPIApplication"/>
+        </application>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.application">
+        <application
+                id="dbeaver-dpi-app"
+                family="DB"
+                name="DBeaver DPI Application"
+                description="DBeaver DPI Application"
+                hidden="true"/>
+    </extension>
+
+</plugin>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -57,7 +59,12 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
 
         // General UI
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_SHOW_HOLIDAY_DECORATIONS, true);
+
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT, true);
+        PrefUtils.setDefaultPreferenceValue(store, ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY, ScreenReader.DEFAULT);
 
         // QM
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);

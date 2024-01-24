@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -76,8 +77,8 @@ import java.util.*;
 /**
  * PostgresRolePrivilegesEditor
  */
-public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<PostgrePrivilegeOwner>
-{
+public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<PostgrePrivilegeOwner> {
+    private static final Log log = Log.getLog(PostgresRolePrivilegesEditor.class);
     private PageControl pageControl;
 
     private boolean isLoaded;
@@ -105,7 +106,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             isRoleEditor() ? new DatabaseObjectFilter() : null);
         roleOrObjectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         final TreeViewer treeViewer = roleOrObjectTable.getViewer();
-        treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer) {
+        treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(roleOrObjectTable) {
             @Override
             public Font getFont(Object element) {
                 if (element instanceof DBNDatabaseNode) {
@@ -221,6 +222,19 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         if (object instanceof PostgreProcedure) {
             String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getOverloadedName();
             return permissionMap.get(fqProcName);
+        } else if (object instanceof DBNDatabaseFolder) {
+            DBNDatabaseFolder folder = (DBNDatabaseFolder) object;
+            String parentNodeName = folder.getParentNode().getNodeDisplayName();
+            Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
+            String permissionKey = parentNodeName + ".";
+            if (DBSSequence.class.isAssignableFrom(childrenClass)) {
+                permissionKey += PostgrePrivilegeGrant.Kind.SEQUENCE;
+            } else if (DBSProcedure.class.isAssignableFrom(childrenClass)) {
+                permissionKey += PostgrePrivilegeGrant.Kind.FUNCTION;
+            } else {
+                permissionKey += PostgrePrivilegeGrant.Kind.TABLE;
+            }
+            return permissionMap.get(permissionKey);
         } else {
             return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
         }
@@ -246,6 +260,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
 
         PostgrePrivilegeOwner databaseObject = getDatabaseObject();
+        PostgreSchema defaultPrivOwner = null;
 
         for (int i = 0; i < currentObjects.length; i++) {
             DBSObject currentObject = currentObjects[i];
@@ -256,32 +271,56 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     continue;
                 }
                 if (isRoleEditor()) {
-                    PostgrePrivilegeOwner permissionsOwner = (PostgrePrivilegeOwner) currentObject;
                     PostgrePrivilegeGrant.Kind kind;
                     String objectName;
-                    if (permissionsOwner instanceof PostgreProcedure) {
-                        if (((PostgreProcedure) permissionsOwner).getKind() == PostgreProcedureKind.p) {
-                            kind = PostgrePrivilegeGrant.Kind.PROCEDURE;
-                        } else {
-                            kind = PostgrePrivilegeGrant.Kind.FUNCTION;
+                    String schemaName;
+                    if (currentObject instanceof DBNDatabaseFolder) {
+                        DBNDatabaseFolder folder = (DBNDatabaseFolder) currentObject;
+                        DBSObject parentObject = ((DBNDatabaseItem) folder.getParentNode()).getObject();
+                        if (parentObject instanceof PostgreSchema) {
+                            defaultPrivOwner = (PostgreSchema) parentObject;
+                            PostgreDefaultPrivilege defaultPrivilege = new PostgreDefaultPrivilege(
+                                defaultPrivOwner,
+                                databaseObject.getName(),
+                                Collections.emptyList());
+                            Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
+                            if (DBSSequence.class.isAssignableFrom(childrenClass)) {
+                                kind = PostgrePrivilegeGrant.Kind.SEQUENCE;
+                            } else if (DBSProcedure.class.isAssignableFrom(childrenClass)) {
+                                kind = PostgrePrivilegeGrant.Kind.FUNCTION;
+                            } else {
+                                kind = PostgrePrivilegeGrant.Kind.TABLE;
+                            }
+                            defaultPrivilege.setUnderKind(kind);
+                            permission = defaultPrivilege;
                         }
-                        objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
                     } else {
-                        if (permissionsOwner instanceof PostgreSchema) {
-                            kind = PostgrePrivilegeGrant.Kind.SCHEMA;
-                        } else if (permissionsOwner instanceof PostgreSequence) {
-                            kind = PostgrePrivilegeGrant.Kind.SEQUENCE;
+                        PostgrePrivilegeOwner permissionsOwner = (PostgrePrivilegeOwner) currentObject;
+                        if (permissionsOwner instanceof PostgreProcedure) {
+                            if (((PostgreProcedure) permissionsOwner).getKind() == PostgreProcedureKind.p) {
+                                kind = PostgrePrivilegeGrant.Kind.PROCEDURE;
+                            } else {
+                                kind = PostgrePrivilegeGrant.Kind.FUNCTION;
+                            }
+                            objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
                         } else {
-                            kind = PostgrePrivilegeGrant.Kind.TABLE;
+                            if (permissionsOwner instanceof PostgreSchema) {
+                                kind = PostgrePrivilegeGrant.Kind.SCHEMA;
+                            } else if (permissionsOwner instanceof PostgreSequence) {
+                                kind = PostgrePrivilegeGrant.Kind.SEQUENCE;
+                            } else {
+                                kind = PostgrePrivilegeGrant.Kind.TABLE;
+                            }
+                            objectName = permissionsOwner.getName();
                         }
-                        objectName = permissionsOwner.getName();
+                        schemaName = permissionsOwner.getSchema().getName();
+                        permission = new PostgreRolePrivilege(
+                            databaseObject,
+                            kind,
+                            schemaName,
+                            objectName,
+                            Collections.emptyList());
                     }
-                    permission = new PostgreRolePrivilege(
-                        databaseObject,
-                        kind,
-                        permissionsOwner.getSchema().getName(),
-                        objectName,
-                        Collections.emptyList());
                 } else {
                     String currentUser = databaseObject.getDataSource().getContainer().getActualConnectionConfiguration().getUserName();
                     PostgrePrivilegeGrant privGrant = new PostgrePrivilegeGrant(
@@ -298,9 +337,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         currentObject.getName(),
                         Collections.singletonList(privGrant));
                 }
-                // Add to map
-                currentPermissions[i] = permission;
-                permissionMap.put(permission.getName(), permission);
+                if (permission != null) {
+                    // Add to map
+                    currentPermissions[i] = permission;
+                    permissionMap.put(permission.getName(), permission);
+                }
             } else if (privilegeType != null) {
                 // Check for privilege was already granted for this object
                 boolean hasPriv = permission.getPermission(privilegeType) != PostgrePrivilege.NONE;
@@ -308,11 +349,15 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     permissionMap.remove(permission.getName());
                 }
             }
+            if (permission == null) {
+                log.error("Can't set permission to the object " + databaseObject.getName());
+                return;
+            }
 
             // Add command
             addChangeCommand(
                 new PostgreCommandGrantPrivilege(
-                    databaseObject,
+                    defaultPrivOwner != null? defaultPrivOwner : databaseObject,
                     grant,
                     currentObject,
                     permission,
@@ -348,7 +393,19 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             permissionTable.removeAll();
 
             if (!CommonUtils.isEmpty(objects)) {
-                Class<?> objectType = objects.get(0).getClass();
+                DBSObject object = objects.get(0);
+                Class<?> objectType = null;
+                if (object instanceof DBNDatabaseFolder && getDatabaseObject() != null
+                    && getDatabaseObject().getDataSource().getServerType().supportsDefaultPrivileges()
+                ) {
+                    objectType = ((DBNDatabaseFolder) object).getChildrenClass();
+                    if (objectType != null && PostgreSchema.class.isAssignableFrom(objectType)) {
+                        hasBadObjects = true;
+                    }
+                }
+                if (objectType == null) {
+                    objectType = object.getClass();
+                }
                 for (PostgrePrivilegeType pt : getDatabaseObject().getDataSource().getSupportedPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(objectType)) {
                         continue;
@@ -365,6 +422,10 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         StringBuilder objectNames = new StringBuilder();
         if (!hasBadObjects) {
             for (DBSObject object : objects) {
+                if (object instanceof DBNDatabaseFolder) {
+                    objectNames.append(PostgreMessages.role_privileges_editor_default_privileges_label);
+                    break;
+                }
                 if (!(object instanceof PostgrePrivilegeOwner)) {
                     hasBadObjects = true;
                     break;

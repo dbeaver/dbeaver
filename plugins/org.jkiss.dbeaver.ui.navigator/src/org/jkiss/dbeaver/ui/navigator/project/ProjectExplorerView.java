@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     //static final Log log = Log.getLog(ProjectExplorerView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
-    private ViewerColumnController columnController;
+    private ViewerColumnController<?,?> columnController;
     private final NumberFormat sizeFormat = new DecimalFormat();
     
     private Composite treeContainer;
@@ -69,8 +69,9 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public DBNNode getRootNode() {
-        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        return projectNode != null ? projectNode : getModel().getRoot();
+        DBNModel model = getGlobalNavigatorModel();
+        DBNProject projectNode = model.getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        return projectNode != null ? projectNode : model.getRoot();
     }
 
     @Override
@@ -120,7 +121,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         final Color shadowColor = viewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
 
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
-        columnController = new ViewerColumnController("projectExplorer", viewer);
+        columnController = new ViewerColumnController<>("projectExplorer", viewer);
         columnController.setForceAutoSize(true);
         columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_name_text,
                 UINavigatorMessages.navigator_project_explorer_columns_name_description,
@@ -278,7 +279,18 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                         return "";
                     }
                 });
-        UIUtils.asyncExec(() -> columnController.createColumns(true));
+        
+        final var closure = new Object() {
+            public Runnable createColumnsWhenNotBusy;
+        };
+        closure.createColumnsWhenNotBusy = () -> {
+            if (viewer.isBusy()) {
+                UIUtils.asyncExec(closure.createColumnsWhenNotBusy);
+            } else {
+                columnController.createColumns(true);
+            }
+        };
+        UIUtils.asyncExec(closure.createColumnsWhenNotBusy);
     }
 
     @Override
@@ -322,7 +334,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     }
 
     private void updateTitle() {
-        setPartName("Project - " + getRootNode().getNodeName());
+        setPartName("Project - " + getRootNode().getNodeDisplayName());
     }
 
     public void configureView() {

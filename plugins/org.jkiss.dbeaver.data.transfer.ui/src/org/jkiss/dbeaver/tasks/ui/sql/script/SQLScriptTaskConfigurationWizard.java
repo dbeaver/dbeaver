@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
 
     public SQLScriptTaskConfigurationWizard(@NotNull DBTTask task) {
         super(task);
-        settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task.getProperties());
+        settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task);
     }
 
     @Override

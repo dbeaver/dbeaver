@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,13 @@ package org.jkiss.dbeaver.tasks.nativetool;
 
 import org.jkiss.code.NotNull;
 
-import java.io.File;
-
 public interface ExportSettingsExtension<INFO> {
     @NotNull
     Iterable<INFO> getExportObjects();
 
     @NotNull
-    File getOutputFile(@NotNull INFO info);
+    String getOutputFile(@NotNull INFO info);
 
     @NotNull
-    File getOutputFolder(@NotNull INFO info);
+    String getOutputFolder(@NotNull INFO info);
 }

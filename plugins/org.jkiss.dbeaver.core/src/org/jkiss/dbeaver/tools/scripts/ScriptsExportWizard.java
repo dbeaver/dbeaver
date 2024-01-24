@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -56,7 +56,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
 	@Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_scripts_export_wizard_window_title); //NON-NLS-1
-        setDefaultPageImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT));
+        setDefaultPageImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_SCRIPT));
         setNeedsProgressMonitor(true);
         mainPage = new ScriptsExportWizardPage(CoreMessages.dialog_scripts_export_wizard_page_name); //NON-NLS-1
     }

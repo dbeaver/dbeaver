@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class SQLiteViewManager extends GenericViewManager {
         if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
             actions.add(new SQLDatabasePersistAction(
                 "Drop view",
-                "DROP " + getDropViewType(command.getObject()) + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
+                "DROP " + getViewType(command.getObject()) + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
             ));
         }
         super.addObjectModifyActions(monitor, executionContext, actions, command, options);

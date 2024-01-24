@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -33,6 +34,8 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SSH tunnel
@@ -44,9 +47,15 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     private DBWHandlerConfiguration configuration;
     private SSHImplementation implementation;
+    private final List<Runnable> listeners = new ArrayList<>();
 
     public SSHImplementation getImplementation() {
         return implementation;
+    }
+
+    @Override
+    public void addCloseListener(Runnable listener) {
+        this.listeners.add(listener);
     }
 
     @Override
@@ -84,6 +93,10 @@ public class SSHTunnelImpl implements DBWTunnel {
             implementation.closeTunnel(monitor);
             // Do not nullify tunnel to keep saved tunnel port number (#7952)
         }
+        for (Runnable listener : this.listeners) {
+            listener.run();
+        }
+        this.listeners.clear();
     }
 
     @Override
@@ -95,12 +108,8 @@ public class SSHTunnelImpl implements DBWTunnel {
         return false;
     }
 
-    public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration) {
-        return getRequiredCredentials(configuration, null);
-    }
-
     @Override
-    public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration, @Nullable String prefix) {
+    public AuthCredentials getRequiredCredentials(@NotNull DBWHandlerConfiguration configuration, @Nullable String prefix) {
         String start = prefix;
         if (start == null) {
             start = "";

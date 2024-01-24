@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ public class GeometryViewerConstants {
     public static final String PREF_MIN_ZOOM_LEVEL = "gis.view.minZoomLevel";
     public static final String PREF_DEFAULT_SRID = "gis.view.defaultSRID";
     public static final String PREF_DEFAULT_LEAFLET_TILES = "gis.view.defaultLeafletTiles";
+    public static final String PREF_SHOW_LABELS = "gis.view.showLabels";
 
     public static final int DEFAULT_MAX_OBJECTS_RENDER = 10000;
 

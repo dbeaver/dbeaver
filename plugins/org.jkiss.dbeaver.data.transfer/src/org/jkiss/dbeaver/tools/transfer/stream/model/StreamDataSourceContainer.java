@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -40,14 +42,15 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -57,7 +60,9 @@ import java.util.List;
  */
 class StreamDataSourceContainer implements DBPDataSourceContainer {
 
-    private File inputFile;
+    private static final Log log = Log.getLog(StreamDataSourceContainer.class);
+
+    private Path inputFile;
     private String name;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
     private final DBVModel virtualModel;
@@ -70,7 +75,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public String getId() {
-        return inputFile == null ? name : inputFile.getName();
+        return inputFile == null ? name : inputFile.getFileName().toString();
     }
 
     @NotNull
@@ -291,6 +296,17 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
+    @Nullable
+    @Override
+    public String getProperty(@NotNull String name) {
+        return null;
+    }
+
+    @Override
+    public void setProperty(@NotNull String name, @Nullable String value) {
+
+    }
+
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
@@ -316,13 +332,25 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public Date getConnectTime() {
-        return inputFile == null ? new Date() : new Date(inputFile.lastModified());
+        if (inputFile != null) {
+            try {
+                return new Date(Files.getLastModifiedTime(inputFile).toMillis());
+            } catch (IOException e) {
+                log.debug(e);
+            }
+        }
+        return new Date();
     }
 
     @NotNull
     @Override
     public SQLDialectMetadata getScriptDialect() {
-        return SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
+        return DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect(BasicSQLDialect.ID);
+    }
+
+    @Override
+    public void resetPassword() {
+
     }
 
     @Override
@@ -363,7 +391,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public String getName() {
-        return inputFile == null ? name : inputFile.getName();
+        return inputFile == null ? name : inputFile.getFileName().toString();
     }
 
     @Nullable
@@ -442,5 +470,21 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public String getRequiredExternalAuth() {
         return null;
+    }
+
+    @Nullable
+    @Override
+    public DBPDriverSubstitutionDescriptor getDriverSubstitution() {
+        return null;
+    }
+
+    @Override
+    public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
+        // do nothing
+    }
+
+    @Override
+    public void dispose() {
+        virtualModel.dispose();
     }
 }

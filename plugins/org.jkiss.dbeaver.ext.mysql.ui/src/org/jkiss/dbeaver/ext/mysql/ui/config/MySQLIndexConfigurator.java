@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,7 +37,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -44,9 +46,9 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableI
 
 
     @Override
-    public MySQLTableIndex configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableIndex index, Map<String, Object> options) {
+    public MySQLTableIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull MySQLTableIndex index, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
-            MyEditIndexPage editPage = new MyEditIndexPage(index);
+            MySQLEditIndexPage editPage = new MySQLEditIndexPage(index);
             if (!editPage.edit()) {
                 return null;
             }
@@ -58,7 +60,7 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableI
                 if (colIndex == 1) {
                     idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
                 }
-                Integer length = (Integer) editPage.getAttributeProperty(tableColumn, MyEditIndexPage.PROP_LENGTH);
+                Integer length = (Integer) editPage.getAttributeProperty(tableColumn, MySQLEditIndexPage.PROP_LENGTH);
                 index.addColumn(
                     new MySQLTableIndexColumn(
                         index,
@@ -79,27 +81,22 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableI
         });
     }
 
-    private static class MyEditIndexPage extends EditIndexPage {
+    private static class MySQLEditIndexPage extends EditIndexPage {
 
         public static final String PROP_LENGTH = "length";
 
         private int lengthColumnIndex;
 
-        public MyEditIndexPage(MySQLTableIndex index) {
-            super(MySQLUIMessages.edit_index_manager_title, index,
-                Arrays.asList(MySQLConstants.INDEX_TYPE_BTREE,
-                    MySQLConstants.INDEX_TYPE_FULLTEXT,
-                    MySQLConstants.INDEX_TYPE_HASH,
-                    MySQLConstants.INDEX_TYPE_RTREE));
-
+        MySQLEditIndexPage(MySQLTableIndex index) {
+            super(MySQLUIMessages.edit_index_manager_title, index, index.getDataSource().supportedIndexTypes());
         }
 
         @Override
         protected void createAttributeColumns(Table columnsTable) {
             super.createAttributeColumns(columnsTable);
 
-            TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, "Length");
-            colDesc.setToolTipText("Index length (for varchar columns)");
+            TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, MySQLMessages.table_column_length);
+            colDesc.setToolTipText(MySQLMessages.table_column_length_tooltip);
         }
 
         @Override

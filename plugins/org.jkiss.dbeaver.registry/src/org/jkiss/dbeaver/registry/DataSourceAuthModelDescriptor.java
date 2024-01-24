@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private DBPImage icon;
     private final boolean defaultModel;
     private final boolean isDesktop;
+    private final boolean isCloud;
     private final boolean requiresLocalConfiguration;
     private final Map<String, String[]> replaces = new HashMap<>();
     private boolean hasCondReplaces = false;
@@ -69,6 +70,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         }
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
         this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
+        this.isCloud = CommonUtils.toBoolean(config.getAttribute("cloud"));
         this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("requiresLocalConfiguration"));
         this.requiredAuthProvider = CommonUtils.toString(config.getAttribute("requiredAuthProvider"));
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
@@ -116,6 +118,11 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Override
     public boolean isDesktopModel() {
         return isDesktop;
+    }
+
+    @Override
+    public boolean isCloudModel() {
+        return isCloud;
     }
 
     @Override

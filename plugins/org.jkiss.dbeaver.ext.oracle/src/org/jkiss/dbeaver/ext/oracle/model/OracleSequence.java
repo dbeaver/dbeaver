@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,8 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, D
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT_BY");
         this.cacheSize = JDBCUtils.safeGetLong(dbResult, "CACHE_SIZE");
         this.lastValue = JDBCUtils.safeGetBigDecimal(dbResult, "LAST_NUMBER");
-        this.flagCycle = JDBCUtils.safeGetBoolean(dbResult, "CYCLE_FLAG", "Y");
-        this.flagOrder = JDBCUtils.safeGetBoolean(dbResult, "ORDER_FLAG", "Y");
+        this.flagCycle = JDBCUtils.safeGetBoolean(dbResult, "CYCLE_FLAG", OracleConstants.RESULT_YES_VALUE);
+        this.flagOrder = JDBCUtils.safeGetBoolean(dbResult, "ORDER_FLAG", OracleConstants.RESULT_YES_VALUE);
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("POINTER", new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL, 38, 127, -84));
         PREDEFINED_TYPES.put("REF", new TypeDesc(DBPDataKind.REFERENCE, Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 38, 127, -84));
+        //PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 38, 127, -84)); can not be created as a data type
         PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, 38, 127, -84));
         PREDEFINED_TYPES.put("TABLE", new TypeDesc(DBPDataKind.OBJECT, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
@@ -113,7 +113,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE, 0, 0, 0));
-        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 38, 127, -84));
+        //PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 38, 127, -84)); can not be created as a data type
         PREDEFINED_TYPES.put("UROWID", new TypeDesc(DBPDataKind.ROWID, Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));

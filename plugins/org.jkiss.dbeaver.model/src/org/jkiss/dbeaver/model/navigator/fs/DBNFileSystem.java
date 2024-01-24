@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,23 @@
 package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -87,17 +91,23 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     protected void dispose(boolean reflect) {
         children = null;
         this.fileSystem = null;
+
         super.dispose(reflect);
     }
 
     @Override
     public String getNodeType() {
-        return "FileSystem";
+        return NodePathType.dbvfs.name() + ".fileSystem";
+    }
+
+    @Override
+    public String getNodeTypeLabel() {
+        return ModelMessages.fs_file_system;
     }
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return fileSystem.getFileSystemDisplayName();
     }
 
@@ -109,7 +119,9 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER_LINK;
+        DBFFileSystemDescriptor provider = DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProvider(
+            fileSystem.getProviderId());
+        return provider == null ? DBIcon.TREE_FOLDER_LINK : provider.getIcon();
     }
 
     @Override
@@ -120,7 +132,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     @Override
     public DBNFileSystemRoot[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
-            this.children = readChildNodes(monitor);
+            this.children = readChildNodes(monitor, null);
         }
         return children;
     }
@@ -134,10 +146,37 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return null;
     }
 
-    protected DBNFileSystemRoot[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+    protected DBNFileSystemRoot[] readChildNodes(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBNFileSystemRoot[] mergeWith
+    ) throws DBException {
         List<DBNFileSystemRoot> result = new ArrayList<>();
+        if (mergeWith != null) {
+            fileSystem.refreshRoots(monitor);
+        }
         for (DBFVirtualFileSystemRoot rootPath : fileSystem.getRootFolders(monitor)) {
-            result.add(new DBNFileSystemRoot(this, rootPath));
+            DBNFileSystemRoot newChild = null;
+            if (mergeWith != null) {
+                for (DBNFileSystemRoot oldRoot : mergeWith) {
+                    if (oldRoot.getName().equals(rootPath.getName())) {
+                        newChild = oldRoot;
+                        break;
+                    }
+                }
+            }
+            if (newChild == null) {
+                newChild = new DBNFileSystemRoot(this, rootPath);
+            }
+            result.add(newChild);
+        }
+
+        if (mergeWith != null) {
+            for (DBNFileSystemRoot oldRoot : mergeWith) {
+                if (!result.contains(oldRoot)) {
+                    oldRoot.dispose(false);
+                    break;
+                }
+            }
         }
         if (result.isEmpty()) {
             return new DBNFileSystemRoot[0];
@@ -155,13 +194,23 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
-        children = null;
+        if (children != null) {
+            children = readChildNodes(monitor, children);
+        }
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         return this;
     }
 
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return getParentNode().getNodeItemPath() + "/" + getName();
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return fileSystem.getId();
     }
 
     @Override
@@ -171,7 +220,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     protected void sortChildren(DBNNode[] list) {
         Arrays.sort(list, (o1, o2) -> {
-            return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
+            return o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName());
         });
     }
 

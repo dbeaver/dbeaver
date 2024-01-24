@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
@@ -32,7 +33,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
     }
 
     public boolean isSecure() {
-        return true;
+        return false; // see dbeaver/pro#1861
     }
 
     protected DBPDataSourceContainer getDataSourceContainer() {
@@ -41,6 +42,11 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
 
     protected DBPConnectionConfiguration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    protected boolean isResolveSystemVariables() {
+        return DBWorkbench.getPlatform().getApplication().isEnvironmentVariablesAccessible();
     }
 
     @Override
@@ -62,6 +68,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
                     return configuration.getConnectionType().getId();
             }
+            // isSecure() is always false here due to dbeaver/pro#1861
             if (DBPConnectionConfiguration.VARIABLE_PASSWORD.equals(name) && isSecure()) {
                 return configuration.getUserPassword();
             }

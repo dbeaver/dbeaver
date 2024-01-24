@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,11 @@ package org.jkiss.utils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * BeanUtils
@@ -428,5 +429,60 @@ public class BeanUtils {
             field.setAccessible(true);
         }
         return (T) field.get(object);
+    }
+
+    @Nullable
+    public static Object handleObjectMethod(@NotNull Object proxy, @NotNull Method method, Object[] args) {
+        switch (method.getName()) {
+            case "toString":
+                return "Proxy";
+            case "hashCode":
+                return System.identityHashCode(proxy);
+            case "equals":
+                return proxy == args[0];
+            default:
+                return null;
+        }
+    }
+
+    @NotNull
+    public static <T> List<T> deepCopy(@NotNull List<T> src) {
+        final List<T> dst = tryInstantiateOrDefault(src.getClass(), ArrayList::new);
+        for (T element : src) {
+            dst.add(deepCopy(element));
+        }
+        return dst;
+    }
+
+    @NotNull
+    public static <K, V> Map<K, V> deepCopy(@NotNull Map<K, V> src) {
+        final Map<K, V> dst = tryInstantiateOrDefault(src.getClass(), LinkedHashMap::new);
+        for (Map.Entry<K, V> entry : src.entrySet()) {
+            dst.put(entry.getKey(), deepCopy(entry.getValue()));
+        }
+        return dst;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T deepCopy(@Nullable T object) {
+        if (object == null) {
+            return null;
+        } else if (object instanceof Map) {
+            return (T) deepCopy((Map<?, ?>) object);
+        } else if (object instanceof List) {
+            return (T) deepCopy((List<?>) object);
+        } else {
+            return object;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @NotNull
+    private static <T> T tryInstantiateOrDefault(@NotNull Class<?> cls, @NotNull Supplier<T> supplier) {
+        try {
+            return (T) MethodHandles.lookup().findConstructor(cls, MethodType.methodType(void.class)).invoke();
+        } catch (Throwable ignored) {
+            return supplier.get();
+        }
     }
 }

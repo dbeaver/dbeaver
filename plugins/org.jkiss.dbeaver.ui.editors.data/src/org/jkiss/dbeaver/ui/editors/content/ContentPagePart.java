@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -35,7 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  * <p>
  * This can cause severe performance issues when opening several heavyweight parts at once (text editors, etc.).
  */
-public class ContentPagePart extends EditorPart implements IPropertyListener, IActiveWorkbenchPart, IRefreshablePart {
+public class ContentPagePart extends EditorPart implements IPropertyListener, IActiveWorkbenchPart, IRefreshablePart, IAdaptable {
     private final IEditorPart editorPart;
 
     private Composite composite;
@@ -148,5 +149,10 @@ public class ContentPagePart extends EditorPart implements IPropertyListener, IA
         editorPart.init((IEditorSite) getSite(), getEditorInput());
         editorPart.createPartControl(composite);
         composite.layout(true, true);
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        return this.editorPart.getAdapter(adapter);
     }
 }

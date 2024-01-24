@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ui.extra.feature"
       label="%featureName"
-      version="22.3.3.qualifier"
+      version="23.3.3.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -13,74 +13,14 @@
       %copyright
    </copyright>
 
-   <plugin
-         id="org.jkiss.dbeaver.ext.ui.colortheme"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.ui.locks"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.tasks.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.tasks.ui.view"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.tasks.native.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.tasks.sql.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.import_config"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.format.sqlworkbenchj"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.cmp.simple.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ui.dashboard"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.ext.ui.locks" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.tasks.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.tasks.ui.view" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.tasks.native.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.tasks.sql.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.import_config" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.cmp.simple.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.dashboard" version="0.0.0" />
 
 </feature>

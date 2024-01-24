@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,6 @@ import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -94,7 +92,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     /**
      * Action which selects datetime mode
      */
-    private static class DateEditorMode extends Action {
+    private class DateEditorMode extends Action {
         private final DateTimeInlineEditor parent;
         CustomTimeEditor editor;
 
@@ -115,26 +113,26 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             if (parent.isDirty()) {
                 try {
                     Object value = parent.extractEditorValue();
-                    if (value instanceof Date || value == null) {
-                        editor.setValue((Date) value);
-                    }
+                    editor.setValue(value);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title, ResultSetMessages.dialog_value_view_dialog_error_updating_message, e);
                     return;
                 }
             }
             try {
-                Object value = parent.extractEditorValue();
-                if (!(value instanceof Date) && value != null) {
-                    DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, value));
-                    ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
-                    this.setChecked(false);
-                    parent.textMode.setChecked(true);
-                    return;
+                if (!parent.isDirty()) {
+                    editor.adaptToDate(valueController.getValue());
                 }
                 editor.setToDateComposite();
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title, ResultSetMessages.dialog_value_view_dialog_error_updating_message, e);
+            } catch (DBCException exception) {
+                DBWorkbench.getPlatformUI()
+                    .showWarningMessageBox(
+                        ResultSetMessages.dialog_value_view_error_parsing_date_title,
+                        ResultSetMessages.dialog_value_view_error_parsing_date_message
+                    );
+                ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
+                this.setChecked(false);
+                parent.textMode.setChecked(true);
                 return;
             }
             ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, true);
@@ -192,7 +190,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     @Override
-    public Object extractEditorValue() throws DBException {
+    public Object extractEditorValue() throws DBCException {
         try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
             if (!isCalendarMode()) {
                 final String strValue = timeEditor.getValueAsString();
@@ -216,17 +214,15 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     public void primeEditorValue(@Nullable Object value) {
         timeEditor.setTextValue(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT));
-        if (value == null) {
-            timeEditor.setValue(null);
-        } else if (value instanceof Time) {
-            timeEditor.setValue((Time) value);
-        } else if (value instanceof Timestamp) {
-            timeEditor.setValue((Timestamp) value);
-        } else if (value instanceof Date) {
-            timeEditor.setValue((Date) value);
-        } else {
-            if (isCalendarMode()){
-                DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, ResultSetMessages.dialog_value_view_error_parsing_date_message);
+        try {
+            timeEditor.setValue(value);
+        } catch (DBCException exception) {
+            if (isCalendarMode()) {
+                DBWorkbench.getPlatformUI()
+                    .showWarningMessageBox(
+                        ResultSetMessages.dialog_value_view_error_parsing_date_title,
+                        NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, exception.getMessage())
+                    );
                 textMode.run();
             }
         }

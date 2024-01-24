@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMObject;
-import org.jkiss.dbeaver.model.qm.meta.QMMStatementInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMetaObjectType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -31,29 +28,27 @@ import java.util.List;
  */
 public enum QMObjectType {
 
-    session("Session", QMMConnectionInfo.class),
-    txn("Transactions", QMMTransactionInfo.class),
-    query("Queries", QMMStatementInfo.class);
+    session("Session", List.of(QMMetaObjectType.CONNECTION_INFO)),
+    txn("Transactions", List.of(QMMetaObjectType.TRANSACTION_INFO, QMMetaObjectType.TRANSACTION_SAVEPOINT_INFO)),
+    query("Queries", List.of());
 
     private final String title;
-    private final Class<? extends QMMObject> type;
+    private final List<QMMetaObjectType> types;
 
-    QMObjectType(String title, Class<? extends QMMObject> type) {
+    QMObjectType(String title, List<QMMetaObjectType> types) {
         this.title = title;
-        this.type = type;
+        this.types = types;
     }
 
-    public Class<? extends QMMObject> getType()
-    {
-        return type;
+    public List<QMMetaObjectType> getTypes() {
+        return types;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public static String toString(Collection<QMObjectType> objectTypes)
-    {
+    public static String toString(Collection<QMObjectType> objectTypes) {
         List<String> names = new ArrayList<>(objectTypes.size());
         for (QMObjectType type : objectTypes) {
             names.add(type.name());
@@ -61,8 +56,7 @@ public enum QMObjectType {
         return CommonUtils.makeString(names, ',');
     }
 
-    public static Collection<QMObjectType> fromString(String str)
-    {
+    public static Collection<QMObjectType> fromString(String str) {
         List<QMObjectType> objectTypes = new ArrayList<>();
         for (String otName : CommonUtils.splitString(str, ',')) {
             try {

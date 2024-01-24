@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -46,7 +47,7 @@ public class GreenplumUtils {
     static int[] readDistributedColumns(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableReal table) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Greenplum table distributed columns")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                if (((GreenplumDataSource) table.getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
+                if (((GreenplumDataSource) table.getDataSource()).isGreenplumVersionAtLeast(6, 0)) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + table.getObjectId())) {
                         if (dbResult.next()) {
                             return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
@@ -115,8 +116,10 @@ public class GreenplumUtils {
     private static String getPartitionData(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableReal table) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Greenplum table partition data")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('" + table.getSchema().getName() + "." + table.getName() + "'::regclass, true, false);")) {
-                    if (dbResult.next()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('" +
+                    table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'::regclass, true, false);")
+                ) {
+                    if (dbResult != null && dbResult.next()) {
                         String result = dbResult.getString(1);
                         if (result != null && result.startsWith("PARTITION ")) {
                             return result;
@@ -132,7 +135,14 @@ public class GreenplumUtils {
         }
     }
 
-    static void addObjectModifiersToDDL(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder ddl, @NotNull PostgreTableReal table, List<PostgreTableColumn> distributionColumns, boolean supportsReplicatedDistribution) throws DBCException {
+    static void addObjectModifiersToDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder ddl,
+        @NotNull PostgreTableReal table,
+        List<PostgreTableColumn> distributionColumns,
+        boolean supportsReplicatedDistribution,
+        boolean addPartitionInfo
+    ) throws DBCException {
         ddl.append("\nDISTRIBUTED ");
         if (supportsReplicatedDistribution && table.isPersisted() && GreenplumUtils.isDistributedByReplicated(monitor, table)) {
             ddl.append("REPLICATED");
@@ -147,10 +157,12 @@ public class GreenplumUtils {
             ddl.append("RANDOMLY");
         }
 
-        String partitionData = table.isPersisted() ? GreenplumUtils.getPartitionData(monitor, table) : null;
-        if (partitionData != null) {
-            ddl.append("\n");
-            ddl.append(partitionData);
+        if (addPartitionInfo) {
+            String partitionData = table.isPersisted() ? GreenplumUtils.getPartitionData(monitor, table) : null;
+            if (partitionData != null) {
+                ddl.append("\n");
+                ddl.append(partitionData);
+            }
         }
     }
 }

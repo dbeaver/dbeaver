@@ -6,7 +6,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
                 id="org.jkiss.dbeaver.ext.mssql.dataSourceWizardView"
-                dataSource="sqlserver,mssql"
+                dataSource="sqlserver,mssql,sybase"
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 label="%sqlserver.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
@@ -16,7 +16,7 @@
                 class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
                 icon="icons/database.png"
                 id="org.jkiss.dbeaver.ext.mssql.dataSourceEditorView"
-                dataSource="sqlserver,mssql"
+                dataSource="sqlserver,mssql,sybase"
                 label="%sqlserver.dialog.connection.header"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
         </view>
@@ -120,31 +120,28 @@
                     label="Table Maintenance"
                     icon="#tools"/>
             <tool
-                    class="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
                     description="Rebuild table indexes"
                     id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
                     group="org.jkiss.dbeaver.ext.mssql.tools.maintenance"
                     label="Rebuild indexes"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+                <task id="mssqlToolTableRebuild"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolTriggerDisable"
                     description="Disable trigger(s)"
                     id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolTriggerDisable"
                     group="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance"
                     label="Disable trigger(s)"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.canDisable()"/>
+                <task id="mssqlToolTriggerDisable"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolTriggerEnable"
                     description="Enable trigger"
                     id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolTriggerEnable"
                     group="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance"
                     label="Enable trigger"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.canEnable()"/>
+                <task id="mssqlToolTriggerEnable"/>
             </tool>
         </tools>
     </extension>

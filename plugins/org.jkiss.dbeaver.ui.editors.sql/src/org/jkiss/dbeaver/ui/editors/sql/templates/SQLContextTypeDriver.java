@@ -28,5 +28,9 @@ public class SQLContextTypeDriver extends SQLContextTypeAbstract {
         return SQLContextTypeBase.ID_SQL + "_" + driver.getProviderId() + "_" +
             (driver.isCustom() ? driver.getDriverClassName() : driver.getId());
     }
+    
+    public static String getTypeId(String providerId, String driverId) {
+        return SQLContextTypeBase.ID_SQL + "_" + providerId + "_" +driverId;
+    }
 
 }

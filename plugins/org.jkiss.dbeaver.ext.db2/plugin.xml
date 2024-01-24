@@ -3,7 +3,7 @@
 <!--
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2014 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,10 @@
                                        <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ColumnMask" label="%tree.column.masks.node.name"
+                                        icon="#triggers" description="%tree.column.masks.node.name">
+                                    <items label="%tree.column.mask.node.name" path="columnMask" property="columnMasks" icon="#trigger"/>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.db2.model.DB2View" label="%tree.views.node.name" icon="#folder_view" description="Views">
@@ -143,8 +147,9 @@
                               </folder>
                            </items>
                        </folder>
-                       <folder label="%tree.appobjects.node.name" icon="#appobjects" description="Application Objects">
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icons/udf.gif" description="Functions">
+                        <folder label="%tree.appobjects.node.name" icon="#appobjects" id="applicationObjects"
+                                description="Application Objects">
+                          <folder id="functions" type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icons/udf.gif" description="Functions">
                              <items label="%tree.function.node.name" path="UDF" property="UDFs" icon="#procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
                              </items>
@@ -180,7 +185,7 @@
                                 </folder>
                              </items>
                           </folder>
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                          <folder id="procedures" type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
                              <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
                              </items>
@@ -191,7 +196,7 @@
                        </folder>
                     </items>
                 </folder>
-                <folder label="%tree.federation.node.name" icon="#federation" description="Federation">
+                <folder label="%tree.federation.node.name" icon="#federation" id="federation" description="Federation">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#folder_wrapper" description="Wrappers">
                         <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="icons/wrapper.gif" >
                            <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2WrapperOption" label="%tree.options.node.name" icon="#options" description="Wrapper Options">
@@ -215,7 +220,8 @@
                     </folder>
 -->                    
                 </folder>
-                <folder label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
+                <folder label="%tree.global_metadata.node.name" icon="#logical" id="globalMetadataObjects"
+                        description="Global metadata objects">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="Types">
                         <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
                     </folder>
@@ -234,7 +240,7 @@
                         <items label="%tree.xmlstring.node.name" path="xmlstring" property="xmlStrings" icon="#parameter" navigable="false" />
                     </folder>
                 </folder>
-                <folder label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                <folder label="%tree.storage.node.name" icon="#storage" id="storageManagement" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">
                         <items label="%tree.bufferpool.node.name" path="bufferpool" property="bufferpools" icon="icons/bufferpool.gif">
                         </items>
@@ -258,7 +264,8 @@
                         <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="icons/storage_group.gif"/>
                     </folder>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" id="maintenanceSettings"
+                        description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
@@ -283,65 +290,154 @@
                 -->
                 <folder label="%tree.security.node.name"
                         icon="#security"
+                        id="securityManagement"
                         description="Security management" 
                         visibleIf="connected &amp;&amp; dataSource.atLeastV9_5">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
                         <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif">
-                           <items label="%tree.users.node.name" path="role" property="roleDeps" icon="#user" navigable="false"/>
-                           <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
-                           <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
-                           <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
-                           <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
-                           <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
-                           <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
-                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_7"/>
-                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
-                           <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
-                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
-                           <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
-                           <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
-                           <items label="%tree.variablesauths.node.name" path="variableauth" property="variablesAuths" icon="#variablesauth" navigable="false" />
-                           <items label="%tree.xmlschemasauths.node.name" path="xmlschemaauth" property="xMLSchemasAuths" icon="#xmlschemasauth" navigable="false" />
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2RoleDep" label="%tree.users.node.name">
+                                <items label="%tree.users.node.name" path="role" property="roleDeps" icon="#user" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthTable" label="%tree.tablesauths.node.name">
+                                <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthView" label="%tree.viewsauths.node.name">
+                                <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthMaterializedQueryTable" label="%tree.mqtsauths.node.name">
+                                <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthColumn" label="%tree.columnsauths.node.name">
+                                <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIndex" label="%tree.indexesauths.node.name">
+                                <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthUDF" label="%tree.functionsauths.node.name">
+                                <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthModule" label="%tree.modulesauths.node.name">
+                                <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_7"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthPackage" label="%tree.packagesauths.node.name">
+                                <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthProcedure" label="%tree.proceduresauths.node.name">
+                                <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthSchema" label="%tree.schemasauths.node.name">
+                                <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthSequence" label="%tree.sequencesauths.node.name">
+                                <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthTablespace" label="%tree.tablespacesauths.node.name">
+                                <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthVariable" label="%tree.variablesauths.node.name">
+                                <items label="%tree.variablesauths.node.name" path="variableauth" property="variablesAuths" icon="#variablesauth" navigable="false" />
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthXMLSchema" label="%tree.xmlschemasauths.node.name">
+                                <items label="%tree.xmlschemasauths.node.name" path="xmlschemaauth" property="xMLSchemasAuths" icon="#xmlschemasauth" navigable="false" />
+                            </folder>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Group" label="%tree.groups.node.name" icon="icons/folder_group.gif" description="Groups">
                         <items label="%tree.group.node.name" path="group" property="groups" icon="icons/group.gif">
-                           <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_5"/>
-                           <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
-                           <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
-                           <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
-                           <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
-                           <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
-                           <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
-                           <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
-                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_7"/>
-                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
-                           <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
-                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
-                           <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
-                           <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
-                           <items label="%tree.variablesauths.node.name" path="variableauth" property="variablesAuths" icon="#variablesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_5"/>
-                           <items label="%tree.xmlschemasauths.node.name" path="xmlschemaauth" property="xMLSchemasAuths" icon="#xmlschemasauth" navigable="false" />
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2RoleDep" label="%tree.users.node.name">
+                                <items label="%tree.users.node.name" path="role" property="roleDeps" icon="#user" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthTable" label="%tree.tablesauths.node.name">
+                                <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthView" label="%tree.viewsauths.node.name">
+                                <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthMaterializedQueryTable" label="%tree.mqtsauths.node.name">
+                                <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthColumn" label="%tree.columnsauths.node.name">
+                                <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIndex" label="%tree.indexesauths.node.name">
+                                <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthUDF" label="%tree.functionsauths.node.name">
+                                <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthModule" label="%tree.modulesauths.node.name">
+                                <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_7"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthPackage" label="%tree.packagesauths.node.name">
+                                <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthProcedure" label="%tree.proceduresauths.node.name">
+                                <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthSchema" label="%tree.schemasauths.node.name">
+                                <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthSequence" label="%tree.sequencesauths.node.name">
+                                <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthTablespace" label="%tree.tablespacesauths.node.name">
+                                <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthVariable" label="%tree.variablesauths.node.name">
+                                <items label="%tree.variablesauths.node.name" path="variableauth" property="variablesAuths" icon="#variablesauth" navigable="false" />
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthXMLSchema" label="%tree.xmlschemasauths.node.name">
+                                <items label="%tree.xmlschemasauths.node.name" path="xmlschemaauth" property="xMLSchemasAuths" icon="#xmlschemasauth" navigable="false" />
+                            </folder>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2User" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="user" property="users" icon="#user">
-                           <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_5"/>
-                           <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
-                           <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
-                           <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
-                           <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
-                           <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
-                           <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
-                           <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
-                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_7"/>
-                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
-                           <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
-                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
-                           <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
-                           <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
-                           <items label="%tree.variablesauths.node.name" path="variableauth" property="variablesAuths" icon="#variablesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_5"/>
-                           <items label="%tree.xmlschemasauths.node.name" path="xmlschemaauth" property="xMLSchemasAuths" icon="#xmlschemasauth" navigable="false" />
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2RoleDep" label="%tree.users.node.name">
+                                <items label="%tree.users.node.name" path="role" property="roleDeps" icon="#user" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthTable" label="%tree.tablesauths.node.name">
+                                <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthView" label="%tree.viewsauths.node.name">
+                                <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthMaterializedQueryTable" label="%tree.mqtsauths.node.name">
+                                <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthColumn" label="%tree.columnsauths.node.name">
+                                <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIndex" label="%tree.indexesauths.node.name">
+                                <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthUDF" label="%tree.functionsauths.node.name">
+                                <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthModule" label="%tree.modulesauths.node.name">
+                                <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="connected &amp;&amp; dataSource.atLeastV9_7"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthPackage" label="%tree.packagesauths.node.name">
+                                <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthProcedure" label="%tree.proceduresauths.node.name">
+                                <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthSchema" label="%tree.schemasauths.node.name">
+                                <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthSequence" label="%tree.sequencesauths.node.name">
+                                <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthTablespace" label="%tree.tablespacesauths.node.name">
+                                <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthVariable" label="%tree.variablesauths.node.name">
+                                <items label="%tree.variablesauths.node.name" path="variableauth" property="variablesAuths" icon="#variablesauth" navigable="false" />
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2AuthXMLSchema" label="%tree.xmlschemasauths.node.name">
+                                <items label="%tree.xmlschemasauths.node.name" path="xmlschemaauth" property="xMLSchemasAuths" icon="#xmlschemasauth" navigable="false" />
+                            </folder>
                         </items>
                     </folder> 
                 </folder>
@@ -354,6 +450,7 @@
                     category="Db2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    supportedConfigurationTypes="MANUAL,URL"
                     useURL="false"
                     icon="icons/db2_icon.png"
                     iconBig="icons/db2_icon_big.png"
@@ -372,7 +469,7 @@
                     
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
 
-                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.7.0]" bundle="!drivers.db2"/>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.9.0]" bundle="!drivers.db2"/>
 
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>

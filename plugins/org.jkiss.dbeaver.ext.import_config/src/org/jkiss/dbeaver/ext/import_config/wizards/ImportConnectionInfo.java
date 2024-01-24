@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,20 @@ public class ImportConnectionInfo {
     private Map<String, String> properties = new HashMap<>();
     private Map<String, String> providerProperties = new HashMap<>();
     private boolean checked = false;
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("alias:").append(alias);
+        if (url != null) {
+            sb.append(" url:").append(url);
+        } else {
+            sb.append(" host:").append(host);
+            sb.append(" port:").append(port);
+            sb.append(" database:").append(database);
+        }
+        return sb.toString();
+    }
 
     public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, String port, String database, String user, String password)
     {
@@ -143,7 +157,7 @@ public class ImportConnectionInfo {
 
     public void setProviderProperty(String name, String value)
     {
-        properties.put(name, value);
+        providerProperties.put(name, value);
     }
 
     public void setHost(String host)

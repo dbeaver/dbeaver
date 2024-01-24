@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,8 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
         externalTimeout = UIUtils.createLabelSpinner(settingsGroup,
             SQLEditorMessages.pref_page_sql_format_label_external_exec_timeout,
             SQLEditorMessages.pref_page_sql_format_label_external_exec_timeout_tip,
-            100, 100, 10000);
+            100, 100, Integer.MAX_VALUE);
+        externalTimeout.setIncrement(10);
 
         return parent;
     }

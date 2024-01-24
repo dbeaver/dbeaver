@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -571,5 +571,32 @@ public class CommonUtilsTest {
     Assert.assertEquals(Arrays.asList("aaa", "abb"), groups.get('a'));
     Assert.assertEquals(Arrays.asList("bbb", "bab"), groups.get('b'));
     Assert.assertEquals(Arrays.asList("ccc"), groups.get('c'));
-  }
+    }
+
+    @Test
+    public void testNormalizeResourcePath() {
+        var emptyString = "";
+        var normalizedPath = "place";
+        var normalizedTwoLevelPath = "some/place";
+        var pathWithBackslashSuffix = "/some/place";
+        var pathWithMultipleBackslashSuffix = "//some/place";
+        var pathWithWrongBackslash = "some\\place";
+        var mixedCasesPath = "//some\\place";
+
+        Assert.assertEquals(emptyString, CommonUtils.normalizeResourcePath(emptyString));
+        Assert.assertEquals(normalizedPath, CommonUtils.normalizeResourcePath(normalizedPath));
+        Assert.assertEquals(normalizedTwoLevelPath, CommonUtils.normalizeResourcePath(normalizedTwoLevelPath));
+        Assert.assertEquals(normalizedTwoLevelPath, CommonUtils.normalizeResourcePath(pathWithBackslashSuffix));
+        Assert.assertEquals(normalizedTwoLevelPath, CommonUtils.normalizeResourcePath(pathWithMultipleBackslashSuffix));
+        Assert.assertEquals(normalizedTwoLevelPath, CommonUtils.normalizeResourcePath(pathWithWrongBackslash));
+        Assert.assertEquals(normalizedTwoLevelPath, CommonUtils.normalizeResourcePath(mixedCasesPath));
+    }
+
+    @Test
+    public void testReplaceLast() {
+        Assert.assertEquals(CommonUtils.replaceLast("foobarfoobar", "foo", "bar"), "foobarbarbar");
+        Assert.assertEquals(CommonUtils.replaceLast("foobarbarbar", "foo", "bar"), "barbarbarbar");
+        Assert.assertEquals(CommonUtils.replaceLast("foo", "bar", "foo"), "foo");
+        Assert.assertEquals(CommonUtils.replaceLast("", "bar", "foo"), "");
+    }
 }

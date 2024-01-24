@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,15 +153,18 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         if (activated) {
             DBSEntity dbObject = getDatabaseObject();
             if (dbObject != null) {
-                DBUtils.getObjectRegistry(dbObject).removeDataSourceListener(this);
+                var registry = DBUtils.getObjectRegistry(dbObject);
+                if (registry != null) {
+                    registry.removeDataSourceListener(this);
+                }
             }
         }
         super.dispose();
     }
 
     private void createEditorUI() {
-        Composite composite = UIUtils.createComposite(parent, 1);
-        ((GridLayout)composite.getLayout()).makeColumnsEqualWidth = true;
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(1, true));
 
         Composite keysComposite = UIUtils.createComposite(composite, 2);
         ((GridLayout)keysComposite.getLayout()).makeColumnsEqualWidth = true;
@@ -179,7 +182,10 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         DBSEntity dbObject = getDatabaseObject();
         if (dbObject != null) {
-            DBUtils.getObjectRegistry(dbObject).addDataSourceListener(this);
+            var registry = DBUtils.getObjectRegistry(dbObject);
+            if (registry != null) {
+                registry.addDataSourceListener(this);
+            }
         }
     }
 
@@ -195,8 +201,9 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createColumnsPage(Composite parent) {
-        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_columns_group_virtual, 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Composite group = UIUtils.createComposite(parent, 1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
+        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_columns_group_virtual);
 
         columnsPage = new EditVirtualColumnsPage(null, vEntity);
         columnsPage.createControl(group);
@@ -207,7 +214,9 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         if (uniqueConstraint == null) {
             return;
         }
-        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys, 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Composite group = UIUtils.createComposite(parent, 1);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys);
 
         ukTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         ukTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -305,7 +314,9 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createForeignKeysPage(Composite parent) {
-        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key, 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Composite group = UIUtils.createComposite(parent, 1);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key);
 
         fkTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         fkTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -357,7 +368,9 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createReferencesPage(Composite parent) {
-        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_control_group_references, 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Composite group = UIUtils.createComposite(parent, 1);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_control_group_references);
 
         refTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         refTable.setLayoutData(new GridData(GridData.FILL_BOTH));

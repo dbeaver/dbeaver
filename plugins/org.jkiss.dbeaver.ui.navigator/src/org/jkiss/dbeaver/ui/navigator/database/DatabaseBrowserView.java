@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,6 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IMemento;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -31,9 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,7 +61,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     }
 
     protected DBNNode getDefaultRootNode() {
-        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
@@ -75,36 +69,19 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);
-        UIUtils.setHelp(parent, getHelpContextId());
 
         String secondaryId = getViewSite().getSecondaryId();
         if (!CommonUtils.isEmpty(secondaryId)) {
             UIExecutionQueue.queueExec(() -> {
                 try {
                     DBNNode node = getNodeFromSecondaryId(secondaryId);
-                    setPartName(node.getNodeName());
+                    setPartName(node.getNodeDisplayName());
                     setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                 } catch (DBException e) {
                     // ignore
                 }
             });
         }
-    }
-
-    @NotNull
-    protected String getHelpContextId() {
-        return IHelpContextIds.CTX_DATABASE_NAVIGATOR;
-    }
-
-    @Override
-    public void init(IViewSite site) throws PartInitException {
-        super.init(site);
-
-    }
-
-    @Override
-    public void saveState(IMemento memento) {
-        super.saveState(memento);
     }
 
     public static String getSecondaryIdFromNode(DBNNode node) {
@@ -116,10 +93,10 @@ public class DatabaseBrowserView extends NavigatorViewBase {
             }
         }
         if (project == null) {
-            throw new IllegalStateException("Navigator node " + node.getNodeItemPath() + " doesn't belong to a project");
+            throw new IllegalStateException("Navigator node " + node.getNodeUri() + " doesn't belong to a project");
         }
         // We can't use colon in secondary ID
-        return project.getName() + "|" + node.getNodeItemPath().replace(":", "~");
+        return project.getName() + "|" + node.getNodeUri().replace(":", "~");
     }
 
     public static DBNNode getNodeFromSecondaryId(String id) throws DBException {

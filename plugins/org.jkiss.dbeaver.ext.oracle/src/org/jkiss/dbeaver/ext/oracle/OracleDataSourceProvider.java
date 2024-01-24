@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPInformationProvider;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -36,7 +33,6 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
@@ -67,7 +63,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
         if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
-            return JDBCURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
+            return DatabaseURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
         }
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:thin:@"); //$NON-NLS-1$
@@ -163,11 +159,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
     @Override
     public DBPNativeClientLocation getDefaultLocalClientLocation()
     {
-        List<OracleHomeDescriptor> oraHomes = OCIUtils.getOraHomes();
-        if (!oraHomes.isEmpty()) {
-            return oraHomes.get(0);
-        }
-        return null;
+        return OCIUtils.getDefaultOraHome();
     }
 
     @Override
@@ -228,7 +220,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
             DBPConnectionConfiguration connectionInfo = ((DBPDataSourceContainer) object).getConnectionConfiguration();
             OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
             if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
-                return JDBCURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
+                return DatabaseURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
             }
             String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
             if (connectionType == OracleConstants.ConnectionType.TNS) {

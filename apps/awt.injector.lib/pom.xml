@@ -1,0 +1,26 @@
+<project>
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.jkiss</groupId>
+	<artifactId>awt.injector</artifactId>
+	<version>1.0.0</version>
+	<properties>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<compilerArgs>
+						<arg>--add-exports</arg>
+						<arg>java.desktop/java.awt.peer=ALL-UNNAMED</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<packaging>jar</packaging>
+</project>

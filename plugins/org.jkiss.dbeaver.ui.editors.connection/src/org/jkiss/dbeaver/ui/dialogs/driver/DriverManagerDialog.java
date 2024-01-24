@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,14 +112,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         getShell().addDisposeListener(e -> UIUtils.dispose(image));
 
 
-        Composite group = UIUtils.createPlaceholder((Composite) super.createDialogArea(parent), 2);
+        Composite group = UIUtils.createPlaceholder(super.createDialogArea(parent), 2);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             treeControl = new DriverSelectViewer(group, this, enabledProviders, false, DriverSelectViewer.SelectorViewType.tree);
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            gd.widthHint = 300;
+            gd.heightHint = 400;
+            gd.widthHint = 500;
             treeControl.getControl().setLayoutData(gd);
         }
 
@@ -368,9 +368,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             //driver.validateFilesPresence(this);
 
             DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
-            if (dialog.open() == IDialogConstants.OK_ID) {
-                // Do nothing
-            }
+            dialog.open();
             treeControl.refresh(driver);
         }
     }

@@ -17,8 +17,8 @@
          </appInfo>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="fileSystem" minOccurs="0" maxOccurs="unbounded"/>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="fileSystemProvider" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,6 +47,46 @@
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.runtime.IPluginService"/>
                </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="fileSystemProvider">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="requiredAuth" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>

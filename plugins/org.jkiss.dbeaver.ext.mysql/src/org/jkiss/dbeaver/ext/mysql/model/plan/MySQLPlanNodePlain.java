@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -83,19 +84,19 @@ public class MySQLPlanNodePlain extends MySQLPlanNode {
         this.extra = JDBCUtils.safeGetString(dbResult, "extra");
     }
 
-    public MySQLPlanNodePlain(MySQLPlanNodePlain parent, Map<String, String> props) {
+    public MySQLPlanNodePlain(MySQLPlanNodePlain parent, Map<String, Object> props) {
         this.parent = parent;
         this.id = props.containsKey("id") ? CommonUtils.toInt(props.get("id")) : null;
-        this.selectType = props.get("select_type");
-        this.table = props.get("table");
-        this.type = props.get("type");
-        this.possibleKeys = props.get("possible_keys");
-        this.key = props.get("key");
-        this.keyLength = props.get("key_len");
-        this.ref = props.get("ref");
+        this.selectType = JSONUtils.getString(props, "select_type");
+        this.table = JSONUtils.getString(props, "table");
+        this.type = JSONUtils.getString(props, "type");
+        this.possibleKeys = JSONUtils.getString(props, "possible_keys");
+        this.key = JSONUtils.getString(props, "key");
+        this.keyLength = JSONUtils.getString(props, "key_len");
+        this.ref = JSONUtils.getString(props, "ref");
         this.rowCount = props.containsKey("rows") ? CommonUtils.toLong(props.get("rows")) : null;
-        this.filtered =  props.containsKey("filtered") ? CommonUtils.toLong(props.get("filtered")) : null;
-        this.extra = props.get("extra");
+        this.filtered = props.containsKey("filtered") ? CommonUtils.toLong(props.get("filtered")) : null;
+        this.extra = JSONUtils.getString(props, "extra");
     }
 
     public MySQLPlanNodePlain(MySQLPlanNodePlain parent, String type) {

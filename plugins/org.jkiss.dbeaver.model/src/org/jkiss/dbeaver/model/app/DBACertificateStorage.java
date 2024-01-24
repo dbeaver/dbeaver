@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,12 @@ public interface DBACertificateStorage
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull String certType,
         @NotNull String keyStorePath,
+        @NotNull char[] keyStorePassword) throws DBException;
+
+    void addCertificate(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull String certType,
+        @NotNull byte[] keyStoreData,
         @NotNull char[] keyStorePassword) throws DBException;
 
     void addSelfSignedCertificate(

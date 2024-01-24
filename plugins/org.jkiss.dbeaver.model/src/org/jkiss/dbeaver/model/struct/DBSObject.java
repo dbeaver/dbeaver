@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,21 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 
 /**
  * Meta object
  */
-public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBPPersistedObject
-{
+@DPIObject
+public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBPPersistedObject {
 
     /**
      * Parent object
      *
      * @return parent object or null
      */
+    @DPIContainer
     @Nullable
 	DBSObject getParentObject();
 
@@ -42,6 +45,7 @@ public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBP
      * It can be null if object was detached from data source.
      * @return datasource reference or null
      */
+    @DPIContainer
     @Nullable
     DBPDataSource getDataSource();
 

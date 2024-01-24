@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,12 @@ public class UIServiceSQLImpl implements UIServiceSQL {
 
     @Override
     public Object openSQLConsole(@NotNull DBPDataSourceContainer dataSourceContainer, DBCExecutionContext executionContext, DBSObject selectedObject, String name, String sqlText) {
-        SQLNavigatorContext navigatorContext = executionContext != null ? new SQLNavigatorContext(executionContext) : new SQLNavigatorContext(dataSourceContainer);
+        SQLNavigatorContext navigatorContext;
+        if (executionContext == null || SQLEditorUtils.isOpenSeparateConnection(dataSourceContainer)) {
+            navigatorContext = new SQLNavigatorContext(dataSourceContainer);
+        } else {
+            navigatorContext = new SQLNavigatorContext(executionContext);
+        }
         if (selectedObject != null) {
             navigatorContext.setSelectedObject(selectedObject);
         }

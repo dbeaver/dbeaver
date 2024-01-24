@@ -1,36 +1,37 @@
-fManifest-Version: 1.0
+Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Vendor: %Bundle-Vendor
-Bundle-Name: %Bundle-Name
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver API
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 1.0.187.qualifier
-Bundle-Release-Date: 20230123
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 1.1.16.qualifier
+Bundle-Release-Date: 20240122
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.access,
- org.jkiss.dbeaver.model.admin.sessions,
  org.jkiss.dbeaver.model.admin.locks,
+ org.jkiss.dbeaver.model.admin.sessions,
+ org.jkiss.dbeaver.model.app,
  org.jkiss.dbeaver.model.auth,
  org.jkiss.dbeaver.model.auth.impl,
- org.jkiss.dbeaver.model.app,
  org.jkiss.dbeaver.model.connection,
  org.jkiss.dbeaver.model.data,
  org.jkiss.dbeaver.model.data.aggregate,
  org.jkiss.dbeaver.model.data.document,
  org.jkiss.dbeaver.model.data.json,
  org.jkiss.dbeaver.model.data.storage,
+ org.jkiss.dbeaver.model.dpi,
  org.jkiss.dbeaver.model.edit,
  org.jkiss.dbeaver.model.edit.prop,
  org.jkiss.dbeaver.model.exec,
  org.jkiss.dbeaver.model.exec.compile,
- org.jkiss.dbeaver.model.exec.jdbc,
  org.jkiss.dbeaver.model.exec.output,
  org.jkiss.dbeaver.model.exec.plan,
  org.jkiss.dbeaver.model.exec.trace,
  org.jkiss.dbeaver.model.fs,
+ org.jkiss.dbeaver.model.fs.event,
  org.jkiss.dbeaver.model.fs.nio,
  org.jkiss.dbeaver.model.impl,
  org.jkiss.dbeaver.model.impl.admin.locks,
@@ -40,12 +41,6 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.impl.data.formatters,
  org.jkiss.dbeaver.model.impl.data.transformers,
  org.jkiss.dbeaver.model.impl.edit,
- org.jkiss.dbeaver.model.impl.jdbc,
- org.jkiss.dbeaver.model.impl.jdbc.cache,
- org.jkiss.dbeaver.model.impl.jdbc.data,
- org.jkiss.dbeaver.model.impl.jdbc.data.handlers,
- org.jkiss.dbeaver.model.impl.jdbc.exec,
- org.jkiss.dbeaver.model.impl.jdbc.struct,
  org.jkiss.dbeaver.model.impl.local,
  org.jkiss.dbeaver.model.impl.net,
  org.jkiss.dbeaver.model.impl.plan,
@@ -54,6 +49,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.impl.sql.edit,
  org.jkiss.dbeaver.model.impl.sql.edit.struct,
  org.jkiss.dbeaver.model.impl.struct,
+ org.jkiss.dbeaver.model.logical,
  org.jkiss.dbeaver.model.meta,
  org.jkiss.dbeaver.model.messages,
  org.jkiss.dbeaver.model.navigator,
@@ -78,6 +74,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.virtual,
  org.jkiss.dbeaver.registry.expressions,
  org.jkiss.dbeaver.registry.formatter,
+ org.jkiss.dbeaver.registry.timezone,
  org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.runtime.encode,
  org.jkiss.dbeaver.runtime.jobs,
@@ -87,7 +84,6 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.runtime.resource,
  org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.runtime.ui.console,
- org.jkiss.dbeaver.runtime.serialize,
  org.jkiss.dbeaver.utils
 Import-Package: org.bouncycastle.asn1,
  org.bouncycastle.asn1.x500,
@@ -112,4 +108,4 @@ Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  com.google.gson
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model
-
+Service-Component: META-INF/component-db-workbench.xml

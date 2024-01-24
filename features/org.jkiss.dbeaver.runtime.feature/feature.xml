@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="22.3.3.qualifier"
+        version="23.3.3.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
@@ -24,37 +24,46 @@
         <import plugin="org.eclipse.core.expressions"/>
     </requires>
 
-    <!-- Bouncycastle -->
-    <plugin id="bcpg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
     <!-- 3rd party -->
-    <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
-    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.objectweb.asm" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="slf4j.api" version="0.0.0" />
+    <plugin id="com.github.jsqlparser" version="0.0.0" />
+    <plugin id="org.apache.commons.jexl" version="0.0.0" />
+    <plugin id="com.google.gson" version="0.0.0"/>
+    <plugin id="com.jcraft.jsch" version="0.0.0" />
+    <plugin id="org.apache.commons.logging" version="0.0.0" />
+
+    <!-- Explicit deps because they are required by OSGI services -->
+    <plugin id="org.objectweb.asm" version="0.0.0" />
+    <plugin id="org.objectweb.asm.commons" version="0.0.0" />
+    <plugin id="org.objectweb.asm.tree.analysis" version="0.0.0" />
+    <plugin id="org.objectweb.asm.tree" version="0.0.0" />
+    <plugin id="org.objectweb.asm.util" version="0.0.0" />
+    <plugin id="org.apache.aries.spifly.dynamic.bundle" version="0.0.0" />
 
     <!-- our plugins -->
 
-    <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.model.dataset" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.model.sql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.parser.common" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.net.ssh" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.net.ssh.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.net.ssh.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.cmp.simple" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.tasks.native" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.erd.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.utils" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model.jdbc" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model.sql" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model.lsm" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.registry" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.net.ssh" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.net.ssh.jsch" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.net.ssh.sshj" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.cmp.simple" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.data.transfer" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.tasks.native" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.erd.model" version="0.0.0" />
+
+    <plugin id="org.jkiss.dbeaver.dpi.app" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.dpi.model" version="0.0.0" />
 
     <!-- GIS -->
-    <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.bundle.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.bundle.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.data.gis" version="0.0.0" />
+    <plugin id="org.jkiss.bundle.gis" version="0.0.0" />
+    <plugin id="org.jkiss.bundle.sshj" version="0.0.0" />
+    <plugin id="org.jkiss.bundle.antlr4" version="0.0.0" />
+    <plugin id="org.jkiss.bundle.jsvg" version="0.0.0" />
 
 </feature>

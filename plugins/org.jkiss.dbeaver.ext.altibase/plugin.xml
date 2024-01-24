@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+  
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="alti" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseMetaModel" driverClass="Altibase.jdbc.driver.AltibaseDriver,Altibase7_1.jdbc.driver.AltibaseDriver,Altibase7_3.jdbc.driver.AltibaseDriver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.altibase.AltibaseDataSourceProvider"
+                description="Altibase JDBC connector"
+                id="altibase"
+                parent="generic"
+                label="Altibase"
+                icon="icons/altibase_icon.png"
+                dialect="altibase">
+            <drivers managable="true">
+               <driver
+                     categories="sql"
+                     class="Altibase.jdbc.driver.AltibaseDriver"
+                     defaultDatabase="mydb"
+                     defaultPort="20300"
+                     defaultUser="SYS"
+                     description="Altibase JDBC Driver"
+                     icon="icons/altibase_icon.png"
+                     iconBig="icons/altibase_icon_big.png"
+                     logoImage="icons/altibase_logo_wide.png"
+                     id="Altibase"
+                     label="Altibase"
+                     sampleURL="jdbc:Altibase://{host}:{port}/{database}">
+                     
+                    <file type="jar" path="maven:/com.altibase:altibase-jdbc:RELEASE[7.1.0.9.0]" bundle="!drivers.altibase"/>
+                    <file type="jar" path="drivers/altibase" bundle="drivers.altibase"/>
+                    
+                    <!-- PARAM list: public class GenericConstants -->
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="false"/>
+                    <parameter name="supports-truncate" value="true"/>
+                    <parameter name="supports-scroll" value="true"/>
+                    <!-- In order to circumvent previous version of JDBC bug: ROLE -->
+                    <parameter name="schema-filters-enabled" value="true"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT db_name FROM V$DATABASE"/>
+                </driver>
+             </drivers>
+             <tree
+                  label="Altibase data source"
+                  path="altibase"
+                  supportsEntityMerge="true">
+                  <folder
+                        description="Database schemas"
+                        icon="#folder_schema"
+                        label="%tree.schemas.node.name"
+                        navigable="true"
+                        type="org.jkiss.dbeaver.ext.altibase.model.AltibaseSchema">
+                  <items label="#schema" path="schema" property="schemaList" icon="#schema" optional="true">
+                         <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                           <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseConstraint" label="%tree.constraints.node.name" icon="#constraints" description="%tree.constraints.node.tip">
+                                    <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" virtual="true">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivTable" label="%tree.table_privileges.node.name" icon="#permissions" description="Table Privileges" navigable="false">
+                                    <items label="%tree.privilege.node.name" path="tablePrivs" property="tablePrivs" icon="#privilege">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder> <!-- Table -->
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseQueue" label="%tree.queues.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                           <items label="%tree.queue.node.name" path="table" property="queueTables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseConstraint" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
+                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder> <!-- Queue Table -->
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
+                            <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView" label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">
+                            <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence" label="%tree.sequences.node.name" icon="#sequences" description="%tree.sequences.node.tip">
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone" label="%tree.functions.node.name" icon="#functions" description="Functions">
+                            <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset" label="%tree.typesets.node.name" icon="#data_types" description="Typesets">
+                            <items label="%tree.typesets.node.name" itemLabel="%tree.typeset.node.name" path="typeset" property="typesetsOnly" icon="#data_type">
+                            </items>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage" label="%tree.packages.node.name" icon="#packages" description="Packages">
+                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                                    <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
+                                    </items>
+                                </items>
+                                <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                    <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
+                                    </items>
+                                </items>
+                            </items>
+                        </folder>       
+                                         
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms">
+                            <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
+                        </folder>
+                        
+                        <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableTrigger" id="tableTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="%tree.tableTriggers.node.tip">
+                            <items label="%tree.trigger.node.name" path="tableTrigger" property="tableTriggers" icon="#trigger"/>
+                        </folder>
+                    </items> <!--</items>-->
+                </folder> <!-- Schemas -->
+                  <folder label="%tree.global_metadata.node.name" id="globalMetadataObjects" icon="#logical" description="Global metadata objects">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
+                        <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                    </folder>
+                    
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym" label="%tree.public_synonyms.node.name" icon="#synonyms" description="Public synonyms">
+                        <items label="%tree.synonym.node.name" path="synonym" property="publicSynonyms" icon="#synonym"/>
+                    </folder>
+                    
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication" label="%tree.replications.node.name" icon="#folder_link" description="Replications">
+                        <items label="%tree.replication.node.name" path="replication" property="replications" icon="#folder_link">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplicationItem" label="%tree.repl_items.node.name" icon="#link" description="Replication Items">
+                                <items label="%tree.repli_item.node.name" path="replication_item" property="replicationItems" icon="#link"/>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder> <!-- Global metadata -->
+                <folder label="%tree.storage.node.name" id="storageManagement" icon="#storage" description="Storage management">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
+                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
+                                <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder>
+                <folder label="%tree.security.node.name" id="securityManagement" icon="#security" description="Security management">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
+                        <items label="%tree.user.node.name" path="users" property="users" icon="#user">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivObject" label="%tree.object_privileges.node.name" icon="#permissions" description="Objects" navigable="false">
+                                <items label="%tree.privilege.node.name" path="objPrivs" property="objectPrivs" icon="#privilege"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
+                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group"/>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
+                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#user_group">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivUser" label="%tree.users.node.name" icon="#folder_user" description="Users" navigable="false">
+                                <items label="%tree.user.node.name" path="userPrivs" property="userPrivs" icon="#user"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles" navigable="false">
+                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivObject" label="%tree.object_privileges.node.name" icon="#permissions" description="Objects" navigable="false">
+                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege"/>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder>
+                <folder label="%tree.administer.node.name"  id="maintenanceSettings" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
+                </folder>
+             </tree>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTableManager"               objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTable"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseQueueManager"               objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseQueue"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseMaterializedViewManager"    objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTableColumnManager"         objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseSequenceManager"            objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseProcedureManager"           objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibasePackageManager"             objectType="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTypesetManager"             objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseSynonymManager"             objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTriggerManager"             objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTrigger"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.ext.altibase.data.AltibaseValueHandlerProvider"
+            description="Altibase data types provider"
+            id="org.jkiss.dbeaver.ext.altibase.data.AltibaseValueHandlerProvider"
+            label="Altibase data types provider">
+
+            <datasource id="altibase"/>
+
+            <type name="BIT"/>
+            <type name="VARBIT"/>
+            <type name="NIBBLE"/>
+            <type name="GEOMETRY"/>
+            
+            <type name="DATE"/>
+        </provider>
+    </extension>
+    
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.altibase.internal.AltibasePreferencesInitializer"/>
+    </extension>
+    
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSQLDialect" class="org.jkiss.dbeaver.ext.altibase.sql.AltibaseDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="altibase" parent="basic" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseSQLDialect" label="Altibase" description="Altibase SQL dialect." icon="icons/altibase_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>

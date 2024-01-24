@@ -87,10 +87,20 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceType">
-        <type id="sql-script" name="SQL script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png" managable="true">
+        <type id="sql-script"
+              name="SQL script"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+              folderIcon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.png"
+              managable="true">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </type>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
+        <lsmDialect analyzerFactoryClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzerFactory">
+            <appliesTo dialectClass="org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect"/>
+        </lsmDialect>
     </extension>
 
 </plugin>

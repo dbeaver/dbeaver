@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,18 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
@@ -35,6 +42,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -43,6 +51,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -63,10 +72,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Sorry, this is a bit over-complicated handler. Historical reasons.
@@ -78,6 +84,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
     private static final Log log = Log.getLog(NavigatorHandlerObjectCreateNew.class);
     public static final Separator DUMMY_CONTRIBUTION_ITEM = new Separator();
+
+    private MenuManager menuManager;
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -107,15 +115,20 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 // No explicit object type. Try to detect from selection
                 IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
                 if (activePart != null) {
-                    List<IContributionItem> actions = fillCreateMenuItems(activePart.getSite(), node);
-                    for (IContributionItem item : actions) {
-                        if (item instanceof CommandContributionItem) {
-                            ParameterizedCommand command = ((CommandContributionItem) item).getCommand();
-                            if (command != null) {
-                                ActionUtils.runCommand(command.getId(), selection, command.getParameterMap(), activePart.getSite());
-                                return null;
-                            }
-                        }
+                    final ParameterizedCommand[] commands = fillCreateMenuItems(activePart.getSite(), node).stream()
+                        .filter(item -> item instanceof CommandContributionItem)
+                        .map(item -> (CommandContributionItem) item)
+                        .map(CommandContributionItem::getCommand)
+                        .filter(Objects::nonNull)
+                        .filter(command -> command.getId().contains(".create")) // All create commands allowed
+                        .toArray(ParameterizedCommand[]::new);
+
+                    if (commands.length == 1) {
+                        ActionUtils.runCommand(commands[0].getId(), selection, commands[0].getParameterMap(), activePart.getSite());
+                        return null;
+                    } else if (commands.length > 1) {
+                        showPopupMenu(event, node);
+                        return null;
                     }
                 }
             }
@@ -157,8 +170,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (node != null && !node.isDisposed()) {
                 List<IContributionItem> actions = fillCreateMenuItems(workbenchWindow.getActivePage().getActivePart().getSite(), node);
                 for (IContributionItem item : actions) {
-                    if (item instanceof CommandContributionItem) {
-                        ParameterizedCommand command = ((CommandContributionItem) item).getCommand();
+                    if (item instanceof CommandContributionItem cci) {
+                        ParameterizedCommand command = cci.getCommand();
                         if (command != null) {
                             typeName = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
                             if (typeName != null) {
@@ -197,7 +210,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (node instanceof DBNContainer && !(node instanceof DBNDataSource)) {
                 return ((DBNContainer)node).getChildrenType();
             } else {
-                return node.getNodeType();
+                return node.getNodeTypeLabel();
             }
         }
         return null;
@@ -264,7 +277,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 ) {
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
                 }
-                if (resource instanceof IContainer && projectResourceEditable) {
+                if (resource instanceof IContainer && !(resource instanceof DBFFileStoreProvider) && projectResourceEditable && !DBWorkbench.isDistributed()) {
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
                 }
@@ -280,6 +293,44 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             ));
         }
         return createActions;
+    }
+
+    private void showPopupMenu(@NotNull ExecutionEvent event, @NotNull DBNNode node) throws ExecutionException {
+        final IWorkbenchPart part = HandlerUtil.getActivePartChecked(event);
+        final Shell activeShell = HandlerUtil.getActiveShell(event);
+        final Control focusControl = activeShell != null ? activeShell.getDisplay().getFocusControl() : null;
+
+        if (part == null || activeShell == null || focusControl == null) {
+            return;
+        }
+
+        if (menuManager != null) {
+            menuManager.dispose();
+        }
+
+        menuManager = new MenuManager();
+
+        for (IContributionItem item : fillCreateMenuItems(part.getSite(), node)) {
+            menuManager.add(item);
+        }
+
+        final Menu contextMenu = menuManager.createContextMenu(focusControl);
+        contextMenu.addMenuListener(MenuListener.menuShownAdapter(e -> {
+            int index = 0;
+            for (final MenuItem item : contextMenu.getItems()) {
+                if (CommonUtils.isNotEmpty(item.getText())) {
+                    item.setText(ActionUtils.getLabelWithIndexMnemonic(item.getText(), index));
+                    index += 1;
+                }
+            }
+        }));
+
+        final Point location = ActionUtils.getLocationFromControl(activeShell, focusControl);
+        if (location != null) {
+            contextMenu.setLocation(location);
+        }
+
+        contextMenu.setVisible(true);
     }
 
     private static void addDatabaseNodeCreateItems(@Nullable IWorkbenchPartSite site, List<IContributionItem> createActions, DBNDatabaseNode node) {
@@ -344,7 +395,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                         UIIcon.SQL_NEW_CONNECTION : node.getNodeIconDefault();
                     createActions.add(
                         makeCreateContributionItem(
-                            site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
+                            site, nodeItemClass.getName(), node.getNodeTypeLabel(), nodeIcon, false));
                 }
             }
 

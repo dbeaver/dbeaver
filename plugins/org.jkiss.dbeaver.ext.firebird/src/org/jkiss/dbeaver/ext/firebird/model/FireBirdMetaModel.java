@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,7 +279,7 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new FireBirdView(
                 container,
@@ -448,5 +448,10 @@ public class FireBirdMetaModel extends GenericMetaModel
     public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
         String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
         return "PRIMARY KEY".equals(constraintType) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+    }
+
+    @Override
+    public boolean supportsUniqueKeys() {
+        return true;
     }
 }

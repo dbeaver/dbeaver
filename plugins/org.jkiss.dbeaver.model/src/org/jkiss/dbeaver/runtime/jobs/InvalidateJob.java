@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,7 +190,7 @@ public class InvalidateJob extends DataSourceJob
                     if (showErrors) {
                         DBeaverNotifications.showNotification(
                             dataSource,
-                            DBeaverNotifications.NT_RECONNECT,
+                            DBeaverNotifications.NT_RECONNECT_FAILURE,
                             "Datasource invalidate failed",
                             DBPMessageType.ERROR,
                             feedback);
@@ -198,7 +198,7 @@ public class InvalidateJob extends DataSourceJob
                 } else {
                     DBeaverNotifications.showNotification(
                         dataSource,
-                        DBeaverNotifications.NT_RECONNECT,
+                        DBeaverNotifications.NT_RECONNECT_SUCCESS,
                         "Datasource was invalidated\n\n" +
                             "Live connection count: " + goodContextsNumber + "/" + totalContexts,
                         DBPMessageType.INFORMATION);

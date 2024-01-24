@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,11 +72,12 @@ public class DataTransferTransformerExpression implements IDataTransferAttribute
 
         @Override
         public Object get(String s) {
-            for (int i = 0; i < dataAttributes.length; i++) {
-                if (dataAttributes[i].getName().equals(s)) {
-                    return DBUtils.getAttributeValue(dataAttributes[i], dataAttributes, dataRow);
+            for (DBDAttributeBinding attribute : dataAttributes) {
+                if (attribute.getName().equals(s)) {
+                    return DBUtils.getAttributeValue(attribute, dataAttributes, dataRow);
                 }
             }
+
             return null;
         }
 
@@ -87,7 +88,13 @@ public class DataTransferTransformerExpression implements IDataTransferAttribute
 
         @Override
         public boolean has(String s) {
-            return get(s) != null;
+            for (DBDAttributeBinding attribute : dataAttributes) {
+                if (attribute.getName().equals(s)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 

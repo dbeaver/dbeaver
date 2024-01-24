@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
@@ -27,12 +29,15 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourcePageDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -41,11 +46,6 @@ import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
-import org.jkiss.dbeaver.ui.editors.data.preferences.*;
-import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion;
-import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute;
-import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat;
 import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,10 +58,12 @@ import java.util.Locale;
  */
 
 public class EditConnectionWizard extends ConnectionWizard {
+    private static final Log log = Log.getLog(EditConnectionWizard.class);
+
     @NotNull
-    private DataSourceDescriptor originalDataSource;
+    private final DataSourceDescriptor originalDataSource;
     @NotNull
-    private DataSourceDescriptor dataSource;
+    private final DataSourceDescriptor dataSource;
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
@@ -76,10 +78,24 @@ public class EditConnectionWizard extends ConnectionWizard {
         this.originalDataSource = dataSource;
         this.dataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
         if (!this.dataSource.isSavePassword()) {
-            this.dataSource.getConnectionConfiguration().setUserPassword(null);
+            this.dataSource.resetPassword();
         }
 
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
+        setDriverSubstitution(dataSource.getDriverSubstitution());
+
+        addPropertyChangeListener(event -> {
+            if (ConnectionPageAbstract.PROP_DRIVER_SUBSTITUTION.equals(event.getProperty())) {
+                ((Dialog) getContainer()).close();
+
+                UIUtils.asyncExec(() -> EditConnectionDialog.openEditConnectionDialog(
+                    UIUtils.getActiveWorkbenchWindow(),
+                    getOriginalDataSource(),
+                    null,
+                    wizard -> wizard.setDriverSubstitution((DBPDriverSubstitutionDescriptor) event.getNewValue())
+                ));
+            }
+        });
     }
 
     @NotNull
@@ -125,11 +141,16 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public void addPages() {
+        if (dataSource.getDriver().isDeprecated()) {
+            addPage(new ConnectionPageDeprecation(dataSource.getDriver()));
+            return;
+        }
+
         DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(
             dataSource.getDriver().getProviderDescriptor(),
             IActionConstants.EDIT_CONNECTION_POINT);
         if (view != null) {
-            pageSettings = new ConnectionPageSettings(this, view, dataSource);
+            pageSettings = new ConnectionPageSettings(this, view, dataSource, getDriverSubstitution());
             addPage(pageSettings);
         }
 
@@ -161,16 +182,39 @@ public class EditConnectionWizard extends ConnectionWizard {
 
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
         addPreferencePage(new PrefPageErrorHandle(), CoreMessages.pref_page_error_handle_name,  CoreMessages.pref_page_error_handle_description);
-        WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), CoreMessages.dialog_connection_edit_wizard_resultset,  CoreMessages.dialog_connection_edit_wizard_resultset_description);
-        rsPage.addSubPage(new PrefPageResultSetEditors(), CoreMessages.dialog_connection_edit_wizard_editors, CoreMessages.dialog_connection_edit_wizard_editors_description);
-        rsPage.addSubPage(new PrefPageDataFormat(), CoreMessages.dialog_connection_edit_wizard_data_format, CoreMessages.dialog_connection_edit_wizard_data_format_description);
-        WizardPrefPage pagePresentation = rsPage.addSubPage(PrefPageResultSetPresentation.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentation());
-        pagePresentation.addSubPage(PrefPageResultSetPresentationGrid.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationGrid());
-        pagePresentation.addSubPage(PrefPageResultSetPresentationPlainText.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationPlainText());
-        WizardPrefPage sqlPage = addPreferencePage(new PrefPageSQLEditor(), CoreMessages.dialog_connection_edit_wizard_sql_editor, CoreMessages.dialog_connection_edit_wizard_sql_editor_description);
-        sqlPage.addSubPage(new PrefPageSQLCompletion(), CoreMessages.dialog_connection_edit_wizard_sql_code_completion, CoreMessages.dialog_connection_edit_wizard_sql_code_completion_description);
-        sqlPage.addSubPage(new PrefPageSQLFormat(), CoreMessages.dialog_connection_edit_wizard_sql_formatting, CoreMessages.dialog_connection_edit_wizard_sql_formatting_description);
-        sqlPage.addSubPage(new PrefPageSQLExecute(), CoreMessages.dialog_connection_edit_wizard_sql_processing, CoreMessages.dialog_connection_edit_wizard_sql_processing_description);
+
+        for (DataSourcePageDescriptor page : DataSourceViewRegistry.getInstance().getRootDataSourcePages(dataSource)) {
+            addDataSourcePage(null, page);
+        }
+    }
+
+    private void addDataSourcePage(WizardPrefPage parent, DataSourcePageDescriptor page) {
+        IPreferencePage pageInstance;
+        try {
+            pageInstance = page.createPage();
+        } catch (Exception e) {
+            log.error("Error instantiating connection preference page '" + page.getId() + "'", e);
+            return;
+        }
+        WizardPrefPage thisWizardPage = null;
+        if (parent != null) {
+            if (page.getTitle() != null) {
+                thisWizardPage = parent.addSubPage(pageInstance, page.getTitle(), page.getDescription());
+            } else {
+                parent.addSubPage(page.getId(), pageInstance);
+            }
+        } else {
+            if (pageInstance instanceof IWizardPage) {
+                addPage((IWizardPage) pageInstance);
+            } else {
+                thisWizardPage = addPreferencePage(pageInstance, page.getTitle(), page.getDescription());
+            }
+        }
+        if (thisWizardPage != null) {
+            for (DataSourcePageDescriptor childPage : DataSourceViewRegistry.getInstance().getChildDataSourcePages(dataSource, page.getId())) {
+                addDataSourcePage(thisWizardPage, childPage);
+            }
+        }
     }
 
     @Override
@@ -205,23 +249,32 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public boolean performFinish() {
-        DBPDataSourceRegistry registry = originalDataSource.getRegistry();
-        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
-        DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
-        saveSettings(dsChanged);
-
-        if (dsCopy.equalSettings(dsChanged)) {
-            // No changes
+        if (dataSource.getDriver().isDeprecated()) {
             return true;
         }
 
-        // Check locked datasources
-        if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
-            if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
-                if (!checkLockPassword()) {
-                    return false;
+        DBPDataSourceRegistry registry = originalDataSource.getRegistry();
+        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
+        DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
+        try {
+            saveSettings(dsChanged);
+
+            if (dsCopy.equalSettings(dsChanged)) {
+                // No changes
+                return true;
+            }
+
+            // Check locked datasources
+            if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
+                if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
+                    if (!checkLockPassword()) {
+                        return false;
+                    }
                 }
             }
+        } finally {
+            dsCopy.dispose();
+            dsChanged.dispose();
         }
 
 
@@ -287,6 +340,10 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
+        if (dataSource.getDriver().isDeprecated()) {
+            return;
+        }
+
         if (isPageActive(pageSettings)) {
             pageSettings.saveSettings(dataSource);
         }
@@ -304,7 +361,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
         // Reset password if "Save password" was disabled
         if (!dataSource.isSavePassword()) {
-            dataSource.getConnectionConfiguration().setUserPassword(null);
+            dataSource.resetPassword();
         }
     }
 
@@ -347,4 +404,10 @@ public class EditConnectionWizard extends ConnectionWizard {
 */
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        // Dispose temp datasource
+        this.dataSource.dispose();
+    }
 }

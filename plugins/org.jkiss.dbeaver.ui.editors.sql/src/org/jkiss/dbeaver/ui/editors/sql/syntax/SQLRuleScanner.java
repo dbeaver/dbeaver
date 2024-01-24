@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
-import org.jkiss.dbeaver.model.text.parser.TPPredicateRule;
-import org.jkiss.dbeaver.model.text.parser.TPRule;
-import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 
 import java.util.*;
 
@@ -51,11 +52,16 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<>();
     private Set<SQLScriptPosition> addedPositions = new HashSet<>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<>();
+    
+    private final HashMap<SQLTokenType, IToken> extraSyntaxTokens = new HashMap<>();
+    private SQLEditorBase editor = null;
 
     private final Map<TPToken, IToken> tokenMap = new IdentityHashMap<>();
 
     private boolean evalMode;
     private int keywordStyle = SWT.NORMAL;
+
+    private final boolean DEBUG = false;
 
     public SQLRuleScanner() {
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
@@ -91,22 +97,19 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         return posList;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, SQLRuleManager ruleManager) {
+    public void refreshRules(@Nullable DBPDataSource dataSource, SQLRuleManager ruleManager, SQLEditorBase editor) {
         tokenMap.clear();
-
-
         boolean boldKeywords = dataSource == null ?
                 DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :
                 dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
         keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
-
         TPRule[] allRules = ruleManager.getAllRules();
-
         IRule[] result = new IRule[allRules.length];
         for (int i = 0; i < allRules.length; i++) {
             result[i] = adaptRule(allRules[i]);
         }
         setRules(result);
+        this.editor = editor;
     }
 
     private IRule adaptRule(TPRule rule) {
@@ -151,9 +154,68 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         return fOffset;
     }
 
+    private static class LazyToken extends TPTokenDefault {
+        public LazyToken(TPTokenType type) {
+            super(type);
+        }
+    }
+    
+    private IToken tryResolveExtraToken() {
+        SQLDocumentSyntaxContext syntaxContext = this.editor == null ? null : this.editor.getSyntaxContext();
+        if (syntaxContext == null) {
+            return Token.UNDEFINED;
+        }
+        
+        int offset = this.getOffset();
+        SQLQuerySymbolEntry entry = syntaxContext.findToken(offset);
+        if (entry != null) {
+            int end = syntaxContext.getLastAccessedTokenOffset() + entry.getInterval().length();
+            if (end > offset) {
+                if (DEBUG) {
+                    StringBuilder sb = new StringBuilder();
+                    while (this.getOffset() < end) {
+                        int c = super.read();
+                        if (c == RuleBasedScanner.EOF) {
+                            return Token.UNDEFINED;
+                        }
+                        sb.append((char) c);
+                    }
+                    System.out.println("found @" + offset + "-" + end + " " + entry + " = " + sb.toString());
+                } else {
+                    while (this.getOffset() < end) {
+                        if (super.read() == RuleBasedScanner.EOF) {
+                            return Token.UNDEFINED;
+                        }
+                    }
+                }
+                return this.extraSyntaxTokens.computeIfAbsent(
+                    entry.getSymbolClass().getTokenType(),
+                    tt -> new SQLTokenAdapter(new LazyToken(tt), this)
+                );
+            } else {
+                return Token.UNDEFINED;
+            }
+        } else {
+            return Token.UNDEFINED;
+        }
+    }
+
+    @Override
+    public IToken nextToken() {
+        super.fTokenOffset = fOffset;
+        super.fColumn = UNDEFINED;
+
+        IToken token = this.tryResolveExtraToken();
+        if (!token.isUndefined()) {
+            return token;
+        }
+        
+        return super.nextToken();
+    }
 
     private class SimpleRuleAdapter<RULE extends TPRule> implements IRule {
         protected final RULE rule;
+
         SimpleRuleAdapter(RULE rule) {
             this.rule = rule;
         }
@@ -189,5 +251,4 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
             return "Adapter of [" + rule.toString() + "]";
         }
     }
-
 }

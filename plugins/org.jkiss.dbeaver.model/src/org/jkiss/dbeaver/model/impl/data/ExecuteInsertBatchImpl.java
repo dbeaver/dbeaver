@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import org.eclipse.core.runtime.Assert;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.sql.BaseInsertMethod;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
@@ -164,12 +163,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
             }
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            String attributeName;
-            if (table instanceof JDBCTable) {
-                attributeName = ((JDBCTable)table).getAttributeName(attribute);
-            } else {
-                attributeName = DBUtils.getObjectFullName(table.getDataSource(), attribute, DBPEvaluationContext.DML);
-            }
+            String attributeName = DBStructUtils.getAttributeName(attribute);
             query.append(attributeName);
             usedAttributes.add(i);
         }

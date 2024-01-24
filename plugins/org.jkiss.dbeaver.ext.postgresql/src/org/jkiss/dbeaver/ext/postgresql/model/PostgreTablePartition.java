@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *               2017 Andrew Khitrin   (andrew@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
@@ -49,6 +52,18 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
     }
 
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return partitionOf;
+    }
+
+    @Override
+    public boolean needFullPath() {
+        // Postgres tables can be queried directly without a parent table.
+        return false;
+    }
+
     @Property(viewable = true, editable = true, updatable = true, order = 60)
     @Nullable
     public String getPartitionExpression() {
@@ -62,6 +77,10 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        options.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
+        options.put(OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, false);
+        options.put(OPTION_INCLUDE_NESTED_OBJECTS, false);
+        options.put(OPTION_INCLUDE_PERMISSIONS, false);
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 

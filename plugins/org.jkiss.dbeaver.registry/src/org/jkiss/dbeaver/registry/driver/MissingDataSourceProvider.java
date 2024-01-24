@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,9 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider {
     @NotNull
     @Override
     public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        throw new DBException("Data source provider not found");
+        throw new DBException("Error: invalid datasource configuration:\n"
+                + "The specified driver '" + container.getDriver().getFullName() + "' could not be found.\n"
+                + "This error may occur if the configuration was created in a different edition of DBeaver.");
     }
 
     @Override

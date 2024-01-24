@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver;
 
+import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 
 /**
@@ -36,6 +37,7 @@ public final class DBeaverPreferences
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
     public static final String CONFIRM_TXN_RECONNECT = "reconnect_txn"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
+    public static final String CONFIRM_DISABLE_NETWORK_HANDLER = "disable_network_handler"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_EDITOR_FULL_NAME = DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME; //$NON-NLS-1$
 
@@ -45,6 +47,9 @@ public final class DBeaverPreferences
     public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
     public static final String UI_KEEP_DATABASE_EDITORS = DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE; //$NON-NLS-1$
+    public static final String UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT = DatabaseEditorPreferences.PROP_KEEP_EDITORS_ON_DISCONNECT; //$NON-NLS-1$
+    public static final String UI_USE_EMBEDDED_AUTH = "ui.use.redirect.auth"; //$NON-NLS-1$
+    public static final String UI_SHOW_HOLIDAY_DECORATIONS = HolidayDecorations.PREF_UI_SHOW_HOLIDAY_DECORATIONS;
 
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$

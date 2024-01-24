@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author serge@dbeaver.com
  */
-class GridColumn implements IGridColumn {
+public class GridColumn implements IGridColumn {
 
     /**
      * Default width of the column.
@@ -131,51 +131,48 @@ class GridColumn implements IGridColumn {
         if (!isFilterable()) {
             return false;
         }
+
         Rectangle bounds = getBounds();
-        if (y < bounds.y || y > bounds.y + bounds.height) {
-            return false;
-        }
+
         Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
+        filterBounds.x = bounds.width - filterBounds.width - GridColumnRenderer.RIGHT_MARGIN;
+        filterBounds.y = bounds.y + GridColumnRenderer.TOP_MARGIN;
 
-        int filterEnd = bounds.width - GridColumnRenderer.IMAGE_SPACING;
-        int filterBegin = filterEnd - filterBounds.width;
-
-        boolean isOverIcon = x >= filterBegin && x <= filterEnd &&
-            y < bounds.y + filterBounds.height + GridColumnRenderer.TOP_MARGIN;
-        return isOverIcon;
+        return filterBounds.contains(x, y);
     }
 
     public boolean isOverSortArrow(int x, int y) {
-        int sortOrder = grid.getContentProvider().getSortOrder(this);
-        Rectangle bounds = getBounds();
-        if (y < bounds.y || y > bounds.y + bounds.height) {
+        IGridContentProvider contentProvider = grid.getContentProvider();
+        if (contentProvider.getSortOrder(this) <= 0 && !contentProvider.isElementSupportsSort(this)) {
             return false;
         }
-        int arrowEnd = bounds.width - rightMargin - GridColumnRenderer.IMAGE_SPACING - GridColumnRenderer.getFilterControlBounds().width;
+
+        Rectangle bounds = getBounds();
+
         Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
-        int arrowBegin = arrowEnd - sortBounds.width;
-        return
-            x >= arrowBegin && x <= arrowEnd &&
-                y <= bounds.y + sortBounds.height + GridColumnRenderer.TOP_MARGIN;
+        sortBounds.x = bounds.width - sortBounds.width - GridColumnRenderer.RIGHT_MARGIN;
+        sortBounds.y = bounds.y + GridColumnRenderer.TOP_MARGIN;
+
+        if (isFilterable()) {
+            sortBounds.x -= GridColumnRenderer.getFilterControlBounds().width + GridColumnRenderer.IMAGE_SPACING;
+        }
+
+        return sortBounds.contains(x, y);
     }
 
     public boolean isOverIcon(int x, int y) {
         Rectangle bounds = getBounds();
-        if (y < bounds.y || y > bounds.y + bounds.height) {
-            return false;
-        }
+
         Image image = grid.getLabelProvider().getImage(this);
         if (image == null) {
             return false;
         }
+
         Rectangle imgBounds = image.getBounds();
-        if (x >= bounds.x + GridColumnRenderer.LEFT_MARGIN &&
-            x <= bounds.x + GridColumnRenderer.LEFT_MARGIN + imgBounds.width + GridColumnRenderer.IMAGE_SPACING &&
-            y > bounds.y + GridColumnRenderer.TOP_MARGIN &&
-            y <= bounds.y + GridColumnRenderer.TOP_MARGIN + imgBounds.height) {
-            return true;
-        }
-        return false;
+        imgBounds.x += bounds.x + GridColumnRenderer.LEFT_MARGIN;
+        imgBounds.y += bounds.y + GridColumnRenderer.TOP_MARGIN;
+
+        return imgBounds.contains(x, y);
     }
 
     int getHeaderHeight(boolean includeChildren, boolean forceRefresh) {

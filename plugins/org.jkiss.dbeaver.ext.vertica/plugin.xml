@@ -82,10 +82,14 @@
                                 </folder>
                             </items>
                         </folder>
-
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject" label="%tree.functions.node.name" icon="#procedures" description="Functions/UDFs">
-                            <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="procedure" property="procedures" icon="#function">
-                                <items label="%tree.function_columns.node.name" itemLabel="%tree.function_column.node.name" path="column" property="parameters" navigable="false"/>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.splitProceduresAndFunctions()">
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                        <folder label="%tree.functions.node.name" icon="#functions" description="Functions/UDFs">
+                            <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" >
@@ -93,7 +97,7 @@
                         </folder>
                     </items>
                 </folder>
-                <folder label="%tree.admin.node.name" icon="#folder_admin" description="%tree.admin.node.description">
+                <folder label="%tree.admin.node.name" icon="#folder_admin" id="folderAdmin" description="%tree.admin.node.description">
                     <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
                         <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                     </folder>
@@ -105,47 +109,10 @@
             </tree>
 
             <drivers manageable="true">
-                <driver
-                    id="vertica-jdbc"
-                    label="Vertica"
-                    icon="icons/vertica_icon.png"
-                    iconBig="icons/vertica_icon_big.png"
-                    class="com.vertica.jdbc.Driver"
-                    sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
-                    defaultPort="5433"
-                    webURL="https://my.vertica.com/download/vertica/client-drivers/"
-                    description="Driver for Vertica Database"
-                    categories="sql,analytic,columns">
-                    <parameter name="query-get-active-db" value="select current_schema()"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
-                    <parameter name="active-entity-type" value="schema"/>
-
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="supports-scroll" value="false"/>
-                </driver>
-
-                <driver
-                        id="vertica-jdbc-6"
-                        label="Vertica"
-                        icon="icons/vertica_icon.png"
-                        iconBig="icons/vertica_icon_big.png"
-                        class="com.vertica.jdbc.Driver"
-                        sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
-                        defaultPort="5433"
-                        webURL="https://www.vertica.com/"
-                        description="Driver for Vertica Database"
-                        categories="sql,analytic,columns">
-                    <replace provider="generic" driver="vertica"/>
-                    <replace provider="vertica" driver="vertica-jdbc"/>
-
-                    <parameter name="query-get-active-db" value="select current_schema()"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
-                    <parameter name="active-entity-type" value="schema"/>
-
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="supports-scroll" value="false"/>
-                </driver>
-
+                <!-- Legacy drivers -->
+                <driver id="vertica-jdbc"/>
+                <driver id="vertica-jdbc-6"/>
+                <!-- Real driver -->
                 <driver
                     id="vertica-jdbc-8"
                     label="Vertica"
@@ -155,7 +122,7 @@
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
                     webURL="https://www.vertica.com/download/vertica/client-drivers/"
-                    description="JDBC driver for Vertica 12+ Database"
+                    description="JDBC driver for Vertica database"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>
@@ -163,10 +130,8 @@
                     <replace provider="vertica" driver="vertica-jdbc-6"/>
 
                     <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
-                    <file type="license" path="https://raw.githubusercontent.com/civitaspo/jdbc-vertica/master/LICENSE.txt" bundle="!drivers.vertica"/>
                     <file type="jar" path="maven:/com.vertica.jdbc:vertica-jdbc:RELEASE" bundle="!drivers.vertica"/>
                     <file type="jar" path="drivers/vertica" bundle="drivers.vertica"/>
-<!--                    <file type="jar" path="https://www.vertica.com/client_drivers/12.0.x/12.0.1-0/vertica-jdbc-12.0.1-0.jar"/>-->
 
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
@@ -179,6 +144,12 @@
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="disable-comments-reading@" label="Disable objects comments reading" type="boolean" description="Disable objects (tables/sequences/projections, etc.) comments reading. Reading this type of information can dramatically reduce data loading speed." supportedConfigurationTypes="MANUAL,URL"/>
+                        <property id="dollar-quotes-as-string@" label="Show $$ quotes as String" type="boolean" supportedConfigurationTypes="MANUAL,URL"/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
 
         </datasource>

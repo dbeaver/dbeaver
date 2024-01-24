@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQLWorkbench SQL formatter support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.format.sqlworkbenchj;singleton:=true
-Bundle-Version: 1.0.105.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 1.0.130.qualifier
+Bundle-Release-Date: 20240122
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
@@ -14,6 +14,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources
 Export-Package: org.jkiss.dbeaver.ext.format.sqlworkbenchj
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: JKISS
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.format.sqlworkbenchj

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.db2.model.fed;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -64,7 +65,7 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
         this.type = CommonUtils.valueOf(DB2WrapperType.class, JDBCUtils.safeGetString(dbResult, "WRAPTYPE"));
         this.version = JDBCUtils.safeGetInteger(dbResult, "WRAPVERSION");
         this.library = JDBCUtils.safeGetString(dbResult, "LIBRARY");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         optionsCache = new JDBCObjectSimpleCache<>(DB2WrapperOption.class, C_OP, name);
     }

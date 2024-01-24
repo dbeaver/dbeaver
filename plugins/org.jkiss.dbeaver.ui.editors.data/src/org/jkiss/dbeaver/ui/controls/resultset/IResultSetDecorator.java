@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public interface IResultSetDecorator {
     long FEATURE_EDIT               = 8;
     long FEATURE_PRESENTATIONS      = 16;
     long FEATURE_LINKS              = 32;
+    long FEATURE_COMPACT_FILTERS    = 64;
 
     long getDecoratorFeatures();
 

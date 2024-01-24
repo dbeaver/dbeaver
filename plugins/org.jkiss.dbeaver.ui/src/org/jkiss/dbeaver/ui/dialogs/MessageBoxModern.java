@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,9 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class MessageBoxModern extends Dialog {
-    @Nullable
-    private String title;
+final class MessageBoxModern extends BaseDialog {
     @Nullable
     private String message;
     @Nullable
@@ -56,11 +51,7 @@ final class MessageBoxModern extends Dialog {
     private List<Button> buttons;
 
     MessageBoxModern(@Nullable Shell parentShell) {
-        super(parentShell);
-    }
-
-    void setTitle(@Nullable String title) {
-        this.title = title;
+        super(parentShell, null, null);
     }
 
     void setMessage(@Nullable String message) {
@@ -111,7 +102,7 @@ final class MessageBoxModern extends Dialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         if (primaryImage != null) {
             Control imageLabel = UIUtils.createLabel(parent, primaryImage);
             GridData gd = new GridData();
@@ -151,10 +142,9 @@ final class MessageBoxModern extends Dialog {
             }
         }
 
-        UIUtils.createEmptyLabel(content, 1, 1);
         if (customArea != null) {
-            customArea.accept(content);
             UIUtils.createEmptyLabel(content, 1, 1);
+            customArea.accept(content);
         }
 
         // create the top level composite for the dialog area
@@ -179,12 +169,6 @@ final class MessageBoxModern extends Dialog {
         composite.setFont(parent.getFont());
         createButtonsForButtonBar(composite);
         return composite;
-    }
-
-    @Override
-    protected void configureShell(@NotNull Shell shell) {
-        super.configureShell(shell);
-        shell.setText(title);
     }
 
     @Override

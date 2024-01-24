@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -30,8 +31,10 @@ import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.action.DiagramTogglePersistAction;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -46,9 +49,11 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IRevertableEditor;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -62,7 +67,8 @@ import java.util.Map;
 /**
  * Embedded ERD editor
  */
-public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor, IEntityStructureEditor, IActiveWorkbenchPart {
+public class ERDEditorEmbedded extends ERDEditorPart
+    implements IDatabaseEditor, IEntityStructureEditor, IActiveWorkbenchPart, IRevertableEditor {
 
     private static final Log log = Log.getLog(ERDEditorEmbedded.class);
 
@@ -71,6 +77,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     private static final String GROUP_SAVE = "save";
 
     private Composite parent;
+    
 
     /**
      * No-arg constructor
@@ -94,7 +101,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     public boolean isReadOnly()
     {
         DBPProject project = this.getDiagramProject();
-        return project == null || !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+        return project != null && !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     @Override
@@ -166,19 +173,23 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             return;
         }
         diagramLoadingJob = LoadingJob.createService(
-            new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
-                @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
-                    try {
-                        return loadFromDatabase(monitor);
-                    } catch (DBException e) {
-                        log.error("Error loading ER diagram", e);
-                    }
+                new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
+                    @Override
+                    public EntityDiagram evaluate(DBRProgressMonitor monitor) {
+                        try {
+                            return loadFromDatabase(monitor);
+                        } catch (DBException e) {
+                            String msg = NLS.bind(ERDUIMessages.erd_error_of_loading_diagram_label, e.getMessage());
+                            log.error(msg, e);
+                            UIUtils.showMessageBox(null,
+                                    ERDUIMessages.erd_error_of_loading_diagram_title,
+                                    msg, SWT.ICON_ERROR);
+                        }
 
-                    return null;
-                }
-            },
-            progressControl.createLoadVisualizer());
+                        return null;
+                    }
+                },
+                progressControl.createLoadVisualizer());
         diagramLoadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event)
@@ -205,10 +216,21 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     }
 
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
-        throws DBException
-    {
+            throws DBException {
         monitor.beginTask("Load database entities", 1);
 
+        // validate connections first
+        DBPDataSource dataSource = getExecutionContext().getDataSource();
+        DBPDataSourceContainer container = dataSource.getContainer();
+        if (!container.isConnected()) {
+            monitor.subTask("Connect to '" + container.getName() + "'");
+            try {
+                container.connect(monitor, true, true);
+            } catch (DBException e) {
+                log.debug(e);
+                throw new DBException("DataSource " + dataSource.getName() + " is disconnected. Please revalidate it.");
+            }
+        }
         DBSObject dbObject = getRootObject();
         if (dbObject == null) {
             log.error("Database object must be entity container to render ERD diagram");
@@ -224,14 +246,14 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
             // Fill from database even if we loaded from state (something could change since last view)
             diagram.fillEntities(
-                monitor,
-                ERDUtils.collectDatabaseTables(
                     monitor,
-                    dbObject,
-                    diagram,
-                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
-                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)),
-                dbObject);
+                    ERDUtils.collectDatabaseTables(
+                            monitor,
+                            dbObject,
+                            diagram,
+                            ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
+                            ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)),
+                    dbObject);
 
             if (dbObject instanceof DBSObjectContainer) {
                 diagram.setRootObjectContainer((DBSObjectContainer) dbObject);
@@ -258,9 +280,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             diagram.setLayoutManualAllowed(true);
             diagram.setNeedsAutoLayout(!hasPersistedState);
         }
-
         monitor.done();
-
         return diagram;
     }
 
@@ -285,6 +305,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             log.error("Error saving diagram", e);
         }
         updateToolbarActions();
+    }
+
+    @Override
+    public void doRevertToSaved() {
+        getCommandStack().markSaveLocation();
     }
 
     public boolean isStateSaved() {

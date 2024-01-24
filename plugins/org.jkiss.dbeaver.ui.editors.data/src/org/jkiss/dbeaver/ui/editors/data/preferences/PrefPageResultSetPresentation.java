@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
@@ -37,13 +38,13 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageResultSetPresentation
  */
-public class PrefPageResultSetPresentation extends TargetPrefPage
-{
+public class PrefPageResultSetPresentation extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageResultSetPresentation.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.presentation"; //$NON-NLS-1$
 
     private Button autoSwitchMode;
+    private Button showFiltersInSingleTabMode;
     private Button showDescription;
     private Button columnWidthByValue;
     private Button showConnectionName;
@@ -52,29 +53,27 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Button rightJustifyDateTime;
     private Button autoCompleteProposal;
 
-    public PrefPageResultSetPresentation()
-    {
+    public PrefPageResultSetPresentation() {
         super();
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
-    {
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
         	store.contains(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
             store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||	
-        	store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
+            store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
             store.contains(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME) ||
             store.contains(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL);
     }
 
     @Override
-    protected boolean supportsDataSourceSpecificOptions()
-    {
+    protected boolean supportsDataSourceSpecificOptions() {
         return true;
     }
 
@@ -85,8 +84,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
         {
             Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
-            ((GridData)uiGroup.getLayoutData()).horizontalSpan = 2;
+            ((GridData) uiGroup.getLayoutData()).horizontalSpan = 2;
             autoSwitchMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
+            showFiltersInSingleTabMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_filters_panel_in_singletab_mode, true);
             showDescription = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_column_description, false);
             columnWidthByValue = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
             showConnectionName = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_connection_name, false);
@@ -100,10 +100,10 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
+    protected void loadPreferences(DBPPreferenceStore store) {
         try {
-        	autoSwitchMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
+            autoSwitchMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
+            showFiltersInSingleTabMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE));
             showDescription.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION));
             columnWidthByValue.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
             showConnectionName.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
@@ -117,10 +117,10 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(DBPPreferenceStore store) {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE, showFiltersInSingleTabMode.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES, columnWidthByValue.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
@@ -135,9 +135,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
-    	store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE);
+    protected void clearPreferences(DBPPreferenceStore store) {
+        store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
@@ -148,8 +148,22 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     }
 
     @Override
-    protected String getPropertyPageID()
-    {
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        autoSwitchMode.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
+        showFiltersInSingleTabMode.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE));
+        showDescription.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION));
+        columnWidthByValue.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
+        showConnectionName.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
+        transformComplexTypes.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
+        rightJustifyNumbers.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
+        rightJustifyDateTime.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
+        autoCompleteProposal.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL));
+        super.performDefaults();
+    }
+
+    @Override
+    protected String getPropertyPageID() {
         return PAGE_ID;
     }
 

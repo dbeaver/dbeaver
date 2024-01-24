@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.Collection;
@@ -59,12 +60,30 @@ public class DBNBookmarkFolder extends DBNResource {
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDatabaseNode) {
-                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+                    node.getNodeDisplayName(),
+                    (IFolder) getResource());
             } else if (node instanceof DBNBookmark) {
-                super.dropNodes(Collections.singleton(node));
+                super.dropNodes(monitor, Collections.singleton(node));
+            }
+        }
+    }
+
+    @Override
+    public boolean supportsPaste(@NotNull DBNNode other) {
+        return other instanceof DBNDatabaseNode;
+    }
+
+    @Override
+    public void pasteNodes(@NotNull Collection<DBNNode> nodes) throws DBException {
+        for (DBNNode node : nodes) {
+            if (node instanceof DBNDatabaseNode) {
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+                    node.getNodeDisplayName(),
+                    (IFolder) getResource());
             }
         }
     }

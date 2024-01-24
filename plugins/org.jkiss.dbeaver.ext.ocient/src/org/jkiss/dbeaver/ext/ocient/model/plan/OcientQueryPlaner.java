@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.ocient.model.plan;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -33,7 +32,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,17 +87,6 @@ public class OcientQueryPlaner extends AbstractExecutionPlanSerializer implement
         });
     }
 
-    private static Map<String, String> getNodeAttributes(JsonObject nodeObject) {
-        Map<String, String> attributes = new HashMap<>();
-
-        JsonObject attrs = nodeObject.getAsJsonObject(PROP_ATTRIBUTES);
-        for (Map.Entry<String, JsonElement> attr : attrs.entrySet()) {
-            attributes.put(attr.getKey(), attr.getValue().getAsString());
-        }
-
-        return attributes;
-    }
-
     @Override
     public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
 
@@ -109,7 +96,7 @@ public class OcientQueryPlaner extends AbstractExecutionPlanSerializer implement
         {
             ExecutionPlanDeserializer<OcientPlanNodeJson> loader = new ExecutionPlanDeserializer<>();
             List<OcientPlanNodeJson> rootNodes = loader.loadRoot(dataSource, jo,
-                (datasource, node, parent) -> new OcientPlanNodeJson(parent, getNodeAttributes(node)));
+                (datasource, node, parent) -> new OcientPlanNodeJson(parent, getNodeAttributesAsStrings(node)));
             return new OcientExecutionPlan(query, rootNodes);
         }
 

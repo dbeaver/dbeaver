@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -52,6 +53,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         super(instance, purpose);
     }
 
+    @DPIContainer
     @NotNull
     @Override
     public GenericDataSource getDataSource() {

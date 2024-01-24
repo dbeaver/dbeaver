@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.spanner.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.spanner.SpannerDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -25,9 +30,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SpannerDataSource extends GenericDataSource {
 
@@ -61,4 +69,27 @@ public class SpannerDataSource extends GenericDataSource {
         return props;
     }
 
+    @Override
+    public GenericTableBase findTable(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @NotNull String tableName
+    ) throws DBException {
+        if (CommonUtils.isEmpty(schemaName) &&  !CommonUtils.isEmpty(getSchemas())) {
+            // This is very strange case from Spanner. He supports one main empty name schema and system schemas.
+            // So use default schema as container for this case.
+            List<GenericSchema> nonSystemSchemas = getSchemas()
+                .stream()
+                .filter(e -> !e.isSystem())
+                .collect(Collectors.toList());
+            if (nonSystemSchemas.size() == 1) {
+                GenericSchema schema = nonSystemSchemas.get(0);
+                if (GenericConstants.DEFAULT_NULL_SCHEMA_NAME.equals(schema.getName())) {
+                    return schema.getTable(monitor, tableName);
+                }
+            }
+        }
+        return super.findTable(monitor, catalogName, schemaName, tableName);
+    }
 }

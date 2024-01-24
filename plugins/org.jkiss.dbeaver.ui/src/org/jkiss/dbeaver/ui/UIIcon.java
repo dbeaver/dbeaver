@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
 
 /**
  * UI Icons
@@ -66,9 +67,9 @@ public class UIIcon {
     public static final DBIcon FIND = new DBIcon("find", "misc/find.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FIND_TEXT = new DBIcon("find_text", "misc/find_text.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SEARCH = new DBIcon("search", "misc/search.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CHECK_ON = new DBIcon("checked", "misc/checked.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CHECK_OFF = new DBIcon("unchecked", "misc/unchecked.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CHECK_QUEST = new DBIcon("check_null", "misc/checked_null.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_ON = new DBIcon("checked", HolidayDecorations.isEnabled() ? "misc/present_checked.png" : "misc/checked.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_OFF = new DBIcon("unchecked", HolidayDecorations.isEnabled() ? "misc/present_unchecked.png" : "misc/unchecked.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_QUEST = new DBIcon("check_null", HolidayDecorations.isEnabled() ? "misc/present_checked_null.png" : "misc/checked_null.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM = new DBIcon("zoom", "misc/zoom.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_IN = new DBIcon("zoom_in", "misc/zoom_in.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_OUT = new DBIcon("zoom_out", "misc/zoom_out.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -140,9 +141,11 @@ public class UIIcon {
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DELETE = new DBIcon("delete", "delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon REMOVE = new DBIcon("remove", "remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RENAME = new DBIcon("rename", "rename.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PALETTE = new DBIcon("palette", "misc/palette.png"); //$NON-NLS-1$ //$NON-NLS-2$
-
+    public static final DBIcon CLEAN = new DBIcon("clean", "misc/clean.png"); //$NON-NLS-1$//
+    // $NON-NLS-2$
     public static final DBIcon ROW_ADD = new DBIcon("row_add", "sql/row_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROW_COPY = new DBIcon("row_copy", "sql/row_copy.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROW_EDIT = new DBIcon("row_edit", "sql/row_edit.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -151,6 +154,7 @@ public class UIIcon {
     public static final DBIcon EDIT_TABLE = new DBIcon("edit_table", "misc/edit_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon EDIT_COLUMN = new DBIcon("edit_column", "misc/edit_column.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CONFIG_TABLE = new DBIcon("edit_table", "misc/config_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_TABLE = new DBIcon("edit_table", "sql/sql_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon OBJ_ADD = new DBIcon("object_add", "misc/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OBJ_REMOVE = new DBIcon("object_remove", "misc/object_remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -166,7 +170,6 @@ public class UIIcon {
 
     public static final DBIcon PROJECTS = new DBIcon("projects", "projects.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASES = new DBIcon("databases", "databases.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SCRIPTS = new DBIcon("scripts", "scripts.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PAGE_STACK = new DBIcon("page_stack", "page_stack.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BOOKMARK_FOLDER = new DBIcon("bookmark_folder", "bookmark_folder.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BOOKMARK = new DBIcon("bookmark", "bookmark.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -188,10 +191,14 @@ public class UIIcon {
     public static final DBIcon SQL_CONNECT = new DBIcon("sql_connect", "sql/connect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_DISCONNECT = new DBIcon("sql_disconnect", "sql/disconnect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_READONLY = new DBIcon("readonly", "sql/readonly.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SQL_SCRIPT = new DBIcon("sql_script", "sql/sql_script.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONSOLE = new DBIcon("sql_console", "sql/sql_console.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXECUTE = new DBIcon("sql_exec", "sql/sql_exec.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE = new DBIcon("sql_script_exec", "sql/sql_script_exec.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_SCRIPT_EXECUTE_NATIVE = new DBIcon("sql_exec_native", "sql/sql_exec_native.png");//$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_FALSE = new DBIcon(
+        "sql_tab_per_result_true", "sql/sql_multiple_results_per_tab_false.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_TRUE = new DBIcon(
+        "sql_tab_per_result_false", "sql/sql_multiple_results_per_tab_true.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_ANALYSE = new DBIcon("sql_analyse", "sql/sql_analyse.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXPLAIN_PLAN = new DBIcon("sql_explain", "sql/sql_plan.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -245,6 +252,8 @@ public class UIIcon {
     public static final DBIcon BUTTON_GO_TO_ERROR = new DBIcon("buttons/target_error.png"); //$NON-NLS-1$
 
     public static final DBIcon FILE = new DBIcon("file/file.png"); //$NON-NLS-1$
+    public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.png"); //$NON-NLS-1$
+    public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.png"); //$NON-NLS-1$
 
     static  {
         DBIcon.loadIcons(UIIcon.class);

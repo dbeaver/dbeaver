@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -42,7 +43,8 @@ import java.util.Map;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreObject, PostgreScriptObject, DBPHiddenObject {
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase>
+        implements PostgreObject, PostgreScriptObject, DBPHiddenObject, DBPNamedObject2 {
     private long indexId;
     private boolean isUnique;
     private boolean isPrimary; // Primary index - implicit

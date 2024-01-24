@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import org.eclipse.gef3.EditPart;
-import org.eclipse.gef3.EditPartFactory;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.EditPartFactory;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphEdge;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;

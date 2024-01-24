@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,13 +26,11 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -42,13 +40,17 @@ import java.io.Reader;
  */
 public class DataExporterXML extends StreamExporterAbstract {
 
+    private static final String PROP_INCLUDE_DOCTYPE_DECLARATION = "includeDoctype";
+
     private DBDAttributeBinding[] columns;
     private String tableName;
+    private boolean includeDoctype;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
+        includeDoctype = CommonUtils.getBoolean(site.getProperties().get(PROP_INCLUDE_DOCTYPE_DECLARATION), false);
     }
 
     @Override
@@ -69,25 +71,27 @@ public class DataExporterXML extends StreamExporterAbstract {
         PrintWriter out = getWriter();
         out.write("<?xml version=\"1.0\" encoding=\"" + getSite().getOutputEncoding() + "\"?>\n");
         tableName = escapeXmlElementName(getSite().getSource().getName());
-        out.write("<!DOCTYPE " + tableName + " [\n");
-        out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
-        out.write("  <!ELEMENT DATA_RECORD (");
-        int columnsSize = columns.length;
-        for (int i = 0; i < columnsSize; i++) {
-            String colName = columns[i].getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = columns[i].getName();
+        if (includeDoctype) {
+            out.write("<!DOCTYPE " + tableName + " [\n");
+            out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
+            out.write("  <!ELEMENT DATA_RECORD (");
+            int columnsSize = columns.length;
+            for (int i = 0; i < columnsSize; i++) {
+                String colName = columns[i].getLabel();
+                if (CommonUtils.isEmpty(colName)) {
+                    colName = columns[i].getName();
+                }
+                out.write(escapeXmlElementName(colName) + "?");
+                if (i < columnsSize - 1) {
+                    out.write(",");
+                }
             }
-            out.write(escapeXmlElementName(colName) + "?");
-            if (i < columnsSize - 1) {
-                out.write(",");
+            out.write(")+>\n");
+            for (int i = 0; i < columnsSize; i++) {
+                out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
             }
+            out.write("]>\n");
         }
-        out.write(")+>\n");
-        for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
-        }
-        out.write("]>\n");
         out.write("<" + tableName + ">\n");
     }
 
@@ -119,7 +123,7 @@ public class DataExporterXML extends StreamExporterAbstract {
                     }
                 }
                 finally {
-                    content.release();
+                    DTUtils.closeContents(resultSet, content);
                 }
             } else {
                 writeTextCell(super.getValueDisplayString(column, row[i]));
@@ -139,24 +143,6 @@ public class DataExporterXML extends StreamExporterAbstract {
         if (value != null) {
             value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
             getWriter().write(value);
-        }
-    }
-
-    private void writeImageCell(File file) throws DBException
-    {
-        if (file != null && file.exists()) {
-            Image image = null;
-            try {
-                image = ImageIO.read(file);
-            } catch (IOException e) {
-                throw new DBException("Can't read an exported image " + image, e);
-            }
-
-            if (image != null) {
-                String imagePath = file.getAbsolutePath();
-                imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-                getWriter().write(imagePath);
-            }
         }
     }
 

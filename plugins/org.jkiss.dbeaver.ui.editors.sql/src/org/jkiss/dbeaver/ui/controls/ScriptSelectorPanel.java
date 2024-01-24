@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -226,7 +225,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                 final ResourceInfo ri = (ResourceInfo) element;
                 if (!ri.isDirectory()) {
                     if (ri.getDataSource() == null) {
-                        return DBeaverIcons.getImage(UIIcon.SQL_SCRIPT);
+                        return DBeaverIcons.getImage(DBIcon.TREE_SCRIPT);
                     } else {
                         return DBeaverIcons.getImage(ri.getDataSource().getDriver().getIcon());
                     }

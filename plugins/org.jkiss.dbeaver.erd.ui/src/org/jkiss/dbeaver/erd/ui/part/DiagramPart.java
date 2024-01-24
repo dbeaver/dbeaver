@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,16 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.*;
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.commands.CommandStackEvent;
-import org.eclipse.gef3.commands.CommandStackEventListener;
-import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
+import org.eclipse.draw2d.ConnectionLayer;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.*;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.commands.CommandStackEvent;
+import org.eclipse.gef.commands.CommandStackEventListener;
+import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
@@ -42,7 +44,9 @@ import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramContainerEditPolicy;
-import org.jkiss.dbeaver.erd.ui.router.MikamiTabuchiConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +62,8 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-
+    
+    private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
         @Override
@@ -125,37 +130,23 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     @Override
-    protected IFigure createFigure()
-    {
+    protected IFigure createFigure() {
         EntityDiagramFigure figure = new EntityDiagramFigure(this);
         delegatingLayoutManager = new DelegatingLayoutManager(this);
         figure.setLayoutManager(delegatingLayoutManager);
-
-/*
-        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
-        ViewportAwareConnectionLayerClippingStrategy clippingStrategy = new ViewportAwareConnectionLayerClippingStrategy(cLayer);
-        figure.setClippingStrategy(clippingStrategy);
-*/
         Control control = getViewer().getControl();
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-
-        FanRouter router = new FanRouter();
-        router.setSeparation(15);
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        //router.setNextRouter(new BendpointConnectionRouter());
-        if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-            router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
-        } else {
-            router.setNextRouter(new ShortestPathConnectionRouter(figure));
+        
+        ERDConnectionRouterDescriptor routerDescriptor = getEditor().getDiagramRouter(); 
+        if (routerDescriptor == null) {
+            routerDescriptor = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
         }
-
-//        router.setNextRouter(new ManhattanConnectionRouter());
-        //router.setNextRouter(new BendpointConnectionRouter());
+        router = routerDescriptor.createRouter();
+        router.setContainer(figure);
         cLayer.setConnectionRouter(router);
-
         return figure;
     }
 
@@ -236,7 +227,7 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     /**
-     * @see org.eclipse.gef3.editparts.AbstractEditPart#isSelectable()
+     * @see org.eclipse.gef.editparts.AbstractEditPart#isSelectable()
      */
     @Override
     public boolean isSelectable()
@@ -423,5 +414,12 @@ public class DiagramPart extends PropertyAwarePart {
         return ERDUIMessages.entity_diagram_ + " " + getDiagram().getName();
     }
 
-
+    /**
+     * Gets the diagram router
+     *
+     * @return - router
+     */
+    public ERDConnectionRouter getActiveRouter() {
+        return router;
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
@@ -141,6 +141,7 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected ERDAssociation createAssociation(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, boolean reflect) {
+        ERDAssociation association = null;
         if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity) {
             DBSEntity srcEntityObject = ((ERDEntity)sourceEntity).getObject();
             DBSEntity targetEntityObject = ((ERDEntity)targetEntity).getObject();
@@ -179,10 +180,16 @@ public class AssociationCreateCommand extends Command {
                 return null;
             }
             vEntity.persistConfiguration();
-            return new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
+            if (sourceEntity != null && targetEntity != null) {
+                association = new ERDAssociation(vfk, (ERDEntity) sourceEntity, (ERDEntity) targetEntity, true);
+            }
         } else {
-            return new ERDAssociation(sourceEntity, targetEntity, true);
+            if (sourceEntity != null && targetEntity != null) {
+                association = new ERDAssociation(sourceEntity, targetEntity, true);
+            }
         }
+        association.resolveAttributes();
+        return association;
     }
 
     public ERDEditorPart getEditor() {

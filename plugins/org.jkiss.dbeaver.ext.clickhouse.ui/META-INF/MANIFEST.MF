@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Clickhouse UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse.ui;singleton:=true
-Bundle-Version: 1.0.102.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 1.0.127.qualifier
+Bundle-Release-Date: 20240122
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ext.generic.ui
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.clickhouse.ui

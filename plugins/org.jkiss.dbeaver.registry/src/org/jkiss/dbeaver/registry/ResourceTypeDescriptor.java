@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     private final String id;
     private final String name;
     private final DBPImage icon;
+    private final DBPImage folderIcon;
     private final boolean managable;
     private final List<IContentType> contentTypes = new ArrayList<>();
     private final List<ObjectType> resourceTypes = new ArrayList<>();
@@ -61,6 +62,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.folderIcon = iconToImage(config.getAttribute("folderIcon"));
         this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
         for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
             String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
@@ -109,6 +111,11 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     }
 
     @Override
+    public DBPImage getFolderIcon() {
+        return folderIcon;
+    }
+
+    @Override
     public String[] getFileExtensions() {
         Set<String> extensions = new LinkedHashSet<>();
         for (IContentType contentType : contentTypes) {
@@ -138,26 +145,30 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
                 return root;
             }
         }
-        try {
-            IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
-            String root = eclipsePreferences.get(id, defaultRoot);
-            boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
-            synchronized (projectRoots) {
-                projectRoots.put(project.getName(), isInvalidRoot ? defaultRoot : root);
-            }
-            if (isInvalidRoot) {
-                root = defaultRoot;
-                eclipsePreferences.put(id, root);
-                try {
-                    eclipsePreferences.flush();
-                } catch (BackingStoreException e) {
-                    log.error(e);
+        if (project.getEclipseProject() != null) {
+            try {
+                IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+                String root = eclipsePreferences.get(id, defaultRoot);
+                boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
+                synchronized (projectRoots) {
+                    projectRoots.put(project.getName(), isInvalidRoot ? defaultRoot : root);
                 }
+                if (isInvalidRoot) {
+                    root = defaultRoot;
+                    eclipsePreferences.put(id, root);
+                    try {
+                        eclipsePreferences.flush();
+                    } catch (BackingStoreException e) {
+                        log.error(e);
+                    }
+                }
+                return root;
+            } catch (Exception e) {
+                log.error("Can't obtain resource handler preferences", e);
+                return defaultRoot;
             }
-            return root;
-        } catch (Exception e) {
-            log.error("Can't obtain resource handler preferences", e);
-            return null;
+        } else {
+            return defaultRoot;
         }
     }
 

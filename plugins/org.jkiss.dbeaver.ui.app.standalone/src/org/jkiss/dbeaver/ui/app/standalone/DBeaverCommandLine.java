@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
-import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -34,15 +34,14 @@ import org.osgi.framework.Bundle;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Command line processing.
  * Note:
  * there are two modes of command line processing:
- * 1. On DBeaver start. It tries to find already running DBeaver instance (thru RMI) and make it execute passed commands
+ * 1. On DBeaver start. It tries to find already running DBeaver instance (thru REST API) and make it execute passed commands
  *    If DBeaver will execute at least one command using remote invocation then application won't start.
  *    Otherwise it will start normally (and then will try to process commands in UI)
  * 2. After DBeaver UI start. It will execute commands directly
@@ -67,8 +66,10 @@ public class DBeaverCommandLine
     public static final String PARAM_BRING_TO_FRONT = "bringToFront";
     public static final String PARAM_QUIET = "q";
 
+    private static final String PARAM_VERSION = "version";
+
     public final static Options ALL_OPTIONS = new Options()
-        .addOption(PARAM_HELP, false, "Help")
+        .addOption(PARAM_HELP, PARAM_HELP, false, "Help")
         .addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
         .addOption(PARAM_FILE, "file", true, "Open a file")
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
@@ -80,6 +81,12 @@ public class DBeaverCommandLine
         .addOption(PARAM_NEW_INSTANCE, PARAM_NEW_INSTANCE, false, "Force creating new application instance (do not try to activate already running)")
         .addOption(PARAM_BRING_TO_FRONT, PARAM_BRING_TO_FRONT, false, "Bring DBeaver window on top of other applications")
         .addOption(PARAM_QUIET, PARAM_QUIET, false, "Run quietly (do not print logs)")
+        .addOption(
+            PARAM_VERSION,
+            PARAM_VERSION,
+            false,
+            "Displays the app name, edition, and version in Major.Minor.Micro.Timestamp format"
+        )
 
         // Eclipse options
         .addOption("product", true, "Product id")
@@ -134,15 +141,6 @@ public class DBeaverCommandLine
         }
     }
 
-    public static List<CommandLineParameterHandler> getRemoteParameterHandlers(@NotNull CommandLine commandLine) {
-        List<CommandLineParameterHandler> handlers = new ArrayList<>();
-        for (ParameterDescriptor param : customParameters.values()) {
-            if (commandLine.hasOption(param.name) && !(param.handler instanceof Remote)) {
-                handlers.add(param.handler);
-            }
-        }
-        return handlers;
-    }
     /**
      * @return true if called should exit after CLI processing
      */
@@ -181,11 +179,7 @@ public class DBeaverCommandLine
         if (!uiActivated) {
             // These command can't be executed locally
             if (commandLine.hasOption(PARAM_STOP)) {
-                try {
-                    controller.quit();
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                controller.quit();
                 return true;
             }
             if (commandLine.hasOption(PARAM_THREAD_DUMP)) {
@@ -240,7 +234,15 @@ public class DBeaverCommandLine
 
     static CommandLine getCommandLine() {
         try {
-            return new DefaultParser().parse(ALL_OPTIONS, Platform.getApplicationArgs(), false);
+            List<String> applicationArgs = Arrays.stream(Platform.getApplicationArgs()).collect(Collectors.toList());
+            int index = applicationArgs.indexOf(CoreApplicationActivator.ARG_ECLIPSE_KEYRING);
+            if (index >= 0) {
+                applicationArgs.remove(index);
+                if (applicationArgs.size() > index) {
+                    applicationArgs.remove(index);
+                }
+            }
+            return new DefaultParser().parse(ALL_OPTIONS, applicationArgs.toArray(new String[0]), false);
         } catch (Exception e) {
             log.warn("Error parsing command line: " + e.getMessage());
             return null;
@@ -258,7 +260,12 @@ public class DBeaverCommandLine
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(120);
             helpFormatter.setOptionComparator((o1, o2) -> 0);
-            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2020-2023 DBeaver Corp", true);
+            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2010-2024 DBeaver Corp", true);
+            return true;
+        }
+
+        if (commandLine.hasOption(PARAM_VERSION)) {
+            System.out.println(GeneralUtils.getLongProductTitle());
             return true;
         }
 
@@ -277,11 +284,8 @@ public class DBeaverCommandLine
             return false;
         }
 
-        final IInstanceController controller = InstanceClient.createClient(instanceLoc);
         try {
-            return executeCommandLineCommands(commandLine, controller, false);
-        } catch (RemoteException e) {
-            log.error("Error calling remote server", e);
+            return executeCommandLineCommands(commandLine, DBeaverInstanceServer.createClient(instanceLoc), false);
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }

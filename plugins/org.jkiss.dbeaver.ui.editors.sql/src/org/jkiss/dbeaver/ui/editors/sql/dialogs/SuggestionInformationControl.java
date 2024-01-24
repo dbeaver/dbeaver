@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBInfoUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -48,6 +47,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -104,8 +104,8 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
         this.input = input;
         if (input instanceof DBPNamedObject && !infoComposite.isDisposed() && !tableComposite.isDisposed()) {
             createMetadataFields((DBPNamedObject) input);
-            if (input instanceof JDBCTable) {
-                createTreeControl((JDBCTable<?, ?>) input);
+            if (input instanceof DBSTable) {
+                createTreeControl((DBSTable) input);
             }
         }
 
@@ -168,7 +168,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
         resolveObject.schedule();
     }
 
-    private void createTreeControl(@NotNull JDBCTable<?, ?> input) {
+    private void createTreeControl(@NotNull DBSTable input) {
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.horizontalSpan = 0;
         gridData.verticalSpan = 0;

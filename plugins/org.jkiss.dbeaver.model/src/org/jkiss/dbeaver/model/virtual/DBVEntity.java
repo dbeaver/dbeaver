@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,7 +36,7 @@ import java.util.*;
 /**
  * Virtual entity descriptor
  */
-public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObject, DBSDictionary, IAdaptable {
+public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObject, DBSDictionary, DBPAdaptable {
 
     public static final String[] DEFAULT_DESCRIPTION_COLUMN_PATTERNS = {
         "title",
@@ -483,25 +482,50 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return getDescriptionColumns(monitor, entity, descriptionColumnNames);
     }
 
-    public static Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity, String descColumns)
-        throws DBException {
-        if (CommonUtils.isEmpty(descColumns)) {
+    @NotNull
+    public <T extends DBSAttributeBase> Collection<T> getDescriptionColumns(@NotNull Collection<? extends T> attributes) {
+        return getDescriptionColumns(attributes, descriptionColumnNames);
+    }
+
+    public static Collection<DBSEntityAttribute> getDescriptionColumns(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity entity,
+        @NotNull String descColumns
+    ) throws DBException {
+        return getDescriptionColumns(entity.getAttributes(monitor), descColumns);
+    }
+
+    @NotNull
+    public static <T extends DBSAttributeBase> Collection<T> getDescriptionColumns(
+        @Nullable Collection<? extends T> attributes,
+        @NotNull String descColumns
+    ) {
+        if (CommonUtils.isEmpty(descColumns) || CommonUtils.isEmpty(attributes)) {
             return Collections.emptyList();
         }
-        List<DBSEntityAttribute> result = new ArrayList<>();
-        Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-        if (!CommonUtils.isEmpty(attributes)) {
-            StringTokenizer st = new StringTokenizer(descColumns, ",");
-            while (st.hasMoreTokens()) {
-                String colName = st.nextToken();
-                for (DBSEntityAttribute attr : attributes) {
-                    if (colName.equalsIgnoreCase(attr.getName())) {
-                        result.add(attr);
-                    }
+        List<T> result = new ArrayList<>();
+        StringTokenizer st = new StringTokenizer(descColumns, ",");
+        while (st.hasMoreTokens()) {
+            String colName = st.nextToken();
+            for (T attr : attributes) {
+                if (matchesName(attr, colName)) {
+                    result.add(attr);
+                    break;
                 }
             }
         }
         return result;
+    }
+
+    private static boolean matchesName(@NotNull DBSAttributeBase attribute, @NotNull String name) {
+        if (attribute instanceof DBSObject) {
+            final DBPDataSource dataSource = ((DBSObject) attribute).getDataSource();
+            if (dataSource != null) {
+                name = DBUtils.getUnQuotedIdentifier(dataSource, name);
+            }
+        }
+
+        return attribute.getName().equalsIgnoreCase(name);
     }
 
     public static String getDefaultDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn) throws DBException {
@@ -670,13 +694,95 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return true;
     }
 
+    @Override
+    public DBSDictionaryAccessor getDictionaryAccessor(
+        DBRProgressMonitor monitor,
+        List<DBDAttributeValue> precedingKeys,
+        DBSEntityAttribute keyColumn,
+        boolean sortAsc,
+        boolean sortByDesc
+    ) throws DBException {
+        final DBSEntity realEntity = getRealEntity(monitor);
+        if (realEntity instanceof DBSDictionary) {
+            return ((DBSDictionary) realEntity).getDictionaryAccessor(
+                monitor,
+                    precedingKeys,
+                keyColumn,
+                sortAsc,
+                sortByDesc
+            );
+        } else {
+            return emptyDictionaryAccessor;
+        }
+    }
+
+    private static final DBSDictionaryAccessor emptyDictionaryAccessor = new DBSDictionaryAccessor() {
+        
+        @Override
+        public boolean isKeyComparable() {
+            return false;
+        }
+        
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException {
+            return Collections.emptyList();
+        }
+        
+        @NotNull
+        public List<DBDLabelValuePair> getValues(long offset, long maxResults) {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        public List<DBDLabelValuePair> getSimilarValues(
+            @NotNull Object pattern,
+            boolean caseInsensitive,
+            boolean byDesc,
+            long offset,
+            long maxResults
+        ) {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getValuesNear(
+            @NotNull Object value,
+            boolean isPreceeding,
+            long offset,
+            long maxResults
+        ) throws DBException {
+            return Collections.emptyList();
+        }
+        
+        @Override
+        public List<DBDLabelValuePair> getSimilarValuesNear(
+            @NotNull Object pattern, boolean caseInsensitive, boolean byDesc, 
+            Object value, boolean isPreceeding, 
+            long offset, long maxResults
+        ) throws DBException {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void close() throws Exception {
+            // do nothing
+        }
+
+        @Override
+        public List<DBDLabelValuePair> getValues(long offset, int pageSize) throws DBException {
+            return Collections.emptyList();
+        }
+    };
+
     @NotNull
     @Override
     public List<DBDLabelValuePair> getDictionaryEnumeration(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
-        Object keyPattern,
-        @Nullable List<DBDAttributeValue> preceedingKeys,
+        @Nullable Object keyPattern,
+        @Nullable String searchText, @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean caseInsensitiveSearch,
         boolean sortAsc,
         boolean sortByValue,
@@ -689,6 +795,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 monitor,
                 keyColumn,
                 keyPattern,
+                searchText,
                 preceedingKeys,
                 caseInsensitiveSearch,
                 sortAsc,

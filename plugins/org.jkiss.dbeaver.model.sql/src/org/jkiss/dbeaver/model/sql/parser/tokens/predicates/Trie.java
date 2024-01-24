@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.model.sql.parser.TrieNode;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.*;
 
@@ -141,7 +141,7 @@ public class Trie<T, V> {
 
         @Nullable
         private ListNode<TrieNode<T, V>> accumulateNonComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
-            TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
+            TrieLookupComparator<T> comparer = Trie.this.lookupPartialComparer;
             ListNode<TrieNode<T, V>> accumulatedResults = results;
             for (int i = 0; i < this.childKeys.size(); i++) {
                 if (comparer.match(this.childKeys.get(i), term)) {
@@ -153,7 +153,7 @@ public class Trie<T, V> {
 
         @NotNull
         private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
-            TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
+            TrieLookupComparator<T> comparer = Trie.this.lookupPartialComparer;
             ListNode<TrieNode<T, V>> accumulatedResults = results;
             int index = Collections.binarySearch(this.childKeys, term, comparer);
             if (index >= 0) {

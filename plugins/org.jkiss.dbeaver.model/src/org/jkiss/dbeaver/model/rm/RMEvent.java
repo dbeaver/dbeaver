@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,41 @@
 package org.jkiss.dbeaver.model.rm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-import java.util.List;
 import java.util.Map;
 
 public class RMEvent {
 
     public enum Action {
         RESOURCE_DELETE,
-        RESOURCE_ADD
+        RESOURCE_ADD,
+        PROJECT_DELETE,
+        PROJECT_ADD
     }
 
     @NotNull
     private final Action action;
     @NotNull
     private final RMProject project;
-    @NotNull
-    private final List<RMResource> resourceTree;
+    @Nullable
+    private final String resourcePath;
     @NotNull
     private final Map<String, Object> parameters;
 
-    public RMEvent(@NotNull Action action, @NotNull RMProject project, @NotNull List<RMResource> resourceTree, @NotNull Map<String, Object> parameters) {
+    public RMEvent(@NotNull Action action, @NotNull RMProject project, @Nullable String resourcePath, @NotNull Map<String, Object> parameters) {
         this.action = action;
         this.project = project;
-        this.resourceTree = resourceTree;
+        this.resourcePath = resourcePath;
         this.parameters = parameters;
     }
 
     public RMEvent(@NotNull Action action, @NotNull RMProject project) {
-        this(action, project, List.of(), Map.of());
+        this(action, project, null, Map.of());
     }
 
-    public RMEvent(@NotNull Action action, @NotNull RMProject project, @NotNull List<RMResource> resourceTree) {
-        this(action, project, resourceTree, Map.of());
+    public RMEvent(@NotNull Action action, @NotNull RMProject project, @NotNull String resourcePath) {
+        this(action, project, resourcePath, Map.of());
     }
 
     @NotNull
@@ -62,9 +64,9 @@ public class RMEvent {
         return project;
     }
 
-    @NotNull
-    public List<RMResource> getResourceTree() {
-        return resourceTree;
+    @Nullable
+    public String getResourcePath() {
+        return resourcePath;
     }
 
     public Map<String, Object> getParameters() {

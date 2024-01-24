@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class DB2PlanObject extends DB2PlanNode implements DBCPlanCostNode {
         this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
         this.objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
 
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATISTICS_TIME");
         this.columnsCount = JDBCUtils.safeGetInteger(dbResult, "COLUMN_COUNT");
         this.rowCount = JDBCUtils.safeGetInteger(dbResult, "ROW_COUNT");

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,18 +28,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWizard;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
@@ -95,6 +95,11 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     public boolean isRunTaskOnFinish() {
         return getCurrentTask() != null && !getCurrentTask().isTemporary() && !getContainer().isSelectorMode();
+    }
+    
+    protected boolean isToolTask() {
+        return getCurrentTask() != null &&
+            getCurrentTask().getProperties().getOrDefault(TaskConstants.TOOL_TASK_PROP, false).equals(true);
     }
 
     public IStructuredSelection getCurrentSelection() {
@@ -164,7 +169,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     protected void addTaskConfigPages() {
         // If we are in task edit mode then add special first page.
         // Do not add it if this is an ew task wizard (because this page is added separately)
-        if (isTaskEditor()) {
+        if (isTaskEditor() && !currentTask.isTemporary()) {
             // Task editor. Add first page
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
             addPage(new TaskConfigurationWizardPageSettings(getCurrentTask()));
@@ -329,6 +334,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            return;
+        }
 
         IViewDescriptor tasksViewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID);
         if (tasksViewDescriptor == null || getContainer().isSelectorMode()) {
@@ -470,5 +478,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     public void onWizardActivation() {
 
+    }
+
+    @NotNull
+    public TaskConfigurationWizardDialog createWizardDialog(@NotNull IWorkbenchWindow window, @Nullable IStructuredSelection selection) {
+        return new TaskConfigurationWizardDialog(window, this, selection);
     }
 }

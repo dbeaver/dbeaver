@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor.tools;
 
-import org.eclipse.draw2dl.Cursors;
-import org.eclipse.draw2dl.FigureCanvas;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.gef3.EditPartViewer;
-import org.eclipse.gef3.palette.ToolEntry;
-import org.eclipse.gef3.tools.AbstractTool;
-import org.eclipse.gef3.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.draw2d.Cursors;
+import org.eclipse.draw2d.FigureCanvas;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.gef.EditPartViewer;
+import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.tools.AbstractTool;
+import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;

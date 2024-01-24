@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,24 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisConstants;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * GeometryDataUtils.
@@ -86,7 +88,7 @@ public class GeometryDataUtils {
 
     public static void setGeometryProperties(@NotNull IResultSetController controller, @NotNull GeomAttrs geomAttrs, @NotNull DBGeometry geometry, @NotNull RGB geometryColor, @NotNull ResultSetRow row) {
         final ResultSetModel model = controller.getModel();
-        final Map<String, Object> info = new LinkedHashMap<>();
+        final Map<String, String> info = new LinkedHashMap<>();
         for (DBDAttributeBinding binding : geomAttrs.descAttrs) {
             final Object description = model.getCellValue(binding, row);
             if (!DBUtils.isNullValue(description)) {
@@ -98,6 +100,27 @@ public class GeometryDataUtils {
         properties.put("color", String.format("#%02x%02x%02x", geometryColor.red, geometryColor.green, geometryColor.blue));
         properties.put("info", info);
         geometry.setProperties(properties);
+
+        final DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
+        final DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), true) : null;
+
+        if (entity != null) {
+            final Collection<DBDAttributeBinding> attributes = entity.getDescriptionColumns(geomAttrs.descAttrs);
+
+            if (!attributes.isEmpty()) {
+                final String divider = entity.getDataSource().getContainer()
+                    .getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER);
+                final String name = attributes.stream()
+                    .map(DBDAttributeBinding::getName)
+                    .map(info::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(divider));
+
+                if (!name.isBlank()) {
+                    properties.put("name", name);
+                }
+            }
+        }
     }
 
     @NotNull

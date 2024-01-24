@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -231,6 +232,10 @@ public class CustomFormEditor {
     public Control createEditorControl(Composite parent, Object object, DBPPropertyDescriptor property, Object value, boolean readOnly)
     {
         // List
+        String propertyDisplayName = property.getDisplayName();
+        if (property.isRequired()) {
+            propertyDisplayName += " (*)";
+        }
         if (!readOnly && property instanceof IPropertyValueListProvider) {
             final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
             Object[] items = listProvider.getPossibleValues(object);
@@ -239,13 +244,17 @@ public class CustomFormEditor {
                 items = new Object[0];
             }
             if (items != null) {
-                final String[] strings = new String[items.length];
+                String[] strings = new String[items.length];
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = objectValueToString(items[i]);
                 }
+                if (!property.isRequired()) {
+                    // Add null value
+                    strings = ArrayUtils.insertArea(String.class, strings, 0, new Object[] { "" });
+                }
                 Combo combo = UIUtils.createLabelCombo(
                     parent,
-                    property.getDisplayName(),
+                    propertyDisplayName,
                     SWT.BORDER | SWT.DROP_DOWN |
                         (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) |
                         (readOnly ? SWT.READ_ONLY : SWT.NONE));
@@ -265,7 +274,7 @@ public class CustomFormEditor {
         if (DBSObject.class.isAssignableFrom(propType) || isLinkProperty(property)) {
             UIUtils.createControlLabel(
                 parent,
-                property.getDisplayName());
+                propertyDisplayName);
             Composite linkPH = new Composite(parent, SWT.NONE);
             {
                 linkPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -286,7 +295,7 @@ public class CustomFormEditor {
             return link;
         } else if (isTextPropertyType(propType)) {
             if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).getLength() == PropertyLength.MULTILINE) {
-                Label label = UIUtils.createControlLabel(parent, property.getDisplayName());
+                Label label = UIUtils.createControlLabel(parent, propertyDisplayName);
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
                 Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
 
@@ -299,7 +308,7 @@ public class CustomFormEditor {
             } else {
                 Text text = UIUtils.createLabelText(
                     parent,
-                    property.getDisplayName(),
+                    propertyDisplayName,
                     objectValueToString(value),
                     SWT.BORDER |
                         (readOnly ? SWT.READ_ONLY : SWT.NONE) |
@@ -316,7 +325,7 @@ public class CustomFormEditor {
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 curButtonsContainer.setLayoutData(gd);
             }
-            Button editor = UIUtils.createCheckbox(curButtonsContainer, property.getDisplayName(), "", CommonUtils.toBoolean(value), 1);
+            Button editor = UIUtils.createCheckbox(curButtonsContainer, propertyDisplayName, "", CommonUtils.toBoolean(value), 1);
             if (readOnly) {
                 editor.setEnabled(false);
             }
@@ -329,7 +338,7 @@ public class CustomFormEditor {
             }
             Combo combo = UIUtils.createLabelCombo(
                 parent,
-                property.getDisplayName(),
+                propertyDisplayName,
                 SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY | (readOnly ? SWT.READ_ONLY : SWT.NONE));
             combo.setItems(strings);
             combo.setText(objectValueToString(value));
@@ -338,7 +347,7 @@ public class CustomFormEditor {
         } else {
             return UIUtils.createLabelText(
                 parent,
-                property.getDisplayName(),
+                propertyDisplayName,
                 objectValueToString(value),
                 SWT.BORDER | SWT.READ_ONLY);
         }
@@ -452,5 +461,13 @@ public class CustomFormEditor {
 
     public boolean hasEditors() {
         return !editorMap.isEmpty();
+    }
+
+    public void clearEditors() {
+        this.editorMap.clear();
+        if (curButtonsContainer != null) {
+            curButtonsContainer.dispose();
+            curButtonsContainer = null;
+        }
     }
 }

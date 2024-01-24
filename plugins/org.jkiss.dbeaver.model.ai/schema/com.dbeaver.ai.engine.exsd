@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="com.dbeaver.ai.engine" id="com.dbeaver.ai.engine" name="AI engines"/>
+      </appInfo>
+      <documentation>
+         AI engines
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="completionEngine" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="completionEngine">
+      <complexType>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+
+</schema>

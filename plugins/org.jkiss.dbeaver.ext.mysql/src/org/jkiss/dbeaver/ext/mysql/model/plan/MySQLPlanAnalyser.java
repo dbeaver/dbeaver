@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +56,7 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
         if (!"SELECT".equalsIgnoreCase(firstKeyword) && !"WITH".equalsIgnoreCase(firstKeyword)) {
-            throw new DBCException("Only SELECT statements could produce execution plan");
+            throw new DBCException(MySQLMessages.exception_only_select_could_produce_execution_plan);
         }
         if (supportsExplainJSON()) {
             return new MySQLPlanJSON(session, query);
@@ -120,33 +119,20 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
                     attributes.add("extra", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getExtra())));
                 } else if (node instanceof MySQLPlanNodeJSON) {
                     MySQLPlanNodeJSON jsNode = (MySQLPlanNodeJSON) node;
-                    for(Map.Entry<String, String>  e : jsNode.getNodeProps().entrySet()) {
-                        attributes.add(e.getKey(), new JsonPrimitive(CommonUtils.notEmpty(e.getValue())));
+                    for (Map.Entry<String, Object> e : jsNode.getNodeProps().entrySet()) {
+                        Object value = e.getValue();
+                        if (value instanceof Double) {
+                            // Keep numbers in the original view
+                            attributes.add(e.getKey(), new JsonPrimitive((Double) value));
+                        } else {
+                            attributes.add(e.getKey(), new JsonPrimitive(value.toString()));
+                        }
                     }
                 }
                 nodeJson.add(PROP_ATTRIBUTES, attributes);
             }
         });
 
-/*
-        if (plan instanceof MySQLPlanClassic) {
-            serializeJson(planData, plan,dataSource.getInfo().getDriverName(),(MySQLPlanClassic) plan);
-        } else if (plan instanceof MySQLPlanJSON) {
-            serializeJson(planData, plan,dataSource.getInfo().getDriverName(),(MySQLPlanJSON) plan);
-        }
-*/
-
-    }
-
-    private static Map<String, String> getNodeAttributes(JsonObject nodeObject){
-        Map<String,String> attributes = new HashMap<>();
-
-        JsonObject attrs =  nodeObject.getAsJsonObject(PROP_ATTRIBUTES);
-        for(Map.Entry<String, JsonElement> attr : attrs.entrySet()) {
-            attributes.put(attr.getKey(), attr.getValue().getAsString());
-        }
-
-        return attributes;
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,10 +50,10 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     {
         super(
             schema,
-            JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"),
+            JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME),
             JDBCUtils.safeGetLong(dbResult, "OBJECT_ID"),
-            DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE")));
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+            DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE)));
+        this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
     }
 
     public OracleProcedureStandalone(OracleSchema oracleSchema, String name, DBSProcedureType procedureType)

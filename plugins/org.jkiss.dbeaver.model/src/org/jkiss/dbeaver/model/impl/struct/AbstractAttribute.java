@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -93,6 +96,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
         return name;
     }
 
+    @Override
     public void setName(String columnName)
     {
         this.name = columnName;
@@ -142,7 +146,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
                 String modifiers = fullTypeName.substring(divPos + 1, divPos2);
                 int divPos3 = modifiers.indexOf(',');
                 if (divPos3 == -1) {
-                    maxLength = precision = CommonUtils.toInt(modifiers);
+                    maxLength = precision = CommonUtils.toInt(modifiers, -1);
                 } else {
                     precision= CommonUtils.toInt(modifiers.substring(0, divPos3).trim());
                     scale = CommonUtils.toInt(modifiers.substring(divPos3 + 1).trim());

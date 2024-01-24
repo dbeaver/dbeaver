@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.net.ssh;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -32,7 +30,6 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -43,23 +40,21 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
-import org.jkiss.dbeaver.model.net.ssh.SSHImplementationAbstract;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.runtime.AbstractTrackingJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
-import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -71,13 +66,14 @@ import java.util.Locale;
  * SSH tunnel configuration
  */
 public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
-    private static final Log log = Log.getLog(SSHTunnelConfiguratorUI.class);
 
     private DBWHandlerConfiguration savedConfiguration;
 
     private CredentialsPanel credentialsPanel;
     private CredentialsPanel jumpServerCredentialsPanel;
+    private ExpandableCompositeEx jumpServerExpandableGroup;
     private Button jumpServerEnabledCheck;
+    private ToolTip jumpServerErrorToolTip;
 
     private Combo tunnelImplCombo;
     private Button fingerprintVerificationCheck;
@@ -91,42 +87,32 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     private VariablesHintLabel variablesHintLabel;
 
     @Override
-    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
-    {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
-        scrolledComposite.setLayout(new GridLayout(1, false));
-        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        final Composite composite = new Composite(scrolledComposite, SWT.NONE);
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
+        final Composite composite = new Composite(parent, SWT.NONE);
         final GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
+        //gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
         composite.setLayoutData(gridData);
         composite.setLayout(new GridLayout(1, false));
-
-        scrolledComposite.setContent(composite);
-        scrolledComposite.setExpandHorizontal(true);
-        scrolledComposite.setExpandVertical(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
         }
 
         {
-            final ExpandableComposite group = new ExpandableComposite(composite, SWT.CHECK);
-            group.addExpansionListener(new ExpansionAdapter() {
+            jumpServerExpandableGroup = new ExpandableCompositeEx(composite, SWT.CHECK);
+            jumpServerExpandableGroup.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
-            group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-            group.setText(SSHUIMessages.model_ssh_configurator_group_jump_server_settings_text);
+            jumpServerExpandableGroup.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            jumpServerExpandableGroup.setText(SSHUIMessages.model_ssh_configurator_group_jump_server_settings_text);
 
-            final Composite client = new Composite(group, SWT.BORDER);
+            final Composite client = new Composite(jumpServerExpandableGroup, SWT.BORDER);
             client.setLayout(new GridLayout(2, false));
             client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-            group.setClient(client);
+            jumpServerExpandableGroup.setClient(client);
 
             jumpServerEnabledCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_group_jump_server_checkbox_label, false);
             jumpServerEnabledCheck.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 2, 1));
@@ -136,14 +122,33 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
+                    validateJumpServerHost();
                 }
             });
             if (jumpServerCredentialsPanel != null && credentialsPanel.savePasswordCheckbox != null) {
                 credentialsPanel.savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection()
-                                                                           && jumpServerEnabledCheck.getSelection());
+                        jumpServerCredentialsPanel.passwordText.setEnabled(
+                            credentialsPanel.savePasswordCheckbox.getSelection() &&
+                                jumpServerEnabledCheck.getSelection()
+                        );
+                    }
+                });
+            }
+            if (jumpServerCredentialsPanel != null) {
+                jumpServerErrorToolTip = new ToolTip(jumpServerCredentialsPanel.hostNameText.getShell(), SWT.BALLOON);
+                jumpServerErrorToolTip.setAutoHide(false);
+                jumpServerCredentialsPanel.hostNameText.addModifyListener(e -> validateJumpServerHost());
+                jumpServerCredentialsPanel.hostNameText.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        showJumpServerErrorToolTipIfNeeded(false);
+                    }
+
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        showJumpServerErrorToolTipIfNeeded(true);
                     }
                 });
             }
@@ -154,7 +159,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -163,7 +167,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             final Composite client = new Composite(group, SWT.BORDER);
             client.setLayout(new GridLayout(4, false));
-            client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            client.setLayoutData(new GridData(GridData.FILL_BOTH));
             group.setClient(client);
 
             tunnelImplCombo = UIUtils.createLabelCombo(client, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -179,21 +183,23 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 tunnelImplCombo.add(it.getLabel());
             }
 
-            fingerprintVerificationCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_label_bypass_verification, false);
-            GridData cgd = new GridData(GridData.FILL_HORIZONTAL);
-            cgd.horizontalSpan = 2;
-            fingerprintVerificationCheck.setLayoutData(cgd);
-            fingerprintVerificationCheck.setToolTipText(SSHUIMessages.model_ssh_configurator_label_bypass_verification_description);
+            fingerprintVerificationCheck = UIUtils.createCheckbox(
+                client,
+                SSHUIMessages.model_ssh_configurator_label_bypass_verification,
+                SSHUIMessages.model_ssh_configurator_label_bypass_verification_description,
+                false,
+                2);
 
             localHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
             localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            remoteHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
-            remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
-            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             localPortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_port, String.valueOf(0));
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
             setNumberEditStyles(localPortSpinner);
+
+            remoteHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
+            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             remotePortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_port, String.valueOf(0));
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
@@ -233,6 +239,46 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
     }
 
+    private void validateJumpServerHost() {
+        if (jumpServerEnabledCheck.getSelection() && jumpServerCredentialsPanel.hostNameText.getText().isEmpty()) {
+            jumpServerCredentialsPanel.hostNameText.setToolTipText(
+                SSHUIMessages.model_ssh_configurator_group_jump_server_host_not_specified_label
+            );
+            jumpServerCredentialsPanel.hostNameText.setBackground(UIUtils.COLOR_VALIDATION_ERROR);
+        } else {
+            jumpServerCredentialsPanel.hostNameText.setToolTipText(null);
+            jumpServerCredentialsPanel.hostNameText.setBackground(null);
+        }
+        showJumpServerErrorToolTipIfNeeded(true);
+        if (jumpServerExpandableGroup.isExpanded()) {
+            jumpServerExpandableGroup.setExpansionTogglerEnabled(
+                CommonUtils.isEmpty(jumpServerCredentialsPanel.hostNameText.getToolTipText())
+            );
+        }
+        jumpServerCredentialsPanel.hostNameText.redraw();
+    }
+
+    private void showJumpServerErrorToolTipIfNeeded(boolean show) {
+        if (show && jumpServerEnabledCheck.getSelection() && credentialsPanel.getParent().isEnabled() &&
+            jumpServerCredentialsPanel.hostNameText.getToolTipText() != null && jumpServerExpandableGroup.isExpanded()
+        ) {
+            UIUtils.asyncExec(() -> {
+                jumpServerErrorToolTip.setMessage(jumpServerCredentialsPanel.hostNameText.getToolTipText());
+                jumpServerErrorToolTip.setLocation(jumpServerCredentialsPanel.hostNameText.getShell().toDisplay(
+                    jumpServerCredentialsPanel.hostNameText.getShell().getDisplay().map(
+                        jumpServerCredentialsPanel.hostNameText,
+                        jumpServerCredentialsPanel.hostNameText.getShell(),
+                        0,
+                        jumpServerCredentialsPanel.hostNameText.getSize().y
+                    )
+                ));
+                jumpServerErrorToolTip.setVisible(true);
+            });
+        } else {
+            jumpServerErrorToolTip.setVisible(false);
+        }
+    }
+
     private static void setNumberEditStyles(Text text) {
         text.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.ENGLISH));
         GridData gdt = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -243,18 +289,19 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     @Nullable
     private static DBPAuthInfo promptCredentialsDialog(
         @NotNull SSHConstants.AuthType type,
-        @NotNull String username, @NotNull String password
+        @Nullable String username,
+        @Nullable String password
     ) {
         try {
             return DBWorkbench.getPlatformUI().promptUserCredentials(
                 SSHUIMessages.model_ssh_dialog_credentials,
                 SSHUIMessages.model_ssh_dialog_credentials_username,
-                username,
+                CommonUtils.notEmpty(username),
                 type.equals(SSHConstants.AuthType.PUBLIC_KEY)
                     ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
                     : SSHUIMessages.model_ssh_dialog_credentials_password,
-                password,
-                type.equals(SSHConstants.AuthType.PUBLIC_KEY),
+                CommonUtils.notEmpty(password),
+                false,
                 false
             );
         } catch (Exception e) {
@@ -280,7 +327,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         final String[] tunnelVersions = new String[2];
 
-        final TunnelConnectionTestJob job = new TunnelConnectionTestJob() {
+        var job = new AbstractTrackingJob("Test tunnel connection") {
             @Override
             protected void execute(@NotNull DBRProgressMonitor monitor) throws Throwable {
                 monitor.beginTask("Instantiate SSH tunnel", 2);
@@ -291,28 +338,27 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 try {
                     monitor.subTask("Initialize tunnel");
                     String authTypeName = configuration.getStringProperty("authType");
-                    SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName);
+                    SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName, SSHConstants.AuthType.PASSWORD);
                     if (!configuration.isSavePassword() && tunnel.getRequiredCredentials(configuration, null) != DBWTunnel.AuthCredentials.NONE) {
-                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration.getUserName(),
-                            configuration.getPassword());
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration.getUserName(), configuration.getPassword());
                         if (dbpAuthInfo != null) {
-                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                                configuration.setUserName(dbpAuthInfo.getUserName());
-                            }
+                            configuration.setUserName(dbpAuthInfo.getUserName());
                             configuration.setPassword(dbpAuthInfo.getUserPassword());
                         }
                         checkJumpServerConfiguration(tunnel);
-
                     }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
-                    monitor.worked(1);
-                    // Get info
-                    tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
-                    tunnelVersions[1] = tunnel.getImplementation().getServerVersion();
+                    try {
+                        monitor.worked(1);
+                        // Get info
+                        tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
+                        tunnelVersions[1] = tunnel.getImplementation().getServerVersion();
 
-                    // Close it
-                    monitor.subTask("Close tunnel");
-                    tunnel.closeTunnel(monitor);
+                    } finally {
+                        // Close it
+                        monitor.subTask("Close tunnel");
+                        tunnel.closeTunnel(monitor);
+                    }
                     monitor.worked(1);
                 } finally {
                     monitor.done();
@@ -324,27 +370,25 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 String authTypeName;
                 // If we are not saving password and have jump server enabled we need to show dialog
                 // for user to write it
-                if (configuration.getBooleanProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_ENABLED)) {
-                    authTypeName = configuration.getStringProperty(getJumpServerSettingsPrefix() + SSHConstants.PROP_AUTH_TYPE);
+                String serverSettingsPrefix = getJumpServerSettingsPrefix();
+                if (configuration.getBooleanProperty(serverSettingsPrefix + DBConstants.PROP_ID_ENABLED)) {
+                    authTypeName = configuration.getStringProperty(serverSettingsPrefix + SSHConstants.PROP_AUTH_TYPE);
                     authType = CommonUtils.valueOf(SSHConstants.AuthType.class,
                         authTypeName,
                         SSHConstants.AuthType.PASSWORD
                     );
-                    if (tunnel.getRequiredCredentials(configuration, getJumpServerSettingsPrefix())
-                        != DBWTunnel.AuthCredentials.NONE) {
-                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType,
-                            configuration.getStringProperty(getJumpServerSettingsPrefix()
-                                                            + DBConstants.PROP_ID_NAME),
-                            configuration.getSecureProperty(getJumpServerSettingsPrefix()
-                                                            + DBConstants.PROP_FEATURE_PASSWORD)
+                    if (tunnel.getRequiredCredentials(configuration, serverSettingsPrefix) != DBWTunnel.AuthCredentials.NONE) {
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(
+                            authType,
+                            configuration.getStringProperty(serverSettingsPrefix + DBConstants.PROP_ID_NAME),
+                            configuration.getSecureProperty(serverSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD)
                         );
                         if (dbpAuthInfo != null) {
-                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                                configuration.setProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME,
-                                    dbpAuthInfo.getUserName()
-                                );
-                            }
-                            configuration.setSecureProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD,
+                            configuration.setProperty(serverSettingsPrefix + DBConstants.PROP_ID_NAME,
+                                dbpAuthInfo.getUserName()
+                            );
+                            configuration.setSecureProperty(
+                                serverSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD,
                                 dbpAuthInfo.getUserPassword()
                             );
                         }
@@ -354,22 +398,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         };
 
         try {
-            UIUtils.runInProgressDialog(monitor -> {
-                job.setOwnerMonitor(monitor);
-                job.schedule();
-
-                while (job.getState() == Job.WAITING || job.getState() == Job.RUNNING) {
-                    if (monitor.isCanceled()) {
-                        job.cancel();
-                        throw new InvocationTargetException(null);
-                    }
-                    RuntimeUtils.pause(50);
-                }
-
-                if (job.getConnectError() != null) {
-                    throw new InvocationTargetException(job.getConnectError());
-                }
-            });
+            AbstractTrackingJob.executeInProgressMonitor(job);
 
             MessageDialog.openInformation(credentialsPanel.getShell(), ModelMessages.dialog_connection_wizard_start_connection_monitor_success,
                 "Connected!\n\nClient version: " + tunnelVersions[0] + "\nServer version: " + tunnelVersions[1]);
@@ -385,17 +414,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
     @NotNull
     private String getJumpServerSettingsPrefix() {
-        return SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+        return DataSourceUtils.getJumpServerSettingsPrefix(0);
     }
 
     @Override
-    public void loadSettings(@NotNull DBWHandlerConfiguration configuration)
-    {
+    public void loadSettings(@NotNull DBWHandlerConfiguration configuration) {
         credentialsPanel.loadSettings(configuration, "");
 
         final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
         jumpServerCredentialsPanel.loadSettings(configuration, jumpServerSettingsPrefix);
         jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED));
+        if (jumpServerEnabledCheck.getSelection() && credentialsPanel.getParent().isEnabled() &&
+            jumpServerCredentialsPanel.hostNameText.getText().isEmpty()
+        ) {
+            jumpServerExpandableGroup.setExpanded(true, true);
+        }
         if (credentialsPanel.savePasswordCheckbox != null) {
             jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection());
             if (!credentialsPanel.savePasswordCheckbox.getSelection()) {
@@ -403,7 +436,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             }
         }
         UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
-
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implType)) {
             // Try SSHJ by default
@@ -466,7 +498,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         if (jumpServersEnabled) {
             final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
             jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
-            configuration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED, jumpServersEnabled);
+            configuration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED, true);
         }
 
         String implLabel = tunnelImplCombo.getText();
@@ -541,7 +573,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         private final Text userNameText;
         private final Combo authMethodCombo;
         private final Label privateKeyLabel;
-        private final TextWithOpen privateKeyText;
+        private final ConfigurationFileSelector privateKeyText;
         private final Label passwordLabel;
         private final Text passwordText;
         private final Button savePasswordCheckbox;
@@ -581,8 +613,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            privateKeyText = new ConfigurationFileSelector(this, SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"});
+            privateKeyText = new ConfigurationFileSelector(
+                this,
+                SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
+                false,
+                DBWorkbench.isDistributed()
+            );
             privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (DBWorkbench.isDistributed()) {
+                privateKeyText.getTextControl().setEditable(false);
+            }
 
             passwordLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_password);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -681,20 +721,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         private void updateAuthMethodVisibility() {
             switch (authMethodCombo.getSelectionIndex()) {
-                case 0:
+                case 0 -> {
                     showPrivateKeyField(false);
                     showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_password);
-                    break;
-                case 1:
+                }
+                case 1 -> {
                     showPrivateKeyField(true);
                     showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_passphrase);
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     showPrivateKeyField(false);
                     showPasswordField(false, null);
-                    break;
-                default:
-                    break;
+                }
+                default -> {
+                }
             }
             authMethodCombo.getShell().layout(true, true);
         }
@@ -714,40 +754,14 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
     }
 
-    private static abstract class TunnelConnectionTestJob extends AbstractJob {
-        private DBRProgressMonitor ownerMonitor;
-        protected Throwable connectError;
-
-        protected TunnelConnectionTestJob() {
-            super("Test tunnel connection");
-            setUser(false);
-            setSystem(true);
+    private static class ExpandableCompositeEx extends ExpandableComposite {
+        public ExpandableCompositeEx(Composite composite, int style) {
+            super(composite, style);
         }
 
-        @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
-            if (ownerMonitor != null) {
-                monitor = ownerMonitor;
-            }
-
-            try {
-                execute(monitor);
-            } catch (Throwable e) {
-                connectError = e;
-            }
-
-            return Status.OK_STATUS;
+        public void setExpansionTogglerEnabled(boolean enabled) {
+            super.toggle.setEnabled(enabled);
+            super.textLabel.setEnabled(enabled);
         }
-
-        public void setOwnerMonitor(@Nullable DBRProgressMonitor ownerMonitor) {
-            this.ownerMonitor = ownerMonitor;
-        }
-
-        @Nullable
-        public Throwable getConnectError() {
-            return connectError;
-        }
-
-        protected abstract void execute(@NotNull DBRProgressMonitor monitor) throws Throwable;
     }
 }

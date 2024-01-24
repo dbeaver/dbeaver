@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public abstract class TokenPredicateFactory {
      * @return predicate node carrying information about the token entry
      */
     @NotNull
-    protected abstract TokenPredicateNode classifyToken(@NotNull String tokenString);
+    protected abstract SQLTokenEntry classifyToken(@NotNull String tokenString);
 
     /**
      * Materialize token predicate node carrying information about token entry described in a certain way.
@@ -75,13 +75,13 @@ public abstract class TokenPredicateFactory {
     @NotNull
     private TokenPredicateNode makeNode(@Nullable Object obj) {
         if (obj == null) {
-            return new SQLTokenEntry(null, null);
+            return new SQLTokenEntry(null, null, false);
         } else if (obj instanceof TokenPredicateNode) {
             return (TokenPredicateNode)obj;
         } else if (obj instanceof String) {
             return this.classifyToken((String)obj);
         } else if (obj instanceof SQLTokenType) {
-            return new SQLTokenEntry(null, (SQLTokenType) obj);
+            return new SQLTokenEntry(null, (SQLTokenType) obj, false);
         } else {
             throw new IllegalArgumentException();
         }
@@ -125,5 +125,16 @@ public abstract class TokenPredicateFactory {
     @NotNull
     public TokenPredicateNode optional(@NotNull Object ... obj) {
         return new OptionalTokenPredicateNode(obj.length == 1 ? this.makeNode(obj[0]) : this.sequence(obj));
+    }
+    
+    @NotNull
+    public TokenPredicateNode not(@NotNull String str) {
+        SQLTokenEntry entry = this.classifyToken(str);
+        return new SQLTokenEntry(entry.getString(), entry.getTokenType(), true);
+    }
+
+    @NotNull
+    public TokenPredicateNode not(@NotNull SQLTokenType token) {
+        return new SQLTokenEntry(null, token, true);
     }
 }

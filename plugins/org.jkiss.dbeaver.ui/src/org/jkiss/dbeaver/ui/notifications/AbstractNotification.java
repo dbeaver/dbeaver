@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.jkiss.dbeaver.ui.notifications;
 
-import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
@@ -18,7 +18,7 @@ import java.util.Date;
 /**
  * Copied from Mylyn sources
  */
-public abstract class AbstractNotification implements Comparable<AbstractNotification>, IAdaptable {
+public abstract class AbstractNotification implements Comparable<AbstractNotification>, DBPAdaptable {
     private final String eventId;
 
     public AbstractNotification(String eventId) {

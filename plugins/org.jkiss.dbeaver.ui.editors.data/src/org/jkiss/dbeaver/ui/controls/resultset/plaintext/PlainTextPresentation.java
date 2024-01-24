@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.plaintext;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,8 +29,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
@@ -44,9 +41,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
@@ -62,7 +61,7 @@ import java.util.Map;
  * Empty presentation.
  * Used when RSV has no results (initially).
  */
-public class PlainTextPresentation extends AbstractPresentation implements IResultSetDisplayFormatProvider, IAdaptable {
+public class PlainTextPresentation extends AbstractPresentation implements IResultSetDisplayFormatProvider, DBPAdaptable {
 
     public static final int FIRST_ROW_LINE = 2;
 
@@ -77,7 +76,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     private StyleRange curLineRange;
     private int totalRows = 0;
     private String curSelection;
-    private Font monoFont;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -127,34 +125,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     }
 
     @Override
-    public void dispose() {
-        if (monoFont != null) {
-            UIUtils.dispose(monoFont);
-            monoFont = null;
-        }
-        super.dispose();
-    }
-
-    @Override
     protected void applyThemeSettings(ITheme currentTheme) {
-        curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
-
-        Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
-        if (rsFont != null) {
-            int fontHeight = rsFont.getFontData()[0].getHeight();
-            Font font = UIUtils.getMonospaceFont();
-
-            FontData[] fontData = font.getFontData();
-            fontData[0].setHeight(fontHeight);
-            Font newFont = new Font(font.getDevice(), fontData[0]);
-
-            this.text.setFont(newFont);
-
-            if (monoFont != null) {
-                UIUtils.dispose(monoFont);
-            }
-            monoFont = newFont;
-
+        text.setFont(currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE));
+        if (UIStyles.isDarkHighContrastTheme()) {
+            text.setBackground(UIStyles.getDefaultWidgetBackground());
+            text.setForeground(UIUtils.COLOR_WHITE);
+            curLineColor = UIUtils.COLOR_GREEN_CONTRAST;
+        } else {
+            curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         }
     }
 
@@ -266,6 +244,12 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         formatter.printRecord(grid, controller.getModel(), controller.getCurrentRow());
 
         text.setText(grid.toString());
+    }
+
+    @NotNull
+    @Override
+    public String getFontId() {
+        return UIFonts.DBEAVER_FONTS_MONOSPACE;
     }
 
     @Override

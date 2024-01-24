@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,18 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
         boolean matches(String providerId, String checkDriverId, String checkDriverClass) {
             if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(providerId)) {
-                return false;
+                // Try finding a matching child provider
+                DBPDataSourceProviderDescriptor provider = DBWorkbench.getPlatform()
+                    .getDataSourceProviderRegistry()
+                    .getDataSourceProvider(this.dataSourceProvider);
+                boolean childHasMatch = false;
+                if (provider != null) {
+                    List<DBPDataSourceProviderDescriptor> childrenProviders = provider.getChildrenProviders();
+                    childHasMatch = childrenProviders.stream().map(DBPDataSourceProviderDescriptor::getId).anyMatch(providerId::equals);
+                }
+                if (!childHasMatch) {
+                    return false;
+                }
             }
             if (checkDriverId != null && this.driverId != null && !this.driverId.equals(checkDriverId)) {
                 return false;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
@@ -30,7 +33,6 @@ import java.util.Map;
  * Task configuration
  */
 public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
-
     @NotNull
     String getId();
 
@@ -60,15 +62,15 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
     DBTTaskRun getLastRun();
 
     @NotNull
-    DBTTaskRun[] getRunStatistics();
+    DBTTaskRun[] getAllRuns();
+
+    @Nullable
+    Path getRunLog(@NotNull DBTTaskRun run);
 
     @NotNull
-    Path getRunLogFolder();
+    InputStream getRunLogInputStream(@NotNull DBTTaskRun run) throws DBException, IOException;
 
-    @NotNull
-    Path getRunLog(DBTTaskRun run);
-
-    void removeRunLog(DBTTaskRun taskRun);
+    void removeRun(DBTTaskRun taskRun);
 
     void cleanRunStatistics();
 

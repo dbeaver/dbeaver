@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,9 +96,9 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
         this.reverseScans = JDBCUtils.safeGetBoolean(dbResult, "REVERSE_SCANS", DB2YesNo.Y.name());
         this.tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
         this.pageSplit = CommonUtils.valueOf(DB2IndexPageSplit.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PAGESPLIT"));
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.madeUnique = JDBCUtils.safeGetBoolean(dbResult, "MADE_UNIQUE");
 
         this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");

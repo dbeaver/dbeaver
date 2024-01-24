@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,6 @@ public class PostgreConstants {
     public static final String PUBLIC_SCHEMA_NAME = "public";
 
     // Settings names from 'pg_options' view
-    public static final String OPTION_CLIENT_MIN_MESSAGES = "client_min_messages";
     public static final String OPTION_STANDARD_CONFORMING_STRINGS = "standard_conforming_strings";
 
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
@@ -107,6 +106,7 @@ public class PostgreConstants {
     public static final String TYPE_JSONB = "jsonb";
     public static final String TYPE_BIT = "bit";
     public static final String TYPE_VARBIT = "varbit";
+    public static final String TYPE_VARBYTE = "varbyte";
     public static final String TYPE_REFCURSOR = "refcursor";
     public static final String TYPE_MONEY = "money";
     public static final String TYPE_GEOMETRY = "geometry";
@@ -117,6 +117,8 @@ public class PostgreConstants {
     public static final String TYPE_TIMETZ = "timetz";
     public static final String TYPE_TIMESTAMPTZ = "timestamptz";
     public static final String TYPE_XML = "xml";
+    public static final String TYPE_BOOLEAN = "boolean";
+    public static final String TYPE_BYTEA = "bytea";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 

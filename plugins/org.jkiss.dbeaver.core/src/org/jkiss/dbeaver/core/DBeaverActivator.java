@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,17 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.awt.injector.ProxyInjector;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-import java.io.File;
+import java.awt.*;
 import java.io.PrintStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -38,7 +41,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     // The shared instance
     private static DBeaverActivator instance;
-    private static File configDir;
     private ResourceBundle pluginResourceBundle, coreResourceBundle;
     private PrintStream debugWriter;
     private DBPPreferenceStore preferences;
@@ -58,6 +60,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         instance = this;
 
         Bundle bundle = getBundle();
+
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
 
@@ -69,6 +72,24 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (MissingResourceException x) {
             coreResourceBundle = null;
         }
+        if (getPreferenceStore().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    injectProxyPeer();
+                } else {
+                    getLog().warn("Desktop interface not available");
+                    getPreferenceStore().setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+                }
+            } catch (Throwable e) {
+                getLog().warn(e.getMessage());
+                getPreferenceStore().setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+            }
+        }
+    }
+
+    private void injectProxyPeer() throws NoSuchFieldException, IllegalAccessException {
+        ProxyInjector proxyInjector = new ProxyInjector();
+        proxyInjector.injectBrowseInteraction(BrowsePeerMethods::canBrowseInSWTBrowser, BrowsePeerMethods::browseInSWTBrowser);
     }
 
     @Override
@@ -76,6 +97,8 @@ public class DBeaverActivator extends AbstractUIPlugin {
         throws Exception {
         this.shutdownUI();
         this.shutdownCore();
+
+        DBRFeatureRegistry.getInstance().endTracking();
 
         if (debugWriter != null) {
             debugWriter.close();

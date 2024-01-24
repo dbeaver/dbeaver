@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.jface.wizard.IWizardPage;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
@@ -28,6 +30,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeScriptExecuteWizard;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
@@ -37,6 +40,16 @@ class MySQLScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<MySQLSc
 
     MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport) {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
+        this.getSettings().setImport(isImport);
+    }
+
+    MySQLScriptExecuteWizard(@NotNull MySQLCatalog catalog, boolean isImport, @Nullable Path file) {
+        super(
+            Collections.singleton(catalog),
+            isImport
+            ? MySQLUIMessages.tools_script_execute_wizard_db_import
+            : MySQLUIMessages.tools_script_execute_wizard_execute_script,
+            file);
         this.getSettings().setImport(isImport);
     }
 

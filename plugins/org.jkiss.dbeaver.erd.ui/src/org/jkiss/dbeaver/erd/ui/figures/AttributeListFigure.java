@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.figures;
 
-import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Insets;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -39,9 +39,10 @@ public class AttributeListFigure extends Figure {
 
     public AttributeListFigure(ERDEntity entity, boolean key) {
         GridLayout layout = new GridLayout(2, false);
-        layout.verticalSpacing = 3;
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
+        layout.marginHeight = 3;
+        layout.marginWidth = 5;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
 /*
         FlowLayout layout = new FlowLayout(false);
 		layout.setMinorAlignment(FlowLayout.ALIGN_TOPLEFT);
@@ -59,7 +60,7 @@ public class AttributeListFigure extends Figure {
 
     public List<AttributeItemFigure> getAttributes() {
         List<AttributeItemFigure> result = new ArrayList<>();
-        for (IFigure child : getChildren()) {
+        for (Object child : getChildren()) {
             if (child instanceof AttributeItemFigure) {
                 result.add((AttributeItemFigure) child);
             }
@@ -71,7 +72,7 @@ public class AttributeListFigure extends Figure {
 
         @Override
         public Insets getInsets(IFigure figure) {
-            return new Insets(5, 3, 3, 3);
+            return new Insets(0, -2, -2, -2);
         }
 
         @Override

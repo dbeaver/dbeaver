@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.utils.ReaderWriterLock;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -47,15 +48,22 @@ import java.util.stream.Stream;
  * </p>
  */
 public class SQLTemplateStore extends TemplateStore {
+    public static final String TEMPLATES_CONFIG_XML = "templates.xml";
 
     private static final Log log = Log.getLog(SQLTemplateStore.class);
     public static final String PREF_STORE_KEY = "org.jkiss.dbeaver.core.sql_templates";
     
+
+    private final ReaderWriterLock<?> rwLock = new ReaderWriterLock<>(() -> null);
     private final CustomTemplatesStore customTemplatesStore;
 
     private SQLTemplateStore(ContextTypeRegistry registry, CustomTemplatesStore customTemplatesStore) {
         super(registry, new PreferenceStoreDelegate(customTemplatesStore), PREF_STORE_KEY); //$NON-NLS-1$
         this.customTemplatesStore = customTemplatesStore;
+    }
+    
+    private ReaderWriterLock<?> lock() {
+        return rwLock;
     }
 
     /**
@@ -65,7 +73,7 @@ public class SQLTemplateStore extends TemplateStore {
     @NotNull
     public Set<String> getCustomTemplateNames() {
         try {
-            String pref = customTemplatesStore.getString(PREF_STORE_KEY);
+            String pref = lock().computeReading(o -> customTemplatesStore.getString(PREF_STORE_KEY));
             if (pref != null && !pref.trim().isEmpty()) {
                 Reader input = new StringReader(pref);
                 TemplateReaderWriter reader = new TemplateReaderWriter();
@@ -82,7 +90,18 @@ public class SQLTemplateStore extends TemplateStore {
      */
     @NotNull
     public static SQLTemplateStore createInstance(@NotNull ContextTypeRegistry registry) {
+        
         return new SQLTemplateStore(registry, new CustomTemplatesStore());
+    }
+
+    /**
+     * Reload templates configuration
+     */
+    public void reload() throws IOException {
+        lock().execWriting(o -> {
+            customTemplatesStore.loadTemplatesConfig();
+            super.load();
+        });
     }
 
     /**
@@ -91,10 +110,12 @@ public class SQLTemplateStore extends TemplateStore {
      * @throws java.io.IOException {@inheritDoc}
      */
     protected void loadContributedTemplates() throws IOException {
-        Collection<TemplatePersistenceData> contributed = readContributedTemplates();
-        for (TemplatePersistenceData data : contributed) {
-            internalAdd(data);
-        }
+        lock().execWriting(o -> {
+            Collection<TemplatePersistenceData> contributed = readContributedTemplates();
+            for (TemplatePersistenceData data : contributed) {
+                internalAdd(data);
+            }
+        });
     }
 
     private Collection<TemplatePersistenceData> readContributedTemplates() throws IOException {
@@ -201,18 +222,18 @@ public class SQLTemplateStore extends TemplateStore {
     protected void handleException(IOException x) {
         log.error(x);
     }
-
+    
     private static class CustomTemplatesStore extends SimplePreferenceStore {
-        private static final String TEMPLATES_CONFIG_XML = "templates.xml";
-
+        
         private CustomTemplatesStore() {
-            super(DBWorkbench.getPlatform().getPreferenceStore());
+            super(DBWorkbench.getPlatform().getPreferenceStore());            
+            loadTemplatesConfig();
+        }
+        
+        public void loadTemplatesConfig() {
             try {
-                if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
-                    log.warn("The user has no permission to load sql templates configuration");
-                    return;
-                }
                 String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
+                clear();
                 if (CommonUtils.isNotEmpty(content)) {
                     setValue(PREF_STORE_KEY, content);
                 }
@@ -229,7 +250,6 @@ public class SQLTemplateStore extends TemplateStore {
             }
             // Save templates
             String templatesConfig = getString(PREF_STORE_KEY);
-
             try {
                 DBWorkbench.getPlatform()
                     .getProductConfigurationController()
@@ -239,6 +259,99 @@ public class SQLTemplateStore extends TemplateStore {
             }
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
 
+    
+    @Override
+    public void load() throws IOException {
+        lock().execWriting(o -> super.load());
+    }
+
+    @Override
+    public void save() throws IOException {
+        lock().execWriting(o -> super.save());
+    }
+
+    @Override
+    public void restoreDefaults(boolean doSave) {
+        lock().execWriting(o -> super.restoreDefaults(doSave));
+    }
+
+    @Override
+    public void restoreDefaults() {
+        lock().execWriting(o -> super.restoreDefaults());
+    }
+
+    @Override
+    public void add(TemplatePersistenceData data) {
+        lock().execWriting(o -> super.add(data));
+    }
+
+    @Override
+    public void add(org.eclipse.text.templates.TemplatePersistenceData data) {
+        lock().execWriting(o -> super.add(data));
+    }
+
+    @Override
+    public void delete(TemplatePersistenceData data) {
+        lock().execWriting(o -> super.delete(data));
+    }
+
+    @Override
+    public void delete(org.eclipse.text.templates.TemplatePersistenceData data) {
+        lock().execWriting(o -> super.delete(data));
+    }
+
+    @Override
+    public TemplatePersistenceData[] getTemplateData(boolean includeDeleted) {
+        return lock().computeReading(o -> super.getTemplateData(includeDeleted));
+    }
+
+    @Override
+    public TemplatePersistenceData getTemplateData(String id) {
+        return lock().computeReading(o -> super.getTemplateData(id));
+    }
+
+    @Override
+    protected void internalAdd(TemplatePersistenceData data) {
+        lock().execWriting(o -> super.internalAdd(data));
+    }
+
+    @Override
+    protected void internalAdd(org.eclipse.text.templates.TemplatePersistenceData data) {
+        lock().execWriting(o -> super.internalAdd(data));
+    }
+
+    @Override
+    public void restoreDeleted() {
+        lock().execWriting(o -> super.restoreDeleted());
+    }
+
+    @Override
+    public Template[] getTemplates() {
+        return lock().computeReading(o -> super.getTemplates());
+    }
+
+    @Override
+    public Template[] getTemplates(String contextTypeId) {
+        return lock().computeReading(o ->  super.getTemplates(contextTypeId));
+    }
+
+    @Override
+    public Template findTemplate(String name) {
+        return lock().computeReading(o ->  super.findTemplate(name));
+    }
+
+    @Override
+    public Template findTemplate(String name, String contextTypeId) {
+        return lock().computeReading(o ->  super.findTemplate(name, contextTypeId));
+    }
+
+    @Override
+    public Template findTemplateById(String id) {
+        return lock().computeReading(o -> super.findTemplateById(id));
+    }
 }
 

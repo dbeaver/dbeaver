@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Arrays;
 
-public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage {
+public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage<WIZARD> {
 
     protected final WIZARD wizard;
 
@@ -79,7 +79,10 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
         outputFolderText = DialogUtils.createOutputFolderChooser(
             outputGroup,
             TaskNativeUIMessages.tools_wizard_page_dialog_folder_pattern,
+            null,
             settings.getOutputFolderPattern(),
+            wizard.getProject(),
+            true,
             e -> updateState());
         outputFileText = UIUtils.createLabelText(
             outputGroup,
@@ -108,7 +111,6 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
             new StringContentProposalProvider(Arrays.stream(NativeToolUtils.LIMITED_VARIABLES)
                 .map(GeneralUtils::variablePattern)
                 .toArray(String[]::new)));
-        fixOutputFileExtension();
     }
 
     protected void createExtraArgsInput(Composite outputGroup) {

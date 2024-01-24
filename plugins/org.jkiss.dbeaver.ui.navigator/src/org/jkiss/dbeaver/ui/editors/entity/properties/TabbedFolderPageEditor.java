@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -34,6 +33,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 /**
  * EditorWrapperSection
  */
-public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable, ISearchContextProvider {
+public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, DBPAdaptable, ISearchContextProvider {
 
     private static final Log log = Log.getLog(TabbedFolderPageEditor.class);
 

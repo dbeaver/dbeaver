@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.database;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
@@ -29,12 +30,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadVisualizer;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeLazyExpander;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.ui.navigator.database.load.*;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DatabaseNavigatorContentProvider
@@ -131,18 +131,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                             lastLoadError);
                     });
                 }
-                if (ArrayUtils.isEmpty(children)) {
-                    return EMPTY_CHILDREN;
-                } else {
-                    int longListFetchSize = Math.max(NavigatorPreferences.MIN_LONG_LIST_FETCH_SIZE, DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
-                    if (children.length > longListFetchSize) {
-                        Object[] curChildren = new Object[longListFetchSize + 1];
-                        System.arraycopy(children, 0, curChildren, 0, longListFetchSize);
-                        curChildren[longListFetchSize] = new TreeNodeLazyExpander(parentNode, children, longListFetchSize);
-                        return curChildren;
-                    }
-                    return children;
-                }
+                return getFinalNodes(parentNode, children);
             }
             catch (Throwable ex) {
                 // Collapse this item
@@ -152,7 +141,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                         ex.getMessage(),
                         ex);
                     navigatorTree.getViewer().collapseToLevel(parent, 1);
-                    navigatorTree.getViewer().refresh(parent);
+                    //navigatorTree.getViewer().refresh(parent);
                 });
                 return EMPTY_CHILDREN;
             }
@@ -173,6 +162,35 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             }
         }
         return parent instanceof DBNNode && ((DBNNode) parent).hasChildren(true);
+    }
+
+    @NotNull
+    private static Object[] getFinalNodes(@NotNull DBNNode parent, @NotNull DBNNode[] children) {
+        final int maxFetchSize = Math.max(
+            NavigatorPreferences.MIN_LONG_LIST_FETCH_SIZE,
+            DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)
+        );
+
+        if (parent.isFiltered() || maxFetchSize < children.length) {
+            final List<Object> nodes = new ArrayList<>(maxFetchSize);
+
+            if (parent.isFiltered()) {
+                nodes.add(new TreeNodeFilterConfigurator(parent));
+            }
+
+            if (maxFetchSize < children.length) {
+                nodes.addAll(List.of(children).subList(0, maxFetchSize));
+                nodes.add(new TreeNodeLazyExpander(parent, children, maxFetchSize));
+            } else {
+                nodes.addAll(List.of(children));
+            }
+
+            return nodes.toArray();
+        } else if (children.length == 0) {
+            return EMPTY_CHILDREN;
+        } else {
+            return children;
+        }
     }
 
 /*

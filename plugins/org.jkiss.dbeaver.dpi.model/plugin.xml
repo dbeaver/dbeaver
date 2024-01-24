@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer"
+                 class="org.jkiss.dbeaver.dpi.model.client.DPIProviderAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.dpi.DPIProvider"/>
+        </factory>
+    </extension>
+
+</plugin>

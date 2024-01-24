@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPresentationRegistry;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -61,12 +62,21 @@ public class ResultSetHandlerTogglePanel extends AbstractHandler implements IEle
     }
 
     private static void toggleResultsPanel(IResultSetController resultSet, String panelId) {
-        boolean isVisible = ((ResultSetViewer)resultSet).isPanelVisible(panelId);
+        ResultSetViewer rsv = (ResultSetViewer) resultSet;
+        boolean isVisible = rsv.isPanelsVisible() && rsv.isPanelVisible(panelId);
 
+        showResultsPanel(rsv, panelId, isVisible);
+    }
+
+    public static void showResultsPanel(ResultSetViewer rsv, String panelId, boolean isVisible) {
         if (isVisible) {
-            ((ResultSetViewer)resultSet).closePanel(panelId);
+            rsv.closePanel(panelId);
         } else {
-            resultSet.activatePanel(panelId, true, true);
+            rsv.activatePanel(panelId, true, true);
+
+            DataEditorFeatures.RESULT_SET_PANEL_OPEN.use(
+                Map.of("panel", panelId)
+            );
         }
     }
 

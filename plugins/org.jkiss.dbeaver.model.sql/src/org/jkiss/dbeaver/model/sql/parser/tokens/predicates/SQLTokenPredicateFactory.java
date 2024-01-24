@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,13 +86,13 @@ class SQLTokenPredicateFactory extends TokenPredicateFactory {
                 TPToken token = fRule.evaluate(scanner);
                 if (!token.isUndefined()) {
                     SQLTokenType tokenType = token instanceof TPTokenDefault ? (SQLTokenType) ((TPTokenDefault) token).getData() : SQLTokenType.T_OTHER;
-                    return new SQLTokenEntry(string, tokenType);
+                    return new SQLTokenEntry(string, tokenType, false);
                 }
             } catch (Throwable e) {
                 // some rules raise exceptions in a certain situations when the string does not correspond the rule
                 log.debug(e.getMessage());
             }
         }
-        return new SQLTokenEntry(string, null);
+        return new SQLTokenEntry(string, null, false);
     }
 }

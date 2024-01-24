@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,16 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleEvent;
-import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
@@ -38,6 +39,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -76,6 +79,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     @Nullable
     private final IGridController gridController;
 
+    private boolean accessibilityEnabled;
     private Clipboard clipboard;
 
     public Spreadsheet(
@@ -143,6 +147,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     @NotNull
     public SpreadsheetPresentation getPresentation() {
         return presentation;
+    }
+    
+    @NotNull
+    public IWorkbenchPartSite getSite() {
+        return site;
     }
 
     public Clipboard getClipboard() {
@@ -366,7 +375,12 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     @Override
     public void refreshData(boolean refreshColumns, boolean keepState, boolean fitValue) {
+        // Disable accessibility support.
+        // It will automatically turn on once we detect ACC events
+        accessibilityEnabled = false;
+        // Cancel all editors
         cancelInlineEditor();
+
         super.refreshData(refreshColumns, keepState, fitValue);
         super.redraw();
     }
@@ -376,17 +390,56 @@ public class Spreadsheet extends LightGrid implements Listener {
         presentation.toggleCellValue(column, row);
     }
 
+    @Override
+    protected void paintTopLeftCellCustom(GC gc, int y) {
+        if (presentation.getController().isRecordMode() && getColumnCount() > 1) {
+            Image searchIcon = DBeaverIcons.getImage(UIIcon.SEARCH);
+            gc.drawImage(searchIcon, 3, y + 3);
+        }
+    }
+
     private void hookContextMenu() {
+        addMenuDetectListener(new MenuDetectListener() {
+            @Override
+            public void menuDetected(MenuDetectEvent e) {
+                if (e.detail == SWT.MENU_KEYBOARD) {
+                    GridCell focusCell = getFocusCell();
+                    Object focusColumnElement = getFocusColumnElement();
+                    if (focusCell != null) {
+                        GridPos focusPos = cellToPos(focusCell);
+                        patchEventWithLocalRect(e, getCellBounds(focusPos.col, focusPos.row));
+                    } else if (focusColumnElement != null) {
+                        IGridColumn focusColumn = getColumnByElement(focusColumnElement);
+                        patchEventWithLocalRect(e, getColumnBounds(focusColumn.getIndex()));
+                    }
+                }
+            }
+            
+            private void patchEventWithLocalRect(MenuDetectEvent e, Rectangle r) {
+                Point p = toDisplay(new Point(r.x + r.width, r.y));
+                e.x = p.x;
+                e.y = p.y;
+            }
+        });
+        
         MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(this);
         menuMgr.addMenuListener(manager -> {
             // Let controller to provide it's own menu items
             GridPos focusPos = getFocusPos();
-            presentation.fillContextMenu(
-                manager,
-                (focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null),
-                (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
-            );
+            if (isColumnContextMenuShouldBeShown()) {
+                boolean isRecordMode = presentation.getController().isRecordMode();
+                presentation.fillContextMenu(
+                    manager,
+                    (focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null),
+                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
+                );
+                presentation.fillContextMenu(
+                    manager,
+                    isHoveringOnRowHeader() ? null : getColumnByPosition(focusPos),
+                    isHoveringOnHeader() ? null : getRowByPosition(focusPos)
+                );
+            }
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
@@ -396,6 +449,22 @@ public class Spreadsheet extends LightGrid implements Listener {
         } else {
             site.registerContextMenu(menuMgr, presentation);
         }
+    }
+
+    /**
+     * Returns grid column by grid position
+     */
+    @Nullable
+    private GridColumn getColumnByPosition(GridPos focusPos) {
+        return focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null;
+    }
+
+    /**
+     * Returns grid row by grid position
+     */
+    @Nullable
+    private IGridRow getRowByPosition(GridPos focusPos) {
+        return focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null;
     }
 
     public void cancelInlineEditor() {
@@ -467,33 +536,16 @@ public class Spreadsheet extends LightGrid implements Listener {
         refreshData(true, false, fitValue);
     }
 
-    ////////////////////////////////////////////////////////////
-    // Accessibility support
-
     private void hookAccessibility() {
-        final Accessible accessible = getAccessible();
-
-        accessible.addAccessibleListener(new GridAccessibleListener());
-        addCursorChangeListener(event -> accessible.selectionChanged());
+        SpreadsheetAccessibleAdapter.install(this);
     }
 
-    private static class GridAccessibleListener implements AccessibleListener {
-        @Override
-        public void getName(AccessibleEvent e) {
-            e.result = "Results grid";
-        }
-
-        @Override
-        public void getHelp(AccessibleEvent e) {
-        }
-
-        @Override
-        public void getKeyboardShortcut(AccessibleEvent e) {
-        }
-
-        @Override
-        public void getDescription(AccessibleEvent e) {
-            e.result = "Results grid";
-        }
+    boolean isAccessibilityEnabled() {
+        return accessibilityEnabled;
     }
+
+    void setAccessibilityEnabled(boolean enabled) {
+        this.accessibilityEnabled = enabled;
+    }
+
 }

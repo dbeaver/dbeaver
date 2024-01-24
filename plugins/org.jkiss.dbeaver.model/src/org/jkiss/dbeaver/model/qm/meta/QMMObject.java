@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.Log;
 
-import java.util.Map;
-
 /**
  * Abstract QM meta object
  */
@@ -28,49 +26,24 @@ public abstract class QMMObject {
 
     static final Log log = Log.getLog(QMMObject.class);
 
-    public enum ObjectType {
-        ConnectionInfo("c"),
-        StatementExecuteInfo("x"),
-        StatementInfo("s"),
-        TransactionInfo("t"),
-        TransactionSavepointInfo("ts");
-
-        private final String id;
-
-        ObjectType(String id) {
-            this.id = id;
-        }
-
-        public static ObjectType getById(String id) {
-            for (ObjectType ot : values()) {
-                if (ot.id.equals(id)) {
-                    return ot;
-                }
-            }
-            return null;
-        }
-
-        public String getId() {
-            return id;
-        }
-    }
-
     private static int globalObjectId = 0;
+    private final QMMetaObjectType type;
 
     private final long objectId;
 
-    private final long openTime;
+    private long openTime;
     private long closeTime;
 
-    private boolean synced;
-    private boolean updated;
+    private transient boolean updated;
 
-    public QMMObject() {
+    public QMMObject(QMMetaObjectType type) {
+        this.type = type;
         this.objectId = generateObjectId();
         this.openTime = getTimeStamp();
     }
 
-    protected QMMObject(long openTime, long closeTime) {
+    protected QMMObject(QMMetaObjectType type, long openTime, long closeTime) {
+        this.type = type;
         this.objectId = generateObjectId();
         this.openTime = openTime;
         this.closeTime = closeTime;
@@ -88,10 +61,6 @@ public abstract class QMMObject {
 
     public long getObjectId() {
         return objectId;
-    }
-
-    public boolean isSynced() {
-        return synced;
     }
 
     public boolean isUpdated() {
@@ -112,16 +81,13 @@ public abstract class QMMObject {
 
     public abstract String getText();
 
-    // fore serialization
-    public abstract ObjectType getObjectType();
+    // for serialization
+    public QMMetaObjectType getObjectType() {
+        return type;
+    }
 
     protected synchronized void update() {
         this.updated = true;
-    }
-
-    protected synchronized void sync() {
-        this.synced = true;
-        this.updated = false;
     }
 
     private static synchronized long generateObjectId() {
@@ -142,6 +108,11 @@ public abstract class QMMObject {
 
     public abstract QMMConnectionInfo getConnection();
 
-    public abstract Map<String, Object> toMap();
+    public void setOpenTime(long openTime) {
+        this.openTime = openTime;
+    }
 
+    public void setCloseTime(long closeTime) {
+        this.closeTime = closeTime;
+    }
 }

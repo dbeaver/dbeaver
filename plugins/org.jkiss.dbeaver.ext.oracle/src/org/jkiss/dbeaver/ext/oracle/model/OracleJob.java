@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class OracleJob extends OracleSchemaObject implements OracleSourceObject 
         this.instance = JDBCUtils.safeGetLong(resultSet, "INSTANCE");
         this.nlsEnv = JDBCUtils.safeGetString(resultSet, "NLS_ENV");
         this.action = JDBCUtils.safeGetString(resultSet, "WHAT");
-        this.broken = JDBCUtils.safeGetBoolean(resultSet, "BROKEN", "Y");
+        this.broken = JDBCUtils.safeGetBoolean(resultSet, "BROKEN", OracleConstants.RESULT_YES_VALUE);
     }
 
     public long getJob() {

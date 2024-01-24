@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.IStatefulEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -218,8 +218,8 @@ public class DataSourcePropertyTester extends PropertyTester {
         IEditorReference[] editors = workbenchWindow.getActivePage().getEditorReferences();
         for (IEditorReference ref : editors) {
             final IEditorPart editor = ref.getEditor(false);
-            if (editor instanceof SQLEditor) {
-                UIUtils.asyncExec(((SQLEditor) editor)::updateDirtyFlag);
+            if (editor instanceof IStatefulEditor) {
+                UIUtils.asyncExec(((IStatefulEditor) editor)::updateDirtyFlag);
             }
         }
     }

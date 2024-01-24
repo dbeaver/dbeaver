@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -34,7 +35,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
+import java.util.Locale;
 
 
 /**
@@ -76,6 +79,23 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
     @Nullable
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
+        if (object instanceof String && (type.getTypeID() == Types.REAL || type.getTypeID() == Types.DOUBLE)) {
+            switch (((String) object).toLowerCase(Locale.ROOT)) {
+                case "inf":
+                case "infinity":
+                case "+inf":
+                case "+infinity":
+                    return Double.POSITIVE_INFINITY;
+                case "-inf":
+                case "-infinity":
+                    return Double.NEGATIVE_INFINITY;
+                case "nan":
+                    return Double.NaN;
+                default:
+                    break;
+            }
+        }
+
         return object;
     }
 
@@ -110,6 +130,9 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
             }
 
             return timestampFormatter.formatValue(value);
+        }
+        if (value instanceof byte[] && column.getDataKind() == DBPDataKind.STRING) {
+            return new String((byte[]) value);
         }
         return super.getValueDisplayString(column, value, format);
     }

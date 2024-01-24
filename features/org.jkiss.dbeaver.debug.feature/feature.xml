@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.debug.feature"
       label="%featureName"
-      version="6.1.88.qualifier"
+      version="6.1.113.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -23,9 +23,9 @@
       <import plugin="org.eclipse.debug.ui" version="0.0.0" match="greaterOrEqual"/>
    </requires>
 
-   <plugin id="org.jkiss.dbeaver.debug.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="org.jkiss.dbeaver.debug.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="org.jkiss.dbeaver.ext.postgresql.debug.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="org.jkiss.dbeaver.ext.postgresql.debug.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.debug.core" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.debug.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.postgresql.debug.core" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.postgresql.debug.ui" version="0.0.0" />
 
 </feature>

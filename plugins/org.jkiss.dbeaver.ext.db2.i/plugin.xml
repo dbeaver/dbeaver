@@ -28,6 +28,7 @@
                         category="Db2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
+                        supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="446"
                         description="IBM Db2 driver for IBM i (replacement for iSeries and AS/400)"
                         categories="sql">

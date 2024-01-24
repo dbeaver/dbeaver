@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,10 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             }
             projectText.setText(databaseName);
         }
-        String additionalProjects = connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS);
+        String additionalProjects = CommonUtils.toString(
+            connectionInfo.getProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS),
+            connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS) // backward compatibility
+        );
         if (additionalProjects != null) {
             extraProjectsText.setText(additionalProjects);
         }
@@ -157,7 +160,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             connectionInfo.setDatabaseName(projectText.getText().trim());
         }
         if (extraProjectsText != null) {
-            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, extraProjectsText.getText().trim());
+            connectionInfo.setProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, extraProjectsText.getText().trim());
         }
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());

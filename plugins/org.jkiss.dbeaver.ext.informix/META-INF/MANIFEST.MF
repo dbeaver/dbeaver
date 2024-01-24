@@ -2,13 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Informix Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.informix;singleton:=true
-Bundle-Version: 1.0.189.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 1.0.214.qualifier
+Bundle-Release-Date: 20240122
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: JKISS
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Bundle-Authors: Bert Herngreen
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.informix

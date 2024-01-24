@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.internal.SQLModelActivator;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class SQLVariablesRegistry {
     private static final Log log = Log.getLog(SQLVariablesRegistry.class);
@@ -73,15 +78,23 @@ public class SQLVariablesRegistry {
     }
 
     private void loadVariables() {
-        File configLocation = getConfigLocation();
-        File[] configFiles = configLocation.listFiles((dir, name) -> name.startsWith(CONFIG_FILE_PREFIX));
-        if (configFiles == null) {
+        Path configLocation = getConfigLocation();
+        if (Files.notExists(configLocation)) {
             return;
         }
-        for (File configFile : configFiles) {
-            String configName = configFile.getName();
+        Path[] configFiles;
+        try (Stream<Path> stream = Files.list(configLocation)) {
+            configFiles = stream
+                .filter(f -> f.getFileName().toString().startsWith(CONFIG_FILE_PREFIX))
+                .toArray(Path[]::new);
+        } catch (IOException e) {
+            log.debug(e);
+            return;
+        }
+        for (Path configFile : configFiles) {
+            String configName = configFile.getFileName().toString();
             if (!configName.endsWith(CONFIG_FILE_SUFFIX)) {
-                log.debug("Skip variables config: bad file extension (" + configFile.getAbsolutePath() + ")");
+                log.debug("Skip variables config: bad file extension (" + configFile + ")");
                 continue;
             }
 //            configName = configName.substring(CONFIG_FILE_PREFIX.length(), configName.length() - CONFIG_FILE_SUFFIX.length());
@@ -99,8 +112,8 @@ public class SQLVariablesRegistry {
         }
     }
 
-    private void loadVariablesFromFile(File file) {
-        try (InputStream is = new FileInputStream(file)) {
+    private void loadVariablesFromFile(Path file) {
+        try (InputStream is = Files.newInputStream(file)) {
             try (Reader r = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 Map<String, Object> map = JSONUtils.parseMap(CONFIG_GSON, r);
                 String driverId = JSONUtils.getString(map, "driver");
@@ -141,7 +154,7 @@ public class SQLVariablesRegistry {
                 if (driverId != null) {
                     DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverId);
                     if (driver == null) {
-                        log.debug("Driver '" + driverId + "' not found. Saved variables ignored (" + file.getAbsolutePath() + ")");
+                        log.debug("Driver '" + driverId + "' not found. Saved variables ignored (" + file + ")");
                     } else {
                         this.driverVariables.put(driver, variables);
                     }
@@ -154,8 +167,8 @@ public class SQLVariablesRegistry {
         }
     }
 
-    private File getConfigLocation() {
-        return new File(SQLModelActivator.getInstance().getStateLocation().toFile(), VARIABLES_STORE_DIR);
+    private Path getConfigLocation() {
+        return SQLModelActivator.getInstance().getStateLocation().toPath().resolve(VARIABLES_STORE_DIR);
     }
 
     @NotNull
@@ -233,10 +246,12 @@ public class SQLVariablesRegistry {
         }
 
         private void flushConfig(List<Object> toSave) {
-            File configLocation = getConfigLocation();
-            if (!configLocation.exists()) {
-                if (!configLocation.mkdirs()) {
-                    log.error("Error creating variables storage location: " + configLocation.getAbsolutePath());
+            Path configLocation = getConfigLocation();
+            if (!Files.exists(configLocation)) {
+                try {
+                    Files.createDirectories(configLocation);
+                } catch (IOException e) {
+                    log.error("Error creating variables storage location: " + configLocation, e);
                     return;
                 }
             }
@@ -257,12 +272,12 @@ public class SQLVariablesRegistry {
 
                 fileName = CommonUtils.escapeFileName(fileName);
 
-                File configFile = new File(configLocation, fileName);
+                Path configFile = configLocation.resolve(fileName);
                 saveConfigToFile(configFile, driver, con);
             }
         }
 
-        private void saveConfigToFile(File configFile, DBPDriver driver, DBPDataSourceContainer con) {
+        private void saveConfigToFile(Path configFile, DBPDriver driver, DBPDataSourceContainer con) {
             Map<String, Object> map = new LinkedHashMap<>();
             List<DBCScriptContext.VariableInfo> variables;
             if (driver != null) {
@@ -289,7 +304,7 @@ public class SQLVariablesRegistry {
             map.put("variables", varMap);
 
             try {
-                IOUtils.writeFileFromString(configFile, CONFIG_GSON.toJson(map, Map.class));
+                Files.writeString(configFile, CONFIG_GSON.toJson(map, Map.class));
             } catch (IOException e) {
                 log.error(e);
             }

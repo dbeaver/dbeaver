@@ -4,7 +4,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,15 +32,13 @@
         </product>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.runtime.DBWorkbench" class="org.jkiss.dbeaver.headless.DBeaverTestPlatformAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
-            <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
-        </factory>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.application">
-        <application id="headless-test-app" family="DB" name="DBeaver Headless Test Application" description="DBeaver Headless Test Application"/>
+        <application
+            id="headless-test-app"
+            family="DB"
+            name="DBeaver Console Test Application"
+            description="DBeaver Console Test Application"
+            class="org.jkiss.dbeaver.headless.DBeaverHeadlessApplication"/>
     </extension>
 
 </plugin>

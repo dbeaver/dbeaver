@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,20 +42,24 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondi
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Locale;
 
 /**
  * Oracle SQL dialect
  */
-public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter, SQLDialectDDLExtension {
+public class OracleSQLDialect extends JDBCSQLDialect
+    implements SQLDataTypeConverter, SQLDialectDDLExtension, SQLDialectSchemaController {
 
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
-    private static final String[] EXEC_KEYWORDS = new String[]{ "call" };
+    private static final String[] EXEC_KEYWORDS = new String[]{"call"};
 
     private static final String[] ORACLE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -67,7 +71,6 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
     private static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
-        {"IF", SQLConstants.BLOCK_END},
         {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
         {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END + " " + SQLConstants.KEYWORD_CASE},
     };
@@ -82,7 +85,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         "IS",
     };
 
-    public static final String[] OTHER_TYPES_FUNCTIONS = {
+    private static final String[] OTHER_TYPES_FUNCTIONS = {
         //functions without parentheses #8710
         "CURRENT_DATE",
         "CURRENT_TIMESTAMP",
@@ -92,7 +95,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         "SYSTIMESTAMP"
     };
 
-    public static final String[] ADVANCED_KEYWORDS = {
+    private static final String[] ADVANCED_KEYWORDS = {
         "REPLACE",
         "PACKAGE",
         "FUNCTION",
@@ -118,8 +121,13 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         "BULK",
         "ELSIF",
         "EXIT",
+        "SUBPARTITION",
+        "TEMPFILE",
+        "DATAFILE",
+        "TABLESPACE"
     };
-    public static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
+
+    private static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
     private boolean crlfBroken;
     private DBPPreferenceStore preferenceStore;
 
@@ -469,13 +477,30 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
     @Override
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        String schemaName = proc.getParentObject().getName();
-        return "CALL " + schemaName + "." + proc.getName();
+        if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return SQLConstants.KEYWORD_SELECT + " " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        } else {
+            return "CALL " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
+    }
+
+    @NotNull
+    @Override
+    protected String getProcedureCallEndClause(DBSProcedure procedure) {
+        if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return "FROM DUAL";
+        }
+        return super.getProcedureCallEndClause(procedure);
     }
 
     @Override
     public boolean isDisableScriptEscapeProcessing() {
         return preferenceStore == null || preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
+    }
+
+    @Override
+    public boolean supportsUuid() {
+        return false;
     }
 
     @NotNull
@@ -648,6 +673,11 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                                 tt.sequence("procedure", SQLTokenType.T_OTHER),
                                 tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
                         ), ";")
+                ),
+                new TokenPredicatesCondition(
+                    SQLParserActionKind.BEGIN_BLOCK,
+                    tt.sequence(),
+                    tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
                 )
         );
 
@@ -678,6 +708,11 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         return false;
     }
 
+    @Override
+    public String getOffsetLimitQueryPart(int offset, int limit) {
+        return String.format("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit);
+    }
+
     @Nullable
     @Override
     public String getAutoIncrementKeyword() {
@@ -705,5 +740,52 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
+    }
+
+    @NotNull
+    @Override
+    public String getBlobDataType() {
+        return OracleConstants.TYPE_NAME_BLOB;
+    }
+
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return OracleConstants.TYPE_UUID;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return OracleConstants.TYPE_BOOLEAN;
+    }
+
+    @Override
+    public boolean supportsNoActionIndex() {
+        return false;
+    }
+
+    @Override
+    public boolean needsDefaultDataTypes() {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public String getSchemaExistQuery(@NotNull String schemaName) {
+        return "SELECT 1 FROM all_users WHERE USERNAME='" + schemaName + "'";
+    }
+
+    @NotNull
+    @Override
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
+        return "CREATE USER \"" + schemaName + "\" IDENTIFIED BY \"" + SecurityUtils.generatePassword(10) + "\"";
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }

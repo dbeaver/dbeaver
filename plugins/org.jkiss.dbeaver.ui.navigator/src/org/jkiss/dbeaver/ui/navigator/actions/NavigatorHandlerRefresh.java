@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
                                 return true;
                             }
-                            iter.remove();
+                            if (nextNode == editorNode) {
+                                iter.remove();
+                            }
                         }
                     }
                 }
@@ -182,11 +184,15 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 //                    if (!showConfirmation(node)) {
 //                        continue;
 //                    }
-                    setName("Refresh '" + node.getNodeName() + "'...");
+                    setName("Refresh '" + node.getNodeDisplayName() + "'...");
                     try {
                         DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                         if (refreshed != null) {
                             refreshedSet.add(refreshed);
+                            Throwable lastLoadError = refreshed.getLastLoadError();
+                            if (lastLoadError != null) {
+                                throw lastLoadError;
+                            }
                         }
                     }
                     catch (Throwable ex) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,4 +31,11 @@ public interface DBPNativeClientLocationManager {
     String getProductName(DBPNativeClientLocation location);
 
     String getProductVersion(DBPNativeClientLocation location);
+
+    /**
+     * @return false if provider child doesn't support native clients
+     */
+    default boolean supportsNativeClients() {
+        return true;
+    }
 }

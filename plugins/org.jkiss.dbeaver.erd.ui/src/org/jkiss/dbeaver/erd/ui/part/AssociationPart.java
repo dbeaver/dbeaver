@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,34 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.PointList;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.*;
-import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
-import org.eclipse.swt.SWT;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.*;
+import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDUtils;
+import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
-import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -57,13 +61,19 @@ import java.util.List;
  * @author Serge Rider
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
-
+    private static final Log log = Log.getLog(AssociationPart.class);
     // Keep original line width to visualize selection
     private Integer oldLineWidth;
 
     private ERDHighlightingHandle associatedAttributesHighlighing = null;
+    protected AccessibleGraphicalEditPart accPart;
+    private final Color labelForegroundColor;
 
     public AssociationPart() {
+        Color foreground = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND);
+        final Color contrastColor = UIUtils.getContrastColor(foreground);
+        final RGB labelForeground = UIUtils.blend(foreground.getRGB(), contrastColor.getRGB(), 60);
+        labelForegroundColor = UIUtils.getSharedColor(labelForeground);
     }
 
     public ERDAssociation getAssociation() {
@@ -94,29 +104,27 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn = new PolylineConnection();
-
+        PolylineConnection conn;
+        ERDConnectionRouter router = getDiagramPart().getActiveRouter();
+        if (router != null) {
+            conn = router.getConnectionInstance();
+        } else {
+            conn = new PolylineConnection();
+        }
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
-
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
             ERDAssociation association = getAssociation();
             if (association != null && association.getObject() != null && !CommonUtils.isEmpty(association.getObject().getDescription())) {
                 ConnectionLocator descLabelLocator = new ConnectionLocator(conn, ConnectionLocator.MIDDLE);
-                //descLabelLocator.setRelativePosition(50);
-                //descLabelLocator.setGap(50);
                 Label descLabel = new Label(association.getObject().getDescription());
                 descLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
-//                Border border = new MarginBorder(20, 0, 0, 0);
-//                descLabel.setBorder(border);
                 conn.add(descLabel, descLabelLocator);
             }
         }
-
         setConnectionStyles(conn);
         setConnectionRouting(conn);
         setConnectionToolTip(conn);
-
         return conn;
     }
 
@@ -124,6 +132,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         ERDAssociation association = getAssociation();
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
+        ERDConnectionRouterDescriptor router = getDiagramPart().getEditor().getDiagramRouter();
         conn.setConnectionRouter(cLayer.getConnectionRouter());
         if (!CommonUtils.isEmpty(association.getInitBends())) {
             List<AbsoluteBendpoint> connBends = new ArrayList<>();
@@ -136,73 +145,50 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             if (entityPart == null) {
                 entityPart = getTarget();
             }
-            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            if (entityPart instanceof GraphicalEditPart && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
-                // Self link
+            if (entityPart instanceof GraphicalEditPart
+                && !router.supportedAttributeAssociation()) {
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
-                //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
-                //final Dimension entitySize = entity.getFigure().getSize();
                 final Dimension figureSize = entityFigure.getMinimumSize();
                 int entityWidth = figureSize.width;
                 int entityHeight = figureSize.height;
-
                 List<RelativeBendpoint> bends = new ArrayList<>();
-                {
-                    RelativeBendpoint bp1 = new RelativeBendpoint(conn);
-                    bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
-                    bends.add(bp1);
-                }
-                {
-                    RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                    bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
-                    bends.add(bp2);
-                }
+                int w2 = entityWidth / 2;
+                int h2 = entityHeight / 2;
+                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
+                bp1.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth / 2, -h2 + w2));
+                bends.add(bp1);
+                RelativeBendpoint bp2 = new RelativeBendpoint(conn);
+                bp2.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2 + w2 / 2));
+                bends.add(bp2);
+                RelativeBendpoint bp3 = new RelativeBendpoint(conn);
+                bp3.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2 - w2 / 2));
+                bends.add(bp3);
+                RelativeBendpoint bp4 = new RelativeBendpoint(conn);
+                bp4.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth / 2, -h2 - w2));
+                bends.add(bp4);
                 conn.setRoutingConstraint(bends);
             }
+        }
+        if (cLayer.getConnectionRouter() instanceof ShortPathRouting) {
+            ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
+            ((ShortPathRouting) cLayer.getConnectionRouter())
+                .setIndentation(diagramNotationDescriptor.getNotation().getIndentation());
         }
     }
 
     protected void setConnectionStyles(PolylineConnection conn) {
-
-        ERDAssociation association = getAssociation();
-        boolean identifying = ERDUtils.isIdentifyingAssociation(association);
-
-        DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
-        if (constraintType == DBSEntityConstraintType.INHERITANCE) {
-            final PolygonDecoration srcDec = new PolygonDecoration();
-            srcDec.setTemplate(PolygonDecoration.TRIANGLE_TIP);
-            srcDec.setFill(true);
-            srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-            srcDec.setScale(10, 6);
-            conn.setTargetDecoration(srcDec);
-        } else if (constraintType.isAssociation() &&
-            association.getSourceEntity() instanceof ERDEntity &&
-            association.getTargetEntity() instanceof ERDEntity)
-        {
-            final CircleDecoration sourceDecor = new CircleDecoration();
-            sourceDecor.setRadius(3);
-            sourceDecor.setFill(true);
-            sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
-            //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-            conn.setSourceDecoration(sourceDecor);
-            if (ERDUtils.isOptionalAssociation(association)) {
-                final RhombusDecoration targetDecor = new RhombusDecoration();
-                targetDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-                //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-                conn.setTargetDecoration(targetDecor);
-            }
+        ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
+        if (diagramNotationDescriptor == null) {
+            log.error("ERD notation descriptor is not defined");
         }
-
-        conn.setLineWidth(2);
-        if (!identifying || constraintType.isLogical()) {
-            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-                conn.setLineStyle(SWT.LINE_DOT);
+        if (diagramNotationDescriptor != null) {
+            Color background = getParent().getViewer().getControl().getBackground();
+            ERDNotation notation = diagramNotationDescriptor.getNotation();
+            if (notation != null) {
+                notation.applyNotationForArrows(conn, getAssociation(), background, labelForegroundColor);
             } else {
-                conn.setLineStyle(SWT.LINE_CUSTOM);
+                log.error("ERD notation instance not created for id: " + diagramNotationDescriptor.getId());
             }
-            conn.setLineDash(
-                constraintType.isLogical() ? new float[]{ 4  } : new float[]{ 5 });
         }
     }
 
@@ -230,7 +216,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         if (value != EditPart.SELECTED_NONE) {
-            ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth + 1);
+            ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth + 3);
         } else {
             ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth);
         }
@@ -314,7 +300,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     public static class CircleDecoration extends Ellipse implements RotatableDecoration {
 
-        private int radius = 5;
+        private int radius = 4;
         private Point location = new Point();
 
         public CircleDecoration() {
@@ -414,4 +400,39 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
     }
 
+    @Override
+    protected AccessibleEditPart getAccessibleEditPart() {
+        if (this.accPart == null) {
+            this.accPart = new AccessibleGraphicalEditPart() {
+                public void getName(AccessibleEvent e) {
+                    ERDAssociation association = AssociationPart.this.getAssociation();
+                    String result = "";
+                    if (association.isLogical()) {
+                        result += ERDUIMessages.erd_accessibility_association_part_logical;
+                    }
+                    StringBuilder sourceString = new StringBuilder();
+                    for (ERDEntityAttribute sourceAttribute : association.getSourceAttributes()) {
+                        sourceString.append(NLS.bind(ERDUIMessages.erd_accessibility_association_part_attribute,
+                            sourceAttribute.getName()));
+                    }
+                    StringBuilder targetString = new StringBuilder();
+                    for (ERDEntityAttribute targetAttribute : association.getTargetAttributes()) {
+                        targetString.append(NLS.bind(
+                            ERDUIMessages.erd_accessibility_association_part_attribute,
+                            targetAttribute.getName()));
+                    }
+                    result += NLS.bind(ERDUIMessages.erd_accessibility_association_part, new Object[]{
+                        association.getName(),
+                        association.getSourceEntity().getName(),
+                        sourceString.toString(),
+                        association.getTargetEntity().getName(),
+                        targetString.toString()
+                    });
+                    e.result = result;
+                }
+            };
+        }
+
+        return this.accPart;
+    }
 }

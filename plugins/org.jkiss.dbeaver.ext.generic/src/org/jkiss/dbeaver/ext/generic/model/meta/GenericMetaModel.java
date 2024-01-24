@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Types;
 import java.util.*;
 
 /**
@@ -55,7 +56,6 @@ import java.util.*;
 public class GenericMetaModel {
 
     private static final Log log = Log.getLog(GenericMetaModel.class);
-    private static final String DEFAULT_NULL_SCHEMA_NAME = "DEFAULT";
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects
@@ -229,7 +229,7 @@ public class GenericMetaModel {
                     boolean nullSchema = false;
                     if (CommonUtils.isEmpty(schemaName)) {
                         if (supportsNullSchemas()) {
-                            schemaName = DEFAULT_NULL_SCHEMA_NAME;
+                            schemaName = GenericConstants.DEFAULT_NULL_SCHEMA_NAME;
                             nullSchema = true;
                         } else {
                             continue;
@@ -628,7 +628,7 @@ public class GenericMetaModel {
             // Wrong schema - this may happen with virtual schemas
             return null;
         }
-        GenericTableBase table = this.createTableImpl(
+        GenericTableBase table = this.createTableOrViewImpl(
             owner,
             tableName,
             tableType,
@@ -649,7 +649,7 @@ public class GenericMetaModel {
         return table;
     }
 
-    public GenericTableBase createTableImpl(
+    public GenericTableBase createTableOrViewImpl(
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
@@ -725,6 +725,21 @@ public class GenericMetaModel {
         );
     }
 
+    /**
+     * Will set precision for type from length if type can have precision
+     *
+     * @param valueType type id
+     * @param columnSize length of the column
+     * @return precision of the numeric column or null
+     */
+    @Nullable
+    public Integer extractPrecisionOfNumericColumn(int valueType, long columnSize) {
+        if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
+            return Math.toIntExact(columnSize);
+        }
+        return null;
+    }
+
     //////////////////////////////////////////////////////
     // Constraints
 
@@ -741,6 +756,14 @@ public class GenericMetaModel {
         return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
+    public boolean supportsUniqueKeys() {
+        return false;
+    }
+
+    public boolean supportsCheckConstraints() {
+        return false;
+    }
+
     @NotNull
     public GenericTableForeignKey createTableForeignKeyImpl(GenericTableBase table, String name, @Nullable String remarks, DBSEntityReferrer referencedKey, DBSForeignKeyModifyRule deleteRule, DBSForeignKeyModifyRule updateRule, DBSForeignKeyDeferability deferability, boolean persisted) {
         return new GenericTableForeignKey(table, name, remarks, referencedKey, deleteRule, updateRule, deferability, persisted);
@@ -748,12 +771,12 @@ public class GenericMetaModel {
 
     public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
         return session.getMetaData().getImportedKeys(
-                owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-                owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
-                forParent == null ?
-                        owner.getDataSource().getAllObjectsPattern() :
-                        forParent.getName())
-                .getSourceStatement();
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
+            forParent == null ?
+                owner.getDataSource().getAllObjectsPattern() :
+                forParent.getName())
+            .getSourceStatement();
     }
 
     public boolean isFKConstraintWordDuplicated() {
@@ -923,10 +946,6 @@ public class GenericMetaModel {
 
     public boolean hasFunctionSupport() {
         return true;
-    }
-
-    public boolean supportsCheckConstraints() {
-        return false;
     }
 
     public boolean supportsViews(@NotNull GenericDataSource dataSource) {

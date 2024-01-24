@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ public class OraclePrivObject extends OracleObject<OracleGrantee> implements DBA
     private boolean hierarchy;
 
     public OraclePrivObject(OracleGrantee grantee, ResultSet resultSet) {
-        super(grantee, JDBCUtils.safeGetString(resultSet, "TABLE_NAME"), true);
-        this.objectOwner = JDBCUtils.safeGetString(resultSet, "OWNER");
+        super(grantee, JDBCUtils.safeGetString(resultSet, OracleConstants.COL_TABLE_NAME), true);
+        this.objectOwner = JDBCUtils.safeGetString(resultSet, OracleConstants.COL_OWNER);
         if (this.objectOwner == null) this.objectOwner = JDBCUtils.safeGetString(resultSet, "TABLE_SCHEMA");
-        this.objectType = JDBCUtils.safeGetString(resultSet, "OBJECT_TYPE");
+        this.objectType = JDBCUtils.safeGetString(resultSet, OracleConstants.COLUMN_OBJECT_TYPE);
         this.privilege = JDBCUtils.safeGetString(resultSet, "PRIVILEGE");
         this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
-        this.grantable = JDBCUtils.safeGetBoolean(resultSet, "GRANTABLE", "Y");
-        this.hierarchy = JDBCUtils.safeGetBoolean(resultSet, "HIERARCHY", "Y");
+        this.grantable = JDBCUtils.safeGetBoolean(resultSet, "GRANTABLE", OracleConstants.RESULT_YES_VALUE);
+        this.hierarchy = JDBCUtils.safeGetBoolean(resultSet, "HIERARCHY", OracleConstants.RESULT_YES_VALUE);
     }
 
     @NotNull

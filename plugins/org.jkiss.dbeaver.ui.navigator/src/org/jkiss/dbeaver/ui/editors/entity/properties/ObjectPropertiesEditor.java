@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -66,6 +67,7 @@ import org.jkiss.dbeaver.ui.editors.entity.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -140,6 +142,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createPropertyBrowser(Composite container)
     {
+        if (container.isDisposed()) {
+            // Disposed during editor opening
+            return;
+        }
         pageControl.setRedraw(false);
         try {
             TabbedFolderInfo[] folders = collectFolders(this);
@@ -223,8 +229,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             }
         }
 
-        folderComposite.switchFolder(curFolderId);
-
         folderComposite.addFolderListener(folderId1 -> {
             if (CommonUtils.equalObjects(curFolderId, folderId1)) {
                 return;
@@ -265,6 +269,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         });
+        
+        folderComposite.switchFolder(curFolderId);
+        
         return foldersPlaceholder;
     }
 
@@ -363,14 +370,20 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     {
         // do not force focus in active editor. We can't do it properly because folderComposite detects
         // active folder by focus (which it doesn't have)
-        if (folderComposite != null) {
-            ITabbedFolder selectedPage = folderComposite.getActiveFolder();
-            if (selectedPage != null) {
-                selectedPage.setFocus();
-                //            IEditorActionBarContributor contributor = pageContributors.get(selectedPage);
-            }
-        } else if (pageControl != null) {
+        // If accessibility is active, set focus to the page control rather the active editor so
+        // the tab names can be read correctly
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (store.getBoolean(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             pageControl.setFocus();
+        } else {
+            if (folderComposite != null) {
+                ITabbedFolder selectedPage = folderComposite.getActiveFolder();
+                if (selectedPage != null) {
+                    selectedPage.setFocus();
+                }
+            } else if (pageControl != null) {
+                pageControl.setFocus();
+            }
         }
     }
 
@@ -431,6 +444,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     public ITabbedFolder getActiveFolder()
     {
         return getActiveFolder(true);
+    }
+    
+    public String getActiveFolderId() {
+        return this.curFolderId;
     }
 
     private ITabbedFolder getActiveFolder(boolean activate)
@@ -656,11 +673,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder)child;
-                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeName() + "'"); //$NON-NLS-2$
+                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeDisplayName() + "'"); //$NON-NLS-2$
                             tabList.add(
                                 new TabbedFolderInfo(
-                                    folder.getNodeName(),
-                                    folder.getNodeName(),
+                                    folder.getNodeDisplayName(),
+                                    folder.getNodeDisplayName(),
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
                                     false,//folder.getMeta().isInline(),
@@ -681,7 +698,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                         if (child instanceof DBXTreeItem) {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeName() + "'"); //$NON-NLS-2$
+                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeDisplayName() + "'"); //$NON-NLS-2$
                                     String nodeName = child.getChildrenTypeLabel(databaseNode.getObject().getDataSource(), null);
                                     tabList.add(
                                         new TabbedFolderInfo(
@@ -772,7 +789,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private class ReadExpensivePropsAction extends Action {
         private final DBSObject databaseObject;
         ReadExpensivePropsAction(DBSObject databaseObject) {
-            super("Read row count and other expensive properties", AS_CHECK_BOX);
+            super(UINavigatorMessages.editors_entity_read_expensive_props_action, AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
             this.databaseObject = databaseObject;
         }

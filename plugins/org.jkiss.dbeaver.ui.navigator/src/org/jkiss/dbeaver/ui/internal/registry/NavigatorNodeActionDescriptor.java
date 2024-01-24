@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.internal.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 import org.jkiss.utils.CommonUtils;
@@ -30,25 +31,37 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.navigator.nodeAction"; //NON-NLS-1 //$NON-NLS-1$
 
-    private ObjectType implType;
-    private int order;
+    private final ObjectType implType;
+    private final int order;
+    private final Expression enablementExpression;
     private INavigatorNodeActionHandler instance;
 
-    NavigatorNodeActionDescriptor(IConfigurationElement config) throws DBException {
+    NavigatorNodeActionDescriptor(IConfigurationElement config) {
         super(config);
 
         this.implType = new ObjectType(config.getAttribute("class"));
-        this.instance = implType.createInstance(INavigatorNodeActionHandler.class);
         this.order = CommonUtils.toInt(config.getAttribute("order"));
+        this.enablementExpression = getEnablementExpression(config);
     }
 
     @NotNull
     public INavigatorNodeActionHandler getHandler() {
+        if (instance == null) {
+            try {
+                this.instance = implType.createInstance(INavigatorNodeActionHandler.class);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
         return instance;
     }
 
     public int getOrder() {
         return order;
+    }
+
+    public boolean appliesTo(DBPObject object) {
+        return isExpressionTrue(enablementExpression, object) && appliesTo(object, null);
     }
 
     @Override

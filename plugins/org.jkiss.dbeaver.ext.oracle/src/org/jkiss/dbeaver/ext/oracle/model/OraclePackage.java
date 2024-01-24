@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,15 +59,18 @@ public class OraclePackage extends OracleSchemaObject
 
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
+    private Date created;
+    private Date lastDDLTime;
+    private boolean temporary;
     private String sourceDeclaration;
     private String sourceDefinition;
 
-    public OraclePackage(
-        OracleSchema schema,
-        ResultSet dbResult)
-    {
-        super(schema, JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"), true);
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+    public OraclePackage(OracleSchema schema, ResultSet dbResult) {
+        super(schema, JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME), true);
+        this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
+        this.created = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_CREATED);
+        this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_LAST_DDL_TIME);
+        this.temporary = JDBCUtils.safeGetBoolean(dbResult, OracleConstants.COLUMN_TEMPORARY, OracleConstants.RESULT_YES_VALUE);
     }
 
     public OraclePackage(OracleSchema schema, String name)
@@ -76,6 +79,21 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Property(viewable = true, order = 3)
+    public Date getCreated() {
+        return created;
+    }
+
+    @Property(viewable = true, order = 4)
+    public Date getLastDDLTime() {
+        return lastDDLTime;
+    }
+
+    @Property(viewable = true, order = 5)
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+    @Property(viewable = true, order = 6)
     public boolean isValid()
     {
         return valid;

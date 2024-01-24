@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -97,8 +98,8 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLCatalog, MySQLDat
     @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLCatalog catalog, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
     {
-        throw new DBException("Direct database rename is not yet implemented in MySQL. You should use export/import functions for that.");
+        throw new DBException(MySQLMessages.exception_direct_database_rename);
     }
-
+    
 }
 

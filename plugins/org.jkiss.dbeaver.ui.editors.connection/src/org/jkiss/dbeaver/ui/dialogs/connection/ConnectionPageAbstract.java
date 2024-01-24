@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ResourceLocator;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,15 +35,19 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
+import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -51,8 +57,11 @@ import java.util.*;
  * ConnectionPageAbstract
  */
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor {
+    public static final String PROP_DRIVER_SUBSTITUTION = "driver-substitution";
 
     protected static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
+    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
+    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
     @NotNull
     protected final Map<String, List<Control>> propGroupMap = new HashMap<>();
 
@@ -67,6 +76,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected Button typeManualRadio;
     @Nullable
     protected Button typeURLRadio;
+    private Combo driverSubstitutionCombo;
 
     private ImageDescriptor curImageDescriptor;
     private Button licenseButton;
@@ -86,9 +96,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         this.site = site;
     }
 
-    protected boolean isCustomURL()
-    {
-        return false;
+    protected boolean isCustomURL() {
+        return typeURLRadio != null && typeURLRadio.getSelection();
     }
 
     @Override
@@ -119,6 +128,17 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 variablesHintLabel.setResolver(null);
             }
         }
+
+        if (driverSubstitutionCombo != null) {
+            final DBPDriverSubstitutionDescriptor driverSubstitution = dataSource.getDriverSubstitution();
+            if (driverSubstitution != null) {
+                final DBPDriverSubstitutionDescriptor[] substitutions
+                    = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
+                driverSubstitutionCombo.select(ArrayUtils.indexOf(substitutions, driverSubstitution) + 1);
+            } else {
+                driverSubstitutionCombo.select(0);
+            }
+        }
     }
 
     @Override
@@ -131,6 +151,17 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
             if (!descriptor.isSavePassword()) {
                 descriptor.resetPassword();
+            }
+        }
+
+        if (driverSubstitutionCombo != null) {
+            final int substitutionIndex = driverSubstitutionCombo.getSelectionIndex();
+            if (substitutionIndex > 0) {
+                final DBPDriverSubstitutionDescriptor[] substitutions
+                    = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
+                dataSource.setDriverSubstitution(substitutions[substitutionIndex - 1]);
+            } else {
+                dataSource.setDriverSubstitution(null);
             }
         }
     }
@@ -268,9 +299,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
         DataSourceDescriptor dataSource = (DataSourceDescriptor)getSite().getActiveDataSource();
         savePasswordCheck = UIUtils.createCheckbox(panel,
-            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
+            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
             dataSource == null || dataSource.isSavePassword());
-        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally);
+        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password);
         //savePasswordCheck.setLayoutData(gd);
 
         if (supportsPasswordView) {
@@ -289,39 +320,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     private void showPasswordText(UIServiceSecurity serviceSecurity) {
-        Composite passContainer = passwordText.getParent();
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
             if (!serviceSecurity.validatePassword(
                 site.getProject(),
                 "Enter project password",
-                "Enter project master password to unlock connection password view",
+                "Enter project password to unlock connection password view",
                 true))
             {
                 return;
             }
         }
 
-        Object layoutData = passwordText.getLayoutData();
-        String curValue = passwordText.getText();
-        passwordText.dispose();
-
-        if (passHidden) {
-            passwordText = new Text(passContainer, SWT.BORDER);
-        } else {
-            passwordText = new Text(passContainer, SWT.PASSWORD | SWT.BORDER);
-        }
-        passwordText.setLayoutData(layoutData);
-        passwordText.setText(curValue);
-        passContainer.layout(true, true);
-
-//        if (passwordText.getEchoChar() == '\0') {
-//            passwordText.setEchoChar('*');
-//            return;
-//        }
-//        if (serviceSecurity.validatePassword(site.getProject().getSecureStorage(), "Enter project password", "Enter project master password to unlock connection password view")) {
-//            passwordText.setEchoChar('\0');
-//        }
+        passwordText = UIUtils.recreateTextControl(
+            passwordText,
+            passHidden ? SWT.BORDER : SWT.BORDER | SWT.PASSWORD
+        );
     }
 
 
@@ -337,8 +351,39 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         typeManualRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_host_label, false, typeSwitcher);
         typeURLRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_url_label, true, typeSwitcher);
         modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
+        createDriverSubstitutionControls(modeGroup);
         addControlToGroup(GROUP_CONNECTION_MODE, cnnTypeLabel);
         addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
+    }
+
+    protected void createDriverSubstitutionControls(@NotNull Composite parent) {
+        final DBPDriverSubstitutionDescriptor[] driverSubstitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
+
+        if (driverSubstitutions.length > 0) {
+            final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
+            substitutionGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).align(SWT.END, SWT.BEGINNING).create());
+
+            driverSubstitutionCombo = UIUtils.createLabelCombo(
+                substitutionGroup,
+                "Driver type",
+                NLS.bind(
+                    "Replaces the current driver ({0}) with the selected one.\nProvides all functionality of the original driver but driven by the substituting driver.",
+                    site.getActiveDataSource().getDriver().getFullName()
+                ),
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
+            driverSubstitutionCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                final int index = driverSubstitutionCombo.getSelectionIndex();
+                final DBPDriverSubstitutionDescriptor driverSubstitution = index > 0 ? driverSubstitutions[index - 1] : null;
+                final IConnectionWizard wizard = (IConnectionWizard) site.getWizard();
+                wizard.firePropertyChangeEvent(PROP_DRIVER_SUBSTITUTION, wizard.getDriverSubstitution(), driverSubstitution);
+            }));
+            driverSubstitutionCombo.add("JDBC");
+
+            for (DBPDriverSubstitutionDescriptor descriptor : driverSubstitutions) {
+                driverSubstitutionCombo.add(descriptor.getName());
+            }
+        }
     }
 
     protected void setupConnectionModeSelection(@NotNull Text urlText, boolean useUrl, @NotNull Collection<String> nonUrlPropGroups) {

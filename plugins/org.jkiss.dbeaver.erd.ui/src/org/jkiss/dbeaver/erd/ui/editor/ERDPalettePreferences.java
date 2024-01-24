@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.draw2dl.PositionConstants;
-import org.eclipse.gef3.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
+import org.eclipse.draw2d.PositionConstants;
+import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 
 

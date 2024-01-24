@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public abstract class AbstractJob extends Job
     private volatile boolean blockCanceled = false;
     private volatile long cancelTimestamp = -1;
     private AbstractJob attachedJob = null;
+    private boolean skipErrorOnCanceling;
 
     // Attached job may be used to "overwrite" current job.
     // It happens if some other AbstractJob runs in sync mode
@@ -60,6 +61,14 @@ public abstract class AbstractJob extends Job
 
     public boolean isFinished() {
         return finished;
+    }
+
+    private boolean isSkipErrorOnCanceling() {
+        return skipErrorOnCanceling;
+    }
+
+    protected void setSkipErrorOnCanceling(boolean skipErrorOnCanceling) {
+        this.skipErrorOnCanceling = skipErrorOnCanceling;
     }
 
     protected Thread getActiveThread()
@@ -234,7 +243,9 @@ public abstract class AbstractJob extends Job
                     BlockCanceler.cancelBlock(progressMonitor, block, getActiveThread());
                 } catch (DBException e) {
                     log.debug("Block cancel error", e); //$NON-N LS-1$
-                    return GeneralUtils.makeExceptionStatus(e);
+                    if (!isSkipErrorOnCanceling()) {
+                        return GeneralUtils.makeExceptionStatus(e);
+                    }
                 } catch (Throwable e) {
                     log.debug("Block cancel internal error", e); //$NON-N LS-1$
                     return Status.CANCEL_STATUS;

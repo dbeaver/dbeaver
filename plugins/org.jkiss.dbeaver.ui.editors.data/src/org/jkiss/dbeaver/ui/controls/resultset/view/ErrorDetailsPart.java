@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -91,12 +92,21 @@ class ErrorDetailsPart {
 			imageLabel.setLayoutData(gridData);
 		}
 
-		Text text = new Text(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
+		Text text = new Text(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
 		text.setBackground(bgColor);
 		text.setForeground(fgColor);
 
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		text.setText(reason.getMessage());
+
+		text.addListener(SWT.Resize, e -> {
+			final Point size = text.getSize();
+			if (size.y > 100) {
+				// Can't use the setSize here - will revalidate every time the parent is resized
+				((GridData) text.getLayoutData()).heightHint = 100;
+				parent.layout(true);
+			}
+		});
 
 		Composite buttonParent = new Composite(parent, SWT.NONE);
 		buttonParent.setBackground(parent.getBackground());
@@ -127,7 +137,6 @@ class ErrorDetailsPart {
 		data.verticalSpan = 1;
 		detailsArea.setLayoutData(data);
 		detailsArea.setLayout(new FillLayout());
-		parent.layout(true);
 	}
 
 	/**

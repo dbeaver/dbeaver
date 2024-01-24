@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,19 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.regex.Matcher;
@@ -37,6 +44,16 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at \\[([0-9]+)\\:([0-9]+)\\]");
 
     public BigQueryMetaModel() {
+    }
+
+    @Override
+    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        return new BigQueryDataSource(monitor, container, this);
+    }
+
+    @Override
+    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(GenericStructContainer container) {
+        return new BigQueryDataTypeCache(container);
     }
 
     @Nullable

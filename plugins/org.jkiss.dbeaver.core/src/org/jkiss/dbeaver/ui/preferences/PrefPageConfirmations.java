@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,9 +52,10 @@ import java.util.stream.Collectors;
 public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations"; //$NON-NLS-1$
 
+    private TableViewer tableViewer;
     private Table confirmTable;
     private List<ConfirmationWithStatus> confirmations = new ArrayList<>();
-    private Map<ConfirmationDescriptor, Object> changedConfirmations = new HashMap<>();
+    private Map<ConfirmationDescriptor, String> changedConfirmations = new HashMap<>();
 
     @Override
     public void init(IWorkbench workbench)
@@ -67,7 +68,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        TableViewer tableViewer = new TableViewer(
+        tableViewer = new TableViewer(
             composite,
             SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
@@ -114,8 +115,8 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
             true,
             item -> {
                 if (item instanceof ConfirmationWithStatus) {
-                return  ((ConfirmationWithStatus) item).enabled;
-            }
+                    return ConfirmationDialog.PROMPT.equals(((ConfirmationWithStatus) item).status);
+                }
             return false;
         }, new EditingSupport(tableViewer) {
 
@@ -132,7 +133,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
                 @Override
                 protected Object getValue(Object element) {
                     if (element instanceof ConfirmationWithStatus) {
-                        return ((ConfirmationWithStatus) element).enabled;
+                        return ConfirmationDialog.PROMPT.equals(((ConfirmationWithStatus) element).status);
                     }
                     return false;
                 }
@@ -141,10 +142,72 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
                 protected void setValue(Object element, Object value) {
                     if (element instanceof ConfirmationWithStatus) {
                         ConfirmationWithStatus confirmation = (ConfirmationWithStatus) element;
-                        confirmation.enabled = CommonUtils.getBoolean(value, true);
-                        changedConfirmations.put((confirmation).confirmation, value);
+                        boolean enabled = CommonUtils.getBoolean(value, true);
+                        if (enabled && !ConfirmationDialog.PROMPT.equals(confirmation.status)) {
+                            confirmation.status = ConfirmationDialog.PROMPT;
+                            changedConfirmations.put((confirmation).confirmation, ConfirmationDialog.PROMPT);
+                        } else if (!enabled) {
+                            // Then set to default - ALWAYS - value.
+                            confirmation.status = ConfirmationDialog.ALWAYS;
+                            changedConfirmations.put((confirmation).confirmation, ConfirmationDialog.ALWAYS);
+                        }
                     }
+                }
+            });
 
+        columnsController.addBooleanColumn(
+            CoreMessages.pref_page_confirmations_table_column_confirm,
+            CoreMessages.pref_page_confirmations_table_column_confirm_tip,
+            SWT.CENTER,
+            true,
+            true,
+            item -> {
+                if (item instanceof ConfirmationWithStatus) {
+                    // PROMPT and ALWAYS are true by default
+                    return !ConfirmationDialog.NEVER.equals(((ConfirmationWithStatus) item).status);
+                }
+                return false;
+            }, new EditingSupport(tableViewer) {
+
+                @Override
+                protected CellEditor getCellEditor(Object element) {
+                    return new CustomCheckboxCellEditor(tableViewer.getTable());
+                }
+
+                @Override
+                protected boolean canEdit(Object element) {
+                    if (element instanceof ConfirmationWithStatus) {
+                        // Can't change this value if dialog showing is enabled to avoid mess.
+                        return !ConfirmationDialog.PROMPT.equals(((ConfirmationWithStatus) element).status);
+                    }
+                    return false;
+                }
+
+                @Override
+                protected Object getValue(Object element) {
+                    if (element instanceof ConfirmationWithStatus) {
+                        return !ConfirmationDialog.NEVER.equals(((ConfirmationWithStatus) element).status);
+                    }
+                    return false;
+                }
+
+                @Override
+                protected void setValue(Object element, Object value) {
+                    if (element instanceof ConfirmationWithStatus) {
+                        ConfirmationWithStatus confirmation = (ConfirmationWithStatus) element;
+                        if (ConfirmationDialog.PROMPT.equals(confirmation.status)) {
+                            // Something went wrong. We do not want to change confirm value if the "show dialog" is enabled.
+                            return;
+                        }
+                        boolean enabled = CommonUtils.getBoolean(value, true);
+                        if (enabled && !ConfirmationDialog.ALWAYS.equals(confirmation.status)) {
+                            confirmation.status = ConfirmationDialog.ALWAYS;
+                            changedConfirmations.put((confirmation).confirmation, ConfirmationDialog.ALWAYS);
+                        } else if (!enabled && !ConfirmationDialog.NEVER.equals(confirmation.status)) {
+                            confirmation.status = ConfirmationDialog.NEVER;
+                            changedConfirmations.put((confirmation).confirmation, ConfirmationDialog.NEVER);
+                        }
+                    }
                 }
             });
 
@@ -186,31 +249,29 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         return composite;
     }
 
-    private Boolean getCurrentConfirmValue(String id) {
+    private String getCurrentConfirmValue(String id) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         String value = store.getString(ConfirmationDialog.PREF_KEY_PREFIX + id);
         if (CommonUtils.isEmpty(value)) {
-            return Boolean.TRUE;
+            return ConfirmationDialog.PROMPT;
         }
 
-        switch (value) {
-            case ConfirmationDialog.NEVER: // backward compatibility
-            case "false":
-                return Boolean.FALSE;
-            case ConfirmationDialog.ALWAYS: // backward compatibility
-            default: return Boolean.TRUE;
+        if (ConfirmationDialog.NEVER.equals(value) || ConfirmationDialog.ALWAYS.equals(value)) {
+            return value;
         }
+
+        // Better to ask in other cases
+        return ConfirmationDialog.PROMPT;
     }
 
 
     @Override
     public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        for (Map.Entry<ConfirmationDescriptor, Object> entry : changedConfirmations.entrySet()) {
+        for (Map.Entry<ConfirmationDescriptor, String> entry : changedConfirmations.entrySet()) {
             String id = entry.getKey().getId();
-            // Store values as String and not as boolean because of the backward compatibility problems
-            store.setValue(ConfirmationDialog.PREF_KEY_PREFIX + id, entry.getValue().toString());
+            store.setValue(ConfirmationDialog.PREF_KEY_PREFIX + id, entry.getValue());
         }
         PrefUtils.savePreferenceStore(store);
         return super.performOk();
@@ -218,24 +279,26 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
 
     @Override
     protected void performDefaults() {
-        // All elements true by default
+        // All elements are true by default
         for (ConfirmationWithStatus confirmation : confirmations) {
-            if (!confirmation.enabled) {
-                confirmation.enabled = true;
-                changedConfirmations.put(confirmation.confirmation, Boolean.TRUE);
+            if (!ConfirmationDialog.PROMPT.equals(confirmation.status)) {
+                confirmation.status = ConfirmationDialog.PROMPT;
+                changedConfirmations.put(confirmation.confirmation, ConfirmationDialog.PROMPT);
             }
         }
+        tableViewer.refresh();
+        UIUtils.asyncExec(() -> UIUtils.packColumns(confirmTable, true));
         super.performDefaults();
     }
 
     private class ConfirmationWithStatus {
 
         private ConfirmationDescriptor confirmation;
-        private boolean enabled;
+        private String status;
 
-        ConfirmationWithStatus(ConfirmationDescriptor confirmation, boolean enabled) {
+        ConfirmationWithStatus(ConfirmationDescriptor confirmation, String status) {
             this.confirmation = confirmation;
-            this.enabled = enabled;
+            this.status = status;
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -231,22 +231,18 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         throws DBException
     {
         if (CommonUtils.isEmpty(title)) {
-            title = node.getNodeName();
+            title = node.getNodeDisplayName();
         }
 
         List<String> nodePath = new ArrayList<>();
         for (DBNNode parent = node; !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
-            nodePath.add(0, parent.getNodeName());
-        }
-        String dsId = null;
-        if (node.getObject() != null && node.getObject().getDataSource() != null) {
-            dsId = node.getObject().getDataSource().getContainer().getId();
+            nodePath.add(0, parent.getNodeDisplayName());
         }
         BookmarkStorage storage = new BookmarkStorage(
             title,
-            node.getNodeType() + " " + node.getNodeName(), //$NON-NLS-1$
+            node.getNodeTypeLabel() + " " + node.getNodeDisplayName(), //$NON-NLS-1$
             node.getNodeIconDefault(),
-            dsId,
+            node.getDataSourceContainer().getId(),
             nodePath);
 
         try {
@@ -279,7 +275,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                     final DBNNode[] children = currentNode.getChildren(monitor);
                     if (!ArrayUtils.isEmpty(children)) {
                         for (DBNNode node : children) {
-                            if (path.equals(node.getNodeName())) {
+                            if (path.equals(node.getNodeDisplayName())) {
                                 nextChild = node;
                                 break;
                             }

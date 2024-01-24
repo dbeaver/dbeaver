@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class DenodoSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
@@ -45,11 +44,18 @@ public class DenodoSQLDialect extends GenericSQLDialect implements TPRuleProvide
                 ));
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new SQLDollarQuoteRule(position == RulePosition.PARTITION, false, false, true));
+            return new TPRule[] {
+                new SQLDollarQuoteRule(position == RulePosition.PARTITION, false, false, true) };
         }
+        return new TPRule[0];
     }
 
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }

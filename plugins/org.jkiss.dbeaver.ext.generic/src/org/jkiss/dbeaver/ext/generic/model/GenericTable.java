@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,28 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstrainable;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintInfo;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Generic table
  */
-public class GenericTable extends GenericTableBase implements DBPScriptObjectExt2
-{
-    private static final Log log = Log.getLog(GenericTable.class);
+public class GenericTable extends GenericTableBase implements DBPScriptObjectExt2, DBSEntityConstrainable {
 
     private String ddl;
 
@@ -45,6 +48,16 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
         @Nullable JDBCResultSet dbResult)
     {
         super(container, tableName, tableType, dbResult);
+    }
+
+    // Constructor for tests
+    public GenericTable(
+        @NotNull GenericStructContainer container,
+        @Nullable String tableName,
+        @NotNull String tableCatalogName,
+        @NotNull String tableSchemaName
+    ) {
+        super(container, tableName, "TABLE", tableCatalogName, tableSchemaName);
     }
 
     @Override
@@ -83,5 +96,19 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
             return !isPersisted() || getDataSource().getMetaModel().supportsTableDDLSplit(this);
         }
         return false;
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        boolean isSupportCheckConstraint = getDataSource().getMetaModel().supportsCheckConstraints();
+        List<DBSEntityConstraintInfo> result = new ArrayList<>();
+        result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, GenericUniqueKey.class));
+        if (getDataSource().getMetaModel().supportsUniqueKeys()) {
+            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, GenericUniqueKey.class));
+        }
+        if (isSupportCheckConstraint) {
+            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, GenericTableConstraint.class));
+        }
+        return result;
     }
 }

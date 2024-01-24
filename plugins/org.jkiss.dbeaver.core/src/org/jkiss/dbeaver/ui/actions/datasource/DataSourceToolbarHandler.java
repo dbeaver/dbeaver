@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
@@ -145,6 +146,8 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         DBPDataSourceContainer currentDataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
 
         if ((event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() == currentDataSource) ||
+            (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && currentDataSource != null
+                && event.getData() == currentDataSource.getRegistry()) ||
             (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) &&
                 DBUtils.getContainer(event.getObject()) == currentDataSource)
             ) {
@@ -189,10 +192,6 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
     @Override
     public void nodeChanged(DBNEvent event) {
         final DBNNode node = event.getNode();
-        if (!(node instanceof DBNResource)) {
-            return;
-        }
-
         IWorkbenchPage activePage = workbenchWindow.getActivePage();
         if (activePage == null) {
             return;
@@ -201,16 +200,27 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         if (activeEditor == null) {
             return;
         }
-        IFile activeFile = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-        if (activeFile == null) {
-            return;
+
+        if (node instanceof DBNResource) {
+            IFile activeFile = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+            if (activeFile == null) {
+                return;
+            }
+            if (activeFile.equals(((DBNResource) node).getResource())) {
+                //DBPDataSourceContainer visibleContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
+                //DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
+                updateToolbar();
+            }
+            DataSourceToolbarUtils.triggerRefreshReadonlyElement();
+        } else {
+            IEditorInput editorInput = activeEditor.getEditorInput();
+            if (editorInput instanceof INavigatorEditorInput) {
+                DBNNode navigatorNode = ((INavigatorEditorInput) editorInput).getNavigatorNode();
+                if (navigatorNode != null && navigatorNode.isChildOf(node)) {
+                    updateToolbar();
+                }
+            }
         }
-        if (activeFile.equals(((DBNResource) node).getResource())) {
-            //DBPDataSourceContainer visibleContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
-            //DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
-            updateToolbar();
-        }
-        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
 }

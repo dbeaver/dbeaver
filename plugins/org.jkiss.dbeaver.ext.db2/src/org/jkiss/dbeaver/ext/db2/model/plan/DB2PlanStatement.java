@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -29,59 +28,41 @@ import java.util.*;
 
 /**
  * DB2 EXPLAIN_STATEMENT table
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2PlanStatement {
 
-    private static final Log LOG = Log.getLog(DB2PlanAnalyser.class);
+    private static final String SEL_BASE_SELECT = "SELECT * FROM %s.%s\n" +
+        "WHERE EXPLAIN_REQUESTER = ? AND EXPLAIN_TIME = ? AND SOURCE_NAME = ? AND SOURCE_SCHEMA = ?" +
+        " AND SOURCE_VERSION = ? AND EXPLAIN_LEVEL = ? AND STMTNO = ? AND SECTNO = ?\n" +
+        "ORDER BY %s\n" +
+        "WITH UR";
 
-    private static final String SEL_BASE_SELECT;
-
-    static {
-        StringBuilder sb = new StringBuilder(1024);
-        sb.append("SELECT *");
-        sb.append("  FROM %s.%s");
-        sb.append(" WHERE EXPLAIN_REQUESTER = ?"); // 1
-        sb.append("   AND EXPLAIN_TIME = ?");// 2
-        sb.append("   AND SOURCE_NAME = ?");// 3
-        sb.append("   AND SOURCE_SCHEMA = ?");// 4
-        sb.append("   AND SOURCE_VERSION = ?");// 5
-        sb.append("   AND EXPLAIN_LEVEL = ?");// 6
-        sb.append("   AND STMTNO = ?");// 7
-        sb.append("   AND SECTNO = ?");// 8
-        sb.append(" ORDER BY %s");
-        sb.append(" WITH UR");
-        SEL_BASE_SELECT = sb.toString();
-    }
-
-    private Map<String, DB2PlanOperator> mapOperators;
-    private Map<String, DB2PlanObject> mapDataObjects;
-    private List<DB2PlanStream> listStreams;
+    private final Map<String, DB2PlanOperator> mapOperators = new HashMap<>();
+    private final Map<String, DB2PlanObject> mapDataObjects = new HashMap<>();
+    private final List<DB2PlanStream> listStreams = new ArrayList<>();
 
     private DB2PlanNode rootNode;
 
-    private DB2PlanInstance planInstance;
-    private String planTableSchema;
+    private final String planTableSchema;
 
-    private String explainRequester;
-    private Timestamp explainTime;
-    private String sourceName;
-    private String sourceSchema;
-    private String sourceVersion;
-    private String explainLevel;
-    private Integer stmtNo;
-    private Integer sectNo;
-    private Double totalCost;
-    private String statementText;
-    private Integer queryDegree;
+    private final String explainRequester;
+    private final Timestamp explainTime;
+    private final String sourceName;
+    private final String sourceSchema;
+    private final String sourceVersion;
+    private final String explainLevel;
+    private final Integer stmtNo;
+    private final Integer sectNo;
+    private final Double totalCost;
+    private final String statementText;
+    private final Integer queryDegree;
 
     // ------------
     // Constructors
     // ------------
-    public DB2PlanStatement(JDBCSession session, JDBCResultSet dbResult, String planTableSchema) throws SQLException
-    {
-
+    public DB2PlanStatement(JDBCSession session, JDBCResultSet dbResult, String planTableSchema) throws SQLException {
         this.planTableSchema = planTableSchema;
 
         this.explainRequester = JDBCUtils.safeGetStringTrimmed(dbResult, "EXPLAIN_REQUESTER");
@@ -103,8 +84,7 @@ public class DB2PlanStatement {
     // ----------------
     // Business Methods
     // ----------------
-    public List<DB2PlanNode> buildNodes()
-    {
+    public List<DB2PlanNode> buildNodes() {
         // Based on streams, establish relationships between nodes
         // DF: Very Important!: The Stream MUST be order by STREAM_ID DESC for the viewer to display things right (from the list
         // order)
@@ -146,20 +126,15 @@ public class DB2PlanStatement {
 
         }
 
-        // return rootNode == null ? Collections.<DB2PlanNode> emptyList() : Collections.singletonList(rootNode);
-        return Collections.singletonList(rootNode);
+        return rootNode == null ? Collections.emptyList() : Collections.singletonList(rootNode);
     }
 
     // -------------
     // Load children
     // -------------
-    private void loadChildren(JDBCSession session) throws SQLException
-    {
-
-        mapDataObjects = new HashMap<>(32);
+    private void loadChildren(JDBCSession session) throws SQLException {
         try (JDBCPreparedStatement sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT",
-            "OBJECT_SCHEMA,OBJECT_NAME")))
-        {
+            "OBJECT_SCHEMA,OBJECT_NAME"))) {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 DB2PlanObject db2PlanObject;
@@ -170,27 +145,23 @@ public class DB2PlanStatement {
             }
         }
 
-        mapOperators = new HashMap<>(64);
         try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
-            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID")))
-        {
+            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID"))) {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 DB2PlanOperator db2PlanOperator;
                 while (res.next()) {
                     db2PlanOperator = new DB2PlanOperator(session, res, this, planTableSchema);
                     mapOperators.put(db2PlanOperator.getNodeName(), db2PlanOperator);
-                    if (db2PlanOperator.getOperatorType() == DB2PlanOperatorType.RETURN) {
+                    if (rootNode == null || db2PlanOperator.getOperatorType() == DB2PlanOperatorType.RETURN) {
                         rootNode = db2PlanOperator;
                     }
                 }
             }
         }
 
-        listStreams = new ArrayList<>();
         try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
-            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC")))
-        {
+            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC"))) {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 while (res.next()) {
@@ -200,8 +171,7 @@ public class DB2PlanStatement {
         }
     }
 
-    private void setQueryParameters(JDBCPreparedStatement sqlStmt) throws SQLException
-    {
+    private void setQueryParameters(JDBCPreparedStatement sqlStmt) throws SQLException {
         sqlStmt.setString(1, explainRequester);
         sqlStmt.setTimestamp(2, explainTime);
         sqlStmt.setString(3, sourceName);
@@ -216,73 +186,55 @@ public class DB2PlanStatement {
     // Standard Getters
     // ----------------
 
-    public DB2PlanInstance getPlanInstance()
-    {
-        return planInstance;
-    }
-
-    public String getExplainLevel()
-    {
+    public String getExplainLevel() {
         return explainLevel;
     }
 
-    public Integer getStmtNo()
-    {
+    public Integer getStmtNo() {
         return stmtNo;
     }
 
-    public Integer getSectNo()
-    {
+    public Integer getSectNo() {
         return sectNo;
     }
 
-    public Double getTotalCost()
-    {
+    public Double getTotalCost() {
         return totalCost;
     }
 
-    public String getStatementText()
-    {
+    public String getStatementText() {
         return statementText;
     }
 
-    public Integer getQueryDegree()
-    {
+    public Integer getQueryDegree() {
         return queryDegree;
     }
 
-    public List<DB2PlanStream> getListStreams()
-    {
+    public List<DB2PlanStream> getListStreams() {
         return listStreams;
     }
 
-    public String getPlanTableSchema()
-    {
+    public String getPlanTableSchema() {
         return planTableSchema;
     }
 
-    public String getExplainRequester()
-    {
+    public String getExplainRequester() {
         return explainRequester;
     }
 
-    public Timestamp getExplainTime()
-    {
+    public Timestamp getExplainTime() {
         return explainTime;
     }
 
-    public String getSourceName()
-    {
+    public String getSourceName() {
         return sourceName;
     }
 
-    public String getSourceSchema()
-    {
+    public String getSourceSchema() {
         return sourceSchema;
     }
 
-    public String getSourceVersion()
-    {
+    public String getSourceVersion() {
         return sourceVersion;
     }
 

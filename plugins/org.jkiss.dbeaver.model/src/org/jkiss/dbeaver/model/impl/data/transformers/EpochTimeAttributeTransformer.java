@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,9 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
     private static final int GIGA = 1_000_000_000;
     private static final int TEN_MEGA = 10_000_000;
+    private static final int MEGA = 1_000_000;
     private static final int TICKS_TO_NANOS = 100;
+    private static final int NANOS_TO_MICROS = 1000;
     private static final long DOTNET_TICKS_OFFSET = 621_355_968_000_000_000L;  // DateTime.UnixEpoch.Ticks
     private static final long W32_FILETIME_OFFSET = 116_444_736_000_000_000L;  // DateTime.UnixEpoch.ToFileTimeUtc()
     private static final double OADATE_OFFSET = 25569.0;  // DateTime.UnixEpoch.ToOADate()
@@ -58,11 +60,12 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
     private static final DateTimeFormatter SECONDS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
     private static final DateTimeFormatter MILLIS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
+    private static final DateTimeFormatter MICROS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnn", Locale.ENGLISH);
+    private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn", Locale.ENGLISH);
     // 10 us precision
     private static final DateTimeFormatter SQLITE_JULIAN_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnn", Locale.ENGLISH);
     // 100 ns precision
     private static final DateTimeFormatter DOTNET_TICKS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnn", Locale.ENGLISH);
-    private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn",Locale.ENGLISH);
 
     private enum EpochUnit {
         seconds {
@@ -98,6 +101,24 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             @Override
             Long toRawValue(Instant instant) {
                 return instant.toEpochMilli();
+            }
+        },
+
+        microseconds {
+            @Override
+            Instant toInstant(Number value) {
+                long longValue = value.longValue();
+                return Instant.ofEpochSecond(longValue / MEGA, longValue % MEGA);
+            }
+
+            @Override
+            DateTimeFormatter getFormatter() {
+                return MICROS_FORMATTER;
+            }
+
+            @Override
+            Long toRawValue(Instant instant) {
+                return instant.getEpochSecond() * MEGA + instant.getNano() / NANOS_TO_MICROS;
             }
         },
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -215,7 +217,14 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
             throw new IOException("Unresolved file reference: " + getPath());
         }
 
-        WebUtils.downloadRemoteFile(monitor, taskName, externalURL, localFile, getAuthInfo(monitor));
+        // Download to a temporary file first so in case the process was terminated we won't have
+        // a malformed file in the target directory and therefore will be able to download it again
+
+        final Path tempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, "driver-files");
+        final Path tempFile = tempFolder.resolve(SecurityUtils.makeDigest(localFile.toString()));
+
+        WebUtils.downloadRemoteFile(monitor, taskName, externalURL, tempFile, getAuthInfo(monitor));
+        Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
     @Nullable

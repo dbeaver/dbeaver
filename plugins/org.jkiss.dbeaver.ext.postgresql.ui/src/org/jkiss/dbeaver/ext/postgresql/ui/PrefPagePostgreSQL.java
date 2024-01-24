@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -163,6 +163,21 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);
 
         return super.performOk();
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        showNonDefault.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
+        showTemplates.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+        showUnavailable.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
+        showDatabaseStatistics.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
+        readAllDataTypes.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+        readKeysWithColumns.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+        ddPlainBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_PLAIN_STRING));
+        ddTagBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_TAG_STRING));
+        setCheckboxesState();
+        super.performDefaults();
     }
 
     @Override

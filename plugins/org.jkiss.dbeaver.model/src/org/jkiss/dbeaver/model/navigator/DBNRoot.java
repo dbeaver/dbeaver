@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Override
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return "#root"; //$NON-NLS-1$
     }
 
@@ -169,6 +169,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return true;
     }
 
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return "";
@@ -190,7 +191,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         }
         for (DBNProject node : projects) {
             if (node.getProject().equals(project) ||
-                CommonUtils.equalObjects(node.getProject().getProjectID(), project.getProjectID()))
+                CommonUtils.equalObjects(node.getProject().getId(), project.getId()))
             {
                 return node;
             }
@@ -206,7 +207,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
             platform instanceof DBPPlatformDesktop ?
                 ((DBPPlatformDesktop)platform).getWorkspace().getResourceHandler(project.getEclipseProject()) : null);
         projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
-        Arrays.sort(projects, Comparator.comparing(DBNResource::getNodeName));
+        Arrays.sort(projects, Comparator.comparing(DBNResource::getNodeDisplayName));
         if (reflect) {
             model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
         }
@@ -229,7 +230,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     @Override
     public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
         extraNodes.add(node);
-        extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
+        extraNodes.sort(Comparator.comparing(DBNNode::getNodeDisplayName));
         model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
     }
 

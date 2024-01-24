@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,4 +145,12 @@ public class DBConstants {
 
 
     public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";
+    public static final String PROP_HOST = "host"; //$NON-NLS-1$
+    public static final String PROP_PORT = "port"; //$NON-NLS-1$
+    public static final String PROP_DATABASE = "database"; //$NON-NLS-1$
+    public static final String PROP_SERVER = "server"; //$NON-NLS-1$
+    public static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
+    public static final String PROP_FILE = "file"; //$NON-NLS-1$
+    public static final String PROP_USER = "user"; //$NON-NLS-1$
+    public static final String PROP_PASSWORD = "password"; //$NON-NLS-1$
 }

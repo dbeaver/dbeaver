@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,13 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * SQLTokenAdapter
@@ -31,7 +34,7 @@ public class SQLTokenAdapter extends Token {
 
     private final TPToken token;
 
-    SQLTokenAdapter(TPToken token, SQLRuleScanner scanner) {
+    public SQLTokenAdapter(TPToken token, SQLRuleScanner scanner) {
         super(makeTextAttribute(token, scanner));
         this.token = token;
     }
@@ -46,38 +49,95 @@ public class SQLTokenAdapter extends Token {
     }
 
     private static TextAttribute makeTextAttribute(TPToken token, SQLRuleScanner scanner) {
-        if (token instanceof TPTokenDefault) {
-            if (token.getData() instanceof SQLTokenType) {
-                switch ((SQLTokenType)token.getData()) {
-                    case T_KEYWORD:
-                    case T_BLOCK_BEGIN:
-                    case T_BLOCK_END:
-                    case T_BLOCK_HEADER:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, scanner.getKeywordStyle());
-                    case T_STRING:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_STRING), null, scanner.getKeywordStyle());
-                    case T_QUOTED:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, scanner.getKeywordStyle());
-                    case T_TYPE:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, scanner.getKeywordStyle());
-                    case T_NUMBER:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_NUMBER), null, SWT.NORMAL);
-                    case T_COMMENT:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_COMMENT), null, SWT.NORMAL);
-                    case T_DELIMITER:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.NORMAL);
-                    case T_BLOCK_TOGGLE:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, scanner.getKeywordStyle());
-                    case T_CONTROL:
-                    case T_SET_DELIMITER:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, scanner.getKeywordStyle());
-                    case T_PARAMETER:
-                    case T_VARIABLE:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_PARAMETER), null, scanner.getKeywordStyle());
-                }
+        String colorKey;
+        int style;
+        if (token instanceof TPTokenDefault && token.getData() instanceof SQLTokenType) {
+            switch ((SQLTokenType) token.getData()) {
+                case T_KEYWORD:
+                case T_BLOCK_BEGIN:
+                case T_BLOCK_END:
+                case T_BLOCK_HEADER:
+                    colorKey = SQLConstants.CONFIG_COLOR_KEYWORD;
+                    style = scanner.getKeywordStyle();
+                    break;
+                case T_STRING:
+                    colorKey = SQLConstants.CONFIG_COLOR_STRING;
+                    style = scanner.getKeywordStyle();
+                    break;
+                case T_QUOTED:
+                case T_TYPE:
+                    colorKey = SQLConstants.CONFIG_COLOR_DATATYPE;
+                    style = scanner.getKeywordStyle();
+                    break;
+                case T_NUMBER:
+                    colorKey = SQLConstants.CONFIG_COLOR_NUMBER;
+                    style = SWT.NORMAL;
+                    break;
+                case T_COMMENT:
+                    colorKey = SQLConstants.CONFIG_COLOR_COMMENT;
+                    style = SWT.NORMAL;
+                    break;
+                case T_DELIMITER:
+                    colorKey = SQLConstants.CONFIG_COLOR_DELIMITER;
+                    style = SWT.NORMAL;
+                    break;
+                case T_BLOCK_TOGGLE:
+                    colorKey = SQLConstants.CONFIG_COLOR_DELIMITER;
+                    style = scanner.getKeywordStyle();
+                    break;
+                case T_CONTROL:
+                case T_SET_DELIMITER:
+                    colorKey = SQLConstants.CONFIG_COLOR_COMMAND;
+                    style = scanner.getKeywordStyle();
+                    break;
+                case T_PARAMETER:
+                case T_VARIABLE:
+                    colorKey = SQLConstants.CONFIG_COLOR_PARAMETER;
+                    style = scanner.getKeywordStyle();
+                    break;
+                case T_TABLE:
+                    colorKey = SQLConstants.CONFIG_COLOR_TABLE;
+                    style = SWT.NORMAL;
+                    break;
+                case T_TABLE_ALIAS:
+                    colorKey = SQLConstants.CONFIG_COLOR_TABLE_ALIAS;
+                    style = SWT.ITALIC;
+                    break;
+                case T_COLUMN:
+                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN;
+                    style = SWT.NORMAL;
+                    break;
+                case T_COLUMN_DERIVED:
+                    colorKey = SQLConstants.CONFIG_COLOR_COLUMN_DERIVED;
+                    style = SWT.ITALIC;
+                    break;
+                case T_SCHEMA:
+                    colorKey = SQLConstants.CONFIG_COLOR_SCHEMA;
+                    style = SWT.NORMAL;
+                    break;
+                case T_SEMANTIC_ERROR:
+                    colorKey = SQLConstants.CONFIG_COLOR_SEMANTIC_ERROR;
+                    style = SWT.BOLD | SWT.ITALIC | TextAttribute.UNDERLINE;
+                    break;
+                default:
+                    colorKey = SQLConstants.CONFIG_COLOR_TEXT;
+                    style = SWT.NORMAL;
+                    break;
+            }
+        } else {
+            colorKey = SQLConstants.CONFIG_COLOR_TEXT;
+            style = SWT.NORMAL;
+        }
+
+        Color color = scanner.getColor(colorKey);
+        if (UIStyles.isDarkHighContrastTheme()) {
+            if (SQLConstants.CONFIG_COLOR_TEXT.equals(colorKey)) {
+                color = UIUtils.COLOR_WHITE;
+            } else {
+                color = UIUtils.getInvertedColor(color);
             }
         }
-        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_TEXT), null, SWT.NORMAL);
+        return new TextAttribute(color, null, style);
     }
 
 }

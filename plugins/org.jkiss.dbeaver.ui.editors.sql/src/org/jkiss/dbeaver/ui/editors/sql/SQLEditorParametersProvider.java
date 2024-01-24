@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDDataReceiverInteractive;
 import org.jkiss.dbeaver.model.sql.SQLParametersProvider;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
@@ -27,6 +30,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLQueryParameterBindDialog;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * SQL Editor params provider
@@ -39,8 +43,15 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
         this.site = site;
     }
 
+    @Nullable
     @Override
-    public Boolean prepareStatementParameters(@NotNull SQLScriptContext scriptContext, @NotNull SQLQuery sqlStatement, @NotNull List<SQLQueryParameter> parameters, boolean useDefaults) {
+    public Boolean prepareStatementParameters(
+        @NotNull SQLScriptContext scriptContext,
+        @NotNull SQLQuery sqlStatement,
+        @NotNull List<SQLQueryParameter> parameters,
+        @NotNull Supplier<DBDDataReceiver> dataReceiverSupplier,
+        boolean useDefaults
+    ) {
         for (SQLQueryParameter param : parameters) {
             String paramName = param.getName();
             Object defValue = useDefaults ? scriptContext.getParameterDefaultValue(paramName) : null;
@@ -73,7 +84,17 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
                 site,
                 sqlStatement,
                 parameters);
-            return dialog.open();
+            final DBDDataReceiver dataReceiver = dataReceiverSupplier.get();
+            try {
+                if (dataReceiver instanceof DBDDataReceiverInteractive dri) {
+                    dri.setDataReceivePaused(true);
+                }
+                return dialog.open();
+            } finally {
+                if (dataReceiver instanceof DBDDataReceiverInteractive dri) {
+                    dri.setDataReceivePaused(false);
+                }
+            }
         });
 
         if (paramsResult == IDialogConstants.OK_ID) {
@@ -90,6 +111,9 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
                     }
                 }
             }
+
+            SQLEditorFeatures.SQL_EDITOR_QUERY_PARAMS.use();
+
             return true;
         } else if (paramsResult == IDialogConstants.IGNORE_ID) {
             scriptContext.setIgnoreParameters(true);

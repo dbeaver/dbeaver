@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.snowflake.ui;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -132,7 +131,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
 
         {
             Composite ph = UIUtils.createPlaceholder(control, 2);
-            CLabel infoLabel = UIUtils.createInfoLabel(ph, ""); //$NON-NLS-1$
+            UIUtils.createInfoLabel(ph, ""); //$NON-NLS-1$
             Link testLink = new Link(ph, SWT.NONE);
             testLink.setText(SnowflakeMessages.label_click_on_test_connection);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);

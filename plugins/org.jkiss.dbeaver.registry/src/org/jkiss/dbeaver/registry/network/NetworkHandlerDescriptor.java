@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,8 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private final List<String> replacesIDs;
     private NetworkHandlerDescriptor replacedBy;
     private final DBPPropertyDescriptor[] properties;
+    private final boolean isDesktop;
+    private final boolean isPinned;
 
     NetworkHandlerDescriptor(
         IConfigurationElement config) {
@@ -66,6 +68,8 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
+        this.isDesktop = CommonUtils.getBoolean(config.getAttribute("desktop"), true);
+        this.isPinned = CommonUtils.getBoolean(config.getAttribute("pinned"), false);
 
         this.replacesIDs = Arrays.stream(config.getChildren("replace"))
             .map(re -> re.getAttribute("id"))
@@ -154,4 +158,12 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.replacedBy = replacedBy;
     }
 
+    // Handler works in desktop application only
+    public boolean isDesktopHandler() {
+        return isDesktop;
+    }
+
+    public boolean isPinned() {
+        return isPinned;
+    }
 }

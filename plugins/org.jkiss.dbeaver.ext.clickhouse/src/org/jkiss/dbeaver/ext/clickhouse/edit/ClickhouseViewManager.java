@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,7 +33,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Clickhouse table manager
@@ -41,7 +42,7 @@ import java.util.*;
 public class ClickhouseViewManager extends GenericViewManager {
 
     @Override
-    protected String getDropViewType(GenericTableBase object) {
+    protected String getViewType(GenericTableBase object) {
         return "TABLE";
     }
     
@@ -57,7 +58,7 @@ public class ClickhouseViewManager extends GenericViewManager {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
         GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel()
-            .createTableImpl(structContainer, tableName, GenericConstants.TABLE_TYPE_VIEW, null);
+            .createTableOrViewImpl(structContainer, tableName, GenericConstants.TABLE_TYPE_VIEW, null);
         if (viewImpl instanceof GenericView) {
             ((GenericView) viewImpl).setObjectDefinitionText(
                 "CREATE OR REPLACE VIEW " + viewImpl.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS SELECT 1 as A\n");

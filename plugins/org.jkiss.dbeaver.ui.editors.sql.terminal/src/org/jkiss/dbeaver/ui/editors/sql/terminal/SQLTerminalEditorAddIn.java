@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -36,14 +33,17 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.EditorPartContextualProperty;
+import org.jkiss.dbeaver.ui.editors.EditorPartContextualProperty.PartCustomPropertyValueInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListener;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListenerDefault;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
+import org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
+import java.util.Map;
 
 
 public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
@@ -52,13 +52,14 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.terminal";
 
     private static final String TERMINAL_VIEW_ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.show.consoleView.isEnabled";
-    private static final String TERMINAL_VIEW_ENABLED_VALUE_TRUE = "true";
-    private static final String TERMINAL_VIEW_ENABLED_VALUE_FALSE = "false";
-    private static final String TERMINAL_VIEW_ENABLED_VALUE_DEFAULT = "default";
     
     private static final QualifiedName FILE_TERMINAL_VIEW_ENABLED_PROP_NAME = new QualifiedName(
         BUNDLE_NAME, TERMINAL_VIEW_ENABLED_PROPERTY
     );
+    
+    private static final EditorPartContextualProperty terminalViewEnabledPartProperty = EditorPartContextualProperty.setup(
+        TERMINAL_VIEW_ENABLED_PROPERTY, FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, 
+        SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT, CommonUtils.toString(false));
 
     private SQLEditor editor;
     private TerminalViewContext viewContext;
@@ -126,7 +127,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
                     if (item instanceof CTabItem) {
                         CTabItem cTab = (CTabItem) item;
                         if (cTab.getData() instanceof SQLTerminalView) {
-                            setConcoleViewEnabled(false);
+                            setConsoleViewEnabled(false);
                         }
                     }
                 }
@@ -136,7 +137,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
                 if (item instanceof CTabItem) {
                     CTabItem cTab = (CTabItem) item;
                     if (cTab.getData() instanceof SQLTerminalView) {
-                        setConcoleViewEnabled(false);
+                        setConsoleViewEnabled(false);
                     }
                 }
                 if (tabsContainer.getItemCount() == 0 && !editor.hasMaximizedControl()) {
@@ -177,9 +178,9 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
             if (viewContext != null) {
                 viewContext.dispose();
             }
-            setConcoleViewEnabled(false);
+            setConsoleViewEnabled(false);
         } else {
-            setConcoleViewEnabled(true);
+            setConsoleViewEnabled(true);
             if (editor.hasMaximizedControl()) {
                 editor.toggleResultPanel(true, false);
             }
@@ -197,52 +198,18 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
      * and saved in the script file to keep the state between launches.
      */
     public boolean isTerminalViewEnabled() {
-        String value = editor.getPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY);
-        if (value == null) {
-            value = TERMINAL_VIEW_ENABLED_VALUE_DEFAULT;
-        }
-        switch (value) {
-            case TERMINAL_VIEW_ENABLED_VALUE_TRUE: return true;
-            case TERMINAL_VIEW_ENABLED_VALUE_FALSE: return false;
-            case TERMINAL_VIEW_ENABLED_VALUE_DEFAULT: // fall through
-            default: {
-                boolean enabled = getInitialConsoleViewEnabled();
-                editor.setResultSetAutoFocusEnabled(!enabled);
-                return enabled;
-            }
-        }
-    }
-    
-    private boolean getInitialConsoleViewEnabled() {
-        IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
-        if (activeFile != null) {
-            try {
-                String fileValue = activeFile.getPersistentProperty(FILE_TERMINAL_VIEW_ENABLED_PROP_NAME);
-                if (fileValue != null) {
-                    return fileValue.equals(TERMINAL_VIEW_ENABLED_VALUE_TRUE);
-                }
-            } catch (CoreException e) {
-                log.debug(e.getMessage(), e);
-            }
-        }
-        return editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT);
-    }
-    
-    private void setConcoleViewEnabled(@Nullable Boolean enabled) {
-        if (enabled == null) {
-            editor.setPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY, TERMINAL_VIEW_ENABLED_VALUE_DEFAULT);
-        } else {
-            String value = enabled ? TERMINAL_VIEW_ENABLED_VALUE_TRUE : TERMINAL_VIEW_ENABLED_VALUE_FALSE;
-            editor.setPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY, value);
+        PartCustomPropertyValueInfo info = terminalViewEnabledPartProperty.getPropertyValue(editor);
+        boolean enabled = CommonUtils.toBoolean(info.value);
+        if (info.isInitial) {
             editor.setResultSetAutoFocusEnabled(!enabled);
-            IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
-            if (activeFile != null) {
-                try {
-                    activeFile.setPersistentProperty(FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, value);
-                } catch (CoreException e) {
-                    log.debug(e.getMessage(), e);
-                }
-            }
+        }
+        return enabled;
+    }
+    
+    private void setConsoleViewEnabled(boolean enabled) {
+        if (terminalViewEnabledPartProperty.setPropertyValue(editor, CommonUtils.toString(enabled))) {
+            editor.setResultSetAutoFocusEnabled(!enabled);
+            SQLTerminalFeatures.SQL_TERMINAL_OPEN.use(Map.of("show", enabled));
         }
     }
 }

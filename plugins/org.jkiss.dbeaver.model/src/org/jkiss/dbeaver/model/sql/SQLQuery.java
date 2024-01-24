@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -205,6 +207,10 @@ public class SQLQuery implements SQLScriptElement {
                 type = SQLQueryType.DDL;
             } else if (statement instanceof Merge) {
                 type = SQLQueryType.MERGE;
+            } else if (statement instanceof Commit) {
+                type = SQLQueryType.COMMIT;
+            } else if (statement instanceof RollbackStatement) {
+                type = SQLQueryType.ROLLBACK;
             } else {
                 type = SQLQueryType.UNKNOWN;
             }

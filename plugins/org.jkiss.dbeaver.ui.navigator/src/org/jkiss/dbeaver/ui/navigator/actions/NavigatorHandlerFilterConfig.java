@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,19 +73,19 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                 shell,
                 dsRegistry,
-                globalFilter ? "All " + node.getNodeType() : node.getNodeType() + " of " + parentName,
+                globalFilter ? "All " + node.getNodeTypeLabel() : node.getNodeTypeLabel() + " of " + parentName,
                 objectFilter,
                 globalFilter);
             switch (dialog.open()) {
                 case IDialogConstants.OK_ID:
-                    folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                    folder.setNodeFilter(itemsMeta, dialog.getFilter(), true);
                     NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
                     break;
                 case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
                     objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null, true);
                     dialog = new EditObjectFilterDialog(
                         shell,
-                            dsRegistry, "All " + node.getNodeType(),
+                            dsRegistry, "All " + node.getNodeTypeLabel(),
                         objectFilter != null  ?objectFilter : new DBSObjectFilter(),
                         true);
                     if (dialog.open() == IDialogConstants.OK_ID) {
@@ -110,7 +110,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             node = node.getParentNode();
         }
         if (node != null) {
-            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_filter_objects, node.getNodeType()));
+            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_filter_objects, node.getNodeTypeLabel()));
         }
     }
 

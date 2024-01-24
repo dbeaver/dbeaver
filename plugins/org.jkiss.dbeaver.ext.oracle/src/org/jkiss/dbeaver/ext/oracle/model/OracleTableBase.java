@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -43,16 +42,13 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * OracleTable base
  */
 public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema>
-    implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject, DBPObjectWithLazyDescription
+    implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject, DBPObjectWithLazyDescription, DBSEntityConstrainable
 {
     private static final Log log = Log.getLog(OracleTableBase.class);
 
@@ -85,6 +81,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected abstract String getTableTypeName();
 
     protected boolean valid;
+    private Date created;
+    private Date lastDDLTime;
     private String comment;
 
     protected OracleTableBase(OracleSchema schema, String name, boolean persisted)
@@ -95,9 +93,18 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected OracleTableBase(OracleSchema oracleSchema, ResultSet dbResult)
     {
         super(oracleSchema, true);
-        setName(JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"));
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME));
+        this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
+        this.created = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_CREATED);
+        this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_LAST_DDL_TIME);
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
+    }
+
+    protected OracleTableBase(@NotNull OracleSchema oracleSchema, @NotNull String name) {
+        // Table partition
+        super(oracleSchema, true);
+        setName(name);
+        this.valid = true;
     }
 
     @Override
@@ -128,6 +135,16 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getComment();
     }
 
+    @Property(viewable = true, order = 13, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    public Date getCreated() {
+        return created;
+    }
+
+    @Property(viewable = true, order = 14, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    public Date getLastDDLTime() {
+        return lastDDLTime;
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
@@ -137,7 +154,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             this);
     }
 
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100,
+        visibleIf = OracleTableNotPartitionPropertyValidator.class)
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {
@@ -263,6 +281,16 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, OracleTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, OracleTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.INDEX, OracleTableIndex.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, OracleTableConstraint.class)
+        );
     }
 
     @Nullable

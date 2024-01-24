@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -78,6 +78,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         Composite filterSettings = UIUtils.createPlaceholder(composite, 2, 5);
         filterSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         Group groupQueryTypes = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_query_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
         checkQueryTypeUser = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_queries, false);
@@ -95,12 +96,20 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
 
         {
             Group viewSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            textEntriesPerPage = UIUtils.createLabelText(viewSettings, CoreMessages.pref_page_query_manager_label_entries_per_page, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
+            textEntriesPerPage = UIUtils.createLabelText(
+                viewSettings,
+                CoreMessages.pref_page_query_manager_label_entries_per_page,
+                store.getString(QMConstants.PROP_ENTRIES_PER_PAGE),
+                SWT.BORDER,
+                new GridData(50, SWT.DEFAULT));
         }
 
         {
             Group storageSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_storage, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            checkStoreLog = UIUtils.createCheckbox(storageSettings, CoreMessages.pref_page_query_manager_checkbox_store_log_file, false);
+            checkStoreLog = UIUtils.createCheckbox(
+                storageSettings,
+                CoreMessages.pref_page_query_manager_checkbox_store_log_file,
+                store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             checkStoreLog.setLayoutData(gd);
@@ -112,40 +121,65 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
                     UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
                 }
             });
-            textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null);
-            textHistoryDays = UIUtils.createLabelText(storageSettings, CoreMessages.pref_page_query_manager_label_days_to_store_log, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
+            textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null, false, null);
+            textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
+            textHistoryDays = UIUtils.createLabelText(
+                storageSettings,
+                CoreMessages.pref_page_query_manager_label_days_to_store_log,
+                store.getString(QMConstants.PROP_HISTORY_DAYS),
+                SWT.BORDER,
+                new GridData(50, SWT.DEFAULT));
 
-            CLabel infoLabel = UIUtils.createInfoLabel(storageSettings, CoreMessages.pref_page_query_manager_log_file_hint);
+            Control infoLabel = UIUtils.createInfoLabel(storageSettings, CoreMessages.pref_page_query_manager_log_file_hint);
             infoLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
         }
-        performDefaults();
+        setSettings();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
         Collection<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
+        checkObjectTypes(objectTypes);
+        checkQueryTypes(queryTypes);
+        UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
+        UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
+    }
 
+    private void checkObjectTypes(Collection<QMObjectType> objectTypes) {
         checkObjectTypeSessions.setSelection(objectTypes.contains(QMObjectType.session));
         checkObjectTypeTxn.setSelection(objectTypes.contains(QMObjectType.txn));
         checkObjectTypeQueries.setSelection(objectTypes.contains(QMObjectType.query));
+    }
 
+    private void checkQueryTypes(Collection<String> queryTypes) {
         checkQueryTypeUser.setSelection(queryTypes.contains(DBCExecutionPurpose.USER.name()));
         checkQueryTypeUserFiltered.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_FILTERED.name()));
         checkQueryTypeScript.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_SCRIPT.name()));
         checkQueryTypeUtil.setSelection(queryTypes.contains(DBCExecutionPurpose.UTIL.name()));
         checkQueryTypeMeta.setSelection(queryTypes.contains(DBCExecutionPurpose.META.name()));
         checkQueryTypeDDL.setSelection(queryTypes.contains(DBCExecutionPurpose.META_DDL.name()));
+    }
 
-        textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
-        textEntriesPerPage.setText(store.getString(QMConstants.PROP_ENTRIES_PER_PAGE));
+    @Override
+    protected void performDefaults() {
+        Collection<QMObjectType> objectTypes = Arrays.asList(QMObjectType.txn, QMObjectType.query);
+        Collection<String> queryTypes = Arrays.asList(
+            DBCExecutionPurpose.USER.name(),
+            DBCExecutionPurpose.USER_FILTERED.name(),
+            DBCExecutionPurpose.USER_SCRIPT.name());
 
-        checkStoreLog.setSelection(store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
-        textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
+        checkObjectTypes(objectTypes);
+        checkQueryTypes(queryTypes);
+
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        textHistoryDays.setText(store.getDefaultString(QMConstants.PROP_HISTORY_DAYS));
+        textEntriesPerPage.setText(store.getDefaultString(QMConstants.PROP_ENTRIES_PER_PAGE));
+
+        checkStoreLog.setSelection(store.getDefaultBoolean(QMConstants.PROP_STORE_LOG_FILE));
+        textOutputFolder.setText(store.getDefaultString(QMConstants.PROP_LOG_DIRECTORY));
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
         UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
 

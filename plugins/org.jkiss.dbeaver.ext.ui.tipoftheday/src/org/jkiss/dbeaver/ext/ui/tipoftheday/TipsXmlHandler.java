@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.ui.tipoftheday;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -26,15 +32,26 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TipsXmlHandler extends DefaultHandler {
+    private static final Log log = Log.getLog(TipsXmlHandler.class);
 
     private static final String TIP = "tip";
+    private static final String COMMAND_REF = "commandRef";
+    private static final String COMMAND_ID = "commandId";
+
+    private final String productEdition;
     private boolean tipTagStarted;
+    private boolean tipApplicable;
+
     private StringBuilder tipTagContent = new StringBuilder();
-    private List<String> tips = new ArrayList<>();
+    private final List<String> tips = new ArrayList<>();
     private static final List<String> HTML_TAGS = Arrays.asList("br", "b", "i", "u", "q", "a", "p", "div");
     private static final String TAG_BRACKET_BEGIN = "<";
     private static final String TAG_BRACKET_END = ">";
     private static final String SLASH = "/";
+
+    public TipsXmlHandler() {
+        productEdition = Platform.getProduct().getProperty("appEdition");
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -47,6 +64,19 @@ public class TipsXmlHandler extends DefaultHandler {
         }
         if (qName.equalsIgnoreCase(TIP)) {
             this.tipTagStarted = true;
+            this.tipApplicable = true;
+            String tipProducts = attributes.getValue("product");
+            if (!CommonUtils.isEmpty(tipProducts) && !CommonUtils.isEmpty(productEdition)) {
+                this.tipApplicable = ArrayUtils.contains(tipProducts.split(","), productEdition);
+            }
+        } else if (qName.equalsIgnoreCase(COMMAND_REF)) {
+            String commandId = attributes.getValue(COMMAND_ID);
+            String description = ActionUtils.findCommandDescription(commandId, PlatformUI.getWorkbench(), false);
+            if (!CommonUtils.isEmpty(description)) {
+                tipTagContent.append("<b>").append(description).append("</b>");
+            } else {
+                log.error("No command found by id: " + commandId + ". Consider removing obsolete tip or fixing command id.");
+            }
         }
     }
 
@@ -60,8 +90,11 @@ public class TipsXmlHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equalsIgnoreCase(TIP)) {
-            this.tips.add(tipTagContent.toString());
+            if (tipApplicable) {
+                this.tips.add(tipTagContent.toString());
+            }
             this.tipTagStarted = false;
+            this.tipApplicable = true;
             tipTagContent = new StringBuilder();
         }
 

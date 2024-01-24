@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.runtime.DBSecurityException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -54,24 +55,34 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     @Override
     public String getSecretValue(@NotNull String secretId) throws DBException {
         try {
-            Path keyPath = root.resolve(secretId);
+            Path keyPath = root.resolve(escapeSecretKey(secretId));
 
             return getNodeByPath(keyPath.getParent())
                 .get(keyPath.getFileName().toString(), null);
         } catch (StorageException e) {
-            throw new DBException("Error getting preference value '" + secretId + "'", e);
+            if (e.getErrorCode() == StorageException.NO_PASSWORD) {
+                throw new DBSecurityException("Cannot load secure settings - master password is not provided");
+            }
+            throw new DBSecurityException("Error getting preference value '" + secretId + "'", e);
         }
     }
 
     @Override
     public void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException {
         try {
-            Path keyPath = root.resolve(secretId);
+            Path keyPath = root.resolve(escapeSecretKey(secretId));
 
-            getNodeByPath(keyPath.getParent())
-                .put(keyPath.getFileName().toString(), secretValue, true);
+            ISecurePreferences node = getNodeByPath(keyPath.getParent());
+            if (secretValue != null) {
+                node.put(keyPath.getFileName().toString(), secretValue, true);
+            } else {
+                node.remove(keyPath.getFileName().toString());
+            }
         } catch (StorageException e) {
-            throw new DBException("Error setting preference value '" + secretId + "'", e);
+            if (e.getErrorCode() == StorageException.NO_PASSWORD) {
+                throw new DBSecurityException("Cannot save secure settings - master password is not provided");
+            }
+            throw new DBSecurityException("Error setting preference value '" + secretId + "'", e);
         }
     }
 
@@ -97,9 +108,9 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     @NotNull
     @Override
     public List<DBSSecret> listSecrets(@Nullable String path) throws DBException {
-        Path keyPath = path == null ? root : root.resolve(path);
+        Path keyPath = path == null ? root : root.resolve(escapeSecretKey(path));
         return Arrays.stream(getNodeByPath(keyPath).keys())
-            .map(k -> new DBSSecret(keyPath.resolve(k).toString(), k))
+            .map(k -> new DBSSecret(keyPath.resolve(escapeSecretKey(k)).toString(), k))
             .collect(Collectors.toList());
     }
 
@@ -107,7 +118,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     @Override
     public DBSSecret getSecret(@NotNull String secretId) throws DBException {
         try {
-            Path keyPath = root.resolve(secretId);
+            Path keyPath = root.resolve(escapeSecretKey(secretId));
             String keyId = keyPath.getFileName().toString();
             String value = getNodeByPath(keyPath.getParent()).get(keyId, null);
             if (value == null) {
@@ -115,7 +126,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
             }
             return new DBSSecret(keyPath.toString(), keyId);
         } catch (StorageException e) {
-            throw new DBException("Error getting secret info '" + secretId + "'", e);
+            throw new DBSecurityException("Error getting secret info '" + secretId + "'", e);
         }
     }
 
@@ -126,7 +137,12 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
 
     @Override
     public void clearAllSecrets(String keyPrefix) throws DBException {
-        getNodeByPath(root.resolve(keyPrefix)).removeNode();
+        getNodeByPath(root.resolve(escapeSecretKey(keyPrefix))).removeNode();
+    }
+
+    private String escapeSecretKey(String key) {
+        // Replace : with _ because Windows do not support : in path names
+        return key.replace(':', '_');
     }
 
 }

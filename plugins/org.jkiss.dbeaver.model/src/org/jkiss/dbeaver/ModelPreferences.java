@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -78,6 +79,8 @@ public final class ModelPreferences
 
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
+    public static final String NOTIFICATIONS_SOUND_ENABLED = "notifications.soundEnabled"; //$NON-NLS-1$
+    public static final String NOTIFICATIONS_SOUND_VOLUME = "notifications.soundVolume"; //$NON-NLS-1$
 
     public static final String DICTIONARY_MAX_ROWS = "dictionary.max.rows";
 
@@ -105,6 +108,7 @@ public final class ModelPreferences
     public static final String META_SEPARATE_CONNECTION = "database.meta.separate.connection"; //$NON-NLS-1$
     public static final String META_CASE_SENSITIVE = "database.meta.casesensitive"; //$NON-NLS-1$
     public static final String META_USE_SERVER_SIDE_FILTERS = "database.meta.server.side.filters"; //$NON-NLS-1$
+    public static final String META_EXTRA_DDL_INFO = "database.meta.extra.ddl.info"; //$NON-NLS-1$
 
     public static final String META_CLIENT_NAME_DISABLE = "database.meta.client.name.disable"; //$NON-NLS-1$
     public static final String META_CLIENT_NAME_OVERRIDE = "database.meta.client.name.override"; //$NON-NLS-1$
@@ -157,7 +161,7 @@ public final class ModelPreferences
 
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
     public static final String READ_EXPENSIVE_STATISTICS = "database.stats.expensive"; //$NON-NLS-1$
-
+    
     // Driver and proxy settings. They have prefix UI_ by historical reasons.
     public static final String UI_DRIVERS_VERSION_UPDATE = "ui.drivers.version.update"; //$NON-NLS-1$
     public static final String UI_DRIVERS_HOME = "ui.drivers.home"; //$NON-NLS-1$
@@ -212,6 +216,8 @@ public final class ModelPreferences
         // Notifications
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, 3000L);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_SOUND_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_SOUND_VOLUME, 100);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_MAX_ROWS, 200);
         // Common
         PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
@@ -234,6 +240,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name());
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
+        PrefUtils.setDefaultPreferenceValue(store, META_EXTRA_DDL_INFO, true);
         PrefUtils.setDefaultPreferenceValue(store, META_USE_SERVER_SIDE_FILTERS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_DISABLE, false);
@@ -308,20 +315,19 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_HOME, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_SOURCES, "https://dbeaver.io/files/jdbc/");
 
-        PrefUtils.setDefaultPreferenceValue(store, PROP_USE_WIN_TRUST_STORE_TYPE, true);
+        PrefUtils.setDefaultPreferenceValue(store, PROP_USE_WIN_TRUST_STORE_TYPE, RuntimeUtils.isWindows());
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SMART_COMMIT, false);
-        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER, true);
-        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED, false);
-        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL, 15 * 60);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER, false);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL, 30 * 60);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
-
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -136,10 +137,13 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
             maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
-            new PreferenceLinkArea(appearanceGroup, SWT.NONE,
+            PreferenceLinkArea linkArea = new PreferenceLinkArea(appearanceGroup, SWT.NONE,
                 EditorUtils.COLORS_AND_FONTS_PAGE_ID,
                 DataEditorsMessages.pref_page_database_resultsets_link_colors_and_fonts,
-                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+                (IWorkbenchPreferenceContainer) getContainer(), null);//$NON-NLS-1$
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            linkArea.getControl().setLayoutData(gd);
 
             final Group behaviorGroup = UIUtils.createControlGroup(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_group_behavior, 2,
@@ -161,7 +165,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 "org.jkiss.dbeaver.preferences.editors",
                 "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link
                     + "  - ''{0}''</a>", (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             editorsLink.getControl().setLayoutData(gd);
 
@@ -264,6 +268,28 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
         store.setToDefault(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        gridShowOddRows.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS));
+        gridHighlightRowsWithSelectedCells.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS));
+        colorizeDataTypes.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES));
+        gridShowAttrIcons.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS));
+        gridShowAttrFilters.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
+        gridShowAttrOrder.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
+        useSmoothScrolling.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
+        showCollectionInline.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE));
+        showBooleanAsCheckbox.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX));
+        showWhitespaceCharacters.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS));
+        textValueFormat.select(DBDDisplayFormat.UI);
+        toggleBooleanOnClick.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN));
+        moveAfterInlineEnter.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_INLINE_ENTER));
+        UIUtils.setComboSelection(gridDoubleClickBehavior, store.getDefaultString(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK));
+        gridRowBatchSize.setText(String.valueOf(store.getDefaultInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE)));
+        maxDefColumnWidth.setText(String.valueOf(store.getDefaultInt(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH)));
+        super.performDefaults();
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -37,20 +34,19 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
-import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
-public class PropertyObjectEditPage extends BaseObjectEditPage {
+public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObjectEditPage {
 
-    private final DBSObject object;
+    private final OBJECT object;
     private final PropertySourceEditable propertySource;
-    private PropertyTreeViewer propertyViewer;
+    //private PropertyTreeViewer propertyViewer;
+    private CustomFormEditor propertyEditor;
 
-    public PropertyObjectEditPage(@Nullable DBECommandContext commandContext, @NotNull DBSObject object) {
-        super(NLS.bind(
-            EditorsMessages.dialog_struct_attribute_edit_page_header_edit_attribute,
-            DBUtils.getObjectFullName(object, DBPEvaluationContext.UI)
-        ));
+    public PropertyObjectEditPage(@Nullable DBECommandContext commandContext, @NotNull OBJECT object) {
+        super("Edit " + object.getName());
 
         this.object = object;
         this.propertySource = new PropertySourceEditable(commandContext, object, object);
@@ -66,35 +62,80 @@ public class PropertyObjectEditPage extends BaseObjectEditPage {
         }
     }
 
+    @NotNull
+    public OBJECT getObject() {
+        return object;
+    }
+
+    @Nullable
+    public DBECommandContext getCommandContext() {
+        return propertySource.getCommandContext();
+    }
+
+    protected String getPropertiesGroupTitle() {
+        return null;
+    }
+
     @Override
     protected Control createPageContents(Composite parent) {
-        final Composite composite = new Composite(parent, SWT.NONE);
+        final Composite composite;
+        String groupTitle = getPropertiesGroupTitle();
+        if (CommonUtils.isEmpty(groupTitle)) {
+            composite = new Composite(parent, SWT.NONE);
+        } else {
+            composite = new Group(parent, SWT.NONE);
+            ((Group)composite).setText(groupTitle);
+        }
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        createDefaultEditControls(composite);
+        createAdditionalEditControls(parent);
+
+        return composite;
+    }
+
+    protected void createAdditionalEditControls(Composite composite) {
+
+    }
+
+    private void createDefaultEditControls(Composite composite) {
         final Text nameText = UIUtils.createLabelText(composite, EditorsMessages.dialog_struct_label_text_name, object.getName());
         nameText.selectAll();
         nameText.addModifyListener(e -> {
             if (object instanceof DBPNamedObject2 && object.getDataSource() != null) {
-                final String transformed = DBObjectNameCaseTransformer.transformName(object.getDataSource(), nameText.getText().trim());
+                String objectName = nameText.getText().trim();
+                final String transformed = DBObjectNameCaseTransformer.transformName(object.getDataSource(), objectName);
                 ((DBPNamedObject2) object).setName(transformed);
+                validateProperties();
             }
         });
 
-        UIUtils
-            .createControlLabel(composite, EditorsMessages.dialog_struct_label_text_properties)
-            .setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+//        UIUtils
+//            .createControlLabel(composite, EditorsMessages.dialog_struct_label_text_properties)
+//            .setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-        propertyViewer = new PropertyTreeViewer(composite, SWT.BORDER);
-        propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
-        propertyViewer.loadProperties(propertySource);
+        propertyEditor = new CustomFormEditor(getObject(), getCommandContext(), propertySource);
+        for (DBPPropertyDescriptor prop : propertySource.getProperties()) {
+            propertyEditor.createPropertyEditor(composite, prop);
+        }
 
-        return composite;
+//        propertyViewer = new PropertyTreeViewer(composite, SWT.BORDER);
+//        propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
+//        propertyViewer.loadProperties(propertySource);
+//        propertyViewer.addPropertyChangeListener(event -> validateProperties());
+    }
+
+    protected String getEditError() {
+        if (CommonUtils.isEmpty(object.getName())) {
+            return "Object name cannot be empty";
+        }
+        return super.getEditError();
     }
 
     @Override
     public void performFinish() throws DBException {
         // Save any active editors
-        propertyViewer.saveEditorValues();
+        //propertyViewer.saveEditorValues();
     }
 }

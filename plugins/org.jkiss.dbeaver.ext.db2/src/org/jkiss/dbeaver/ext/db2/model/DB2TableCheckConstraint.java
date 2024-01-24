@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
@@ -45,10 +44,10 @@ import java.util.Map;
 
 /**
  * DB2 Table Check Constraint
- * 
+ *
  * @author Denis Forveille
  */
-public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> implements DB2SourceObject, DBSTableCheckConstraint {
+public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table, DB2TableCheckConstraintColumn> implements DB2SourceObject, DBSTableCheckConstraint {
 
     private String owner;
     private DB2OwnerType ownerType;
@@ -69,14 +68,13 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     // Constructor
     // -----------------
 
-    public DB2TableCheckConstraint(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult) throws DBException
-    {
+    public DB2TableCheckConstraint(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult) throws DBException {
         super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.CHECK, true);
 
         DB2DataSource db2DataSource = table.getDataSource();
 
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.qualifier = JDBCUtils.safeGetString(dbResult, "QUALIFIER");
         this.type = CommonUtils.valueOf(DB2TableCheckConstraintType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
         this.fumcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
@@ -88,22 +86,20 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
 
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }
 
     @NotNull
     @Override
-    public DB2DataSource getDataSource()
-    {
+    public DB2DataSource getDataSource() {
         return getTable().getDataSource();
     }
 
@@ -112,13 +108,11 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     // -----------------
 
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
-    {
+    public List<DB2TableCheckConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
-    public void setColumns(List<DB2TableCheckConstraintColumn> columns)
-    {
+    public void setAttributeReferences(List<DB2TableCheckConstraintColumn> columns) {
         this.columns = columns;
     }
 
@@ -127,26 +121,22 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     // -----------------
 
     @Override
-    public DB2Schema getSchema()
-    {
+    public DB2Schema getSchema() {
         return getTable().getSchema();
     }
 
     @NotNull
     @Override
-    public DBSObjectState getObjectState()
-    {
+    public DBSObjectState getObjectState() {
         return DBSObjectState.UNKNOWN;
     }
 
     @Override
-    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
-    {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
-    {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return SQLFormatUtils.formatSQL(getDataSource(), text);
     }
 
@@ -155,82 +145,69 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     // -----------------
     @Override
     @Property(viewable = true, editable = false, order = 2)
-    public DB2Table getTable()
-    {
+    public DB2Table getTable() {
         return super.getTable();
     }
 
     @NotNull
     @Override
     @Property(hidden = true)
-    public DBSEntityConstraintType getConstraintType()
-    {
+    public DBSEntityConstraintType getConstraintType() {
         return super.getConstraintType();
     }
 
     @Property(viewable = true, editable = false, order = 3)
-    public DB2TableCheckConstraintType getType()
-    {
+    public DB2TableCheckConstraintType getType() {
         return type;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwner()
-    {
+    public String getOwner() {
         return owner;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public DB2OwnerType getOwnerType()
-    {
+    public DB2OwnerType getOwnerType() {
         return ownerType;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getCreateTime()
-    {
+    public Timestamp getCreateTime() {
         return createTime;
     }
 
     @Property(viewable = false, editable = false)
-    public String getQualifier()
-    {
+    public String getQualifier() {
         return qualifier;
     }
 
     @Property(viewable = false, editable = false)
-    public String getFumcPath()
-    {
+    public String getFumcPath() {
         return fumcPath;
     }
 
     @Property(viewable = false, editable = false, category = DBConstants.CAT_STATISTICS)
-    public Integer getPrecentValid()
-    {
+    public Integer getPrecentValid() {
         return precentValid;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)
-    public String getCollationSchema()
-    {
+    public String getCollationSchema() {
         return collationSchema;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)
-    public String getCollationName()
-    {
+    public String getCollationName() {
         return collationName;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)
-    public String getCollationSchemaOrderBy()
-    {
+    public String getCollationSchemaOrderBy() {
         return collationSchemaOrderBy;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)
-    public String getCollationNameOrderBy()
-    {
+    public String getCollationNameOrderBy() {
         return collationNameOrderBy;
     }
 

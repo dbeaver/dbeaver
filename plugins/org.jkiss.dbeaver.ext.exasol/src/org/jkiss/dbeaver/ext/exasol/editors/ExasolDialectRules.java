@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,27 +25,26 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
-import java.util.List;
-
 /**
 * Exasol dialect rules
 */
 class ExasolDialectRules implements TPRuleProvider {
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == TPRuleProvider.RulePosition.CONTROL) {
             final SQLControlToken defineToken = new SQLControlToken("exasol.define");
 
-            SQLFullLineRule defineRule = new SQLFullLineRule("define", defineToken); //$NON-NLS-1$
-            rules.add(defineRule);
-
-            SQLFullLineRule defineRule2 = new SQLFullLineRule("DEFINE", defineToken); //$NON-NLS-1$
-            rules.add(defineRule2);
+            return new TPRule[] {
+                new SQLFullLineRule("define", defineToken), //$NON-NLS-1$
+                new SQLFullLineRule("DEFINE", defineToken) //$NON-NLS-1$
+            };
         }
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-        	rules.add(new ExasolSquareBracketsRule(dataSource,  position == RulePosition.PARTITION));
+            return new TPRule[] {new ExasolSquareBracketsRule(dataSource,  position == RulePosition.PARTITION) };
         }
+        return new TPRule[0];
     }
 
 }

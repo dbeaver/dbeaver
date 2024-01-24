@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout;
 
-import org.eclipse.draw2dl.AbstractLayout;
-import org.eclipse.draw2dl.Animation;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.AbstractLayout;
+import org.eclipse.draw2d.Animation;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.erd.ui.layout.algorithm.direct.DirectedGraphLayoutVisitor;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 
@@ -49,7 +49,7 @@ public class GraphLayoutAuto extends AbstractLayout
     protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint)
 	{		
 		container.validate();
-		List<IFigure> children = container.getChildren();
+		List<? extends IFigure> children = container.getChildren();
 		Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
 		for (IFigure child : children) {
 			result.union(child.getBounds());

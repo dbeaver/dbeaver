@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
@@ -32,6 +34,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.List;
@@ -59,12 +63,15 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     protected boolean validateTaskParameters(DBTTask task, MySQLExportSettings settings, Log log) {
         if (task.getType().getId().equals(MySQLTasks.TASK_DATABASE_BACKUP)) {
             for (MySQLDatabaseExportInfo exportObject : settings.getExportObjects()) {
-                final File dir = settings.getOutputFolder(exportObject);
-                if (!dir.exists()) {
-                    if (!dir.mkdirs()) {
-                        log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
-                        return false;
+                final String dir = settings.getOutputFolder(exportObject);
+                try {
+                    Path outFile = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), task.getProject(), dir);
+                    if (!Files.exists(outFile)) {
+                        Files.createDirectories(outFile);
                     }
+                } catch (Exception e) {
+                    log.error("Can't create directory '" + dir + "'");
+                    return false;
                 }
             }
         }
@@ -140,10 +147,11 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        File outFile = settings.getOutputFile(arg);
-        if (outFile.exists()) {
+        String outFileStr = settings.getOutputFile(arg);
+        Path outFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), outFileStr);
+        if (Files.exists(outFile)) {
             // Unlike pg_dump, mysqldump happily overrides files which can easily lead to a lost dump.
             // We prevent that with our manual check
             // https://github.com/dbeaver/dbeaver/issues/11532
@@ -160,7 +168,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     static class DumpFilterJob extends DumpJob {
         private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.%]*`", Pattern.CASE_INSENSITIVE);
 
-        DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, File outFile, Log log) {
+        DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, Path outFile, Log log) {
             super("MySQL databasse dump filter", monitor, stream, outFile, log);
         }
 
@@ -172,7 +180,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
                 LineNumberReader reader = new LineNumberReader(new InputStreamReader(input, GeneralUtils.DEFAULT_ENCODING));
-                try (OutputStream output = new FileOutputStream(outFile)) {
+                try (OutputStream output = Files.newOutputStream(outFile)) {
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output, GeneralUtils.DEFAULT_ENCODING));
                     for (; ; ) {
                         String line = reader.readLine();

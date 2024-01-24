@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -26,6 +27,9 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -44,6 +48,8 @@ public class DialogUtils {
     private static final Log log = Log.getLog(DialogUtils.class);
 
     private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
+    
+    public static final String APPLY_AND_CLOSE_BUTTON_LABEL = JFaceResources.getString("PreferencesDialog.okButtonLabel");
 
     public static String curDialogFolder;
 
@@ -161,14 +167,13 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, changeListener);
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, project, multiFS, changeListener);
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener)
-    {
-        return createOutputFolderChooser(parent, label, null, value, changeListener);
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, value, project, multiFS, changeListener);
     }
 
     @NotNull
@@ -177,28 +182,39 @@ public class DialogUtils {
         @Nullable String label,
         @Nullable String tooltip,
         @Nullable String value,
+        @Nullable DBPProject project,
+        boolean multiFS,
         @Nullable ModifyListener changeListener
     ) {
+        if (multiFS) {
+            multiFS = project != null && DBFUtils.supportsMultiFileSystems(project);
+        }
         final String message = label != null ? label : UIMessages.output_label_directory;
         UIUtils.createControlLabel(parent, message).setToolTipText(tooltip);
-        final TextWithOpen directoryText = new TextWithOpen(parent) {
+        final TextWithOpen directoryText = new TextWithOpen(parent, multiFS) {
             @Override
-            protected void openBrowser() {
-                DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
-                dialog.setMessage("Choose target directory");
-                dialog.setText(message);
-                String directory = getText();
-                if (CommonUtils.isEmpty(directory)) {
-                    directory = curDialogFolder;
+            protected void openBrowser(boolean remoteFS) {
+                String fileName;
+                if (remoteFS && project != null) {
+                    DBNPathBase pathNode = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                        CommonUtils.toString(label, "Output folder"),
+                        true, SWT.SAVE, false, null, value);
+                    fileName = pathNode == null ? null :
+                        DBFUtils.getUriFromPath(pathNode.getPath()).toString();
+                    if (fileName != null) {
+                        setText(fileName);
+                    }
+                } else {
+                    fileName = openDirectoryDialog(parent.getShell(), message, getText());
                 }
-                if (!CommonUtils.isEmpty(directory)) {
-                    dialog.setFilterPath(directory);
+                if (fileName != null) {
+                    setText(fileName);
                 }
-                directory = dialog.open();
-                if (directory != null) {
-                    setText(directory);
-                    setCurDialogFolder(directory);
-                }
+            }
+
+            @Override
+            public DBPProject getProject() {
+                return project;
             }
         };
         directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -210,6 +226,26 @@ public class DialogUtils {
         }
 
         return directoryText.getTextControl();
+    }
+
+    @Nullable
+    public static String openDirectoryDialog(@NotNull Shell shell, @NotNull String message, @Nullable String directory) {
+        final DirectoryDialog dialog = new DirectoryDialog(shell);
+        dialog.setMessage("Choose target directory");
+        dialog.setText(message);
+
+        if (CommonUtils.isEmpty(directory)) {
+            directory = curDialogFolder;
+        }
+        if (!CommonUtils.isEmpty(directory)) {
+            dialog.setFilterPath(directory);
+        }
+        directory = dialog.open();
+        if (directory != null) {
+            setCurDialogFolder(directory);
+        }
+
+        return directory;
     }
 
     public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {

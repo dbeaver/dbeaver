@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
@@ -36,8 +38,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -98,7 +98,15 @@ public class EntityAddCommand extends Command {
                                 null);
                             // This actually only loads unresolved relations.
                             // This happens only with entities added on diagram during editing
-                            entity.addModelRelations(monitor, diagramPart.getDiagram(), false, false);
+                            try {
+                                entity.addModelRelations(monitor, diagramPart.getDiagram(), false, false);
+                            } catch (DBException e) {
+                                String msg = NLS.bind(ERDUIMessages.erd_error_of_loading_diagram_label, e.getMessage());
+                                log.error(msg, e);
+                                UIUtils.showMessageBox(null,
+                                        ERDUIMessages.erd_error_of_loading_diagram_title,
+                                        msg, SWT.ICON_ERROR);
+                            }
                         }
                     }
                 }

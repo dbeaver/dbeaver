@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,47 +17,29 @@
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
 import org.eclipse.jface.text.*;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 
 public abstract class AbstractSQLEditorTextHover implements ITextHover, ITextHoverExtension {
 
-    /**
-     *
-     */
-    public AbstractSQLEditorTextHover()
-    {
+    public AbstractSQLEditorTextHover() {
     }
 
     /**
      * Associates a SQL editor with this hover. Subclass can cache it for later use.
-     *
-     * @param editor
      */
     public abstract void setEditor(IEditorPart editor);
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.text.ITextHoverExtension#getHoverControlCreator()
-     */
     @Override
-    public IInformationControlCreator getHoverControlCreator()
-    {
-        return new IInformationControlCreator() {
-            @Override
-            public IInformationControl createInformationControl(Shell parent)
-            {
-                DefaultInformationControl control = new DefaultInformationControl(parent, true);
-                control.setSizeConstraints(60, 10);
-                return control;
-            }
+    public IInformationControlCreator getHoverControlCreator() {
+        return parent -> {
+            DefaultInformationControl control = new DefaultInformationControl(parent, true);
+            control.setSizeConstraints(60, 10);
+            return control;
         };
     }
 
     @Override
-    public IRegion getHoverRegion(ITextViewer textViewer, int offset)
-    {
+    public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         return SQLWordFinder.findWord(textViewer.getDocument(), offset);
     }
 

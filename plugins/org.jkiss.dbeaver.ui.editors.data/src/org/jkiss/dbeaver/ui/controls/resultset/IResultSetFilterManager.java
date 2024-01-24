@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 import java.util.Collection;
 
@@ -29,10 +30,10 @@ import java.util.Collection;
 public interface IResultSetFilterManager
 {
     @NotNull
-    Collection<String> getQueryFilterHistory(@NotNull String query) throws DBException;
+    Collection<String> getQueryFilterHistory(@NotNull DBCExecutionContext context, @NotNull String query) throws DBException;
 
-    void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) throws DBException;
+    void saveQueryFilterValue(@NotNull DBCExecutionContext context, @NotNull String query, @NotNull String filterValue) throws DBException;
 
-    void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException;
+    void deleteQueryFilterValue(@NotNull DBCExecutionContext context, @NotNull String query, String filterValue) throws DBException;
 
 }

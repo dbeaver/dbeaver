@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -68,7 +69,18 @@ public class DatabaseDataEditor extends AbstractDataEditor<DBSDataContainer> imp
 
     @Override
     public boolean isSmartAutoCommit() {
-        return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
+        DBPDataSource dataSource = getDatabaseObject().getDataSource();
+        if (dataSource != null) {
+            DBPDataSourceContainer container = dataSource.getContainer();
+            DBPPreferenceStore preferenceStore = container.getPreferenceStore();
+            // First check data source settings
+            if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT)) {
+                return preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
+            } else {
+                return container.getConnectionConfiguration().getConnectionType().isSmartCommit();
+            }
+        }
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
 
     @Override
@@ -77,7 +89,7 @@ public class DatabaseDataEditor extends AbstractDataEditor<DBSDataContainer> imp
         try {
             getActivePreferenceStore().save();
         } catch (IOException e) {
-            DBWorkbench.getPlatformUI().showError("Samrt commit", "Error saving smart auto-commit option", e);
+            DBWorkbench.getPlatformUI().showError("Smart commit", "Error saving smart auto-commit option", e);
         }
     }
 

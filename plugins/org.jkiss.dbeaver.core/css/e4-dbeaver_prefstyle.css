@@ -1,0 +1,8 @@
+
+/* ############################# DBeaver preferences ############################# */
+/* Includes styles for all plugins. Eclipse bug? */
+
+ IEclipsePreferences#org-eclipse-ui-workbench:org-eclipse-draw2d {
+	preferences:
+		'org.eclipse.gef.color.line.foreground=192,192,192'
+}

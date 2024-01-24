@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,7 +33,7 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
         TAR("t", "Tar", "tar");
 
         private final String id;
-        private String title;
+        private final String title;
         @NotNull
         private final String ext;
 
@@ -69,9 +69,8 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
-
         this.format = CommonUtils.valueOf(ExportFormat.class, store.getString("pg.format"), ExportFormat.CUSTOM);
+        super.loadSettings(runnableContext, store);
     }
 
     @Override

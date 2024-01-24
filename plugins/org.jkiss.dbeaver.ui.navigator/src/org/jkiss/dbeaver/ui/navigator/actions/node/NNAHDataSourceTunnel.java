@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -54,7 +55,7 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
         StringBuilder tip = new StringBuilder("Network handlers enabled:");
         for (DBWHandlerConfiguration handler : ((DBNDataSource)node).getDataSourceContainer().getConnectionConfiguration().getHandlers()) {
             if (handler.isEnabled()) {
-                tip.append("\n  -").append(handler.getHandlerDescriptor().getLabel());
+                tip.append("\n  -").append(handler.getTitle());
                 String hostName = handler.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
                 if (!CommonUtils.isEmpty(hostName)) {
                     tip.append(": ").append(hostName);
@@ -68,9 +69,17 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
     public void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction) {
         if (node instanceof DBNDatabaseNode) {
             DBPDataSourceContainer dataSourceContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
+
+            String nhId = null;
+            for (DBWHandlerConfiguration nhc : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
+                if (nhc.isEnabled() && nhc.getType() == DBWHandlerType.TUNNEL) {
+                    nhId = nhc.getId();
+                    break;
+                }
+            }
             UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
             if (serviceConnections != null) {
-                serviceConnections.openConnectionEditor(dataSourceContainer, "ConnectionPageNetworkHandler.ssh_tunnel");
+                serviceConnections.openConnectionEditor(dataSourceContainer, "ConnectionPageNetworkHandler." + nhId);
             }
         }
     }

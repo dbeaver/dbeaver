@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.model.sql.analyzer;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -29,6 +32,45 @@ import java.util.List;
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
 public class SQLCompletionAnalyzerTest {
+    private static RequestResult modelDataRequest;
+    private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
+
+    @Before
+    public void init() throws DBException {
+        if (Platform.isRunning()) {
+            modelDataRequest = RequestBuilder
+                .tables(t -> {
+
+                    t.table("table1", f -> {
+                        f.attribute("attribute1");
+                        f.attribute("attribute2");
+                        f.attribute("attribute3");
+                    });
+                    t.table("table2", f -> {
+                        f.attribute("attribute1");
+                        f.attribute("attribute2");
+                        f.attribute("attribute3");
+                    });
+                    t.table("table3", f -> {
+                        f.attribute("attribute1");
+                        f.attribute("attribute2");
+                        f.attribute("attribute3");
+                    });
+                    t.table("tableNaMeA", f -> {
+                        f.attribute("attribute-a");
+                        f.attribute("attribute-A");
+                        f.attribute("attribute-Aa");
+                    });
+                    t.table("tableNaMeB", f -> {
+                        f.attribute("attribute-a");
+                        f.attribute("attribute-A");
+                        f.attribute("attribute-Aa");
+                    });
+                })
+                .prepare();
+        }
+    }
+    
     @Test
     public void testKeywordCompletion() throws DBException {
         final RequestResult request = RequestBuilder
@@ -91,9 +133,9 @@ public class SQLCompletionAnalyzerTest {
                 .request("SELECT * FROM Table1 WHERE |");
 
             Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Table1.Col1", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Table1.Col2", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Table1.Col3", proposals.get(2).getReplacementString());
         }
 
         {
@@ -420,5 +462,104 @@ public class SQLCompletionAnalyzerTest {
             Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
             Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
+    }
+    
+    @Test
+    public void testCompleteTablesWithAliasesPositive() throws DBException {
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
+        List<SQLCompletionProposalBase> proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE |");
+        
+        Assert.assertEquals("a.attribute1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("a.attribute2", proposals.get(1).getReplacementString());
+        Assert.assertEquals("a.attribute3", proposals.get(2).getReplacementString());
+        Assert.assertEquals("b.attribute1", proposals.get(3).getReplacementString());
+        Assert.assertEquals("b.attribute2", proposals.get(4).getReplacementString());
+        Assert.assertEquals("b.attribute3", proposals.get(5).getReplacementString());
+
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE a.|");
+        Assert.assertEquals("attribute1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("attribute2", proposals.get(1).getReplacementString());
+        Assert.assertEquals("attribute3", proposals.get(2).getReplacementString());
+
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE b.|");
+        Assert.assertEquals("attribute1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("attribute2", proposals.get(1).getReplacementString());
+        Assert.assertEquals("attribute3", proposals.get(2).getReplacementString());
+        
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE a.attribute1=1 AND |");
+        Assert.assertEquals("a.attribute1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("a.attribute2", proposals.get(1).getReplacementString());
+        Assert.assertEquals("a.attribute3", proposals.get(2).getReplacementString());
+        Assert.assertEquals("b.attribute1", proposals.get(3).getReplacementString());
+        Assert.assertEquals("b.attribute2", proposals.get(4).getReplacementString());
+        Assert.assertEquals("b.attribute3", proposals.get(5).getReplacementString());
+        
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE a.attribute1=1 AND b.|");
+        Assert.assertEquals("attribute1", proposals.get(0).getReplacementString());
+        Assert.assertEquals("attribute2", proposals.get(1).getReplacementString());
+        Assert.assertEquals("attribute3", proposals.get(2).getReplacementString());
+
+        // all
+        proposals = modelDataRequest
+            .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE |");
+        Assert.assertEquals("a.\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assert.assertEquals("a.\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assert.assertEquals("a.\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assert.assertEquals("b.\"attribute-a\"", proposals.get(3).getReplacementString());
+        Assert.assertEquals("b.\"attribute-A\"", proposals.get(4).getReplacementString());
+        Assert.assertEquals("b.\"attribute-Aa\"", proposals.get(5).getReplacementString());
+
+        // a
+        proposals = modelDataRequest
+            .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.|");
+        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+
+        // b
+        proposals = modelDataRequest
+            .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.attribute-a=1 AND b.|");
+        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+    }
+    
+    @Test
+    public void testCompleteTablesWithAliasesQuotedPositive() throws DBException {
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
+        List<SQLCompletionProposalBase> proposals = modelDataRequest
+            .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE |");
+        // alias from a and b
+        Assert.assertEquals("a.\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assert.assertEquals("a.\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assert.assertEquals("a.\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assert.assertEquals("b.\"attribute-a\"", proposals.get(3).getReplacementString());
+        Assert.assertEquals("b.\"attribute-A\"", proposals.get(4).getReplacementString());
+        Assert.assertEquals("b.\"attribute-Aa\"", proposals.get(5).getReplacementString());
+        // alias from a
+        proposals = modelDataRequest
+            .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.|");
+        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        // alias from b
+        proposals = modelDataRequest
+            .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.attribute-a=1 AND b.|");
+        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+    }
+
+    @Test
+    public void testCompleteTablesByAliaseNegative() throws DBException {
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
+        List<SQLCompletionProposalBase> proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE c.|");
+        Assert.assertTrue(proposals.isEmpty());
     }
 }

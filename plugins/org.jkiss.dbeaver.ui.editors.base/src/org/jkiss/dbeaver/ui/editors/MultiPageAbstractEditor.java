@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -29,8 +30,12 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -39,20 +44,19 @@ import java.util.List;
 /**
  * MultiPageAbstractEditor
  */
-public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
-{
+public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     private ImageDescriptor curTitleImage;
     private final List<Image> oldImages = new ArrayList<>();
     private int activePageIndex = -1;
+    private List<CTabItem> tabsList = new ArrayList<>();
 
     @Override
-    public void init(IEditorSite site, IEditorInput input)
-        throws PartInitException
-    {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         if (getEditorInput() == null) {
             super.init(site, input);
         } else {
-            // Pages re-initialization. Do not call init bcause it recreates selection provider
+            // Pages re-initialization. Do not call init bcause it recreates selection
+            // provider
             setSite(site);
             setInput(input);
         }
@@ -60,10 +64,18 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         setTitleImage(input.getImageDescriptor());
     }
 
+    @Override
+    protected CTabItem createItem(int index, Control control) {
+        CTabItem item = super.createItem(index, control);
+        item.getControl().getAccessible().addAccessibleListener(new EditorAccessibleAdapter(item.getControl())); 
+        tabsList.add(item);
+        return item;
+    }
+
     protected void setTitleImage(ImageDescriptor titleImage) {
-    	if (getContainer() != null && getContainer().isDisposed()) {
-    		return;
-    	}
+        if (getContainer() != null && getContainer().isDisposed()) {
+            return;
+        }
         if (CommonUtils.equalObjects(curTitleImage, titleImage)) {
             return;
         }
@@ -82,33 +94,36 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         super.dispose();
     }
 
+    /**
+     * The method do save
+     */
     @Override
-    public void doSave(IProgressMonitor monitor)
-    {
+    public void doSave(IProgressMonitor monitor) {
+        // nothing
+    }
+
+    /**
+     * The method do save as
+     */
+    @Override
+    public void doSaveAs() {
+        // nothing
     }
 
     @Override
-    public void doSaveAs()
-    {
-    }
-
-    @Override
-    public boolean isSaveAsAllowed()
-    {
+    public boolean isSaveAsAllowed() {
         return false;
     }
 
     @Override
-    protected void createPages()
-    {
+    protected void createPages() {
         this.setContainerStyles();
     }
 
-    protected void setContainerStyles()
-    {
+    protected void setContainerStyles() {
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder && !pageContainer.isDisposed()) {
-            CTabFolder tabFolder = (CTabFolder)pageContainer;
+            CTabFolder tabFolder = (CTabFolder) pageContainer;
             tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);
             tabFolder.setTabPosition(SWT.TOP);
@@ -118,21 +133,29 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
                 tabFolder.setTabHeight(trSize.y);
                 tabFolder.setTopRight(topRight, SWT.RIGHT | SWT.WRAP);
             }
+
+            /*
+             * final Accessible accessible = tabFolder.getAccessible();
+             * accessible.addAccessibleListener(new AccessibleAdapter() { public void
+             * getName(AccessibleEvent e) { if (e.childID < 0) { CTabItem selection =
+             * tabFolder.getSelection(); if (selection != null) { e.result = "Tab " +
+             * selection.getText(); } } } });
+             */
+
 //            tabFolder.setSimple(false);
-            //tabFolder.setBorderVisible(true);
+            // tabFolder.setBorderVisible(true);
             Layout parentLayout = tabFolder.getParent().getLayout();
             if (parentLayout instanceof FillLayout) {
-                ((FillLayout)parentLayout).marginHeight = 0;
+                ((FillLayout) parentLayout).marginHeight = 0;
 //                ((FillLayout)parentLayout).marginWidth = 5;
             }
         }
     }
 
-    protected void setPageToolTip(int index, String toolTip)
-    {
+    protected void setPageToolTip(int index, String toolTip) {
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder) {
-            CTabFolder tabFolder = (CTabFolder)pageContainer;
+            CTabFolder tabFolder = (CTabFolder) pageContainer;
             if (index < tabFolder.getItemCount()) {
                 tabFolder.getItem(index).setToolTipText(toolTip);
             }
@@ -140,18 +163,16 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     }
 
     @Override
-    protected void pageChange(int newPageIndex)
-    {
+    protected void pageChange(int newPageIndex) {
         deactivateEditor();
         this.activePageIndex = newPageIndex;
         super.pageChange(newPageIndex);
         activateEditor();
     }
 
-    protected final void deactivateEditor()
-    {
+    protected final void deactivateEditor() {
         // Deactivate the nested services from the last active service locator.
-        if (activePageIndex >= 0) {
+        if (activePageIndex >= 0 && getEditorCount() > activePageIndex) {
             final IWorkbenchPart part = getEditor(activePageIndex);
             if (part instanceof IActiveWorkbenchPart) {
                 ((IActiveWorkbenchPart) part).deactivatePart();
@@ -159,8 +180,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         }
     }
 
-    protected final void activateEditor()
-    {
+    protected final void activateEditor() {
         final int pageIndex = getActivePage();
         final IWorkbenchPart part = getEditor(pageIndex);
 
@@ -170,8 +190,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     }
 
     @Override
-    public IEditorPart getActiveEditor()
-    {
+    public IEditorPart getActiveEditor() {
         if (getContainer().isDisposed()) {
             return null;
         }
@@ -179,7 +198,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     }
 
     protected IEditorPart getEditor(int pageIndex) {
-        Item item = ((CTabFolder)getContainer()).getItem(pageIndex);
+        Item item = ((CTabFolder) getContainer()).getItem(pageIndex);
         if (item != null && !item.isDisposed()) {
             Object data = item.getData();
             if (data instanceof IEditorPart) {
@@ -187,6 +206,10 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
             }
         }
         return null;
+    }
+
+    protected int getEditorCount() {
+        return ((CTabFolder) getContainer()).getItemCount();
     }
 
     protected Control createTopRightControl(Composite composite) {
@@ -199,5 +222,41 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
             removePage(i - 1);
         }
         createPages();
+    }
+
+    @Override
+    public void setFocus() {
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        String storedScreenReader = store.getString(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
+        ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
+        switch (screenReader) {
+            case JAWS -> {
+                if (activePageIndex != -1) {
+                    CTabItem tabItem = tabsList.get(activePageIndex);
+                    if (tabItem != null && !tabItem.isDisposed()) {
+                        if (tabItem.getControl() != null && !tabItem.getControl().isDisposed()) {
+                            tabItem.getControl().setFocus();
+                            tabItem.getParent().forceFocus();
+                        }
+                    }
+                }
+            }
+            case NARRATOR, NVDA, OTHER -> {
+                if (activePageIndex != -1) {
+                    CTabItem tabItem = tabsList.get(activePageIndex);
+                    if (tabItem != null && !tabItem.isDisposed()) {
+                        if (tabItem != null && !tabItem.isDisposed()) {
+                            Control control = tabItem.getControl();
+                            if (control != null && !control.isDisposed()) {
+                                control.forceFocus();
+                            }
+                        }
+                    }
+                }
+            }
+            case DEFAULT -> {
+                super.setFocus();
+            }
+        }
     }
 }

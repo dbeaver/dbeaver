@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -49,6 +50,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 /**
  * OracleConnectionPage
@@ -213,6 +215,11 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         }
         String oraHome = oraHomeSelector == null ? null : oraHomeSelector.getSelectedHome();
         if (CommonUtils.isEmpty(oraHome)) {
+            // check default oraHome before checking tnsAdmin
+            File defaultOraHomePath = OCIUtils.getDefaultOraHomePath();
+            if (defaultOraHomePath != null) {
+                return OCIUtils.readTnsNames(defaultOraHomePath, false).keySet();
+            }
             return OCIUtils.readTnsNames(null, true).keySet();
         } else {
             OracleHomeDescriptor home = OCIUtils.getOraHomeByName(oraHome);
@@ -228,6 +235,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         String oldText = tnsNameCombo.getText();
         tnsNameCombo.removeAll();
         Collection<String> serviceNames = getAvailableServiceNames();
+        // check if network alias is one of available services
+        String networkAlias = site.getActiveDataSource().getConnectionConfiguration().getDatabaseName();
+        boolean aliasAmongServiceNames = Stream.of(serviceNames).anyMatch(sn -> sn.equals(networkAlias));
         if (serviceNames.isEmpty()) {
             tnsNameCombo.setEnabled(false);
         } else {
@@ -237,6 +247,8 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             }
             if (!oldText.isEmpty()) {
                 UIUtils.setComboSelection(tnsNameCombo, oldText);
+            } else if (aliasAmongServiceNames) {
+                UIUtils.setComboSelection(tnsNameCombo, networkAlias);
             }
             if (tnsNameCombo.getSelectionIndex() < 0) {
                 tnsNameCombo.select(0);
@@ -395,16 +407,19 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
                 connectionInfo.setHostName(hostText.getText().trim());
                 connectionInfo.setHostPort(portText.getText().trim());
                 connectionInfo.setDatabaseName(serviceNameCombo.getText().trim());
+                connectionInfo.setConfigurationType(DBPDriverConfigurationType.MANUAL);
                 break;
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
                 connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText().trim());
+                connectionInfo.setConfigurationType(DBPDriverConfigurationType.MANUAL);
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText().trim());
                 connectionInfo.setHostName(hostText.getText().trim());
                 connectionInfo.setHostPort(portText.getText().trim());
                 connectionInfo.setDatabaseName(serviceNameCombo.getText().trim());
+                connectionInfo.setConfigurationType(DBPDriverConfigurationType.URL);
                 break;
         }
         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());

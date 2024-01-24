@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,15 @@
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-
-import java.io.File;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFileRemote;
 
 
 public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPageSettings<PostgreScriptExecuteWizard> {
@@ -57,16 +52,15 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPag
 
         Group inputGroup = UIUtils.createControlGroup(
             composite, PostgreMessages.tool_script_label_input, 3, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = UIUtils.createLabelText(
-            inputGroup, PostgreMessages.tool_script_label_input_file, "", SWT.BORDER); //$NON-NLS-2$
-        Button browseButton = new Button(inputGroup, SWT.PUSH);
-        browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-        browseButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                chooseInputFile();
-            }
-        });
+        TextWithOpenFile inputText = new TextWithOpenFileRemote(
+            inputGroup,
+            PostgreMessages.tool_script_label_input_file,
+            new String[]{"*.sql", "*.txt", "*"},
+            SWT.OPEN | SWT.SINGLE,
+            true,
+            getWizard().getProject());
+        inputText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        this.inputFileText = inputText.getTextControl();
 
         if (wizard.getSettings().getInputFile() != null) {
             inputFileText.setText(wizard.getSettings().getInputFile());
@@ -75,15 +69,9 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPag
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
 
-        setControl(composite);
-    }
+        PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, null);
 
-    private void chooseInputFile() {
-        File file = DialogUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        if (file != null) {
-            inputFileText.setText(file.getAbsolutePath());
-        }
-        updateState();
+        setControl(composite);
     }
 
     @Override

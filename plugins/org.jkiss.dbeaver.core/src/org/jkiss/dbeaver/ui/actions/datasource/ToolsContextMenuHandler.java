@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,16 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MenuAdapter;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class ToolsContextMenuHandler extends AbstractDataSourceHandler
@@ -56,7 +55,7 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
         if (focusControl == null) {
             return null;
         }
-        Point location = getLocationFromControl(activeShell, focusControl);
+        Point location = ActionUtils.getLocationFromControl(activeShell, focusControl);
 
         if (menuManager != null) {
             menuManager.dispose();
@@ -101,14 +100,11 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
         contextMenu.addMenuListener(new MenuAdapter() {
             @Override
             public void menuShown(MenuEvent e) {
-                int keyIndex = 1;
+                int keyIndex = 0;
                 for (MenuItem item : contextMenu.getItems()) {
                     if (/*item.getMenu() == null && */!CommonUtils.isEmpty(item.getText())) {
-                        item.setText(String.valueOf(keyIndex) + ". " + item.getText());
+                        item.setText(ActionUtils.getLabelWithIndexMnemonic(item.getText(), keyIndex));
                         keyIndex++;
-                        if (keyIndex >= 10) {
-                            break;
-                        }
                     }
                 }
             }
@@ -117,37 +113,4 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
 
         return null;
     }
-
-    @Nullable
-    private Point getLocationFromControl(Shell activeShell, Control focusControl) {
-        Point location = null;
-        final Display display = activeShell.getDisplay();
-        if (focusControl instanceof Table) {
-            final Table table = (Table) focusControl;
-            final int selectionIndex = table.getSelectionIndex();
-            if (selectionIndex < 0) {
-                location = display.map(focusControl, null, table.getLocation());
-            } else {
-                Rectangle absBounds = display.map(focusControl, null, table.getItem(selectionIndex).getBounds());
-                location = new Point(absBounds.x, absBounds.y + table.getItemHeight());
-            }
-        } else if (focusControl instanceof Tree) {
-            final Tree tree = (Tree) focusControl;
-            final TreeItem[] selection = tree.getSelection();
-            if (ArrayUtils.isEmpty(selection)) {
-                location = display.map(focusControl, null, tree.getLocation());
-            } else {
-                Rectangle absBounds = display.map(focusControl, null, selection[0].getBounds());
-                location = new Point(absBounds.x, absBounds.y + tree.getItemHeight());
-            }
-        } else if (focusControl instanceof StyledText) {
-            final StyledText styledText = (StyledText) focusControl;
-            final int caretOffset = styledText.getCaretOffset();
-            location = styledText.getLocationAtOffset(caretOffset);
-            location = display.map(styledText, null, location);
-            location.y += styledText.getLineHeight();
-        }
-        return location;
-    }
-
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -227,6 +227,23 @@ public class PrefPageOracle extends TargetPrefPage
         store.setToDefault(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
 
         store.setToDefault(OracleConstants.PROP_SHOW_DATE_AS_DATE);
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        explainTableText.setText(store.getDefaultString(OracleConstants.PREF_EXPLAIN_TABLE_NAME));
+        rowidSupportCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_SUPPORT_ROWID));
+        enableDbmsOutputCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_DBMS_OUTPUT));
+        readAllSynonymsCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS));
+        disableScriptEscapeProcessingCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING));
+        useRuleHint.setSelection(store.getDefaultBoolean(OracleConstants.PROP_USE_RULE_HINT));
+        useOptimizerHint.setSelection(store.getDefaultBoolean(OracleConstants.PROP_USE_META_OPTIMIZER));
+        useSimpleConstraints.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
+        useAlternativeTableMetadataQuery.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
+        searchInSynonyms.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        showDateAsDate.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SHOW_DATE_AS_DATE));
+        super.performDefaults();
     }
 
     @Override

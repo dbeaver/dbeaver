@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ public class CompareUIMessages extends NLS {
     public static String compare_objects_page_settings_page;
     public static String compare_objects_page_settings_title;
     public static String compare_objects_page_settings_description;
+    public static String compare_objects_page_settings_configuration_output_report;
+    public static String compare_objects_page_settings_configuration_output;
+    public static String compare_objects_page_settings_configuration_output_type;
     public static String compare_objects_page_settings_group_objects;
     public static String compare_objects_page_settings_nodes_column_name;
     public static String compare_objects_page_settings_nodes_column_type;
@@ -34,6 +37,8 @@ public class CompareUIMessages extends NLS {
     public static String compare_objects_page_settings_checkbox_compare_preporties;
     public static String compare_objects_page_settings_checkbox_compare_structure;
     public static String compare_objects_page_settings_checkbox_scripts;
+    public static String compare_objects_page_checkbox_show_only_differences;
+    public static String compare_objects_page_report_settings;
 
     public static String compare_objects_wizard_title;
     public static String compare_objects_wizard_error_title;
@@ -41,6 +46,10 @@ public class CompareUIMessages extends NLS {
     public static String compare_objects_wizard_finish_report_info;
 
     public static String compare_objects_wizard_dialog_button_compare;
+    public static String compare_objects_error_just_one_object_selected_title;
+    public static String compare_objects_error_just_one_object_selected_message;
+    public static String compare_objects_error_different_object_types_title;
+    public static String compare_objects_error_different_object_types_message;
 
     static {
         // initialize resource bundle

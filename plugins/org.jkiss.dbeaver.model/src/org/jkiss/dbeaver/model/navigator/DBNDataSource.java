@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,8 +27,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBServiceConnections;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -39,7 +35,7 @@ import java.util.List;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAdaptable
+public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable
 {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
 
@@ -111,8 +107,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
-    public String getNodeName()
-    {
+    public String getNodeDisplayName() {
         return dataSource.getName();
     }
 
@@ -125,9 +120,10 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     @Override
     public String getNodeFullName()
     {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return makeDataSourceItemPath(dataSource);
@@ -137,6 +133,12 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     public boolean isManagable()
     {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public String getNodeId() {
+        return dataSource.getId();
     }
 
     @Override
@@ -152,17 +154,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
 
     @Override
     public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish) throws DBException {
-        if (!dataSource.isConnected()) {
-            DBServiceConnections serviceConnections = DBWorkbench.getService(DBServiceConnections.class);
-            if (serviceConnections != null) {
-                serviceConnections.initConnection(monitor, dataSource, onFinish);
-            }
-        } else {
-            if (onFinish != null) {
-                onFinish.onTaskFinished(Status.OK_STATUS);
-            }
-        }
-        return dataSource.isConnected();
+        return DBUtils.initDataSource(monitor, dataSource, onFinish);
     }
 
     @Override
@@ -251,7 +243,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException
     {
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {

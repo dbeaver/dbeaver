@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -118,6 +119,8 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
                     contextService.deactivateContext(perspectiveActivation);
                     perspectiveActivation = null;
                 }
+
+                CoreFeatures.GENERAL_SHOW_PERSPECTIVE.use(Map.of("perspective", perspective.getId()));
             }
 
             @Override
@@ -133,6 +136,11 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
         window.addPageListener(this);
         for (IWorkbenchPage page : window.getPages()) {
+            for (IViewReference vr : page.getViewReferences()) {
+                if (vr.getView(false) != null) {
+                    CoreFeatures.GENERAL_VIEW_OPEN.use(Map.of("view", vr.getId()));
+                }
+            }
             page.addPartListener(this);
         }
     }
@@ -236,11 +244,20 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
     @Override
     public void partClosed(IWorkbenchPart part) {
-
+        if (part instanceof IViewPart) {
+            CoreFeatures.GENERAL_VIEW_CLOSE.use(Map.of(
+                "view", ((IViewPart) part).getViewSite().getId()
+            ));
+        }
     }
 
     @Override
     public void partOpened(IWorkbenchPart part) {
+        if (part instanceof IViewPart) {
+            CoreFeatures.GENERAL_VIEW_OPEN.use(Map.of(
+                "view", ((IViewPart) part).getViewSite().getId()
+            ));
+        }
         fireOnNewSqlEditorListener(part);
     }
 
@@ -261,15 +278,14 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
         @Override
         public void postExecuteSuccess(String commandId, Object returnValue) {
-            final DBRFeature commandFeature = DBRFeatureRegistry.getInstance().findCommandFeature(commandId);
-            if (commandFeature != null) {
-                commandFeature.use();
-            }
         }
 
         @Override
         public void preExecute(String commandId, ExecutionEvent event) {
-
+            final DBRFeature commandFeature = DBRFeatureRegistry.getInstance().findCommandFeature(commandId);
+            if (commandFeature != null) {
+                commandFeature.use(event.getParameters());
+            }
         }
     }
     

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.slf4j.impl;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.slf4j.SLFLogger;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.spi.LoggerFactoryBinder;

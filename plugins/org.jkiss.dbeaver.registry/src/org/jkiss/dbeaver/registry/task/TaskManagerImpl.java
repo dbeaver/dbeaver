@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +59,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         .setPrettyPrinting()
         .create();
 
-    static final SimpleDateFormat systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
+    final SimpleDateFormat systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
     private final BaseProjectImpl projectMetadata;
@@ -66,10 +67,11 @@ public class TaskManagerImpl implements DBTTaskManager {
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
     private final Path statisticsFolder;
 
-    public TaskManagerImpl(BaseProjectImpl projectMetadata) {
+    public TaskManagerImpl(BaseProjectImpl projectMetadata, Path statisticsFolder) {
         this.projectMetadata = projectMetadata;
-        this.statisticsFolder = projectMetadata.getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER);
-
+        this.statisticsFolder = statisticsFolder;
+        this.systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
+        systemDateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         loadConfiguration();
     }
 
@@ -146,16 +148,23 @@ public class TaskManagerImpl implements DBTTaskManager {
         @NotNull String label,
         @Nullable String description,
         @Nullable String taskFolderName,
-        @NotNull Map<String, Object> properties) throws DBException
-    {
+        @NotNull Map<String, Object> properties) throws DBException {
         if (getTaskByName(label) != null) {
             throw new DBException("Task with name '" + label + "' already exists");
         }
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
         TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
-        TaskImpl task = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime, taskFolder);
-        task.setProperties(properties);
+        TaskImpl task = createTask(
+            taskDescriptor,
+            id,
+            label,
+            description,
+            createTime,
+            createTime,
+            taskFolder,
+            properties
+        );
 
         return task;
     }
@@ -287,6 +296,12 @@ public class TaskManagerImpl implements DBTTaskManager {
         return statisticsFolder;
     }
 
+    @NotNull
+    @Override
+    public Path getStatisticsFolder(@NotNull DBTTask task) {
+        return statisticsFolder.resolve(task.getId());
+    }
+
     @Override
     public Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
         TaskRunJob runJob = new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener);
@@ -312,8 +327,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
         String configFile = null;
         try {
-            configFile =
-                DBWorkbench.getPlatform().getTaskController().loadTaskConfigurationFile(getProject().getId(), TaskConstants.CONFIG_FILE);
+            configFile = loadConfigFile();
         } catch (DBException e) {
             log.error("Error loading task configuration file.", e);
         }
@@ -364,16 +378,16 @@ public class TaskManagerImpl implements DBTTaskManager {
                     }
 
                     TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
-                    TaskImpl taskConfig = new TaskImpl(
-                        projectMetadata,
+                    TaskImpl taskConfig = createTask(
                         taskDescriptor,
                         id,
                         label,
                         description,
                         createTime,
                         updateTime,
-                        taskFolder);
-                    taskConfig.setProperties(state);
+                        taskFolder,
+                        state
+                    );
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);
                         if (!tasksFolders.contains(taskFolder)) {
@@ -393,6 +407,37 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
 
         }
+    }
+
+    @NotNull
+    protected TaskImpl createTask(
+        @NotNull DBTTaskType taskType,
+        @NotNull String id,
+        @NotNull String label,
+        @Nullable String description,
+        @NotNull Date createTime,
+        @NotNull Date updateTime,
+        @Nullable TaskFolderImpl taskFolder,
+        @NotNull Map<String, Object> properties
+    ) {
+        TaskImpl taskConfig = new TaskImpl(
+            getProject(),
+            taskType,
+            id,
+            label,
+            description,
+            createTime,
+            updateTime,
+            taskFolder
+        );
+        taskConfig.setProperties(properties);
+        return taskConfig;
+    }
+
+    protected String loadConfigFile() throws DBException {
+        return DBWorkbench.getPlatform()
+            .getTaskController()
+            .loadTaskConfigurationFile(getProject().getId(), TaskConstants.CONFIG_FILE);
     }
 
     private TaskFolderImpl searchTaskFolderByName(String taskFolderName) {

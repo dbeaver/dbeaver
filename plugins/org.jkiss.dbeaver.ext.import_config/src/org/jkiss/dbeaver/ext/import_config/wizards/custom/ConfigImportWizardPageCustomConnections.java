@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -39,6 +40,8 @@ import java.util.Map;
 
 
 public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardPage {
+    private static final Log log = Log.getLog(ConfigImportWizardPageCustomConnections.class);
+
 
     protected ConfigImportWizardPageCustomConnections()
     {
@@ -113,7 +116,7 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
         if (CommonUtils.isEmpty(name)) {
             return;
         }
-        importData.addConnection(new ImportConnectionInfo(
+        ImportConnectionInfo ici = new ImportConnectionInfo(
             driver,
             conProps.get("id"),
             name,
@@ -123,7 +126,10 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
             conProps.get("database"),
             conProps.get("user"),
             conProps.get("password")
-        ));
+        );
+        
+        log.debug("load connection: " + ici.toString());
+        importData.addConnection(ici);
     }
 
 }

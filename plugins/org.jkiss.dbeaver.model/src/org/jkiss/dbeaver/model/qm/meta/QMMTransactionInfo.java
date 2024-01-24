@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * QM Transaction info
@@ -30,26 +25,20 @@ import java.util.Map;
 public class QMMTransactionInfo extends QMMObject {
 
     private final QMMConnectionInfo connection;
-    private final QMMTransactionInfo previous;
+    private final transient QMMTransactionInfo previous;
     private boolean committed;
-    private final QMMTransactionSavepointInfo savepointStack;
+    private final transient QMMTransactionSavepointInfo savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
 
     QMMTransactionInfo(QMMConnectionInfo connection, QMMTransactionInfo previous) {
+        super(QMMetaObjectType.TRANSACTION_INFO);
         this.connection = connection;
         this.previous = previous;
-        this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
     }
 
-    private QMMTransactionInfo(Builder builder) {
-        super(builder.openTime, builder.closeTime);
-        connection = builder.connection;
-        previous = builder.previous;
-        committed = builder.committed;
-        savepointStack = builder.savepointStack;
-    }
-
-    public static Builder builder() {
-        return new Builder();
+    public QMMTransactionInfo(QMMConnectionInfo connection, long openTime) {
+        super(QMMetaObjectType.TRANSACTION_INFO, openTime, openTime);
+        this.connection = connection;
+        this.previous = null;
     }
 
     void commit() {
@@ -77,27 +66,6 @@ public class QMMTransactionInfo extends QMMObject {
 
     public QMMConnectionInfo getConnection() {
         return connection;
-    }
-
-    @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("connection", getConnection().toMap());
-        result.put("openTime", getOpenTime());
-        result.put("closeTime", getCloseTime());
-        return result;
-    }
-
-    public static QMMTransactionInfo fromMap(Map<String, Object> objectMap) {
-        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap(
-            JSONUtils.getObject(objectMap, "connection"));
-        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
-        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
-        return builder()
-            .setConnection(connectionInfo)
-            .setOpenTime(openTime)
-            .setCloseTime(closeTime)
-            .build();
     }
 
     public QMMTransactionInfo getPrevious() {
@@ -134,54 +102,4 @@ public class QMMTransactionInfo extends QMMObject {
         return connection.getText();
     }
 
-    @Override
-    public ObjectType getObjectType() {
-        return ObjectType.TransactionInfo;
-    }
-
-    public static final class Builder {
-        private QMMConnectionInfo connection;
-        private QMMTransactionInfo previous;
-        private boolean committed;
-        private QMMTransactionSavepointInfo savepointStack;
-        private long openTime;
-        private long closeTime;
-
-        private Builder() {
-        }
-
-        public Builder setConnection(QMMConnectionInfo connection) {
-            this.connection = connection;
-            return this;
-        }
-
-        public Builder setPrevious(QMMTransactionInfo previous) {
-            this.previous = previous;
-            return this;
-        }
-
-        public Builder setCommitted(boolean committed) {
-            this.committed = committed;
-            return this;
-        }
-
-        public Builder setSavepointStack(QMMTransactionSavepointInfo savepointStack) {
-            this.savepointStack = savepointStack;
-            return this;
-        }
-
-        public Builder setOpenTime(long openTime) {
-            this.openTime = openTime;
-            return this;
-        }
-
-        public Builder setCloseTime(long closeTime) {
-            this.closeTime = closeTime;
-            return this;
-        }
-
-        public QMMTransactionInfo build() {
-            return new QMMTransactionInfo(this);
-        }
-    }
 }

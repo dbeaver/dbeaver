@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -45,7 +46,7 @@ import java.util.Map;
 /**
  * Stream transfer settings
  */
-public class StreamConsumerSettings implements IDataTransferSettings {
+public class StreamConsumerSettings implements IDataTransferConsumerSettings {
 
     private static final Log log = Log.getLog(StreamConsumerSettings.class);
 
@@ -278,12 +279,14 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         return eventProcessors.computeIfAbsent(id, x -> new HashMap<>());
     }
 
-    public void addEventProcessor(@NotNull String id) {
-        eventProcessors.putIfAbsent(id, new HashMap<>());
+    @Override
+    public void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.putIfAbsent(descriptor.getId(), new HashMap<>());
     }
 
-    public void removeEventProcessor(@NotNull String id) {
-        eventProcessors.remove(id);
+    @Override
+    public void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.remove(descriptor.getId());
     }
 
     public boolean hasEventProcessor(@NotNull String id) {
@@ -324,11 +327,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             CommonUtils.toString(settings.get(BLOB_FILE_CONFLICT_BEHAVIOR)),
             BlobFileConflictBehavior.PATCHNAME
         );
-        if (dataTransferSettings.getDataPipes().size() > 1) {
-            useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
-        } else {
-            useSingleFile = false;
-        }
 
         compressResults = CommonUtils.getBoolean(settings.get("compressResults"), compressResults);
         splitOutFiles = CommonUtils.getBoolean(settings.get("splitOutFiles"), splitOutFiles);
@@ -391,6 +389,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             config.put(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY, null);
             eventProcessors.put(ExecuteCommandEventProcessor.ID, config);
         }
+
+        useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile)
+            && dataTransferSettings.getDataPipes().size() > 1
+            && dataTransferSettings.getProcessor().isAppendable();
     }
 
     @Override

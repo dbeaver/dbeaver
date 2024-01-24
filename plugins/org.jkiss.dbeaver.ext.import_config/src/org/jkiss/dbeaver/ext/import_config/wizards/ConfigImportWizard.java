@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
+import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -44,8 +46,9 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
-	
-	private ConfigImportWizardPage mainPage;
+    private static final Log log = Log.getLog(ConfigImportWizard.class);
+    
+    private ConfigImportWizardPage mainPage;
     private Map<String, DriverDescriptor> driverClassMap = new HashMap<>();
 
     public ConfigImportWizard() {
@@ -191,6 +194,13 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         config.setHostName(connectionInfo.getHost());
         config.setHostPort(connectionInfo.getPort());
         config.setDatabaseName(connectionInfo.getDatabase());
+        //It allows to specify whether connection url should be used directly or not after connection creation.
+        if (CommonUtils.isEmpty(connectionInfo.getHost())) {
+            config.setConfigurationType(DBPDriverConfigurationType.URL);
+        } else {
+            config.setConfigurationType(DBPDriverConfigurationType.MANUAL);
+        }
+        
         DataSourceDescriptor dataSource = new DataSourceDescriptor(
             dataSourceRegistry,
             DataSourceDescriptor.generateNewId(connectionInfo.getDriver()),
@@ -208,20 +218,63 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
     protected void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException
     {
+        
+        //connectionInfo.getDriver()
+        String url = connectionInfo.getUrl();
+        if (url == null) {
+            if (connectionInfo.getDriver() == null) {
+                throw new DBCException("Can't detect target driver for '" + connectionInfo.getAlias() + "'");
+            }
+            if (connectionInfo.getHost() == null) {
+                throw new DBCException("No URL and no host name - can't import connection '" + connectionInfo.getAlias() + "'");
+            }
+            // No URL - generate from props
+            DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
+            conConfig.setHostName(connectionInfo.getHost());
+            conConfig.setHostPort(connectionInfo.getPort());
+            conConfig.setDatabaseName(connectionInfo.getDatabase());
+            url = connectionInfo.getDriver().getConnectionURL(conConfig);
+            connectionInfo.setUrl(url);
+            return;
+        }
+        
+        try {
+            parseUrlAsDriverSampleUrl(connectionInfo);
+            return;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        
+        /*
+         * Here parsing was not successful.
+         * URL is not null and not agree with sampleURL from drive. 
+         * Still we proceed to import cause can be any other valid url format for the driver.
+         */
+        log.info("Import url as is it for url:" + url);
+        
+    }
+
+    /**
+     * Try to parse url by driver sample url. 
+     * NOTE sampleURL is not the only possible way to define a valid url.
+     *
+     * @throws DBException in case url does not reflect the sample one from driver.
+     */
+    private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) throws DBException {
+        String url = connectionInfo.getUrl();
+        
         String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
         if (connectionInfo.getDriver() != null) {
             sampleURL = connectionInfo.getDriver().getSampleURL();
         }
-        //connectionInfo.getDriver()
-        String url = connectionInfo.getUrl();
-        if (url != null) {
-            // Parse url
-            final JDBCURL.MetaURL metaURL = JDBCURL.parseSampleURL(sampleURL);
+        final DatabaseURL.MetaURL metaURL = DatabaseURL.parseSampleURL(sampleURL);
+        List<String> urlComponents = metaURL.getUrlComponents();
+        for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
+            String component = urlComponents.get(i);
+            log.info("urlComponents:" + component);
+            
             int sourceOffset = 0;
-            List<String> urlComponents = metaURL.getUrlComponents();
-            for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
-                String component = urlComponents.get(i);
-                if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
+            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
                     metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
                     // Property
                     int partEnd;
@@ -269,23 +322,11 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                     // Static string
                     sourceOffset += component.length();
                 }
-            }
-        }
-        if (url == null) {
-            if (connectionInfo.getDriver() == null) {
-                throw new DBCException("Can't detect target driver for '" + connectionInfo.getAlias() + "'");
-            }
-            if (connectionInfo.getHost() == null) {
-                throw new DBCException("No URL and no host name - can't import connection '" + connectionInfo.getAlias() + "'");
-            }
-            // No URL - generate from props
-            DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
-            conConfig.setHostName(connectionInfo.getHost());
-            conConfig.setHostPort(connectionInfo.getPort());
-            conConfig.setDatabaseName(connectionInfo.getDatabase());
-            url = connectionInfo.getDriver().getConnectionURL(conConfig);
-            connectionInfo.setUrl(url);
         }
     }
+    
+    
+    
+    
 
 }

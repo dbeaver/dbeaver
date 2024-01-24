@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,21 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
+import org.jkiss.dbeaver.model.rm.RMUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -44,8 +51,11 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
 
@@ -63,8 +73,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
     private TableViewer scriptsViewer;
     private TableViewer dataSourceViewer;
 
-    private List<DBNResource> selectedScripts = new ArrayList<>();
-    private List<DBNDataSource> selectedDataSources = new ArrayList<>();
+    private final List<DBNNodeWithResource> selectedScripts = new ArrayList<>();
+    private final List<DBNDataSource> selectedDataSources = new ArrayList<>();
 
     SQLScriptTaskPageSettings(SQLScriptTaskConfigurationWizard wizard) {
         super(DTMessages.sql_script_task_title);
@@ -97,16 +107,26 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             scriptsViewer.setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    return ((DBNResource) element).getResource().getProjectRelativePath().toString();
+                    if (element instanceof DBNPathBase path) {
+                        return path.getPath().toString();
+                    }
+                    return ((DBNNodeWithResource) element).getResource().getProjectRelativePath().toString();
                 }
                 @Override
                 public Image getImage(Object element) {
-                    return DBeaverIcons.getImage(((DBNResource)element).getNodeIconDefault());
+                    DBNNode node = (DBNNode) element;
+                    DBPImage icon;
+                    if (node instanceof DBNPathBase path) {
+                        icon = DBIcon.TREE_SCRIPT;
+                    } else {
+                        icon = node.getNodeIconDefault();
+                    }
+                    return DBeaverIcons.getImage(icon);
                 }
             });
             scriptsViewer.addDoubleClickListener(event -> {
                 StructuredSelection selection = (StructuredSelection) event.getSelection();
-                IResource resource = ((DBNResource) selection.getFirstElement()).getResource();
+                IResource resource = ((DBNNodeWithResource) selection.getFirstElement()).getResource();
                 if (resource != null) {
                     DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
                     if (handler != null) {
@@ -134,7 +154,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public void widgetSelected(SelectionEvent e) {
                     SQLScriptTaskScriptSelectorDialog dialog = new SQLScriptTaskScriptSelectorDialog(getShell(), projectNode);
                     if (dialog.open() == IDialogConstants.OK_ID) {
-                        for (DBNResource script : dialog.getSelectedScripts()) {
+                        for (DBNNodeWithResource script : dialog.getSelectedScripts()) {
                             if (!selectedScripts.contains(script)) {
                                 selectedScripts.add(script);
                             }
@@ -143,13 +163,33 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                 }
             });
+            if (DBFUtils.supportsMultiFileSystems(sqlWizard.getProject())) {
+                UIUtils.createToolItem(buttonsToolbar, UIMessages.text_with_open_dialog_browse_remote, UIIcon.OPEN_EXTERNAL, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBNPathBase selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                            UIMessages.text_with_open_dialog_browse_remote,
+                            false,
+                            SWT.OPEN,
+                            false,
+                            new String[]{ "*.sql", "*"},
+                            null);
+                        if (selected != null) {
+                            if (!selectedScripts.contains(selected)) {
+                                selectedScripts.add(selected);
+                            }
+                            refreshScripts();
+                        }
+                    }
+                });
+            }
             ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_remove_script, UIIcon.ROW_DELETE, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ISelection selection = scriptsViewer.getSelection();
                     if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
                         for (Object element : ((IStructuredSelection) selection).toArray()) {
-                            if (element instanceof DBNResource) {
+                            if (element instanceof DBNNodeWithResource) {
                                 selectedScripts.remove(element);
                             }
                         }
@@ -163,7 +203,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = scriptTable.getSelectionIndex();
                     if (selectionIndex > 0) {
-                        DBNResource prevScript = selectedScripts.get(selectionIndex - 1);
+                        DBNNodeWithResource prevScript = selectedScripts.get(selectionIndex - 1);
                         selectedScripts.set(selectionIndex - 1, selectedScripts.get(selectionIndex));
                         selectedScripts.set(selectionIndex, prevScript);
                         refreshScripts();
@@ -175,7 +215,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = scriptTable.getSelectionIndex();
                     if (selectionIndex < scriptTable.getItemCount() - 1) {
-                        DBNResource nextScript = selectedScripts.get(selectionIndex + 1);
+                        DBNNodeWithResource nextScript = selectedScripts.get(selectionIndex + 1);
                         selectedScripts.set(selectionIndex + 1, selectedScripts.get(selectionIndex));
                         selectedScripts.set(selectionIndex, nextScript);
                         refreshScripts();
@@ -200,7 +240,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             dataSourceViewer.setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    return ((DBNDataSource) element).getNodeName();
+                    return ((DBNDataSource) element).getNodeDisplayName();
                 }
                 @Override
                 public Image getImage(Object element) {
@@ -280,6 +320,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             });
             deleteItem.setEnabled(false);
         }
+        mainGroup.setWeights(700, 300);
 
         {
             Composite settingsGroup = UIUtils.createControlGroup(
@@ -297,7 +338,19 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
         getWizard().createVariablesEditButton(composite);
 
-        loadSettings();
+        try {
+            getWizard().getContainer().run(true, true, monitor -> {
+                try {
+                    loadSettings(new DefaultProgressMonitor(monitor));
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            setErrorMessage("Error loading settings: " + e.getTargetException().getMessage());
+        } catch (InterruptedException e) {
+            // ignore
+        }
 
         setControl(composite);
     }
@@ -315,10 +368,12 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
 
         Set<DBPDataSourceContainer> dataSources = new LinkedHashSet<>();
-        for (DBNResource element : selectedScripts) {
-            Collection<DBPDataSourceContainer> resDS = element.getAssociatedDataSources();
-            if (!CommonUtils.isEmpty(resDS)) {
-                dataSources.addAll(resDS);
+        for (DBNNodeWithResource element : selectedScripts) {
+            if (element instanceof DBNResource res) {
+                Collection<DBPDataSourceContainer> resDS = res.getAssociatedDataSources();
+                if (!CommonUtils.isEmpty(resDS)) {
+                    dataSources.addAll(resDS);
+                }
             }
         }
 
@@ -366,44 +421,47 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         return true;
     }
 
-    public void loadSettings() {
+    public void loadSettings(DBRProgressMonitor monitor) throws DBException {
         SQLScriptExecuteSettings settings = sqlWizard.getSettings();
 
-        List<String> scriptFiles = settings.getScriptFiles();
-        for (String filePath : scriptFiles) {
-            IFile file = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
-            if (file == null) {
-                log.debug("Script file '" + filePath + "' not found");
-                continue;
-            }
-            DBPProject currentProject = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
-            if (currentProject == null) {
-                log.debug("Project '" + file.getProject().getName() + "' not found");
-                continue;
-            }
-            DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject);
-            if (projectNode != null) {
-                DBNResource resource = projectNode.findResource(file);
-                if (resource != null) {
-                    selectedScripts.add(resource);
+        DBPProject project = getWizard().getProject();
+        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(project);
+        if (projectNode != null) {
+            List<String> scriptFiles = settings.getScriptFiles();
+            for (String filePath : scriptFiles) {
+                if (IOUtils.isLocalFile(filePath)) {
+                    IFile workspaceFile = RMUtils.findEclipseProjectFile(project, filePath);
+                    if (workspaceFile == null) {
+                        log.debug("Script file '" + filePath + "' not found");
+                        continue;
+                    }
+                    DBNResource resource = projectNode.findResource(monitor, workspaceFile);
+                    if (resource != null) {
+                        selectedScripts.add(resource);
+                    }
+                } else {
+                    DBNFileSystems fsNode = projectNode.getExtraNode(DBNFileSystems.class);
+                    if (fsNode != null) {
+                        DBNPathBase pathNode = fsNode.findNodeByPath(monitor, filePath);
+                        if (pathNode != null) {
+                            selectedScripts.add(pathNode);
+                        }
+                    }
                 }
             }
         }
-        scriptsViewer.setInput(selectedScripts);
 
         for (DBPDataSourceContainer dataSource : settings.getDataSources()) {
-            DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(dataSource.getProject());
             DBNDataSource dsNode = projectNode.getDatabases().getDataSource(dataSource);
             if (dsNode != null) {
                 selectedDataSources.add(dsNode);
             }
         }
 
-        dataSourceViewer.setInput(selectedDataSources);
-//        if (!selectedDataSources.isEmpty()) {
-//            dataSourceTree.getCheckboxViewer().setCheckedElements(selectedDataSources.toArray());
-//            dataSourceTree.getCheckboxViewer().reveal(selectedDataSources.get(0));
-//        }
+        UIUtils.syncExec(() -> {
+            scriptsViewer.setInput(selectedScripts);
+            dataSourceViewer.setInput(selectedDataSources);
+        });
     }
 
     public void saveSettings() {
@@ -413,10 +471,14 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         SQLScriptExecuteSettings settings = sqlWizard.getSettings();
 
         List<String> scriptPaths = new ArrayList<>();
-        for (DBNResource resource : selectedScripts) {
-            IResource res = resource.getResource();
-            if (res instanceof IFile) {
-                scriptPaths.add(res.getFullPath().toString());
+        for (DBNNodeWithResource resource : selectedScripts) {
+            if (resource instanceof DBNPathBase) {
+                scriptPaths.add(((DBNPathBase) resource).getPath().toString());
+            } else {
+                IResource res = resource.getResource();
+                if (res instanceof IFile) {
+                    scriptPaths.add(getWizard().getProject().getResourcePath(res));
+                }
             }
         }
         if (!CommonUtils.isEmpty(scriptPaths)) {

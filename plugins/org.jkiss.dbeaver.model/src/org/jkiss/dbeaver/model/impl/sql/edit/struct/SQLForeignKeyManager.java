@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -25,9 +26,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -45,7 +47,7 @@ import java.util.Map;
 /**
  * JDBC foreign key manager
  */
-public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE> & DBSTableForeignKey, TABLE_TYPE extends JDBCTable>
+public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableConstraint & DBSTableForeignKey, TABLE_TYPE extends AbstractTable>
     extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -63,7 +65,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException
     {
-        final TABLE_TYPE table = command.getObject().getTable();
+        final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
@@ -173,7 +175,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         DBSEntityConstraint uniqueKey = foreignKey.getReferencedConstraint();
         DBSEntity targetTable = uniqueKey == null ? null : uniqueKey.getParentObject();
 
-        TABLE_TYPE table = foreignKey.getParentObject();
+        TABLE_TYPE table = (TABLE_TYPE) foreignKey.getParentObject();
         String baseName = CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
             (uniqueKey == null ? "" : CommonUtils.escapeIdentifier(targetTable.getName()) + "_") + "FK"; //$NON-NLS-1$
 
@@ -222,5 +224,19 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     protected boolean isFKConstraintDuplicated(TABLE_TYPE owner) {
         return false;
     }
+
+    public static <FK extends AbstractTableConstraint> void updateForeignKeyName(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull FK foreignKey) {
+        SQLForeignKeyManager objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+            foreignKey.getClass(), SQLForeignKeyManager.class);
+        if (objectManager == null) {
+            log.debug("Foreign key manager not found for " + foreignKey.getClass().getName());
+        } else {
+            String fkName = objectManager.getNewConstraintName(monitor, foreignKey);
+            foreignKey.setName(fkName);
+        }
+    }
+
 }
 

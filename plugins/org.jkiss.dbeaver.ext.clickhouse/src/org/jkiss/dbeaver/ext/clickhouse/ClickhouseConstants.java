@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,4 +24,6 @@ public class ClickhouseConstants {
     public static final String SSL_MODE = "sslmode"; //$NON-NLS-1$
 
     public static final String SSL_ROOT_CERTIFICATE = "sslrootcert"; //$NON-NLS-1$
+
+    public static final String DATA_TYPE_IPV4 = "ipv4";
 }

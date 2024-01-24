@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,16 +32,25 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 class SQLGeneratorDialog extends ViewSQLDialog {
+    private static final Log log = Log.getLog(SQLGeneratorDialog.class);
 
     private static final String PROP_USE_FQ_NAMES = "GenerateSQL.useFQNames";
     private static final String PROP_USE_COMPACT_SQL = "GenerateSQL.compactSQL";
@@ -43,14 +59,21 @@ class SQLGeneratorDialog extends ViewSQLDialog {
     private static final String PROP_USE_SEPARATE_FK_STATEMENTS = "GenerateSQL.useSeparateFKStatements";
 
     private final SQLGenerator<?> sqlGenerator;
+    private Job generateDDLJob;
 
     SQLGeneratorDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
         super(parentSite, () -> context,
-            "Generated SQL (" + context.getDataSource().getContainer().getName() + ")",
+            NLS.bind(SQLEditorMessages.sql_generator_dialog_title, context.getDataSource().getContainer().getName()),
             null, "");
         this.sqlGenerator = sqlGenerator;
     }
 
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        createRefreshButton(parent);
+        super.createButtonsForButtonBar(parent);
+    }
+    
     @Override
     protected Composite createDialogArea(Composite parent) {
         sqlGenerator.setFullyQualifiedNames(getDialogBoundsSettings().get(PROP_USE_FQ_NAMES) == null ||
@@ -99,14 +122,47 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         sqlGenerator.setShowFullDdl(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS) != null &&
                 getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS));
 
-        UIUtils.runInUI(sqlGenerator);
-        Object sql = sqlGenerator.getResult();
-        if (sql != null) {
-            setSQLText(CommonUtils.toString(sql));
-        }
+        generateDDLJob = new AbstractJob("Generating DDL") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    DBExecUtils.tryExecuteRecover(monitor, getExecutionContext().getDataSource(), param -> {
+                        sqlGenerator.run(monitor);
+                    });
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    Object sql = sqlGenerator.getResult();
+                    UIUtils.syncExec(() -> {
+                        if (SQLGeneratorDialog.this.getShell() != null && !SQLGeneratorDialog.this.getShell()
+                            .isDisposed()) {
+                            if (sql != null) {
+                                setSQLText(CommonUtils.toString(sql));
+                                updateSQL();
+                            }
+                            Button button = getButton(IDialogConstants.DETAILS_ID);
+                            if (button != null) {
+                                button.setEnabled(true);
+                            }
+                        }
+                    });
+
+                    return Status.OK_STATUS;
+                } catch (DBException e) {
+                    UIUtils.syncExec(() -> {
+                        if (SQLGeneratorDialog.this.getShell() != null && !SQLGeneratorDialog.this.getShell().isDisposed()) {
+                            setSQLText("Error running DDL generation");
+                        }
+                    });
+                    log.error(e);
+                    return Status.error("Error running DDL generation", e);
+                }
+            }
+        };
 
         Composite composite = super.createDialogArea(parent);
-        
+        startGenerateJob();
+
         if (!sqlGenerator.hasOptions()) {
             return composite;
         }
@@ -119,13 +175,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
             public void widgetSelected(SelectionEvent e) {
                 sqlGenerator.setFullyQualifiedNames(useFQNames.getSelection());
                 getDialogBoundsSettings().put(PROP_USE_FQ_NAMES, useFQNames.getSelection());
-
-                UIUtils.runInUI(sqlGenerator);
-                Object sql = sqlGenerator.getResult();
-                if (sql != null) {
-                    setSQLText(CommonUtils.toString(sql));
-                    updateSQL();
-                }
+                startGenerateJob();
             }
         });
         Button useCompactSQL = UIUtils.createCheckbox(settings, SQLEditorMessages.sql_generator_dialog_button_compact_sql, sqlGenerator.isCompactSQL());
@@ -134,13 +184,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
             public void widgetSelected(SelectionEvent e) {
                 sqlGenerator.setCompactSQL(useCompactSQL.getSelection());
                 getDialogBoundsSettings().put(PROP_USE_COMPACT_SQL, useCompactSQL.getSelection());
-
-                UIUtils.runInUI(sqlGenerator);
-                Object sql = sqlGenerator.getResult();
-                if (sql != null) {
-                    setSQLText(CommonUtils.toString(sql));
-                    updateSQL();
-                }
+                startGenerateJob();
             }
         });
         if (sqlGenerator.isInsertOption()) {
@@ -150,13 +194,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setExcludeAutoGeneratedColumn(excludeAutoGeneratedColumn.getSelection());
                     getDialogBoundsSettings().put(PROP_EXCLUDE_AUTO_GENERATED_COLUMNS, excludeAutoGeneratedColumn.getSelection());
-
-                    UIUtils.runInUI(sqlGenerator);
-                    Object sql = sqlGenerator.getResult();
-                    if (sql != null) {
-                        setSQLText(CommonUtils.toString(sql));
-                        updateSQL();
-                    }
+                    startGenerateJob();
                 }
             });
         }
@@ -167,13 +205,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setUseCustomDataFormat(useCustomDateFormat.getSelection());
                     getDialogBoundsSettings().put(PROP_USE_CUSTOM_DATA_FORMAT, useCustomDateFormat.getSelection());
-
-                    UIUtils.runInUI(sqlGenerator);
-                    Object sql = sqlGenerator.getResult();
-                    if (sql != null) {
-                        setSQLText(CommonUtils.toString(sql));
-                        updateSQL();
-                    }
+                    startGenerateJob();
                 }
             });
         }
@@ -185,13 +217,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                     public void widgetSelected(SelectionEvent e) {
                         sqlGenerator.setShowComments(useShowComments.getSelection());
                         getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, useShowComments.getSelection());
-
-                        UIUtils.runInUI(sqlGenerator);
-                        Object sql = sqlGenerator.getResult();
-                        if (sql != null) {
-                            setSQLText(CommonUtils.toString(sql));
-                            updateSQL();
-                        }
+                        startGenerateJob();
                     }
                 });
             }
@@ -202,13 +228,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                     public void widgetSelected(SelectionEvent e) {
                         sqlGenerator.setShowPermissions(useShowPermissions.getSelection());
                         getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, useShowPermissions.getSelection());
-
-                        UIUtils.runInUI(sqlGenerator);
-                        Object sql = sqlGenerator.getResult();
-                        if (sql != null) {
-                            setSQLText(CommonUtils.toString(sql));
-                            updateSQL();
-                        }
+                        startGenerateJob();
                     }
                 });
             }
@@ -220,13 +240,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setShowFullDdl(useShowFullDdl.getSelection());
                     getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, useShowFullDdl.getSelection());
-
-                    UIUtils.runInUI(sqlGenerator);
-                    Object sql = sqlGenerator.getResult();
-                    if (sql != null) {
-                        setSQLText(CommonUtils.toString(sql));
-                        updateSQL();
-                    }
+                    startGenerateJob();
                 }
             });
         }
@@ -237,13 +251,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setUseSeparateForeignKeys(useSeparateFkStatements.getSelection());
                     getDialogBoundsSettings().put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, useSeparateFkStatements.getSelection());
-
-                    UIUtils.runInUI(sqlGenerator);
-                    Object sql = sqlGenerator.getResult();
-                    if (sql != null) {
-                        setSQLText(CommonUtils.toString(sql));
-                        updateSQL();
-                    }
+                    startGenerateJob();
                 }
             });
         }
@@ -257,16 +265,81 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setShowPartitionsDDL(supportsPartitionsDDLButton.getSelection());
                     getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, supportsPartitionsDDLButton.getSelection());
-
-                    UIUtils.runInUI(sqlGenerator);
-                    Object sql = sqlGenerator.getResult();
-                    if (sql != null) {
-                        setSQLText(CommonUtils.toString(sql));
-                        updateSQL();
-                    }
+                    startGenerateJob();
+                }
+            });
+        }
+        if (sqlGenerator.supportCastParams()) {
+            Button supportsCastParamsButton = UIUtils.createCheckbox(
+                    settings,
+                    SQLEditorMessages.sql_generator_dialog_button_show_cast_params,
+                    sqlGenerator.isShowCastParams());
+            supportsCastParamsButton.setToolTipText(SQLEditorMessages.sql_generator_dialog_button_show_cast_params_tip);
+            supportsCastParamsButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setShowCastParams(supportsCastParamsButton.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_CAST_PARAMS, supportsCastParamsButton.getSelection());
+                    startGenerateJob();
                 }
             });
         }
         return composite;
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == IDialogConstants.RETRY_ID) {
+            final AbstractJob job = new AbstractJob("Refresh metadata for SQL Generator") { //$NON-NLS-1$
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    for (Object object : sqlGenerator.getObjects()) {
+                        if (object instanceof DBSObject) {
+                            DBSObject dbsObject = (DBSObject) object;
+                            try {
+                                DBNDatabaseNode dbnNode = DBNUtils.getNodeByObject(dbsObject);
+                                dbnNode.refreshNode(monitor, object);
+                                if (monitor.isCanceled()) {
+                                    break;
+                                }
+                                monitor.worked(1);
+                            } catch (Exception e) {
+                                log.error("Error refreshing object '" + dbsObject.getName() + "'", e); //$NON-NLS-1$ //$NON-NLS-2$
+                            }
+                        }
+                    }
+                    monitor.done();
+                    return Status.OK_STATUS;
+                }
+            };
+            job.addJobChangeListener(new JobChangeAdapter() {
+                public void done(IJobChangeEvent event) {
+                    UIUtils.syncExec(() -> {
+                        if (event.getResult() == Status.OK_STATUS) {
+                            startGenerateJob();
+                        }
+                    });
+                }
+            });
+            job.schedule();
+        }
+        super.buttonPressed(buttonId);
+    }
+
+    private void startGenerateJob() {
+        setSQLText("Loading DDL...");
+        updateSQL();
+        Button button = getButton(IDialogConstants.DETAILS_ID);
+        if (button != null) {
+            button.setEnabled(false);
+        }
+        generateDDLJob.cancel();
+        generateDDLJob.schedule();
+    }
+
+    @Override
+    public boolean close() {
+        generateDDLJob.cancel();
+        return super.close();
     }
 }

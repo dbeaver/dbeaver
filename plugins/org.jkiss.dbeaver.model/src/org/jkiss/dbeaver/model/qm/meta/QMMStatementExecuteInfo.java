@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,10 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
 * Statement execute info
@@ -46,10 +42,16 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     private boolean transactional;
 
-    private QMMStatementExecuteInfo previous;
+    private transient QMMStatementExecuteInfo previous;
 
-    QMMStatementExecuteInfo(QMMStatementInfo statement, QMMTransactionSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
+    QMMStatementExecuteInfo(
+        QMMStatementInfo statement,
+        QMMTransactionSavepointInfo savepoint,
+        String queryString,
+        QMMStatementExecuteInfo previous,
+        SQLDialect sqlDialect)
     {
+        super(QMMetaObjectType.STATEMENT_EXECUTE_INFO);
         this.statement = statement;
         this.previous = previous;
         this.savepoint = savepoint;
@@ -57,7 +59,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
         if (savepoint != null) {
             savepoint.setLastExecute(this);
         }
-        final SQLDialect sqlDialect = statement.getConnection().getSQLDialect();
         if (sqlDialect != null && queryString != null) {
             this.transactional = statement.getPurpose() != DBCExecutionPurpose.META && sqlDialect.isTransactionModifyingQuery(queryString);
         } else {
@@ -66,7 +67,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     public QMMStatementExecuteInfo(long openTime, long closeTime, QMMStatementInfo stmt, String queryString, long rowCount, int errorCode, String errorMessage, long fetchBeginTime, long fetchEndTime, boolean transactional) {
-        super(openTime, closeTime);
+        super(QMMetaObjectType.STATEMENT_EXECUTE_INFO, openTime, closeTime);
         this.statement = stmt;
         this.queryString = queryString;
         this.fetchRowCount = rowCount;
@@ -75,25 +76,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
         this.fetchBeginTime = fetchBeginTime;
         this.fetchEndTime = fetchEndTime;
         this.transactional = transactional;
-    }
-
-    private QMMStatementExecuteInfo(Builder builder) {
-        super(builder.openTime, builder.closeTime);
-        statement = builder.statement;
-        savepoint = builder.savepoint;
-        queryString = builder.queryString;
-        fetchRowCount = builder.fetchRowCount;
-        updateRowCount = builder.updateRowCount;
-        errorCode = builder.errorCode;
-        errorMessage = builder.errorMessage;
-        fetchBeginTime = builder.fetchBeginTime;
-        fetchEndTime = builder.fetchEndTime;
-        transactional = builder.transactional;
-        previous = builder.previous;
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     void close(long rowCount, Throwable error)
@@ -198,11 +180,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     @Override
-    public ObjectType getObjectType() {
-        return ObjectType.StatementExecuteInfo;
-    }
-
-    @Override
     public long getDuration() {
         if (!isClosed()) {
             return -1;
@@ -217,131 +194,4 @@ public class QMMStatementExecuteInfo extends QMMObject {
         return statement.getConnection();
     }
 
-    @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> serializedInfo = new LinkedHashMap<>();
-        serializedInfo.put("query", getQueryString());
-        serializedInfo.put("statement", getStatement().toMap());
-        serializedInfo.put("updateRowCount", getUpdateRowCount());
-        serializedInfo.put("fetchRowCount", getFetchRowCount());
-        serializedInfo.put("errorCode", getErrorCode());
-        serializedInfo.put("errorMessage", getErrorMessage());
-        serializedInfo.put("openTime", getOpenTime());
-        serializedInfo.put("closeTime", getCloseTime());
-        serializedInfo.put("fetchBeginTime", getFetchBeginTime());
-        serializedInfo.put("fetchEndTime", getFetchEndTime());
-        return serializedInfo;
-    }
-
-    public static QMMStatementExecuteInfo fromMap(Map<String, Object> objectMap) {
-        String query = CommonUtils.toString(objectMap.get("query"));
-        QMMStatementInfo statement = QMMStatementInfo.fromMap(JSONUtils.getObject(objectMap, "statement"));
-        long updateRowCount = CommonUtils.toLong(objectMap.get("updateRowCount"));
-        long fetchRowCount = CommonUtils.toLong(objectMap.get("fetchRowCount"));
-        int errorCode = CommonUtils.toInt(objectMap.get("errorCode"));
-        String errorMessage = CommonUtils.toString(objectMap.get("errorMessage"), null);
-        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
-        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
-        long fetchBeginTime = CommonUtils.toLong(objectMap.get("fetchBeginTime"));
-        long fetchEndTime = CommonUtils.toLong(objectMap.get("fetchEndTime"));
-        return builder()
-            .setQueryString(query)
-            .setStatement(statement)
-            .setUpdateRowCount(updateRowCount)
-            .setFetchRowCount(fetchRowCount)
-            .setErrorCode(errorCode)
-            .setErrorMessage(errorMessage)
-            .setOpenTime(openTime)
-            .setCloseTime(closeTime)
-            .setFetchBeginTime(fetchBeginTime)
-            .setFetchEndTime(fetchEndTime)
-            .build();
-    }
-
-    public static final class Builder {
-        private QMMStatementInfo statement;
-        private QMMTransactionSavepointInfo savepoint;
-        private String queryString;
-        private long fetchRowCount;
-        private long updateRowCount;
-        private int errorCode;
-        private String errorMessage;
-        private long openTime;
-        private long closeTime;
-        private long fetchBeginTime;
-        private long fetchEndTime;
-        private boolean transactional;
-        private QMMStatementExecuteInfo previous;
-
-        private Builder() {
-        }
-
-        public Builder setStatement(QMMStatementInfo statement) {
-            this.statement = statement;
-            return this;
-        }
-
-        public Builder setSavepoint(QMMTransactionSavepointInfo savepoint) {
-            this.savepoint = savepoint;
-            return this;
-        }
-
-        public Builder setQueryString(String queryString) {
-            this.queryString = queryString;
-            return this;
-        }
-
-        public Builder setFetchRowCount(long fetchRowCount) {
-            this.fetchRowCount = fetchRowCount;
-            return this;
-        }
-
-        public Builder setUpdateRowCount(long updateRowCount) {
-            this.updateRowCount = updateRowCount;
-            return this;
-        }
-
-        public Builder setErrorCode(int errorCode) {
-            this.errorCode = errorCode;
-            return this;
-        }
-
-        public Builder setErrorMessage(String errorMessage) {
-            this.errorMessage = errorMessage;
-            return this;
-        }
-
-        public Builder setOpenTime(long openTime) {
-            this.openTime = openTime;
-            return this;
-        }
-
-        public Builder setCloseTime(long closeTime) {
-            this.closeTime = closeTime;
-            return this;
-        }
-        public Builder setFetchBeginTime(long fetchBeginTime) {
-            this.fetchBeginTime = fetchBeginTime;
-            return this;
-        }
-
-        public Builder setFetchEndTime(long fetchEndTime) {
-            this.fetchEndTime = fetchEndTime;
-            return this;
-        }
-
-        public Builder setTransactional(boolean transactional) {
-            this.transactional = transactional;
-            return this;
-        }
-
-        public Builder setPrevious(QMMStatementExecuteInfo previous) {
-            this.previous = previous;
-            return this;
-        }
-
-        public QMMStatementExecuteInfo build() {
-            return new QMMStatementExecuteInfo(this);
-        }
-    }
 }

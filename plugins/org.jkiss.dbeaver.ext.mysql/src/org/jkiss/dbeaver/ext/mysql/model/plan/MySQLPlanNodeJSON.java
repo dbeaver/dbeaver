@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     private MySQLPlanNodeJSON parent;
     private String name;
     private JsonObject object;
-    private Map<String, String> nodeProps = new LinkedHashMap<>();
+    private Map<String, Object> nodeProps = new LinkedHashMap<>();
     private List<MySQLPlanNodeJSON> nested = new ArrayList<>();
 
     public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, String name, JsonObject object) {
@@ -48,12 +48,12 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         parseObject(name, object);
     }
 
-    public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent,  Map<String, String> attributes) {
+    public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent,  Map<String, Object> attributes) {
         this.parent = parent;
         this.nodeProps.putAll(attributes);
     }
 
-    public Map<String, String> getNodeProps() {
+    public Map<String, Object> getNodeProps() {
         return nodeProps;
     }
 
@@ -210,7 +210,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     public DBPPropertyDescriptor[] getProperties() {
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
         int index = 0;
-        for (Map.Entry<String, String> attr : nodeProps.entrySet()) {
+        for (Map.Entry<String, Object> attr : nodeProps.entrySet()) {
             props[index++] = new PropertyDescriptor(
                 "Details",
                 attr.getKey(),
@@ -227,7 +227,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
 
     @Override
     public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
-        return nodeProps.get(id.toString());
+        return nodeProps.get(id);
     }
 
     @Override

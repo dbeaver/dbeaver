@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -48,9 +49,9 @@ import java.util.List;
 
 class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
 
-    private DBNProject projectNode;
+    private final DBNProject projectNode;
     private DatabaseNavigatorTree scriptsTree;
-    private List<DBNResource> selectedScripts = new ArrayList<>();
+    private final List<DBNNodeWithResource> selectedScripts = new ArrayList<>();
 
     SQLScriptTaskScriptSelectorDialog(Shell parentShell, DBNProject projectNode) {
         super(parentShell, DTMessages.sql_script_task_page_settings_group_files, null);
@@ -105,9 +106,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
                 return false;
             }
         });
-        scriptsTree.getViewer().addSelectionChangedListener(event -> {
-            updateSelectedScripts();
-        });
+        scriptsTree.getViewer().addSelectionChangedListener(event -> updateSelectedScripts());
         scriptsTree.getViewer().expandToLevel(2);
         scriptsTree.getViewer().getTree().setHeaderVisible(true);
         createScriptColumns(scriptsTree.getViewer());
@@ -125,7 +124,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
         getButton(IDialogConstants.OK_ID).setEnabled(!selectedScripts.isEmpty());
     }
 
-    public List<DBNResource> getSelectedScripts() {
+    public List<DBNNodeWithResource> getSelectedScripts() {
         return selectedScripts;
     }
 
@@ -137,7 +136,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
 
     static void createScriptColumns(ColumnViewer viewer) {
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
-        ViewerColumnController columnController = new ViewerColumnController("sqlTaskScriptViewer", viewer);
+        ViewerColumnController<?,?> columnController = new ViewerColumnController<>("sqlTaskScriptViewer", viewer);
         columnController.setForceAutoSize(true);
         columnController.addColumn(ModelMessages.model_navigator_Name, DTUIMessages.sql_script_task_selector_dialog_column_description_script, SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override

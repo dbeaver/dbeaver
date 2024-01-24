@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,36 @@ class GridCellRenderer extends AbstractRenderer {
         {"\t",     "\u00bb"},
         {"\u3000", "\u00b0"}, // ideographic whitespace
         {"\u200b", "\u2588"}, // zero-width whitespace
+        {"\u0000", "NUL"},
+        {"\u0001", "SOH"},
+        {"\u0002", "STX"},
+        {"\u0003", "ETX"},
+        {"\u0004", "EOT"},
+        {"\u0005", "ENQ"},
+        {"\u0006", "ACK"},
+        {"\u0007", "BEL"},
+        {"\u0008", "BS"},
+        {"\u000B", "VT"},
+        {"\u000C", "FF"},
+        {"\u000E", "SO"},
+        {"\u000F", "SI"},
+        {"\u0010", "DLE"},
+        {"\u0011", "DC1"},
+        {"\u0012", "DC2"},
+        {"\u0013", "DC3"},
+        {"\u0014", "DC4"},
+        {"\u0015", "NAK"},
+        {"\u0016", "SYN"},
+        {"\u0017", "ETB"},
+        {"\u0018", "CAN"},
+        {"\u0019", "EM"},
+        {"\u001A", "SUB"},
+        {"\u001B", "ESC"},
+        {"\u001C", "FS"},
+        {"\u001D", "GS"},
+        {"\u001E", "RS"},
+        {"\u001F", "US"},
+        {"\u007F", "DEL"}
     };
 
     protected Color colorLineFocused;
@@ -293,36 +323,54 @@ class GridCellRenderer extends AbstractRenderer {
         final Color activeBackground = cellInfo.background;
         final Color disabledForeground = UIUtils.getSharedColor(UIUtils.blend(activeForeground.getRGB(), activeBackground.getRGB(), 50));
 
-        for (int start = 0; start < text.length(); ) {
-            boolean matches = false;
+        int start = 0;
+        int index = 0;
+
+        while (index < text.length()) {
+            boolean matched = false;
 
             for (String[] mapping : SPECIAL_CHARACTERS_MAP) {
                 final String expected = mapping[0];
                 final String replacement = mapping[1];
-                final int index = text.indexOf(expected, start);
+                final boolean regionMatches = text.regionMatches(index, expected, 0, expected.length());
 
-                if (index >= 0) {
-                    if (drawCellTextSegment(gc, text.substring(start, index), bounds, activeForeground, disabledForeground)) {
+                if (regionMatches) {
+                    if (drawCellTextSegment(gc, text.substring(start, index), bounds, activeForeground, disabledForeground, false)) {
                         return;
                     }
 
-                    if (drawCellTextSegment(gc, replacement, bounds, disabledForeground, disabledForeground)) {
+                    if (drawCellTextSegment(gc, replacement, bounds, disabledForeground, disabledForeground, replacement.length() > 1)) {
                         return;
                     }
 
-                    start = index + expected.length();
-                    matches = true;
+                    index += expected.length();
+                    start = index;
+                    matched = true;
                 }
             }
 
-            if (!matches) {
-                drawCellTextSegment(gc, text.substring(start), bounds, activeForeground, disabledForeground);
-                return;
+            if (!matched) {
+                index += 1;
             }
+        }
+
+        if (start < text.length()) {
+            drawCellTextSegment(gc, text.substring(start), bounds, activeForeground, disabledForeground, false);
         }
     }
 
-    private boolean drawCellTextSegment(@NotNull GC gc, @NotNull String segment, @NotNull Rectangle bounds, @NotNull Color activeForeground, @NotNull Color disabledForeground) {
+    private boolean drawCellTextSegment(
+        @NotNull GC gc,
+        @NotNull String segment,
+        @NotNull Rectangle bounds,
+        @NotNull Color activeForeground,
+        @NotNull Color disabledForeground,
+        boolean highlight
+    ) {
+        if (segment.isEmpty()) {
+            return false;
+        }
+
         final Point extent = gc.textExtent(segment);
 
         if (extent.x > bounds.width) {
@@ -348,23 +396,45 @@ class GridCellRenderer extends AbstractRenderer {
                 }
             }
 
-            drawTextAndAdvance(gc, clipped, activeForeground, bounds);
-            drawTextAndAdvance(gc, "...", disabledForeground, bounds);
+            drawTextAndAdvance(gc, clipped, activeForeground, bounds, false);
+            drawTextAndAdvance(gc, "...", disabledForeground, bounds, false);
 
             return true;
         } else {
-            drawTextAndAdvance(gc, segment, activeForeground, bounds);
+            drawTextAndAdvance(gc, segment, activeForeground, bounds, highlight);
 
             return false;
         }
     }
 
-    private void drawTextAndAdvance(@NotNull GC gc, @NotNull String text, @NotNull Color foreground, @NotNull Rectangle bounds) {
-        gc.setForeground(foreground);
-        gc.drawString(text, bounds.x, bounds.y);
+    private void drawTextAndAdvance(
+        @NotNull GC gc,
+        @NotNull String text,
+        @NotNull Color foreground,
+        @NotNull Rectangle bounds,
+        boolean highlight
+    ) {
+        if (text.isEmpty()) {
+            return;
+        }
 
-        final int extent = gc.textExtent(text).x + 1 /* HACK: antialiasing occupies one extra pixel */;
-        bounds.x += extent;
-        bounds.width -= extent;
+        gc.setTextAntialias(SWT.ON);
+        gc.setForeground(foreground);
+
+        final Point extent = gc.stringExtent(text);
+
+        if (highlight) {
+            extent.x += 2;
+
+            gc.drawRoundRectangle(bounds.x, bounds.y, extent.x, extent.y - 1, 2, 2);
+
+            bounds.x += 2;
+            bounds.width -= 2;
+        }
+
+        gc.drawString(text, bounds.x, bounds.y, true);
+
+        bounds.x += extent.x;
+        bounds.width -= extent.x;
     }
 }

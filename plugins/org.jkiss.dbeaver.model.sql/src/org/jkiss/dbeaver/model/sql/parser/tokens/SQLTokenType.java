@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License")),
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,13 @@ public enum SQLTokenType implements TPTokenType {
     T_QUOTED(502),
     T_TYPE(503),
     T_NUMBER(504),
-
+    T_TABLE(505),
+    T_TABLE_ALIAS(506),
+    T_COLUMN(507),
+    T_COLUMN_DERIVED(508),
+    T_SCHEMA(509),
+    T_SEMANTIC_ERROR(510),
+    
     T_UNKNOWN(1000),
     T_BLOCK_BEGIN(1001),
     T_BLOCK_END(1002),

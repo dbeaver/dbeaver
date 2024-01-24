@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,10 +236,12 @@ public class PrivilegeTableControl extends Composite {
                 if (isStatic && !grant.isStatic()) {
                     continue;
                 }
-                if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME) && grant.isGrantOption()) {
-                    // WITH GRANT OPTION is enabled only in this case
-                    privilegeEnabled = true;
-                    break;
+                if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
+                    if (grant.isGrantOption()) {
+                        // WITH GRANT OPTION is enabled only in this case
+                        privilegeEnabled = true;
+                        break;
+                    }
                 } else if (grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege)) {
                     privilegeEnabled = true;
                     break;

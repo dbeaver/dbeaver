@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,13 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -33,10 +37,11 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  */
 public class SQLEditorPropertyTester extends PropertyTester
 {
-    //static final Log log = Log.getLog(SQLEditorPropertyTester.class);
+    static final Log log = Log.getLog(SQLEditorPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql";
     public static final String PROP_CAN_EXECUTE = "canExecute";
+    public static final String PROP_CAN_EXECUTE_NATIVE = "canExecuteNative";
     public static final String PROP_CAN_EXPLAIN = "canExplain";
     public static final String PROP_CAN_NAVIGATE = "canNavigate";
     public static final String PROP_CAN_EXPORT = "canExport";
@@ -65,6 +70,19 @@ public class SQLEditorPropertyTester extends PropertyTester
             case PROP_CAN_EXECUTE:
                 // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
                 return true;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
+            case PROP_CAN_EXECUTE_NATIVE: {
+                try {
+                    if (editor.getDataSourceContainer() == null) {
+                        return false;
+                    }
+                    SQLNativeExecutorDescriptor executorDescriptor =
+                        SQLNativeExecutorRegistry.getInstance().getExecutorDescriptor(editor.getDataSourceContainer());
+                    return executorDescriptor != null && executorDescriptor.getNativeExecutor() != null;
+                } catch (DBException exception) {
+                    log.error("Error checking native execution", exception);
+                    return false;
+                }
+            }
             case PROP_CAN_EXPLAIN:
                 return hasConnection && GeneralUtils.adapt(editor.getDataSource(), DBCQueryPlanner.class) != null;
             case PROP_CAN_NAVIGATE: {

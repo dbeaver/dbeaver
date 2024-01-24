@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -65,8 +66,10 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return connectionInfo.getUrl();
+        }
         StringBuilder url = new StringBuilder(128);
         url.append("jdbc:db2://").append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {

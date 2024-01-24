@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -61,7 +63,6 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     private boolean isUtility;
     private String description;
     private Long rowCount;
-    private List<? extends GenericTrigger> triggers;
     private final String tableCatalogName;
     private final String tableSchemaName;
 
@@ -92,6 +93,23 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
             tableCatalogName = null;
             tableSchemaName = null;
         }
+    }
+
+    // Constructor for tests
+    public GenericTableBase(
+        @NotNull GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @NotNull String tableCatalogName,
+        @NotNull String tableSchemaName
+    ) {
+        super(container, tableName, true);
+        this.tableType = tableType;
+        if (this.tableType == null) {
+            this.tableType = "";
+        }
+        this.tableCatalogName = tableCatalogName;
+        this.tableSchemaName = tableSchemaName;
     }
 
     @Override
@@ -203,6 +221,16 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         this.getContainer().getTableCache().getChildrenCache(this).removeObject(column, false);
     }
 
+    @ForTest
+    public List<? extends GenericTableColumn> getCachedAttributes() {
+        final DBSObjectCache<GenericTableBase, GenericTableColumn> childrenCache =
+            getContainer().getTableCache().getChildrenCache(this);
+        if (childrenCache != null) {
+            return childrenCache.getCachedObjects();
+        }
+        return Collections.emptyList();
+    }
+
     @Override
     public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException {
@@ -283,6 +311,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.getContainer().getTableTriggerCache().clearObjectCache(this);
         this.getContainer().getIndexCache().clearObjectCache(this);
         this.getContainer().getConstraintKeysCache().clearObjectCache(this);
         this.getContainer().getForeignKeysCache().clearObjectCache(this);
@@ -350,6 +379,22 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return !isView();
     }
 
+    public boolean isExternalTable() {
+        return "EXTERNAL_TABLE".equals(tableType);
+    }
+
+    public boolean isAbstractTable() {
+        return "ABSTRACT_TABLE".equals(tableType);
+    }
+
+    public boolean isSharedTable() {
+        return "SHARED_TABLE".equals(tableType);
+    }
+
+    public boolean supportsDDL() {
+        return true;
+    }
+
     public abstract String getDDL();
 
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
@@ -385,7 +430,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                         break;
                 }
 
-                if (info.fkTableName == null) {
+                if (CommonUtils.isEmpty(info.fkTableName)) {
                     log.debug("Null FK table name");
                     continue;
                 }
@@ -467,7 +512,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
             return fkList;
         } catch (SQLException ex) {
             if (ex instanceof SQLFeatureNotSupportedException) {
-                log.debug("Error reading references", ex);
+                log.debug("Error reading references: " + ex.getMessage());
                 return Collections.emptyList();
             } else {
                 throw new DBException(ex, getDataSource());
@@ -495,31 +540,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     @Nullable
     @Association
     public List<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (triggers == null) {
-            GenericStructContainer parentObject = getParentObject();
-            if (parentObject != null) {
-                TableTriggerCache tableTriggerCache = parentObject.getTableTriggerCache();
-                if (tableTriggerCache != null) {
-                    triggers = tableTriggerCache.getObjects(monitor, parentObject, this);
-                }
-            } else {
-                loadTriggers(monitor);
+        GenericStructContainer parentObject = getParentObject();
+        if (parentObject != null) {
+            TableTriggerCache tableTriggerCache = parentObject.getTableTriggerCache();
+            if (tableTriggerCache != null) {
+                return tableTriggerCache.getObjects(monitor, parentObject, this);
             }
         }
-        return triggers;
-    }
-
-    private void loadTriggers(DBRProgressMonitor monitor) throws DBException {
-        triggers = getDataSource().getMetaModel().loadTriggers(monitor, getContainer(), this);
-        if (triggers == null) {
-            triggers = new ArrayList<>();
-        } else {
-            DBUtils.orderObjects(triggers);
-        }
-    }
-
-    public List<? extends GenericTrigger> getTriggerCache() {
-        return triggers;
+        return null;
     }
 
     public boolean supportUniqueIndexes() {

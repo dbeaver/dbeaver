@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -28,10 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
@@ -46,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -60,6 +57,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     static final String PAGE_NAME = ConnectionPageInitialization.class.getSimpleName();
 
     private static final Log log = Log.getLog(ConnectionPageInitialization.class);
+
+    private static final String PAGE_DOCS_LINK = "https://dbeaver.com/docs/dbeaver/Configure-Connection-Initialization-Settings/";
 
     private DataSourceDescriptor dataSourceDescriptor;
 
@@ -105,9 +104,10 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     @Override
     public void activatePage() {
         if (dataSourceDescriptor != null) {
+            final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
+            
             if (!activated) {
                 // Get settings from data source descriptor
-                final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 isolationLevel.add("");
 
@@ -119,9 +119,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
-                autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
                 activated = true;
             }
+            autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
         } else {
             // Default settings
             isolationLevel.setEnabled(false);
@@ -274,7 +274,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             {
                 String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
                 UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
-                final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
                 queriesConfigButton.setToolTipText(bootstrapTooltip);
                 if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
                     queriesConfigButton.setFont(boldFont);
@@ -296,12 +296,22 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             }
         }
 
-        CLabel infoLabel = UIUtils.createInfoLabel(group, CoreMessages.dialog_connection_wizard_connection_init_hint);
+        Control infoLabel = UIUtils.createInfoLabel(group, CoreMessages.dialog_connection_wizard_connection_init_hint);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
         gd.grabExcessHorizontalSpace = true;
         infoLabel.setLayoutData(gd);
         infoLabel.setToolTipText(CoreMessages.dialog_connection_wizard_connection_init_hint_tip);
-
+        Link urlHelpLabel = UIUtils.createLink(
+            group,
+            CoreMessages.dialog_connection_wizard_connection_init_docs_hint,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(PAGE_DOCS_LINK));
+                }
+            }
+        );
+        urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
 
         setControl(group);
 

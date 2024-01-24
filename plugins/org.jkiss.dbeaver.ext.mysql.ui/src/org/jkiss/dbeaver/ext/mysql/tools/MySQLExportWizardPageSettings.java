@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -113,15 +116,9 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         settings.setOutputFilePattern(outputFileText.getText());
 
         switch (methodCombo.getSelectionIndex()) {
-            case 0:
-                settings.setMethod(MySQLExportSettings.DumpMethod.ONLINE);
-                break;
-            case 1:
-                settings.setMethod(MySQLExportSettings.DumpMethod.LOCK_ALL_TABLES);
-                break;
-            default:
-                settings.setMethod(MySQLExportSettings.DumpMethod.NORMAL);
-                break;
+            case 0 -> settings.setMethod(MySQLExportSettings.DumpMethod.ONLINE);
+            case 1 -> settings.setMethod(MySQLExportSettings.DumpMethod.LOCK_ALL_TABLES);
+            default -> settings.setMethod(MySQLExportSettings.DumpMethod.NORMAL);
         }
         settings.setNoCreateStatements(noCreateStatementsCheck.getSelection());
         settings.setAddDropStatements(addDropStatementsCheck.getSelection());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,21 +32,23 @@ import java.util.Map;
 /**
  * Oracle index manager
  */
-public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, OracleTablePhysical> {
+public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, OracleTableBase> {
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleTableIndex> getObjectsCache(OracleTableIndex object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleTableIndex> getObjectsCache(OracleTableIndex object) {
         return object.getParentObject().getSchema().indexCache;
     }
 
     @Override
     protected OracleTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
-    {
-        OracleTablePhysical table = (OracleTablePhysical) container;
+        DBRProgressMonitor monitor,
+        DBECommandContext context,
+        final Object container,
+        Object from,
+        Map<String, Object> options
+    ) {
+        OracleTableBase table = (OracleTableBase) container;
 
         return new OracleTableIndex(
             table.getSchema(),
@@ -57,8 +59,7 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
     }
 
     @Override
-    protected String getDropIndexPattern(OracleTableIndex index)
-    {
+    protected String getDropIndexPattern(OracleTableIndex index) {
         return "DROP INDEX " + PATTERN_ITEM_INDEX; //$NON-NLS-1$ //$NON-NLS-2$
     }
 

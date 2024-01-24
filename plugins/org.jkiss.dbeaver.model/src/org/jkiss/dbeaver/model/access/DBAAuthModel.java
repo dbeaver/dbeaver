@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -44,7 +43,23 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
     /**
      * Save credentials into connection configuration
      */
-    void saveCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials);
+    void saveCredentials(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull CREDENTIALS credentials
+    );
+
+    /**
+     * Provide credentials into connection configuration, always includes secured properties
+     */
+    default void provideCredentials(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull CREDENTIALS credentials
+    ) {
+        // backward compatibility
+        saveCredentials(dataSource, configuration, credentials);
+    }
 
     /**
      * Called before connection opening. May modify any connection configuration properties
@@ -63,26 +78,23 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull Properties connProperties) throws DBException;
 
-    void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
+    /**
+     * Finishes authentication
+     */
+    void endAuthentication(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties);
 
     /**
      * Refresh credentials in current session
      * @param monitor progress monitor
-     * @param credentials
      */
     void refreshCredentials(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull CREDENTIALS credentials
-    )
-        throws DBException;
+    ) throws DBException;
 
-    /**
-     * Validate that connection contains necessary credentials
-     *
-     * @param project
-     * @param configuration
-     */
-    boolean isDatabaseCredentialsPresent(DBPProject project, DBPConnectionConfiguration configuration);
 }

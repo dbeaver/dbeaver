@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Locale;
 
 /**
@@ -101,10 +100,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         } catch (Throwable e) {
             log.warn("Error getting column scale", e);
         }
-        Integer precision = null;
-        if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
-            precision = (int) columnSize;
-        }
+        Integer precision = getDataSource().getMetaModel().extractPrecisionOfNumericColumn(valueType, columnSize);
         int radix = 10;
         try {
             radix = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NUM_PREC_RADIX);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * EndIdleTransactionsJob
@@ -37,14 +35,13 @@ import java.util.Set;
 class EndIdleTransactionsJob extends DataSourceUpdaterJob {
     private static final Log log = Log.getLog(EndIdleTransactionsJob.class);
 
-    private static final Set<String> activeDataSources = new HashSet<>();
     private static final Object CONFIRM_SYNC = new Object();
 
     private final DBPDataSource dataSource;
     private final Map<DBCExecutionContext, DBCTransactionManager> txnToEnd;
 
     EndIdleTransactionsJob(DBPDataSource dataSource, Map<DBCExecutionContext, DBCTransactionManager> txnToEnd) {
-        super("Connection ping (" + dataSource.getContainer().getName() + ")");
+        super("End idle transaction for (" + dataSource.getContainer().getName() + ")");
         setUser(false);
         setSystem(true);
         this.dataSource = dataSource;
@@ -78,31 +75,11 @@ class EndIdleTransactionsJob extends DataSourceUpdaterJob {
         }
         DBeaverNotifications.showNotification(
             dataSource,
-            DBeaverNotifications.NT_ROLLBACK,
-            "Transactions have been rolled back after long idle period",
+            DBeaverNotifications.NT_ROLLBACK_IDLE,
+            "Transactions have been rolled back after long idle period (" + dataSource.getContainer().getName() + ")",
             DBPMessageType.ERROR);
 
         return Status.OK_STATUS;
     }
-/*
-    class EndTransactionConfirmationJob extends UIJob {
-
-        public EndTransactionConfirmationJob() {
-            super("Show end transaction confirmation for " + dataSource.getContainer().getName());
-            setUser(false);
-            setSystem(true);
-        }
-
-        @Override
-        public IStatus runInUIThread(IProgressMonitor monitor) {
-
-            return Status.OK_STATUS;
-        }
-    }
-
-    class EndTransactionConfirmationDialog extends ConfirmationDialog {
-
-    }
-*/
 
 }

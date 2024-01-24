@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -118,6 +119,11 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     }
 
     @Override
+    protected boolean isColumnsRequired() {
+        return false;
+    }
+
+    @Override
     public boolean isColumnSelected(DBSEntityAttribute attribute)
     {
         return descColumns.contains(attribute);
@@ -134,6 +140,11 @@ public class EditDictionaryPage extends AttributesSelectorPage {
             custom.append(DBUtils.getQuotedIdentifier(column));
         }
         criteriaText.setText(custom.toString());
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return entity;
     }
 
     @Override

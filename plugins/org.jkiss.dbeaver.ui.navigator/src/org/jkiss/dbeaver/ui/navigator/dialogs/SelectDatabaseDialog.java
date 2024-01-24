@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,8 +147,8 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
             selectedInstances.clear();
             selectedInstances.addAll(selection.toList());
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.get(0);
-            if (instance != null && !CommonUtils.equalObjects(instance.getNodeName(), currentInstanceName)) {
-                currentInstanceName = instance.getNodeName();
+            if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
+                currentInstanceName = instance.getNodeDisplayName();
                 objectList.loadData();
             }
         });

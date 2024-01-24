@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,8 +138,7 @@ public class ClearHistoryHandler extends AbstractHandler {
 
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, CoreApplicationMessages.clear_history_dialog_apply_and_restart, true)
-                .setEnabled(false);
+            createButton(parent, IDialogConstants.OK_ID, CoreApplicationMessages.button_apply_and_restart, true).setEnabled(false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         }
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,16 @@ import java.util.Map;
 /**
  * DBIcon
  */
-public class DBIcon implements DBPImage
-{
+public class DBIcon implements DBPImage {
     private static final Log log = Log.getLog(DBIcon.class);
 
     public static final DBIcon TREE_ADMIN = new DBIcon("admin", "tree/admin.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATABASE = new DBIcon("database", "tree/database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATABASE_CATEGORY = new DBIcon("database_category", "tree/database_category.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATABASE_SHARED = new DBIcon("database_shared", "tree/database_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon TREE_SCRIPT = new DBIcon("sql_script", "tree/script.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_SCRIPT_FOLDER = new DBIcon("scripts", "tree/script_folder.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA = new DBIcon("schema", "tree/schema.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA_SHARED = new DBIcon("schema_shared", "tree/schema_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA_SYSTEM = new DBIcon("schema_system", "tree/schema_system.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -164,6 +166,8 @@ public class DBIcon implements DBPImage
     public static final DBIcon SMALL_WARNING = new DBIcon("small_warning", "status/warning_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_QUESTION = new DBIcon("small_question", "status/question_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon AI = new DBIcon("ai", "misc/ai.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TINY_ERROR = new DBIcon("tiny_error", "status/error_tiny.png"); //$NON-NLS-1$ //$NON-NLS-2$
 

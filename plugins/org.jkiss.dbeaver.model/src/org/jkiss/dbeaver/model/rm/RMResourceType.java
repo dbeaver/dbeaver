@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ public class RMResourceType {
     private String displayName;
     private String rootFolder;
     private String icon;
+    private String folderIcon;
     private String[] fileExtensions;
 
     public RMResourceType() {
@@ -33,6 +34,7 @@ public class RMResourceType {
         this.id = rtd.getId();
         this.displayName = rtd.getName();
         this.icon = rtd.getIcon().getLocation();
+        this.folderIcon = rtd.getFolderIcon() == null ? null : rtd.getFolderIcon().getLocation();
         this.rootFolder = rtd.getDefaultRoot(null);
         this.fileExtensions = rtd.getFileExtensions();
     }
@@ -67,6 +69,14 @@ public class RMResourceType {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public String getFolderIcon() {
+        return folderIcon;
+    }
+
+    public void setFolderIcon(String folderIcon) {
+        this.folderIcon = folderIcon;
     }
 
     public String[] getFileExtensions() {

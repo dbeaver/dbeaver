@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     public static final String PROP_PROJECT_ARTIFACT_ID = "project.artifactId";
     private static final String DEFAULT_PROFILE_ID = "#root";
 
-    private MavenArtifact artifact;
+    private final MavenArtifact artifact;
     private String name;
     private String version;
     private String packaging;
@@ -61,7 +61,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private final List<MavenProfile> profiles = new ArrayList<>();
     private final List<MavenRepository> repositories = new ArrayList<>();
 
-    private IVariableResolver propertyResolver = new IVariableResolver() {
+    private final IVariableResolver propertyResolver = new IVariableResolver() {
         @Override
         public String get(String name) {
             switch (name) {
@@ -89,7 +89,12 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         }
     };
 
-    MavenArtifactVersion(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifact artifact, @NotNull String version, boolean resolveOptionalDependencies) throws IOException {
+    MavenArtifactVersion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull MavenArtifact artifact,
+        @NotNull String version,
+        boolean resolveOptionalDependencies
+    ) throws IOException {
         this.artifact = artifact;
         this.version = CommonUtils.trim(version);
 
@@ -117,6 +122,12 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     @Override
     public String getArtifactId() {
         return artifact.getArtifactId();
+    }
+
+    @Nullable
+    @Override
+    public String getClassifier() {
+        return artifact.getClassifier();
     }
 
     @Nullable
@@ -200,11 +211,16 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
     @NotNull
     private String getPackagingFileExtension() {
-        String fileExt = packaging;
-        if (CommonUtils.isEmpty(fileExt) || fileExt.equals(MavenArtifact.PACKAGING_BUNDLE) || fileExt.equals(MavenArtifact.FILE_POM)) {
-            fileExt = MavenArtifact.FILE_JAR;
+        final String packaging = CommonUtils.notEmpty(this.packaging);
+        switch (packaging) {
+            case "": // empty packaging
+            case MavenArtifact.PACKAGING_BUNDLE:
+            case MavenArtifact.PACKAGING_MAVEN_PLUGIN:
+            case MavenArtifact.FILE_POM:
+                return MavenArtifact.FILE_JAR;
+            default:
+                return packaging;
         }
-        return fileExt;
     }
 
     public String getExternalURL(String fileType) {
@@ -285,6 +301,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             if (parentElement != null) {
                 String parentGroupId = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "groupId"));
                 String parentArtifactId = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "artifactId"));
+                String parentClassifier = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "classifier"));
                 String parentVersion = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "version"));
                 if (parentGroupId == null || parentArtifactId == null || parentVersion == null) {
                     log.error("Broken parent reference: " + parentGroupId + ":" + parentArtifactId + ":" + parentVersion);
@@ -292,6 +309,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                     MavenArtifactReference parentReference = new MavenArtifactReference(
                         parentGroupId,
                         parentArtifactId,
+                        parentClassifier,
                         null,
                         parentVersion);
                     if (this.version == null) {
@@ -473,6 +491,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                         groupId,
                         artifactId,
                         classifier,
+                        MavenArtifactReference.VERSION_PATTERN_RELEASE,
                         version);
                     if (resolveOptionalDependencies) {
                         importReference.setResolveOptionalDependencies(true);
@@ -513,6 +532,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                                 new MavenArtifactReference(
                                     CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
                                     CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
+                                    CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "classifier")),
                                     null,
                                     ""));
                         }

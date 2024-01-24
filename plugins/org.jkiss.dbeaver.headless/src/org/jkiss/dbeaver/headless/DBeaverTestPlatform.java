@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.headless;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -37,10 +36,8 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,42 +66,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     private QMRegistryImpl qmController;
     private DefaultCertificateStorage defaultCertificateStorage;
 
-    public static DBeaverTestPlatform getInstance() {
-        if (instance == null) {
-            synchronized (DBeaverTestPlatform.class) {
-                if (disposed) {
-                    throw new IllegalStateException("DBeaverTestPlatform core already disposed");
-                }
-                if (instance == null) {
-                    // Initialize DBeaver Core
-                    DBeaverTestPlatform.createInstance();
-                }
-            }
-        }
-        return instance;
-    }
-
-    private static DBeaverTestPlatform createInstance() {
-        log.debug("Initializing " + GeneralUtils.getProductTitle());
-        if (Platform.getProduct() != null) {
-            Bundle definingBundle = Platform.getProduct().getDefiningBundle();
-            if (definingBundle != null) {
-                log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
-            } else {
-                log.debug("No product bundle found");
-            }
-        }
-
-        try {
-            instance = new DBeaverTestPlatform();
-            instance.initialize();
-            return instance;
-        } catch (Throwable e) {
-            log.error("Error initializing test platform", e);
-            throw new IllegalStateException("Error initializing test platform", e);
-        }
-    }
-
     public static String getCorePluginID() {
         return PLUGIN_ID;
     }
@@ -121,7 +82,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         isClosing = closing;
     }
 
-    private DBeaverTestPlatform() {
+    DBeaverTestPlatform() {
     }
 
     protected void initialize() {
@@ -153,7 +114,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
         workspace.dispose();
 
-        DataSourceProviderRegistry.getInstance().dispose();
+        DataSourceProviderRegistry.dispose();
 
         // Remove temp folder
         if (tempFolder != null) {

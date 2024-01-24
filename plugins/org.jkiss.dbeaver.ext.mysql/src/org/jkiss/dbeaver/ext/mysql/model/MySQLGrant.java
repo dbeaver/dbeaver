@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,9 +178,14 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         return privileges.isEmpty() && !isAllPrivileges() && !isGrantOption();
     }
 
-    public boolean matches(MySQLCatalog catalog)
-    {
-        return (catalog == null && isAllCatalogs()) || (catalog != null && !isAllCatalogs() && SQLUtils.matchesLike(catalog.getName(), catalogName));
+    /**
+     * Returns true if the given catalog exists and it is comparable to this grant catalog
+     * or the given catalog is empty, but the grant applies to all catalogs.
+     */
+    public boolean matches(@Nullable MySQLCatalog catalog) {
+        return (catalog == null && isAllCatalogs())
+            || (catalog != null && CommonUtils.isNotEmpty(catalogName) && !isAllCatalogs()
+            && SQLUtils.matchesLike(catalog.getName(), catalogName));
     }
 
     public boolean matches(MySQLTableBase table)

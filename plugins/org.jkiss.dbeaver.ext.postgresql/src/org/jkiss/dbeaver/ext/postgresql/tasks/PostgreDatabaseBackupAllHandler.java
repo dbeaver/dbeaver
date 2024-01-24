@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,17 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,9 +59,14 @@ public class PostgreDatabaseBackupAllHandler
     protected boolean validateTaskParameters(DBTTask task, PostgreBackupAllSettings settings, Log log) {
         if (PostgreSQLTasks.TASK_DATABASE_BACKUP_ALL.equals(task.getType().getId())) {
             for (PostgreDatabaseBackupAllInfo exportObject : settings.getExportObjects()) {
-                final File dir = settings.getOutputFolder(exportObject);
-                if (!dir.exists() && !dir.mkdirs()) {
-                    log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
+                String dir = settings.getOutputFolder(exportObject);
+                try {
+                    Path outputFolderPath = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), task.getProject(), dir);
+                    if (!Files.exists(outputFolderPath)) {
+                            Files.createDirectories(outputFolderPath);
+                    }
+                } catch (Exception e) {
+                    log.error("Can't create directory '" + dir + "'", e);
                     return false;
                 }
             }
@@ -117,7 +125,7 @@ public class PostgreDatabaseBackupAllHandler
         }
 
         cmd.add("--file");
-        cmd.add(settings.getOutputFile(arg).getAbsolutePath());
+        cmd.add(settings.getOutputFile(arg));
 
         // Databases
         if (settings.getExportObjects().isEmpty()) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,11 +45,22 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
         if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
             return;
         }
-        if (attribute.getDataKind() == DBPDataKind.STRUCT && !CommonUtils.isEmpty(attribute.getNestedBindings())) {
+        if (attribute.getDataKind() == DBPDataKind.STRUCT &&
+            !CommonUtils.isEmpty(attribute.getNestedBindings()) &&
+            !session.getDataSource().getInfo().isDynamicMetadata()
+        ) {
             // Do not transform structs to avoid double transformation
             return;
         }
-        resolveMapsFromData(session, attribute, rows);
+        if (rows.isEmpty()) {
+            // Make a fake row with empty document in it
+            int attrIndex = attribute.getOrdinalPosition();
+            Object[] fakeRow = new Object[attrIndex + 1];
+            fakeRow[attrIndex] = attribute.getValueHandler().createNewValueObject(session, attribute);
+            resolveMapsFromData(session, attribute, Collections.singletonList(fakeRow));
+        } else {
+            resolveMapsFromData(session, attribute, rows);
+        }
     }
 
     static void resolveMapsFromData(DBCSession session, DBDAttributeBinding attribute, List<Object[]> rows) throws DBException {

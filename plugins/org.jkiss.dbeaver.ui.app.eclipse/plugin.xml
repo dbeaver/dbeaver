@@ -4,7 +4,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@
         <application id="dbeaver-ce-eclipse"
             family="DB"
             name="%productName"
-            description="%productSubTitle"/>
+            description="%productSubTitle"
+            class="org.jkiss.dbeaver.ui.app.DBeaverPluginApplication"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -57,31 +58,6 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.common" id="org.jkiss.dbeaver.preferences.main.errorLogs" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorLogs" name="%pref.page.name.errorLogs">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain" name="%pref.page.name.resultset">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.data"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.editors" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors" name="%pref.page.name.resultset.editors">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.content"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.presentation" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation" name="%pref.page.name.resultset.presentation">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset.presentation" id="org.jkiss.dbeaver.preferences.main.resultset.grid" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationGrid" name="%pref.page.name.resultset.grid">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.resultset.grid"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset.presentation" id="org.jkiss.dbeaver.preferences.main.resultset.plain.text" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationPlainText" name="%pref.page.name.resultset.plain.text">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat" name="%pref.page.name.data.formats">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataviewer" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataViewer" name="%pref.page.name.data.viewers">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.eclipse.main" id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral" name="%pref.page.name.connections">
@@ -130,14 +106,22 @@
         <page category="org.jkiss.dbeaver.preferences.main.common" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.notifications" class="org.jkiss.dbeaver.ui.preferences.PrefPageNotifications" name="%pref.page.name.notifications">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.misc" class="org.jkiss.dbeaver.ui.preferences.PrefPageMiscellaneous" name="%pref.page.name.miscellaneous">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.keyword.pref.ui.misc"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.eclipse.main" id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface" name="%pref.page.name.user.interface">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
 
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="holiday decoration christmas snow"/>
     </extension>
 
     <extension point="org.eclipse.ui.perspectiveExtensions">

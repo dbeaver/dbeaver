@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,39 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableObject;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLPartition
  */
-public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTablePartition {
+public class MySQLPartition extends MySQLTable implements DBSTablePartition {
 
+    private MySQLTable table;
     private MySQLPartition parent;
     private List<MySQLPartition> subPartitions;
     private int position;
+    private String name;
     private String method;
     private String expression;
     private String description;
@@ -58,7 +69,10 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTa
 
     protected MySQLPartition(MySQLTable mySQLTable, MySQLPartition parent, String name, ResultSet dbResult)
     {
-        super(mySQLTable, name, true);
+        super(mySQLTable.getContainer(), dbResult);
+        this.name = name;
+        this.table = mySQLTable;
+        setPartition(true);
         this.parent = parent;
         if (parent != null) {
             parent.addSubPartitions(this);
@@ -90,15 +104,17 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTa
         this.nodegroup = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_NODEGROUP);
     }
 
-    protected MySQLPartition(JDBCTableObject<MySQLTable> source)
-    {
-        super(source);
-    }
-
     // Copy constructor
-    protected MySQLPartition(DBRProgressMonitor monitor, MySQLTable table, MySQLPartition source)
-    {
-        super(table, source.getName(), false);
+    protected MySQLPartition(
+        DBRProgressMonitor monitor,
+        MySQLTable table,
+        MySQLPartition source,
+        DBSEntity sourceEntity
+    ) throws DBException {
+        super(monitor, table.getContainer(), sourceEntity);
+        setPartition(true);
+        this.name = source.name;
+        this.table = source.table;
         this.position = source.position;
         this.method = source.method;
         this.expression = source.expression;
@@ -115,11 +131,18 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTa
         subPartitions.add(partition);
     }
 
+    @NotNull
+    @Override
+    public DBSTable getParentTable() {
+        return table;
+    }
+
     public MySQLPartition getParent()
     {
         return parent;
     }
 
+    @Association
     public List<MySQLPartition> getSubPartitions()
     {
         return subPartitions;
@@ -127,17 +150,10 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTa
 
     @NotNull
     @Override
-    public MySQLDataSource getDataSource()
-    {
-        return getTable().getDataSource();
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, editable = false, updatable = false, order = 1)
     public String getName()
     {
-        return super.getName();
+        return name;
     }
 
     @Property(viewable = true, order = 2)
@@ -238,4 +254,28 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTa
         return checksum;
     }
 
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return table.getObjectDefinitionText(monitor, options);
+    }
+
+    @Override
+    protected boolean needAliasInSelect(
+        @Nullable DBDDataFilter dataFilter,
+        @Nullable DBDPseudoAttribute rowIdAttribute,
+        @NotNull DBPDataSource dataSource
+    ) {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    protected String getTableName() {
+        return table.getFullyQualifiedName(DBPEvaluationContext.DML);
+    }
+
+    @Override
+    protected void appendExtraSelectParameters(@NotNull StringBuilder query) {
+        query.append(" PARTITION (").append(DBUtils.getQuotedIdentifier(this)).append(")");
+    }
 }

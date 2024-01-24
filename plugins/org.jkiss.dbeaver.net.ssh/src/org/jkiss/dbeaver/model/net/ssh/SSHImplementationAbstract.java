@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,22 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.agentproxy.AgentProxy;
-import com.jcraft.jsch.agentproxy.connector.PageantConnector;
-import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
-import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+import com.jcraft.jsch.AgentConnector;
+import com.jcraft.jsch.AgentIdentityRepository;
+import com.jcraft.jsch.JUnixSocketFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,9 +39,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * SSH tunnel
@@ -54,7 +53,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
     protected transient DBWHandlerConfiguration savedConfiguration;
     protected transient DBPConnectionConfiguration savedConnectionInfo;
-    protected AgentProxy agentProxy = null;
+    protected AgentIdentityRepository agentIdentityRepository;
 
     @Override
     public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
@@ -99,7 +98,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
         // jump hosts, if supported and present
         if (isSupportsJumpServer()) {
-            final String prefix = getJumpServerSettingsPrefix(0);
+            final String prefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
             if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
                 hostConfigurations.add(0, loadConfiguration(configuration, prefix));
             }
@@ -107,25 +106,29 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
         for (SSHHostConfiguration host : hostConfigurations) {
             if (host.getAuthConfiguration().getType() == SSHConstants.AuthType.AGENT) {
+                AgentConnector connector = null;
+
                 try {
-                    agentProxy = new AgentProxy(new PageantConnector());
+                    connector = new com.jcraft.jsch.PageantConnector();
                     log.debug("SSH: Connected with pageant");
                 } catch (Exception e) {
                     log.debug("pageant connect exception", e);
                 }
 
-                if (agentProxy == null) {
+                if (connector == null) {
                     try {
-                        agentProxy = new AgentProxy(new SSHAgentConnector(new JNAUSocketFactory()));
+                        connector = new com.jcraft.jsch.SSHAgentConnector(new JUnixSocketFactory());
                         log.debug("SSH: Connected with ssh-agent");
                     } catch (Exception e) {
                         log.debug("ssh-agent connection exception", e);
                     }
                 }
 
-                if (agentProxy == null) {
+                if (connector == null) {
                     throw new DBException("Unable to initialize SSH agent");
                 }
+
+                agentIdentityRepository = new AgentIdentityRepository(connector);
 
                 break;
             }
@@ -137,36 +140,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         savedConnectionInfo = connectionInfo;
 
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
-        // Replace database host/port and URL
-        if (CommonUtils.isEmpty(sshLocalHost)) {
-            connectionInfo.setHostName(SSHConstants.LOCALHOST_NAME);
-        } else {
-            connectionInfo.setHostName(sshLocalHost);
-        }
-        connectionInfo.setHostPort(Integer.toString(sshLocalPort));
-        if (configuration.getDriver() != null) {
-            // Driver can be null in case of orphan tunnel config (e.g. in network profile)
-            String newURL = configuration.getDriver().getConnectionURL(connectionInfo);
-            connectionInfo.setUrl(newURL);
-        }
+        DBWUtils.updateConfigWithTunnelInfo(configuration, connectionInfo, sshLocalHost, sshLocalPort);
         return connectionInfo;
-    }
-
-    @NotNull
-    public byte[] agentSign(@NotNull byte [] blob, @NotNull byte[] data) {
-        return agentProxy.sign(blob, data);
-    }
-
-    @NotNull
-    protected List<SSHAgentIdentity> getAgentData() {
-        return Arrays.stream(agentProxy.getIdentities())
-            .map(i -> {
-                SSHAgentIdentity id = new SSHAgentIdentity();
-                id.setBlob(i.getBlob());
-                id.setComment(i.getComment());
-                return id;
-            })
-            .collect(Collectors.toList());
     }
 
     protected abstract void setupTunnel(
@@ -231,11 +206,6 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         }
 
         return new SSHHostConfiguration(username, hostname, port, authentication);
-    }
-
-    @NotNull
-    public static String getJumpServerSettingsPrefix(int index) {
-        return SSHConstants.PROP_JUMP_SERVER + index + ".";
     }
 
     protected boolean isSupportsJumpServer() {

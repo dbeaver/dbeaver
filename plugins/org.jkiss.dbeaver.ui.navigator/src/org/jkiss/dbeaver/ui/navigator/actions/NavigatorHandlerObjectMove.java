@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                     return null;
                 }
                 DBSObject object = ((DBNDatabaseNode) node).getObject();
-                if (!(object instanceof DBPOrderedObject)) {
+                if (!(object instanceof DBPOrderedObject orderedObject)) {
                     return null;
                 }
 
@@ -76,7 +76,6 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                 if (objectReorderer == null) {
                     return null;
                 }
-                DBPOrderedObject orderedObject = (DBPOrderedObject) object;
                 try {
                     // Sibling objects - they are involved in reordering process
                     List<DBSObject> siblingObjects = new ArrayList<>();
@@ -99,24 +98,14 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                         null, object.getClass(),
                         false);
 
-                    final int shift;
-
-                    switch (commandId) {
-                        case NavigatorCommands.CMD_OBJECT_MOVE_TOP:
-                            shift = -min + 1;
-                            break;
-                        case NavigatorCommands.CMD_OBJECT_MOVE_UP:
-                            shift = -1;
-                            break;
-                        case NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM:
-                            shift = objectReorderer.getMaximumOrdinalPosition(object) - max + partition.length - 1;
-                            break;
-                        case NavigatorCommands.CMD_OBJECT_MOVE_DOWN:
-                            shift = partition.length;
-                            break;
-                        default:
-                            throw new ExecutionException("Unexpected command: " + event.getCommand());
-                    }
+                    final int shift = switch (commandId) {
+                        case NavigatorCommands.CMD_OBJECT_MOVE_TOP -> -min + 1;
+                        case NavigatorCommands.CMD_OBJECT_MOVE_UP -> -1;
+                        case NavigatorCommands.CMD_OBJECT_MOVE_BOTTOM ->
+                            objectReorderer.getMaximumOrdinalPosition(object) - max + partition.length - 1;
+                        case NavigatorCommands.CMD_OBJECT_MOVE_DOWN -> partition.length;
+                        default -> throw new ExecutionException("Unexpected command: " + event.getCommand());
+                    };
 
                     objectReorderer.setObjectOrdinalPosition(
                         commandTarget.getContext(),

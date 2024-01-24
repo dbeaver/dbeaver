@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -50,8 +52,7 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, GenericProcedure> getObjectsCache(GenericProcedure object)
-    {
+    public DBSObjectCache<? extends DBSObject, GenericProcedure> getObjectsCache(GenericProcedure object) {
         GenericStructContainer container = object.getContainer();
         return new ListCache<>(((GenericObjectContainer) container).getProcedureCache());
     }
@@ -59,19 +60,18 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     @Override
     protected GenericProcedure createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
-    {
-        throw new IllegalStateException("Not implemented");
+        Object from, Map<String, Object> options
+    ) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        throw new IllegalStateException("Not implemented");
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBCException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         GenericProcedure object = command.getObject();
         String procedureName;
         GenericMetaModel metaModel = object.getDataSource().getMetaModel();

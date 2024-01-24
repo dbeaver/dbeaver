@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Detached Database Invocation
+Bundle-SymbolicName: org.jkiss.dbeaver.dpi.model;singleton:=true
+Bundle-Version: 1.0.13.qualifier
+Bundle-Release-Date: 20240122
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Export-Package: org.jkiss.dbeaver.dpi.model,
+ org.jkiss.dbeaver.dpi.model.client
+Bundle-ClassPath: .
+Require-Bundle: org.eclipse.core.runtime,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ com.google.gson;visibility:=reexport
+Automatic-Module-Name: org.jkiss.dbeaver.dpi.model

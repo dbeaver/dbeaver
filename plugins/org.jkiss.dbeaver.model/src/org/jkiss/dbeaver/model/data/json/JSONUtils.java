@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
-import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -41,11 +41,14 @@ import java.util.*;
  */
 public class JSONUtils {
 
+    public static final String DEFAULT_INDENT = "\t";
+    public static final String EMPTY_INDENT = "";
     private static final Log log = Log.getLog(JSONUtils.class);
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
         .ofPattern("yyyy-MM-dd['T'HH:mm:ss['.'SSS]['Z']]")
         .withZone(ZoneId.of("UTC"));
+    public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
 
     public static String formatDate(Date date) {
         try {
@@ -95,29 +98,13 @@ public class JSONUtils {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             switch (c) {
-                case '\n':
-                    result.append("\\n");
-                    break;
-                case '\r':
-                    result.append("\\r");
-                    break;
-                case '\t':
-                    result.append("\\t");
-                    break;
-                case '\f':
-                    result.append("\\f");
-                    break;
-                case '\b':
-                    result.append("\\b");
-                    break;
-                case '"':
-                case '\\':
-                case '/':
-                    result.append("\\").append(c);
-                    break;
-                default:
-                    result.append(c);
-                    break;
+                case '\n' -> result.append("\\n");
+                case '\r' -> result.append("\\r");
+                case '\t' -> result.append("\\t");
+                case '\f' -> result.append("\\f");
+                case '\b' -> result.append("\\b");
+                case '"', '\\', '/' -> result.append("\\").append(c);
+                default -> result.append(c);
             }
         }
         return result.toString();
@@ -169,17 +156,25 @@ public class JSONUtils {
     }
 
     public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list) throws IOException {
-        serializeStringList(json, tagName, list, false);
+        serializeStringList(json, tagName, list, true, false);
     }
 
-    public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list, boolean force) throws IOException {
+    public static void serializeStringList(
+        @NotNull JsonWriter json,
+        @NotNull String tagName,
+        @Nullable Collection<String> list,
+        boolean compact,
+        boolean force
+    ) throws IOException {
         if (force || !CommonUtils.isEmpty(list)) {
             json.name(tagName);
             json.beginArray();
+            if (compact) json.setIndent(EMPTY_INDENT);
             for (String include : CommonUtils.safeCollection(list)) {
                 json.value(include);
             }
             json.endArray();
+            if (compact) json.setIndent(DEFAULT_INDENT);
         }
     }
 
@@ -213,16 +208,16 @@ public class JSONUtils {
         for (Object value : CommonUtils.safeCollection(list)) {
             if (value == null) {
                 json.nullValue();
-            } else if (value instanceof Number) {
-                json.value((Number) value);
-            } else if (value instanceof Boolean) {
-                json.value((Boolean) value);
-            } else if (value instanceof String) {
-                json.value(value.toString());
-            } else if (value instanceof Map) {
-                serializeMap(json, (Map<String, ?>) value);
-            } else if (value instanceof Collection) {
-                serializeCollection(json, (Collection<?>) value);
+            } else if (value instanceof Number numberValue) {
+                json.value(numberValue);
+            } else if (value instanceof Boolean boolValue) {
+                json.value(boolValue);
+            } else if (value instanceof String strValue) {
+                json.value(strValue);
+            } else if (value instanceof Map mapValue) {
+                serializeMap(json, mapValue);
+            } else if (value instanceof Collection colValue) {
+                serializeCollection(json, colValue);
             } else {
                 json.value(value.toString());
             }
@@ -245,54 +240,29 @@ public class JSONUtils {
                 //continue;
             } else if (propValue instanceof Number) {
                 field(json, fieldName, (Number)propValue);
-            } else if (propValue instanceof String) {
-                String strValue = (String) propValue;
+            } else if (propValue instanceof String strValue) {
                 if (!strValue.isEmpty()) {
                     field(json, fieldName, strValue);
                 } else if (allowsEmptyValue) {
                     field(json, fieldName, strValue);
                 }
-            } else if (propValue instanceof Boolean) {
-                field(json, fieldName, (Boolean) propValue);
-            } else if (propValue instanceof Collection) {
-                serializeObjectList(json, fieldName, (Collection<?>) propValue);
-            } else if (propValue instanceof Map) {
-                serializeProperties(json, fieldName, (Map<String, ?>) propValue);
-            } else if (propValue instanceof Enum) {
-                field(json, fieldName, ((Enum) propValue).name());
+            } else if (propValue instanceof Boolean bool) {
+                field(json, fieldName, bool);
+            } else if (propValue instanceof Collection collectionValue) {
+                serializeObjectList(json, fieldName, collectionValue);
+            } else if (propValue instanceof Map mapValue) {
+                serializeProperties(json, fieldName, mapValue);
+            } else if (propValue instanceof Enum anEnum) {
+                field(json, fieldName, anEnum.name());
+            } else if (propValue instanceof URI uri) {
+                field(json, fieldName, uri.toString());
             } else {
-                log.debug("Unsupported property type: " + propValue.getClass().getName());
+                log.debug("Unsupported JSON property '" + fieldName + "' type: " + propValue.getClass().getName() +
+                    ". Serializing as string.");
                 field(json, fieldName, propValue.toString());
             }
         }
         json.endObject();
-    }
-
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(DBRRunnableContext runnableContext, OBJECT_CONTEXT context, @NotNull OBJECT_TYPE object) {
-        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
-        if (serializer == null) {
-            log.error("No serializer found for object " + object.getClass().getName());
-            return null;
-        }
-        Map<String, Object> state = new LinkedHashMap<>();
-
-        Map<String, Object> location = new LinkedHashMap<>();
-        serializer.serializeObject(runnableContext, context, object, location);
-        state.put("type", SerializerRegistry.getInstance().getObjectType(object));
-        state.put("location", location);
-
-        return state;
-    }
-
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  OBJECT_CONTEXT objectContext, @NotNull Map<String, Object> objectConfig) throws DBCException {
-        String typeID = CommonUtils.toString(objectConfig.get("type"));
-        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
-        if (serializer == null) {
-            log.error("No deserializer found for type " + typeID);
-            return null;
-        }
-        Map<String, Object> location = getObject(objectConfig, "location");
-        return serializer.deserializeObject(runnableContext, objectContext, location);
     }
 
     public static <OBJECT_TYPE> OBJECT_TYPE deserializeObject(Map<String, Object> map, @NotNull Class<OBJECT_TYPE> type) throws DBCException {
@@ -303,7 +273,7 @@ public class JSONUtils {
 
     @NotNull
     public static Map<String, Object> parseMap(@NotNull Gson gson, @NotNull Reader reader) {
-        Map<String, Object> result = gson.fromJson(reader, new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> result = gson.fromJson(reader, MAP_TYPE_TOKEN);
         if (result == null) {
             return new LinkedHashMap<>();
         }
@@ -313,11 +283,7 @@ public class JSONUtils {
     @NotNull
     public static Map<String, Object> getObject(@NotNull Map<String, Object> map, @NotNull String name) {
         Map<String, Object> object = (Map<String, Object>) map.get(name);
-        if (object == null) {
-            return new LinkedHashMap<>();
-        } else {
-            return object;
-        }
+        return Objects.requireNonNullElseGet(object, LinkedHashMap::new);
     }
 
     @Nullable
@@ -336,8 +302,8 @@ public class JSONUtils {
     }
 
     public static <T> T getObjectProperty(Object object, String name) {
-        if (object instanceof Map) {
-            return (T) ((Map) object).get(name);
+        if (object instanceof Map map) {
+            return (T) map.get(name);
         }
         log.error("Object " + object + " is not map");
         return null;
@@ -351,6 +317,28 @@ public class JSONUtils {
     public static String getString(Map<String, Object> map, String name, String defValue) {
         Object value = map.get(name);
         return value == null ? defValue : value.toString();
+    }
+
+    /**
+     * Returns timestamp value from the attributes map, if map contains key
+     *
+     * @param attributes Attributes map
+     * @param name Name of the attribute
+     * @return timestamp from the given string value
+     */
+    @NotNull
+    public static Timestamp getTimestamp(@NotNull Map<String, Object> attributes, @NotNull String name) {
+        if (attributes.containsKey(name)) {
+            try {
+                long inst = getLong(attributes, name, 0);
+                if (inst != 0) {
+                    return Timestamp.from(Instant.ofEpochMilli(inst));
+                }
+            } catch (Exception e) {
+                log.debug("Can't parse timestamp value from " + name);
+            }
+        }
+        return new Timestamp(0);
     }
 
     public static boolean getBoolean(Map<String, Object> map, String name) {
@@ -380,8 +368,8 @@ public class JSONUtils {
     @NotNull
     public static List<Map<String, Object>> getObjectList(@NotNull Map<String, Object> map, @NotNull String name) {
         Object value = map.get(name);
-        if (value instanceof List) {
-            return  (List<Map<String, Object>>) value;
+        if (value instanceof List list) {
+            return  (List<Map<String, Object>>) list;
         }
         return Collections.emptyList();
     }
@@ -389,8 +377,8 @@ public class JSONUtils {
     @NotNull
     public static List<String> getStringList(@NotNull Map<String, Object> map, @NotNull String name) {
         Object value = map.get(name);
-        if (value instanceof List) {
-            return  (List<String>) value;
+        if (value instanceof List list) {
+            return  (List<String>) list;
         }
         return Collections.emptyList();
     }
@@ -424,7 +412,7 @@ public class JSONUtils {
     @Nullable
     public static Map<String, String> deserializeStringMapOrNull(Map<String, Object> map, String name) {
         Object propMap = map.get(name);
-        if (propMap instanceof Map && !((Map) propMap).isEmpty()) {
+        if (propMap instanceof Map mapVal && !mapVal.isEmpty()) {
             Map<String, String> result = new LinkedHashMap<>();
             for (Map.Entry<?,?> pe : ((Map<?, ?>) propMap).entrySet()) {
                 result.put(CommonUtils.toString(pe.getKey()), CommonUtils.toString(pe.getValue()));
@@ -438,8 +426,8 @@ public class JSONUtils {
     public static List<String> deserializeStringList(Map<String, Object> map, String name) {
         List<String> result = new ArrayList<>();
         Object propMap = map.get(name);
-        if (propMap instanceof Collection) {
-            for (Object pe : (Collection<?>) propMap) {
+        if (propMap instanceof Collection colValue) {
+            for (Object pe : colValue) {
                 result.add(CommonUtils.toString(pe));
             }
         }

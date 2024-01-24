@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -54,6 +57,9 @@ public final class DBStructUtils {
     private static final String REAL_DATA_TYPE = "real";
     private static final String DOUBLE_DATA_TYPE = "double";
     private static final String TEXT_DATA_TYPE = "text";
+    private static final String VARCHAR_DATA_TYPE = "varchar";
+    private static final String VARCHAR2_DATA_TYPE = "varchar2";
+    private static final int DEFAULT_VARCHAR_LENGTH = 100;
 
     @Nullable
     public static DBSEntityReferrer getEnumerableConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attribute) throws DBException {
@@ -133,7 +139,7 @@ public final class DBStructUtils {
 
         // Good tables: generate full DDL
         for (T table : goodTableList) {
-            //sql.append(getObjectNameComment(table, "definition"));
+            //sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         {
@@ -153,41 +159,49 @@ public final class DBStructUtils {
 
             if (!CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true)) {
                 for (T table : goodCycleTableList) {
-                    //sql.append(getObjectNameComment(table, "definition"));
+                    //sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
                 }
             } else {
                 Map<String, Object> optionsNoFK = new HashMap<>(options);
                 optionsNoFK.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
-                    //sql.append(getObjectNameComment(table, "definition"));
+                    //sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments));
                 }
                 Map<String, Object> optionsOnlyFK = new HashMap<>(options);
                 optionsOnlyFK.put(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
-                    //sql.append(getObjectNameComment(table, "foreign keys"));
+                    //sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_foreign_keys));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments));
                 }
             }
 
             // the rest - tables which can't split their DDL
             for (T table : cycleTableList) {
-                //sql.append(getObjectNameComment(table, "definition"));
+                //sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
                 addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
             }
         }
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
-            //sql.append(getObjectNameComment(table, "source"));
+            //sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_source));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         monitor.done();
     }
 
-    private static String getObjectNameComment(DBSObject object, String comment) {
-        String[] singleLineComments = object.getDataSource().getSQLDialect().getSingleLineComments();
+    private static String getObjectNameComment(@NotNull DBSObject object, @NotNull String comment) {
+        DBPDataSource dataSource = object.getDataSource();
+        if (dataSource == null) {
+            return "";
+        }
+        if (!dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
+            // Skip this step, then
+            return "";
+        }
+        String[] singleLineComments = dataSource.getSQLDialect().getSingleLineComments();
         if (ArrayUtils.isEmpty(singleLineComments)) {
             return "";
         }
@@ -276,7 +290,11 @@ public final class DBStructUtils {
         monitor.done();
     }
 
-    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject srcTypedObject, boolean addModifiers) {
+    public static String mapTargetDataType(
+        @Nullable DBSObject objectContainer,
+        @NotNull DBSTypedObject srcTypedObject,
+        boolean addModifiers
+    ) {
         boolean isBindingWithEntityAttr = false;
         if (srcTypedObject instanceof DBDAttributeBinding) {
             DBDAttributeBinding attributeBinding = (DBDAttributeBinding) srcTypedObject;
@@ -297,7 +315,7 @@ public final class DBStructUtils {
         }
 
         {
-            SQLDataTypeConverter dataTypeConverter = objectContainer == null ? null :
+            SQLDataTypeConverter dataTypeConverter = objectContainer == null || objectContainer.getDataSource() == null ? null :
                 DBUtils.getAdapter(SQLDataTypeConverter.class, objectContainer.getDataSource().getSQLDialect());
             if (dataTypeConverter != null && srcTypedObject instanceof DBSObject) {
                 DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
@@ -323,6 +341,10 @@ public final class DBStructUtils {
             if (dataType == null && typeName.contains("(")) {
                 // It seems this data type has modifiers. Try to find without modifiers
                 dataType = dataTypeProvider.getLocalDataType(SQLUtils.stripColumnTypeModifiers(typeName));
+                if (dataType != null) {
+                    int startPos = typeName.indexOf("(");
+                    typeName = dataType + typeName.substring(startPos);
+                }
             }
             if (dataType == null && typeNameLower.equals(DOUBLE_DATA_TYPE)) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
@@ -395,12 +417,15 @@ public final class DBStructUtils {
                             }
                         }
                     } else if (targetType == null && dataKind == DBPDataKind.STRING) {
-                        if (typeNameLower.contains(TEXT_DATA_TYPE)) {
+                        if (typeNameLower.contains(TEXT_DATA_TYPE) || srcTypedObject.getMaxLength() <= 0) {
+                            // Search data types ending with "text" for the source data type including "text".
+                            // Like "longtext", "ntext", "mediumtext".
+                            // Other string data types can also be turned into the "text" data type if they have no length.
                             if (possibleTypes.containsKey(TEXT_DATA_TYPE)) {
                                 targetType = possibleTypes.get(TEXT_DATA_TYPE);
                             } else {
                                 for (Map.Entry<String, DBSDataType> type : possibleTypes.entrySet()) {
-                                    if (type.getKey().contains(TEXT_DATA_TYPE)) {
+                                    if (type.getKey().endsWith(TEXT_DATA_TYPE) && type.getValue().getDataKind() == DBPDataKind.STRING) {
                                         targetType = type.getValue();
                                         break;
                                     }
@@ -425,6 +450,10 @@ public final class DBStructUtils {
             }
             if (dataType != null) {
                 dataKind = dataType.getDataKind();
+                // Datatype caches ignore case, but we probably should use it with the original case
+                if (typeName.equalsIgnoreCase(dataType.getTypeName())) {
+                    typeName = dataType.getTypeName();
+                }
             }
         }
 
@@ -434,8 +463,47 @@ public final class DBStructUtils {
             String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, srcTypedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;
+            } else if (VARCHAR_DATA_TYPE.equals(typeNameLower) || VARCHAR2_DATA_TYPE.equals(typeNameLower)) {
+                // Default max length value for varchar column, because many databases do not support varchar without modifiers.
+                // VARCHAR2 - is a special Oracle and Oracle-based databases case.
+                typeName += "(" + DEFAULT_VARCHAR_LENGTH + ")";
             }
         }
         return typeName;
+    }
+
+    /**
+     * Get name of the attribute
+
+     * @param attribute to get name of
+     * @return attribute name
+     */
+    public static String getAttributeName(@NotNull DBSAttributeBase attribute) {
+        return getAttributeName(attribute, DBPAttributeReferencePurpose.UNSPECIFIED);
+    }
+
+    /**
+     * Get name of the attribute
+
+     * @param attribute to get name of
+     * @param purpose of the name usage
+     * @return attribute name
+     */
+    public static String getAttributeName(@NotNull DBSAttributeBase attribute, DBPAttributeReferencePurpose purpose) {
+        if (attribute instanceof DBDAttributeBindingMeta) {
+            // For top-level query bindings we need to use table columns name instead of alias.
+            // For nested attributes we should use aliases
+
+            // Entity attribute obtain commented because it broke complex attributes full name construction
+            // We can't use entity attr because only particular query metadata contains real structure
+            DBSEntityAttribute entityAttribute = ((DBDAttributeBindingMeta) attribute).getEntityAttribute();
+            if (entityAttribute != null) {
+                attribute = entityAttribute;
+            }
+        }
+        // Do not quote pseudo attribute name
+        return DBUtils.isPseudoAttribute(attribute)
+            ? attribute.getName()
+            : DBUtils.getObjectFullName(attribute, DBPEvaluationContext.DML);
     }
 }

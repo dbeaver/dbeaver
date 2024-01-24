@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,13 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -56,6 +58,7 @@ public class VerticaDataSource extends GenericDataSource {
     private static final String VERTICA_EXPIRED_PASSWORD_CODE = "100069";
     private Boolean childObjectColumnAvailable;
     private boolean isPasswordExpireWarningShown;
+    private boolean isPasswordChangingDialogShown;
 
     private NodeCache nodeCache = new NodeCache();
 
@@ -153,6 +156,24 @@ public class VerticaDataSource extends GenericDataSource {
             log.debug("Can't get connection warnings", e);
         }
         return connection;
+    }
+
+    @Override
+    protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.initializeRemoteInstance(monitor);
+        if (isPasswordExpireWarningShown && !isPasswordChangingDialogShown &&
+            AuthModelDatabaseNative.ID.equals(getContainer().getActualConnectionConfiguration().getAuthModelId())
+        ) {
+            DBAUserPasswordManager manager = getAdapter(DBAUserPasswordManager.class);
+            if (manager != null &&
+                DBWorkbench.getPlatformUI().confirmAction(
+                    VerticaMessages.data_source_prompt_to_change_pass_title,
+                    VerticaMessages.data_source_prompt_to_change_pass_message)
+            ) {
+                DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, getContainer(), manager);
+                isPasswordChangingDialogShown = true;
+            }
+        }
     }
 
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {

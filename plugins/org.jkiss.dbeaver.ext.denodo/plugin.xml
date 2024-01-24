@@ -12,7 +12,7 @@
         <!-- Denodo Platform -->
         <datasource
                 class="org.jkiss.dbeaver.ext.denodo.DenodoDataSourceProvider"
-                description="%datasource.denodo.description"
+                description="Denodo data source"
                 id="denodo"
                 parent="generic"
                 label="Denodo"

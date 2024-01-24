@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -164,6 +164,10 @@ public class DriverSelectViewer extends Viewer {
 
         createSelectorControl();
 
+        filterText.addTraverseListener(e -> {
+            selectorViewer.getControl().traverse(e.detail, e);
+        });
+
         refreshJob = createRefreshJob();
     }
 
@@ -228,6 +232,8 @@ public class DriverSelectViewer extends Viewer {
         createFilterToolbar(filterComposite);
 
         createExtraFilterControlsAfter(filterGroup);
+
+        UIUtils.asyncExec(() -> filterComposite.layout(true, true));
     }
 
     protected void createExtraFilterControlsBefore(Composite filterGroup) {

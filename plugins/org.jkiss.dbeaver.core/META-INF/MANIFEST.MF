@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Vendor: %Bundle-Vendor
-Bundle-Name: %Bundle-Name
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Desktop Application Core
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 22.3.3.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 23.3.3.qualifier
+Bundle-Release-Date: 20240122
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.registry,
@@ -28,8 +28,10 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.views,
  org.jkiss.dbeaver.ui.views.process,
  org.jkiss.dbeaver.ui.views.qm
-Bundle-ClassPath: .
-Require-Bundle: org.eclipse.core.runtime,
+Bundle-ClassPath: .,
+ lib/awt.injector-1.0.0.jar
+Require-Bundle: org.osgi.service.event,
+ org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
@@ -37,7 +39,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.security,
  org.eclipse.ui,
  org.eclipse.ui.editors,
+ org.eclipse.ui.forms,
  org.eclipse.ui.views,
+ org.eclipse.ui.browser,
  org.eclipse.ui.workbench,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.ide,
@@ -56,7 +60,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
- org.jkiss.dbeaver.ui.editors.data;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.hex;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport,
  org.jkiss.dbeaver.ui.navigator;visibility:=reexport,

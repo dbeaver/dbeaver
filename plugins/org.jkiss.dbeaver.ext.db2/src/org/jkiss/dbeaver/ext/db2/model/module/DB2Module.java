@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,12 +78,12 @@ public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer,
         super(schema, JDBCUtils.safeGetStringTrimmed(dbResult, "MODULENAME"), true);
 
         this.moduleId = JDBCUtils.safeGetInteger(dbResult, "MODULEID");
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         this.dialect = JDBCUtils.safeGetString(dbResult, "DIALECT");
         this.type = CommonUtils.valueOf(DB2ModuleType.class, JDBCUtils.safeGetString(dbResult, "MODULETYPE"));
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         this.conditionCache = new JDBCObjectSimpleCache<>(DB2ModuleCondition.class, C_CON,
             schema.getName(), name);

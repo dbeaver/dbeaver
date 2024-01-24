@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,7 +157,13 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                         );
                     } else {
                         // Most likely it is an expression so we don't want to quote it
-                        attrName = binding.getMetaAttribute().getName();
+                        String metaName = binding.getMetaAttribute().getName();
+                        if (CommonUtils.isNotEmpty(metaName)) {
+                            attrName = binding.getMetaAttribute().getName();
+                        } else {
+                            // Second option for some databases (like Firebird)
+                            attrName = binding.getMetaAttribute().getLabel();
+                        }
                     }
                 }
             } else if (cAttr != null) {
@@ -340,9 +346,14 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                     Object[] array = ((Object[]) value);
                     for (int i = 0; i < array.length; i++) {
                         if (i > 0) {
-                            conString.append(" OR");
-                            conString.append(' ').append(DBUtils.getQuotedIdentifier(dataSource,
-                                constraint.getAttributeLabel())).append(' ');
+                            conString.append(" OR ");
+                            conString.append(DBUtils.getQuotedIdentifier(
+                                dataSource,
+                                CommonUtils.isEmpty(constraint.getAttributeLabel()) ?
+                                    constraint.getAttributeName() :
+                                    constraint.getAttributeLabel()
+                            ));
+                            conString.append(' ');
                         }
                         conString.append(operator.getExpression());
                         String strValue = getStringValue(dataSource, constraint, inlineCriteria, array[i]);

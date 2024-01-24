@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Usage Statistics
+Bundle-SymbolicName: org.jkiss.dbeaver.ui.statistics;singleton:=true
+Bundle-Version: 1.0.19.qualifier
+Bundle-Release-Date: 20240122
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.ui.statistics.UIStatisticsActivator
+Bundle-ClassPath: .
+Require-Bundle: org.eclipse.equinox.preferences,
+ org.eclipse.core.runtime,
+ org.eclipse.core.runtime,
+ org.eclipse.ui,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ui
+Automatic-Module-Name: org.jkiss.dbeaver.ui.statistics
+

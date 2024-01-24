@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -32,7 +33,6 @@ import org.jkiss.utils.IntKeyMap;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 
 /**
@@ -104,49 +104,6 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
 
     private OraclePlanNode parent;
     protected final List<OraclePlanNode> nested = new ArrayList<>();
-    
-
-
-    private String aGetString(Map<String,String> attributes,String name) {
-        return attributes.containsKey(name) ? attributes.get(name).toString() : "";
-    }
-
-    private long aGetLong(Map<String,String> attributes,String name) {
-        if (attributes.containsKey(name)) {
-            try {
-                return Long.parseLong(attributes.get(name));
-            } catch (Exception e) {
-                return 0L;
-            }  		
-        } else {
-            return 0L;
-        }
-    }
-
-    private Timestamp aGetTimestamp(Map<String,String> attributes,String name) {
-        if (attributes.containsKey(name)) {
-            try {
-                Long inst =  Long.parseLong(attributes.get(name));
-                return Timestamp.from(Instant.ofEpochMilli(inst));
-            } catch (Exception e) {
-                return new Timestamp(0);
-            }  		
-        } else {
-            return new Timestamp(0);
-        }
-    }
-
-    private int aGetInt(Map<String,String> attributes,String name) {
-        if (attributes.containsKey(name)) {
-            try {
-                return Integer.parseInt(attributes.get(name));
-            } catch (Exception e) {
-                return 0;
-            }  		
-        } else {
-            return 0;
-        }
-    }
     
      @Override
     public DBCPlanNodeKind getNodeKind() {
@@ -226,46 +183,46 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         return DBCPlanNodeKind.DEFAULT;
     }
 
-    public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, Map<String,String> attributes) {
+    public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, Map<String, Object> attributes) {
         this.dataSource = dataSource;
 
-        this.statementId = aGetString(attributes,"statement_id");
-        this.plan_id = aGetLong(attributes,"plan_id");
-        this.timestamp = aGetTimestamp(attributes, "timestamp");
-        this.remarks = aGetString(attributes,"remarks");
-        this.operation = aGetString(attributes,"operation");
-        this.options = aGetString(attributes,"options");
-        this.objectNode = aGetString(attributes,"object_node");
-        this.objectOwner = aGetString(attributes,"object_owner");
-        this.objectName = aGetString(attributes,"object_name");
-        this.objectAlias = aGetString(attributes,"object_alias");
-        this.objectInstance = aGetLong(attributes,"object_instance");
-        this.objectType = aGetString(attributes,"object_type");
-        this.optimizer = aGetString(attributes,"optimizer");
-        this.searchColumns = aGetLong(attributes,"search_columns");
-        this.id = aGetInt(attributes, "id");
-        this.depth = aGetInt(attributes,"depth");
-        this.position =  aGetInt(attributes,"position");
-        this.cost = aGetLong(attributes,"cost");
-        this.cardinality = aGetLong(attributes,"cardinality");
-        this.bytes = aGetLong(attributes,"bytes");
-        this.otherTag = aGetString(attributes,"other_tag");
-        this.partitionStart = aGetString(attributes,"partition_start");
-        this.partitionStop = aGetString(attributes,"partition_stop");
-        this.partitionId = aGetLong(attributes,"partition_id");
-        this.other = aGetString(attributes,"other");
-        this.distribution = aGetString(attributes,"distribution");
-        this.cpuCost = aGetLong(attributes,"cpu_cost");
-        this.ioCost = aGetLong(attributes,"io_cost");
-        this.tempSpace = aGetLong(attributes,"temp_space");
-        this.accessPredicates = aGetString(attributes,"access_predicates");
-        this.filterPredicates = aGetString(attributes,"filter_predicates");
-        this.projection = aGetString(attributes,"projection");
-        this.time = aGetLong(attributes,"time");
-        this.qblockName = aGetString(attributes,"qblock_name");
-        this.otherXml = aGetString(attributes,"other_xml");
+        this.statementId = JSONUtils.getString(attributes, "statement_id");
+        this.plan_id = JSONUtils.getLong(attributes, "plan_id", 0);
+        this.timestamp = JSONUtils.getTimestamp(attributes, "timestamp");
+        this.remarks = JSONUtils.getString(attributes, "remarks");
+        this.operation = JSONUtils.getString(attributes, "operation");
+        this.options = JSONUtils.getString(attributes, "options");
+        this.objectNode = JSONUtils.getString(attributes, "object_node");
+        this.objectOwner = JSONUtils.getString(attributes, "object_owner");
+        this.objectName = JSONUtils.getString(attributes, "object_name");
+        this.objectAlias = JSONUtils.getString(attributes, "object_alias");
+        this.objectInstance = JSONUtils.getLong(attributes, "object_instance", 0);
+        this.objectType = JSONUtils.getString(attributes, "object_type");
+        this.optimizer = JSONUtils.getString(attributes, "optimizer");
+        this.searchColumns = JSONUtils.getLong(attributes, "search_columns", 0);
+        this.id = JSONUtils.getInteger(attributes, "id");
+        this.depth = JSONUtils.getInteger(attributes, "depth");
+        this.position = JSONUtils.getInteger(attributes, "position");
+        this.cost = JSONUtils.getLong(attributes, "cost", 0);
+        this.cardinality = JSONUtils.getLong(attributes, "cardinality", 0);
+        this.bytes = JSONUtils.getLong(attributes, "bytes", 0);
+        this.otherTag = JSONUtils.getString(attributes, "other_tag");
+        this.partitionStart = JSONUtils.getString(attributes, "partition_start");
+        this.partitionStop = JSONUtils.getString(attributes, "partition_stop");
+        this.partitionId = JSONUtils.getLong(attributes, "partition_id", 0);
+        this.other = JSONUtils.getString(attributes, "other");
+        this.distribution = JSONUtils.getString(attributes, "distribution");
+        this.cpuCost = JSONUtils.getLong(attributes, "cpu_cost", 0);
+        this.ioCost = JSONUtils.getLong(attributes, "io_cost", 0);
+        this.tempSpace = JSONUtils.getLong(attributes, "temp_space", 0);
+        this.accessPredicates = JSONUtils.getString(attributes, "access_predicates");
+        this.filterPredicates = JSONUtils.getString(attributes, "filter_predicates");
+        this.projection = JSONUtils.getString(attributes, "projection");
+        this.time = JSONUtils.getLong(attributes, "time", 0);
+        this.qblockName = JSONUtils.getString(attributes, "qblock_name");
+        this.otherXml = JSONUtils.getString(attributes, "other_xml");
 
-        Integer parent_id =  aGetInt(attributes,"parent_id");
+        Integer parent_id = JSONUtils.getInteger(attributes, "parent_id");
 
         if (parent_id != null) {
             parent = prevNodes.get(parent_id);

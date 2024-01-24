@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ public class MavenArtifactReference implements IMavenIdentifier
     private final String groupId;
     @NotNull
     private final String artifactId;
+    @Nullable
+    private final String classifier;
     @NotNull
     private final String version;
     @NotNull
@@ -43,47 +45,52 @@ public class MavenArtifactReference implements IMavenIdentifier
     private final String fallbackVersion;
     private boolean resolveOptionalDependencies;
 
-    public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @Nullable String fallbackVersion, @NotNull String version) {
+    public MavenArtifactReference(
+        @NotNull String groupId,
+        @NotNull String artifactId,
+        @Nullable String classifier,
+        @Nullable String fallbackVersion,
+        @NotNull String version
+    ) {
         this.groupId = CommonUtils.trim(groupId);
         this.artifactId = CommonUtils.trim(artifactId);
+        this.classifier = CommonUtils.trim(classifier);
         this.version = CommonUtils.trim(version);
         this.fallbackVersion = CommonUtils.trim(fallbackVersion);
         this.id = makeId(this);
     }
 
+    /**
+     * @param ref artifact reference path.
+     *   Can be GROUP:ARTIFACT:FALLABACK_VERSION or
+     *   GROUP:ARTIFACT:CLASSIFIER:FALLABACK_VERSION
+     */
     public MavenArtifactReference(String ref) {
         String mavenUri = ref;
         int divPos = mavenUri.indexOf('/');
         if (divPos >= 0) {
             mavenUri = mavenUri.substring(divPos + 1);
         }
-        divPos = mavenUri.indexOf(':');
-        if (divPos < 0) {
+        version = DEFAULT_MAVEN_VERSION;
+        String[] parts = mavenUri.split(":");
+        if (parts.length == 1) {
             // No artifact ID
             groupId = mavenUri;
             artifactId = mavenUri;
+            classifier = null;
             fallbackVersion = null;
-            version = DEFAULT_MAVEN_VERSION;
         } else {
-            groupId = mavenUri.substring(0, divPos);
-            int divPos2 = mavenUri.indexOf(':', divPos + 1);
-            if (divPos2 < 0) {
-                // No version
-                artifactId = mavenUri.substring(divPos + 1);
+            groupId = parts[0];
+            artifactId = parts[1];
+            if (parts.length == 2) {
+                classifier = null;
                 fallbackVersion = null;
-                version = DEFAULT_MAVEN_VERSION;
+            } else if (parts.length == 3) {
+                classifier = null;
+                fallbackVersion = parts[2];
             } else {
-                int divPos3 = mavenUri.indexOf(':', divPos2 + 1);
-                if (divPos3 < 0) {
-                    // No classifier
-                    artifactId = mavenUri.substring(divPos + 1, divPos2);
-                    fallbackVersion = null;
-                    version = mavenUri.substring(divPos2 + 1);
-                } else {
-                    artifactId = mavenUri.substring(divPos + 1, divPos2);
-                    fallbackVersion = mavenUri.substring(divPos2 + 1, divPos3);
-                    version = mavenUri.substring(divPos3 + 1);
-                }
+                classifier = parts[2];
+                fallbackVersion = parts[3];
             }
         }
         id = makeId(this);
@@ -99,6 +106,12 @@ public class MavenArtifactReference implements IMavenIdentifier
     @NotNull
     public String getArtifactId() {
         return artifactId;
+    }
+
+    @Nullable
+    @Override
+    public String getClassifier() {
+        return classifier;
     }
 
     @Override
@@ -120,7 +133,7 @@ public class MavenArtifactReference implements IMavenIdentifier
     }
 
     public String getPath() {
-        return id + ":" + version;
+        return id;
     }
 
     public boolean isResolveOptionalDependencies() {
@@ -142,11 +155,17 @@ public class MavenArtifactReference implements IMavenIdentifier
     }
 
     static String makeId(IMavenIdentifier identifier) {
-        if (identifier.getFallbackVersion() != null) {
-            return identifier.getGroupId() + ":" + identifier.getArtifactId() + ":" + identifier.getFallbackVersion();
-        } else {
-            return identifier.getGroupId() + ":" + identifier.getArtifactId();
+        StringBuilder id = new StringBuilder();
+        id.append(identifier.getGroupId()).append(":").append(identifier.getArtifactId());
+
+        if (identifier.getClassifier() != null) {
+            id.append(":").append(identifier.getClassifier());
         }
+        if (identifier.getFallbackVersion() != null) {
+            id.append(":").append(identifier.getFallbackVersion() != null ? identifier.getFallbackVersion() :
+                                  identifier.getVersion());
+        }
+        return id.toString();
     }
 
 }

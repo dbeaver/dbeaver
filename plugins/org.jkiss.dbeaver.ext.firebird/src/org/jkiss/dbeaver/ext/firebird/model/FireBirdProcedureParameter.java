@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
 public class FireBirdProcedureParameter extends GenericProcedureParameter {
 
-    private String defaultValue;
+    private final String defaultValue;
+    private final String fieldName;
+    private final String relationName;
 
     public FireBirdProcedureParameter(
             GenericProcedure procedure,
@@ -36,13 +39,28 @@ public class FireBirdProcedureParameter extends GenericProcedureParameter {
             boolean notNull,
             String remarks,
             DBSProcedureParameterKind parameterKind,
-            String defaultValue)
-    {
+            String defaultValue,
+            String fieldName,
+            String relationName
+    ) {
         super(procedure, columnName, typeName, valueType, ordinalPosition, columnSize, scale, precision, notNull, remarks, parameterKind);
         this.defaultValue = defaultValue;
+        this.fieldName = fieldName;
+        this.relationName = relationName;
     }
 
+    @Nullable
     public String getDefaultValue() {
         return defaultValue;
+    }
+
+    @Nullable
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    @Nullable
+    public String getRelationName() {
+        return relationName;
     }
 }

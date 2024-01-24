@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -140,7 +141,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                     }
                 }
                 finally {
-                    content.release();
+                    DTUtils.closeContents(resultSet, content);
                 }
             } else {
                 writeCellValue(super.getValueDisplayString(column, row[i]));

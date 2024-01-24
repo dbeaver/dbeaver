@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
@@ -53,8 +54,12 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Array;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /**
  * postgresql utils
@@ -641,7 +646,11 @@ public class PostgreUtils {
         return grantees.toArray(new String[0]);
     }
 
-    public static List<PostgrePrivilege> extractPermissionsFromACL(@NotNull PostgrePrivilegeOwner owner, @NotNull String[] acl) {
+    public static List<PostgrePrivilege> extractPermissionsFromACL(
+        @NotNull PostgrePrivilegeOwner owner,
+        @NotNull String[] acl,
+        boolean isDefault
+    ) {
         List<PostgrePrivilege> permissions = new ArrayList<>();
         for (String aclValue : acl) {
             if (CommonUtils.isEmpty(aclValue)) {
@@ -683,12 +692,21 @@ public class PostgreUtils {
                     false
                 ));
             }
-            permissions.add(new PostgreObjectPrivilege(owner, grantee, privileges));
+            if (isDefault) {
+                permissions.add(new PostgreDefaultPrivilege(owner, grantee, privileges));
+            } else {
+                permissions.add(new PostgreObjectPrivilege(owner, grantee, privileges));
+            }
         }
         return permissions;
     }
 
-    public static List<PostgrePrivilege> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePrivilegeOwner owner, @Nullable Object acl) throws DBException {
+    public static List<PostgrePrivilege> extractPermissionsFromACL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgrePrivilegeOwner owner,
+        @Nullable Object acl,
+        boolean isDefault
+    ) throws DBException {
         if (!(acl instanceof java.sql.Array)) {
             if (acl == null) {
                 // Special case. Means ALL permissions are granted to table owner
@@ -727,7 +745,7 @@ public class PostgreUtils {
             aclValue = aclValue.replace("\\\"", "\"");
             aclValues[i] = aclValue;
         }
-        return extractPermissionsFromACL(owner, aclValues);
+        return extractPermissionsFromACL(owner, aclValues, isDefault);
     }
 
     public static String getOptionsString(String[] options) {
@@ -774,6 +792,8 @@ public class PostgreUtils {
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePrivilegeOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (object.isPersisted() && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(object, true);
+            if (object.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
+            }
 
             // Owner
             PostgreRole owner = object.getOwner(monitor);
@@ -821,7 +841,7 @@ public class PostgreUtils {
      * If the column doesn't exist, then there will be an exception
      *
      * @param tableName name of the system table
-     * @param columnName name of the system column
+     * @param columnName name of the system column. Use "*" param, if you need to check access to the full table/view.
      * @return query for the system column checking
      */
     @NotNull
@@ -829,4 +849,119 @@ public class PostgreUtils {
         return "SELECT " + columnName + " FROM pg_catalog." + tableName + " WHERE 1<>1 LIMIT 1";
     }
 
+    /**
+     * Returns state of the meta object existence from the system catalogs.
+     *
+     * @param session to execute a query
+     * @param tableName name of the required table
+     * @param columnName name of the required column or symbol *
+     * @return state of the meta object existence in the system data
+     */
+    public static boolean isMetaObjectExists(@NotNull JDBCSession session, @NotNull String tableName, @NotNull String columnName) {
+        try {
+            JDBCUtils.queryString(session, getQueryForSystemColumnChecking(tableName, columnName));
+            return true;
+        } catch (SQLException e) {
+            log.debug("Error reading system information from the " + tableName + " table: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Retrieves delimiter used for separating array elements of the given type.
+     *
+     * @param type type to get array delimiter for
+     * @return a type-specific array delimiter, or {@code ","} if the given type is not a postgres data type.
+     */
+    @NotNull
+    public static String getArrayDelimiter(@NotNull DBSTypedObject type) {
+        if (type instanceof PostgreDataType) {
+            return ((PostgreDataType) type).getArrayDelimiter();
+        } else {
+            return ",";
+        }
+    }
+
+    /**
+     * Attempts to retrieve an array using {@link ResultSet#getArray(String)}, and if it can't
+     * be done due to an exception, falls back to manually parsing the string representation
+     * of an array retrieved using {@link ResultSet#getString(String)}.
+     *
+     * @param dbResult   a result set to retrieve data from
+     * @param columnName a name of a column to retrieve data from
+     * @param converter  a function that takes string representation of an element and returns {@code T}
+     * @param generator  a function that takes a length and creates array of {@code T}
+     * @return array elements
+     * @see PostgreValueParser#parsePrimitiveArray(String, Function, IntFunction)
+     */
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public static <T> T[] safeGetArray(
+        @NotNull ResultSet dbResult,
+        @NotNull String columnName,
+        @NotNull Function<String, T> converter,
+        @NotNull IntFunction<T[]> generator
+    ) {
+        Exception exception = null;
+
+        try {
+            final java.sql.Array value = dbResult.getArray(columnName);
+            return value != null ? (T[]) value.getArray() : null;
+        } catch (SQLFeatureNotSupportedException ignored) {
+            // Some drivers (ODBC) might not have an implementation for that API, just ignore and try with a string
+        } catch (Exception e) {
+            exception = e;
+        }
+
+        try {
+            final String value = dbResult.getString(columnName);
+            return value != null ? PostgreValueParser.parsePrimitiveArray(value, converter, generator) : null;
+        } catch (Exception e) {
+            if (exception == null) {
+                exception = e;
+            }
+        }
+
+        log.debug("Can't get column '" + columnName + "': " + exception.getMessage());
+        return null;
+    }
+
+    /**
+     * Attempts to retrieve an array of strings from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
+    @Nullable
+    public static String[] safeGetStringArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Function.identity(), String[]::new);
+    }
+
+    /**
+     * Attempts to retrieve an array of shorts from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
+    @Nullable
+    public static Number[] safeGetNumberArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, PostgreUtils::parseNumber, Number[]::new);
+    }
+
+    /**
+     * Attempts to retrieve an array of booleans from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
+    @Nullable
+    public static Boolean[] safeGetBooleanArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Boolean::valueOf, Boolean[]::new);
+    }
+
+    @NotNull
+    private static Number parseNumber(@NotNull String str) {
+        try {
+            return Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            return Double.parseDouble(str);
+        }
+    }
 }

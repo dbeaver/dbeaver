@@ -9,7 +9,7 @@
 
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.zos.DB2ZOSDataSourceProvider"
-                description="%datasource.db2_zos.description"
+                description="DB2 z/OS Connector"
                 id="db2_zos"
                 parent="generic"
                 label="Db2 for z/OS data source"
@@ -25,6 +25,7 @@
                         category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="50000"
                         description="IBM Db2 driver for z/OS"
                         note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library."
@@ -45,7 +46,7 @@
                     <parameter name="omit-type-cache" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
 
-                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.7.0]" bundle="!drivers.db2"/>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.9.0]" bundle="!drivers.db2"/>
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
                 </driver>

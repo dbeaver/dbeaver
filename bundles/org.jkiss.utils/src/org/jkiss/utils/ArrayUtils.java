@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Common utils
@@ -50,8 +51,8 @@ public class ArrayUtils {
     {
         if (array == null)
             return false;
-        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value)
+        for (short item : array) {
+            if (item == value)
                 return true;
         }
         return false;
@@ -61,8 +62,8 @@ public class ArrayUtils {
     {
         if (array == null || array.length == 0)
             return false;
-        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value)
+        for (char c : array) {
+            if (c == value)
                 return true;
         }
         return false;
@@ -104,8 +105,8 @@ public class ArrayUtils {
     {
         if (isEmpty(array))
             return false;
-        for (int i = 0; i < array.length; i++) {
-            if (CommonUtils.equalObjects(value, array[i]))
+        for (OBJECT_TYPE object_type : array) {
+            if (CommonUtils.equalObjects(value, object_type))
                 return true;
         }
         return false;
@@ -115,8 +116,8 @@ public class ArrayUtils {
     {
         if (isEmpty(array) || value == null)
             return false;
-        for (int i = 0; i < array.length; i++) {
-            if (value.equalsIgnoreCase(array[i]))
+        for (String s : array) {
+            if (value.equalsIgnoreCase(s))
                 return true;
         }
         return false;
@@ -125,8 +126,8 @@ public class ArrayUtils {
     public static <OBJECT_TYPE> boolean containsRef(@NotNull OBJECT_TYPE[] array, @Nullable OBJECT_TYPE value)
     {
         final int length = array.length;
-        for (int i = 0; i < length; i++) {
-            if (value == array[i])
+        for (OBJECT_TYPE object_type : array) {
+            if (value == object_type)
                 return true;
         }
         return false;
@@ -171,6 +172,18 @@ public class ArrayUtils {
         } else {
             return Arrays.asList(array);
         }
+    }
+
+    /**
+     * Returns index of the first found element satisfying a given predicate in the provided array 
+     */
+    public static <T> int indexOf(@NotNull T[] array, @NotNull Predicate<T> condition) {
+        for (int i = 0; i < array.length; i++) {
+            if (condition.test(array[i])) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static <T> int indexOf(T[] array, T element) {

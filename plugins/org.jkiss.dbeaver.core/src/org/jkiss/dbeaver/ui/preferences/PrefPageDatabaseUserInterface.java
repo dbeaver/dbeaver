@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,15 +18,15 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -46,13 +46,12 @@ import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
-import org.jkiss.dbeaver.registry.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -76,15 +75,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     @Nullable
     private Combo clientTimezone;
 
-    private Button longOperationsCheck;
-    private Spinner longOperationsTimeout;
-
-    private Button notificationsEnabled;
-    private Spinner notificationsCloseDelay;
-
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
-
+    private Button useEmbeddedBrowserAuth;
+    
 
     public PrefPageDatabaseUserInterface()
     {
@@ -162,7 +156,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             };
             ContentAssistUtils.installContentProposal(clientTimezone, new ComboContentAdapter(), proposalProvider);
 
-            CLabel tipLabel = UIUtils.createInfoLabel(regionalSettingsGroup,
+            Control tipLabel = UIUtils.createInfoLabel(regionalSettingsGroup,
                 CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart
             );
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
@@ -174,37 +168,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
 
         }
-        // Notifications settings
-        {
-            Group notificationsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_notifications, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            notificationsEnabled = UIUtils.createCheckbox(notificationsGroup,
-                CoreMessages.pref_page_ui_general_label_enable_notifications,
-                CoreMessages.pref_page_ui_general_label_enable_notifications_tip, false, 2);
-
-            notificationsCloseDelay = UIUtils.createLabelSpinner(notificationsGroup, CoreMessages.pref_page_ui_general_label_notifications_close_delay, 0, 0, Integer.MAX_VALUE);
-        }
-
-        // Agent settings
-        {
-            Group agentGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_task_bar, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            longOperationsCheck = UIUtils.createCheckbox(agentGroup,
-                    CoreMessages.pref_page_ui_general_label_enable_long_operations,
-                    CoreMessages.pref_page_ui_general_label_enable_long_operations_tip, false, 2);
-
-            longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, CoreMessages.pref_page_ui_general_label_long_operation_timeout + UIMessages.label_sec, 0, 0, Integer.MAX_VALUE);
-
-            if (RuntimeUtils.isMacOS()) {
-                ControlEnableState.disable(agentGroup);
-            }
-        }
+        Group groupObjects = UIUtils.createControlGroup(
+            composite,
+            CoreMessages.pref_page_ui_general_group_browser, 2,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
+        );
         if (isWindowsDesktopClient()) {
-            Group groupObjects = UIUtils.createControlGroup(
-                composite,
-                CoreMessages.pref_page_ui_general_group_browser, 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
-            );
             browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
                 SWT.READ_ONLY
             );
@@ -212,32 +181,58 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
                 browserCombo.add(value.getFullName(), value.ordinal());
             }
-            CLabel tipLabel =
+            Control tipLabel =
                 UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
                 GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
             ));
         }
 
-        performDefaults();
-
+        if (isStandalone) {
+            useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
+                CoreMessages.pref_page_ui_general_check_browser_auth,
+                CoreMessages.pref_page_ui_general_check_browser_auth_tip,
+                false,
+                2
+            );
+            useEmbeddedBrowserAuth.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                2,
+                1
+            ));
+            if (browserCombo != null) {
+                browserCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
+                            useEmbeddedBrowserAuth.setEnabled(false);
+                            useEmbeddedBrowserAuth.setSelection(false);
+                        } else {
+                            useEmbeddedBrowserAuth.setEnabled(true);
+                        }
+                    }
+                });
+            }
+        }
+        setSettings();
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        if (isStandalone) {
-            automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-        }
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.getActiveBrowser();
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
+            useEmbeddedBrowserAuth.setEnabled(!SWTBrowserRegistry.getActiveBrowser().equals(SWTBrowserRegistry.BrowserSelection.IE));
         }
-        notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
-        notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
+        if (isStandalone) {
+            automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+            if (!RuntimeUtils.isLinux()) {
+                useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            }
+        }
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {
             if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
@@ -246,9 +241,22 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
+    }
 
-        longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
-        longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (isStandalone) {
+            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+        }
+        if (isWindowsDesktopClient()) {
+            SWTBrowserRegistry.getActiveBrowser();
+            browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
+        }
+        if (clientTimezone != null) {
+            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
+        }
     }
 
     private boolean isWindowsDesktopClient() {
@@ -257,8 +265,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     public boolean isValid() {
-        return super.isValid() && clientTimezone != null &&
-            (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
+        return super.isValid() && (!isStandalone || clientTimezone != null &&
+            (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText()))));
     }
 
     @Override
@@ -268,16 +276,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (isStandalone) {
             store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
+            store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
         }
 
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.setActiveBrowser(SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
         }
-        store.setValue(ModelPreferences.NOTIFICATIONS_ENABLED, notificationsEnabled.getSelection());
-        store.setValue(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, notificationsCloseDelay.getSelection());
-
-        store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
-        store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
         if (clientTimezone != null) {
@@ -306,7 +310,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
-
         return true;
     }
 

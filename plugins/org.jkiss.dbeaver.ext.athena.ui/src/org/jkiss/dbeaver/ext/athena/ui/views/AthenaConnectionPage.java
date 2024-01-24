@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -58,6 +59,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -72,6 +75,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
 
     private static final ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
+    private Button showCatalogsCheck;
 
     public AthenaConnectionPage() {
         driverPropsPage = new DriverPropertiesDialogPage(this);
@@ -154,7 +158,13 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                                 if (s3Node instanceof DBNPathBase) {
                                     String newS3Path = ((DBNPathBase) s3Node).getPath().toString();
                                     if (newS3Path.startsWith("s3:/")) {
-                                        s3LocationText.setText(newS3Path);
+                                        try {
+                                            URI uri = new URI(newS3Path);
+                                            URI patchedURI = new URI(uri.getScheme(), null, null, 0, uri.getPath(), uri.getQuery(), null);
+                                            s3LocationText.setText(patchedURI.toString());
+                                        } catch (URISyntaxException ex) {
+                                            DBWorkbench.getPlatformUI().showError("Bad URI", "Bad URI '" + newS3Path + "'", ex);
+                                        }
                                     }
                                 }
                             }
@@ -164,6 +174,10 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             }
 
             UIUtils.addVariablesToControl(s3LocationText, getAvailableVariables(), "S3 location pattern");
+
+            showCatalogsCheck = UIUtils.createCheckbox(addrGroup,
+                "Show catalogs",
+                "To show multiple data catalogs with Athena (for example, when using an external Hive metastore or federated queries)", false, 2);
         }
 
         createAuthPanel(settingsGroup, 1);
@@ -177,7 +191,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         final DBNPathBase[] result = new DBNPathBase[1];
         RuntimeUtils.runTask(monitor -> {
             try {
-                result[0] = fsRootNode.findNodeByPath(monitor, s3Path);
+                result[0] = fsRootNode.findNodeByPath(monitor, s3Path, true);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
@@ -222,6 +236,11 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             }
             s3LocationText.setText(databaseName);
         }
+        if (showCatalogsCheck != null) {
+            showCatalogsCheck.setSelection(
+                CommonUtils.getBoolean(connectionInfo.getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS))
+            );
+        }
     }
 
     @Override
@@ -233,6 +252,9 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         if (s3LocationText != null) {
             connectionInfo.setProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, s3LocationText.getText().trim());
             connectionInfo.setDatabaseName(s3LocationText.getText().trim());
+        }
+        if (showCatalogsCheck != null) {
+            connectionInfo.setProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS, String.valueOf(showCatalogsCheck.getSelection()));
         }
         super.saveSettings(dataSource);
     }

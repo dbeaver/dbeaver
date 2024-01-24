@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,8 @@ public class SQLSemanticProcessor {
     private static final boolean ALLOW_COMPLEX_PARSING = false;
 
     public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
+        String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqlWithoutComments));
         try {
             parser.withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
             if (dialect != null) {

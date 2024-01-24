@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.qm.meta;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -27,16 +26,17 @@ import java.util.NoSuchElementException;
  */
 public class QMMTransactionSavepointInfo extends QMMObject {
 
-    private final QMMTransactionInfo transaction;
+    private final transient QMMTransactionInfo transaction;
     private final String name;
     private boolean committed;
-    private final QMMTransactionSavepointInfo previous;
-    private QMMStatementExecuteInfo lastExecute;
+    private final transient QMMTransactionSavepointInfo previous;
+    private transient QMMStatementExecuteInfo lastExecute;
 
     private transient DBCSavepoint reference;
 
     QMMTransactionSavepointInfo(QMMTransactionInfo transaction, DBCSavepoint reference, String name, QMMTransactionSavepointInfo previous)
     {
+        super(QMMetaObjectType.TRANSACTION_SAVEPOINT_INFO);
         this.transaction = transaction;
         this.reference = reference;
         this.name = name;
@@ -141,17 +141,8 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     }
 
     @Override
-    public ObjectType getObjectType() {
-        return ObjectType.TransactionSavepointInfo;
-    }
-
-    @Override
     public QMMConnectionInfo getConnection() {
         return getTransaction().getConnection();
     }
 
-    @Override
-    public Map<String, Object> toMap() {
-        return null;
-    }
 }

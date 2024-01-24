@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
+import org.jkiss.dbeaver.model.task.DBTTaskSettingsInput;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.utils.CommonUtils;
@@ -40,7 +42,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> implements DBTTaskSettings<BASE_OBJECT> {
+public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
+    implements DBTTaskSettings<BASE_OBJECT>, DBTTaskSettingsInput<BASE_OBJECT> {
 
     private static final Log log = Log.getLog(AbstractNativeToolSettings.class);
 
@@ -255,4 +258,31 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
             preferenceStore.setValue("clientHomeName", clientHomeName);
         }
     }
+    
+    @Override
+    public void loadSettingsFromInput(List<BASE_OBJECT> inputObjects) {
+        databaseObjects.addAll(inputObjects);
+    }
+
+    public boolean isMutatingTask() {
+        return false;
+    }
+
+    @NotNull
+    protected String makeOutFilePath(String outputFolder, String outputFileName) {
+        // Check URI query
+        String query = null;
+        int queryStartPos = outputFolder.lastIndexOf("?");
+        if (queryStartPos != -1) {
+            query = outputFolder.substring(queryStartPos);
+            outputFolder = outputFolder.substring(0, queryStartPos - 1);
+        }
+        if (!outputFolder.endsWith("/")) outputFolder += "/";
+        String outFile = outputFolder + outputFileName;
+        if (query != null) {
+            outFile += query;
+        }
+        return outFile;
+    }
+
 }

@@ -2,12 +2,18 @@
 <?eclipse version="3.4"?>
 <plugin>
     <extension-point id="org.jkiss.dbeaver.confirmations" name="UI confirmations" schema="schema/org.jkiss.dbeaver.confirmations.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.notifications" name="UI notifications" schema="schema/org.jkiss.dbeaver.notifications.exsd"/>
 
    <extension point="org.eclipse.core.expressions.definitions">
       <definition id="DBeaverPerspectiveActive">
-          <with variable="activeWorkbenchWindow.activePerspective">
-              <equals value="org.jkiss.dbeaver.core.perspective"/>
-          </with>
+          <or>
+              <with variable="selection">
+                  <test property="org.jkiss.dbeaver.core.global.standalone"/>
+              </with>
+              <with variable="activeWorkbenchWindow.activePerspective">
+                  <equals value="org.jkiss.dbeaver.core.perspective"/>
+              </with>
+          </or>
       </definition>
        <definition id="LocalWorkspace">
            <not>
@@ -95,4 +101,38 @@
         </handler>
     </extension>
 
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-high_contrast_dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.high-contrast"/>
+        </stylesheet>
+    </extension>
+
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
+        </themeElementCategory>
+    
+        <fontDefinition
+                id="org.jkiss.dbeaver.dbeaver.ui.fonts.monospace"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.ui.fonts.monospace.label"
+                value="Courier New-regular-10">
+            <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.monospace.description</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-13"/>
+        </fontDefinition>
+        <fontDefinition
+                id="org.jkiss.dbeaver.dbeaver.ui.fonts.main"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.label"
+                value="Segoe UI-regular-9">
+            <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.description</description>
+            <fontValue os="macosx" value="Sans-regular-13"/>
+        </fontDefinition>
+       
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="generic" name="Generic notification" hidden="true"/>
+    </extension>
 </plugin>

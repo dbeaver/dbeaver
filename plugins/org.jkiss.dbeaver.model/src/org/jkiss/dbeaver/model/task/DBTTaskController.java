@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,37 @@ public interface DBTTaskController extends DBPObjectController {
      * Or it can be on the remote workspace + project
      *
      * @param projectId to find proper project
-     * @param filePath file name + extension
+     * @param filePath  file name + extension
      * @return data from task configuration file in the String format
      * @throws DBException returns in case of file loading
      */
+    @Nullable
     String loadTaskConfigurationFile(@NotNull String projectId, @NotNull String filePath) throws DBException;
+
+    /**
+     * Method to load (read) task configuration from file (usually tasks.json). Task config can be in the local
+     * workspace + project
+     * Or it can be on the remote workspace + project
+     *
+     * @param projectId to find proper project
+     * @param taskId    to find proper task
+     * @param filePath  file name + extension
+     * @return data from task configuration file in the String format or null if task not exist
+     * @throws DBException returns in case of file loading
+     */
+    @Nullable
+    String loadTaskConfiguration(
+        @NotNull String projectId,
+        @NotNull String taskId,
+        @NotNull String filePath
+    ) throws DBException;
 
     /**
      * Method saves task configuration file. After task creation/editing as example
      *
      * @param projectId to find proper project task config
-     * @param filePath file name + extension
-     * @param data for update. Can be null in case of purpose of delete file
+     * @param filePath  file name + extension
+     * @param data      for update. Can be null in case of purpose of delete file
      * @throws DBException returns in case of file loading/saving
      */
     void saveTaskConfigurationFile(

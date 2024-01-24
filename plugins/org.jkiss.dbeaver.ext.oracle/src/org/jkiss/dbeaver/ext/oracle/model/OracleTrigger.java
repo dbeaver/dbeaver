@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,9 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
         this.columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
         this.refNames = JDBCUtils.safeGetString(dbResult, "REFERENCING_NAMES");
         this.whenClause = JDBCUtils.safeGetString(dbResult, "WHEN_CLAUSE");
-        this.status = CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
+        this.status = CommonUtils.valueOf(
+            OracleObjectStatus.class,
+            JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COLUMN_STATUS));
         this.description = JDBCUtils.safeGetString(dbResult, "DESCRIPTION");
         this.actionType = "CALL".equals(JDBCUtils.safeGetString(dbResult, "ACTION_TYPE")) ? ActionType.CALL : ActionType.PLSQL;
     }

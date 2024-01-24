@@ -2,7 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.dataTransfer" name="%extension-point.org.jkiss.dbeaver.dataTransfer.name" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTransfer" name="Data Transfer Provider" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
 
     <extension point="org.jkiss.dbeaver.dataTransfer">
         <node type="producer"
@@ -81,6 +81,7 @@
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.xml.property.extension.label" defaultValue="xml"/>
+                    <property id="includeDoctype" label="%dataTransfer.processor.xml.property.doctype.label" type="boolean" defaultValue="false"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -198,13 +199,19 @@
                 <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.txt.property.extension.label" type="string" defaultValue="txt"/>
                     <property id="batchSize" label="%dataTransfer.processor.txt.property.batchSize.label" defaultValue="200"/>
-                    <property id="minColumnLength" label="%dataTransfer.processor.txt.property.minColumnLength.label" defaultValue="3"/>
-                    <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label" defaultValue="0"/>
+                    <property id="minColumnLength" label="%dataTransfer.processor.txt.property.minColumnLength.label"
+                              description="%dataTransfer.processor.txt.property.minColumnLength.tip" defaultValue="3"/>
+                    <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label"
+                              description="%dataTransfer.processor.txt.property.maxColumnLength.tip" defaultValue="0"/>
                     <property id="showNulls" label="%dataTransfer.processor.txt.property.showNulls.label" description="%dataTransfer.processor.txt.property.showNulls.tip" type="boolean" defaultValue="false"/>
-                    <property id="delimHeader" label="%dataTransfer.processor.txt.property.delimHeader.label" type="boolean" defaultValue="true"/>
-                    <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean" defaultValue="true"/>
-                    <property id="delimTrailing" label="%dataTransfer.processor.txt.property.delimTrailing.label" type="boolean" defaultValue="true"/>
-                    <property id="delimBetween" label="%dataTransfer.processor.txt.property.delimBetween.label" type="boolean" defaultValue="true"/>
+                    <property id="delimHeader" label="%dataTransfer.processor.txt.property.delimHeader.label" type="boolean"
+                              description="%dataTransfer.processor.txt.property.delimHeader.tip" defaultValue="true"/>
+                    <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean"
+                              description="%dataTransfer.processor.txt.property.delimLeading.tip" defaultValue="true"/>
+                    <property id="delimTrailing" label="%dataTransfer.processor.txt.property.delimTrailing.label" type="boolean"
+                              description="%dataTransfer.processor.txt.property.delimTrailing.tip" defaultValue="true"/>
+                    <property id="delimBetween" label="%dataTransfer.processor.txt.property.delimBetween.label" type="string"
+                              description="%dataTransfer.processor.txt.property.delimBetween.tip" defaultValue="|" required="true" allowCustomValues="true"/>
                     <property id="showHeader" label="%dataTransfer.processor.txt.property.showHeader.label" description="%dataTransfer.processor.txt.property.showHeader.tip" type="boolean" defaultValue="true"/>
                 </propertyGroup>
             </processor>
@@ -235,7 +242,7 @@
             </propertyGroup>
         </transformer>
 
-        <transformer id="expression" label="Expression" description="Set column value to a result of expression" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression">
+        <transformer id="expression" label="Expression" description="Set column value to a result of expression&#10;Language references and examples can be found here:&#10;http://commons.apache.org/proper/commons-jexl/reference/syntax.html" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression">
             <propertyGroup label="Settings">
                 <property id="expression" label="Expression" type="string" description="Expression to evaluate" defaultValue="" required="true"/>
             </propertyGroup>
@@ -258,25 +265,38 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="common" name="%task.category.name.common" description="%task.category.description.common" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
+        <category id="common" name="%task.category.name.common" description="%task.category.description.common"
+                  icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
 
-        <task id="dataExport" name="%task.name.export" description="%task.description.export" icon="icons/export.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
+        <task id="dataExport" name="%task.name.export" description="%task.description.export" icon="icons/export.png" type="common"
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </task>
-        <task id="dataImport" name="%task.name.import" description="%task.description.import" icon="icons/import.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
+        <task id="dataImport" name="%task.name.import" description="%task.description.import" icon="icons/import.png" type="common"
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
-        <task id="scriptExecute" name="%task.name.sql.script" description="%task.description.sql.script" icon="icons/task_script.png" type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
+        <task id="scriptExecute" name="%task.name.sql.script" description="%task.description.sql.script" icon="icons/task_script.png"
+              type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
             <objectType name="org.eclipse.core.resources.IFile"/>
         </task>
     </extension>
 
     <extension point="org.jkiss.dbeaver.serialize">
-        <serializer id="databaseTransferProducer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer$ObjectSerializer"/>
-        <serializer id="streamTransferProducer" class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer$ObjectSerializer"/>
+        <serializer id="databaseTransferProducer"
+                    class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer$ObjectSerializer"/>
+        <serializer id="streamTransferProducer"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer$ObjectSerializer"/>
 
-        <serializer id="databaseTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
-        <serializer id="streamTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"/>
+        <serializer id="databaseTransferConsumer"
+                    class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
+        <serializer id="streamTransferConsumer"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"
+                    supportsDistributedMode="false"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.tools.transfer.internal.DataTransferPreferencesInitializer"/>
     </extension>
 </plugin>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                         switch (dataType.getFirst()) {
                             case STRING:
-                                columnInfo.updateMaxLength(columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
+                                columnInfo.updateMaxLength(
+                                    entityMapping.getDataSource(),
+                                    columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
                                 /* fall-through */
                             case NUMERIC:
                             case BOOLEAN:

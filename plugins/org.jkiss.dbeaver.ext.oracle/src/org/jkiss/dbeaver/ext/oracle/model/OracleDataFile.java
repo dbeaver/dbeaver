@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,11 +71,19 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT_BY");
         this.userBytes = JDBCUtils.safeGetBigDecimal(dbResult, "USER_BYTES");
         this.userBlocks = JDBCUtils.safeGetBigDecimal(dbResult, "USER_BLOCKS");
-        this.autoExtensible = JDBCUtils.safeGetBoolean(dbResult, "AUTOEXTENSIBLE", "Y");
-        this.available = "AVAILABLE".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
+        this.autoExtensible = JDBCUtils.safeGetBoolean(dbResult, "AUTOEXTENSIBLE", OracleConstants.RESULT_YES_VALUE);
+        this.available = "AVAILABLE".equals(JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COLUMN_STATUS));
         if (!this.temporary) {
             this.onlineStatus = CommonUtils.valueOf(OnlineStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "ONLINE_STATUS"));
         }
+    }
+
+    // New created tablespace
+    public OracleDataFile(@NotNull OracleTablespace tablespace, @NotNull String name) {
+        super(tablespace, name, false);
+        this.tablespace = tablespace;
+        this.temporary = tablespace.getContents() == OracleTablespace.Contents.TEMPORARY;
+        this.bytes = BigDecimal.valueOf(1000000); // Minimum value
     }
 
     public OracleTablespace getTablespace()
@@ -103,10 +111,14 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         return relativeNo;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, editable = true, order = 4)
     public BigDecimal getBytes()
     {
         return bytes;
+    }
+
+    public void setBytes(BigDecimal bytes) {
+        this.bytes = bytes;
     }
 
     @Property(viewable = true, order = 5)
@@ -115,10 +127,14 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         return blocks;
     }
 
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, editable = true, order = 6)
     public BigDecimal getMaxBytes()
     {
         return maxBytes;
+    }
+
+    public void setMaxBytes(BigDecimal maxBytes) {
+        this.maxBytes = maxBytes;
     }
 
     @Property(viewable = true, order = 7)
@@ -151,19 +167,23 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         return available;
     }
 
-    @Property(viewable = true, order = 12)
+    @Property(viewable = true, editable = true, order = 12)
     public boolean isAutoExtensible()
     {
         return autoExtensible;
     }
 
-    @Property(order = 13)
+    public void setAutoExtensible(boolean autoExtensible) {
+        this.autoExtensible = autoExtensible;
+    }
+
+    @Property(viewable = true, order = 13)
     public OnlineStatus getOnlineStatus()
     {
         return onlineStatus;
     }
 
-    @Property(order = 14)
+    @Property(viewable = true, order = 14)
     public boolean isTemporary()
     {
         return temporary;

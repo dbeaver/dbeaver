@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,10 +106,15 @@ public class CompareReportRenderer {
         xml.startElement("style");
         StringBuilder styles = new StringBuilder();
         styles.append("table {font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;text-align:left;} ");
-        styles.append(".missing {color:red;} .differs {color:red;} ");
+        //styles.append(".missing {color:red;} .differs {color:red;} ");
+        styles.append(".missing {color:red;} .differs {color:blue;}"); //visibility!
         styles.append(".object td,th {border-top:solid 1px; border-right:solid 1px; border-color: black; white-space:nowrap;} ");
         styles.append(".property td,th {border-top:dashed 1px; border-right:solid 1px; border-color: black; white-space:pre; } ");
         styles.append(".struct {border-top:none; !important } ");
+       //For readability, and avoiding bovine view
+        styles.append("td,th {word-break: break-word; max-width: 0; white-space: normal !important;}");
+        //Hovering!
+        styles.append("td:hover { background-color: #f2f2f2;}");
 //        styles.append(".object:first-child {border:none; } ");
 //        styles.append(".property:first-child {border:none; } ");
         for (int i = 1; i <= maxLevel; i++) {

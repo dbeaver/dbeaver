@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,10 @@
 
 package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
+import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -34,8 +30,11 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class OceanbasePlanJSON extends AbstractExecutionPlan {
     private static final Gson gson = new Gson();

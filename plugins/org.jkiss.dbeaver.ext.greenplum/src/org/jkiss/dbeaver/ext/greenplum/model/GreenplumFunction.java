@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,7 +64,8 @@ public class GreenplumFunction extends PostgreProcedure {
     public enum FunctionExecLocation {
         a("ANY"),
         m("MASTER"),
-        s("ALL SEGMENTS");
+        s("ALL SEGMENTS"),
+        i("INITPLAN");
 
         private String execLocation;
 

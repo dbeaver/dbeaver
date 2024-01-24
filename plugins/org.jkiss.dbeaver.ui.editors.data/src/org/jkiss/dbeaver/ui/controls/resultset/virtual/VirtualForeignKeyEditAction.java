@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
 public class VirtualForeignKeyEditAction extends Action {
@@ -25,7 +26,7 @@ public class VirtualForeignKeyEditAction extends Action {
     private ResultSetViewer resultSetViewer;
 
     public VirtualForeignKeyEditAction(ResultSetViewer resultSetViewer) {
-        super("Add virtual foreign key");
+        super(ResultSetMessages.controls_resultset_virtual_add_virtual_foreign_key);
         this.resultSetViewer = resultSetViewer;
     }
 

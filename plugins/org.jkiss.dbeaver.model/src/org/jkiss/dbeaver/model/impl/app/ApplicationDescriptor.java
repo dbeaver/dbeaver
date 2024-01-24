@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,13 @@ public class ApplicationDescriptor extends AbstractDescriptor {
     private final String description;
     private final String parentId;
     private final String[] umbrellaProductIds;
-    private boolean serverApplication;
+    private final boolean serverApplication;
+    private final boolean hidden;
     private ApplicationDescriptor parent;
     private boolean finalApplication = true;
 
-    private ObjectType implClass;
+    private final ObjectType implClass;
+    private DBPApplication implementation;
 
     ApplicationDescriptor(IConfigurationElement config) {
         super(config);
@@ -54,6 +56,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
             this.umbrellaProductIds = new String[0];
         }
         this.serverApplication = CommonUtils.toBoolean(config.getAttribute("server"));
+        this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
         this.implClass = new ObjectType(config, "class");
     }
 
@@ -94,7 +97,18 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         return serverApplication;
     }
 
-    public Class<? extends DBPApplication> getImplClass() {
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public DBPApplication getInstance() throws Exception {
+        if (implementation == null) {
+            implementation = getImplClass().getConstructor().newInstance();
+        }
+        return implementation;
+    }
+
+    private Class<? extends DBPApplication> getImplClass() {
         return implClass.getObjectClass(DBPApplication.class);
     }
 

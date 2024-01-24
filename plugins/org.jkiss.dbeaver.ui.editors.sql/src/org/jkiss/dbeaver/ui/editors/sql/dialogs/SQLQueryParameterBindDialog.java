@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 /**
  * Parameter binding
@@ -74,8 +76,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private Table paramTable;
     private Object queryPreviewPanel;
 
-    public SQLQueryParameterBindDialog(IWorkbenchPartSite site, SQLQuery query, List<SQLQueryParameter> parameters)
-    {
+    public SQLQueryParameterBindDialog(IWorkbenchPartSite site, SQLQuery query, List<SQLQueryParameter> parameters) {
         super(site.getShell());
         if (!UIUtils.isInDialog()) {
             setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
@@ -101,14 +102,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     }
 
     @Override
-    protected IDialogSettings getDialogBoundsSettings()
-    {
+    protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
-    protected boolean isResizable()
-    {
+    protected boolean isResizable() {
         return true;
     }
 
@@ -118,10 +117,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
+    protected Control createDialogArea(Composite parent) {
         getShell().setText(SQLEditorMessages.dialog_sql_param_title);
-        final Composite composite = (Composite)super.createDialogArea(parent);
+        final Composite composite = (Composite) super.createDialogArea(parent);
 
         SashForm sash = new SashForm(composite, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -234,7 +232,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
             if (!parameters.isEmpty()) {
                 UIUtils.asyncExec(() -> {
-                    if (paramTable.getItemCount() > 0) {
+                    if (!paramTable.isDisposed() && paramTable.getItemCount() > 0) {
                         paramTable.select(0);
                         tableEditor.showEditor(paramTable.getItem(0), 2);
                     }
@@ -295,7 +293,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             item.setData(param);
             item.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
             item.setText(0, String.valueOf(param.getOrdinalPosition() + 1));
-            item.setText(1, param.getVarName());
+            item.setText(1, param.getOriginalName());
             item.setText(2, CommonUtils.notEmpty(param.getValue()));
         }
     }
@@ -331,8 +329,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     }
 
     @Override
-    protected void okPressed()
-    {
+    protected void okPressed() {
         SQLQueryParameterRegistry registry = SQLQueryParameterRegistry.getInstance();
         for (SQLQueryParameterRegistry.ParameterInfo param : savedParamValues.values()) {
             registry.setParameter(param.name, param.value);

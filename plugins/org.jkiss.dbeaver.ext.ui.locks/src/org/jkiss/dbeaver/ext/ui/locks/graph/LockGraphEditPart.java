@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import org.eclipse.draw2dl.*;
-import org.eclipse.gef3.EditPolicy;
-import org.eclipse.gef3.LayerConstants;
-import org.eclipse.gef3.editparts.AbstractGraphicalEditPart;
+import org.eclipse.draw2d.*;
+import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.LayerConstants;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;
 

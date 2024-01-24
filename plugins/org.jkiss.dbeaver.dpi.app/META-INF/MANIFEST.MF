@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Detached Application
+Bundle-SymbolicName: org.jkiss.dbeaver.dpi.app;singleton:=true
+Bundle-Version: 1.0.13.qualifier
+Bundle-Release-Date: 20240122
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.dpi.app.DPIActivator
+Export-Package: org.jkiss.dbeaver.dpi.app
+Bundle-ClassPath: .
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.equinox.app,
+ org.eclipse.equinox.common,
+ org.eclipse.equinox.event,
+ org.eclipse.equinox.launcher,
+ org.apache.felix.scr,
+ org.apache.aries.spifly.dynamic.bundle,
+ slf4j.api,
+ org.eclipse.equinox.simpleconfigurator,
+ org.eclipse.update.configurator,
+ org.jkiss.dbeaver.dpi.model,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.registry
+Automatic-Module-Name: org.jkiss.dbeaver.dpi.app

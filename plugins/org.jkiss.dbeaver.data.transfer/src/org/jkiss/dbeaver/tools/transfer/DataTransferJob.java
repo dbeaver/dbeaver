@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             if (monitor.isCanceled()) {
                 break;
             }
-            DataTransferPipe transferPipe = settings.acquireDataPipe(monitor);
+            DataTransferPipe transferPipe = settings.acquireDataPipe(monitor, task);
             if (transferPipe == null) {
                 break;
             }
@@ -110,21 +110,15 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
             IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
-            try {
-                producer.transferData(
-                    monitor,
-                    consumer,
-                    processor,
-                    nodeSettings,
-                    task);
+            producer.transferData(monitor, consumer, processor, nodeSettings, task);
 
-                totalStatistics.accumulate(producer.getStatistics());
-                totalStatistics.accumulate(consumer.getStatistics());
-            } finally {
-                consumer.finishTransfer(monitor, false);
-            }
+            totalStatistics.accumulate(producer.getStatistics());
+            totalStatistics.accumulate(consumer.getStatistics());
+
+            consumer.finishTransfer(monitor, false);
             return true;
         } catch (Exception e) {
+            consumer.finishTransfer(monitor, e, task, false);
             log.error("Error transfering data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
             throw e;
         } finally {

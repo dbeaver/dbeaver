@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,8 +72,8 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             for (DBNDatabaseNode node : settings.getNodes()) {
                 TableItem item = new TableItem(nodesTable, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
-                item.setText(0, node.getNodeName());
-                item.setText(1, node.getNodeType());
+                item.setText(0, node.getNodeDisplayName());
+                item.setText(1, node.getNodeTypeLabel());
                 item.setText(2, node.getNodeFullName());
             }
         }

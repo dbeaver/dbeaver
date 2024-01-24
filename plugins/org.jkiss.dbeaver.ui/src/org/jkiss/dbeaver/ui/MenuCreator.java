@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,16 @@ import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.runtime.DBRCreator;
 
 public class MenuCreator implements IMenuCreator {
 
-    private DBRCreator<MenuManager, Control> creator;
+    private DBRCreator<MenuManager, Widget> creator;
     private MenuManager menuManager;
+    private Menu dropDownMenu;
 
-    public MenuCreator(DBRCreator<MenuManager, Control> creator) {
+    public MenuCreator(DBRCreator<MenuManager, Widget> creator) {
         this.creator = creator;
     }
 
@@ -42,7 +44,16 @@ public class MenuCreator implements IMenuCreator {
 
     @Override
     public Menu getMenu(Menu parent) {
-        return null;
+        if (menuManager != null) {
+            menuManager.dispose();
+        }
+        if (dropDownMenu != null) {
+            dropDownMenu.dispose();
+        }
+        dropDownMenu = new Menu(parent);
+        menuManager = creator.createObject(parent);
+        menuManager.fill(dropDownMenu, 0);
+        return menuManager.getMenu();
     }
 
     @Override
@@ -50,7 +61,11 @@ public class MenuCreator implements IMenuCreator {
         if (menuManager != null) {
             menuManager.dispose();
         }
+        if (dropDownMenu != null) {
+            dropDownMenu.dispose();
+        }
         menuManager = null;
+        dropDownMenu = null;
     }
 
 }

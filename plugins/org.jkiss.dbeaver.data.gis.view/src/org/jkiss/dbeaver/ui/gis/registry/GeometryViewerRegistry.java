@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,10 +121,6 @@ public class GeometryViewerRegistry {
         @NotNull Collection<String> notVisiblePredefinedTilesIds,
         @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles
     ) throws DBException {
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
-            log.warn("The user has no permission to load geometry tiles configuration");
-            return;
-        }
         String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML);
         if (CommonUtils.isEmpty(content)) {
             return;

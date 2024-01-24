@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlannerSerializable{
 
@@ -125,6 +127,52 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
         }
 
         return queryElement.getAsString();
+    }
+
+    /**
+     * Returns map of node objects from the json object for deserializer
+     *
+     * @param nodeObject json node object
+     * @return map of attributes from the json object
+     */
+    protected Map<String, Object> getNodeAttributes(@NotNull JsonObject nodeObject) {
+        Map<String, Object> attributes = new HashMap<>();
+        JsonElement attrs = nodeObject.get(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        if (attrs instanceof JsonArray) {
+            for (JsonElement attr : (JsonArray)attrs) {
+                for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                    attributes.put(p.getKey(), p.getValue());
+                }
+            }
+        } else if (attrs instanceof JsonObject) {
+            for (Map.Entry<String, JsonElement> p : ((JsonObject)attrs).entrySet()) {
+                attributes.put(p.getKey(), p.getValue());
+            }
+        }
+        return attributes;
+    }
+
+    /**
+     * Returns map of node objects from the json object for deserializer as strings
+     *
+     * @param nodeObject json node object
+     * @return map of attributes from the json object
+     */
+    protected Map<String, String> getNodeAttributesAsStrings(@NotNull JsonObject nodeObject) {
+        Map<String, String> attributes = new HashMap<>();
+        JsonElement attrs = nodeObject.get(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        if (attrs instanceof JsonArray) {
+            for (JsonElement attr : (JsonArray)attrs) {
+                for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                    attributes.put(p.getKey(), p.getValue().getAsString());
+                }
+            }
+        } else if (attrs instanceof JsonObject) {
+            for (Map.Entry<String, JsonElement> p : ((JsonObject)attrs).entrySet()) {
+                attributes.put(p.getKey(), p.getValue().getAsString());
+            }
+        }
+        return attributes;
     }
 
 

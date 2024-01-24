@@ -3,7 +3,7 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.dashboard" name="%extension-point.org.jkiss.dbeaver.dashboard.name" schema="schema/org.jkiss.dbeaver.dashboard.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dashboard" name="Dashboards" schema="schema/org.jkiss.dbeaver.dashboard.exsd"/>
 
     <extension point="org.eclipse.ui.views">
         <view
@@ -55,15 +55,12 @@
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.open" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardOpen">
             <enabledWhen>
                 <and>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
                     <reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
-                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
                 </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration">
-            <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
-            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset">
             <enabledWhen>
@@ -81,9 +78,6 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.view" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem">
-            <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
-            </enabledWhen>
         </handler>
     </extension>
 
@@ -92,7 +86,12 @@
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="dashboard" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                <visibleWhen>
+                    <and>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </and>
+                </visibleWhen>
             </command>
         </menuContribution>
 
@@ -106,7 +105,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen checkEnabled="true"/>
+                <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/></visibleWhen>
             </command>
         </menuContribution>
 
@@ -132,14 +131,14 @@
 
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
-            <tool
-                class="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
-                id="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
-                label="%command.org.jkiss.dbeaver.ui.dashboard.open.name"
-                description="%command.org.jkiss.dbeaver.ui.dashboard.open.description"
-                icon="icons/dashboard.png"
-                singleton="false">
-                <objectType name="org.jkiss.dbeaver.model.DBPDataSource"/>
+            <tool id="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
+                  label="%command.org.jkiss.dbeaver.ui.dashboard.open.name"
+                  description="%command.org.jkiss.dbeaver.ui.dashboard.open.description"
+                  icon="icons/dashboard.png"
+                  singleton="false">
+                <command id="org.jkiss.dbeaver.ui.dashboard.open">
+                    <objectType name="org.jkiss.dbeaver.model.DBPDataSource"/>
+                </command>
             </tool>
         </tools>
     </extension>

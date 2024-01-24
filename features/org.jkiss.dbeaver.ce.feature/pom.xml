@@ -10,8 +10,13 @@
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.ce.feature</artifactId>
-    <version>22.3.3-SNAPSHOT</version>
+    <version>23.3.3-SNAPSHOT</version>
     <packaging>eclipse-feature</packaging>
+
+    <properties>
+        <sourceBranch>-</sourceBranch>
+        <sourceCommit>-</sourceCommit>
+    </properties>
 
     <build>
         <plugins>

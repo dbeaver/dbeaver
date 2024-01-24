@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,5 +40,15 @@ public class SnowflakeConstants
     public static final String METADATA_COLUMN_CREATED = "CREATED";
     public static final String METADATA_COLUMN_LAST_ALTERED = "LAST_ALTERED";
     public static final String METADATA_COLUMN_COMMENT = "COMMENT";
+
+    public static final String TYPE_NUMBER = "NUMBER";
+    public static final String TYPE_NUMERIC = "NUMERIC";
+    public static final String TYPE_DECIMAL = "DECIMAL";
+    public static final String TYPE_DOUBLE_PRECISION = "DOUBLE PRECISION";
+    public static final String TYPE_REAL = "REAL";
+    public static final String TYPE_INTEGER = "INTEGER";
+
+    public static final int NUMERIC_MAX_PRECISION = 38;
+    public static final int NUMERIC_MAX_SCALE = 35;
 
 }

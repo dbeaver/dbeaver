@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -216,6 +217,11 @@ public interface DBPDataSourceContainer extends
 
     void fireEvent(DBPEvent event);
 
+    @Nullable
+    String getProperty(@NotNull String name);
+
+    void setProperty(@NotNull String name, @Nullable String value);
+
     /**
      * Preference store associated with this datasource
      * @return preference store
@@ -240,7 +246,13 @@ public interface DBPDataSourceContainer extends
     SQLDialectMetadata getScriptDialect();
 
     /**
+     * reset all secured properties
+     */
+    void resetPassword();
+
+    /**
      * Make variable resolver for datasource properties.
+     *
      * @param actualConfig if true then actual connection config will be used (e.g. with preprocessed host/port values).
      */
     IVariableResolver getVariablesResolver(boolean actualConfig);
@@ -259,4 +271,11 @@ public interface DBPDataSourceContainer extends
      */
     @Nullable
     String getRequiredExternalAuth();
+
+    @Nullable
+    DBPDriverSubstitutionDescriptor getDriverSubstitution();
+
+    void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution);
+
+    void dispose();
 }

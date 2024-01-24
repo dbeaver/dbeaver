@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeContentTypeProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 class ResultSetContextImpl implements IResultSetContext {
     private final ResultSetViewer viewer;
@@ -68,7 +71,32 @@ class ResultSetContextImpl implements IResultSetContext {
     @Override
     public String getDocumentContentType() {
         DBDAttributeBinding docAttr = viewer.getModel().getDocumentAttribute();
-        return docAttr == null ? null : docAttr.getValueHandler().getValueContentType(docAttr);
+        if (docAttr != null) {
+            return docAttr.getValueHandler().getValueContentType(docAttr);
+        }
+
+        final Pair<DBDAttributeBinding, String> contentAttribute = getUniqueContentAttribute();
+        if (contentAttribute != null) {
+            return contentAttribute.getSecond();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public DBDAttributeBinding getDocumentAttribute() {
+        final DBDAttributeBinding documentAttribute = viewer.getModel().getDocumentAttribute();
+        if (documentAttribute != null) {
+            return documentAttribute;
+        }
+
+        final Pair<DBDAttributeBinding, String> contentAttribute = getUniqueContentAttribute();
+        if (contentAttribute != null) {
+            return contentAttribute.getFirst();
+        }
+
+        return null;
     }
 
     @Override
@@ -88,5 +116,35 @@ class ResultSetContextImpl implements IResultSetContext {
             }
         }
         return false;
+    }
+
+    @Nullable
+    private Pair<DBDAttributeBinding, String> getUniqueContentAttribute() {
+        final DBPDataSource dataSource = viewer.getDataSource();
+
+        if (dataSource != null) {
+            final DBDAttributeContentTypeProvider provider = GeneralUtils.adapt(dataSource, DBDAttributeContentTypeProvider.class);
+
+            if (provider != null) {
+                Pair<DBDAttributeBinding, String> result = null;
+
+                for (DBDAttributeBinding attr : viewer.getModel().getAttributes()) {
+                    final String contentType = provider.getContentType(attr);
+
+                    if (CommonUtils.isNotEmpty(contentType)) {
+                        if (result == null) {
+                            result = new Pair<>(attr, contentType);
+                        } else {
+                            // We want to retrieve a "unique" attribute that should be the only one in the result set
+                            break;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        return null;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,13 +46,14 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
     private ERDModelAdapter modelAdapter;
     private final ERDDecorator decorator;
     private boolean needsAutoLayout;
+    private boolean dirty;
 
     private final Map<ERDNote, NodeVisualInfo> noteVisuals = new IdentityHashMap<>();
     private final Map<DBSEntity, NodeVisualInfo> entityVisuals = new IdentityHashMap<>();
 
     private ERDAttributeVisibility attributeVisibility;
     private ERDViewStyle[] attributeStyles;
-
+    
     public EntityDiagram(DBSObject container, String name, ERDContentProvider contentProvider, ERDDecorator decorator) {
         super(container, name, contentProvider);
         // Get model adapter (force adapter plugin activation if needed)
@@ -190,5 +191,13 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
             return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
         });
         return children;
+    }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 }

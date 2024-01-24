@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.PolygonDecoration;
-import org.eclipse.draw2dl.PolylineConnection;
-import org.eclipse.gef3.EditPolicy;
-import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
-import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.PolygonDecoration;
+import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 
 public class LockGraphEdgeEditPart extends AbstractConnectionEditPart {
 

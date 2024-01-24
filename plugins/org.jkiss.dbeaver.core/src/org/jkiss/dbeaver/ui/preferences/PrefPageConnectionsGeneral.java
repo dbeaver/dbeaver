@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,14 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
@@ -49,6 +52,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionNameResolver;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,6 +62,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+    private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;
@@ -118,6 +123,40 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             );
         }
 
+        if (DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
+            createWinstoreSettings(composite);
+        }
+
+        {
+            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_eclipse_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Label descLabel = new Label(groupObjects, SWT.WRAP);
+            descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
+
+            // Link to secure storage config
+            addLinkToSettings(groupObjects, PrefPageDrivers.PAGE_ID);
+            addLinkToSettings(groupObjects, PrefPageErrorHandle.PAGE_ID);
+            addLinkToSettings(groupObjects, PrefPageMetaData.PAGE_ID);
+            addLinkToSettings(groupObjects, PrefPageTransactions.PAGE_ID);
+        }
+
+        Link urlHelpLabel = UIUtils.createLink(
+            composite,
+            "<a>" + CoreMessages.pref_page_connections_wiki_link + "</a>",
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK));
+                }
+            });
+        GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
+        urlHelpLabel.setLayoutData(gridData);
+
+        updateCombosAndSettings();
+
+        return composite;
+    }
+
+    private void createWinstoreSettings(Composite composite) {
         if (RuntimeUtils.isWindows()) {
             Group settings = UIUtils.createControlGroup(
                 composite,
@@ -126,8 +165,6 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 GridData.FILL_HORIZONTAL,
                 300
             );
-            
-
             if (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
                 || (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
                 && !System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE).equalsIgnoreCase(VALUE_TRUST_STRORE_TYPE_WINDOWS))
@@ -149,22 +186,29 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
             }
         }
-        
-        {
-            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_eclipse_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            Label descLabel = new Label(groupObjects, SWT.WRAP);
-            descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
+    }
 
-            // Link to secure storage config
-            addLinkToSettings(groupObjects, PrefPageDrivers.PAGE_ID);
-            addLinkToSettings(groupObjects, PrefPageErrorHandle.PAGE_ID);
-            addLinkToSettings(groupObjects, PrefPageMetaData.PAGE_ID);
-            addLinkToSettings(groupObjects, PrefPageTransactions.PAGE_ID);
+    protected void createWinstoreSettings(Group settings) {
+        if (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+            || (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
+            && !System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE).equalsIgnoreCase(VALUE_TRUST_STRORE_TYPE_WINDOWS))
+        ) {
+            Composite winTrustStoreComposite = UIUtils.createComposite(settings, 1);
+            useWinTrustStoreCheck = UIUtils.createCheckbox(
+                winTrustStoreComposite,
+                CoreMessages.pref_page_connections_use_win_cert_label,
+                ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+            );
+            winTrustStoreComposite.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_disabled_tip);
+            useWinTrustStoreCheck.setEnabled(false);
+        } else {
+            useWinTrustStoreCheck = UIUtils.createCheckbox(
+                settings,
+                CoreMessages.pref_page_connections_use_win_cert_label,
+                ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+            );
+            useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
         }
-
-        updateCombosAndSettings();
-
-        return composite;
     }
 
     @Override
@@ -215,13 +259,14 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     @Override
-    protected void performDefaults()
-    {
-        connectionDefaultNamePatternText.setText(ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+    protected void performDefaults() {
+        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        connectionDefaultNamePatternText.setText(preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
-        connectionNamePattern = ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        if (RuntimeUtils.isWindows()) {
-            useWinTrustStoreCheck.setSelection(ModelPreferences.getPreferences().getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
+        connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
+            useWinTrustStoreCheck.setSelection(
+                preferences.getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
         }
         updateCombosAndSettings();
     }
@@ -248,7 +293,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
         ModelPreferences.getPreferences().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
-        if (RuntimeUtils.isWindows()) {
+        if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             ModelPreferences.getPreferences().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
         return super.performOk();

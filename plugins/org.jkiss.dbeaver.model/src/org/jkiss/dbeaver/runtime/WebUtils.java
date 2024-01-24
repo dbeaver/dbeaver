@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.Base64;
+import java.util.Map;
 
 /**
  * WebUtils
@@ -65,6 +66,18 @@ public class WebUtils {
      */
     @NotNull
     private static URLConnection openURLConnection(String urlString, DBPAuthInfo authInfo, String referrer, int retryNumber) throws IOException {
+        return openURLConnection(urlString, authInfo, referrer, "GET", retryNumber, 10000, null);
+    }
+
+    public static URLConnection openURLConnection(
+        String urlString,
+        DBPAuthInfo authInfo,
+        String referrer,
+        String method,
+        int retryNumber,
+        int timeout,
+        Map<String, String> headers
+    ) throws IOException {
         if (retryNumber > MAX_RETRY_COUNT) {
             throw new IOException("Too many redirects (" + retryNumber + ")");
         } else if (retryNumber > 1) {
@@ -85,11 +98,11 @@ public class WebUtils {
 
         URL url = new URL(urlString);
         final URLConnection connection = (proxy == null ? url.openConnection() : url.openConnection(proxy));
-        connection.setReadTimeout(10000);
-        connection.setConnectTimeout(10000);
+        connection.setReadTimeout(timeout);
+        connection.setConnectTimeout(timeout);
         if (connection instanceof HttpURLConnection) {
             final HttpURLConnection httpConnection = (HttpURLConnection) connection;
-            httpConnection.setRequestMethod("GET"); //$NON-NLS-1$
+            httpConnection.setRequestMethod(method); //$NON-NLS-1$
             httpConnection.setInstanceFollowRedirects(true);
             HttpURLConnection.setFollowRedirects(true);
             connection.setRequestProperty(
@@ -107,16 +120,25 @@ public class WebUtils {
                 connection.setRequestProperty("Authorization", "Basic " + encoded);
             }
         }
-        connection.connect();
-        if (connection instanceof HttpURLConnection) {
-            final HttpURLConnection httpConnection = (HttpURLConnection) connection;
-            final int responseCode = httpConnection.getResponseCode();
-            if (responseCode != 200) {
-                if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-                    String newUrl = connection.getHeaderField("Location");
-                    return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
+        if (headers != null) {
+            for (Map.Entry<String, String> me : headers.entrySet()) {
+                connection.setRequestProperty(me.getKey(), me.getValue());
+            }
+        }
+        if ("POST".equals(method)) {
+            connection.setDoOutput(true);
+        } else {
+            connection.connect();
+            if (connection instanceof HttpURLConnection) {
+                final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                final int responseCode = httpConnection.getResponseCode();
+                if (responseCode != 200) {
+                    if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+                        String newUrl = connection.getHeaderField("Location");
+                        return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
+                    }
+                    throw new IOException("Can't open '" + urlString + "': " + httpConnection.getResponseMessage());
                 }
-                throw new IOException("Can't open '" + urlString + "': " + httpConnection.getResponseMessage());
             }
         }
 

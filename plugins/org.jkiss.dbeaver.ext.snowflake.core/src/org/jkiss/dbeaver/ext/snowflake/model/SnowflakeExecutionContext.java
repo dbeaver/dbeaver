@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     void setDefaultCatalog(DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable DBSObject schema, boolean force)
             throws DBCException {
         String catalogName = catalog.getName();
-        if (!force && catalogName.equals(activeDatabaseName)) {
+        if (!force && catalogName.equals(activeDatabaseName) && (schema == null || schema.getName().equals(activeSchemaName))) {
             return;
         }
         DBSObject oldActiveDatabase = getDefaultCatalog();

@@ -34,17 +34,20 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.data.gis.leaflet.tiles">
-        <tiles id="osm" label="OpenStreetMap" layersDefinition="'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
+        <tiles id="osm" label="OpenStreetMap" layersDefinition="'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxNativeZoom: 19,
+            maxZoom: 24,
             attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors',
             id: 'osm.streets'}"/>
         <tiles id="otm" label="OpenTopoMap" layersDefinition="'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            maxZoom: 17,
+            maxNativeZoom: 17,
+            maxZoom: 24,
             attribution: 'Map data: &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors,' +
                 ' &lt;a href=&quot;http://viewfinderpanoramas.org&quot;>SRTM&lt;/a> | Map style: &amp;copy; &lt;a href=&quot;https://opentopomap.org&quot;>OpenTopoMap&lt;/a> (&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/3.0/&quot;>CC-BY-SA&lt;/a>)',
             id: 'opentopomap.main'}"/>
         <tiles id="mapbox" label="MapBox" layersDefinition="'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-            maxZoom: 18,
+            maxNativeZoom: 18,
+            maxZoom: 24,
             attribution: 'Map data &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/&quot; target=&quot;_new&quot;>OpenStreetMap&lt;/a> contributors ' +
             '&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/2.0/&quot; target=&quot;_new&quot;>CC-BY-SA&lt;/a>, ' +
             'Imagery &lt;a href=&quot;https://www.mapbox.com/&quot; target=&quot;_new&quot;>Mapbox&lt;/a>',
@@ -59,7 +62,8 @@
 			attribution: 'Map tiles by &lt;a href=&quot;http://stamen.com&quot;&gt;Stamen Design&lt;/a&gt;, &lt;a href=&quot;http://creativecommons.org/licenses/by/3.0&quot;&gt;CC BY 3.0&lt;/a&gt; &amp;mdash; Map data &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStreetMap&lt;/a&gt; contributors',
 			subdomains: 'abcd',
 			minZoom: 0,
-			maxZoom: 20,
+			maxNativeZoom: 20,
+                        maxZoom: 24,
 			ext: 'png',
             id: 'stamen.mono'}"/>
         <tiles id="Esri_WorldStreetMap" label="ESRI StreetMap" layersDefinition="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -71,7 +75,8 @@
         <tiles id="CartoDB_Voyager" label="CartoDB TopoMap" layersDefinition="'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
 			attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStreetMap&lt;/a&gt; contributors &amp;copy; &lt;a href=&quot;https://carto.com/attributions&quot;&gt;CARTO&lt;/a&gt;',
 			subdomains: 'abcd',
-			maxZoom: 19,
+			maxNativeZoom: 19,
+                        maxZoom: 24,
             id: 'carto.topo'}"/>
     </extension>
     <extension point="org.jkiss.dbeaver.resultset.presentation">

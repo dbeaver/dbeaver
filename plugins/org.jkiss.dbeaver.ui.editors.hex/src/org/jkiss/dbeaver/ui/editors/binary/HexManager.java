@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.binary.dialogs.FindReplaceDialog;
 import org.jkiss.dbeaver.ui.editors.binary.dialogs.GoToDialog;
 
@@ -441,11 +442,19 @@ public class HexManager {
     public void openFile(File aFile, String charset)
         throws IOException
     {
+        setContent(new BinaryContent(aFile), charset);
+    }
+
+    /**
+     * Sets new content for editing
+     *
+     * @param newContent the content to be edited
+     */
+    public void setContent(@NotNull BinaryContent newContent, String charset) {
         if (content != null) {
             content.dispose();
-            content = null;
         }
-        content = new BinaryContent(aFile);  // throws IOException
+        content = newContent;
         hexEditControl.setCharset(charset);
         hexEditControl.setContentProvider(content, true);
     }

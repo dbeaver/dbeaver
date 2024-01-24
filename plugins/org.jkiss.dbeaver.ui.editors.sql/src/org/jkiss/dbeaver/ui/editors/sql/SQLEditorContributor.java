@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
@@ -46,7 +43,10 @@ public class SQLEditorContributor extends TextEditorActionContributor
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
 
     // It cannot be static! Otherwise item state cache become corrupted (I guess)
-    private final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE = new StatusLineContributionItem("SelectionState", true, 12);
+    private final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE
+        = new StatusLineContributionItem(SQLEditorBase.STATS_CATEGORY_SELECTION_STATE, true, 12);
+    private final StatusLineContributionItem STATUS_FIELD_TRANSACTION_TIMEOUT
+        = new StatusLineContributionItem(SQLEditor.STATS_CATEGORY_TRANSACTION_TIMEOUT, true, 25);
 
     private SQLEditorBase activeEditorPart;
 
@@ -124,6 +124,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
 
             {
                 activeEditorPart.setStatusField(STATUS_FIELD_SELECTION_STATE, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
+                activeEditorPart.setStatusField(STATUS_FIELD_TRANSACTION_TIMEOUT, SQLEditor.STATS_CATEGORY_TRANSACTION_TIMEOUT);
             }
 
         }
@@ -162,6 +163,9 @@ public class SQLEditorContributor extends TextEditorActionContributor
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_QUERY_NEXT));
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_QUERY_PREV));
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_GOTO_MATCHING_BRACKET));
+                navMenu.add(new Separator());
+                navMenu.add(ActionUtils.makeCommandContribution(window, IWorkbenchCommandConstants.NAVIGATE_NEXT));
+                navMenu.add(ActionUtils.makeCommandContribution(window, IWorkbenchCommandConstants.NAVIGATE_PREVIOUS));
             }
         }
     }
@@ -197,6 +201,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
         }
 
         statusLineManager.add(STATUS_FIELD_SELECTION_STATE);
+        statusLineManager.add(STATUS_FIELD_TRANSACTION_TIMEOUT);
     }
 
 }

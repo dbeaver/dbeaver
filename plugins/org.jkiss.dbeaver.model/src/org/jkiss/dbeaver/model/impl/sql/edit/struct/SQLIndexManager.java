@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,17 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndex;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * JDBC constraint manager
  */
-public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? extends DBSObjectContainer, TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TABLE_TYPE extends AbstractTable>
     extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -52,12 +52,16 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
-        final TABLE_TYPE table = command.getObject().getTable();
+        final TABLE_TYPE table = (TABLE_TYPE)command.getObject().getTable();
         final OBJECT_TYPE index = command.getObject();
 
         // Create index
         final String indexName = DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName());
-        index.setName(indexName);
+        if (index instanceof DBPNamedObject2) {
+            ((DBPNamedObject2) index).setName(indexName);
+        } else {
+            log.error("Cannot set index name");
+        }
 
         final String tableName = DBUtils.getEntityScriptName(table, options);
 
@@ -110,7 +114,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_index,
                 getDropIndexPattern(command.getObject())
-                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
+                    .replace(PATTERN_ITEM_TABLE, DBUtils.getObjectFullName(command.getObject().getTable(), DBPEvaluationContext.DDL))
                     .replace(PATTERN_ITEM_INDEX, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
                     .replace(PATTERN_ITEM_INDEX_SHORT, DBUtils.getQuotedIdentifier(command.getObject())))
         );

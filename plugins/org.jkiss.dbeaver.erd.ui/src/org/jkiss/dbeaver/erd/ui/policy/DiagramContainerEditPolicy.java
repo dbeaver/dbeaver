@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.gef3.EditPart;
-import org.eclipse.gef3.Request;
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.AbstractEditPolicy;
-import org.eclipse.gef3.editpolicies.ContainerEditPolicy;
-import org.eclipse.gef3.requests.CreateRequest;
-import org.eclipse.gef3.requests.GroupRequest;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.AbstractEditPolicy;
+import org.eclipse.gef.editpolicies.ContainerEditPolicy;
+import org.eclipse.gef.requests.CreateRequest;
+import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.command.NoteCreateCommand;
@@ -43,7 +43,7 @@ import java.util.List;
 public class DiagramContainerEditPolicy extends ContainerEditPolicy {
 
     /**
-     * @see org.eclipse.gef3.editpolicies.ContainerEditPolicy#getAddCommand(org.eclipse.gef3.requests.GroupRequest)
+     * @see org.eclipse.gef.editpolicies.ContainerEditPolicy#getAddCommand(org.eclipse.gef.requests.GroupRequest)
      */
     @Override
     protected Command getAddCommand(GroupRequest request)
@@ -53,7 +53,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
     }
 
     /**
-     * @see ContainerEditPolicy#getCreateCommand(org.eclipse.gef3.requests.CreateRequest)
+     * @see ContainerEditPolicy#getCreateCommand(org.eclipse.gef.requests.CreateRequest)
      */
     @Override
     protected Command getCreateCommand(CreateRequest request)
@@ -85,7 +85,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
     }
 
     /**
-     * @see AbstractEditPolicy#getTargetEditPart(org.eclipse.gef3.Request)
+     * @see AbstractEditPolicy#getTargetEditPart(org.eclipse.gef.Request)
      */
     @Override
     public EditPart getTargetEditPart(Request request)

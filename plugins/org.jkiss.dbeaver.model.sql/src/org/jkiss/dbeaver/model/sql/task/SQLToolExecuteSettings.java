@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.task;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -24,7 +25,6 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskSettingsInput;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -63,17 +63,11 @@ public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> implements DB
         objectList.addAll(inputObjects);
     }
 
-    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
         try {
             runnableContext.run(true, true, monitor -> {
                 List<OBJECT_TYPE> objList = new ArrayList<>();
                 for (Map<String, Object> objectConfig : JSONUtils.getObjectList(config, "objects")) {
-                    String projectName = CommonUtils.toString(objectConfig.get("project"));
-                    DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                    if (project == null) {
-                        log.error("Project '" + projectName + "' not found");
-                        continue;
-                    }
                     String objectId = CommonUtils.toString(objectConfig.get("objectId"));
                     try {
                         OBJECT_TYPE object = (OBJECT_TYPE) DBUtils.findObjectById(monitor, project, objectId);

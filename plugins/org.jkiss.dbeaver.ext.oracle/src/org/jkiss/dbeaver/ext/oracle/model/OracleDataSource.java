@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -33,12 +32,16 @@ import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDAttributeContentTypeProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
-import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -64,7 +67,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, IAdaptable {
+public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, DBPAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -223,8 +226,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 throw new DBException("You can't set empty password");
             }
             Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-            connectProps.setProperty(JDBCConstants.PROP_USER, passwordInfo.getUserName());
-            connectProps.setProperty(JDBCConstants.PROP_PASSWORD, passwordInfo.getOldPassword());
+            connectProps.setProperty(DBConstants.PROP_USER, passwordInfo.getUserName());
+            connectProps.setProperty(DBConstants.PROP_PASSWORD, passwordInfo.getOldPassword());
             connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
 
             final String url = getConnectionURL(connectionInfo);
@@ -427,6 +430,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return tablespaceCache.getAllObjects(monitor, this);
     }
 
+    public TablespaceCache getTablespaceCache() {
+        return tablespaceCache;
+    }
+
     @Association
     public Collection<OracleUser> getUsers(DBRProgressMonitor monitor) throws DBException {
         return userCache.getAllObjects(monitor, this);
@@ -543,6 +550,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         this.userCache.clearCache();
         this.profileCache.clearCache();
         this.roleCache.clearCache();
+        hasStatistics = false;
 
         this.initialize(monitor);
 
@@ -587,6 +595,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             return adapter.cast(new OracleQueryPlanner(this));
         } else if(adapter == DBAUserPasswordManager.class) {
             return adapter.cast(new OracleChangeUserPasswordManager(this));
+        } else if (adapter == DBDAttributeContentTypeProvider.class) {
+            return adapter.cast(OracleAttributeContentTypeProvider.INSTANCE);
         }
         return super.getAdapter(adapter);
     }
@@ -815,6 +825,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     public boolean isStatisticsCollected() {
         return hasStatistics;
+    }
+
+    void resetStatistics() {
+        hasStatistics = false;
     }
 
     @Override
@@ -1057,7 +1071,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
-            case BOOLEAN: return OracleConstants.TYPE_NAME_BOOLEAN;
+            case BOOLEAN: return SQLConstants.DATA_TYPE_BOOLEAN;
             case NUMERIC: return OracleConstants.TYPE_NAME_NUMERIC;
             case DATETIME: return OracleConstants.TYPE_NAME_TIMESTAMP;
             case BINARY:

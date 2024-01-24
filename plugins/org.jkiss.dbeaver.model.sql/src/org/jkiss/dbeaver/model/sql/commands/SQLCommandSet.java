@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Locale;
-
 /**
  * Control command handler
  */
@@ -42,7 +40,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         if (varNameEnd == -1) {
             throw new DBCException("Missing variable name. Expected syntax:\n@set varName = value or expression");
         }
-        String varName = prepareVarName(sqlDialect, parameter.substring(0, varNameEnd));
+        String varName = parameter.substring(0, varNameEnd);
         int divPos = parameter.indexOf('=', varNameEnd);
         if (divPos == -1) {
             throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");
@@ -55,7 +53,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
             );
         }
         String varValue = parameter.substring(divPos + 1).trim();
-        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
+        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)), true);
         scriptContext.setVariable(varName, varValue);
 
         return true;
@@ -67,9 +65,9 @@ public class SQLCommandSet implements SQLControlCommandHandler {
     @NotNull
     public static String prepareVarName(@NotNull SQLDialect sqlDialect, @NotNull String rawName) {
         if (sqlDialect.isQuotedIdentifier(rawName)) {
-            return sqlDialect.getUnquotedIdentifier(rawName);
+            return sqlDialect.getUnquotedIdentifier(rawName, true);
         } else {
-            return rawName.toUpperCase(Locale.ENGLISH);
+            return rawName;
         }
     }
 }

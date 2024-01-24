@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 
 public class StreamDataImporterColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
 
@@ -39,9 +42,32 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         this.dataKind = dataKind;
     }
 
-    public void updateMaxLength(long maxLength) {
-        if (getMaxLength() < maxLength) {
-            setMaxLength(roundToNextPowerOf2(maxLength));
+    /**
+     *
+     * Updates current data type max length if needed
+     *
+     * @param dataSource to search data source specific options
+     * @param maxLengthFromData the required length for correct data storing from foreign sources for this data type
+     */
+    public void updateMaxLength(@Nullable DBPDataSource dataSource, long maxLengthFromData) {
+        long maxLength = getMaxLength();
+        DBPPreferenceStore globalPreferenceStore = DTActivator.getDefault().getPreferences();
+        if (dataSource != null) {
+            // First check data source settings for max data type length
+            DBPPreferenceStore dataSourcePreferenceStore = dataSource.getContainer().getPreferenceStore();
+            int maxTypeLengthFromPref = dataSourcePreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH);
+            if (dataSourcePreferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) && maxLength > maxTypeLengthFromPref) {
+                setMaxLength(maxTypeLengthFromPref);
+                return;
+            }
+        }
+        if (globalPreferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) &&
+            maxLength > globalPreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH)
+        ) {
+            // Also change if global settings have max data type value
+            setMaxLength(globalPreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH));
+        } else if (maxLength < maxLengthFromData) {
+            setMaxLength(roundToNextPowerOf2(maxLengthFromData));
         }
     }
 

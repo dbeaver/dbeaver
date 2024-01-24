@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,20 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorPresentation;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * SQLPresentationDescriptor
@@ -40,9 +44,9 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
-    private final SQLEditorPresentation.ActivationType activationType;
-    private final String toggleCommandId;
+    private final int order;
     private final List<SQLPresentationPanelDescriptor> panels = new ArrayList<>();
+    private final Expression enabledWhen;
 
     public SQLPresentationDescriptor(IConfigurationElement config)
     {
@@ -52,18 +56,11 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         this.description = config.getAttribute("description");
         this.implClass = new ObjectType(config.getAttribute("class"));
         this.icon = iconToImage(config.getAttribute("icon"));
-        String activationStr = config.getAttribute("activation");
-        if (CommonUtils.isEmpty(activationStr)) {
-            this.activationType = SQLEditorPresentation.ActivationType.HIDDEN;
-        } else {
-            this.activationType = SQLEditorPresentation.ActivationType.valueOf(activationStr.toUpperCase(Locale.ENGLISH));
-        }
-        toggleCommandId = config.getAttribute("toggleCommand");
+        this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
         for (IConfigurationElement panelConfig : config.getChildren("panel")) {
-            // Load functions
-            SQLPresentationPanelDescriptor presentationDescriptor = new SQLPresentationPanelDescriptor(panelConfig);
-            this.panels.add(presentationDescriptor);
+            this.panels.add(new SQLPresentationPanelDescriptor(panelConfig));
         }
+        this.enabledWhen = getEnablementExpression(config);
     }
 
     public String getId() {
@@ -82,16 +79,21 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public SQLEditorPresentation.ActivationType getActivationType() {
-        return activationType;
-    }
-
-    public String getToggleCommandId() {
-        return toggleCommandId;
+    public int getOrder() {
+        return order;
     }
 
     public List<SQLPresentationPanelDescriptor> getPanels() {
         return panels;
+    }
+
+    @Nullable
+    public Expression getEnabledWhen() {
+        return enabledWhen;
+    }
+
+    public boolean isEnabled(@NotNull IWorkbenchSite site) {
+        return isExpressionTrue(enabledWhen, site);
     }
 
     public SQLEditorPresentation createPresentation()

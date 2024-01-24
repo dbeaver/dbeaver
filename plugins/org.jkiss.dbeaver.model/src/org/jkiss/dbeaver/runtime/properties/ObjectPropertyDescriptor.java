@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
-import org.eclipse.core.internal.runtime.Activator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.*;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -41,7 +43,10 @@ import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +58,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private final Property propInfo;
     private final String propName;
     private final String propDescription;
+    private final String propHint;
     private Method setter;
     private IPropertyValueTransformer valueTransformer;
     private IPropertyValueTransformer valueRenderer;
@@ -116,6 +122,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
                 propName :
                 getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false, locale);
+        this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
+            null :
+            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, propName, false, locale);
     }
 
     @Override
@@ -175,8 +184,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.href();
     }
 
-    public boolean supportsPreview()
-    {
+    public boolean supportsPreview() {
         return propInfo.supportsPreview();
     }
 
@@ -184,12 +192,15 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.password();
     }
 
+    public String getKeyName() {
+        return propInfo.keyName();
+    }
+
     public boolean isNonSecuredProperty() {
         return propInfo.nonSecuredProperty();
     }
 
-    public IPropertyValueTransformer getValueTransformer()
-    {
+    public IPropertyValueTransformer getValueTransformer() {
         return valueTransformer;
     }
 
@@ -288,6 +299,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return this.isViewable();
             case DBConstants.PROP_FEATURE_PASSWORD:
                 return this.isPassword();
+            case DBConstants.PROP_FEATURE_NON_SECURED:
+                return this.isNonSecuredProperty();
         }
 
         return ArrayUtils.contains(propInfo.features(), feature);
@@ -339,6 +352,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propDescription;
     }
 
+    @Override
+    public String getHint()
+    {
+        return propHint;
+    }
+
     @NotNull
     @Override
     public String getDisplayName()
@@ -387,9 +406,34 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return null;
             }
         }
+        if (object instanceof DPIClientObject) {
+            log.debug("Read DPI property " + getId());
+        }
+
         Method getter = getGetter();
         Object[] params = getter.getParameterCount() > 0 ?
             new Object[getter.getParameterCount()] : null;
+        Object finalObject = object;
+
+
+        InvocationSupplier<Object> readPropertyMethod;
+        if (object instanceof DPIClientObject dpiObject) {
+            readPropertyMethod = () -> {
+                try {
+                    return dpiObject.dpiPropertyValue(progressMonitor, getId());
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e, e.getMessage());
+                }
+            };
+        } else {
+            readPropertyMethod = () -> {
+                try {
+                    return getGetter().invoke(finalObject, params);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e, e.getMessage());
+                }
+            };
+        }
 
         if (isLazy() && params != null) {
             // Lazy (probably cached)
@@ -399,12 +443,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             params[0] = progressMonitor;
         }
         if (progressMonitor != null && isLazy() && object instanceof DBSObject) {
-            Object finalObject = object;
             Object[] finalResult = new Object[1];
             try {
                 DBExecUtils.tryExecuteRecover(progressMonitor, ((DBSObject) object).getDataSource(), param -> {
                     try {
-                        finalResult[0] = getter.invoke(finalObject, params);
+                        finalResult[0] = readPropertyMethod.get();
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -414,7 +457,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
             value = finalResult[0];
         } else {
-            value = getter.invoke(object, params);
+            value = readPropertyMethod.get();
         }
 
         if (formatValue) {
@@ -595,7 +638,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                     }
                 }
                 if (result == null) {
-                    if (type.equals(Property.RESOURCE_TYPE_NAME)) {
+                    if (type.equals(Property.RESOURCE_TYPE_NAME) && warnMissing) {
                         log.debug("Resource '" + messageID + "' not found in bundle " + bundle.getSymbolicName());
                     }
                     return defaultValue;
@@ -610,11 +653,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     private ResourceBundle getPluginResourceBundle(Bundle bundle, Class<?> ownerClass, String language) {
-        return Activator.getDefault().getLocalization(bundle, language);
+        return RuntimeUtils.getBundleLocalization(bundle, language);
         // Copied from ResourceTranslator.getResourceBundle
 //        Locale locale = (language == null) ? Locale.getDefault() : new Locale(language);
 //        return ResourceBundle.getBundle("plugin", locale, ownerClass.getClassLoader()); //$NON-NLS-1$
     }
-
 
 }

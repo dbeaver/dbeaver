@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@
 
 package org.jkiss.dbeaver.ext.firebird;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedureParameter;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTrigger;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTriggerType;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -148,20 +146,27 @@ public class FireBirdUtils {
                     args.add(param);
                 }
             }
-            Map<String, String> domainNames = new HashMap<>();
+            Map<String, List<String>> domainNames = new HashMap<>();
             try (JDBCSession session = DBUtils.openUtilSession(monitor, procedure, "Load domains used in procedure")) {
                 try (JDBCPreparedStatement stmt = session.prepareStatement(
-                        "SELECT RDB$PARAMETER_NAME, RDB$FIELD_SOURCE " +
+                        "SELECT RDB$PARAMETER_NAME, RDB$FIELD_SOURCE, RDB$DEFAULT_SOURCE " +
                         "FROM RDB$PROCEDURE_PARAMETERS rpp " +
                         "WHERE RDB$PROCEDURE_NAME = ? " +
                         "AND LEFT(rpp.RDB$FIELD_SOURCE, 4) <> 'RDB$'")) {
                     stmt.setString(1, procedure.getName());
                     try (JDBCResultSet rs = stmt.executeQuery()) {
                         while (rs.next()) {
-                            String paramName = rs.getString(1);
-                            String domainName = rs.getString(2);
+                            String paramName = JDBCUtils.safeGetString(rs, 1);
+                            String domainName = JDBCUtils.safeGetString(rs, 2);
+                            String defaultValue = JDBCUtils.safeGetString(rs, 3);
                             if (paramName != null && domainName != null) {
-                                domainNames.put(paramName.trim(), domainName.trim());
+                                if (CommonUtils.isNotEmpty(defaultValue)) {
+                                    domainNames.put(
+                                        paramName.trim(),
+                                        new ArrayList<>(Arrays.asList((domainName.trim()), defaultValue.trim())));
+                                } else {
+                                    domainNames.put(paramName.trim(), new ArrayList<>(Collections.singletonList((domainName.trim()))));
+                                }
                             }
                         }
                     }
@@ -186,11 +191,7 @@ public class FireBirdUtils {
                 sql.append("RETURNS ");
                 if (isFunction) {
                     GenericProcedureParameter param = results.get(0); // According Firebird documentation, functions return just one data type without parameter name
-                    sql.append(param.getTypeName());
-                    String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
-                    if (typeModifiers != null) {
-                        sql.append(typeModifiers);
-                    }
+                    addProcedureType(sql, param);
                     sql.append("\n");
                 } else {
                     sql.append("(\n");
@@ -211,19 +212,19 @@ public class FireBirdUtils {
         return sql.toString();
     }
 
-    private static void printParam(StringBuilder sql, GenericProcedureParameter param, Map<String, String> domainNames) {
+    private static void printParam(StringBuilder sql, GenericProcedureParameter param, Map<String, List<String>> domainNames) {
         String paramName = DBUtils.getQuotedIdentifier(param);
         sql.append(paramName).append(" ");
-        String domainName = domainNames.get(paramName.trim());
-        if (domainName != null) {
-            sql.append(domainName);
+        List<String> domainParameters = domainNames.get(paramName.trim());
+        if (!CommonUtils.isEmpty(domainParameters)) {
+            StringJoiner paramsJoiner = new StringJoiner(" ");
+            for (String parameter : domainParameters) {
+                paramsJoiner.add(parameter);
+            }
+            sql.append(paramsJoiner.toString());
             return;
         }
-        sql.append(param.getTypeName());
-        String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
-        if (typeModifiers != null) {
-            sql.append(typeModifiers);
-        }
+        addProcedureType(sql, param);
         boolean notNull = param.isRequired();
         if (notNull) {
             sql.append(" NOT NULL");
@@ -232,6 +233,25 @@ public class FireBirdUtils {
             String defaultValue = ((FireBirdProcedureParameter) param).getDefaultValue();
             if (!CommonUtils.isEmpty(defaultValue)) {
                 sql.append(" ").append(defaultValue);
+            }
+        }
+    }
+
+    private static void addProcedureType(@NotNull StringBuilder sql, @NotNull GenericProcedureParameter param) {
+        GenericDataSource dataSource = param.getDataSource();
+        if ((param instanceof FireBirdProcedureParameter par) &&
+                CommonUtils.isNotEmpty(par.getFieldName()) && CommonUtils.isNotEmpty(par.getRelationName())
+        ) {
+            // We need to use link on the original column syntax here instead of the real type name and modification
+            sql.append(" TYPE OF COLUMN ")
+                    .append(DBUtils.getQuotedIdentifier(dataSource, par.getRelationName()))
+                    .append(".")
+                    .append(DBUtils.getQuotedIdentifier(dataSource, par.getFieldName()));
+        } else {
+            sql.append(param.getTypeName());
+            String typeModifiers = SQLUtils.getColumnTypeModifiers(dataSource, param, param.getTypeName(), param.getDataKind());
+            if (typeModifiers != null) {
+                sql.append(typeModifiers);
             }
         }
     }

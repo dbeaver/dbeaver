@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,11 +242,13 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
     protected boolean determinePageCompletion() {
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
-                setErrorMessage("Source not specified for " + pipe.getConsumer().getObjectName());
+                setErrorMessage(NLS.bind(DTUIMessages.data_transfer_error_source_not_specified,
+                    pipe.getConsumer().getObjectName()));
                 return false;
             }
             if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
-                setErrorMessage("Target not specified for " + pipe.getProducer().getObjectName());
+                setErrorMessage(NLS.bind(DTUIMessages.data_transfer_error_target_not_specified,
+                    pipe.getProducer().getObjectName()));
                 return false;
             }
         }

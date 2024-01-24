@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_CATEGORIES, String.join(",", driver.getCategories()));
             JSONUtils.field(json, RegistryConstants.ATTR_CUSTOM, driver.isCustom());
             JSONUtils.field(json, RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
+            JSONUtils.field(json, RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES, driver.isPropagateDriverProperties());
             JSONUtils.field(json, RegistryConstants.ATTR_ANONYMOUS, driver.isAnonymousAccess());
             JSONUtils.field(json, "allowsEmptyPassword", driver.isAnonymousAccess());
             JSONUtils.field(json, RegistryConstants.ATTR_INSTANTIABLE, driver.isInstantiable());
@@ -159,10 +160,10 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             }
 
             // Properties
-            if (!CommonUtils.isEmpty(driver.getCustomConnectionProperties())) {
+            if (!CommonUtils.isEmpty(driver.getConnectionProperties())) {
                 json.name("connection-properties");
                 json.beginObject();
-                for (Map.Entry<String, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
+                for (Map.Entry<String, Object> propEntry : driver.getConnectionProperties().entrySet()) {
                     if (!CommonUtils.equalObjects(propEntry.getValue(), driver.getDefaultConnectionProperties().get(propEntry.getKey()))) {
                         json.name(CommonUtils.toString(propEntry.getKey()));
                         json.value(CommonUtils.toString(propEntry.getValue()));

@@ -2,12 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SLF4J binder
 Bundle-SymbolicName: org.jkiss.dbeaver.slf4j;singleton:=true
-Bundle-Version: 2.0.68.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 2.0.93.qualifier
+Bundle-Release-Date: 20240122
 Require-Bundle: org.jkiss.dbeaver.model
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: JKISS
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Export-Package: org.slf4j.impl
-Fragment-Host: org.slf4j.api
+Fragment-Host: slf4j.api
 Automatic-Module-Name: org.jkiss.dbeaver.slf4j
+Provide-Capability: osgi.serviceloader;osgi.serviceloader="org.slf4j.spi.SLF4JServiceProvider"

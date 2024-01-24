@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,10 +26,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
@@ -51,12 +54,11 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
     private static boolean buffers;
     private static boolean wal;
     private static boolean timing = true;
-    private static boolean summary;
 
     private static PostgreDataSource dataSource;
 
     @Override
-    public DBCQueryPlannerConfiguration configureObject(DBRProgressMonitor monitor, Object container, DBCQueryPlannerConfiguration configuration, Map<String, Object> options) {
+    public DBCQueryPlannerConfiguration configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DBCQueryPlannerConfiguration configuration, @NotNull Map<String, Object> options) {
         if (container instanceof DBCQueryPlanner) {
             DBPDataSource dbpDataSource = ((DBCQueryPlanner) container).getDataSource();
             if (dbpDataSource instanceof PostgreDataSource) {
@@ -84,9 +86,9 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     if (isVersionSupports(9, 2)) {
                         parameters.put(PostgreQueryPlaner.PARAM_TIMING, timing);
                     }
-                    if (isVersionSupports(10, 0)) {
+                    /*if (isVersionSupports(10, 0)) {
                         parameters.put(PostgreQueryPlaner.PARAM_SUMMARY, summary);
-                    }
+                    }*/
                     return configuration;
                 }
                 return null;
@@ -102,7 +104,6 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
 
         private Button walCheckbox;
         private Button timingCheckbox;
-        private Button summaryCheckbox;
         private Button buffersCheckbox;
 
         public PlanConfigDialog() {
@@ -133,16 +134,30 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     analyse = analyseCheckbox.getSelection();
                     if (walCheckbox != null) {
                         walCheckbox.setEnabled(analyseCheckboxSelection);
+                        if (walCheckbox.getSelection() && !analyseCheckboxSelection) {
+                            walCheckbox.setSelection(false);
+                            wal = false;
+                        }
                     }
                     if (timingCheckbox != null) {
                         timingCheckbox.setEnabled(analyseCheckboxSelection);
+                        if (!analyseCheckboxSelection) {
+                            timing = false;
+                        } else if (timingCheckbox.getSelection() && !timing) {
+                            timing = true;
+                        }
                     }
-                    if (summaryCheckbox != null && analyseCheckboxSelection) {
+                    /*if (summaryCheckbox != null && analyseCheckboxSelection) {
                         // SUMMARY has default value for ANALYZE parameter as true
                         summaryCheckbox.setSelection(true);
-                    }
+                        summary = true;
+                    }*/
                     if (buffersCheckbox != null && !isServerAtLeast13) {
                         buffersCheckbox.setEnabled(analyseCheckboxSelection);
+                        if (buffersCheckbox.getSelection() && !analyseCheckboxSelection) {
+                            buffersCheckbox.setSelection(false);
+                            buffers = false;
+                        }
                     }
                 }
             });
@@ -240,7 +255,8 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                 timingCheckbox.setEnabled(analyseCheckbox.getSelection());
             }
 
-            if (isVersionSupports(10, 0)) {
+            // Summary needs special support. Maybe we will add it some day.
+            /*if (isVersionSupports(10, 0)) {
                 summaryCheckbox = UIUtils.createCheckbox(
                     settingsGroup,
                     PostgreMessages.dialog_query_planner_settings_summary,
@@ -253,7 +269,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                         summary = summaryCheckbox.getSelection();
                     }
                 });
-            }
+            }*/
 
             return dialogArea;
         }

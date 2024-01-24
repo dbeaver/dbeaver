@@ -24,33 +24,54 @@
                         icon="icons/bigquery_icon.png"
                         iconBig="icons/bigquery_icon_big.png"
                         class="com.simba.googlebigquery.jdbc42.Driver"
-                        sampleURL="jdbc:bigquery://{host}:{port};ProjectId={database};OAuthType=0;OAuthServiceAcctEmail={user};OAuthPvtKeyPath={server};"
+                        sampleURL="jdbc:bigquery://{host}:{port}"
                         defaultHost="https://www.googleapis.com/bigquery/v2"
                         defaultPort="443"
                         description="Google BigQuery driver"
                         webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
                         propertiesURL="https://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
-                        categories="bigdata"
+                        categories="bigdata,gcp"
                         singleConnection="true">
-                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.21.1025.zip" bundle="!drivers.bigquery"/>
+                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.5.0.1001.zip" bundle="!drivers.bigquery"/>
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.bigquery"/>
 
                     <file type="jar" path="drivers/bigquery" bundle="drivers.bigquery"/>
+                    <file type="jar" path="drivers/google-jdbc-deps" bundle="drivers.bigquery"/>
                     <file type="license" path="drivers/bigquery/EULA.txt" bundle="drivers.bigquery"/>
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <parameter name="supports-catalog-selection" value="false"/>
+                    <parameter name="supports-ddl-transactions" value="false"/>
                     <parameter name="supports-schema-selection" value="false"/>
                 </driver>
-
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="AdditionalProjects" label="Additional project(s)" type="string" description="Comma-separated list of projects (optional)"/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
 
         </datasource>
+    </extension>
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                id="org.jkiss.dbeaver.ext.bigquery.model.data.BigQueryValueHandlerProvider"
+                class="org.jkiss.dbeaver.ext.bigquery.model.data.BigQueryValueHandlerProvider"
+                label="BigQuery data types provider"
+                description="BigQuery data types provider">
+            <datasource id="bigquery"/>
+            <type standard="ARRAY"/>
+            <type standard="STRUCT"/>
+        </provider>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="google_bigquery" parent="generic" class="org.jkiss.dbeaver.ext.bigquery.model.BigQuerySQLDialect" label="BigQuery" description="Google BigQuery." icon="icons/bigquery_icon.png">
         </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="bigquery" class="org.jkiss.dbeaver.ext.bigquery.model.BigQueryMetaModel" driverClass="com.simba.googlebigquery.jdbc42.Driver"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceAuth">

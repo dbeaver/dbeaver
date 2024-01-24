@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
     public static final String PROP_KILL_QUERY = "killQuery";
 
     public static final String OPTION_HIDE_SLEEPING = "hideSleeping";
+    public static final String OPTION_SHOW_PERFORMANCE = "showPerformance";
 
     private final MySQLDataSource dataSource;
 
@@ -64,7 +65,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
-                        MySQLSession sessionInfo = new MySQLSession(dbResult);
+                        MySQLSession sessionInfo = new MySQLSession(dbResult, options);
                         if (hideSleeping && "Sleep".equals(sessionInfo.getCommand())) {
                             continue;
                         }
@@ -101,6 +102,30 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
 
     @Override
     public String generateSessionReadQuery(Map<String, Object> options) {
+        if (dataSource.supportsSysSchema() && CommonUtils.toBoolean(options.get(OPTION_SHOW_PERFORMANCE))) {
+            return "SELECT\n" +
+                "\tip.*,\n" +
+                "\tsp.statement_latency,\n" +
+                "\tsp.progress,\n" +
+                "\tsp.lock_latency,\n" +
+                "\tsp.rows_examined,\n" +
+                "\tsp.rows_sent,\n" +
+                "\tsp.rows_affected,\n" +
+                "\tsp.tmp_tables,\n" +
+                "\tsp.tmp_disk_tables,\n" +
+                "\tsp.full_scan,\n" +
+                "\tsp.last_statement,\n" +
+                "\tsp.last_statement_latency,\n" +
+                "\tsp.current_memory,\n" +
+                "\tsp.source,\n" +
+                "\tsp.trx_latency,\n" +
+                "\tsp.trx_state,\n" +
+                "\tsp.trx_autocommit,\n" +
+                "\tsp.program_name\n" +
+                "FROM information_schema.PROCESSLIST ip\n" +
+                "LEFT JOIN sys.processlist sp ON\n" +
+                "\tsp.CONN_ID = ip.ID";
+        }
         return "SHOW FULL PROCESSLIST";
     }
 }

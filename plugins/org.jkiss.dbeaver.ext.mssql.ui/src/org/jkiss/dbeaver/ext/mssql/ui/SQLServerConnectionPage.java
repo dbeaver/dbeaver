@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
@@ -38,13 +39,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
-
 
 public class SQLServerConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
-
-    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
-    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
 
     private Label hostLabel;
     private Text hostText;
@@ -57,6 +53,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     private Button showAllDatabases;
     private Button showAllSchemas;
     private Button encryptPassword;
+    private Button trustServerCertificate;
 
     private boolean needsPort;
 
@@ -185,7 +182,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             Group secureGroup = new Group(settingsGroup, SWT.NONE);
             secureGroup.setText(SQLServerUIMessages.dialog_setting_connection_settings);
             secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            secureGroup.setLayout(new RowLayout());
+            secureGroup.setLayout(new GridLayout(1, false));
 
             if (!isSqlServer) {
                 encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 1);
@@ -199,6 +196,15 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                     1);
             }
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 1);
+
+            if (isSqlServer) {
+                trustServerCertificate = UIUtils.createCheckbox(
+                    secureGroup,
+                    SQLServerUIMessages.dialog_setting_trust_server_certificate,
+                    SQLServerUIMessages.dialog_setting_trust_server_certificate_tip,
+                    false,
+                    1);
+            }
         }
 
         createDriverPanel(settingsGroup);
@@ -216,6 +222,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
 
     @Override
     public Image getImage() {
+        DBPImage logoImage = site.getDriver().getLogoImage();
+        if (logoImage != null) {
+            return DBeaverIcons.getImage(logoImage);
+        }
         Image logo = LOGO_SYBASE;
         if (isSqlServer()) {
             if (isDriverAzure()) {
@@ -281,6 +291,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                 CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES)));
         }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
+        if (trustServerCertificate != null) {
+            trustServerCertificate.setSelection(CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE), false));
+        }
 
         if (!isSqlServer() && encryptPassword != null) {
             encryptPassword.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD)));
@@ -300,7 +314,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         
         connectionInfo.setConfigurationType(
-            typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+            typeURLRadio != null && typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
         
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -321,12 +335,16 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
                 String.valueOf(showAllSchemas.getSelection()));
         }
+        if (trustServerCertificate != null) {
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE,
+                String.valueOf(trustServerCertificate.getSelection()));
+        }
 
         if (encryptPassword != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD,
                 String.valueOf(encryptPassword.getSelection()));
         }
-        if (typeURLRadio.getSelection()) {
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
             connectionInfo.setUrl(urlText.getText());
         }
 
@@ -337,17 +355,11 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
     }
-    
-    
-    @Override
-    protected boolean isCustomURL() {
-        return typeURLRadio.getSelection();
-    }
 
     private void updateUrl() {
         DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
         saveSettings(dataSourceContainer);
-        if (typeURLRadio.getSelection()) {
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
             urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
         } else {
             urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,7 +165,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             String confirmMessage;
             if (dependentObjectsListNodes.size() == 1) {
                 DBNDatabaseNode node = (DBNDatabaseNode) dependentObjectsListNodes.get(0);
-                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_one_object, node.getNodeType(), node.getNodeName());
+                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_one_object,
+                    node.getNodeTypeLabel(),
+                    node.getNodeDisplayName());
             } else {
                 confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_objects, dependentObjectsListNodes.size());
             }

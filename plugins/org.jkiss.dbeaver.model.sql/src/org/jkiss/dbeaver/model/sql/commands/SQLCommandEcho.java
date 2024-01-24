@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class SQLCommandEcho implements SQLControlCommandHandler {
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
         String parameter = command.getParameter();
         if (parameter != null) {
-            parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext));
+            parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext), true);
         }
         scriptContext.getOutputWriter().println(null, parameter);
 

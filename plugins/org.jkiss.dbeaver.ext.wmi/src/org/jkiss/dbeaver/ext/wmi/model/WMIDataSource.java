@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
@@ -45,7 +45,7 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource extends AbstractDataSource implements DBSInstance, DBCExecutionContext, IAdaptable
+public class WMIDataSource extends AbstractDataSource implements DBSInstance, DBCExecutionContext, DBPAdaptable
 {
     private WMINamespace rootNamespace;
     private final SQLDialect dialect;

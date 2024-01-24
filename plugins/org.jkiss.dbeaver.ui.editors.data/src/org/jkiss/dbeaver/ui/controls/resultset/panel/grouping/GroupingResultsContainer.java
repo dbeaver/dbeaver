@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -37,12 +29,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
@@ -50,7 +40,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
@@ -58,13 +48,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public static final String FUNCTION_COUNT = "COUNT";
 
-    public static final String DEFAULT_FUNCTION = FUNCTION_COUNT + "(*)";
-
     private final IResultSetPresentation presentation;
-    private GroupingDataContainer dataContainer;
-    private ResultSetViewer groupingViewer;
-    private List<String> groupAttributes = new ArrayList<>();
-    private List<String> groupFunctions = new ArrayList<>();
+    private final GroupingDataContainer dataContainer;
+    private final ResultSetViewer groupingViewer;
+    private final List<String> groupAttributes = new ArrayList<>();
+    private final List<String> groupFunctions = new ArrayList<>();
 
     public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
         this.presentation = presentation;
@@ -74,10 +62,17 @@ public class GroupingResultsContainer implements IResultSetContainer {
         initDefaultSettings();
     }
 
+    private String getDefaultFunction() {
+        DBPDataSource dataSource = dataContainer.getDataSource();
+        return FUNCTION_COUNT + "(" +
+            (dataSource == null ? SQLConstants.COLUMN_ASTERISK :
+            dataSource.getSQLDialect().getDefaultGroupAttribute()) + ")";
+    }
+
     private void initDefaultSettings() {
         this.groupAttributes.clear();
         this.groupFunctions.clear();
-        addGroupingFunctions(Collections.singletonList(DEFAULT_FUNCTION));
+        addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
     }
 
     public IResultSetPresentation getOwnerPresentation() {
@@ -211,7 +206,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (statistics == null) {
             throw new DBException("No main query - can't perform grouping");
         }
-        boolean isCustomQuery = !(presentation.getController().getDataContainer() instanceof DBSEntity);
+        DBSDataContainer dbsDataContainer = presentation.getController().getDataContainer();
+        boolean isCustomQuery = !(dbsDataContainer instanceof DBSEntity);
         DBPDataSource dataSource = dataContainer.getDataSource();
         if (dataSource == null) {
             throw new DBException("No active datasource");
@@ -220,92 +216,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, presentation.getController().getPreferenceStore());
         String queryText = statistics.getQueryText();
-        if (queryText == null || queryText.isEmpty()) {
-            DBSDataContainer dataContainer = presentation.getController().getDataContainer();
-            if (dataContainer != null) {
-                queryText = dataContainer.getName();
-            } else {
-                throw new DBException("Empty data container");
-            }
-        }
-        for (String delimiter : syntaxManager.getStatementDelimiters()) {
-            while (queryText.endsWith(delimiter)) {
-                queryText = queryText.substring(0, queryText.length() - delimiter.length());
-            }
-        }
-
-        boolean useAliasForColumns = dataContainer.getDataSource().getSQLDialect().supportsAliasInConditions();
-
-        StringBuilder sql = new StringBuilder();
-        String[] funcAliases = new String[groupFunctions.size()];
-        for (int i = 0; i < groupFunctions.size(); i++) {
-            if (useAliasForColumns) {
-                funcAliases[i] = makeGroupFunctionAlias(i);
-            } else {
-                funcAliases[i] = groupFunctions.get(i);
-            }
-        }
-        if (isCustomQuery && dialect.supportsSubqueries()) {
-            sql.append("SELECT ");
-            for (int i = 0; i < groupAttributes.size(); i++) {
-                if (i > 0) sql.append(", ");
-                sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
-            }
-            for (int i = 0; i < groupFunctions.size(); i++) {
-                String func = groupFunctions.get(i);
-                sql.append(", ").append(func);
-                if (useAliasForColumns) {
-                    sql.append(" as ").append(funcAliases[i]);
-                }
-            }
-            sql.append(" FROM (\n");
-            sql.append(queryText);
-            sql.append("\n) src");
-        } else {
-            try {
-                Statement statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), queryText);
-                if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                    PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                    select.setOrderByElements(null);
-
-                    List<SelectItem> selectItems = new ArrayList<>();
-                    select.setSelectItems(selectItems);
-                    for (String groupAttribute : groupAttributes) {
-                        selectItems.add(
-                            new SelectExpressionItem(
-                                new Column(
-                                    quotedGroupingString(dataSource, groupAttribute))));
-                    }
-                    for (int i = 0; i < groupFunctions.size(); i++) {
-                        String func = groupFunctions.get(i);
-                        Expression expression = SQLSemanticProcessor.parseExpression(func);
-                        SelectExpressionItem sei = new SelectExpressionItem(expression);
-                        if (useAliasForColumns) {
-                            sei.setAlias(new Alias(funcAliases[i]));
-                        }
-                        selectItems.add(sei);
-                    }
-                }
-                queryText = statement.toString();
-            } catch (Throwable e) {
-                log.debug("SQL parse error", e);
-            }
-            sql.append(queryText);
-        }
-
-        sql.append("\nGROUP BY ");
-        for (int i = 0; i < groupAttributes.size(); i++) {
-            if (i > 0) sql.append(", ");
-            sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
-        }
-        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
-
         boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
-        if (isDefaultGrouping && isShowDuplicatesOnly) {
-            sql.append("\nHAVING ").append(funcAliases[0]).append(" > 1");
-        }
 
-        dataContainer.setGroupingQuery(sql.toString());
+        var groupingQueryGenerator = new SQLGroupingQueryGenerator(dataSource, dbsDataContainer, dialect, syntaxManager, groupAttributes, groupFunctions, isShowDuplicatesOnly);
+        dataContainer.setGroupingQuery(groupingQueryGenerator.generateGroupingQuery(queryText));
         dataContainer.setGroupingAttributes(groupAttributes.toArray(String[]::new));
         DBDDataFilter dataFilter;
         if (presentation.getController().getModel().isMetadataChanged()) {
@@ -314,6 +228,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             dataFilter = new DBDDataFilter(groupingViewer.getModel().getDataFilter());
         }
 
+        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equalsIgnoreCase(getDefaultFunction());
         String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
             if (false/*dialect.supportsOrderByIndex()*/) {
@@ -326,27 +241,16 @@ public class GroupingResultsContainer implements IResultSetContainer {
                 }
                 dataFilter.setOrder(orderBy.toString());
             } else {
+                var funcAliases = groupingQueryGenerator.getFuncAliases();
                 dataFilter.setOrder(funcAliases[funcAliases.length - 1] + " " + defaultSorting);
             }
         }
+        DataEditorFeatures.RESULT_SET_PANEL_GROUPING.use(Map.of(
+            "custom", isCustomQuery,
+            "default", isDefaultGrouping,
+            "dups", isShowDuplicatesOnly));
         groupingViewer.setDataFilter(dataFilter, true);
         //groupingViewer.refresh();
-    }
-
-    private String makeGroupFunctionAlias(int funcIndex) {
-        String function = groupFunctions.get(funcIndex);
-        StringBuilder alias = new StringBuilder();
-        for (int i = 0; i < function.length(); i++) {
-            char c = function.charAt(i);
-            if (Character.isLetterOrDigit(c) || c == '_') {
-                alias.append(c);
-            }
-        }
-        if (alias.length() > 0) {
-            alias.append('_');
-            return alias.toString().toLowerCase(Locale.ENGLISH);
-        }
-        return "i_" + funcIndex;
     }
 
     void setGrouping(List<String> attributes, List<String> functions) {
@@ -361,17 +265,5 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     private void resetDataFilters() {
         groupingViewer.getModel().createDataFilter();
-    }
-
-    private String quotedGroupingString(DBPDataSource dataSource, String string) {
-        try {
-            Expression expression = SQLSemanticProcessor.parseExpression(string);
-            if (!(expression instanceof Column)) {
-                return string;
-            }
-        } catch (DBException e) {
-            log.debug("Can't parse expression " + string, e);
-        }
-        return DBUtils.getQuotedIdentifier(dataSource, string);
     }
 }

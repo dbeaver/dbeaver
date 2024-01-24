@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.net.ssh;
  */
 public class SSHConstants {
 
-    public static final String LOCALHOST_NAME = "127.0.0.1";
     public static final int DEFAULT_SSH_PORT = 22;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
 
@@ -32,7 +31,6 @@ public class SSHConstants {
     public static final String PROP_ALIVE_INTERVAL = "aliveInterval";
     public static final String PROP_ALIVE_COUNT = "aliveCount";
     public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";
-    public static final String PROP_JUMP_SERVER = "jumpServer";
 
     public static final String PROP_LOCAL_HOST = "localHost";
     public static final String PROP_LOCAL_PORT = "localPort";

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor.tools;
 
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.ui.actions.SelectionAction;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -86,47 +86,42 @@ public class SetPartSettingsAction extends SelectionAction {
         return new Command() {
             private ViewSettings newSettings;
             private final Map<ICustomizablePart, ViewSettings> oldSettings = new HashMap<>();
+
             @Override
             public void execute() {
                 final Shell shell = UIUtils.createCenteredShell(getWorkbenchPart().getSite().getShell());
-                try {
-                    NodePart nodePart = null;
-                    boolean hasNotes = false, hasEntities = false;
-                    for (Object item : objects) {
-                        if (item instanceof NodePart) {
-                            if (nodePart == null) {
-                                nodePart = (NodePart) item;
-                            }
-                            if (item instanceof NotePart) {
-                                hasNotes = true;
-                            } else if (item instanceof EntityPart) {
-                                hasEntities = true;
-                            }
+                NodePart nodePart = null;
+                boolean hasNotes = false;
+                boolean hasEntities = false;
+                for (Object item : objects) {
+                    if (item instanceof NodePart) {
+                        if (nodePart == null) {
+                            nodePart = (NodePart) item;
+                        }
+                        if (item instanceof NotePart) {
+                            hasNotes = true;
+                        } else if (item instanceof EntityPart) {
+                            hasEntities = true;
                         }
                     }
-
-                    PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart, hasNotes, hasEntities);
-                    if (settingsDialog.open() != IDialogConstants.OK_ID) {
-                        return;
+                }
+                PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart, hasNotes, hasEntities);
+                if (settingsDialog.open() != IDialogConstants.OK_ID) {
+                    return;
+                }
+                newSettings = settingsDialog.newSettings;
+                for (Object item : objects) {
+                    if (item instanceof ICustomizablePart) {
+                        ICustomizablePart part = (ICustomizablePart) item;
+                        ViewSettings oldSettings = new ViewSettings();
+                        oldSettings.transparency = part.getCustomTransparency();
+                        oldSettings.background = part.getCustomBackgroundColor();
+                        oldSettings.foreground = part.getCustomForegroundColor();
+                        oldSettings.borderWidth = part.getCustomBorderWidth();
+                        oldSettings.fontInfo = SharedFonts.toString(part.getCustomFont());
+                        this.oldSettings.put(part, oldSettings);
+                        setNodeSettings(part, newSettings);
                     }
-                    newSettings = settingsDialog.newSettings;
-
-                    for (Object item : objects) {
-                        if (item instanceof ICustomizablePart) {
-                            ICustomizablePart part = (ICustomizablePart) item;
-                            ViewSettings oldSettings = new ViewSettings();
-                            oldSettings.transparency = part.getCustomTransparency();
-                            oldSettings.background = part.getCustomBackgroundColor();
-                            oldSettings.foreground = part.getCustomForegroundColor();
-                            oldSettings.borderWidth = part.getCustomBorderWidth();
-                            oldSettings.fontInfo = SharedFonts.toString(part.getCustomFont());
-                            this.oldSettings.put(part, oldSettings);
-
-                            setNodeSettings(part, newSettings);
-                        }
-                    }
-                } finally {
-                    UIUtils.disposeCenteredShell(shell);
                 }
             }
 

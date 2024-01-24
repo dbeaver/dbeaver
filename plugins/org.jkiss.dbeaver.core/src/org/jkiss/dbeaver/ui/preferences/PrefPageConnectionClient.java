@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,7 +48,8 @@ public class PrefPageConnectionClient extends TargetPrefPage
         DBPConnectionConfiguration.VARIABLE_SERVER,
         DBPConnectionConfiguration.VARIABLE_DATABASE,
         DBPConnectionConfiguration.VARIABLE_USER,
-        DBPConnectionConfiguration.VARIABLE_PASSWORD,
+        // We removed support of ${password} variable due to dbeaver/pro#1861
+        // DBPConnectionConfiguration.VARIABLE_PASSWORD,
         DBPConnectionConfiguration.VARIABLE_URL,
         DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
         DBPConnectionConfiguration.VARIABLE_DATASOURCE,

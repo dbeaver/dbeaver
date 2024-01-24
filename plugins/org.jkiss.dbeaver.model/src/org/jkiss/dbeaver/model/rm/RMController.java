@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
+import org.jkiss.dbeaver.model.app.DBPPingController;
 
 import java.util.List;
 
 /**
  * Resource manager API.
  */
-public interface RMController extends DBPObjectController {
+public interface RMController extends DBPObjectController, DBPPingController {
 
     ////////////////////////////////////////////
     // Projects
@@ -62,6 +63,11 @@ public interface RMController extends DBPObjectController {
      * Reads single project property
      */
     Object getProjectProperty(@NotNull String projectId, @NotNull String propName) throws DBException;
+
+    /**
+     * Sets project property
+     */
+    void setProjectProperty(@NotNull String projectId, @NotNull String propName, @NotNull Object propValue) throws DBException;
 
     ////////////////////////////////////////////
     // DataSources
@@ -173,7 +179,18 @@ public interface RMController extends DBPObjectController {
      */
     RMResource[] getResourcePath(
         @NotNull String projectId,
-        @NotNull String resourcePath) throws DBException;
+        @NotNull String resourcePath
+    ) throws DBException;
+
+
+    /**
+     * Resource metainfo
+     */
+    @Nullable
+    RMResource getResource(
+        @NotNull String projectId,
+        @NotNull String resourcePath
+    ) throws DBException;
 
     /**
      * Reads resource data

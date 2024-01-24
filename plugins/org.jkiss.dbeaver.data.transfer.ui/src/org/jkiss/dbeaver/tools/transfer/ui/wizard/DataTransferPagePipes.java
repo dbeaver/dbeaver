@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -50,6 +52,8 @@ import java.util.List;
 
 class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
+    private static final String DATABASE_PRODUCER_ID = "database_producer";
+    private static final String DATABASE_CONSUMER_ID = "database_consumer";
     private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
@@ -65,9 +69,16 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         }
     }
 
-    DataTransferPagePipes() {
-        super(DTMessages.data_transfer_wizard_init_name);
-        setTitle(DTMessages.data_transfer_wizard_init_name);
+    DataTransferPagePipes(@NotNull DataTransferSettings settings) {
+        super(DTMessages.data_transfer_wizard_init_title);
+
+        if (settings.isConsumerOptional()) {
+            setTitle(DTMessages.data_transfer_wizard_init_title);
+            setDescription(DTMessages.data_transfer_wizard_init_description);
+        } else {
+            setTitle(DTMessages.data_transfer_wizard_producers_title);
+            setDescription(DTMessages.data_transfer_wizard_producers_description);
+        }
     }
 
     @Override
@@ -251,14 +262,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     private void loadNodeSettings() {
         if (getWizard().getSettings().isConsumerOptional()) {
-            setTitle(DTMessages.data_transfer_wizard_init_title);
-            setDescription(DTMessages.data_transfer_wizard_init_description);
-
             loadConsumers();
         } else {
-            setTitle(DTMessages.data_transfer_wizard_producers_title);
-            setDescription(DTMessages.data_transfer_wizard_producers_description);
-
             loadProducers();
         }
 
@@ -296,12 +301,20 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     }
 
     private void loadConsumers() {
-        DataTransferSettings settings = getWizard().getSettings();
+        final DataTransferWizard wizard = getWizard();
+        DataTransferSettings settings = wizard.getSettings();
         Collection<DBSObject> objects = settings.getSourceObjects();
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objects)) {
             if (consumer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
+                continue;
+            }
+            if (DATABASE_CONSUMER_ID.equals(consumer.getId())
+                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+                continue;
+            }
+            if (wizard.isTaskEditor() && settings.getConsumer() != null && !settings.getConsumer().getId().equals(consumer.getId())) {
                 continue;
             }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
@@ -317,12 +330,20 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     }
 
     private void loadProducers() {
-        DataTransferSettings settings = getWizard().getSettings();
+        final DataTransferWizard wizard = getWizard();
+        DataTransferSettings settings = wizard.getSettings();
         Collection<DBSObject> objects = settings.getSourceObjects();
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
             if (producer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
+                continue;
+            }
+            if (DATABASE_PRODUCER_ID.equals(producer.getId())
+                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+                continue;
+            }
+            if (wizard.isTaskEditor() && settings.getProducer() != null && !settings.getProducer().getId().equals(producer.getId())) {
                 continue;
             }
 

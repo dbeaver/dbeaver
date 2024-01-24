@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,9 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
         GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, event.getParameter("group"), GroupBy.category);
         DatabaseTasksView view = (DatabaseTasksView) HandlerUtil.getActivePart(event);
         DatabaseTasksTree tasksTree = view.getTasksTree();
+        if (tasksTree == null) {
+            return null;
+        }
         switch (groupBy) {
             case category:
                 tasksTree.setGroupByCategory(!tasksTree.isGroupByCategory());
@@ -57,6 +60,9 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
         DatabaseTasksView taskView = (DatabaseTasksView) UIUtils.findView(UIUtils.getActiveWorkbenchWindow(), DatabaseTasksView.VIEW_ID);
         if (taskView != null) {
             DatabaseTasksTree tasksTree = taskView.getTasksTree();
+            if (tasksTree == null) {
+                return;
+            }
             GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, (String)parameters.get("group"), GroupBy.category);
 
             switch (groupBy) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -90,7 +91,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     protected Point getInitialSize() {
-        return new Point(700, 500);
+        Point minSize = new Point(700, 500);
+        Point suggestedSize = super.getInitialSize();
+        return new Point(Math.max(minSize.x, suggestedSize.x), Math.max(minSize.y, suggestedSize.y));
     }
 
     public IWizard getWizard() {
@@ -181,8 +184,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Vertical separator
         new Label(pageContainer, SWT.SEPARATOR | SWT.VERTICAL)
             .setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
-
-        pageArea = UIUtils.createPlaceholder(pageContainer, 1);
+        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(pageContainer);
+        pageArea = UIUtils.createPlaceholder(scrolledComposite, 1);
+        UIUtils.configureScrolledComposite(scrolledComposite, pageArea);
         GridData gd = new GridData(GridData.FILL_BOTH);
         pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
@@ -388,6 +392,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 changePage();
                 return;
             }
+            for (TreeItem child : item.getItems()) {
+                if (child.getData() == page) {
+                    pagesTree.setSelection(child);
+                    changePage();
+                    return;
+                }
+            }
+        }
+        for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() instanceof ICompositeDialogPageContainer) {
                 IDialogPage[] subPages = ((ICompositeDialogPageContainer) item.getData()).getDialogPages(false, false);
                 if (!ArrayUtils.isEmpty(subPages)) {
@@ -401,13 +414,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                     }
                 }
             }
-            for (TreeItem child : item.getItems()) {
-                if (child.getData() == page) {
-                    pagesTree.setSelection(child);
-                    changePage();
-                    return;
-                }
-            }
+
         }
     }
 
@@ -561,6 +568,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     public boolean close() {
         if (runningOperations > 0) {
             return false;
+        }
+        if (wizard != null) {
+            wizard.dispose();
         }
         return super.close();
     }

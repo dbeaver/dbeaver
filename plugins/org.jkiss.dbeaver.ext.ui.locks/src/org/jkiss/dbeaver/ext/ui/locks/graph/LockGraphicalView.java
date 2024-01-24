@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import org.eclipse.draw2dl.ColorConstants;
-import org.eclipse.gef3.ContextMenuProvider;
-import org.eclipse.gef3.DefaultEditDomain;
-import org.eclipse.gef3.GraphicalViewer;
-import org.eclipse.gef3.editparts.FreeformGraphicalRootEditPart;
-import org.eclipse.gef3.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.gef.ContextMenuProvider;
+import org.eclipse.gef.DefaultEditDomain;
+import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.gef.editparts.FreeformGraphicalRootEditPart;
+import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;

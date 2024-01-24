@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
         try {
             if (object == null) {
-                return new JDBCCompositeStatic(session, structType, new JDBCStructImpl(structType.getTypeName(), null, ""));
+                return new JDBCCompositeStatic(session, structType, null);
             } else if (object instanceof JDBCCompositeStatic) {
                 return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
             } else {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
-import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
@@ -51,14 +48,14 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Locale;
 
 /**
  * PostgreSQL dialect
  */
 public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter,
-    SQLDialectDDLExtension {
+    SQLDialectDDLExtension, SQLDialectSchemaController {
     private static final Log log = Log.getLog(PostgreDialect.class);
 
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
@@ -84,11 +81,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     //Function without arguments/parameters #8710
     private static final String[] OTHER_TYPES_FUNCTION = {
-        "CURRENT_DATE",
-        "CURRENT_TIME",
-        "CURRENT_TIMESTAMP",
-        "CURRENT_ROLE",
-        "CURRENT_USER",
+        "current_date",
+        "current_time",
+        "current_timestamp",
+        "current_role",
+        "current_user",
     };
     public static final String AUTO_INCREMENT_KEYWORD = "AUTO_INCREMENT";
 
@@ -252,7 +249,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         //"USER_DEFINED_TYPE_CATALOG",
         //"USER_DEFINED_TYPE_CODE",
         //"USER_DEFINED_TYPE_NAME",
-        //"USER_DEFINED_TYPE_SCHEMA",
+        //"USER_DEFINED_TYPE_SCHEMA",        
         //"VALUE",
         //"VALUE_OF",
         "VERSIONING",
@@ -270,6 +267,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "SQLERRM",
         "WHILE"
     };
+    
+    public static String[] POSTGRE_EXTRA_TYPES = new String[]{
+        "UUID",
+    };
 
     public static String[] POSTGRE_ONE_CHAR_KEYWORDS = new String[]{
         "C",
@@ -284,393 +285,393 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     //region FUNCTIONS KW
 
     public static String[] POSTGRE_FUNCTIONS_AGGREGATE = new String[]{
-        "ARRAY_AGG",
-        "BIT_AND",
-        "BIT_OR",
-        "BOOL_AND",
-        "BOOL_OR",
-        "EVERY",
-        "JSON_AGG",
-        "JSONB_AGG",
-        "JSON_OBJECT_AGG",
-        "JSONB_OBJECT_AGG",
-        "MODE",
-        "STRING_AGG",
-        "XMLAGG",
-        "CORR",
-        "COVAR_POP",
-        "COVAR_SAMP",
-        "STDDEV",
-        "STDDEV_POP",
-        "STDDEV_SAMP",
-        "VARIANCE",
-        "VAR_POP",
-        "VAR_SAMP"
+        "array_agg",
+        "bit_and",
+        "bit_or",
+        "bool_and",
+        "bool_or",
+        "every",
+        "json_agg",
+        "jsonb_agg",
+        "json_object_agg",
+        "jsonb_object_agg",
+        "mode",
+        "string_agg",
+        "xmlagg",
+        "corr",
+        "covar_pop",
+        "covar_samp",
+        "stddev",
+        "stddev_pop",
+        "stddev_samp",
+        "variance",
+        "var_pop",
+        "var_samp"
     };
 
     public static String[] POSTGRE_FUNCTIONS_WINDOW = new String[]{
-        "ROW_NUMBER",
-        "RANK",
-        "DENSE_RANK",
-        "CUME_DIST",
-        "NTILE",
-        "LAG",
-        "LEAD",
-        "FIRST_VALUE",
-        "LAST_VALUE",
-        "NTH_VALUE"
+        "row_number",
+        "rank",
+        "dense_rank",
+        "cume_dist",
+        "ntile",
+        "lag",
+        "lead",
+        "first_value",
+        "last_value",
+        "nth_value"
     };
 
 
     public static String[] POSTGRE_FUNCTIONS_MATH = new String[]{
-        "ACOSD",
-        "ASIND",
-        "ATAN2D",
-        "ATAND",
-        "CBRT",
-        "CEIL",
-        "CEILING",
-        "COSD",
-        "COTD",
-        "DIV",
-        "EXP",
-        "LN",
-        "MOD",
-        "RANDOM",
-        "SCALE",
-        "SETSEED",
-        "SIND",
-        "TAND",
-        "TRUNC",
-        "WIDTH_BUCKET"
+        "acosd",
+        "asind",
+        "atan2d",
+        "atand",
+        "cbrt",
+        "ceil",
+        "ceiling",
+        "cosd",
+        "cotd",
+        "div",
+        "exp",
+        "ln",
+        "mod",
+        "random",
+        "scale",
+        "setseed",
+        "sind",
+        "tand",
+        "trunc",
+        "width_bucket"
     };
     public static String[] POSTGRE_FUNCTIONS_STRING = new String[]{
-        "BIT_LENGTH",
-        "BTRIM",
-        "CHR",
-        "CONCAT_WS",
-        "CONVERT",
-        "CONVERT_FROM",
-        "CONVERT_TO",
-        "DECODE",
-        "ENCODE",
-        "INITCAP",
-        "LEFT",
-        "LENGTH",
-        "LPAD",
-        "MD5",
-        "OVERLAY",
-        "PARSE_IDENT",
-        "PG_CLIENT_ENCODING",
-        "POSITION",
-        "QUOTE_IDENT",
-        "QUOTE_LITERAL",
-        "QUOTE_NULLABLE",
-        "REGEXP_MATCH",
-        "REGEXP_MATCHES",
-        "REGEXP_REPLACE",
-        "REGEXP_SPLIT_TO_ARRAY",
-        "REGEXP_SPLIT_TO_TABLE",
-        "REPLACE",
-        "REVERSE",
-        "RIGHT",
-        "RPAD",
-        "SPLIT_PART",
-        "STRPOS",
-        "SUBSTRING",
-        "TO_ASCII",
-        "TO_HEX",
-        "TRANSLATE",
-        "TREAT",
-        "UNACCENT"
+        "bit_length",
+        "btrim",
+        "chr",
+        "concat_ws",
+        "convert",
+        "convert_from",
+        "convert_to",
+        "decode",
+        "encode",
+        "initcap",
+        "left",
+        "length",
+        "lpad",
+        "md5",
+        "overlay",
+        "parse_ident",
+        "pg_client_encoding",
+        "position",
+        "quote_ident",
+        "quote_literal",
+        "quote_nullable",
+        "regexp_match",
+        "regexp_matches",
+        "regexp_replace",
+        "regexp_split_to_array",
+        "regexp_split_to_table",
+        "replace",
+        "reverse",
+        "right",
+        "rpad",
+        "split_part",
+        "strpos",
+        "substring",
+        "to_ascii",
+        "to_hex",
+        "translate",
+        "treat",
+        "unaccent"
     };
 
     public static String[] POSTGRE_FUNCTIONS_DATETIME = new String[]{
-        "AGE",
-        "CLOCK_TIMESTAMP",
-        "DATE_PART",
-        "DATE_TRUNC",
-        "ISFINITE",
-        "JUSTIFY_DAYS",
-        "JUSTIFY_HOURS",
-        "JUSTIFY_INTERVAL",
-        "MAKE_DATE",
-        "MAKE_INTERVAL",
-        "MAKE_TIME",
-        "MAKE_TIMESTAMP",
-        "MAKE_TIMESTAMPTZ",
-        "STATEMENT_TIMESTAMP",
-        "TIMEOFDAY",
-        "TRANSACTION_TIMESTAMP"
+        "age",
+        "clock_timestamp",
+        "date_part",
+        "date_trunc",
+        "isfinite",
+        "justify_days",
+        "justify_hours",
+        "justify_interval",
+        "make_date",
+        "make_interval",
+        "make_time",
+        "make_timestamp",
+        "make_timestamptz",
+        "statement_timestamp",
+        "timeofday",
+        "transaction_timestamp"
     };
 
     public static String[] POSTGRE_FUNCTIONS_GEOMETRY = new String[]{
-        "AREA",
-        "CENTER",
-        "DIAMETER",
-        "HEIGHT",
-        "ISCLOSED",
-        "ISOPEN",
-        "NPOINTS",
-        "PCLOSE",
-        "POPEN",
-        "RADIUS",
-        "WIDTH",
-        "BOX",
-        "BOUND_BOX",
-        "CIRCLE",
-        "LINE",
-        "LSEG",
-        "PATH",
-        "POLYGON"
+        "area",
+        "center",
+        "diameter",
+        "height",
+        "isclosed",
+        "isopen",
+        "npoints",
+        "pclose",
+        "popen",
+        "radius",
+        "width",
+        "box",
+        "bound_box",
+        "circle",
+        "line",
+        "lseg",
+        "path",
+        "polygon"
     };
 
     public static String[] POSTGRE_FUNCTIONS_NETWROK = new String[]{
-        "ABBREV",
-        "BROADCAST",
-        "HOST",
-        "HOSTMASK",
-        "MASKLEN",
-        "NETMASK",
-        "NETWORK",
-        "SET_MASKLEN",
-        //"TEXT",
-        "INET_SAME_FAMILY",
-        "INET_MERGE",
-        "MACADDR8_SET7BIT"
+        "abbrev",
+        "broadcast",
+        "host",
+        "hostmask",
+        "masklen",
+        "netmask",
+        "network",
+        "set_masklen",
+        //"text",
+        "inet_same_family",
+        "inet_merge",
+        "macaddr8_set7bit"
     };
 
     public static String[] POSTGRE_FUNCTIONS_LO = new String[]{
-        "LO_FROM_BYTEA",
-        "LO_PUT",
-        "LO_GET",
-        "LO_CREAT",
-        "LO_CREATE",
-        "LO_UNLINK",
-        "LO_IMPORT",
-        "LO_EXPORT",
-        "LOREAD",
-        "LOWRITE",
-        "GROUPING",
-        "CAST"
+        "lo_from_bytea",
+        "lo_put",
+        "lo_get",
+        "lo_creat",
+        "lo_create",
+        "lo_unlink",
+        "lo_import",
+        "lo_export",
+        "loread",
+        "lowrite",
+        "grouping",
+        "cast"
     };
 
     public static String[] POSTGRE_FUNCTIONS_ADMIN = new String[]{
-        "CURRENT_SETTING",
-        "SET_CONFIG",
-        "BRIN_SUMMARIZE_NEW_VALUES",
-        "BRIN_SUMMARIZE_RANGE",
-        "BRIN_DESUMMARIZE_RANGE",
-        "GIN_CLEAN_PENDING_LIST"
+        "current_setting",
+        "set_config",
+        "brin_summarize_new_values",
+        "brin_summarize_range",
+        "brin_desummarize_range",
+        "gin_clean_pending_list"
     };
 
     public static String[] POSTGRE_FUNCTIONS_RANGE = new String[]{
-        "ISEMPTY",
-        "LOWER_INC",
-        "UPPER_INC",
-        "LOWER_INF",
-        "UPPER_INF",
-        "RANGE_MERGE"
+        "isempty",
+        "lower_inc",
+        "upper_inc",
+        "lower_inf",
+        "upper_inf",
+        "range_merge"
     };
 
     public static String[] POSTGRE_FUNCTIONS_TEXT_SEARCH = new String[]{
-        "ARRAY_TO_TSVECTOR",
-        "GET_CURRENT_TS_CONFIG",
-        "NUMNODE",
-        "PLAINTO_TSQUERY",
-        "PHRASETO_TSQUERY",
-        "WEBSEARCH_TO_TSQUERY",
-        "QUERYTREE",
-        "SETWEIGHT",
-        "STRIP",
-        "TO_TSQUERY",
-        "TO_TSVECTOR",
-        "JSON_TO_TSVECTOR",
-        "JSONB_TO_TSVECTOR",
-        "TS_DELETE",
-        "TS_FILTER",
-        "TS_HEADLINE",
-        "TS_RANK",
-        "TS_RANK_CD",
-        "TS_REWRITE",
-        "TSQUERY_PHRASE",
-        "TSVECTOR_TO_ARRAY",
-        "TSVECTOR_UPDATE_TRIGGER",
-        "TSVECTOR_UPDATE_TRIGGER_COLUMN"
+        "array_to_tsvector",
+        "get_current_ts_config",
+        "numnode",
+        "plainto_tsquery",
+        "phraseto_tsquery",
+        "websearch_to_tsquery",
+        "querytree",
+        "setweight",
+        "strip",
+        "to_tsquery",
+        "to_tsvector",
+        "json_to_tsvector",
+        "jsonb_to_tsvector",
+        "ts_delete",
+        "ts_filter",
+        "ts_headline",
+        "ts_rank",
+        "ts_rank_cd",
+        "ts_rewrite",
+        "tsquery_phrase",
+        "tsvector_to_array",
+        "tsvector_update_trigger",
+        "tsvector_update_trigger_column"
     };
 
     public static String[] POSTGRE_FUNCTIONS_XML = new String[]{
-        "XMLCOMMENT",
-        "XMLCONCAT",
-        "XMLELEMENT",
-        "XMLFOREST",
-        "XMLPI",
-        "XMLROOT",
-        "XMLEXISTS",
-        "XML_IS_WELL_FORMED",
-        "XML_IS_WELL_FORMED_DOCUMENT",
-        "XML_IS_WELL_FORMED_CONTENT",
-        "XPATH",
-        "XPATH_EXISTS",
-        "XMLTABLE",
-        "XMLNAMESPACES",
-        "TABLE_TO_XML",
-        "TABLE_TO_XMLSCHEMA",
-        "TABLE_TO_XML_AND_XMLSCHEMA",
-        "QUERY_TO_XML",
-        "QUERY_TO_XMLSCHEMA",
-        "QUERY_TO_XML_AND_XMLSCHEMA",
-        "CURSOR_TO_XML",
-        "CURSOR_TO_XMLSCHEMA",
-        "SCHEMA_TO_XML",
-        "SCHEMA_TO_XMLSCHEMA",
-        "SCHEMA_TO_XML_AND_XMLSCHEMA",
-        "DATABASE_TO_XML",
-        "DATABASE_TO_XMLSCHEMA",
-        "DATABASE_TO_XML_AND_XMLSCHEMA",
-        "XMLATTRIBUTES"
+        "xmlcomment",
+        "xmlconcat",
+        "xmlelement",
+        "xmlforest",
+        "xmlpi",
+        "xmlroot",
+        "xmlexists",
+        "xml_is_well_formed",
+        "xml_is_well_formed_document",
+        "xml_is_well_formed_content",
+        "xpath",
+        "xpath_exists",
+        "xmltable",
+        "xmlnamespaces",
+        "table_to_xml",
+        "table_to_xmlschema",
+        "table_to_xml_and_xmlschema",
+        "query_to_xml",
+        "query_to_xmlschema",
+        "query_to_xml_and_xmlschema",
+        "cursor_to_xml",
+        "cursor_to_xmlschema",
+        "schema_to_xml",
+        "schema_to_xmlschema",
+        "schema_to_xml_and_xmlschema",
+        "database_to_xml",
+        "database_to_xmlschema",
+        "database_to_xml_and_xmlschema",
+        "xmlattributes"
     };
 
     public static String[] POSTGRE_FUNCTIONS_JSON = new String[]{
-        "TO_JSON",
-        "TO_JSONB",
-        "ARRAY_TO_JSON",
-        "ROW_TO_JSON",
-        "JSON_BUILD_ARRAY",
-        "JSONB_BUILD_ARRAY",
-        "JSON_BUILD_OBJECT",
-        "JSONB_BUILD_OBJECT",
-        "JSON_OBJECT",
-        "JSONB_OBJECT",
-        "JSON_ARRAY_LENGTH",
-        "JSONB_ARRAY_LENGTH",
-        "JSON_EACH",
-        "JSONB_EACH",
-        "JSON_EACH_TEXT",
-        "JSONB_EACH_TEXT",
-        "JSON_EXTRACT_PATH",
-        "JSONB_EXTRACT_PATH",
-        "JSON_OBJECT_KEYS",
-        "JSONB_OBJECT_KEYS",
-        "JSON_POPULATE_RECORD",
-        "JSONB_POPULATE_RECORD",
-        "JSON_POPULATE_RECORDSET",
-        "JSONB_POPULATE_RECORDSET",
-        "JSON_ARRAY_ELEMENTS",
-        "JSONB_ARRAY_ELEMENTS",
-        "JSON_ARRAY_ELEMENTS_TEXT",
-        "JSONB_ARRAY_ELEMENTS_TEXT",
-        "JSON_TYPEOF",
-        "JSONB_TYPEOF",
-        "JSON_TO_RECORD",
-        "JSONB_TO_RECORD",
-        "JSON_TO_RECORDSET",
-        "JSONB_TO_RECORDSET",
-        "JSON_STRIP_NULLS",
-        "JSONB_STRIP_NULLS",
-        "JSONB_SET",
-        "JSONB_INSERT",
-        "JSONB_PRETTY"
+        "to_json",
+        "to_jsonb",
+        "array_to_json",
+        "row_to_json",
+        "json_build_array",
+        "jsonb_build_array",
+        "json_build_object",
+        "jsonb_build_object",
+        "json_object",
+        "jsonb_object",
+        "json_array_length",
+        "jsonb_array_length",
+        "json_each",
+        "jsonb_each",
+        "json_each_text",
+        "jsonb_each_text",
+        "json_extract_path",
+        "jsonb_extract_path",
+        "json_object_keys",
+        "jsonb_object_keys",
+        "json_populate_record",
+        "jsonb_populate_record",
+        "json_populate_recordset",
+        "jsonb_populate_recordset",
+        "json_array_elements",
+        "jsonb_array_elements",
+        "json_array_elements_text",
+        "jsonb_array_elements_text",
+        "json_typeof",
+        "jsonb_typeof",
+        "json_to_record",
+        "jsonb_to_record",
+        "json_to_recordset",
+        "jsonb_to_recordset",
+        "json_strip_nulls",
+        "jsonb_strip_nulls",
+        "jsonb_set",
+        "jsonb_insert",
+        "jsonb_pretty"
     };
 
     public static String[] POSTGRE_FUNCTIONS_ARRAY = new String[]{
-        "ARRAY_APPEND",
-        "ARRAY_CAT",
-        "ARRAY_NDIMS",
-        "ARRAY_DIMS",
-        "ARRAY_FILL",
-        "ARRAY_LENGTH",
-        "ARRAY_LOWER",
-        "ARRAY_POSITION",
-        "ARRAY_POSITIONS",
-        "ARRAY_PREPEND",
-        "ARRAY_REMOVE",
-        "ARRAY_REPLACE",
-        "ARRAY_TO_STRING",
-        "ARRAY_UPPER",
-        "CARDINALITY",
-        "STRING_TO_ARRAY",
-        "UNNEST"
+        "array_append",
+        "array_cat",
+        "array_ndims",
+        "array_dims",
+        "array_fill",
+        "array_length",
+        "array_lower",
+        "array_position",
+        "array_positions",
+        "array_prepend",
+        "array_remove",
+        "array_replace",
+        "array_to_string",
+        "array_upper",
+        "cardinality",
+        "string_to_array",
+        "unnest"
     };
 
     public static String[] POSTGRE_FUNCTIONS_INFO = new String[]{
-        "CURRENT_DATABASE",
-        "CURRENT_QUERY",
-        "CURRENT_SCHEMA",
-        "CURRENT_SCHEMAS",
-        "INET_CLIENT_ADDR",
-        "INET_CLIENT_PORT",
-        "INET_SERVER_ADDR",
-        "INET_SERVER_PORT",
-        "ROW_SECURITY_ACTIVE",
-        "FORMAT_TYPE",
-        "TO_REGCLASS",
-        "TO_REGPROC",
-        "TO_REGPROCEDURE",
-        "TO_REGOPER",
-        "TO_REGOPERATOR",
-        "TO_REGTYPE",
-        "TO_REGNAMESPACE",
-        "TO_REGROLE",
-        "COL_DESCRIPTION",
-        "OBJ_DESCRIPTION",
-        "SHOBJ_DESCRIPTION",
-        "TXID_CURRENT",
-        "TXID_CURRENT_IF_ASSIGNED",
-        "TXID_CURRENT_SNAPSHOT",
-        "TXID_SNAPSHOT_XIP",
-        "TXID_SNAPSHOT_XMAX",
-        "TXID_SNAPSHOT_XMIN",
-        "TXID_VISIBLE_IN_SNAPSHOT",
-        "TXID_STATUS"
+        "current_database",
+        "current_query",
+        "current_schema",
+        "current_schemas",
+        "inet_client_addr",
+        "inet_client_port",
+        "inet_server_addr",
+        "inet_server_port",
+        "row_security_active",
+        "format_type",
+        "to_regclass",
+        "to_regproc",
+        "to_regprocedure",
+        "to_regoper",
+        "to_regoperator",
+        "to_regtype",
+        "to_regnamespace",
+        "to_regrole",
+        "col_description",
+        "obj_description",
+        "shobj_description",
+        "txid_current",
+        "txid_current_if_assigned",
+        "txid_current_snapshot",
+        "txid_snapshot_xip",
+        "txid_snapshot_xmax",
+        "txid_snapshot_xmin",
+        "txid_visible_in_snapshot",
+        "txid_status"
     };
 
     public static String[] POSTGRE_FUNCTIONS_COMPRASION = new String[]{
-        "NUM_NONNULLS",
-        "NUM_NULLS"
+        "num_nonnulls",
+        "num_nulls"
     };
 
     public static String[] POSTGRE_FUNCTIONS_FORMATTING = new String[]{
-        "TO_CHAR",
-        "TO_DATE",
-        "TO_NUMBER",
-        "TO_TIMESTAMP"
+        "to_char",
+        "to_date",
+        "to_number",
+        "to_timestamp"
     };
 
     public static String[] POSTGRE_FUNCTIONS_ENUM = new String[]{
-        "ENUM_FIRST",
-        "ENUM_LAST",
-        "ENUM_RANGE"
+        "enum_first",
+        "enum_last",
+        "enum_range"
     };
 
     public static String[] POSTGRE_FUNCTIONS_SEQUENCE = new String[]{
-        "CURRVAL",
-        "LASTVAL",
-        "NEXTVAL",
-        "SETVAL"
+        "currval",
+        "lastval",
+        "nextval",
+        "setval"
     };
 
     public static String[] POSTGRE_FUNCTIONS_BINARY_STRING = new String[]{
-        "GET_BIT",
-        "GET_BYTE",
-        "SET_BIT",
-        "SET_BYTE"
+        "get_bit",
+        "get_byte",
+        "set_bit",
+        "set_byte"
     };
 
     public static String[] POSTGRE_FUNCTIONS_CONDITIONAL = new String[]{
-        "COALESCE",
-        "NULLIF",
-        "GREATEST",
-        "LEAST"
+        "coalesce",
+        "nullif",
+        "greatest",
+        "least"
     };
 
     public static String[] POSTGRE_FUNCTIONS_TRIGGER = new String[]{
-        "SUPPRESS_REDUNDANT_UPDATES_TRIGGER"
+        "suppress_redundant_updates_trigger"
     };
 
     public static String[] POSTGRE_FUNCTIONS_SRF = new String[]{
-        "GENERATE_SERIES",
-        "GENERATE_SUBSCRIPTS"
+        "generate_series",
+        "generate_subscripts"
     };
 
     //endregion
@@ -688,7 +689,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     public void addExtraFunctions(String... functions) {
         super.addFunctions(Arrays.asList(functions));
     }
-
+    
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
 
@@ -784,6 +785,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         
         // #12723 Redshift driver returns wrong infor about unquoted case
         setUnquotedIdentCase(DBPIdentifierCase.LOWER);
+    }
+
+    @NotNull
+    @Override
+    protected DBPIdentifierCase getDefaultIdentifiersCase() {
+        return DBPIdentifierCase.LOWER;
     }
 
     @Override
@@ -944,6 +951,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
         super.loadDataTypesFromDatabase(dataSource);
         addDataTypes(PostgreConstants.DATA_TYPE_ALIASES.keySet());
+        addDataTypes(Arrays.asList(POSTGRE_EXTRA_TYPES));
     }
 
     @NotNull
@@ -971,8 +979,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return quoteStrings[0][0] + str + quoteStrings[0][1];
     }
     
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
             boolean ddTagDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_TAG_STRING);
             boolean ddTagIsString = dataSource == null
@@ -984,9 +993,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
                 ? ddPlainDefault
                 : CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING), ddPlainDefault);
 
-            rules.add(new SQLDollarQuoteRule(position == RulePosition.PARTITION, true, ddTagIsString, ddPlainIsString));
-            rules.add(new PostgreEscapeStringRule());
+            return new TPRule[] {
+                new SQLDollarQuoteRule(position == RulePosition.PARTITION, true, ddTagIsString, ddPlainIsString),
+                new PostgreEscapeStringRule()
+            };
         }
+        return new TPRule[0];
     }
 
     @Override
@@ -1080,5 +1092,48 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String getClobDataType() {
         return PostgreConstants.TYPE_TEXT;
+    }
+
+    @NotNull
+    @Override
+    public String getBlobDataType() {
+        return PostgreConstants.TYPE_BYTEA;
+    }
+
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return PostgreConstants.TYPE_UUID;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return PostgreConstants.TYPE_BOOLEAN;
+    }
+
+    @Override
+    public boolean supportsNoActionIndex() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public String getSchemaExistQuery(@NotNull String schemaName) {
+        return "SELECT 1 FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = " + getQuotedString(schemaName);
+    }
+
+    @NotNull
+    @Override
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
+        return "CREATE SCHEMA " + schemaName;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }

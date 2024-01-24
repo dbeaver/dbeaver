@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,29 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 public class LocalTaskController implements DBTTaskController {
+    private static final Gson gson = new GsonBuilder()
+        .setLenient()
+        .serializeNulls()
+        .setPrettyPrinting()
+        .create();
 
     public LocalTaskController() {
     }
@@ -43,6 +53,20 @@ public class LocalTaskController implements DBTTaskController {
             return Files.readString(localPath, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new DBException("Error reading task configuration file '" + filePath + "'", e);
+        }
+    }
+
+    @Override
+    public String loadTaskConfiguration(@NotNull String projectId, @NotNull String taskId, @NotNull String filePath)
+        throws DBException {
+        var configString = loadTaskConfigurationFile(projectId, filePath);
+        if (configString == null) {
+            return null;
+        }
+        try (var reader = new StringReader(configString)) {
+            Map<String, Object> jsonMap = JSONUtils.parseMap(gson, reader);
+            var taskData = jsonMap.get(taskId);
+            return taskData == null ? null : gson.toJson(Map.of(taskId, taskData));
         }
     }
 

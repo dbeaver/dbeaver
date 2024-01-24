@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
 {
     private static final Log log = Log.getLog(MySQLTableBase.class);
 
+    private boolean isPartition;
+
     protected MySQLTableBase(MySQLCatalog catalog)
     {
         super(catalog, false);
@@ -79,6 +81,14 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         super(catalog, JDBCUtils.safeGetString(dbResult, 1), true);
     }
 
+    public boolean isPartition() {
+        return isPartition;
+    }
+
+    public void setPartition(boolean partition) {
+        isPartition = partition;
+    }
+
     @Override
     public JDBCStructCache<MySQLCatalog, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
     {
@@ -98,7 +108,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     public List<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<MySQLTableColumn> childColumns = getContainer().tableCache.getChildren(monitor, getContainer(), this);
+        List<MySQLTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);
         if (childColumns == null) {
             return Collections.emptyList();
         }
@@ -111,12 +121,12 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     public MySQLTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
-        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     public List<MySQLTableColumn> getCachedAttributes()
     {
-        DBSObjectCache<MySQLTableBase, MySQLTableColumn> childrenCache = getContainer().tableCache.getChildrenCache(this);
+        DBSObjectCache<MySQLTableBase, MySQLTableColumn> childrenCache = getContainer().getTableCache().getChildrenCache(this);
         if (childrenCache != null) {
             return childrenCache.getCachedObjects();
         }
@@ -126,7 +136,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
     public String getDDL(DBRProgressMonitor monitor, Map<String, Object> options)

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,15 +49,15 @@ public class OracleRecycledObject extends OracleSchemaObject implements DBSObjec
     protected OracleRecycledObject(OracleSchema schema, ResultSet dbResult)
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "ORIGINAL_NAME"), true);
-        this.recycledName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+        this.recycledName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME);
         this.operation = CommonUtils.valueOf(Operation.class, JDBCUtils.safeGetString(dbResult, "OPERATION"));
         this.objectType = JDBCUtils.safeGetString(dbResult, "TYPE");
         this.tablespace = JDBCUtils.safeGetString(dbResult, "TS_NAME");
         this.createTime = JDBCUtils.safeGetString(dbResult, "CREATETIME");
         this.dropTime = JDBCUtils.safeGetString(dbResult, "DROPTIME");
         this.partitionName = JDBCUtils.safeGetString(dbResult, "PARTITION_NAME");
-        this.canUndrop = JDBCUtils.safeGetBoolean(dbResult, "CAN_UNDROP", "Y");
-        this.canPurge = JDBCUtils.safeGetBoolean(dbResult, "CAN_PURGE", "Y");
+        this.canUndrop = JDBCUtils.safeGetBoolean(dbResult, "CAN_UNDROP", OracleConstants.RESULT_YES_VALUE);
+        this.canPurge = JDBCUtils.safeGetBoolean(dbResult, "CAN_PURGE", OracleConstants.RESULT_YES_VALUE);
     }
 
     @Property(viewable = true, order = 2)

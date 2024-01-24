@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,24 +22,24 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
 
-import java.util.List;
-
 /**
 * Oracle dialect rules
 */
 class OracleDialectRules implements TPRuleProvider {
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new QStringRule());
+            return new TPRule[]{ new QStringRule() };
         }
+        return new TPRule[0];
     }
 
     private static class QStringRule implements TPPredicateRule {
 
         private final TPToken stringToken;
-        private char quoteStartChar = (char) -1;
+        private int quoteStartChar = -1;
 
         QStringRule() {
             stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
@@ -51,30 +51,35 @@ class OracleDialectRules implements TPRuleProvider {
                 c = resume ? '\'' : scanner.read();
                 if (c == '\'') {
                     boolean quoteCharRead = false;
+                    boolean quoteCharNeedsToBeUnread = false;
                     if (resume && quoteStartChar != -1) {
                         quoteCharRead = true;
                     }
                     if (!quoteCharRead) {
-                        quoteStartChar = (char) scanner.read();
+                        quoteStartChar = scanner.read();
+                        quoteCharNeedsToBeUnread = true;
                     }
 
                     if (!Character.isLetterOrDigit(quoteStartChar)) {
                         // Probably a Q-string
-                        char quoteEndChar = getQuoteEndChar(quoteStartChar);
+                        char quoteEndChar = getQuoteEndChar((char) quoteStartChar);
 
                         if (tryReadQString(scanner, quoteEndChar)) {
                             return stringToken;
                         }
-                    } else {
-                        quoteStartChar = (char) -1;
-                        if (quoteCharRead) {
+                        if (quoteCharNeedsToBeUnread) {
                             scanner.unread();
                         }
+                    } else {
+                        quoteStartChar = -1;
+                        scanner.unread();
                     }
-                } else {
+                }
+                if (!resume) {
                     scanner.unread();
                 }
-            } else {
+            }
+            if (!resume) {
                 scanner.unread();
             }
             return TPTokenAbstract.UNDEFINED;

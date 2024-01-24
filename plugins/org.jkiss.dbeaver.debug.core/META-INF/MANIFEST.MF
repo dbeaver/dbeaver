@@ -1,17 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Debug Model
 Bundle-SymbolicName: org.jkiss.dbeaver.debug.core;singleton:=true
-Bundle-Version: 1.0.127.qualifier
-Bundle-Release-Date: 20230123
-Bundle-Vendor: %Bundle-Vendor
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 1.0.152.qualifier
+Bundle-Release-Date: 20240122
+Bundle-Vendor: DBeaver Corp
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.osgi.services,
  org.eclipse.e4.core.services,
  org.eclipse.e4.core.contexts,
  org.eclipse.core.runtime,
  org.eclipse.debug.core;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.core
 Export-Package: org.jkiss.dbeaver.debug,
  org.jkiss.dbeaver.debug.core,

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +37,7 @@ public class TaskNativeUIMessages extends NLS {
     public static String tools_wizard_log_io_error;
     public static String tools_wizard_message_client_home_not_found;
     public static String tools_wizard_message_no_client_home;
+    public static String tools_wizard_message_no_client_home_link;
     public static String tools_wizard_message_no_output_folder;
     public static String tools_wizard_page_log_task_finished;
     public static String tools_wizard_page_log_task_log_reader;

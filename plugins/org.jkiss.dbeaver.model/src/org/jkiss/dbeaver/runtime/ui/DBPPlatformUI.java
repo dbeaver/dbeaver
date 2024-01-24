@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -56,7 +57,7 @@ public interface DBPPlatformUI {
         RETRY,
     }
     
-    public class UserChoiceResponse {
+    class UserChoiceResponse {
         /**
          * index of the user's choice or out of range value (-1) on dialog failure
          */
@@ -73,7 +74,7 @@ public interface DBPPlatformUI {
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
     UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final Throwable e);
     UserResponse showError(@NotNull final String title, @Nullable final String message);
-    void showNotification(@NotNull final String title, @Nullable final String message, boolean error);
+    void showNotification(@NotNull final String title, @Nullable final String message, boolean error, @Nullable Runnable feedback);
     void showWarningNotification(@NotNull final String title, @Nullable final String message);
     void showMessageBox(@NotNull final String title, @Nullable final String message, boolean error);
     void showWarningMessageBox(@NotNull final String title, @Nullable final String message);
@@ -122,6 +123,11 @@ public interface DBPPlatformUI {
     DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword, boolean userEditable, boolean oldPasswordVisible);
 
     /**
+     * Ask user to enter some property value
+     */
+    String promptProperty(String prompt, String defValue);
+
+    /**
      * Ask user to accept license agreement
      */
     boolean acceptLicense(String message, String licenseText);
@@ -168,6 +174,14 @@ public interface DBPPlatformUI {
     void executeShellProgram(String shellCommand);
 
     void showInSystemExplorer(@NotNull String path);
+
+    DBNPathBase openFileSystemSelector(
+        @NotNull String title,
+        boolean folder,
+        int style,
+        boolean binary,
+        String[] filterExt,
+        String defaultValue);
 
     boolean readAndDispatchEvents();
 }

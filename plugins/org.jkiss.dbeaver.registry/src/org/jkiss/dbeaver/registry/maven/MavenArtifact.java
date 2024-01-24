@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.VersionUtils;
 import org.jkiss.dbeaver.registry.maven.versioning.DefaultArtifactVersion;
 import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -34,7 +34,10 @@ import org.xml.sax.Attributes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +53,7 @@ public class MavenArtifact implements IMavenIdentifier
     public static final String FILE_JAR = "jar";
     public static final String FILE_POM = "pom";
     public static final String PACKAGING_BUNDLE = "bundle";
+    public static final String PACKAGING_MAVEN_PLUGIN = "maven-plugin";
 
     @NotNull
     private final MavenRepository repository;
@@ -58,31 +62,50 @@ public class MavenArtifact implements IMavenIdentifier
     @NotNull
     private final String artifactId;
     @Nullable
+    private final String classifier;
+    @Nullable
     private final String fallbackVersion;
 
     private final List<String> versions = new ArrayList<>();
     private String latestVersion;
     private String releaseVersion;
     private Date lastUpdate;
+    private List<String> snapshotVersions = new ArrayList<>();
     private final List<MavenArtifactVersion> localVersions = new ArrayList<>();
 
     private transient boolean metadataLoaded = false;
 
-    public MavenArtifact(@NotNull MavenRepository repository, @NotNull String groupId, @NotNull String artifactId, @Nullable String fallbackVersion)
+    public MavenArtifact(
+        @NotNull MavenRepository repository,
+        @NotNull String groupId,
+        @NotNull String artifactId,
+        @Nullable String classifier,
+        @Nullable String fallbackVersion)
     {
         this.repository = repository;
         this.groupId = CommonUtils.trim(groupId);
         this.artifactId = CommonUtils.trim(artifactId);
+        this.classifier = CommonUtils.trim(classifier);
         this.fallbackVersion = CommonUtils.trim(fallbackVersion);
     }
 
+
     public void loadMetadata(DBRProgressMonitor monitor) throws IOException {
+        loadMetadata(monitor, null);
+    }
+
+    public void loadMetadata(DBRProgressMonitor monitor, String version) throws IOException {
         latestVersion = null;
         releaseVersion = null;
         versions.clear();
+        snapshotVersions.clear();
         lastUpdate = null;
-
-        String metadataPath = getBaseArtifactURL() + MAVEN_METADATA_XML;
+        String metadataPath = getBaseArtifactURL();
+        // The repository is a SNAPSHOT repo, artifact metadata is stored inside the version
+        if (version != null) {
+            metadataPath += version + "/";
+        }
+        metadataPath += MAVEN_METADATA_XML;
         monitor.subTask("Load metadata " + this + "");
 
         try (InputStream mdStream = WebUtils.openConnection(metadataPath, getRepository().getAuthInfo(), null).getInputStream()) {
@@ -104,12 +127,8 @@ public class MavenArtifact implements IMavenIdentifier
     }
 
     private void removeIgnoredVersions() {
-        for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
-            String version = iter.next();
-            if (MavenRegistry.getInstance().isVersionIgnored(groupId + ":" + artifactId + ":" + version)) {
-                iter.remove();
-            }
-        }
+        versions.removeIf(version ->
+            MavenRegistry.getInstance().isVersionIgnored(groupId + ":" + artifactId + ":" + version));
     }
 
     private void parseDirectory(InputStream dirStream) throws IOException, XMLException {
@@ -138,31 +157,58 @@ public class MavenArtifact implements IMavenIdentifier
         SAXReader reader = new SAXReader(mdStream);
         reader.parse(new SAXListener() {
             public String lastTag;
+            public boolean insideSnapshotVersion = false;
+            public String currentSnapshotVersion;
+            boolean invalid = false;
 
             @Override
             public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+                if ("snapshotVersion".equals(localName)) {
+                    insideSnapshotVersion = true;
+                }
                 lastTag = localName;
             }
 
             @Override
             public void saxText(SAXReader reader, String data) throws XMLException {
-                if ("version".equals(lastTag)) {
-                    versions.add(data);
-                } else if ("latest".equals(lastTag)) {
-                    latestVersion = data;
-                } else if ("release".equals(lastTag)) {
-                    releaseVersion = data;
-                } else if ("lastUpdate".equals(lastTag)) {
-                    try {
-                        lastUpdate = new Date(Long.parseLong(data));
-                    } catch (NumberFormatException e) {
-                        log.warn(e);
+                if (insideSnapshotVersion) {
+                    if ("value".equals(lastTag)) {
+                        currentSnapshotVersion = data;
+                    } else if ("classifier".equals(lastTag)
+                        && !data.equals(classifier)) {
+                        invalid = true;
+                    } else if ("extension".equals(lastTag) && !"jar".equals(data)) {
+                        invalid = true;
+                    }
+                } else {
+                    if ("version".equals(lastTag)) {
+                        versions.add(data);
+                    } else if ("snapshotVersion".equals(lastTag)) {
+                        insideSnapshotVersion = true;
+                    } else if ("latest".equals(lastTag)) {
+                        latestVersion = data;
+                    } else if ("release".equals(lastTag)) {
+                        releaseVersion = data;
+                    } else if ("lastUpdate".equals(lastTag)) {
+                        try {
+                            lastUpdate = new Date(Long.parseLong(data));
+                        } catch (NumberFormatException e) {
+                            log.warn(e);
+                        }
                     }
                 }
             }
 
             @Override
             public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
+                if (localName.equals("snapshotVersion")) {
+                    if (!invalid) {
+                        snapshotVersions.add(currentSnapshotVersion);
+                    }
+                    currentSnapshotVersion = null;
+                    insideSnapshotVersion = false;
+                    invalid = false;
+                }
                 lastTag = null;
             }
         });
@@ -181,6 +227,12 @@ public class MavenArtifact implements IMavenIdentifier
     @NotNull
     public String getArtifactId() {
         return artifactId;
+    }
+
+    @Nullable
+    @Override
+    public String getClassifier() {
+        return classifier;
     }
 
     @Nullable
@@ -203,7 +255,7 @@ public class MavenArtifact implements IMavenIdentifier
     @Nullable
     public Collection<String> getAvailableVersions(DBRProgressMonitor monitor, String versionSpec) throws IOException {
         if (CommonUtils.isEmpty(versions) && !metadataLoaded) {
-            loadMetadata(monitor);
+            loadMetadata(monitor, null);
         }
         if (!isVersionPattern(versionSpec)) {
             return versions;
@@ -252,7 +304,12 @@ public class MavenArtifact implements IMavenIdentifier
         return repository.getUrl() + dir + "/";
     }
 
-    public String getFileURL(String version, String fileType) {
+    String getFileURL(String version, String fileType) {
+        if (getRepository().isSnapshot()) {
+            return getBaseArtifactURL() + versions.get(0) + "/" + getVersionFileName(VersionUtils.findLatestVersion(snapshotVersions),
+                fileType);
+        }
+
         return getBaseArtifactURL() + version + "/" + getVersionFileName(version, fileType);
     }
 
@@ -260,8 +317,8 @@ public class MavenArtifact implements IMavenIdentifier
     String getVersionFileName(@NotNull String version, @NotNull String fileType) {
         StringBuilder sb = new StringBuilder();
         sb.append(artifactId).append("-").append(version);
-        if (FILE_JAR.equals(fileType) && !CommonUtils.isEmpty(fallbackVersion)) {
-            sb.append('-').append(fallbackVersion);
+        if (FILE_JAR.equals(fileType) && !CommonUtils.isEmpty(classifier)) {
+            sb.append('-').append(classifier);
         }
         sb.append(".").append(fileType);
         return sb.toString();
@@ -271,11 +328,6 @@ public class MavenArtifact implements IMavenIdentifier
     public String toString() {
         return getId();
     }
-
-//    @Nullable
-//    public MavenArtifactVersion getActiveVersion() {
-//        return getVersion(activeVersion);
-//    }
 
     @Nullable
     public MavenArtifactVersion getVersion(String versionStr) {
@@ -304,12 +356,14 @@ public class MavenArtifact implements IMavenIdentifier
         if (CommonUtils.isEmpty(versionRef)) {
             throw new IOException("Empty artifact " + this + " version");
         }
-        boolean predefinedVersion =
-            versionRef.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE) ||
-            versionRef.equals(MavenArtifactReference.VERSION_PATTERN_LATEST) ||
-            versionRef.equals(MavenArtifactReference.VERSION_PATTERN_SNAPSHOT);
-        boolean lookupVersion = predefinedVersion || isVersionPattern(versionRef);
-
+        boolean predefinedVersion = versionRef.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE)
+            || versionRef.equals(MavenArtifactReference.VERSION_PATTERN_LATEST) || (
+            versionRef.equals(MavenArtifactReference.VERSION_PATTERN_SNAPSHOT) && !getRepository().isSnapshot());
+        boolean snapshotVersion = repository.isSnapshot() && versionRef.contains(MavenArtifactReference.VERSION_PATTERN_SNAPSHOT);
+        if (snapshotVersion) {
+            loadMetadata(monitor, versionRef);
+        }
+        boolean lookupVersion = predefinedVersion || isVersionPattern(versionRef) || snapshotVersion;
         if (lookupVersion && !metadataLoaded) {
             loadMetadata(monitor);
         }
@@ -317,6 +371,7 @@ public class MavenArtifact implements IMavenIdentifier
         String versionInfo;
         if (lookupVersion) {
             List<String> allVersions = versions;
+
             switch (versionRef) {
                 case MavenArtifactReference.VERSION_PATTERN_RELEASE:
                     versionInfo = releaseVersion;
@@ -328,17 +383,17 @@ public class MavenArtifact implements IMavenIdentifier
                     versionInfo = latestVersion;
                     break;
                 default:
+                    if (snapshotVersion) {
+                        versionInfo = VersionUtils.findLatestVersion(snapshotVersions);
+                        break;
+                    }
                     if (versionRef.startsWith("{") && versionRef.endsWith("}")) {
                         // Regex - find most recent version matching this pattern
                         String regex = versionRef.substring(1, versionRef.length() - 1);
-                        try {
+                    try {
                             Pattern versionPattern = Pattern.compile(regex);
                             List<String> versions = new ArrayList<>(allVersions);
-                            for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
-                                if (!versionPattern.matcher(iter.next()).matches()) {
-                                    iter.remove();
-                                }
-                            }
+                            versions.removeIf(s -> !versionPattern.matcher(s).matches());
                             versionInfo = VersionUtils.findLatestVersion(versions);
                         } catch (Exception e) {
                             throw new IOException("Bad version pattern: " + regex);

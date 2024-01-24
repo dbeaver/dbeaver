@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -113,7 +113,7 @@ public class OracleCompilerDialog extends BaseDialog
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
-                        cell.setText(node.getNodeName());
+                        cell.setText(node.getNodeDisplayName());
                         cell.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                     } else {
                         cell.setText(unit.toString());
@@ -127,7 +127,7 @@ public class OracleCompilerDialog extends BaseDialog
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
-                        cell.setText(node.getNodeType());
+                        cell.setText(node.getNodeTypeLabel());
                     } else {
                         cell.setText("???"); //$NON-NLS-1$
                     }

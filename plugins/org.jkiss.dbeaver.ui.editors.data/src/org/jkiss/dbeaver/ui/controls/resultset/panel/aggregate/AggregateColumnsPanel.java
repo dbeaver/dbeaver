@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
 import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
 import org.jkiss.dbeaver.registry.functions.FunctionsRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -45,6 +46,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * RSV value view panel
@@ -72,6 +74,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private IDialogSettings panelSettings;
 
     private final List<AggregateFunctionDescriptor> enabledFunctions = new ArrayList<>();
+    private boolean featureTracked;
 
     public AggregateColumnsPanel() {
     }
@@ -217,6 +220,14 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     private void aggregateSelection(IResultSetSelection selection) {
+        if (!featureTracked) {
+            DataEditorFeatures.RESULT_SET_PANEL_CALC.use(Map.of(
+                "functions", enabledFunctions.stream()
+                    .map(AggregateFunctionDescriptor::getId)
+                    .collect(Collectors.joining(","))
+            ));
+            featureTracked = true;
+        }
         ResultSetModel model = presentation.getController().getModel();
         if (groupByColumns) {
             Map<DBDAttributeBinding, List<Object>> attrValues = new LinkedHashMap<>();
@@ -240,8 +251,10 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             for (Object element : selection.toList()) {
                 DBDAttributeBinding attr = selection.getElementAttribute(element);
                 ResultSetRow row = selection.getElementRow(element);
-                Object cellValue = model.getCellValue(attr, row);
-                allValues.add(cellValue);
+                if (row != null) {
+                    Object cellValue = model.getCellValue(attr, row);
+                    allValues.add(cellValue);
+                }
             }
             aggregateValues(null, allValues);
         }
@@ -349,7 +362,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class AddFunctionAction extends Action {
         public AddFunctionAction() {
-            super(ResultSetMessages.aggregate_columns_add_function_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
+            super(ResultSetMessages.aggregate_columns_add_function_text, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
         }
 
         @Override
@@ -361,7 +374,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 }
             }
             if (!missingFunctions.isEmpty()) {
-                Point location = aggregateTable.getDisplay().map(aggregateTable, null, new Point(10, 10));
+                Point location = aggregateTable.getDisplay().getCursorLocation();
                 MenuManager menuManager = new MenuManager();
 
                 for (final AggregateFunctionDescriptor func : missingFunctions) {
@@ -394,7 +407,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class RemoveFunctionAction extends Action {
         public RemoveFunctionAction() {
-            super(ResultSetMessages.aggregate_columns_remove_function_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REMOVE));
+            super(ResultSetMessages.aggregate_columns_remove_function_text, DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
         }
 
         @Override
@@ -414,7 +427,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class ResetFunctionsAction extends Action {
         public ResetFunctionsAction() {
-            super(ResultSetMessages.aggregate_columns_reset_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
+            super(ResultSetMessages.aggregate_columns_reset_text, DBeaverIcons.getImageDescriptor(UIIcon.CANCEL));
         }
 
         @Override

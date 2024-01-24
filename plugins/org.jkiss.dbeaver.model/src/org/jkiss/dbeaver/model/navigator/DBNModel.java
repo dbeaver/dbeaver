@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -45,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * DBNModel.
@@ -56,18 +56,19 @@ import java.util.function.Function;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
-
     public static final String SLASH_ESCAPE_TOKEN = "%2F";
 
     private static final Log log = Log.getLog(DBNModel.class);
 
-    private static class NodePath {
+    public static class NodePath {
         DBNNode.NodePathType type;
         List<String> pathItems;
+        final boolean legacyFormat;
 
         NodePath(DBNNode.NodePathType type, List<String> pathItems) {
             this.type = type;
             this.pathItems = pathItems;
+            this.legacyFormat = type != DBNNode.NodePathType.node;
         }
 
         public String first() {
@@ -259,7 +260,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @NotNull
-    private NodePath getNodePath(@NotNull String path) {
+    private static NodePath getNodePath(@NotNull String path) {
         DBNNode.NodePathType nodeType = DBNNode.NodePathType.other;
         for (DBNNode.NodePathType type : DBNNode.NodePathType.values()) {
             final String prefix = type.getPrefix();
@@ -273,15 +274,31 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public DBNDataSource getDataSourceByPath(DBPProject project, String path) {
-        String dsId = getNodePath(path).first();
+    public DBNDataSource getDataSourceByPath(@NotNull DBPProject project, @NotNull String path) {
         DBNProject projectNode = getRoot().getProjectNode(project);
-        if (projectNode != null) {
-            DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
-            if (dataSource != null) {
-                return dataSource;
+        if (projectNode == null) {
+            return null;
+        }
+        NodePath nodePath = getNodePath(path);
+        if (nodePath.legacyFormat) {
+            return DBNLegacyUtils.getDataSourceByPath(projectNode, nodePath);
+        }
+        DBNProjectDatabases databaseRootNode = projectNode.getDatabases();
+        int rootDbNodeIndex = nodePath.pathItems.indexOf(databaseRootNode.getNodeId());
+        if (rootDbNodeIndex < 0) {
+            return null;
+        }
+        Map<String, DBNDataSource> datasourceById = databaseRootNode.getDataSources()
+            .stream()
+            .collect(Collectors.toMap(DBNDataSource::getNodeId, Function.identity()));
+        for (int i = rootDbNodeIndex + 1; i < nodePath.pathItems.size(); i++) {
+            // it can be folder name or datasource id
+            String potentialDatasourceId = nodePath.pathItems.get(i);
+            if (datasourceById.containsKey(potentialDatasourceId)) {
+                return datasourceById.get(potentialDatasourceId);
             }
         }
+
         return null;
     }
 
@@ -292,80 +309,77 @@ public class DBNModel implements IResourceChangeListener {
     @Nullable
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
         final NodePath nodePath = getNodePath(path);
-        if (nodePath.type == DBNNode.NodePathType.database) {
-            boolean hasLazyProjects = false;
-            for (DBNProject projectNode : getRoot().getProjects()) {
-                if (!projectNode.getProject().isRegistryLoaded()) {
-                    hasLazyProjects = true;
-                    continue;
-                }
-                DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
-                if (curNode != null) {
-                    return findNodeByPath(monitor, nodePath, curNode, 1);
-                }
-            }
-            if (hasLazyProjects) {
-                // No try to search in uninitialized proejcts
-                for (DBNProject projectNode : getRoot().getProjects()) {
-                    if (!projectNode.getProject().isRegistryLoaded()) {
-                        DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
-                        if (curNode != null) {
-                            return findNodeByPath(monitor, nodePath, curNode, 1);
-                        }
-                    }
-                }
-            }
-        } else if (nodePath.type == DBNNode.NodePathType.ext) {
-            DBNProject[] projects = root.getProjects();
-            if (ArrayUtils.isEmpty(projects)) {
-                throw new DBException("No projects in workspace");
-            }
-            if (projects.length > 1) {
-                boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
-                if (!multiNode) {
-                    throw new DBException("Multi-project workspace. Extension nodes not supported");
-                }
-            }
-            return findNodeByPath(monitor, nodePath,
-                projects[0], 0);
-        } else if (nodePath.type == DBNNode.NodePathType.other) {
-            return findNodeByPath(monitor, nodePath,
-                root, 0);
-        } else {
-            for (DBNProject projectNode : getRoot().getProjects()) {
-                if (projectNode.getName().equals(nodePath.first())) {
-                    return findNodeByPath(monitor, nodePath,
-                        nodePath.type == DBNNode.NodePathType.folder ? projectNode.getDatabases() : projectNode, 1);
-                }
-            }
+        if (nodePath.legacyFormat) {
+            return DBNLegacyUtils.legacyGetNodeByPath(monitor, this, nodePath);
         }
-        return null;
+        return findNodeByPath(monitor, getRoot(), nodePath, 0);
     }
 
     @Nullable
-    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull DBPProject project, @NotNull String path) throws DBException {
+    public DBNNode getNodeByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPProject project,
+        @NotNull String path
+    ) throws DBException {
         DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode == null) {
             log.debug("Project node not found");
             return null;
         }
         final NodePath nodePath = getNodePath(path);
-        DBNNode curNode;
-        switch (nodePath.type) {
-            case database:
-                curNode = projectNode.getDatabases().getDataSource(nodePath.first());
-                break;
-            case folder:
-                curNode = projectNode.getDatabases();
-                break;
-            default:
-                curNode = projectNode;
-                break;
+        if (nodePath.legacyFormat) {
+            return DBNLegacyUtils.legacyGetNodeByPath(monitor, projectNode, nodePath);
         }
-        if (curNode == null) {
+        String projectNodePath = projectNode.getNodeUri();
+        if (!path.startsWith(projectNodePath)) {
+            throw new DBException("Node from another project");
+        }
+        int nodeLevel = getNodePath(projectNodePath).pathItems.size();
+        return findNodeByPath(monitor, projectNode, nodePath, nodeLevel);
+    }
+
+    private DBNNode findNodeByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNNode currentNode,
+        @NotNull NodePath nodePath,
+        int currentLevel
+    ) throws DBException {
+        if (CommonUtils.isEmpty(nodePath.pathItems)) {
+            return currentNode;
+        }
+        if (currentLevel >= nodePath.pathItems.size()) {
+            throw new DBException("Node level " + currentLevel + " out of range: " + (nodePath.pathItems.size() - 1));
+        }
+        String expectedNodePathName = nodePath.pathItems.get(currentLevel);
+        //skip fake root resource node
+        //2 because project node is 1, fake resource node must be 2 in the path
+        if (currentLevel == 2 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
+            currentLevel++;
+        }
+        DBNNode[] children = currentNode.getChildren(monitor);
+        if (children == null) {
             return null;
         }
-        return findNodeByPath(monitor, nodePath, curNode, 1);
+
+        DBNNode detectedNode = null;
+        for (DBNNode child : children) {
+            if (child.getNodeId().equals(expectedNodePathName)) {
+                detectedNode = child;
+                break;
+            }
+        }
+
+        if (detectedNode == null) {
+            log.debug("Node '" + expectedNodePathName + "' not found in parent node '"
+                + currentNode.getNodeUri() + "'." + "\nAllowed children: " + Arrays.toString(children));
+            return null;
+        }
+
+        if (currentLevel == nodePath.pathItems.size() - 1) {
+            return detectedNode;
+        } else {
+            return findNodeByPath(monitor, detectedNode, nodePath, currentLevel + 1);
+        }
     }
 
     public DBNResource getNodeByResource(IResource resource) {
@@ -391,63 +405,8 @@ public class DBNModel implements IResourceChangeListener {
         return curResNode;
     }
 
-    private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
-        //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
 
-        for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
-            String item = nodePath.pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
 
-            DBNNode[] children = curNode.getChildren(monitor);
-            DBNNode nextChild = null;
-            if (children != null && children.length > 0) {
-                for (DBNNode child : children) {
-                    if (nodePath.type == DBNNode.NodePathType.resource) {
-                        if (child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)) {
-                            nextChild = child;
-                        } else if (child instanceof DBNProjectDatabases && child.getName().equals(item)) {
-                            nextChild = child;
-                        }
-                    } else if (nodePath.type == DBNNode.NodePathType.folder) {
-                        if (child instanceof DBNLocalFolder && child.getName().equals(item)) {
-                            nextChild = child;
-                        }
-                    } else {
-                        if (child instanceof DBNDatabaseFolder) {
-                            DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
-                            if (meta != null) {
-                                String idOrType = meta.getIdOrType();
-                                if (!CommonUtils.isEmpty(idOrType) && idOrType.equals(item)) {
-                                    nextChild = child;
-                                }
-                            }
-                        }
-                        if (child.getName().equals(item)) {
-                            nextChild = child;
-                        }
-                    }
-                    if (nextChild != null) {
-                        if (i < itemsSize - 1) {
-                            nextChild = findNodeByPath(monitor, nodePath, nextChild, i + 1);
-                            if (nextChild != null) {
-                                return nextChild;
-                            }
-                            continue;
-                        }
-                        break;
-                    }
-                }
-            }
-            if (nextChild == null) {
-                log.debug("Node '" + item + "' not found in parent node '" + curNode.getNodeItemPath() + "'." +
-                    "\nAllowed children: " + Arrays.toString(children));
-            }
-            curNode = nextChild;
-            if (curNode == null) {
-                break;
-            }
-        }
-        return curNode;
-    }
 
     private boolean cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, DBSObject objectToCache, boolean addFiltered) throws DBException
     {
@@ -578,7 +537,7 @@ public class DBNModel implements IResourceChangeListener {
             }
         }
         if (badNode) {
-            log.warn("Remove unregistered meta node object " + node.getNodeName());
+            log.warn("Remove unregistered meta node object " + node.getNodeDisplayName());
         } else {
             if (reflect) {
                 this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, DBNEvent.NodeChange.UNLOAD, node));

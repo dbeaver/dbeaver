@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,35 +35,27 @@ import java.util.Map;
  */
 public class DBGeometry implements DBDValue {
 
-    private Object rawValue;
+    private final Object rawValue;
     private int srid;
     private Map<String, Object> properties;
 
     public DBGeometry() {
-        this.rawValue = null;
+        this(null, 0);
     }
 
-    public DBGeometry(String rawValue) {
-        this.rawValue = rawValue;
+    public DBGeometry(@NotNull DBGeometry source) {
+        this(source.rawValue, source.srid, source.properties);
     }
 
-    public DBGeometry(DBGeometry source) {
-        this.rawValue = source.rawValue;
-        this.srid = source.srid;
-        this.properties = source.properties == null ? null : new LinkedHashMap<>(source.properties);
+    public DBGeometry(@Nullable Geometry rawValue) {
+        this(rawValue, rawValue == null ? 0 : rawValue.getSRID());
     }
 
-    public DBGeometry(Geometry rawValue) {
-        this.rawValue = rawValue;
-        this.srid = rawValue == null ? 0 : rawValue.getSRID();
+    public DBGeometry(@Nullable Object rawValue, int srid) {
+        this(rawValue, srid, null);
     }
 
-    public DBGeometry(Object rawValue, int srid) {
-        this.rawValue = rawValue;
-        this.srid = srid;
-    }
-
-    public DBGeometry(Object rawValue, int srid, Map<String, Object> properties) {
+    public DBGeometry(@Nullable Object rawValue, int srid, @Nullable Map<String, Object> properties) {
         this.rawValue = rawValue;
         this.srid = srid;
         this.properties = properties == null ? null : new LinkedHashMap<>(properties);
@@ -200,6 +192,7 @@ public class DBGeometry implements DBDValue {
     private static class InvertCoordinateFilter implements CoordinateFilter {
         public static final InvertCoordinateFilter INSTANCE = new InvertCoordinateFilter();
 
+        @SuppressWarnings("SuspiciousNameCombination")
         @Override
         public void filter(Coordinate coord) {
             double oldX = coord.x;

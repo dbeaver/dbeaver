@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,19 +36,22 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionPermissionsDialog;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.List;
 import java.util.*;
 
 /**
@@ -57,6 +60,8 @@ import java.util.*;
 public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.connectionTypes"; //$NON-NLS-1$
+
+    private static final String HELP_CONNECTION_TYPES_LINK = "Connection-Types";
 
     private Table typeTable;
     private Text typeId;
@@ -67,6 +72,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     private Button confirmCheck;
     private Button confirmDataChangeCheck;
     private Button autoCloseTransactionsCheck;
+    private Text autoCloseTransactionsTtlText;
+    private Button smartCommitCheck;
+    private Button smartCommitRecoverCheck;
     private ToolItem deleteButton;
     private DBPConnectionType selectedType;
 
@@ -127,7 +135,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         true,
                         false,
                         true,
-                        false);
+                        false,
+                        true,
+                        true,
+                        1800);
                     addTypeToTable(newType, newType);
                     typeTable.select(typeTable.getItemCount() - 1);
                     typeTable.showSelection();
@@ -156,7 +167,12 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
 
         {
-            Group groupSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_types_group_settings, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            Group groupSettings = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_connection_types_group_parameters,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                300);
             groupSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             typeId = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_id, null);
@@ -219,15 +235,23 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 });
 */
             }
+        }
 
-            autocommitCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_auto_commit_by_default, CoreMessages.pref_page_connection_types_label_auto_commit_by_default_tip, false, 2);
-            autocommitCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setAutocommit(autocommitCheck.getSelection());
-                }
-            });
-            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_sql_execution, CoreMessages.pref_page_connection_types_label_confirm_sql_execution_tip, false, 2);
+        {
+            Group placeholder = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_connection_types_group_settings,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                300);
+            placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            confirmCheck = UIUtils.createCheckbox(
+                placeholder,
+                CoreMessages.pref_page_connection_types_label_confirm_sql_execution,
+                CoreMessages.pref_page_connection_types_label_confirm_sql_execution_tip,
+                false,
+                2);
             confirmCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -235,15 +259,12 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
 
-            autoCloseTransactionsCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.action_menu_transaction_auto_close_enabled, CoreMessages.action_menu_transaction_auto_close_enabled_tip, false, 2);
-            autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setAutoCloseTransactions(autoCloseTransactionsCheck.getSelection());
-                }
-            });
-
-            confirmDataChangeCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_data_change, CoreMessages.pref_page_connection_types_label_confirm_data_change_tip, false, 2);
+            confirmDataChangeCheck = UIUtils.createCheckbox(
+                placeholder,
+                CoreMessages.pref_page_connection_types_label_confirm_data_change,
+                CoreMessages.pref_page_connection_types_label_confirm_data_change_tip,
+                false,
+                2);
             confirmDataChangeCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -251,8 +272,70 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
 
+            autocommitCheck = UIUtils.createCheckbox(
+                placeholder,
+                CoreMessages.pref_page_connection_types_label_auto_commit_by_default,
+                CoreMessages.pref_page_connection_types_label_auto_commit_by_default_tip,
+                false,
+                2);
+            autocommitCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setAutocommit(autocommitCheck.getSelection());
+                }
+            });
+
+            smartCommitCheck = UIUtils.createCheckbox(placeholder,
+                CoreMessages.action_menu_transaction_smart_auto_commit,
+                CoreMessages.action_menu_transaction_smart_auto_commit_tip,
+                false,
+                2);
+            smartCommitCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setSmartCommit(smartCommitCheck.getSelection());
+                    updateButtons();
+                    if (!smartCommitCheck.getSelection()) {
+                        getSelectedType().setSmartCommitRecover(false);
+                    }
+                }
+            });
+            smartCommitRecoverCheck = UIUtils.createCheckbox(placeholder,
+                CoreMessages.action_menu_transaction_smart_auto_commit_recover,
+                CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip,
+                false,
+                2);
+            smartCommitRecoverCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setSmartCommitRecover(smartCommitRecoverCheck.getSelection());
+                }
+            });
+
+            autoCloseTransactionsCheck = UIUtils.createCheckbox(
+                placeholder,
+                CoreMessages.action_menu_transaction_auto_close_enabled,
+                CoreMessages.pref_page_connection_types_label_auto_close_enabled_tip,
+                true,
+                1);
+            autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setAutoCloseTransactions(autoCloseTransactionsCheck.getSelection());
+                }
+            });
+
+            autoCloseTransactionsTtlText = new Text(placeholder, SWT.BORDER);
+            autoCloseTransactionsTtlText.setToolTipText(CoreMessages.pref_page_connection_types_label_auto_close_ttl_tip);
+            autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            GridData grd = new GridData();
+            grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
+            autoCloseTransactionsTtlText.setLayoutData(grd);
+            autoCloseTransactionsTtlText.addModifyListener(e ->
+                getSelectedType().setCloseIdleTransactionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
+
             Button epButton = UIUtils.createDialogButton(
-                groupSettings,
+                placeholder,
                 CoreMessages.pref_page_label_edit_permissions,
                 new SelectionAdapter() {
                     @Override
@@ -271,9 +354,31 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             epButton.setLayoutData(gd);
         }
 
+        Link urlHelpLabel = UIUtils.createLink(
+            composite,
+            "<a>" + CoreMessages.pref_page_connection_types_wiki_link + "</a>",
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTION_TYPES_LINK));
+                }
+            });
+        GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
+        urlHelpLabel.setLayoutData(gridData);
+
         performDefaults(false);
+        updateButtons();
 
         return composite;
+    }
+
+    private void updateButtons() {
+        if (!smartCommitCheck.getSelection()) {
+            smartCommitRecoverCheck.setEnabled(false);
+            smartCommitRecoverCheck.setSelection(false);
+        } else if (!smartCommitRecoverCheck.isEnabled()) {
+            smartCommitRecoverCheck.setEnabled(true);
+        }
     }
 
     private DBPConnectionType getSelectedType() {
@@ -295,7 +400,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         autocommitCheck.setSelection(connectionType.isAutocommit());
         confirmCheck.setSelection(connectionType.isConfirmExecute());
         confirmDataChangeCheck.setSelection(connectionType.isConfirmDataChange());
+        smartCommitCheck.setSelection(connectionType.isSmartCommit());
+        smartCommitRecoverCheck.setSelection(connectionType.isSmartCommitRecover());
         autoCloseTransactionsCheck.setSelection(connectionType.isAutoCloseTransactions());
+        autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleTransactionPeriod()));
 
         deleteButton.setEnabled(!connectionType.isPredefined());
     }
@@ -383,7 +491,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         typeId.setEnabled(false);
 
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        List<DBPConnectionType> toRemove = new ArrayList<>();
+        Set<DBPConnectionType> toRemove = new HashSet<>();
         for (DBPConnectionType type : registry.getConnectionTypes()) {
             if (!changedInfo.values().contains(type)) {
                 // Remove
@@ -426,6 +534,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setConfirmDataChange(changed.isConfirmDataChange());
                 source.setColor(changed.getColor());
                 source.setModifyPermissions(changed.getModifyPermission());
+                source.setSmartCommit(changed.isSmartCommit());
+                source.setSmartCommitRecover(changed.isSmartCommitRecover());
+                source.setAutoCloseTransactions(changed.isAutoCloseTransactions());
+                source.setCloseIdleTransactionPeriod(changed.getCloseIdleTransactionPeriod());
                 hasChanges = true;
             }
             if (hasChanges) {
@@ -433,18 +545,28 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             }
         }
 
+        Set<DBPDataSourceRegistry> affectedDataSourceRegs = new HashSet<>();
         if (!changedSet.isEmpty()) {
             registry.saveConnectionTypes();
             // Flush projects configs (as they cache connection type information)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
                 for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
-                    if (changedSet.contains(ds.getConnectionConfiguration().getConnectionType())) {
+                    DBPConnectionConfiguration cnnCfg = ds.getConnectionConfiguration();
+                    DBPConnectionType cnnType = cnnCfg.getConnectionType();
+                    if (changedSet.contains(cnnType)) {
+                        if (toRemove.contains(cnnType)) {
+                            cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
+                        }
                         projectRegistry.flushConfig();
+                        affectedDataSourceRegs.add(projectRegistry);
                         break;
                     }
                 }
             }
+        }
+        for (DBPDataSourceRegistry dsReg : affectedDataSourceRegs) {
+            dsReg.notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, null, dsReg));
         }
         return super.performOk();
     }

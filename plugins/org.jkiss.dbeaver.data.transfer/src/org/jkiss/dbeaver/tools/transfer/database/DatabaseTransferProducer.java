@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,18 +41,20 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,7 +67,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     private final DBCStatistics producerStatistics = new DBCStatistics();
 
+    private DBPDataSourceContainer dataSourceContainer;
     private DBSDataContainer dataContainer;
+    private String objectId;
     @Nullable
     private DBDDataFilter dataFilter;
     @Nullable
@@ -97,13 +101,19 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return dataContainer;
     }
 
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return dataContainer == null ? null : DBUtils.getObjectOwnerProject(dataContainer);
+    }
+
     @Override
     public String getObjectName() {
         final SQLQueryContainer queryContainer = GeneralUtils.adapt(dataContainer, SQLQueryContainer.class);
         if (queryContainer != null) {
             return CommonUtils.getSingleLineString(queryContainer.getQuery().toString());
         }
-        return dataContainer == null ? "?" : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
+        return dataContainer == null ? objectId : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
     }
 
     @Override
@@ -117,7 +127,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     @Override
     public String getObjectContainerName() {
         DBPDataSourceContainer container = getDataSourceContainer();
-        return container != null ? container.getName() : "?";
+        return container != null ? container.getName() : objectId;
     }
 
     @Override
@@ -131,11 +141,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return dataContainer != null;
     }
 
-    private DBPDataSourceContainer getDataSourceContainer() {
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
         if (dataContainer != null) {
             return dataContainer.getDataSource().getContainer();
         }
-        return null;
+        return dataSourceContainer;
     }
 
     @Nullable
@@ -315,10 +326,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return producerStatistics;
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
+    public static class ObjectSerializer implements DTObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull DatabaseTransferProducer object, @NotNull Map<String, Object> state) {
             DBSDataContainer dataContainer = object.dataContainer;
             if (dataContainer instanceof IAdaptable) {
                 DBSDataContainer nestedDataContainer = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
@@ -360,7 +371,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
 
         @Override
-        public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
+        public DatabaseTransferProducer deserializeObject(
+            @NotNull DBRRunnableContext runnableContext,
+            @NotNull SerializerContext serializeContext,
+            @NotNull DBTTask objectContext,
+            @NotNull Map<String, Object> state
+        ) throws DBException {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
                 runnableContext.run(true, true, monitor -> {
@@ -374,9 +390,20 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         switch (selType) {
                             case "entity": {
                                 String id = CommonUtils.toString(state.get("entityId"));
-                                producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
-                                if (producer.dataContainer == null) {
-                                    throw new DBException("Can't find database object '" + id + "'");
+                                String[] pathItems = id.split("/");
+                                if (pathItems.length > 2) {
+                                    producer.objectId = String.join("/", List.of(pathItems).subList(2, pathItems.length));
+                                } else {
+                                    producer.objectId = id;
+                                }
+                                producer.dataSourceContainer = DBUtils.findDataSourceByObjectId(project, id);
+                                if (producer.dataSourceContainer != null && !serializeContext.isDataSourceFailed(producer.dataSourceContainer)) {
+                                    try {
+                                        producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                    } catch (DBException e) {
+                                        serializeContext.addError(e);
+                                        serializeContext.addDataSourceFail(producer.dataSourceContainer);
+                                    }
                                 }
                                 break;
                             }
@@ -406,7 +433,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 break;
                             }
                             default:
-                                log.warn("Unsupported selector type: " + selType);
+                                serializeContext.addError(new DBException("Unsupported selector type: " + selType));
+                                break;
                         }
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);

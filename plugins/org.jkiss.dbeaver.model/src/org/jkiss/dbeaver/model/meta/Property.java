@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public @interface Property
     String DEFAULT_LOCAL_STRING = "#"; //NON-NLS-1
     String RESOURCE_TYPE_NAME = "name"; //NON-NLS-1
     String RESOURCE_TYPE_DESCRIPTION = "description"; //NON-NLS-1
+    String RESOURCE_TYPE_HINT = "hint"; //NON-NLS-1
 
     /**
      * Property unique ID (unique within class)
@@ -43,12 +44,21 @@ public @interface Property
 
     /**
      * Property human readable name
+     *
      * @return name
      */
     String name() default DEFAULT_LOCAL_STRING;
 
     /**
+     * Property name which used on serialization
+     *
+     * @return name
+     */
+    String keyName() default DEFAULT_LOCAL_STRING;
+
+    /**
      * Property category (optional). A human readable string
+     *
      * @return category
      */
     String category() default ""; //NON-NLS-1
@@ -58,6 +68,12 @@ public @interface Property
      * @return description
      */
     String description() default DEFAULT_LOCAL_STRING;
+
+    /**
+     * Property hint (optional)
+     * @return hint
+     */
+    String hint() default DEFAULT_LOCAL_STRING;
 
     /**
      * Editable flag. If set to true then property may be edited for new objects.

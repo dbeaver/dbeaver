@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.db2.model.fed;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RemoteServerOptionCache;
@@ -60,7 +61,7 @@ public class DB2RemoteServer extends DB2GlobalObject implements DBPRefreshableOb
         this.name = JDBCUtils.safeGetString(dbResult, "SERVERNAME");
         this.type = JDBCUtils.safeGetString(dbResult, "SERVERTYPE");
         this.version = JDBCUtils.safeGetString(dbResult, "SERVERVERSION");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         String db2WrapperName = JDBCUtils.safeGetString(dbResult, "WRAPNAME");
         if (db2WrapperName != null) {

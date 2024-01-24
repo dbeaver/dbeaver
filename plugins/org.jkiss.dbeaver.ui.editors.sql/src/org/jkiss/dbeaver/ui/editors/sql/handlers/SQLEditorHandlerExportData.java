@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,14 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorParametersProvider;
@@ -33,6 +38,13 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
+            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
+                ResultSetMessages.dialog_policy_data_export_title,
+                ResultSetMessages.dialog_policy_data_export_msg,
+                SWT.ICON_WARNING);
+            return null;
+        }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
             editor.exportDataFromQuery(new ExportDataSQLScriptContext(editor));
@@ -42,7 +54,12 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
 
     private static class ExportDataSQLScriptContext extends SQLScriptContext {
         public ExportDataSQLScriptContext(SQLEditor editor) {
-            super(null, new DataSourceContextProvider(editor.getDataSource()), EditorUtils.getLocalFileFromInput(editor.getEditorInput()), new StringWriter(), new SQLEditorParametersProvider(editor.getSite()));
+            super(
+                null,
+                new DataSourceContextProvider(editor.getDataSource()),
+                EditorUtils.getPathFromInput(editor.getEditorInput()),
+                new StringWriter(),
+                new SQLEditorParametersProvider(editor.getSite()));
         }
 
         @Override

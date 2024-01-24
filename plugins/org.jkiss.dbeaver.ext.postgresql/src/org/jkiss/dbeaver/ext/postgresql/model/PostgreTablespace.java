@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,16 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * PostgreTablespace
@@ -58,9 +59,11 @@ public class PostgreTablespace extends PostgreInformation implements PostgreScri
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "spcname");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "spcowner");
-        Object opts[] = JDBCUtils.safeGetArray(dbResult, "spcoptions");
-        this.options = opts == null ? "" : Stream.of(opts).map(Object::toString).collect(Collectors.joining(","));
-        this.loc = JDBCUtils.safeGetString(dbResult, "loc");
+        String[] opts = PostgreUtils.safeGetStringArray(dbResult, "spcoptions");
+        this.options = opts == null ? "" : String.join(",", opts);
+        if (getDataSource().getServerType().supportsTablespaceLocation()) {
+            this.loc = JDBCUtils.safeGetString(dbResult, "loc");
+        }
     }
 
     @NotNull
@@ -90,16 +93,20 @@ public class PostgreTablespace extends PostgreInformation implements PostgreScri
         return options;
     }
 
+    public void setOptions(String options) {
+        this.options = options;
+    }
+
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-
         StringBuilder sb = new StringBuilder("CREATE TABLESPACE ");
-        sb.append(getName()).append(" OWNER ").append(getOwner(monitor).getName()).append(" LOCATION '")
-            .append(getLoc()).append("'");
-        if (getOptions() != null && !getOptions().isEmpty()) {
-            sb.append(" WITH (").append(getOptions()).append(")");
+        sb.append(DBUtils.getQuotedIdentifier(this)).append(" OWNER ").append(DBUtils.getQuotedIdentifier(getOwner(monitor)));
+        if (CommonUtils.isNotEmpty(getLoc())) {
+            sb.append(" LOCATION '").append(getLoc()).append("'");
         }
-
+        if (CommonUtils.isNotEmpty(getOptions())) {
+            sb.append("\nWITH (").append(getOptions()).append(")");
+        }
         return sb.toString();
     }
 

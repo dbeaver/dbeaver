@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.erd.ui.action;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;

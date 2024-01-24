@@ -1,0 +1,14 @@
+ @import url("platform:/plugin/org.eclipse.ui.themes/css/e4_classic.css");
+
+CTabItem:selected {
+ 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
+}
+
+.MPartStack.active > CTabItem:selected {
+	color: '#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR';
+}
+
+.MPart Composite
+{
+    background-color: '#COLOR_WIDGET_BACKGROUND';
+}

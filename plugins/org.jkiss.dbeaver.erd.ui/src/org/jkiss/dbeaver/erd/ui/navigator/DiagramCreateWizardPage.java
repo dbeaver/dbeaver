@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -73,6 +73,10 @@ class DiagramCreateWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete()
     {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            setErrorMessage("The user needs more permissions to create a new diagram.");
+            return false;
+        }
         boolean hasName = !CommonUtils.isEmpty(diagram.getName());
         if (!hasName) {
             setErrorMessage("Set diagram name");

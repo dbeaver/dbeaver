@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
     private String inputFile;
@@ -35,9 +36,10 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
+        if (CommonUtils.isEmpty(inputFile)) {
+            inputFile = preferenceStore.getString("inputFile");
+        }
         super.loadSettings(runnableContext, preferenceStore);
-
-        inputFile = preferenceStore.getString("inputFile");
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private String defaultValue;
     @Nullable
     private boolean isGeneratedColumn;
+    private long depObjectId;
 
     protected PostgreAttribute(
         OWNER table)
@@ -171,8 +172,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 }
             }
         }
-        //setTypeName(dataType.getTypeName());
-        setValueType(dataType.getTypeID());
+        if (dataType != null) {
+            //setTypeName(dataType.getTypeName());
+            setValueType(dataType.getTypeID());
+        }
         typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
@@ -196,10 +199,12 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
 
         if (getTable() instanceof PostgreTableForeign) {
-            foreignTableColumnOptions = JDBCUtils.safeGetArray(dbResult, "attfdwoptions");
+            foreignTableColumnOptions = PostgreUtils.safeGetStringArray(dbResult, "attfdwoptions");
         }
 
         setPersisted(true);
+
+        this.depObjectId = JDBCUtils.safeGetLong(dbResult, "objid"); // ID of object which has dependency with this column
     }
 
     @NotNull
@@ -358,6 +363,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.description = description;
     }
 
+    public long getDepObjectId() {
+        return depObjectId;
+    }
+
     @Property(viewable = true, editableExpr = "!object.table.view", order = 30, listProvider = CollationListProvider.class)
     public PostgreCollation getCollation(DBRProgressMonitor monitor) throws DBException {
         if (collationId <= 0) {
@@ -407,10 +416,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return getTypeName();
         }
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        String typeName = dataType.getFullyQualifiedName(DBPEvaluationContext.DDL);
         if (handler != null) {
-            return dataType.getTypeName() + handler.getTypeModifiersString(dataType, typeMod);
+            return typeName + handler.getTypeModifiersString(dataType, typeMod);
         }
-        return dataType.getTypeName();
+        return typeName;
     }
 
     @Override

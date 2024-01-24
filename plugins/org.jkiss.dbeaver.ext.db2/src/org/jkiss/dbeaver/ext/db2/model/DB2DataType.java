@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,18 +101,18 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
         this.db2TypeId = JDBCUtils.safeGetInteger(dbResult, "TYPEID");
 
-        this.ownerCol = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.ownerCol = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
         this.sourceSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCESCHEMA");
         this.sourceName = JDBCUtils.safeGetString(dbResult, "SOURCENAME");
         this.metaType = CommonUtils.valueOf(DB2DataTypeMetaType.class, JDBCUtils.safeGetString(dbResult, "METATYPE"));
         this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
+        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_ALTER_TIME);
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
         if (db2DataSource.isAtLeastV9_7()) {
             this.sourceModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCEMODULENAME");

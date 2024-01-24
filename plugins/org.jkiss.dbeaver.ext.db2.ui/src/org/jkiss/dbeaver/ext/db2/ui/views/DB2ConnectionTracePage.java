@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -106,8 +106,18 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
         traceGroup.setLayout(new GridLayout(2, false));
         traceGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        folderText = DialogUtils.createOutputFolderChooser(traceGroup, DB2Messages.db2_connection_trace_page_label_folder, null);
-        fileNameText = UIUtils.createLabelText(traceGroup, DB2Messages.db2_connection_trace_page_label_file_name, DB2Messages.db2_connection_trace_page_string_trace);
+        folderText = DialogUtils.createOutputFolderChooser(
+            traceGroup,
+            DB2Messages.db2_connection_trace_page_label_folder,
+            null,
+            null,
+            null,
+            false,
+            null);
+        fileNameText = UIUtils.createLabelText(
+            traceGroup,
+            DB2Messages.db2_connection_trace_page_label_file_name,
+            DB2Messages.db2_connection_trace_page_string_trace);
         traceAppendCheck = UIUtils.createLabelCheckbox(traceGroup, DB2Messages.db2_connection_trace_page_checkbox_append, false);
 
         Group levelsGroup = UIUtils.createControlGroup(traceGroup, DB2Messages.db2_connection_trace_page_header_levels, 2, 0, 0);

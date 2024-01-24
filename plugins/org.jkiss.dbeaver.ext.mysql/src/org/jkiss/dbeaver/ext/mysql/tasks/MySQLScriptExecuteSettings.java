@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ext.mysql.tasks;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
@@ -95,19 +95,18 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
     }
 
     @Override
-    public MySQLServerHome findNativeClientHome(String clientHomeId) {
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
         return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
-        super.loadSettings(runnableContext, preferenceStore);
-
         isImport = CommonUtils.getBoolean(preferenceStore.getString(PREFERENCE_IS_IMPORT), isImport);
         logLevel = CommonUtils.valueOf(LogLevel.class, preferenceStore.getString(PREFERENCE_LOG_LEVEL), LogLevel.Normal);
         noBeep = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_NO_BEEP));
         isForeignKeyCheckDisabled = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_DISABLE_FOREIGN_KEY));
         overrideCredentials = CommonUtils.toBoolean(preferenceStore.getString(MySQLNativeCredentialsSettings.PREFERENCE_NAME));
+        super.loadSettings(runnableContext, preferenceStore);
     }
 
     @Override

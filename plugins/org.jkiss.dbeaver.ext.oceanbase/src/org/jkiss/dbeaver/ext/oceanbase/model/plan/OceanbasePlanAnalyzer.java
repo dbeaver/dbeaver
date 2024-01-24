@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
 
 package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
+import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -39,7 +38,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,19 +87,8 @@ public class OceanbasePlanAnalyzer extends AbstractExecutionPlanSerializer imple
 
         ExecutionPlanDeserializer<OceanbasePlanNodeJSON> loader = new ExecutionPlanDeserializer<>();
         List<OceanbasePlanNodeJSON> rootNodes = loader.loadRoot(dataSource, jo,
-                (datasource, node, parent) -> new OceanbasePlanNodeJSON(parent, getNodeAttributes(node)));
+                (datasource, node, parent) -> new OceanbasePlanNodeJSON(parent, getNodeAttributesAsStrings(node)));
         return new OceanbasePlanJSON(dataSource, query, rootNodes);
-    }
-
-    private static Map<String, String> getNodeAttributes(JsonObject nodeObject) {
-        Map<String, String> attributes = new HashMap<>();
-
-        JsonObject attrs = nodeObject.getAsJsonObject(PROP_ATTRIBUTES);
-        for (Map.Entry<String, JsonElement> attr : attrs.entrySet()) {
-            attributes.put(attr.getKey(), attr.getValue().getAsString());
-        }
-
-        return attributes;
     }
 
     @Override

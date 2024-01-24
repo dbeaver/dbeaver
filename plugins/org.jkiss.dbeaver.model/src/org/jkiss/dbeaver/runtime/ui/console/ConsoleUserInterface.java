@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -45,6 +46,11 @@ import java.util.concurrent.Future;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
+
+
+    protected void initialize() {
+        // just a placeholder for injection
+    }
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
@@ -72,7 +78,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void showNotification(@NotNull String title, @Nullable String message, boolean error) {
+    public void showNotification(@NotNull String title, @Nullable String message, boolean error, @Nullable Runnable feedback) {
         showMessageBox(title, message, error);
     }
 
@@ -150,6 +156,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordEditable) {
         throw new IllegalStateException("Can not prompt user password change in non-interactive mode");
+    }
+
+    @Override
+    public String promptProperty(String prompt, String defValue) {
+        return null;
     }
 
     @Override
@@ -261,6 +272,18 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public void showInSystemExplorer(@NotNull String path) {
         // do nothing
+    }
+
+    @Override
+    public DBNPathBase openFileSystemSelector(
+        @NotNull String title,
+        boolean folder,
+        int style,
+        boolean binary,
+        String[] filterExt,
+        String defaultValue
+    ) {
+        return null;
     }
 
     @Override

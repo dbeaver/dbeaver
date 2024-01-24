@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,12 +69,14 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
     public static boolean renameNode(IWorkbenchWindow workbenchWindow, Shell shell, final DBNNode node, String newName, Object uiSource)
     {
-        String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true, false) : node.getNodeName();
+        String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true,
+            false) : node.getNodeDisplayName();
         if (oldName == null) {
             oldName = "?";
         }
         if (newName == null) {
-            newName = EnterNameDialog.chooseName(shell, "Rename " + node.getNodeType(), oldName);
+            newName = EnterNameDialog.chooseName(shell,
+                NLS.bind(UINavigatorMessages.actions_navigator_rename_object, node.getNodeTypeLabel()), oldName);
         }
         if (CommonUtils.isEmpty(newName) || newName.equals(oldName)) {
             return false;
@@ -84,7 +88,9 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 node.rename(new VoidProgressMonitor(), newName);
                 return true;
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Rename", "Can't rename object '" + oldName + "'", e);
+                DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.actions_navigator_rename_object_exception_title,
+                    NLS.bind(UINavigatorMessages.actions_navigator_rename_object_exception_message, oldName), e);
             }
         }
         if (node instanceof DBNDatabaseNode) {
@@ -115,12 +121,14 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                         options.put(DBEObjectManager.OPTION_UI_SOURCE, uiSource);
                         objectRenamer.renameObject(commandTarget.getContext(), object, options, newName);
                         if (object.isPersisted() && commandTarget.getEditor() == null) {
-                            if (!showScript(workbenchWindow, commandTarget.getContext(), DBPScriptObject.EMPTY_OPTIONS, "Rename script")) {
+                            if (!showScript(workbenchWindow, commandTarget.getContext(), DBPScriptObject.EMPTY_OPTIONS,
+                                UINavigatorMessages.actions_navigator_rename_script)) {
                                 commandTarget.getContext().resetChanges(true);
                                 return false;
                             } else {
                                 ObjectSaver renamer = new ObjectSaver(commandTarget.getContext(), DBPScriptObject.EMPTY_OPTIONS);
-                                TasksJob.runTask("Rename object '" + object.getName() + "'", renamer);
+                                TasksJob.runTask(NLS.bind(UINavigatorMessages.actions_navigator_rename_database_object,
+                                    object.getName()), renamer);
                             }
                         } else {
                             for (DBECommand command : commandTarget.getContext().getFinalCommands()) {
@@ -132,7 +140,11 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 }
             }
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Rename object", "Can't rename object '" + node.getNodeName() + "'", e);
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.actions_navigator_rename_database_object_exception_title,
+                NLS.bind(UINavigatorMessages.actions_navigator_rename_database_object_exception_message,
+                    node.getNodeDisplayName()),
+                e);
             return false;
         }
         return false;

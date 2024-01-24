@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,4 +157,23 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         }
     }
 
+    @Override
+    protected void addObjectExtraActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actionList,
+        NestedObjectCommand<SQLServerTableBase, PropertyHandler> command,
+        Map<String, Object> options
+    ) throws DBException {
+        super.addObjectExtraActions(monitor, executionContext, actionList, command, options);
+        SQLServerTableBase tableBase = command.getObject();
+        if (!tableBase.isPersisted()) {
+            // Column comments for the newly created table
+            for (SQLServerTableColumn column : CommonUtils.safeCollection(tableBase.getAttributes(monitor))) {
+                if (!CommonUtils.isEmpty(column.getDescription())) {
+                    SQLServerTableColumnManager.addColumnCommentAction(actionList, column, false);
+                }
+            }
+        }
+    }
 }

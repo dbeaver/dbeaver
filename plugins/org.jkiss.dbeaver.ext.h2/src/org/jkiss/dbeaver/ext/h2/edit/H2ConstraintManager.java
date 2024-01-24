@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,15 +80,6 @@ public class H2ConstraintManager extends GenericPrimaryKeyManager {
                         SQLUtils.quoteString(constraint, CommonUtils.notEmpty(constraint.getDescription()))
                 )
             );
-        }
-    }
-
-    @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<GenericUniqueKey> command) {
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append("(").append(((H2Constraint)command.getObject()).getCheckConstraintDefinition()).append(")");
-        } else {
-            super.appendConstraintDefinition(decl, command);
         }
     }
 }

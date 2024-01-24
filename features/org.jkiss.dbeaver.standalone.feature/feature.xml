@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.standalone.feature"
         label="%featureName"
-        version="22.3.3.qualifier"
+        version="23.3.3.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
@@ -25,17 +25,17 @@
     <includes id="org.jkiss.dbeaver.app.base.feature" version="0.0.0"/>
 
     <!-- Additional plugins for standalone version -->
-    <plugin id="org.jkiss.dbeaver.ext.sample.database" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.sample.database" version="0.0.0" />
 
     <!-- P2 for RCP -->
     <!-- Do not include p2.rcp as we don't need auto-update and scheduler -->
     <includes id="org.eclipse.equinox.p2.core.feature" version="0.0.0"/>
-    <plugin id="org.eclipse.equinox.p2.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.equinox.p2.ui.sdk" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.equinox.security.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.equinox.p2.ui" version="0.0.0" />
+    <plugin id="org.eclipse.equinox.p2.ui.sdk" version="0.0.0" />
+    <plugin id="org.eclipse.equinox.security.ui" version="0.0.0" />
 
-    <plugin id="org.eclipse.equinox.p2.updatesite" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.equinox.p2.ui.importexport" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.equinox.p2.updatesite" version="0.0.0" />
+    <plugin id="org.eclipse.equinox.p2.ui.importexport" version="0.0.0" />
 
     <includes id="org.eclipse.equinox.p2.discovery.feature" version="0.0.0"/>
     <includes id="org.eclipse.equinox.p2.extras.feature" version="0.0.0"/>

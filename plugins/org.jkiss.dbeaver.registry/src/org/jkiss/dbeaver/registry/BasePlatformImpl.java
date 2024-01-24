@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,15 +33,20 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
+import org.osgi.service.component.annotations.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -56,6 +61,7 @@ import java.util.Map;
  *
  * Base implementation of DBeaver platform
  */
+@Component
 public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
@@ -66,16 +72,17 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     public static final String CONFIG_FOLDER = ".config";
     public static final String FILES_FOLDER = ".files";
 
-    private OSDescriptor localSystem;
+    protected OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
-
     private final List<IPluginService> activatedServices = new ArrayList<>();
     private DBFileController localFileController;
     private DBTTaskController localTaskController;
     
     private DBConfigurationController defaultConfigurationController;
     private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
+
+    private SQLDialectMetadataRegistry sqlDialectRegistry;
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -89,8 +96,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             }
         });
 
-        this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
-
         // Navigator model
         this.navigatorModel = new DBNModel(this, null);
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
@@ -98,17 +103,23 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
         if (!getApplication().isExclusiveMode()) {
             // Activate plugin services
-            for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
-                try {
-                    pluginService.activateService();
-                    activatedServices.add(pluginService);
-                } catch (Throwable e) {
-                    log.error("Error activating plugin service", e);
-                }
-            }
+            activatePluginServices();
 
-            // Connections monitoring job
-            new DataSourceMonitorJob(this).scheduleMonitor();
+            if (!getApplication().isMultiuser()) {
+                // Connections monitoring job
+                new DataSourceMonitorJob(this).scheduleMonitor();
+            }
+        }
+    }
+
+    protected void activatePluginServices() {
+        for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
+            try {
+                pluginService.activateService();
+                activatedServices.add(pluginService);
+            } catch (Throwable e) {
+                log.error("Error activating plugin service", e);
+            }
         }
     }
 
@@ -151,6 +162,21 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public SQLDialectMetadataRegistry getSQLDialectRegistry() {
+        if (sqlDialectRegistry == null) {
+            sqlDialectRegistry = RuntimeUtils.getBundleService(SQLDialectMetadataRegistry.class, true);
+        }
+        return sqlDialectRegistry;
+    }
+
+    @NotNull
+    @Override
+    public DBWHandlerRegistry getNetworkHandlerRegistry() {
+        return NetworkHandlerRegistry.getInstance();
+    }
+
+    @NotNull
+    @Override
     public DBConfigurationController getConfigurationController() {
         return getPluginConfigurationController(null);
     }
@@ -163,11 +189,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     
     @NotNull
     @Override
-    public DBConfigurationController getPluginConfigurationController(@NotNull String pluginId) {
-        return getConfigurationController(Platform.getBundle(pluginId));
+    public DBConfigurationController getPluginConfigurationController(@Nullable String pluginId) {
+        return getConfigurationController(CommonUtils.isEmpty(pluginId) ? null : Platform.getBundle(pluginId));
     }
     
-    private DBConfigurationController getConfigurationController(Bundle bundle) {
+    private DBConfigurationController getConfigurationController(@Nullable Bundle bundle) {
         DBConfigurationController controller = bundle == null ? defaultConfigurationController : configurationControllerByPlugin.get(bundle);
         if (controller == null) {
             controller = createConfigurationController(bundle);
@@ -196,7 +222,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             LocalConfigurationController controller = new LocalConfigurationController(
                 getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
             );
-            controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+            Plugin productPlugin = getProductPlugin();
+            if (productPlugin != null && productPlugin.getStateLocation() != null) {
+                controller.setLegacyConfigFolder(productPlugin.getStateLocation().toFile().toPath());
+            }
             return controller;
         } else {
             return new LocalConfigurationController(
@@ -273,7 +302,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @NotNull
     @Override
     public OSDescriptor getLocalSystem() {
-        return localSystem;
+        if (this.localSystem == null) {
+            this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
+        }
+        return this.localSystem;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,11 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -95,7 +97,8 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
                 }
             };
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 200;
+            gd.heightHint = 300;
+            gd.widthHint = 400;
             driverSelectViewer.getControl().setLayoutData(gd);
 
             ((GridData)filterIndentLabel.getLayoutData()).widthHint =
@@ -180,6 +183,10 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     @Override
     public boolean isPageComplete()
     {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            setErrorMessage("The user needs more permissions to create a new connection.");
+            return false;
+        }
         return canFlipToNextPage();
     }
 
@@ -208,7 +215,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     @Override
     public void doubleClick(DoubleClickEvent event)
     {
-        if (selectedDriver != null) {
+        if (selectedDriver != null && projectSelector.getSelectedProject() != null) {
             wizard.getContainer().showPage(wizard.getNextPage(this));
         }
     }

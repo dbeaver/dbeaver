@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,6 +102,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public final JobClassCache jobClassCache = new JobClassCache();
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
+    private final EnumValueCache enumValueCache = new EnumValueCache();
 
     protected PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
         throws DBException {
@@ -171,6 +172,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
             roleCache.setCache(Collections.emptyList());
         }
 */
+    }
+
+    private void initEnumTypesCache(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (((PostgreDataSource) dataSource).isSupportsEnumTable()) {
+            enumValueCache.getAllObjects(monitor, this);
+        }
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -541,8 +548,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
-        if (!CommonUtils.isEmpty(dataTypeCache)) {
-            return dataTypeCache.values();
+        synchronized (dataTypeCache) {
+            if (!CommonUtils.isEmpty(dataTypeCache)) {
+                return new ArrayList<>(dataTypeCache.values());
+            }
         }
         final PostgreSchema schema = getCatalogSchema();
         if (schema != null) {
@@ -564,6 +573,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return PostgreUtils.getDefaultDataTypeName(dataKind);
+    }
+
+    /**
+     * @return enum values cache. Do not use is if database do not support enams. Check {@code PostgreDatasource#isSupportsEnumTable}
+     */
+    EnumValueCache getEnumValueCache() {
+        return enumValueCache;
     }
 
     ///////////////////////////////////////////////
@@ -654,8 +670,15 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     void cacheDataTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
-        if (dataTypeCache.isEmpty() || forceRefresh) {
-            dataTypeCache.clear();
+        boolean hasDataTypes;
+        synchronized (dataTypeCache) {
+            hasDataTypes = !dataTypeCache.isEmpty();
+        }
+        if (!hasDataTypes || forceRefresh) {
+            synchronized (dataTypeCache) {
+                dataTypeCache.clear();
+                enumValueCache.clearCache();
+            }
             // Cache data types
 
             PostgreDataSource postgreDataSource = getDataSource();
@@ -679,6 +702,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                     }
                 }
 
+                List<PostgreDataType> loadedDataTypes = new ArrayList<>();
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         Set<PostgreSchema> schemaList = new HashSet<>();
@@ -688,7 +712,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                                 PostgreSchema schema = dataType.getParentObject();
                                 schemaList.add(schema);
                                 schema.getDataTypeCache().cacheObject(dataType);
-                                dataTypeCache.put(dataType.getObjectId(), dataType);
+                                loadedDataTypes.add(dataType);
                             }
                         }
                         if (!schemaList.isEmpty()) {
@@ -702,9 +726,15 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         }
                     }
                 }
+                synchronized (dataTypeCache) {
+                    for (PostgreDataType dataType : loadedDataTypes) {
+                        dataTypeCache.put(dataType.getObjectId(), dataType);
+                    }
+                }
             } catch (SQLException e) {
                 throw new DBException(e, postgreDataSource);
             }
+            initEnumTypesCache(monitor);
         }
     }
 
@@ -719,7 +749,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         PostgreUtils.getQueryForSystemColumnChecking("pg_type", "typcategory"));
                     supportTypColumn = true;
                 } catch (SQLException e) {
-                    log.debug("Error reading system information from the pg_type table", e);
+                    log.debug("Error reading system information from the pg_type table: " + e.getMessage());
+                    try {
+                        if (!session.isClosed() && !session.getAutoCommit()) {
+                            session.rollback();
+                        }
+                    } catch (SQLException ex) {
+                        log.warn("Can't rollback transaction", e);
+                    }
                     supportTypColumn = false;
                 }
             } else {
@@ -837,6 +874,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         jobClassCache.clearCache();
         schemaCache.clearCache();
         cacheDataTypes(monitor, true);
+        enumValueCache.clearCache();
 
         return this;
     }
@@ -879,14 +917,20 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (typeId <= 0) {
             return null;
         }
-        PostgreDataType dataType = dataTypeCache.get(typeId);
-        if (dataType != null) {
-            return dataType;
+
+        PostgreDataType dataType;
+        synchronized (dataTypeCache) {
+            dataType = dataTypeCache.get(typeId);
+            if (dataType != null) {
+                return dataType;
+            }
         }
         for (PostgreSchema schema : schemaCache.getCachedObjects()) {
             dataType = schema.getDataTypeCache().getDataType(typeId);
             if (dataType != null) {
-                dataTypeCache.put(typeId, dataType);
+                synchronized (dataTypeCache) {
+                    dataTypeCache.put(typeId, dataType);
+                }
                 return dataType;
             }
         }
@@ -894,7 +938,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try {
             dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);
             dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
-            dataTypeCache.put(dataType.getObjectId(), dataType);
+            synchronized (dataTypeCache) {
+                dataTypeCache.put(dataType.getObjectId(), dataType);
+            }
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type " + typeId, e);
@@ -949,7 +995,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try {
             PostgreDataType dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeName);
             dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
-            dataTypeCache.put(dataType.getObjectId(), dataType);
+            synchronized (dataTypeCache) {
+                dataTypeCache.put(dataType.getObjectId(), dataType);
+            }
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
@@ -1151,7 +1199,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             throws SQLException {
             return session.prepareStatement(
                 "SELECT t.oid,t.*" +
-                    (owner.getDataSource().getServerType().supportsTeblespaceLocation() ? ",pg_tablespace_location(t.oid) loc" : "") +
+                    (owner.getDataSource().getServerType().supportsTablespaceLocation() ? ",pg_tablespace_location(t.oid) loc" : "") +
                     "\nFROM pg_catalog.pg_tablespace t " +
                     "\nORDER BY t.oid"
             );
@@ -1268,6 +1316,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0 AND d.classoid='pg_namespace'::regclass\n");
+            boolean extraConditionAdded = addExtraCondition(session, catalogQuery);
             DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
                 if (object != null || objectName != null) {
@@ -1281,7 +1330,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
                     }
                 }
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true, database.getDataSource());
+                JDBCUtils.appendFilterClause(
+                    catalogQuery,
+                    catalogFilters,
+                    "nspname",
+                    !extraConditionAdded,
+                    database.getDataSource());
             }
             catalogQuery.append(" ORDER BY nspname");
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
@@ -1301,6 +1355,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 return null;
             }
             return owner.createSchemaImpl(owner, name, resultSet);
+        }
+
+        /**
+         * Adds condition in the query and returns true if condition is added.
+         *
+         * @param session to check columns existing
+         * @param query query text needed for additions
+         * @return true if condition added
+         */
+        protected boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
+            // Do not do anything.
+            return false;
         }
     }
 
@@ -1340,6 +1406,32 @@ public class PostgreDatabase extends JDBCRemoteInstance
         @Override
         protected PostgreJobClass fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) {
             return new PostgreJobClass(database, dbResult);
+        }
+    }
+
+    public static class EnumValueCache extends PostgreDatabaseJDBCObjectCache<PostgreEnumValue> {
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreDatabase database
+        ) throws SQLException {
+            if (!database.getDataSource().isSupportsEnumTable()) {
+                // For those who missed previous warnings
+                return session.prepareStatement("SELECT 1");
+            }
+            return session.prepareStatement("SELECT * FROM pg_catalog.pg_enum");
+        }
+
+        @Nullable
+        @Override
+        protected PostgreEnumValue fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreDatabase database,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
+            return new PostgreEnumValue(database.getDataSource(), database, resultSet);
         }
     }
 

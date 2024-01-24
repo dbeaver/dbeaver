@@ -1,11 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Vendor: %Bundle-Vendor
-Bundle-Name: %Bundle-Name
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver UI Editors - SQL
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.sql;singleton:=true
-Bundle-Version: 1.0.98.qualifier
-Bundle-Release-Date: 20230123
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 1.0.123.qualifier
+Bundle-Release-Date: 20240122
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator
 Require-Bundle: org.eclipse.core.runtime,
@@ -13,6 +13,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.filesystem,
  org.eclipse.ui;visibility:=reexport,
+ org.eclipse.ui.views,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.ui;visibility:=reexport,
@@ -22,15 +23,18 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.tasks.native.ui;visibility:=reexport,
  org.eclipse.jface.text;visibility:=reexport,
  org.eclipse.ui.editors;visibility:=reexport,
  org.eclipse.ui.ide,
  org.eclipse.ui.workbench.texteditor;visibility:=reexport,
  org.eclipse.ui.console,
  org.eclipse.e4.ui.model.workbench,
- org.eclipse.ui.forms
-Export-Package: org.jkiss.dbeaver.runtime.sql,
- org.jkiss.dbeaver.ui.controls,
+ org.eclipse.ui.forms,
+ org.eclipse.e4.ui.workbench.renderers.swt,
+ org.jkiss.dbeaver.model.lsm,
+ org.jkiss.bundle.antlr4
+Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.controls.querylog,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.editors.sql.addins,

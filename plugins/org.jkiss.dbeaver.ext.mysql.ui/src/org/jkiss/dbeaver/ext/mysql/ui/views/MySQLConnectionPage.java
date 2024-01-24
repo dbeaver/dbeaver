@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.mysql.ui.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -26,15 +28,19 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -49,6 +55,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     // as now we use server timestamp format by default
     private static final boolean MANAGE_SERVER_TIME_ZONE = true;
 
+    private Text urlText;
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -78,7 +85,12 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public Image getImage() {
         // We set image only once at activation
         // There is a bug in Eclipse which leads to SWTException after wizard image change
-        if (getSite().getDriver().getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
+        DBPDriver driver = getSite().getDriver();
+        DBPImage logoImage = driver.getLogoImage();
+        if (logoImage != null) {
+            return DBeaverIcons.getImage(logoImage);
+        }
+        if (driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
             return LOGO_MARIADB;
         } else {
             return LOGO_MYSQL;
@@ -86,50 +98,89 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     }
 
     @Override
-    public void createControl(Composite composite)
-    {
-        //Composite group = new Composite(composite, SWT.NONE);
-        //group.setLayout(new GridLayout(1, true));
+    public void createControl(Composite composite) {
         ModifyListener textListener = e -> {
             if (activated) {
+                updateUrl();
                 site.updateButtons();
             }
         };
-        final int fontHeight = UIUtils.getFontHeight(composite);
 
         Composite addrGroup = new Composite(composite, SWT.NONE);
         addrGroup.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Group serverGroup = UIUtils.createControlGroup(addrGroup, "Server", 2, GridData.FILL_HORIZONTAL, 0);
+        Group serverGroup = UIUtils.createControlGroup(
+            addrGroup,
+            UIConnectionMessages.dialog_connection_server_label,
+            4,
+            GridData.FILL_HORIZONTAL,
+            0);
 
-        needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
+        SelectionAdapter typeSwitcher = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+                updateUrl();
+            }
+        };
+        createConnectionModeSwitcher(serverGroup, typeSwitcher);
+
+        UIUtils.createControlLabel(serverGroup, UIConnectionMessages.dialog_connection_url_label);
+        urlText = new Text(serverGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        gd.grabExcessHorizontalSpace = true;
+        gd.widthHint = 355;
+        urlText.setLayoutData(gd);
+        urlText.addModifyListener(e -> site.updateButtons());
+
+        DBPDriver driver = getSite().getDriver();
+        needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
 
         Label hostLabel = UIUtils.createControlLabel(serverGroup,
             needsPort ? MySQLUIMessages.dialog_connection_host : MySQLUIMessages.dialog_connection_instance);
-        Composite hostComposite = UIUtils.createComposite(serverGroup, 3);
-        hostComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        addControlToGroup(GROUP_CONNECTION, hostLabel);
 
-        hostText = new Text(hostComposite, SWT.BORDER);
-        hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        hostText = new Text(serverGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
+        addControlToGroup(GROUP_CONNECTION, hostText);
 
         if (needsPort) {
-            portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            ((GridData) portText.getLayoutData()).widthHint = fontHeight * 10;
+            Label portLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_port);
+            addControlToGroup(GROUP_CONNECTION, portLabel);
+            portText = new Text(serverGroup, SWT.BORDER);
+            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            gd.widthHint = UIUtils.getFontHeight(portText) * 10;
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
+            addControlToGroup(GROUP_CONNECTION, portText);
         } else {
-            ((GridLayout)hostComposite.getLayout()).numColumns -= 2;
+            gd.horizontalSpan = 3;
         }
 
-        dbText = UIUtils.createLabelText(serverGroup, MySQLUIMessages.dialog_connection_database, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+        Label dbLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_database);
+        addControlToGroup(GROUP_CONNECTION, dbLabel);
+        dbText = new Text(serverGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 3;
+        dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
+        addControlToGroup(GROUP_CONNECTION, dbText);
 
         createAuthPanel(addrGroup, 1);
 
-        Group advancedGroup = UIUtils.createControlGroup(addrGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        Group advancedGroup = UIUtils.createControlGroup(
+            addrGroup,
+            MySQLUIMessages.dialog_connection_group_advanced,
+            2,
+            GridData.HORIZONTAL_ALIGN_BEGINNING,
+            0);
 
         if (MANAGE_SERVER_TIME_ZONE) {
             serverTimezoneCombo = UIUtils.createLabelCombo(advancedGroup, MySQLUIMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);
@@ -144,7 +195,8 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             serverTimezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
-        if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION)) {
+        boolean supportsClients = CommonUtils.getBoolean(driver.getDriverParameter(MySQLConstants.DRIVER_PARAM_CLIENTS), true);
+        if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION) && supportsClients) {
             homesSelector = new ClientHomesSelector(advancedGroup, MySQLUIMessages.dialog_connection_local_client, false);
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             homesSelector.getPanel().setLayoutData(gd);
@@ -154,8 +206,21 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         setControl(addrGroup);
     }
 
+    private void updateUrl() {
+        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
+        saveSettings(dataSourceContainer);
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
+            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
+        } else {
+            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+        }
+    }
+
     @Override
     public boolean isComplete() {
+        if (isCustomURL()) {
+            return !CommonUtils.isEmpty(urlText.getText());
+        }
         return super.isComplete() &&
             hostText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
@@ -165,8 +230,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     @Override
     public void loadSettings() {
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        DBPDriver driver = getSite().getDriver();
-
         super.loadSettings();
 
         // Load values from new connection info
@@ -203,6 +266,13 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
         }
 
+        final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        if (useURL) {
+            urlText.setText(connectionInfo.getUrl());
+        }
+        setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
+        updateUrl();
+
         activated = true;
     }
 
@@ -210,6 +280,10 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+        if (typeURLRadio != null) {
+            connectionInfo.setConfigurationType(
+                typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+        }
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
         }
@@ -230,6 +304,9 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
+            connectionInfo.setUrl(urlText.getText());
+        }
 
         super.saveSettings(dataSource);
     }
@@ -238,8 +315,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage(this),
-
+            new DriverPropertiesDialogPage(this)
         };
     }
 

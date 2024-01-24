@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -410,10 +410,15 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        DBPPreferenceStore targetPreferenceStore = getTargetPreferenceStore();
-        clearPreferences(targetPreferenceStore);
         formatterProfile = null;
-        loadPreferences(targetPreferenceStore);
+        refreshProfileList();
+        setCurrentProfile(getDefaultProfile());
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        datetimeNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
+        numericNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT));
+        boolean isNumericSc = store.getDefaultBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
+        numericScientificFormatCheck.setSelection(isNumericSc);
+        numericScientificFormatCheck.setEnabled(isNumericSc);
         reloadSample();
         super.performDefaults();
     }
@@ -581,10 +586,6 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
 
         private void loadProfiles() {
-            if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
-                log.warn("The user has no permission to load custom data format profiles configuration");
-                return;
-            }
             profileList.removeAll();
             List<DBDDataFormatterProfile> profiles = DataFormatterRegistry.getInstance().getCustomProfiles();
             for (DBDDataFormatterProfile profile : profiles) {

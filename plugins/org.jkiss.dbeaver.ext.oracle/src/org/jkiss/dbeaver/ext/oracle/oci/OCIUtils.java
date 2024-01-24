@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,24 @@ public class OCIUtils
     {
         checkOraHomes();
         return oraHomes;
+    }
+    
+    /** 
+     * Return first element of oraHomes, or null
+     */
+    @Nullable
+    public static OracleHomeDescriptor getDefaultOraHome() {
+        List<OracleHomeDescriptor> oraHomes = getOraHomes();
+        return oraHomes.isEmpty() ? null : oraHomes.get(0);
+    }
+    
+    /** 
+     * Return path to first element of oraHomes, or null
+     */
+    @Nullable
+    public static File getDefaultOraHomePath() {
+        OracleHomeDescriptor defaultOraHome = getDefaultOraHome();
+        return defaultOraHome == null ? null : defaultOraHome.getPath();
     }
 
     private static boolean checkOraHomes() {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,10 +69,8 @@ public class ModelPropertyTester extends PropertyTester
             case PROP_IS_TABLE_CONTAINER: {
                 DBSObject object = DBUtils.getPublicObject((DBSObject) receiver);
                 if (object instanceof DBNContainer) {
-                    Object valueObject = ((DBNContainer) object).getValueObject();
-                    if (valueObject instanceof DBSObject) {
-                        object = (DBSObject) valueObject;
-                    }
+                    final Class<?> childrenClass = ((DBNContainer) object).getChildrenClass();
+                    return childrenClass != null && DBSDataContainer.class.isAssignableFrom(childrenClass);
                 }
                 if (object instanceof DBSSchema) {
                     return true;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelRefresher;
@@ -80,12 +81,14 @@ public class ReferencesPanel implements IResultSetPanel {
                         return;
                     }
                     this.prevSelection = selectedItems;
-                    getResultsContainer().refreshReferences();
+                    getResultsContainer().refreshReferences(false);
                 }
             };
             ((ISelectionProvider) presentation).addSelectionChangedListener(selectionListener);
             presentation.getControl().addDisposeListener(e -> ((ISelectionProvider) presentation).removeSelectionChangedListener(selectionListener));
         }
+
+        DataEditorFeatures.RESULT_SET_PANEL_REFS.use();
 
         return referencesPlaceholder;
     }
@@ -135,7 +138,7 @@ public class ReferencesPanel implements IResultSetPanel {
     @Override
     public void refresh(boolean force) {
         if (presentation.getController().getVisiblePanel() == this) {
-            getResultsContainer().refreshReferences();
+            getResultsContainer().refreshReferences(force);
         }
     }
 

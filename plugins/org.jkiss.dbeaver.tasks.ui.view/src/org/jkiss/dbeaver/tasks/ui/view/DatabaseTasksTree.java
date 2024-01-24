@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -73,10 +74,12 @@ public class DatabaseTasksTree {
     private boolean groupByType = false;
     private boolean groupByCategory = false;
 
-    private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
+    private final DateFormat dateFormat;
     private final Color colorError, colorErrorForeground;
 
     public DatabaseTasksTree(Composite composite, boolean selector) {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
+        dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
         colorErrorForeground = UIUtils.getContrastColor(colorError);
@@ -166,7 +169,7 @@ public class DatabaseTasksTree {
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
                     DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                    if (lastRun == null) {
+                    if (lastRun == null || !lastRun.isFinished()) {
                         return "N/A";
                     } else {
                         return RuntimeUtils.formatExecutionTime(lastRun.getRunDuration());
@@ -328,6 +331,9 @@ public class DatabaseTasksTree {
     }
 
     void regroupTasks(ExpansionOptions options) {
+        if (taskViewer.isBusy()) {
+            return;
+        }
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
@@ -474,7 +480,9 @@ public class DatabaseTasksTree {
                     }
 
                     UIUtils.asyncExec(() -> {
-                        taskViewer.refresh(true);
+                        if (!taskViewer.isBusy()) {
+                            taskViewer.refresh(true);
+                        }
                     });
                     return Status.OK_STATUS;
                 }

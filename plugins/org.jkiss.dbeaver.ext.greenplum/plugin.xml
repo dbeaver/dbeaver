@@ -26,7 +26,7 @@
             <treeInjection path="postgresql/database/schema" after="table">
                 <folder type="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable"
                         label="%tree.externaltables.node.name"
-                        icon="#folder_table">
+                        icon="#folder_table" visibleIf="object.dataSource.supportsExternalTables()">
                     <items label="%tree.externaltable.node.name" path="externalTable" property="externalTables"
                            icon="#table_external">
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"
@@ -53,7 +53,7 @@
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.2]"
                           bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>
@@ -74,12 +74,12 @@
                 </driver>
 
                 <provider-properties drivers="*">
+                    <propertyGroup label="Misc">
+                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection"/>
+                    </propertyGroup>
                     <propertyGroup label="Database list">
                         <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
                         <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
-                    </propertyGroup>
-                    <propertyGroup label="Misc">
-                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection"/>
                     </propertyGroup>
                 </provider-properties>
             </drivers>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.erd.ui;
 
-import org.eclipse.draw2dl.PrintFigureOperation;
+import org.eclipse.draw2d.PrintFigureOperation;
 
 /**
  * ERD constants
@@ -31,12 +31,13 @@ public class ERDUIConstants {
     public static final String PREF_PRINT_MARGIN_BOTTOM = "erd.print.margin-bottom";
     public static final String PREF_PRINT_MARGIN_LEFT = "erd.print.margin-left";
     public static final String PREF_PRINT_MARGIN_RIGHT = "erd.print.margin-right";
-
     public static final String PREF_ROUTING_TYPE = "erd.routing.type";
+    public static final String PREF_NOTATION_TYPE = "erd.notation.type";
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
     public static final String PROP_DIAGRAM_FONT = "org.jkiss.dbeaver.erd.diagram.font";
+    public static final String PROP_DIAGRAM_NOTATION_LABEL_FONT = "org.jkiss.dbeaver.erd.diagram.font.notation.label";
 
     public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
     public static final String PREF_DIAGRAM_SHOW_PARTITIONS = "erd.diagram.show.partitions";
@@ -81,7 +82,11 @@ public class ERDUIConstants {
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
 
-    public static final String ROUTING_MIKAMI = "Mikami-Tabuchi (Experimental)";
-    public static final String ROUTING_SHORTEST_PATH = "Shortest Path";
+    public static final String ATTR_ERD_NOTATION = "notation"; // $NON-NLS-N$
+    public static final String ATTR_ERD_SUPPORT_ATTRIBUTES_ASSOCIATION = "supportAttributesAssociation"; //$NON-NLS-1$
+    public static final String ATTR_ERD_ROUTER = "router"; //$NON-NLS-1$
+    public static final String ATTR_ERD_CONNECTION = "connection"; //$NON-NLS-1$
 
+    public static final String PREF_DEFAULT_ATTR_ERD_ROUTER_ID = "org.jkiss.dbeaver.erd.router.shortest.path"; //$NON-NLS-1$
+    public static final String PREF_DEFAULT_ATTR_ERD_NOTATION_ID = "org.jkiss.dbeaver.erd.notaion.idef1x"; //$NON-NLS-1$
 }

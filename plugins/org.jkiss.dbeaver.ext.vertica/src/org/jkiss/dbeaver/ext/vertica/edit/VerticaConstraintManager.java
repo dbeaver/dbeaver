@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,36 +18,19 @@ package org.jkiss.dbeaver.ext.vertica.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaConstraint;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.util.List;
 import java.util.Map;
 
 public class VerticaConstraintManager extends GenericPrimaryKeyManager {
-
-    @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        VerticaConstraint constraint = (VerticaConstraint) command.getObject();
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            actions.add(
-                    new SQLDatabasePersistAction("Create check constraint", 
-                        "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                            " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) + " CHECK (" + constraint.getCheckConstraintDefinition() + ")"
-                    ));
-        } else {
-            super.addObjectCreateActions(monitor, executionContext, actions, command, options);
-        }
-    }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
@@ -73,14 +56,5 @@ public class VerticaConstraintManager extends GenericPrimaryKeyManager {
             );
         }*/
         super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
-    }
-
-    @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<GenericUniqueKey> command) {
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append("(").append(((VerticaConstraint)command.getObject()).getCheckConstraintDefinition()).append(")");
-        } else {
-            super.appendConstraintDefinition(decl, command);
-        }
     }
 }

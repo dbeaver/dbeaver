@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,28 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
+import org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -43,13 +52,15 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.WorkbenchMessages;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -77,6 +88,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
@@ -94,7 +106,10 @@ public class UIUtils {
 
     private static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
     private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
-    private static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
+    public static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
+    public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
+    public static final Color COLOR_VALIDATION_ERROR = new Color(255, 220, 220);
+    
     private static final Color COLOR_WHITE_DARK = new Color(null, 208, 208, 208);
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
@@ -591,24 +606,86 @@ public class UIUtils {
         return imageLabel;
     }
 
-
-    public static CLabel createInfoLabel(Composite parent, String text) {
-        CLabel tipLabel = new CLabel(parent, SWT.NONE);
-        tipLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        tipLabel.setText(text);
-        return tipLabel;
+    @NotNull
+    public static Control createInfoLabel(@NotNull Composite parent, @NotNull String text) {
+        return createInfoLabel(parent, text, null);
     }
 
-    public static CLabel createInfoLabel(Composite parent, String text, int gridStyle, int hSpan) {
-        CLabel tipLabel = new CLabel(parent, SWT.NONE);
-        tipLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        tipLabel.setText(text);
-        GridData gd = new GridData(gridStyle);
-        if (hSpan > 1) {
-            gd.horizontalSpan = hSpan;
+    @NotNull
+    public static Control createInfoLabel(@NotNull Composite parent, @NotNull String text, @Nullable Runnable listener) {
+        return createInfoLabel(parent, text, SWT.NONE, 1, listener);
+    }
+
+    @NotNull
+    public static Control createInfoLabel(@NotNull Composite parent, @NotNull String text, int gridStyle, int hSpan) {
+        return createInfoLabel(parent, text, gridStyle, hSpan, null);
+    }
+
+    @NotNull
+    public static Control createWarningLabel(
+        @NotNull Composite parent,
+        @NotNull String text,
+        int gridStyle,
+        int hSpan
+    ) {
+        return createInfoLabel(parent, text, gridStyle, hSpan, null, DBeaverIcons.getImage(DBIcon.SMALL_WARNING));
+    }
+
+    @NotNull
+    public static Control createInfoLabel(
+        @NotNull Composite parent,
+        @NotNull String text,
+        int gridStyle,
+        int hSpan,
+        @Nullable Runnable callback
+    ) {
+        return createInfoLabel(parent, text, gridStyle, hSpan, callback, DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+    }
+
+    @NotNull
+    public static Control createInfoLabel(
+        @NotNull Composite parent,
+        @NotNull String text,
+        int gridStyle,
+        int hSpan,
+        @Nullable Runnable callback,
+        @NotNull Image image
+    ) {
+        final Control control;
+
+        if (callback == null) {
+            final CLabel label = new CLabel(parent, SWT.NONE);
+            label.setImage(image);
+            label.setText(text);
+            control = label;
+        } else {
+            control = createInfoLink(parent, "<a href=\"#\">" + text + "</a>", callback).getParent();
         }
-        tipLabel.setLayoutData(gd);
-        return tipLabel;
+
+        if (gridStyle != SWT.NONE || hSpan > 1) {
+            final GridData gd = new GridData(gridStyle);
+            gd.horizontalSpan = hSpan;
+            control.setLayoutData(gd);
+        }
+
+        return control;
+    }
+
+    @NotNull
+    public static Link createInfoLink(@NotNull Composite parent, @NotNull String text, @NotNull Runnable callback) {
+        final Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+
+        final Label imageLabel = new Label(composite, SWT.NONE);
+        imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
+
+        final Link link = new Link(composite, SWT.NONE);
+        link.setText(text);
+        link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
+        link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+
+        return link;
     }
 
     public static Text createLabelText(Composite parent, String label, String value) {
@@ -835,9 +912,19 @@ public class UIUtils {
     }
 
     @Nullable
-    public static Shell getActiveShell()
-    {
-        return getActiveWorkbenchShell();
+    public static Shell getActiveShell() {
+        final Display display = Display.getCurrent();
+        final Shell activeShell = display.getActiveShell();
+        if (activeShell != null) {
+            return activeShell;
+        }
+        final Shell[] shells = display.getShells();
+        for (Shell shell : shells) {
+            if (shell.isVisible()) {
+                return shell;
+            }
+        }
+        return shells.length > 0 ? shells[0] : null;
     }
 
     @Nullable
@@ -891,6 +978,39 @@ public class UIUtils {
         gl.marginHeight = 0;
         ph.setLayout(gl);
         return ph;
+    }
+
+    /**
+     * Creates {@link ScrolledComposite} from the {@link Composite}
+     *
+     * @param parent composite parent
+     * @return ScrolledComposite
+     */
+    @NotNull
+    public static ScrolledComposite createScrolledComposite(@NotNull Composite parent) {
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(1, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        return scrolledComposite;
+    }
+
+    /**
+     * Configures created composite to detect resize and be appropriately sized with its contents
+     *
+     * @param scrolledComposite composite to configure
+     * @param content it's contents
+     */
+    public static void configureScrolledComposite(@NotNull ScrolledComposite scrolledComposite, @NotNull Control content) {
+        scrolledComposite.setContent(content);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                scrolledComposite.setMinHeight(content.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+            }
+        });
+        scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
     public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
@@ -1023,11 +1143,8 @@ public class UIUtils {
     }
 
     @NotNull
-    public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
-    {
-        final CustomSashForm sash = new CustomSashForm(parent, style);
-
-        return sash;
+    public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style) {
+        return new CustomSashForm(parent, style);
     }
 
     @NotNull
@@ -1069,6 +1186,18 @@ public class UIUtils {
 
     @NotNull
     public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable DBPImage icon, @Nullable String toolTip, @Nullable SelectionListener selectionListener) {
+        return createDialogButton(parent, label, toolTip, icon, GridData.HORIZONTAL_ALIGN_FILL, selectionListener);
+    }
+
+    @NotNull
+    public static Button createDialogButton(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String toolTip,
+        @Nullable DBPImage icon,
+        int style,
+        @Nullable SelectionListener selectionListener
+    ) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText(label);
         button.setFont(JFaceResources.getDialogFont());
@@ -1080,7 +1209,7 @@ public class UIUtils {
         }
 
         // Dialog settings
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData gd = new GridData(style);
         GC gc = new GC(button);
         int widthHint;
         try {
@@ -1171,6 +1300,49 @@ public class UIUtils {
         if (propDialog != null) {
             propDialog.open();
         }
+    }
+
+    /**
+     * Creates a new link that opens the given preference page either in the current
+     * preference container, is present, or in a new modal dialog.
+     */
+    @NotNull
+    public static Link createPreferenceLink(
+        @NotNull Composite parent,
+        @NotNull String message,
+        @NotNull String pageId,
+        @Nullable IWorkbenchPreferenceContainer pageContainer,
+        @Nullable Object pageData
+    ) {
+        final IPreferenceNode node = PlatformUI.getWorkbench().getPreferenceManager().getElements(PreferenceManager.PRE_ORDER).stream()
+            .filter(next -> next.getId().equals(pageId))
+            .findFirst()
+            .orElse(null);
+
+        final Link link = new Link(parent, 0);
+
+        if (node == null) {
+            link.setText(NLS.bind(WorkbenchMessages.PreferenceNode_NotFound, pageId));
+        } else {
+            link.setText(NLS.bind(message, node.getLabelText()));
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (pageContainer != null) {
+                    // Open in the same dialog
+                    pageContainer.openPage(pageId, pageData);
+                } else {
+                    // Open in a new dialog
+                    PreferencesUtil.createPreferenceDialogOn(
+                        link.getShell(),
+                        pageId,
+                        new String[]{pageId},
+                        pageData,
+                        PreferencesUtil.OPTION_NONE
+                    ).open();
+                }
+            }));
+        }
+
+        return link;
     }
 
     public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
@@ -1333,7 +1505,7 @@ public class UIUtils {
     }
 
     public static boolean isUIThread() {
-        return Display.getDefault().getThread() == Thread.currentThread();
+        return Display.getCurrent() != null;
     }
 
     /**
@@ -1691,18 +1863,7 @@ public class UIUtils {
                 }
             }
         }
-        Display display = Display.getCurrent();
-        Shell activeShell = display.getActiveShell();
-        if (activeShell != null) {
-            return activeShell;
-        }
-        Shell[] shells = display.getShells();
-        for (Shell shell : shells) {
-            if (shell.isVisible()) {
-                return shell;
-            }
-        }
-        return shells.length > 0 ? shells[0] : null;
+        return getActiveShell();
     }
 
     public static DBRRunnableContext getDefaultRunnableContext() {
@@ -1870,25 +2031,17 @@ public class UIUtils {
         }
     }
 
+    /**
+     * Create centralized shell from default display
+     *
+     */
     public static Shell createCenteredShell(Shell parent) {
-
         final Rectangle bounds = parent.getBounds();
         final int x = bounds.x + bounds.width / 2 - 120;
         final int y = bounds.y + bounds.height / 2 - 170;
-
-        final Shell shell = new Shell( parent );
-
-        shell.setBounds( x, y, 0, 0 );
-
+        final Shell shell = new Shell(parent);
+        shell.setLocation(x, y);
         return shell;
-    }
-
-    public static void disposeCenteredShell(Shell shell) {
-        Composite parentShell = shell.getParent();
-        shell.dispose();
-        if (parentShell instanceof Shell) {
-            ((Shell) parentShell).setActive();
-        }
     }
 
     public static void centerShell(Shell parent, Shell shell) {
@@ -1975,9 +2128,16 @@ public class UIUtils {
     }
 
     public static void waitJobCompletion(AbstractJob job) {
+        waitJobCompletion(job, null);
+    }
+
+    public static void waitJobCompletion(@NotNull AbstractJob job, @Nullable IProgressMonitor monitor) {
         // Wait until job finished
         Display display = Display.getCurrent();
         while (!job.isFinished()) {
+            if (monitor != null && monitor.isCanceled()) {
+                job.cancel();
+            }
             if (!display.readAndDispatch()) {
                 display.sleep();
             }
@@ -2072,15 +2232,18 @@ public class UIUtils {
             return UIStyles.isDarkTheme() ? COLOR_WHITE_DARK : COLOR_WHITE;
         }
         return COLOR_BLACK;
-    }  
+    }
 
-    public static void openWebBrowser(String url)
-    {
+    public static Color getInvertedColor(Color color) {
+        return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
+
+    public static void openWebBrowser(String url) {
         url = url.trim();
         if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("ftp://")) {
             url = "http://" + url;
         }
-        Program.launch(url);
+        ShellUtils.launchProgram(url);
     }
 
     public static void setBackgroundForAll(Control control, Color color) {
@@ -2095,20 +2258,21 @@ public class UIUtils {
     }
 
     public static <T extends Control> void addEmptyTextHint(T control, DBRValueProvider<String, T> tipProvider) {
-        control.addPaintListener(new PaintListener() {
-            private Font hintFont = UIUtils.modifyFont(control.getFont(), SWT.ITALIC);
-            {
-                control.addDisposeListener(e -> hintFont.dispose());
-            }
-            @Override
-            public void paintControl(PaintEvent e) {
-                String tip = tipProvider.getValue(control);
-                if (tip != null && (isEmptyTextControl(control) && !control.isFocusControl())) {
-                    e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                    e.gc.setFont(hintFont);
-                    e.gc.drawText(tip, 2, 0, true);
-                    e.gc.setFont(null);
-                }
+        final Font hintFont = UIUtils.modifyFont(control.getFont(), SWT.ITALIC);
+
+        control.addDisposeListener(e -> hintFont.dispose());
+        control.addPaintListener(e -> {
+            String tip = tipProvider.getValue(control);
+            if (tip != null && isEmptyTextControl(control) && !control.isFocusControl()) {
+                final GC gc = e.gc;
+                final Point textSize = gc.textExtent(tip);
+                final Point controlSize = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                final int baseline = (controlSize.y - textSize.y) / 2;
+
+                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                gc.setFont(hintFont);
+                gc.drawText(tip, baseline, baseline, true);
+                gc.setFont(null);
             }
         });
     }
@@ -2131,7 +2295,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return JFaceResources.getFont(JFaceResources.TEXT_FONT);
+        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
@@ -2159,6 +2323,19 @@ public class UIUtils {
         }
     }
 
+    public static void drawTextWithBackground(@NotNull GC gc, @NotNull String text, int x, int y) {
+        final Point size = gc.textExtent(text);
+        final int centerX = x - size.x / 2;
+        final int centerY = y - size.y;
+
+        gc.setForeground(UIStyles.getDefaultTextForeground());
+        gc.setBackground(UIStyles.getDefaultTextBackground());
+
+        gc.fillRectangle(centerX - 2, centerY - 2, size.x + 4, size.y + 4);
+        gc.drawText(text, centerX, centerY, true);
+        gc.drawRoundRectangle(centerX - 3, centerY - 3, size.x + 5, size.y + 5, 5, 5);
+    }
+
     public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {
         if (!RuntimeUtils.isMacOS()) {
             return;
@@ -2172,6 +2349,139 @@ public class UIUtils {
             }));
         } else {
             widget.addDisposeListener(e -> onFocusLost.run());
+        }
+    }
+
+    public static void installAndUpdateMainFont(@NotNull Control control) {
+        final IPropertyChangeListener listener = event -> {
+            if (event.getProperty().equals(UIFonts.DBEAVER_FONTS_MAIN_FONT)) {
+                applyMainFont(control);
+            }
+        };
+
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
+        control.addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener));
+
+        applyMainFont(control);
+    }
+
+    public static void applyMainFont(@Nullable Control control) {
+        if (control == null || control.isDisposed() || mainFontIsDefault()) {
+            return;
+        }
+        applyMainFont(control, JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+    }
+
+    @Nullable
+    public static Text recreateTextControl(@Nullable Text original, int style) {
+        if (original == null || original.getStyle() == style) {
+            return original;
+        }
+
+        final Composite parent = original.getParent();
+        final Control[] tabList = parent.getTabList();
+
+        final Text text = new Text(parent, style);
+        text.setText(original.getText());
+        text.setLayoutData(original.getLayoutData());
+        text.moveAbove(original);
+
+        copyListeners(original, text, SWT.DefaultSelection);
+        copyListeners(original, text, SWT.Modify);
+        copyListeners(original, text, SWT.Verify);
+
+        original.dispose();
+
+        for (int i = 0; i < tabList.length; i++) {
+            if (tabList[i] == original) {
+                tabList[i] = text;
+            }
+        }
+
+        parent.setTabList(tabList);
+        parent.layout(true, true);
+
+        return text;
+    }
+
+    private static void copyListeners(@NotNull Widget source, @NotNull Widget target, int eventType) {
+        for (Listener listener : source.getListeners(eventType)) {
+            target.addListener(eventType, listener);
+        }
+    }
+
+    private static void applyMainFont(@NotNull Control control, @NotNull Font font) {
+        control.setFont(font);
+
+        if (control instanceof Composite) {
+            for (Control element : ((Composite) control).getChildren()) {
+                applyMainFont(element, font);
+            }
+        }
+    }
+
+    private static boolean mainFontIsDefault() {
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
+        return Arrays.equals(mainFontData, defaultFontData);
+    }
+
+    @Nullable
+    public static ToolItem findToolItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
+        for (ToolItem item : toolbarManager.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+                if (cmd != null && commandId.equals(cmd.getId())) {
+                    return item;
+                }
+            } else if (data instanceof HandledContributionItem) {
+                MHandledItem model = ((HandledContributionItem) data).getModel();
+                if (model != null ) {
+                    ParameterizedCommand cmd = model.getWbCommand();
+                    if (cmd != null && commandId.equals(cmd.getId())) {
+                        return item;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
+        // used for accessibility automation, see dbeaver-qa-auto
+        for (ToolItem item : toolbarManager.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+                if (cmd != null) {
+                    item.setData("commandId", cmd.getId());
+                }
+            } else if (data instanceof HandledContributionItem) {
+                MHandledItem model = ((HandledContributionItem) data).getModel();
+                if (model != null) {
+                    ParameterizedCommand cmd = model.getWbCommand();
+                    if (cmd != null) {
+                        item.setData("commandId", cmd.getId());
+                    }
+                }
+            }
+        }
+    }
+
+    public static void enableDoubleBuffering(@NotNull Control control) {
+        if ((control.getStyle() & SWT.DOUBLE_BUFFERED) != 0) {
+            // Already enabled - no op
+            return;
+        }
+        try {
+            final Field styleField = Widget.class.getDeclaredField("style");
+            if (!styleField.canAccess(control)) {
+                styleField.setAccessible(true);
+            }
+            styleField.set(control, styleField.getInt(control) | SWT.DOUBLE_BUFFERED);
+        } catch (Exception e) {
+            log.error("Unable to enable double buffering", e.getCause());
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,12 +69,14 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     private Text groupText;
     private Text artifactText;
-    private Combo fallbackVersionText;
+    private Text classifierText;
     private Text preferredVersionText;
+    private Combo fallbackVersionText;
     private Text fieldText;
 
     private CLabel errorLabel;
     private TabFolder tabFolder;
+    private boolean isReadOnly = false;
 
     public EditMavenArtifactDialog(@NotNull Shell shell, @NotNull DriverDescriptor driver, @Nullable DriverLibraryMavenArtifact library) {
         super(shell, UIConnectionMessages.dialog_edit_driver_edit_maven_title, DBIcon.TREE_USER);
@@ -199,7 +201,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         errorLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         errorLabel.setVisible(false);
 
-        UIUtils.asyncExec(() -> setStatus(false, UIConnectionMessages.dialog_edit_driven_edit_maven_field_text_message));
+        //UIUtils.asyncExec(() -> setStatus(false, UIConnectionMessages.dialog_edit_driven_edit_maven_field_text_message));
 
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_raw);
@@ -213,20 +215,46 @@ public class EditMavenArtifactDialog extends BaseDialog {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         container.setLayoutData(gd);
 
-        artifactText = UIUtils.createLabelText(container, UIConnectionMessages.dialog_edit_driver_edit_maven_artifact_id_label, originalArtifact != null ? originalArtifact.getReference().getArtifactId() : "");
-        groupText = UIUtils.createLabelText(container, UIConnectionMessages.dialog_edit_driver_edit_maven_group_id_label, originalArtifact != null ? originalArtifact.getReference().getGroupId() : "");
-        preferredVersionText = UIUtils.createLabelText(container, UIConnectionMessages.dialog_edit_driver_edit_maven_version_label, originalArtifact != null ? originalArtifact.getPreferredVersion() : "");
-        fallbackVersionText = UIUtils.createLabelCombo(container, UIConnectionMessages.dialog_edit_driver_edit_maven_fallback_version_label,SWT.DROP_DOWN | SWT.BORDER);
+        groupText = UIUtils.createLabelText(container,
+            UIConnectionMessages.dialog_edit_driver_edit_maven_group_id_label,
+            originalArtifact != null ? CommonUtils.notEmpty(originalArtifact.getReference().getGroupId()) : "");
+        artifactText = UIUtils.createLabelText(container,
+            UIConnectionMessages.dialog_edit_driver_edit_maven_artifact_id_label,
+            originalArtifact != null ? CommonUtils.notEmpty(originalArtifact.getReference().getArtifactId()) : "");
+        classifierText = UIUtils.createLabelText(container,
+            UIConnectionMessages.dialog_edit_driver_edit_maven_classifier_label,
+            originalArtifact != null ? CommonUtils.notEmpty(originalArtifact.getReference().getClassifier()) : "");
+        preferredVersionText = UIUtils.createLabelText(container,
+            UIConnectionMessages.dialog_edit_driver_edit_maven_version_label,
+            originalArtifact != null ? (originalArtifact.getPreferredVersion()) : "");
+        fallbackVersionText = UIUtils.createLabelCombo(container,
+            UIConnectionMessages.dialog_edit_driver_edit_maven_fallback_version_label,SWT.DROP_DOWN | SWT.BORDER);
 
-        fallbackVersionText.setText(originalArtifact != null ? originalArtifact.getReference().getVersion() : "");
         fallbackVersionText.add(MavenArtifactReference.VERSION_PATTERN_RELEASE);
         fallbackVersionText.add(MavenArtifactReference.VERSION_PATTERN_LATEST);
+        if (originalArtifact != null) {
+            fallbackVersionText.setText(CommonUtils.notEmpty(originalArtifact.getReference().getFallbackVersion()));
+        }
+        if (fallbackVersionText.getText().isEmpty()) {
+            fallbackVersionText.select(0);
+        }
+
+        if (originalArtifact != null && !originalArtifact.isCustom()) {
+            // Artifact reference is read-only. We use it to find libraries
+            // To change artifact info delete it and create a new one
+            groupText.setEditable(false);
+            artifactText.setEditable(false);
+            classifierText.setEditable(false);
+            preferredVersionText.setEditable(false);
+            fallbackVersionText.setEnabled(false);
+            isReadOnly = true;
+            UIUtils.createInfoLabel(container, "Predefined Maven artifacts are read-only", GridData.FILL_HORIZONTAL, 2);
+        }
 
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_manual);
         item.setControl(container);
         item.setData(TabType.DECLARE_ARTIFACT_MANUALLY);
-
 
         ModifyListener ml = e -> updateButtons();
         groupText.addModifyListener(ml);
@@ -267,6 +295,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
                     CommonUtils.notEmpty(group),
                     CommonUtils.notEmpty(name),
                     null,
+                    null,
                     MavenArtifactReference.VERSION_PATTERN_RELEASE
                 ));
                 lib.setPreferredVersion(version);
@@ -299,6 +328,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
         private String groupId;
         private String artifactId;
+        private String classifier;
         private String version;
 
         public SAXMavenListener(@NotNull List<DriverLibraryMavenArtifact> artifacts) {
@@ -314,11 +344,14 @@ public class EditMavenArtifactDialog extends BaseDialog {
                 state.offer(State.DEPENDENCY);
                 groupId = null;
                 artifactId = null;
+                classifier = null;
                 version = null;
             } else if (state.peekLast() == State.DEPENDENCY && "groupId".equals(name)) {
                 state.offer(State.DEPENDENCY_GROUP_ID);
             } else if (state.peekLast() == State.DEPENDENCY && "artifactId".equals(name)) {
                 state.offer(State.DEPENDENCY_ARTIFACT_ID);
+            } else if (state.peekLast() == State.DEPENDENCY && "classifier".equals(name)) {
+                state.offer(State.DEPENDENCY_CLASSIFIER);
             } else if (state.peekLast() == State.DEPENDENCY && "version".equals(name)) {
                 state.offer(State.DEPENDENCY_VERSION);
             }
@@ -328,13 +361,14 @@ public class EditMavenArtifactDialog extends BaseDialog {
         public void saxEndElement(SAXReader reader, String namespaceURI, String name) {
             if (state.peekLast() == State.DEPENDENCY && "dependency".equals(name)) {
                 DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(EditMavenArtifactDialog.this.driver, DBPDriverLibrary.FileType.jar, "", version);
-                lib.setReference(new MavenArtifactReference(groupId, artifactId, null, MavenArtifactReference.VERSION_PATTERN_RELEASE));
+                lib.setReference(new MavenArtifactReference(groupId, artifactId, classifier, MavenArtifactReference.VERSION_PATTERN_RELEASE, version));
                 lib.setPreferredVersion(version);
                 artifacts.add(lib);
                 state.removeLast();
             } else if ((state.peekLast() == State.DEPENDENCIES && "dependencies".equals(name))
                 || (state.peekLast() == State.DEPENDENCY_GROUP_ID && "groupId".equals(name))
                 || (state.peekLast() == State.DEPENDENCY_ARTIFACT_ID && "artifactId".equals(name))
+                || (state.peekLast() == State.DEPENDENCY_CLASSIFIER && "classifier".equals(name))
                 || (state.peekLast() == State.DEPENDENCY_VERSION && "version".equals(name))) {
                 state.removeLast();
             }
@@ -351,6 +385,9 @@ public class EditMavenArtifactDialog extends BaseDialog {
                     break;
                 case DEPENDENCY_ARTIFACT_ID:
                     artifactId = data;
+                    break;
+                case DEPENDENCY_CLASSIFIER:
+                    classifier = data;
                     break;
                 case DEPENDENCY_VERSION:
                     version = data;
@@ -372,14 +409,24 @@ public class EditMavenArtifactDialog extends BaseDialog {
         DEPENDENCY,
         DEPENDENCY_GROUP_ID,
         DEPENDENCY_ARTIFACT_ID,
+        DEPENDENCY_CLASSIFIER,
         DEPENDENCY_VERSION
     }
 
     @Override
     protected void okPressed() {
+        if (isReadOnly) {
+            super.okPressed();
+            return;
+        }
         if (tabFolder.getSelection()[0].getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
             if (originalArtifact != null) {
-                originalArtifact.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
+                originalArtifact.setReference(new MavenArtifactReference(
+                    groupText.getText(),
+                    artifactText.getText(),
+                    CommonUtils.nullIfEmpty(classifierText.getText()),
+                    CommonUtils.nullIfEmpty(fallbackVersionText.getText()),
+                    preferredVersionText.getText()));
                 originalArtifact.setPreferredVersion(preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText());
                 originalArtifact.setIgnoreDependencies(ignoreDependencies);
                 originalArtifact.setLoadOptionalDependencies(loadOptionalDependencies);
@@ -390,7 +437,8 @@ public class EditMavenArtifactDialog extends BaseDialog {
                     "",
                     preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText()
                 );
-                lib.setReference(new MavenArtifactReference(groupText.getText(), artifactText.getText(), null, fallbackVersionText.getText()));
+                lib.setReference(new MavenArtifactReference(
+                    groupText.getText(), artifactText.getText(), classifierText.getText(), fallbackVersionText.getText(), preferredVersionText.getText()));
                 lib.setPreferredVersion(preferredVersionText.getText().isEmpty() ? null : preferredVersionText.getText());
                 lib.setLoadOptionalDependencies(loadOptionalDependencies);
                 lib.setIgnoreDependencies(ignoreDependencies);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -81,12 +82,12 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         }
 
         PostgrePrivilegeOwner object = getObject();
-        String objectName, roleName;
+        String objectName = "", roleName;
         if (object instanceof PostgreRole) {
             roleName = DBUtils.getQuotedIdentifier(object);
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
-            } else {
+            } else if (privilege instanceof PostgreRolePrivilege) {
                 objectName = ((PostgreRolePrivilege) privilege).getFullObjectName();
             }
         } else {
@@ -118,17 +119,31 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             objectType = objectType.toLowerCase();
         }
 
-        String grantedCols = "", grantedTypedObject = "";
+        String grantedCols = "", grantedTypedObject;
         if (object instanceof PostgreTableColumn) {
             grantedCols = "(" + DBUtils.getQuotedIdentifier(object) + ")";
             grantedTypedObject = ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        } else if (privilege instanceof PostgreDefaultPrivilege) {
+            PostgrePrivilegeGrant.Kind underKind = ((PostgreDefaultPrivilege) privilege).getUnderKind();
+            if (underKind == PostgrePrivilegeGrant.Kind.TYPE) {
+                grantedTypedObject = "TYPES";
+            } else if (underKind == PostgrePrivilegeGrant.Kind.SEQUENCE) {
+                grantedTypedObject = "SEQUENCES";
+            } else if (underKind == PostgrePrivilegeGrant.Kind.FUNCTION) {
+                grantedTypedObject = "FUNCTIONS";
+            } else {
+                grantedTypedObject = "TABLES";
+            }
         } else {
             grantedTypedObject = objectType + " " + objectName;
         }
 
-        String grantScript = (grant ? "grant " : "revoke ") + privName + grantedCols +
-            " on " + grantedTypedObject +
-            (grant ? " to " : " from ") + roleName;
+        String scriptBeginning = "";
+        if (privilege instanceof PostgreDefaultPrivilege) {
+            scriptBeginning = "alter default privileges in schema " + DBUtils.getQuotedIdentifier(privilege.getOwner()) + " ";
+        }
+
+        String grantScript = scriptBeginning + (grant ? "grant " : "revoke ") + privName + grantedCols +
         if (grant && withGrantOption) {
             grantScript += " with grant option";
         }
@@ -183,9 +198,16 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     }
 
     private boolean hasAllPrivilegeTypes() {
-	int supportedCount = 0;
+        int supportedCount = 0;
+        Class<? extends DBSObject> ownerClass = null;
+        if (privilegeOwner instanceof DBNDatabaseFolder) {
+            ownerClass = ((DBNDatabaseFolder) privilegeOwner).getChildrenClass();
+        }
+        if (ownerClass == null) {
+            ownerClass = privilegeOwner.getClass();
+        }
         for (PostgrePrivilegeType type : getObject().getDataSource().getSupportedPrivilegeTypes()) {
-            if (type.supportsType(privilegeOwner.getClass())) {
+            if (type.supportsType(ownerClass)) {
         	if (!privilegeTypes.contains(type)) {
                   return false;
         	}

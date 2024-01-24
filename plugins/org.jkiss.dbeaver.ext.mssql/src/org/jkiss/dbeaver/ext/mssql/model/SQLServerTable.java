@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,26 +33,27 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCheckConstraintContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * SQLServerTable
  */
 public class SQLServerTable extends SQLServerTableBase
-        implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController {
+        implements DBPObjectStatistics, DBSCheckConstraintContainer, DBPReferentialIntegrityController, DBSEntityConstrainable {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
     private static final String DISABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
     private static final String ENABLE_REFERENTIAL_INTEGRITY_STATEMENT = "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
 
-    private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
+    private final CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
 
     private transient volatile List<SQLServerTableForeignKey> references;
 
@@ -63,11 +64,8 @@ public class SQLServerTable extends SQLServerTableBase
         super(schema);
     }
 
-    public SQLServerTable(
-        SQLServerSchema catalog,
-        ResultSet dbResult)
-    {
-        super(catalog, dbResult);
+    public SQLServerTable(@NotNull SQLServerSchema catalog, @NotNull ResultSet dbResult, @NotNull String name) {
+        super(catalog, dbResult, name);
     }
 
     @Override
@@ -270,7 +268,7 @@ public class SQLServerTable extends SQLServerTableBase
         String sql = getChangeReferentialIntegrityStatement(monitor, enable);
         sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
         try {
-            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+            JDBCUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
         } catch (SQLException e) {
             throw new DBException("Unable to change referential integrity", e);
         }
@@ -283,6 +281,15 @@ public class SQLServerTable extends SQLServerTableBase
             return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, SQLServerTableUniqueKey.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, SQLServerTableUniqueKey.class)
+            // DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, SQLServerTableCheckConstraint.class) only as a separate key class
+        );
     }
 
     /**

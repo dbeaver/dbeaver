@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -44,26 +46,25 @@ import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
+import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstract connection wizard
  */
 
-public abstract class ConnectionWizard extends ActiveWizard implements INewWizard {
+public abstract class ConnectionWizard extends ActiveWizard implements IConnectionWizard, INewWizard {
 
     static final String PROP_CONNECTION_TYPE = "connection-type";
 
     // protected final IProject project;
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
+    private DBPDriverSubstitutionDescriptor driverSubstitution;
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
@@ -117,7 +118,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         if (registry == null) {
             throw new IllegalStateException("No active project");
         }
-        if (info == null) {
+        if (info == null && driver != null) {
             DBPConnectionConfiguration connectionInfo = getDefaultConnectionConfiguration();
             info = new DataSourceDescriptor(
                 registry,
@@ -138,6 +139,16 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         return null;
     }
 
+    @Nullable
+    @Override
+    public DBPDriverSubstitutionDescriptor getDriverSubstitution() {
+        return driverSubstitution;
+    }
+
+    public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
+        this.driverSubstitution = driverSubstitution;
+        getActiveDataSource().setDriverSubstitution(driverSubstitution);
+    }
 
     public void testConnection() {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
@@ -152,6 +163,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
             ModelPreferences.META_SEPARATE_CONNECTION,
             SeparateConnectionBehavior.NEVER.name()
         );
+
+        CoreFeatures.CONNECTION_TEST.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
 
         try {
 
@@ -213,6 +226,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         }
     }
 
+    @Override
     public boolean isNew() {
         return false;
     }
@@ -230,11 +244,17 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         }
     }
 
-    public void addPropertyChangeListener(IPropertyChangeListener listener) {
+    @Override
+    public void addPropertyChangeListener(@NotNull IPropertyChangeListener listener) {
         propertyListeners.add(listener);
     }
 
-    public void firePropertyChangeEvent(String property, Object oldValue, Object newValue) {
+    @Override
+    public void firePropertyChangeEvent(@NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
+        if (Objects.equals(oldValue, newValue)) {
+            return;
+        }
+
         for (IPropertyChangeListener listener : propertyListeners) {
             listener.propertyChange(new PropertyChangeEvent(this, property, oldValue, newValue));
         }

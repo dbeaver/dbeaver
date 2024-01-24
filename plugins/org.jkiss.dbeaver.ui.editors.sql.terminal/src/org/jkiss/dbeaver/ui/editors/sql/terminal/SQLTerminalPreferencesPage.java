@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,13 +18,17 @@
 package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -116,6 +120,15 @@ public class SQLTerminalPreferencesPage extends TargetPrefPage {
         store.setToDefault(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT);
         store.setToDefault(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT);
         store.setToDefault(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT);
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        showTerminalViewByDefault.setSelection(store.getDefaultBoolean(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT));
+        showQueryText.setSelection(store.getDefaultBoolean(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT));
+        showServerOutput.setSelection(store.getDefaultBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT));
+        super.performDefaults();
     }
 
     @NotNull

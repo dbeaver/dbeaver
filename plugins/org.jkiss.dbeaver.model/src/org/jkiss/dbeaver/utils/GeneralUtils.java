@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import org.eclipse.core.internal.runtime.AdapterManager;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
@@ -35,6 +37,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -62,12 +65,12 @@ public class GeneralUtils {
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
 
-    public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
+    public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
-    public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
+    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\]+";
 
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -77,10 +80,12 @@ public class GeneralUtils {
         '8', '9', 'a', 'b',
         'c', 'd', 'e', 'f'
     };
-    
+
     public static final String PROP_TRUST_STORE = "javax.net.ssl.trustStore"; //$NON-NLS-1$
     public static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
-    
+    public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+    public static final String EMPTY_ENV_VARIABLE_VALUE = "''";
+
     static {
         // Compose byte to hex map
         for (int i = 0; i < 256; ++i) {
@@ -88,7 +93,8 @@ public class GeneralUtils {
         }
     }
 
-    private static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)(\\:[^\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VAR_PATTERN = Pattern.compile(
+        "(\\$\\{([\\w\\.\\-]+)(\\:[^\\$\\{\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
 
     /**
      * Default encoding (UTF-8)
@@ -114,12 +120,6 @@ public class GeneralUtils {
 
     public static String getDefaultLineSeparator() {
         return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
-    }
-
-    public static void writeByteAsHex(Writer out, byte b) throws IOException {
-        int v = b & 0xFF;
-        out.write(HEX_CHAR_TABLE[v >>> 4]);
-        out.write(HEX_CHAR_TABLE[v & 0xF]);
     }
 
     public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException {
@@ -286,6 +286,11 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String getLongProductTitle() {
+        return getProductName() + " " + getProductVersion();
+    }
+
+    @NotNull
     public static String getProductName() {
         ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
         if (application != null) {
@@ -413,7 +418,7 @@ public class GeneralUtils {
     }
 
     public interface IParameterHandler {
-        boolean setParameter(String name, String  value);
+        boolean setParameter(String name, String value);
     }
 
     public static class MapResolver implements IVariableResolver {
@@ -430,13 +435,6 @@ public class GeneralUtils {
         }
     }
 
-    public static String replaceSystemEnvironmentVariables(String string) {
-        if (string == null) {
-            return null;
-        }
-        return replaceVariables(string, System::getenv);
-    }
-
     public static String replaceSystemPropertyVariables(String string) {
         if (string == null) {
             return null;
@@ -449,7 +447,6 @@ public class GeneralUtils {
         return "${" + name + "}";
     }
 
-    @NotNull
     public static boolean isVariablePattern(String pattern) {
         return pattern.startsWith("${") && pattern.endsWith("}");
     }
@@ -485,6 +482,11 @@ public class GeneralUtils {
 
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
+        return replaceVariables(string, resolver, false);
+    }
+
+    @NotNull
+    public static String replaceVariables(@NotNull String string, IVariableResolver resolver, boolean isUpperCaseVarName) {
         if (CommonUtils.isEmpty(string)) {
             return string;
         }
@@ -495,10 +497,11 @@ public class GeneralUtils {
             int pos = 0;
             while (matcher.find(pos)) {
                 pos = matcher.end();
-                String varName = matcher.group(2);
-                String varValue = null;
+                String matchedName = matcher.group(2);
+                String varName = isUpperCaseVarName ? matchedName.toUpperCase(Locale.ENGLISH) : matchedName;
+                String varValue;
                 if (resolvedVars != null) {
-                    varValue = resolvedVars.get(varName); 
+                    varValue = resolvedVars.get(varName);
                     if (varValue != null) {
                         string = substituteVariable(string, matcher, varValue);
                         matcher = VAR_PATTERN.matcher(string);
@@ -516,6 +519,9 @@ public class GeneralUtils {
                 if (varValue != null) {
                     if (resolvedVars == null) {
                         resolvedVars = new HashMap<>();
+                        if (EMPTY_ENV_VARIABLE_VALUE.equals(varValue)) {
+                            varValue = "";
+                        }
                         resolvedVars.put(varName, varValue);
                     }
                     string = substituteVariable(string, matcher, varValue);
@@ -548,6 +554,9 @@ public class GeneralUtils {
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
+        if (ex instanceof InvocationTargetException) {
+            ex = ((InvocationTargetException) ex).getTargetException();
+        }
         if (ex instanceof CoreException) {
             return ((CoreException) ex).getStatus();
         }
@@ -604,6 +613,9 @@ public class GeneralUtils {
     }
 
     public static IStatus makeExceptionStatus(int severity, String message, Throwable ex) {
+        if (CommonUtils.equalObjects(message, ex.getMessage())) {
+            return makeExceptionStatus(severity, ex);
+        }
         return new MultiStatus(
             ModelPreferences.PLUGIN_ID,
             0,
@@ -729,9 +741,7 @@ public class GeneralUtils {
             return adapter.cast(sourceObject);
         }
 
-        if (sourceObject instanceof IAdaptable) {
-            IAdaptable adaptable = (IAdaptable) sourceObject;
-
+        if (sourceObject instanceof IAdaptable adaptable) {
             T result = adaptable.getAdapter(adapter);
             if (result != null) {
                 // Sanity-check
@@ -801,13 +811,25 @@ public class GeneralUtils {
     public static UUID getMixedEndianUUIDFromBytes(byte[] bytes) {
         ByteBuffer source = ByteBuffer.wrap(bytes);
         ByteBuffer target = ByteBuffer.allocate(16).
-                order(ByteOrder.LITTLE_ENDIAN).
-                putInt(source.getInt()).
-                putShort(source.getShort()).
-                putShort(source.getShort()).
-                order(ByteOrder.BIG_ENDIAN).
-                putLong(source.getLong());
+            order(ByteOrder.LITTLE_ENDIAN).
+            putInt(source.getInt()).
+            putShort(source.getShort()).
+            putShort(source.getShort()).
+            order(ByteOrder.BIG_ENDIAN).
+            putLong(source.getLong());
         target.rewind();
         return new UUID(target.getLong(), target.getLong());
+    }
+
+    public static void validateResourceName(String name) throws DBException {
+        if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return;
+        }
+        if (name.startsWith(".")) {
+            throw new DBException("Resource name '" + name + "' can't start with dot");
+        }
+        if (!name.matches(GeneralUtils.RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX)) {
+            throw new DBException("Resource name '" + name + "' contains illegal characters:  / : ' \" \\");
+        }
     }
 }

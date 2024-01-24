@@ -1,16 +1,16 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Configuration Import Tool
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.import_config;singleton:=true
-Bundle-Version: 2.1.161.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 2.1.186.qualifier
+Bundle-Release-Date: 20240122
 Bundle-Activator: org.jkiss.dbeaver.ext.import_config.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.import_config.wizards
 Automatic-Module-Name: org.jkiss.dbeaver.ext.import_config

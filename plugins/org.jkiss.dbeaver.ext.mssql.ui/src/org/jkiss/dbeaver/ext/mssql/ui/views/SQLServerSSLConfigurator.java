@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.ui.views;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -34,7 +32,6 @@ import org.jkiss.utils.CommonUtils;
 
 public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private Text keystoreHostname;
-    private Button trustServerCertificate;
 
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
@@ -54,11 +51,11 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
             keystoreHostname.setToolTipText(SQLServerUIMessages.dialog_setting_ssl_advanced_hostname_tip);
         }
 
-        {
+        /*{
             Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
             trustServerCertificate = UIUtils.createCheckbox(settingsGroup, SQLServerUIMessages.dialog_setting_trust_server_certificate, SQLServerUIMessages.dialog_setting_trust_server_certificate_tip, true, 2);
-        }
+        }*/
     }
 
     @Override
@@ -82,7 +79,6 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         }
 
         keystoreHostname.setText(CommonUtils.notEmpty(configuration.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME)));
-        trustServerCertificate.setSelection(configuration.getBooleanProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE));
     }
 
     @Override
@@ -90,6 +86,5 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         super.saveSettings(configuration);
 
         configuration.setProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME, keystoreHostname.getText().trim());
-        configuration.setProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE, trustServerCertificate.getSelection());
     }
 }

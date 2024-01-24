@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ public class RegistryConstants {
     public static final String TAG_DATASOURCE = "datasource"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_PATCH = "datasourcePatch"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_ORIGIN = "datasourceOrigin"; //$NON-NLS-1$
+    public static final String TAG_DRIVER_SUBSTITUTION = "driverSubstitution"; //$NON-NLS-1$
     public static final String TAG_OS = "os"; //NON-NLS-1
 
     public static final String ATTR_ID = "id"; //$NON-NLS-1$
@@ -57,6 +58,7 @@ public class RegistryConstants {
     public static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     public static final String ATTR_ALIAS = "alias"; //$NON-NLS-1$
     public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
+    public static final String ATTR_SNAPSHOT = "snapshot"; //$NON-NLS-1$
     public static final String ATTR_URL = "url"; //$NON-NLS-1$
     public static final String ATTR_LINK = "link"; //$NON-NLS-1$
     public static final String ATTR_SCOPE = "scope"; //$NON-NLS-1$
@@ -87,6 +89,7 @@ public class RegistryConstants {
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
     public static final String ATTR_LICENSE_REQUIRED = "licenseRequired"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDED = "embedded"; //$NON-NLS-1$
+    public static final String ATTR_PROPAGATE_DRIVER_PROPERTIES = "propagateDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_SINGLE_CONNECTION = "singleConnection"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
     public static final String ATTR_USE_URL_TEMPLATE = "useURL"; //$NON-NLS-1$
@@ -107,12 +110,18 @@ public class RegistryConstants {
     public static final String ATTR_DEFAULT_SCHEMA = "defaultSchema"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_DATA_CHANGE = "confirmDataChange"; //$NON-NLS-1$
+    public static final String ATTR_SMART_COMMIT = "smartCommit"; //$NON-NLS-1$
+    public static final String ATTR_SMART_COMMIT_RECOVER = "smartCommitRecover"; //$NON-NLS-1$
     public static final String ATTR_AUTO_CLOSE_TRANSACTIONS = "autoCloseTransactions"; //$NON-NLS-1$
+    public static final String ATTR_CLOSE_TRANSACTIONS_PERIOD = "closeTransactionsPeriod"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
+    public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
+
+    public static final long DEFAULT_IDLE_TRANSACTION_PERIOD = 1800;
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -164,6 +173,7 @@ public class RegistryConstants {
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
     public static final String TAG_EVENTS = "events"; //$NON-NLS-1$
+    public static final String TAG_AUTH_PROPERTIES = "auth-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTIES = "provider-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
@@ -190,6 +200,7 @@ public class RegistryConstants {
     public static final String ATTR_DATABASE = "database"; //$NON-NLS-1$
     public static final String ATTR_USER = "user"; //$NON-NLS-1$
     public static final String ATTR_PASSWORD = "password"; //$NON-NLS-1$
+    public static final String ATTR_EMPTY_DATABASE_CREDENTIALS = "empty-credentials"; //$NON-NLS-1$
     public static final String ATTR_NATIVE_AUTH = "native-auth"; //$NON-NLS-1$
     public static final String ATTR_HOME = "home"; //$NON-NLS-1$
     public static final String ATTR_SHOW_PANEL = "show-panel"; //$NON-NLS-1$
@@ -217,7 +228,9 @@ public class RegistryConstants {
     public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
     public static final String ATTR_COMMAND = "command";
     public static final String ATTR_SUPPORTED_CONFIGURATION_TYPES = "supportedConfigurationTypes";
+    public static final String ATTR_SUPPORTED_PAGE_FIELDS = "supportedPageFields";
     public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
     public static final String ATTR_SUPPORTS_DISTRIBUTED_MODE = "supportsDistributedMode";
+    public static final String ATTR_DEPRECATED = "deprecated";
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +22,15 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
@@ -35,7 +38,12 @@ public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends Abstrac
 {
     protected AbstractNativeScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
         super(dbObject, task);
-	}
+    }
+
+    protected AbstractNativeScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task, @Nullable Path file) {
+        super(dbObject, task);
+        updateFileSettings(file);
+    }
 
     protected AbstractNativeScriptExecuteWizard(DBTTask task) {
         super(task);
@@ -59,12 +67,16 @@ public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends Abstrac
         addPage(logPage);
     }
 
-	@Override
-	public void onSuccess(long workTime) {
+    @Override
+    public void onSuccess(long workTime) {
         UIUtils.showMessageBox(getShell(),
             taskTitle,
                 NLS.bind(TaskNativeUIMessages.tools_script_execute_wizard_task_completed, taskTitle, getObjectsName()) , //$NON-NLS-1$
                         SWT.ICON_INFORMATION);
-	}
+    }
+
+    protected void updateFileSettings(@Nullable Path file) {
+        getSettings().setInputFile(file != null && Files.exists(file) ? file.toAbsolutePath().toString() : null);
+    }
 
 }

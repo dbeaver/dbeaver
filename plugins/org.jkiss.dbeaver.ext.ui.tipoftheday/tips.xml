@@ -1,95 +1,254 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?eclipse version="3.2"?>
 <tips>
-<!--	Tips below were reviewed on 10th of February, 2021.-->
-	<tip>To execute current query use the following shortcut: <b>Ctrl+Enter</b>.<br/>Note that queries are separated by delimiters or empty lines.</tip>
-	<tip>To open query results in a new tab, use the following shortcut: <b>Ctrl+\</b>.<br/>Note that queries are separated by delimiters or empty lines.</tip>
-	<tip>To run the current SQL script use the following shortcut: <b>Alt+X</b>.</tip>
-	<tip>In order to format SQL statements use the following shortcut: <b>Ctrl+Shift+F</b>.</tip>
-	<tip>We release new version of DBeaver Community every two weeks and usually publish the updates on Mondays. You can download up-to-date version <a href="https://dbeaver.io/download">here</a>.</tip>
-	<tip>Use the following options in SQL Editor's context menu: <b>Execute</b> -> <b>Export From Query</b>, to export data directly from SQL query without pre-executing it. </tip>
-	<tip>For additional information on DBeaver features and functions, visit our <a href="https://github.com/dbeaver/dbeaver/wiki"> wiki page</a>.</tip>
-	<tip>To open DBeaver Help contents, press <b>F1</b>.</tip>
-	<tip>You can convert the selected text into uppercase using the following shortcut: <b>Ctrl+Shift+X</b>.</tip>
-	<tip>You can convert the selected text into lowercase using the following shortcut: <b>Ctrl+Shift+Y</b>.</tip>
-	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, you can iterate through the view modes using the following shortcut: <b>Ctrl+~</b>.</tip>
-	<tip>Use <b>Ctrl+F7</b> shortcut to iterate through the view windows of DBeaver interface.</tip>
-	<tip>You can turn on/off the right panels by using the following shortcut: <b>Ctrl+7</b>.</tip>
-	<tip>You can turn on/off the right panels by pressing <b>F7</b>.</tip>
-	<tip>To refresh query results in <a href="https://github.com/dbeaver/dbeaver/wiki/SQL-Editor">SQL Editor</a>, press <b>F5</b>.</tip>
-	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F2</b> to rename the selected element.</tip>
-	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F4</b> to edit properties of the selected element.</tip>
-	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F5</b> to refresh the selected element.</tip>
-	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>Ctrl+Alt+Shift+D</b> to add the selected elements into your <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a>.</tip>
-	<tip>Use <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a> as quick access links to objects of a database.</tip>
-	<tip><a href="https://github.com/dbeaver/dbeaver/wiki/Managing-Charts">Charts</a> let you quickly and easily turn your SELECT queries' output into a colorized bar chart.
-		<br/>Note: this feature is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.
-	</tip>
-	<tip>To see available <a href="https://github.com/dbeaver/dbeaver/wiki/SQL-Templates">templates</a> of SQL statements, use <b>Ctrl+Alt+Space</b> shortcut.</tip>
-	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor"> Data Editor</a>, press <b>Ctrl+F</b> to search for data in the current table.</tip>
-	<tip>You can generate SQL statements (SELECT/INSERT/UPDATE/DELETE) based on selected rows. To generate SQL, right-click the selected rows ,then click Generate SQL and select one of the SQL commands you see.</tip>
-	<tip>DBeaver allows viewing diagrams of existing tables and whole database schemas, see <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Structure-Diagrams">ER diagrams</a> article.</tip>
-	<tip>DBeaver allows creating custom diagrams, see <a href="https://github.com/dbeaver/dbeaver/wiki/Custom-Diagrams">Custom Diagrams</a>.</tip>
-	<tip>DBeaver is a customizable software.<br/>For additional information on optional extensions, see <a href="https://github.com/dbeaver/dbeaver/wiki/Optional-extensions"> Optional Extensions</a></tip>
-	<tip>Use <a href="https://github.com/dbeaver/dbeaver/wiki/Mock-Data-Generation-in-DBeaver">DBeaver Mock Data Generator</a> when you need to create a huge quantities of realistic sample data for testing purposes and want to avoid tedious and time-consuming work of entering test data by hand.
-		<br/>Note: this tool is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.
-	</tip>
-	<tip>You can customize the menu bar and the list of menu items displayed <a href="prefs://org.eclipse.ui.window.customizePerspective">here</a> in the <b>Menu Visibility</b> tab.</tip>
-	<tip>You can customize the toolbar <a href="prefs://org.eclipse.ui.window.customizePerspective">here</a> in the <b>Toolbar Visibility</b> tab.</tip>
-	<tip>To execute the selected SQL expression and print the results use the following shortcut: <b>Ctrl+Alt+'</b>.</tip>
-	<tip>To see the execution plan for the current query, use the following shortcut: <b>Ctrl+Shift+E</b>.</tip>
-	<tip>To execute queries of current script simultaneously and display the results in separate tabs, use the following shortcut: <b>Ctrl+Alt+Shift+X</b>.</tip>
-	<tip>To jump to the previous query in the current SQL script, use the following shortcut: <b>Alt+Up</b>.</tip>
-	<tip>To jump to the next query in the current SQL script, use the following shortcut: <b>Alt+Down</b>.</tip>
-	<tip>If you are not very familiar with SQL scripting, use <a href="https://github.com/dbeaver/dbeaver/wiki/Visual-Query-Builder">Visual Query Builder</a> tool.
-		<br/>Note: this tool is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.
-	</tip>
-	<tip>To monitor database health you can open dashboard view using main toolbar or <b>Ctrl+Alt+Shift+B</b>.
-		<br/>Note: dashboards are database-specific.
-	</tip>
-	<tip>All the errors that occur when running SQL scripts in DBeaver, can be observed in the <a href="view://org.eclipse.pde.runtime.LogView">Error Log</a> view.<br/>The error log tracks SQL, permission and configuration errors.</tip>
-	<tip>You can view queries executed in DBeaver in <a href="view://org.jkiss.dbeaver.core.queryManager">Query Manager</a> view.<br/>All the internal queries DBeaver runs to read metadata can also be found there.</tip>
-	<tip>Any keyboard shortcut can be created for most of DBeaver commands. <a href="prefs://org.eclipse.ui.preferencePages.Keys">Existing shortcuts can also be changed</a>.</tip>
-	<tip>You can <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.format">configure</a> SQL formatter globally or for a particular database.</tip>
-	<tip>To filter table rows by column value in <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, use the following shortcut: <b>Ctrl+F11</b>. You can also open filter menu by pressing <b>F11</b>.</tip>
-	<tip>To open foreign keys menu in <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, use the following shortcut: <b>Ctrl+1</b>.</tip>
-	<tip>If your project requires advanced analytical tools or NoSQL database support, you can try <a href="https://dbeaver.com/">DBeaver Enterprise Edition</a>.</tip>
-	<tip>You can schedule your tasks to execute with specified recurrence, without needing to open DBeaver.
-		<br/>Note: <a href="https://github.com/dbeaver/dbeaver/wiki/Task-Scheduler">this feature</a> is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.
-	</tip>
-	<tip>You can group several tasks into one composite task to easily execute a set of actions in one click.
-		<br/>Note: <a href="https://github.com/dbeaver/dbeaver/wiki/Composite-Tasks">this feature</a> is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.
-	</tip>
-	<tip>If you're not familiar with NoSQL databases, you can use plain SQL to perform different queries.
-		<br/>Note: this feature is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.
-	</tip>
-	<tip>DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a> is fully integrated with Git version control system. You can keep your project configuration, scripts, diagrams, bookmarks and other artifacts in a Git repository.</tip>
-	<tip>You can change the current commit mode and the current transaction isolation mode in the toolbar, in the dropdown menu to the right of the Commit and Rollback buttons.</tip>
-	<tip>DBeaver integrates the special data viewer designed specifically for work with spatial data. You can find out more about that in our <a href="https://github.com/dbeaver/dbeaver/wiki/Working-with-Spatial-GIS-data">wiki article</a>.</tip>
-	<tip>You can open SQL Console with the <b>Ctrl+Alt+Enter</b> shortcut. It's great for executing a query that you don't want to save in a file.</tip>
-	<tip>You can customize the representation of boolean values <a href="prefs://org.jkiss.dbeaver.preferences.editors">here</a>.</tip>
-	<tip>To only work with tables, choose Simple view in a connection context menu in <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator">Database Navigator</a>.</tip>
-	<tip>In SQL Editor you can press Ctrl/Option+Space after asterisk in a query like "SELECT * FROM tableName" or like "INSERT INTO tableName (*)" (brackets are important) and the asterisk will be replaced with a list of all table columns.</tip>
-	<tip>You can ignore the PK validation constraint when importing data into a table by selecting the Replace method in the data load settings. Supported by Oracle, MySQL, PostgreSQL, Firebird, and SQLite. You can find out more about that in our <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Import-and-Replace">wiki article</a>.</tip>
-	<tip>Choose the fully qualified name of the object in the SQL Editor and use <b>Ctrl(Cmd) + Left click</b>. This will take you to the object's tab. Works with tables, columns and procedures.</tip>
-<!--	Tips above were reviewed on 10th of February, 2021.-->
-	<tip>If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.</tip>
+	<!--        Tips below were reviewed on 28th of November 2023   -->
+	<tip>DBeaver can be customized to suit your needs. Learn detailed information about optional extensions <a href="https://dbeaver.com/docs/wiki/Optional-extensions"> here</a>.</tip>
+	<tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the menu bar and the list of menu items displayed</a> in the <b>Menu Visibility</b> tab.</tip>
+	<tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the toolbar </a> in the <b>Toolbar Visibility</b> tab.</tip>
+	<tip>You can create a keyboard shortcut for most commands in DBeaver. <a href="prefs://org.eclipse.ui.preferencePages.Keys">Existing shortcuts can also be changed</a></tip>
+	<tip>You can change the current <a href="https://dbeaver.com/2022/05/26/change-the-data-in-the-smart-way/">database transaction mode</a> in the toolbar.
+		 Click the dropdown menu to the right of the <b>Commit and Rollback buttons</b>.</tip>
+	<tip>If you are afraid to change the important data in the table accidentally, turn on <b>read-only mode</b> and view the table without the editing options.</tip>
+	<tip>Don’t waste time editing all your connections if the password for the SSH tunnel changes.
+		 Use <a href="https://dbeaver.com/2022/03/10/how-to-create-network-profiles/"> Network profiles</a>.</tip>
+	<tip>When adding a new dependency for your driver, use Maven or Gradle scripts by switching to the <b>Dependency Declaration</b> tab.</tip>
+	<tip>To securely pass external variables into DBeaver, you can use the -vars command-line parameter to specify the file containing variables.
+		 Read more about Admin variables <a href="https://dbeaver.com/docs/wiki/Admin-Variables#declare-external-variables-in-a-file"> here</a>.</tip>
+	<tip>You can easily change a DBeaver file’s location. Just go to <b>File –> Switch Workspace</b> and set a new path.</tip>
+	<tip> <a href="https://dbeaver.com/2022/06/02/keep-calm-and-use-connection-types/">Highlight your connection types</a>
+		 – Test or Production – to specify their colors in your <b>Navigation Tree, Data Editor, and SQL Editor</b>.
+		 This protects you from accidentally making changes to the production system.</tip>
+	<tip>You can open SQL Console with the <commandRef commandId="org.jkiss.dbeaver.core.sql.editor.console" showName="false"/> command. It's suitable for executing a query you don't want to save in a file.</tip>
+	<tip>To execute the current query, use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>. Please note that queries are separated by delimiters or empty lines.</tip>
+	<tip>To run the current SQL script, use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>.</tip>
+	<tip>In order to format SQL statements use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.text.content.format"/>.</tip>
+	<tip>Use the following options in SQL Editor's context menu: <b>Execute -> Export From Query</b> to export data directly from SQL query without pre-executing it.</tip>
+	<tip>You can convert the selected text into uppercase using the command <commandRef commandId="org.eclipse.ui.edit.text.upperCase"/>.</tip>
+	<tip>You can convert the selected text into lowercase using the <commandRef commandId="org.eclipse.ui.edit.text.lowerCase"/> command.</tip>
+	<tip>To refresh query results in <a href="https://dbeaver.com/2022/04/14/your-first-queries-in-the-sql-editor/">SQL Editor</a>, use <commandRef commandId="org.eclipse.ui.file.refresh"/> command.</tip>
+	<tip>To see available <a href="https://dbeaver.com/docs/wiki/SQL-Templates">templates</a> of SQL statements, use the <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation"/> command.</tip>
+	<tip>Based on selected rows, you can generate <b>SQL statements (SELECT/INSERT/UPDATE/DELETE)</b>.
+		 To generate SQL, right-click the selected rows, click <b>Generate SQL</b> and select one of the SQL commands you see.</tip>
+	<tip>To see the execution plan for the current query, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/> command.</tip>
+	<tip>To execute queries of the current script simultaneously and display the results in separate tabs, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/> command.</tip>
+	<tip>To jump to the previous query in the current SQL script, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev"/> command.</tip>
+	<tip>To jump to the next query in the current SQL script, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.next"/> command.</tip>
+	<tip>All the errors that occur when running SQL scripts in DBeaver can be observed in the <a href="view://org.eclipse.pde.runtime.LogView">Error Log</a> view.
+		 The error log tracks SQL, permission, and configuration errors.</tip>
+	<tip>You can view the queries executed in DBeaver in the <b>Query Manager</b>. All internal queries that DBeaver runs to read the metadata can also be found there.</tip>
+	<tip>You can change the editor settings according to your personal needs. To do this, click the gear icon and go to <b>Editors -> SQL Editor</b>.
+		 Here you can change the formatting, script processing settings, and more.</tip>
+	<tip>In SQL Editor, you can call <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.proposals"/> after the asterisk in a query like "SELECT * FROM tableName" or
+		 like "INSERT INTO tableName (*)" (brackets are important), and the asterisk will be replaced with a list of all table columns.</tip>
+	<tip>Choose the fully qualified name of the object in the SQL Editor and use <b>Ctrl + Left click</b>.
+		 This will take you to the object's tab. Works with tables, columns, and procedures.</tip>
+	<tip>You can <b>enter an SQL expression</b> to filter the results using the Filter field above the grid.<br/>Click the expand button (<b>&#9660;</b>) on the right side to see the
+		 filter history.<br/>By clicking <b>Save filter settings</b>, the filter history will be available even after restarting the app.</tip>
+	<tip>You no longer need to import scripts one by one into the SQL Editor. The Import SQL Script option in DBeaver allows you
+		 to select multiple files simultaneously, opening them in one editor.</tip>
+	<tip>To execute the selected SQL expression and get the results, use command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>.</tip>
+	<tip>The SQL button above the <b>Navigation tree</b> allows you to open SQL scripts and change the default command.
+		 For example, you can set up a quick console opening by clicking this button.</tip>
+	<tip>In Data Editor, you can switch between the view modes using the command <commandRef commandId="org.jkiss.dbeaver.core.resultset.switchPresentation"/>.</tip>
+	<tip>In <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">Data Editor</a>, use <commandRef commandId="org.eclipse.ui.edit.findReplace"/> command to search for data in the current table quickly.</tip>
+	<tip>To filter table rows by column value in <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/"> Data Editor,</a>
+		 use the <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct"/> command. You can also open <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu"/>.</tip>
+	<tip>To open the foreign keys menu in <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">Data Editor</a>, use <commandRef commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"/> command.</tip>
+	<tip>While working with the Data Editor, you can apply to filter using the value from the clipboard.
+		 Copy the value you need from any source, right-click on the cell, go to <b>Filter -> Clipboard,</b> and select the appropriate option.</tip>
+	<tip>Highlighting repeated values in your data is an easy way to find them. You can enable this
+		 feature by ticking the Mark occurrences of the selected cell's value checkbox here.</tip>
+	<tip>You can easily change the booleans view in Properties. Click on the Gear icon, go to <b>Appearance –> Grid</b>, and click the <b>Configure booleans view</b> – Editors.
+		 You can choose how your booleans will look: as icons, checkmarks, or words, for which you can set the font color.
+		 In the same way, you can customize other Data editor properties, change data formatting, font size, etc.</tip>
+	<tip> <a href="https://dbeaver.com/tag/colorization/">Highlight rows or filter the cells by color</a> to better view and analyze your data in a grid.
+		 Apply the gradient to visualize the increase of the values in rows by size.</tip>
+	<tip>If you select one or several rows in your table and click the <b>Record button</b> in the side toolbar of the editor, the rows and columns switch positions.
+		 The Record mode is useful if the table contains numerous amounts of columns.</tip>
+	<tip>You can enter an SQL expression to filter results using the <b>Filter field and Top toolbar</b>.
+		 Your filter history is also available here. If you use DBeaver PRO, the history will be saved even after restarting the app.</tip>
+	<tip>View any specific data through <a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">the Value panel</a> (GIS, website, images, and more).</tip>
+	<tip>Using a convenient calendar, you can edit date and time fields in your tables.
+		 Open <a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">the Value panel</a> and click on the icon with the clock
+		 to switch the editor to a calendar view. You can also find a corresponding checkbox in the Preferences.</tip>
+	<tip>You can turn on/off the right panels using the <commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview"/> command.</tip>
+	<tip>You will see a dictionary if you select the cell containing the key and
+		 go to <a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">the Value panel</a>.It consists of Value and Description columns.
+		 You can quickly view the necessary data using this table and search through it.</tip>
+	<tip>If you need to count values from your table quickly, use the Grouping or Calculation panel.
+		 Learn more about all opportunities of DBeaver panels <a href="https://dbeaver.com/2022/05/05/build-your-report-step-by-step/">here</a>.</tip>
+	<tip>You can quickly view information about data format and size limits using the Metadata Panel.
+		 <a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">The Metadata Panel</a> only works in read-only mode.
+		 If you want to make changes, go to the Properties tab.</tip>
+	<tip>Instead of constantly switching between all these tables to add or edit data,
+		 use <a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">the References Panel</a>.
+		 It lets you quickly view which tables the selected table is associated with.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.edit.rename"/> command to rename the selected element.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.object.open"/> command to edit the selected element's properties.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.file.refresh"/> command to refresh the selected element.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/> command to add
+		 the selected elements to your <a href="https://dbeaver.com/docs/wiki/Bookmarks">bookmarks</a>.</tip>
+	<tip>Customize your Database Navigator tree to suit your needs. Learn more about Navigation tree customization
+		 <a href="https://dbeaver.com/2022/08/25/how-to-customize-your-navigation-tree/"> here</a>.</tip>
+	<tip>Choose a Simple or Advanced navigation tree view according to your needs. Learn more about how to set it up
+		 <a href="https://dbeaver.com/2022/08/18/simple-or-advanced-choose-your-navigation-tree-view/">here</a>.</tip>
+	<tip>Use <a href="https://dbeaver.com/docs/wiki/Bookmarks">bookmarks</a> as quick access links to objects of a database.</tip>
+	<tip>If the Projects tab is closed, go to <b>Main menu -> Window -> Show view -> Projects</b> to open it.</tip>
+	<tip>You can make your project default, and its content will be displayed in the <b>Database Navigator</b>.
+		 To do this, right-click on it and choose <b>“Set Active Project."</b></tip>
+	<tip>You can copy connections, bookmarks, diagrams, and scripts between your projects.</tip>
+	<tip>DBeaver allows you to view diagrams for any objects: tables, views, and even entire database schemes.
+		 Learn more about ER diagrams in DBeaver <a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">here</a>.</tip>
+	<tip>You can create custom ER diagrams containing tables, relations, and notes.
+		 Learn more about this feature <a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">here</a>.</tip>
+	<tip>You can open the dashboard view using the <b>main toolbar</b> or command <commandRef commandId="org.jkiss.dbeaver.ui.dashboard.open"/> to monitor database health.<br/>Note: dashboards are database-specific.</tip>
+	<tip>While working on our app, you can <a href="https://dbeaver.com/2022/09/08/working-with-tasks-how-to-get-started/">save repetitive tasks</a>
+		 such as importing and exporting data, database dumping and restoring, comparing data, etc.</tip>
+	<tip>You can <a href="https://dbeaver.com/2022/09/22/database-tasks-view-all-your-tasks-in-one-place/">customize</a> the displayed columns in Database tasks.
+		 For example, show the execution time of a particular task. To do this, you must right-click on any area of the list and go to <b>Configure columns</b>.
+		 Check the appropriate boxes and <b>click OK</b>.</tip>
+	<tip>You can ignore the PK validation constraint when <a href="https://dbeaver.com/docs/wiki/Data-Import-and-Replace">importing data</a> into a
+		 table by selecting the Replace method in the data load settings. Supported by Oracle, MySQL, PostgreSQL, Firebird, and SQLite.</tip>
+	<tip>You can improve data import performance by enabling <b>Use multi-row value</b> insert in the data transfer settings.
+		 Additionally, you can increase the rows count in the <b>multi-insert batch</b>.</tip>
+	<tip>You can jump to a column in the result set using the <commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.gotoColumn"/> command.</tip>
+	<tip>To view script execution results sequentially in one tab, enable the option from the SQL Editor context menu: <b>Execute -> Toggle execution results orientation</b>.</tip>
+	<tip>Would you like to use local clients in DBeaver for database backup/restore?<br/>
+		<a href="https://dbeaver.com/docs/dbeaver/Local-Client-Configuration/">Learn more about client configuring</a></tip>
+	<tip>You can enable additional support of screen readers for database editors <a href="prefs://org.jkiss.dbeaver.preferences.accessibility">here</a>.</tip>
+	<tip>In case you have a connection behind a proxy, you can specify the proxy setting during connection creation/editing using the <b>Network Configurations</b> button.</tip>
+	<tip>If you need the high contrast theme, enable it in your operating system, and DBeaver's high contrast theme will be activated.</tip>
 
-	<tip>To compare data from two tables, you can use our Data Compare tool.
-		<br/>Note: <a href="https://github.com/dbeaver/dbeaver/wiki/Data-compare">this feature</a> is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.
-	</tip>
-	<tip>While working with the Data Editor you can apply filtering using the value from the clipboard. Just copy the value you need from any source, right-click on the cell, go to Filter &amp;rArr; Clipboard and select the appropriate option.</tip>
-	<tip>If you are afraid to change the important data in the table by mistake, this problem can be easily solved. Just turn on read-only mode and view the table without the editing function.</tip>
-	<tip>An easy way to find repeated values in your data is to highlight them. You can enable this feature by ticking the <b>Mark occurrences of selected cell's value</b> checkbox <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.codeeditor">here</a>.</tip>
-	<tip>You can edit date and time fields in your tables using a convenient calendar. Open the Value panel and click on the icon with the clock to switch the editor to a calendar view. You can also find a corresponding checkbox in the Preferences.</tip>
-	<tip>Using the Filter field located above the grid you can enter an SQL expression to filter the results.
-		<br/>Click the expand button (<b>&#9660;</b>) on the right side to see the filter history.
-		<br/>By clicking <b>Save filter settings</b>, the filter history will be available even after restarting the app.</tip>
-	<tip>With a <a href="prefs://org.jkiss.dbeaver.project.settings.networkProfiles#project">network profile</a>, you won’t waste time editing all your connections if the password for the SSH tunnel changes.</tip>
-	<tip>You no longer need to import scripts one by one into the SQL Editor. The <b>Import SQL Script</b> option in DBeaver allows you to select multiple files at once, which will open them in one editor.</tip>
-	<tip>When adding a new dependency for your driver, you can use Maven or Gradle scripts by switching to the <b>Dependency Declaration</b> tab.</tip>
-	<tip>To securely pass external variables into DBeaver you can use <b>-vars</b> command-line parameter to specify the file containing variables.
-		<br/>Read more about this feature on our <a href="https://github.com/dbeaver/dbeaver/wiki/Admin-Variables#declare-external-variables-in-a-file">wiki page</a>.
-	</tip>
-	<tip>You can improve data import performance by enabling <b>Use multi-row value insert</b> in the data transfer settings. Additionally, you can increase the rows count in the multi-insert batch.</tip>
+	<tip product="ce">DBeaver PRO is fully integrated with the
+		 <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Git version control system</a>.
+		 Upgrade your DBeaver to keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>
+	<tip product="ce,le,ee">With DBeaver Ultimate, you can work with databases accessible via AWS, Google Cloud, and Microsoft Azure simultaneously and easily switch between their configurations.
+		Learn more about how to easily work with hybrid clouds in DBeaver Ultimate
+		<a href="https://dbeaver.com/2023/06/01/hybrid-cloud-with-dbeaver-how-to-get-started/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ce">Take advantage of DBeaver PRO to <a href="https://dbeaver.com/2023/06/08/security-in-dbeaver-pro-questions-and-answers/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">
+		 manage your data privately</a>: master password to protect all projects in the local workspace and strong credentials encryption.</tip>
+	<tip product="ce,ee,ue">If you work in DBeaver with your team, choose the best way to manage user rights, restrictions, and permissions with
+		 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>.
+		 Create users and assign them convenient roles with predefined capabilities.</tip>
+	<tip product="ce">If you are looking for a server-side data management solution for your team, try
+		 <a href="https://dbeaver.com/cloudbeaver-enterprise/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">CloudBeaver</a>.</tip>
+	<tip product="ce,le,ee">If you regularly work with AWS databases and need access to the files stored in the AWS, use
+		 <a href="https://dbeaver.com/2022/04/21/easy-management-for-aws-s3-files/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">the S3 browser</a> in DBeaver Ultimate.</tip>
+	<tip product="ce,le">Use the <a href="https://dbeaver.com/2022/02/10/how-does-visual-query-builder-help-optimize-your-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Visual
+		 Query Builder</a> tool in DBeaver PRO to simplify the SQL scripting process.</tip>
+	<tip product="ce">DBeaver PRO supports <a href="https://dbeaver.com/databases/?utm_source=ce&amp;tm_medium=cpc&amp;utm_campaign=tips">all
+		 popular NoSQL databases</a>: MongoDB, CouchDB, InfluxDB, and more. In addition, if you're unfamiliar with NoSQL,
+		 you can use a plain SQL editor to perform different queries in DBeaver PRO.</tip>
+	<tip product="ce">Get a powerful AI Assistant in DBeaver PRO to automatically create complex queries with joins.
+		 Watch how it works <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video.</a>. </tip>
+	<tip product="ce">In DBeaver PRO, you can quickly and easily visualize your data with
+		 <a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=c&amp;utm_medium=cpc&amp;utm_campaign=tips">Charts</a>
+		 in the data grid, Panels, or result set in SQL editor.</tip>
+	<tip product="ce">DBeaver PRO allows you to directly change the database schema with ERD edit mode. Learn more about database development in DBeaver PRO
+		 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ce">Get <a href="https://dbeaver.com/docs/wiki/Mock-Data-Generation-in-DBeaver?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
+		 in DBeaver PRO when you need to create huge quantities of realistic sample data for testing purposes and want to avoid the tedious and time-consuming work of entering test data by hand.</tip>
+	<tip product="ce">Get <a href="https://dbeaver.com/docs/wiki/Query-Execution-Plan/?utm_source=ce&amp;utm_&amp;edium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
+		 graph mode in DBeaver PRO to view and estimate the speed of the query or script execution and to define the most expensive plan nodes.</tip>
+	<tip product="ce">With DBeaver PRO, you can <a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">import
+		 and export files</a> in any format - XLS, XLSL, XML, and more.</tip>
+	<tip product="ce">In DBeaver PRO, you can get advanced options to compare data from two similar tables to navigate the differences. Learn more about Data comparison in DBeaver PRO
+		 <a href="https://dbeaver.com/docs/wiki/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ce">With DBeaver PRO, you can <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">schedule
+		 your tasks</a> to execute with the specified recurrence without opening DBeaver.</tip>
+	<tip product="ce">With DBeaver PRO, you can group several tasks into
+		 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">one composite task</a>
+		 to easily execute a set of actions in one click.</tip>
+	<tip product="ce">In DBeaver PRO, you can create a database schema backup by using the
+		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Schema Compare/Migrate feature</a>
+		 and save it as a task. In addition, you can execute this task automatically with Task Scheduler in DBeaver PRO.</tip>
+	<tip product="ce">With DBeaver PRO, you can compare schemas, including all metadata objects, in one or different databases.
+		 Learn more about the powerful schema comparison in DBeaver PRO
+		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ce">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — for example, Crows Foot.</tip>
+	<tip product="ce,le,ee,ue">DBeaver PRO offers a convenient way to configure Kubernetes settings for connecting to databases in a Kubernetes cluster.<br/>
+		Learn more about Kubernetes configuration <a href="https://dbeaver.com/docs/dbeaver/Kubernetes-configuration/">here</a>.</tip>
+	<tip product="ce">You can connect to almost any database by using native ODBC drivers in <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">DBeaver PRO</a>.</tip>
+	<tip product="ce,le,ee,ue"><a href="https://dbeaver.com/docs/dbeaver/AI-Smart-Assistance/">AI Chat</a> in DBeaver PRO is a new way to build SQL queries automatically.
+		To try it out, open the **AI Chat** tab on the right side of the SQL editor.</tip>
+	<tip product="ce,le,ee,ue">You can configure DBeaver's integration with Tableau to create database connections and edit custom SQL queries conveniently.<br/>
+		Learn more about Tableau integration in DBeaver PRO <a href="https://dbeaver.com/docs/dbeaver/Tableau-integration-in-DBeaver/">here</a>.</tip>
+	<tip product="ce">You can connect to a Salesforce database in DBeaver PRO using the
+		<a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce driver</a> created by the DBeaver team.</tip>
+
+	<tip product="le">If you are looking for a light web data manager for your team, try
+		 <a href="https://dbeaver.com/cloudbeaver-enterprise/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">CloudBeaver Enterprise</a>.</tip>
+	<tip product="le">If you are looking for a convenient collaboration tool with quick access to data without additional requests, try
+		 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>.
+		 Easily share datasets and scripts across teams in real time.</tip>
+	<tip product="le,ee,ue">If you're unfamiliar with NoSQL, you can use a plain SQL editor to perform different queries.</tip>
+	<tip product="le">Get a powerful AI Assistant in DBeaver Enterprise to automatically create complex queries with joins. Watch how it works
+		 <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video</a>.</tip>
+	<tip product="le">In DBeaver Enterprise, you can get advanced options to compare data from two similar tables to navigate the differences.
+		 Learn more about Data comparison in DBeaver Enterprise <a href="https://dbeaver.com/docs/wiki/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="le">With DBeaver Enterprise, you can <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">schedule
+		 your tasks</a> to execute with the specified recurrence without opening DBeaver.</tip>
+	<tip product="le">With DBeaver Enterprise, you can group several tasks into
+		 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">one composite task</a>
+		 to easily execute a set of actions in one click.</tip>
+	<tip product="le,ee,ue">You can easily manage DBeaver's root certificates <a href="prefs://org.jkiss.dbeaver.preferences.main.truststore">here</a>.</tip>
+	<tip product="le,ee,ue">You can connect to almost any database by using native ODBC drivers <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">with the help of DBeaver ODBC</a>.</tip>
+	<tip product="le,ee,ue">You can connect to a Salesforce database using the
+		<a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce driver</a> created by the DBeaver team.</tip>
+	<tip product="le,ee,ue">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — Crows Foot or Bachman.</tip>
+
+	<tip product="ee">DBeaver Enterprise is fully integrated with the <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Git
+		 version control system</a>. Keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>
+	<tip product="ee,ue">If you want a convenient data collaboration tool for your team, try
+		 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>.
+		 Easily share connections, scripts, and datasets across teams in real time. Get the full functionality of DBeaver Ultimate and CloudBeaver Enterprise.</tip>
+	<tip product="ee,ue">Use the <a href="https://dbeaver.com/2022/02/10/how-does-visual-query-builder-help-optimize-your-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Visual
+		 Query Builder tool</a> to simplify the SQL scripting process.</tip>
+	<tip product="ee,ue">Use a powerful AI Assistant to automatically create complex queries with joins. Watch how it works <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video</a>.</tip>
+	<tip product="ee,ue">You can quickly and easily visualize your data with
+		 <a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Charts</a>
+		 in the data grid, Panels, or result set in SQL editor.</tip>
+	<tip product="ee">DBeaver Enterprise allows you to directly change the database schema with ERD edit mode. Learn more about database development in DBeaver Enterprise
+		 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ee,ue">Use <a href="https://dbeaver.com/docs/wiki/Mock-Data-Generation-in-DBeaver?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
+		 when you need to create huge quantities of realistic sample data for testing purposes and want to avoid the tedious and time-consuming work of entering test data by hand.</tip>
+	<tip product="ee,ue">Use <a href="https://dbeaver.com/docs/wiki/Query-Execution-Plan/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
+		 graph mode to view and estimate the speed of the query or script execution and to define the most expensive plan nodes.</tip>
+	<tip product="ee,ue"><a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">Import
+		 and export files</a> in any format - XLS, XLSL, XML, and more.</tip>
+	<tip product="ee,ue">Use advanced options to compare data from two similar tables to navigate the differences. Learn more about Data comparison in DBeaver PRO
+		 <a href="https://dbeaver.com/docs/wiki/Data-compare?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ee,ue"> <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Schedule your tasks</a>
+		 to execute with the specified recurrence without opening DBeaver.</tip>
+	<tip product="ee">Group several tasks into one composite task to easily execute a set of actions in one click. Learn more about advanced task management in DBeaver PRO
+		 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>. </tip>
+	<tip product="ee,ue">You can create a database schema backup by using the
+		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Schema Compare/Migrate feature</a>
+		 and save it as a task. In addition, you can execute this task automatically with Task Scheduler.</tip>
+	<tip product="ee,ue">Compare schemas, including all metadata objects, in one or different databases. Learn more about the powerful schema comparison in DBeaver PRO
+		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<!--        Tips for UE   -->
+	<tip product="ue">DBeaver Ultimate is fully integrated with the
+		 <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">Git version control system</a>.
+		 Keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>
+	<tip product="ue">Work with databases accessible via AWS, Google Cloud, and Microsoft Azure simultaneously and easily switch between their configurations.
+		 Learn more about how to easily work with hybrid clouds in DBeaver Ultimate
+		 <a href="https://dbeaver.com/2023/06/01/hybrid-cloud-with-dbeaver-how-to-get-started/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>. </tip>
+	<tip product="ue">Use the <a href="https://dbeaver.com/2022/04/21/easy-management-for-aws-s3-files/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">S3 browser</a>
+		 for quick access to the files stored in the AWS.</tip>
+	<tip product="ue">DBeaver Ultimate allows you to directly change the database schema with ERD edit mode. Learn more about database development in DBeaver Ultimate
+		 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+	<tip product="ue">Group several tasks into <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">one
+		 composite task</a> to easily execute a set of actions in one click.</tip>
+
+	<tip product="te">The administrator can create an unlimited number of shared projects.</tip>
+	<tip product="te">Use the admin panel to create, edit and delete shared projects.</tip>
+	<tip product="te">Use the administrative panel to create, edit and delete teams.</tip>
+	<tip product="te">Use the administrative panel to create, edit and delete users.</tip>
+	<tip product="te">In the desktop and web versions of Team Edition, you can create connections and edit existing ones.</tip>
+	<tip product="te">You can create unlimited datasets and share them with other users in real time.</tip>
+	<tip product="te">You can create unlimited scripts and share them with other users in real time.</tip>
+	<tip product="te">Advanced load scalability available in Team Edition.</tip>
+	<tip product="te">If you want to expand the number of user roles and change the user role, please <a href="mailto:sales@dbeaver.com">get in touch</a> with our customer success team.</tip>
+	<tip product="te">Use Query Manager in the web version of Team Edition to explore all users' queries.</tip>
 </tips>

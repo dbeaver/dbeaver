@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,12 @@ import java.util.List;
 /**
  * AbstractContextDescriptor
  */
-public abstract class AbstractContextDescriptor extends AbstractDescriptor
-{
+public abstract class AbstractContextDescriptor extends AbstractDescriptor {
     private static final String OBJECT_TYPE = "objectType";
 
     private final ObjectType[] objectTypes;
 
-    public AbstractContextDescriptor(IConfigurationElement config)
-    {
+    public AbstractContextDescriptor(IConfigurationElement config) {
         super(config.getContributor().getName());
 
         List<ObjectType> objectTypes = new ArrayList<>();
@@ -49,8 +47,7 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
         this.objectTypes = objectTypes.toArray(new ObjectType[0]);
     }
 
-    public AbstractContextDescriptor(String pluginId)
-    {
+    public AbstractContextDescriptor(String pluginId) {
         super(pluginId);
         this.objectTypes = new ObjectType[0];
     }
@@ -63,13 +60,11 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
         return objectTypes;
     }
 
-    public boolean appliesTo(DBPObject object)
-    {
+    public boolean appliesTo(DBPObject object) {
         return appliesTo(object, null);
     }
 
-    public boolean matchesType(Class<? extends DBSObject> objectClass)
-    {
+    public boolean matchesType(Class<? extends DBSObject> objectClass) {
         for (ObjectType objectType : objectTypes) {
             if (objectType.matchesType(objectClass)) {
                 return true;
@@ -78,10 +73,9 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
         return false;
     }
 
-    public boolean appliesTo(DBPObject object, Object context)
-    {
+    public boolean appliesTo(DBPObject object, Object context) {
         if (object instanceof DBSObject) {
-            object = DBUtils.getPublicObject((DBSObject)object);
+            object = DBUtils.getPublicObject((DBSObject) object);
         }
         if (object == null) {
             return false;
@@ -95,8 +89,7 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
         return false;
     }
 
-    protected Object adaptType(DBPObject object)
-    {
+    protected Object adaptType(DBPObject object) {
         return null;
     }
 }

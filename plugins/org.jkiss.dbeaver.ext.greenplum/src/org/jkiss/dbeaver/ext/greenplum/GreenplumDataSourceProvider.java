@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.greenplum;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
@@ -27,8 +28,9 @@ public class GreenplumDataSourceProvider extends PostgreDataSourceProvider {
     public GreenplumDataSourceProvider() {
     }
 
+    @NotNull
     @Override
-    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new GreenplumDataSource(monitor, container);
     }
 }

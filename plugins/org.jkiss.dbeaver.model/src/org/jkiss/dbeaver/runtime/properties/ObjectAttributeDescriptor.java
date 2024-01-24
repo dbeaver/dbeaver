@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -48,13 +49,13 @@ public abstract class ObjectAttributeDescriptor {
     };
 
     private final DBPPropertySource source;
-    private ObjectPropertyGroupDescriptor parent;
-    private int orderNumber;
+    private final ObjectPropertyGroupDescriptor parent;
+    private final int orderNumber;
     private String id;
-    private Method getter;
+    private final Method getter;
     private boolean isLazy;
     private IPropertyCacheValidator cacheValidator;
-    private Class<?> declaringClass;
+    private final Class<?> declaringClass;
 
     public ObjectAttributeDescriptor(
         DBPPropertySource source,
@@ -114,8 +115,7 @@ public abstract class ObjectAttributeDescriptor {
         return getter == null ? null : getter.getAnnotation(annoType);
     }
 
-    public Method getGetter()
-    {
+    public Method getGetter() {
         return getter;
     }
 
@@ -171,12 +171,28 @@ public abstract class ObjectAttributeDescriptor {
 
     public abstract String getDescription();
 
+    @NotNull
+    public static Class<?> getObjectClass(Object theObject) {
+        if (theObject instanceof DPIClientObject) {
+            String objectType = ((DPIClientObject) theObject).dpiObjectType();
+            try {
+                return  ((DPIClientObject) theObject).dpiClassLoader().loadClass(objectType);
+            } catch (ClassNotFoundException e) {
+                log.debug("Cannot determine DPI object local class '" + objectType + "'", e);
+                return theObject.getClass();
+            }
+        } else {
+            return theObject.getClass();
+        }
+    }
+
+    @NotNull
     public static List<ObjectPropertyDescriptor> extractAnnotations(
         @Nullable DBPPropertySource source,
         Class<?> theClass,
         IPropertyFilter filter,
-        @Nullable String locale)
-    {
+        @Nullable String locale
+    ) {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
         extractAnnotations(source, null, theClass, annoProps, filter, locale);
         return annoProps;

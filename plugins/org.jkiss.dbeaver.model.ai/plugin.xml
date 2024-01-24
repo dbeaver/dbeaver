@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+
+<plugin>
+    <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
+    <extension-point id="com.dbeaver.ai.formatter" name="AI formatters" schema="schema/com.dbeaver.ai.formatter.exsd"/>
+
+    <extension point="com.dbeaver.ai.engine">
+        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.openai.OpenAICompletionEngine" default="true">
+            <propertyGroup label="Engine settings">
+                <property id="gpt.token" label="API token" type="string" hint="Copy-paste API token from https://platform.openai.com/account/api-keys" features="password"/>
+                <property id="gpt.model" label="Model" type="string" validValues="gpt-3.5-turbo,gpt-3.5-turbo-16k,text-ada-001,text-curie-001,text-babbage-001,text-davinci-003,text-davinci-002,text-davinci-001" defaultValue="gpt-3.5-turbo-16k" hint="gpt-3.5-turbo-16k model suits the best for SQL code completion"/>
+                <property id="gpt.model.temperature" label="Temperature" type="integer" hint="Lower temperatures give more precise results"/>
+                <property id="gpt.log.query" label="Write GPT queries to debug log" type="boolean" hint="Write GPT queries with metadata info in debug logs"/>
+            </propertyGroup>
+        </completionEngine>
+    </extension>
+
+    <extension point="com.dbeaver.ai.formatter">
+        <formatter id="core" class="org.jkiss.dbeaver.model.ai.format.DefaultRequestFormatter"/>
+    </extension>
+
+</plugin>

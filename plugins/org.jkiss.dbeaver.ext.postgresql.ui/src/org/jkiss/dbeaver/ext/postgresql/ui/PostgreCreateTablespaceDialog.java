@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
@@ -40,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +49,7 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
 {
     private static final String DIALOG_ID = "DBeaver.PostgreCreateTablespaceDialog";//$NON-NLS-1$
 
-    private final PostgreTablespace newtablespace;
+    private final PostgreTablespace newTablespace;
     private List<PostgreRole> allUsers;
     private PostgreRole owner;
     private String name = null;
@@ -60,7 +58,7 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
 
     public PostgreCreateTablespaceDialog(Shell parentShell, PostgreTablespace tablespace) {
         super(parentShell, PostgreMessages.dialog_create_tablespace_title, null);
-        this.newtablespace = tablespace;
+        this.newTablespace = tablespace;
     }
 
     protected IDialogSettings getDialogBoundsSettings()
@@ -69,7 +67,11 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
     }
 
     private void checkEnabled() {
-            getButton(IDialogConstants.OK_ID).setEnabled(name != null && !name.isEmpty() && loc != null && !loc.isEmpty()); 
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        if (okButton != null) {
+            okButton.setEnabled(CommonUtils.isNotEmpty(name) &&
+                (!newTablespace.getDataSource().getServerType().supportsTablespaceLocation() || (loc != null && !loc.isEmpty())));
+        }
     }
 
     @Override
@@ -85,7 +87,10 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
         gd.horizontalIndent = 0;
         group.setLayoutData(gd);
 
-        UIUtils.createLabelText(group,PostgreMessages.dialog_create_tablespace_database, newtablespace.getDatabase().getName(), SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        UIUtils.createLabelText(group,
+            PostgreMessages.dialog_create_tablespace_database,
+            newTablespace.getDatabase().getName(),
+            SWT.BORDER | SWT.READ_ONLY);
 
         final Text nameText = UIUtils.createLabelText(group, PostgreMessages.dialog_create_tablespace_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
@@ -106,32 +111,29 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
             }
         });
           
-        final Text locText = UIUtils.createLabelText(group, PostgreMessages.dialog_create_tablespace_loc, ""); //$NON-NLS-2$
-        locText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
+        if (newTablespace.getDataSource().getServerType().supportsTablespaceLocation()) {
+            final Text locText = UIUtils.createLabelText(group, PostgreMessages.dialog_create_tablespace_loc, "");
+            locText.addModifyListener(e -> {
                 loc = locText.getText();
                 checkEnabled();
-            }
-        });
+            });
+        }
 
-        final Text optionsText = UIUtils.createLabelText(group, PostgreMessages.dialog_create_tablespace_options, ""); //$NON-NLS-2$
-        optionsText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                options = optionsText.getText();
-            }
-        });
-
+        UIUtils.createControlLabel(group, PostgreMessages.dialog_create_tablespace_options);
+        final Text optionsText = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
+        GridData gd1 = new GridData(GridData.FILL_BOTH);
+        gd1.heightHint = optionsText.getLineHeight() * 6;
+        gd1.widthHint = optionsText.getLineHeight() * 30;
+        optionsText.setLayoutData(gd1);
+        optionsText.addModifyListener(e -> options = optionsText.getText());
         
         new AbstractJob("Load users") {
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    final List<String> userNames = new ArrayList<>();
-                    allUsers = new ArrayList<>(newtablespace.getDatabase().getUsers(monitor));
-                    final PostgreRole dba = newtablespace.getDatabase().getDBA(monitor);
+                    allUsers = new ArrayList<>(newTablespace.getDatabase().getUsers(monitor));
+                    final PostgreRole dba = newTablespace.getDatabase().getDBA(monitor);
                     final String defUserName = dba == null ? "" : dba.getName(); //$NON-NLS-1$
 
                     UIUtils.syncExec(() -> {
@@ -173,7 +175,7 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
         return loc;
     }
 
-    protected String getOptions() {
+    public String getOptions() {
         return options;
     }
     

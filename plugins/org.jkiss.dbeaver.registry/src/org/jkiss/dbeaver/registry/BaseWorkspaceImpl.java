@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,15 +32,22 @@ import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.*;
 
 /**
@@ -76,6 +83,24 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     public abstract void initializeProjects();
+
+    public void initializeWorkspaceSession() {
+        // Acquire workspace session
+        try {
+            this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
+        } catch (DBException e) {
+            if (!(e instanceof DBInterruptedException)) {
+                log.debug(e);
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    "Authentication error",
+                    "Error authenticating application user: " +
+                        "\n" + e.getMessage(),
+                    true);
+            }
+            dispose();
+            System.exit(101);
+        }
+    }
 
     public static Properties readWorkspaceInfo(Path metadataFolder) {
         Properties props = new Properties();
@@ -259,13 +284,52 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
                 Math.abs(SecurityUtils.generateRandomLong()),
                 36).toUpperCase();
             workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
-            BaseWorkspaceImpl.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
         }
-        return workspaceId;
+        return workspaceId + "-" + getLocalHostId();
+    }
+
+    private static String getLocalHostId() {
+        // Here we get local machine identifier. It is hashed and thus depersonalized
+        try {
+            InetAddress localHost = RuntimeUtils.getLocalHostOrLoopback();
+            NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+            if (ni == null || ni.getHardwareAddress() == null) {
+                Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+                while (niEnum.hasMoreElements()) {
+                    ni = niEnum.nextElement();
+                    if (ni.getHardwareAddress() != null) {
+                        break;
+                    }
+                }
+            }
+            if (ni == null) {
+                log.debug("Cannot detect local network interface");
+                return "NOMACADDR";
+            }
+            byte[] hardwareAddress = ni.getHardwareAddress();
+
+            // Use MD5
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(hardwareAddress);
+
+            long lValue = 0;
+            for (int i = 0; i < messageDigest.length; i++) {
+                lValue += (long)messageDigest[i] << (i * 8);
+            }
+
+            return Long.toString(Math.abs(lValue), 36).toUpperCase();
+        } catch (Exception e) {
+            log.debug(e);
+            return "XXXXXXXXXX";
+        }
     }
 
     ////////////////////////////////////////////////////////
-    // Realm
+    // Options
+
+    public boolean isReadOnly() {
+        return false;
+    }
 
     public boolean isAdmin() {
         return hasRealmPermission(DBAPermissionRealm.PERMISSION_ADMIN);

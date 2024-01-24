@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.impl.app.CertificateGenHelper;
+import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -27,11 +29,14 @@ import org.jkiss.utils.CommonUtils;
 
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -51,6 +56,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
     public static final String PROP_SSL_KEYSTORE = "ssl.keystore";
     public static final String PROP_SSL_KEYSTORE_VALUE = PROP_SSL_KEYSTORE + CERT_VALUE_SUFFIX;
+    public static final String PROP_SSL_KEYSTORE_PASSWORD = "ssl.keystore.password";
 
     public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_METHOD = "ssl.method";
@@ -68,6 +74,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
         final String selfSignedCert = sslConfig.getStringProperty(PROP_SSL_SELF_SIGNED_CERT);
         final String keyStore = sslConfig.getStringProperty(PROP_SSL_KEYSTORE);
+        final String keyStoreData = sslConfig.getSecureProperty(PROP_SSL_KEYSTORE_VALUE);
 
         final SSLConfigurationMethod method = CommonUtils.valueOf(
             SSLConfigurationMethod.class,
@@ -75,12 +82,22 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
             SSLConfigurationMethod.CERTIFICATES);
 
         {
-            if (method == SSLConfigurationMethod.KEYSTORE && keyStore != null) {
+            if (method == SSLConfigurationMethod.KEYSTORE) {
                 monitor.subTask("Load keystore");
-                final String password = sslConfig.getPassword();
-
+                final String password = sslConfig.getPassword() == null ?
+                    sslConfig.getSecureProperty(PROP_SSL_KEYSTORE_PASSWORD) :
+                    sslConfig.getPassword();
                 char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
-                securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
+                if (keyStore != null) {
+                    securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
+                } else if (keyStoreData != null) {
+                    securityManager.addCertificate(
+                        dataSource.getContainer(),
+                        CERT_TYPE,
+                        Base64.getDecoder().decode(keyStoreData),
+                        keyStorePasswordData
+                    );
+                }
             } else if (CommonUtils.toBoolean(selfSignedCert)) {
                 monitor.subTask("Generate self-signed certificate");
                 securityManager.addSelfSignedCertificate(dataSource.getContainer(), CERT_TYPE, "CN=" + dataSource.getContainer().getActualConnectionConfiguration().getHostName());
@@ -181,4 +198,51 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         return createTrustStoreSslContext(dataSource, sslConfig).getSocketFactory();
     }
 
+    public static void loadDerFromPem(
+        final @NotNull DBWHandlerConfiguration handler,
+        final @NotNull Path tempDerFile
+    ) throws IOException {
+        final byte[] key = SSLHandlerTrustStoreImpl.readCertificate(handler, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        final Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
+        Files.write(tempDerFile, DefaultCertificateStorage.loadDerFromPem(reader));
+        String derCertPath = tempDerFile.toAbsolutePath().toString();
+        if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            handler.setSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, derCertPath);
+        } else {
+            handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, derCertPath);
+        }
+        // Unfortunately, we can't delete the temp file here.
+        // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
+        // It will still be deleted during shutdown.
+    }
+
+    /**
+     * Creates a non-validating SSL socket factory.
+     */
+    @NotNull
+    public static SSLSocketFactory createNonValidatingSslSocketFactory() throws Exception {
+        final SSLContext context = SSLContext.getInstance("SSL");
+        context.init(null, CertificateGenHelper.NON_VALIDATING_TRUST_MANAGERS, new SecureRandom());
+
+        return context.getSocketFactory();
+    }
+
+    /**
+     * Reads trust store file contents.
+     */
+    public static byte[] readTrustStoreData(@NotNull DBWHandlerConfiguration configuration, @NotNull String property) throws DBException {
+        var propertyValue = configuration.getSecureProperty(property);
+        if (!CommonUtils.isEmpty(propertyValue)) {
+            try {
+                return Files.readAllBytes(Path.of(propertyValue));
+            } catch (IOException e) {
+                throw new DBException("Error reading file '" + property + "' data", e);
+            }
+        }
+        var valueProperty = configuration.getSecureProperty(property + SSLHandlerTrustStoreImpl.CERT_VALUE_SUFFIX);
+        if (!CommonUtils.isEmpty(valueProperty)) {
+            return Base64.getDecoder().decode(valueProperty);
+        }
+        return null;
+    }
 }

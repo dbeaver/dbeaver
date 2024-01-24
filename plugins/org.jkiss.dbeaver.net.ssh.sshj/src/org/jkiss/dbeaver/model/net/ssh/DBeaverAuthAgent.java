@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,49 +16,58 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.method.AbstractAuthMethod;
+import org.jkiss.code.NotNull;
 
 public class DBeaverAuthAgent extends AbstractAuthMethod {
+    private final Identity identity;
 
-    private final SSHAgentIdentity identity;
-    private final String algorithm;
-    private final SSHImplementationAbstract impl;
-
-    public DBeaverAuthAgent(SSHImplementationAbstract impl, SSHAgentIdentity identity) throws Buffer.BufferException {
+    public DBeaverAuthAgent(@NotNull Identity identity) throws Buffer.BufferException {
         super("publickey");
         this.identity = identity;
-        this.algorithm = (new Buffer.PlainBuffer(identity.getBlob())).readString();
-        this.impl = impl;
     }
 
-    /** Internal use. */
     @Override
     public void handle(Message cmd, SSHPacket buf) throws UserAuthException, TransportException {
-        if (cmd == Message.USERAUTH_60)
+        if (cmd == Message.USERAUTH_60) {
             sendSignedReq();
-        else
+        } else {
             super.handle(cmd, buf);
+        }
     }
 
-    protected SSHPacket putPubKey(SSHPacket reqBuf) throws UserAuthException {
+    @Override
+    protected SSHPacket buildReq() throws UserAuthException {
+        return buildReq(false);
+    }
+
+    @NotNull
+    private SSHPacket buildReq(boolean signed) throws UserAuthException {
+        return putPubKey(super.buildReq().putBoolean(signed));
+    }
+
+    @NotNull
+    private SSHPacket putPubKey(SSHPacket reqBuf) {
         reqBuf
-            .putString(algorithm)
-            .putBytes(identity.getBlob()).getCompactData();
+            .putString(getAlgName())
+            .putBytes(identity.getPublicKeyBlob());
         return reqBuf;
     }
 
-    private SSHPacket putSig(SSHPacket reqBuf) throws UserAuthException {
+    @NotNull
+    private SSHPacket putSig(SSHPacket reqBuf) {
         final byte[] dataToSign = new Buffer.PlainBuffer()
-                .putString(params.getTransport().getSessionID())
-                .putBuffer(reqBuf) // & rest of the data for sig
-                .getCompactData();
+            .putString(params.getTransport().getSessionID())
+            .putBuffer(reqBuf) // & rest of the data for sig
+            .getCompactData();
 
-        reqBuf.putBytes(impl.agentSign(identity.getBlob(), dataToSign));
+        reqBuf.putBytes(identity.getSignature(dataToSign, getAlgName()));
 
         return reqBuf;
     }
@@ -67,12 +76,13 @@ public class DBeaverAuthAgent extends AbstractAuthMethod {
         params.getTransport().write(putSig(buildReq(true)));
     }
 
-    private SSHPacket buildReq(boolean signed) throws UserAuthException {
-        return putPubKey(super.buildReq().putBoolean(signed));
-    }
-
-    @Override
-    protected SSHPacket buildReq() throws UserAuthException {
-        return buildReq(false);
+    @NotNull
+    private String getAlgName() {
+        final String name = identity.getAlgName();
+        if ("ssh-rsa".equals(name)) {
+            return "rsa-sha2-512";
+        } else {
+            return name;
+        }
     }
 }

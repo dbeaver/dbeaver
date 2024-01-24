@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.commands.ICommandImageService;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.commands.CommandImageManager;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.app.standalone.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
@@ -183,6 +185,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 //        register(historyForwardAction);
 
         CheckForUpdateAction.deactivateStandardHandler(window);
+        ApplicationPolicyService.getInstance().disableStandardProductModification(window.getService(ICommandService.class));
     }
 
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -67,16 +68,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     static final String PAGE_NAME = ConnectionPageGeneral.class.getSimpleName();
 
-    @Override
-    public DBNBrowseSettings getNavigatorSettings() {
-        return navigatorSettings;
-    }
-
-    @Override
-    public void setNavigatorSettings(DBNBrowseSettings settings) {
-        this.navigatorSettings = settings;
-    }
-
     private static class FilterInfo {
         final Class<?> type;
         final String title;
@@ -97,6 +88,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private ConnectionFolderSelector folderSelector;
     private DBPDataSourceFolder curDataSourceFolder;
     private Text descriptionText;
+    private Button showVirtualModelCheck;
 
     private boolean connectionNameChanged = false;
     private boolean activated = false;
@@ -106,7 +98,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private DBNBrowseSettings navigatorSettings;
     private List<DBPDataSourcePermission> accessRestrictions;
 
-    private List<FilterInfo> filters = new ArrayList<>();
+    private final List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
     private Font boldFont;
 
@@ -134,7 +126,20 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    
+    @Override
+    public DBNBrowseSettings getNavigatorSettings() {
+        return navigatorSettings;
+    }
+
+    @Override
+    public void setNavigatorSettings(DBNBrowseSettings settings) {
+        this.navigatorSettings = settings;
+
+        if (showVirtualModelCheck != null) {
+            showVirtualModelCheck.setSelection(!settings.isHideVirtualModel());
+        }
+    }
+
     protected boolean wasActivated() {
         return this.activated;
     }
@@ -282,6 +287,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
+        if (navigatorSettings == null) {
+            navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+        }
+
         Composite group = UIUtils.createComposite(parent, 1);
 
         {
@@ -302,7 +311,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             );
             UIUtils.setContentProposalToolTip(connectionNameText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
-
+            descriptionText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_description, null);
             {
                 connectionTypeCombo = createConnectionTypeCombo(miscGroup);
                 connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
@@ -339,15 +348,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }
 
             folderSelector = new ConnectionFolderSelector(miscGroup);
-
-            {
-                Label descLabel = UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_description);
-                descLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-                descriptionText = new Text(miscGroup, SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.MULTI);
-                final GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.heightHint = descriptionText.getLineHeight() * 3;
-                descriptionText.setLayoutData(gd);
-            }
         }
 
         Composite refsGroup = UIUtils.createComposite(group, 3);
@@ -410,9 +410,56 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
 
         {
+            // Filters
+            Composite vmGroup = UIUtils.createControlGroup(
+                refsGroup,
+                "Virtual model",
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            showVirtualModelCheck = UIUtils.createCheckbox(
+                vmGroup,
+                "Show virtual model editor",
+                "Show virtual model pages in table editor",
+                !navigatorSettings.isHideVirtualModel(),
+                1);
+            showVirtualModelCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                final DataSourceNavigatorSettings settings = new DataSourceNavigatorSettings(navigatorSettings);
+                settings.setHideVirtualModel(!showVirtualModelCheck.getSelection());
+                updateNavigatorSettingsPreset(navigatorSettingsCombo, settings);
+                setNavigatorSettings(settings);
+            }));
+            Button resetVM = UIUtils.createDialogButton(
+                vmGroup,
+                "Reset configuration",
+                null,
+                "Delete all colorings, transformers and virtual table constraints for all tables in this data source",
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (UIUtils.confirmAction(
+                            getShell(),
+                            "Reset virtual model settings",
+                            "You are about to reset all virtual model configuration.\n It includes:\n" +
+                                "\t- All virtual constraints and foreign keys\n" +
+                                "\t- All column transformers\n" +
+                                "\t- All table row colorings"
+                            )
+                        ) {
+                            dataSourceDescriptor.getVirtualModel().resetData();
+                            DataSourceDescriptor originalDataSource = getWizard().getOriginalDataSource();
+                            originalDataSource.getVirtualModel().resetData();
+                            originalDataSource.persistConfiguration();
+                        }
+                    }
+                });
+            resetVM.setEnabled(dataSourceDescriptor != null && dataSourceDescriptor.getVirtualModel().hasValuableData());
+//            UIUtils.createInfoLabel(vmGroup, "Virtual model is a logical database structure on the client side (not in a real database).\n" +
+//                "It also contains information about\nrow coloring and columns transformations", GridData.FILL_HORIZONTAL, 1);
+        }
+
+        {
             Composite linkGroup = UIUtils.createComposite(refsGroup, 1);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
+            gd.horizontalSpan = 3;
             linkGroup.setLayoutData(gd);
 
             Link initConfigLink = new Link(linkGroup, SWT.NONE);

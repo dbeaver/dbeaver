@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.Map;
@@ -48,11 +50,11 @@ public class NavigatorHandlerFilterExclude extends AbstractHandler implements IE
             if (selection instanceof IStructuredSelection) {
                 final int objectCount = ((IStructuredSelection) selection).size();
                 if (objectCount > 1) {
-                    element.setText("Hide " + objectCount + " objects");
+                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_hide_objects, objectCount));
                 } else {
                     DBNNode node = NavigatorUtils.getSelectedNode(selection);
                     if (node != null) {
-                        element.setText("Hide '" + node.getName() + "'");
+                        element.setText(NLS.bind(UINavigatorMessages.actions_navigator_hide_object, node.getName()));
                     }
                 }
             }

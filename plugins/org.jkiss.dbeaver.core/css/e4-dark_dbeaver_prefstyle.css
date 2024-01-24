@@ -23,6 +23,11 @@
             'org.jkiss.dbeaver.sql.resultset.color.datetime.foreground=92,162,89'
             'org.jkiss.dbeaver.sql.resultset.color.numeric.foreground=192,192,255'
             'org.jkiss.dbeaver.sql.resultset.color.string.foreground=192,192,192'
+            'org.jkiss.dbeaver.sql.editor.color.schema.foreground=204,155,117'
+            'org.jkiss.dbeaver.sql.editor.color.column.derived.foreground=0,184,184'
+            'org.jkiss.dbeaver.sql.editor.color.column.foreground=0,184,184'
+            'org.jkiss.dbeaver.sql.editor.color.table.alias.foreground=183,136,211'
+            'org.jkiss.dbeaver.sql.editor.color.table.foreground=183,136,211'
 
             'org.jkiss.dbeaver.sql.editor.color.text.foreground=158,158,158'
             'org.jkiss.dbeaver.sql.editor.color.text.background=0,0,0'
@@ -34,6 +39,7 @@
             'org.jkiss.dbeaver.sql.editor.color.comment.foreground=102,151,104'
             'org.jkiss.dbeaver.sql.editor.color.delimiter.foreground=238,204,100'
             'org.jkiss.dbeaver.sql.editor.color.parameter.foreground=126,186,211'
+            'org.jkiss.dbeaver.sql.editor.color.command.foreground=211,186,211'
 
             'org.jkiss.dbeaver.erd.diagram.background=47,47,47'
             'org.jkiss.dbeaver.erd.diagram.entity.regular.background=32,32,32'
@@ -61,5 +67,4 @@
 
             'org.jkiss.dbeaver.color.connectionType.qa.background=0,115,0'
             'org.jkiss.dbeaver.color.connectionType.prod.background=140,0,0'
-
 }

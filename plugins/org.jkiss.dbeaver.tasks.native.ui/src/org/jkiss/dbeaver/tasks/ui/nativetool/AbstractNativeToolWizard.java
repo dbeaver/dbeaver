@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +17,14 @@
  */
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
-import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -73,7 +75,12 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
     public AbstractNativeToolWizard(@NotNull DBTTask task) {
         super(task);
-        this.preferenceStore = new TaskPreferenceStore(task);
+        if (isToolTask()) {
+            // Use global store for tool tasks
+            this.preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        } else {
+            this.preferenceStore = new TaskPreferenceStore(task);
+        }
         this.settings = createSettings();
         this.taskTitle = task.getType().getName();
         this.logPage = new NativeToolWizardPageLog(taskTitle);
@@ -148,7 +155,10 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                     settings.setClientHome(null);
                 }
                 if (settings.getClientHome() == null) {
-                    currentPage.setErrorMessage(TaskNativeUIMessages.tools_wizard_message_no_client_home);
+                    currentPage.setErrorMessage(TaskNativeUIMessages.tools_wizard_message_no_client_home + "\n " +
+                                    NLS.bind(
+                                            TaskNativeUIMessages.tools_wizard_message_no_client_home_link,
+                                            HelpUtils.getHelpExternalReference("Local-Client-Configuration")));
                     getContainer().updateMessage();
                     return;
                 }
@@ -186,8 +196,8 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
-            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
+            DBWorkbench.getPlatformUI().showError("Download local client file(s)", "Error downloading client file(s)", e.getTargetException());
+            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading local client file(s)");
             getContainer().updateMessage();
             return false;
         } catch (InterruptedException e) {
@@ -206,7 +216,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
             return false;
         }
 
-        if (getCurrentTask() != null) {
+        if (getCurrentTask() != null && !isToolTask()) {
             return super.performFinish();
         }
 
@@ -234,15 +244,6 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
     protected void showLogPage() {
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
-        }
-    }
-
-    protected void notifyToolFinish(String toolName, long workTime) {
-        // Make a sound
-        Display.getCurrent().beep();
-        // Notify agent
-        if (workTime > DBWorkbench.getPlatformUI().getLongOperationTimeout() * 1000) {
-            DBWorkbench.getPlatformUI().notifyAgent(toolName, IStatus.INFO);
         }
     }
 
@@ -275,5 +276,9 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
             SWT.ICON_ERROR);
     }
 
-
+    @NotNull
+    @Override
+    public TaskConfigurationWizardDialog createWizardDialog(@NotNull IWorkbenchWindow window, @Nullable IStructuredSelection selection) {
+        return new NativeToolWizardDialog(window, this, selection);
+    }
 }

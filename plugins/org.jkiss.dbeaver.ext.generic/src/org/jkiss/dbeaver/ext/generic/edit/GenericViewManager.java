@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
-        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
+        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(structContainer, tableName,
                 GenericConstants.TABLE_TYPE_VIEW,
                 null);
         if (viewImpl instanceof GenericView) {
@@ -109,12 +109,12 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop view",
-                "DROP " + getDropViewType(command.getObject()) + " " +
+                "DROP " + getViewType(command.getObject()) + " " +
                 command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
-    protected String getDropViewType(GenericTableBase object) {
+    protected String getViewType(GenericTableBase object) {
         return "VIEW";
     }
 
@@ -132,12 +132,22 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
         if (!hasComment || command.getProperties().size() > 1) {
             actionList.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
         }
-        if (hasComment) {
-            actionList.add(new SQLDatabasePersistAction(
-                    "Comment view",
-                    "COMMENT ON VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                            " IS " + SQLUtils.quoteString(command.getObject(), CommonUtils.notEmpty(command.getObject().getDescription()))));
-        }
     }
 
+    @Override
+    protected void addObjectExtraActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        Map<String, Object> options
+    ) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            GenericTableBase object = command.getObject();
+            actions.add(new SQLDatabasePersistAction(
+                "Comment view",
+                "COMMENT ON " + getViewType(object) + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " IS " + SQLUtils.quoteString(object, CommonUtils.notEmpty(object.getDescription()))));
+        }
+    }
 }

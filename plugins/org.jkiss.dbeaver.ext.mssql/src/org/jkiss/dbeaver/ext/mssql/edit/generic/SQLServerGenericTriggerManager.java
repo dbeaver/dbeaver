@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,14 @@
 
 package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTable;
+import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
 import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.model.struct.cache.ListCache;
 
 import java.util.List;
 import java.util.Map;
@@ -37,38 +32,11 @@ import java.util.Map;
 /**
  * SQLServerTableTriggerManager
  */
-public class SQLServerGenericTriggerManager extends SQLTriggerManager<SQLServerGenericTrigger, SQLServerGenericTable> {
-    @Override
-    public boolean canCreateObject(Object container) {
-        return false;
-    }
-
-    @Override
-    public boolean canEditObject(SQLServerGenericTrigger object) {
-        return false;
-    }
-
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, SQLServerGenericTrigger> getObjectsCache(SQLServerGenericTrigger object)
-    {
-        return new ListCache<SQLServerGenericTable, SQLServerGenericTrigger>(
-            (List<SQLServerGenericTrigger>) object.getTable().getTriggerCache());
-    }
-
-    @Override
-    protected SQLServerGenericTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
-    {
-        return null;
-    }
-
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerGenericTrigger trigger, boolean create) {
-
-    }
+public class SQLServerGenericTriggerManager extends GenericTriggerManager {
 
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        SQLServerGenericTrigger trigger = command.getObject();
+        SQLServerGenericTrigger trigger = (SQLServerGenericTrigger) command.getObject();
         DBSObject defaultDatabase = DBUtils.getDefaultContext(trigger.getDataSource(), true).getContextDefaults().getDefaultCatalog();
         if (defaultDatabase != trigger.getTable().getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getCatalog()), false)); //$NON-NLS-2$

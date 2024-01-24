@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,19 @@ public class SMAuthInfo {
 
     @Nullable
     private final String redirectUrl;
+    @Nullable
+    private final String signOutLink;
 
     @Nullable
     private final String smAccessToken;
+
+    /**
+     * Deprecated, use smAccessToken instead
+     */
+    @Deprecated
+    @Nullable //Backward compatibility
+    private String smAuthToken;
+
     @Nullable
     private final String smRefreshToken;
     @Nullable
@@ -45,61 +55,78 @@ public class SMAuthInfo {
     @Nullable
     private final SMAuthPermissions authPermissions;
 
+    private final boolean mainAuth;
+
     private SMAuthInfo(
         @NotNull SMAuthStatus authStatus,
         @Nullable String error,
         @NotNull String authAttemptId,
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
-        @Nullable String redirectUrl,
+        @Nullable String smSignInLink,
+        @Nullable String smSignOutLink,
         @Nullable String smAccessToken,
         @Nullable String smRefreshToken,
         @Nullable String authRole,
-        @Nullable SMAuthPermissions authPermissions
+        @Nullable SMAuthPermissions authPermissions,
+        boolean mainAuth
     ) {
         this.authStatus = authStatus;
         this.error = error;
         this.authAttemptId = authAttemptId;
         this.authData = authData;
-        this.redirectUrl = redirectUrl;
+        this.redirectUrl = smSignInLink;
+        this.signOutLink = smSignOutLink;
         this.smAccessToken = smAccessToken;
         this.smRefreshToken = smRefreshToken;
         this.authRole = authRole;
         this.authPermissions = authPermissions;
+        this.mainAuth = mainAuth;
     }
 
     public static SMAuthInfo expired(
         @NotNull String authAttemptId,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
+        boolean mainAuth
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.EXPIRED)
             .setAuthAttemptId(authAttemptId)
             .setAuthData(authData)
+            .setMainAuth(mainAuth)
             .build();
     }
 
-    public static SMAuthInfo error(@NotNull String authAttemptId, @NotNull String error) {
+    public static SMAuthInfo error(
+        @NotNull String authAttemptId,
+        @NotNull String error,
+        boolean mainAuth
+    ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.ERROR)
             .setAuthAttemptId(authAttemptId)
             .setError(error)
+            .setMainAuth(mainAuth)
             .build();
     }
 
     public static SMAuthInfo inProgress(
         @NotNull String authAttemptId,
-        @Nullable String redirectUrl,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData
+        @Nullable String signInLink,
+        @Nullable String signOutLink,
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
+        boolean mainAuth
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
             .setAuthAttemptId(authAttemptId)
-            .setRedirectUrl(redirectUrl)
+            .setSignInLink(signInLink)
+            .setSignOutLink(signOutLink)
             .setAuthData(authData)
+            .setMainAuth(mainAuth)
             .build();
     }
 
-    public static SMAuthInfo success(
+    public static SMAuthInfo successMainSession(
         @NotNull String authAttemptId,
         @NotNull String accessToken,
         @Nullable String refreshToken,
@@ -107,20 +134,36 @@ public class SMAuthInfo {
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
         @Nullable String authRole
     ) {
-        return new Builder()
-            .setAuthStatus(SMAuthStatus.SUCCESS)
+        return new Builder().setAuthStatus(SMAuthStatus.SUCCESS)
             .setAuthAttemptId(authAttemptId)
             .setSmAccessToken(accessToken)
             .setSmRefreshToken(refreshToken)
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
             .setAuthRole(authRole)
+            .setMainAuth(true)
+            .build();
+    }
+
+    public static SMAuthInfo successChildSession(
+        @NotNull String authAttemptId,
+        SMAuthPermissions permissions,
+        @NotNull Map<SMAuthConfigurationReference, Object> authData
+    ) {
+        return new Builder().setAuthStatus(SMAuthStatus.SUCCESS)
+            .setAuthAttemptId(authAttemptId)
+            .setAuthPermissions(permissions)
+            .setAuthData(authData)
+            .setMainAuth(false)
             .build();
     }
 
 
     @Nullable
     public String getSmAccessToken() {
+        if (smAuthToken != null) {
+            return smAuthToken;
+        }
         return smAccessToken;
     }
 
@@ -160,21 +203,36 @@ public class SMAuthInfo {
     }
 
     @Nullable
+    public String getSignInLink() {
+        return redirectUrl;
+    }
+
+    @Nullable
+    public String getSignOutLink() {
+        return signOutLink;
+    }
+
+    @Nullable
     public String getError() {
         return error;
     }
 
+    public boolean isMainAuth() {
+        return mainAuth;
+    }
 
     private static final class Builder {
         private SMAuthStatus authStatus;
         private String error;
         private String authAttemptId;
         private Map<SMAuthConfigurationReference, Object> authData;
-        private String redirectUrl;
+        private String signInLink;
+        private String signOutLink;
         private String smAccessToken;
         private String smRefreshToken;
         private String authRole;
         private SMAuthPermissions authPermissions;
+        private boolean mainAuth;
 
         private Builder() {
         }
@@ -199,8 +257,13 @@ public class SMAuthInfo {
             return this;
         }
 
-        public Builder setRedirectUrl(String redirectUrl) {
-            this.redirectUrl = redirectUrl;
+        public Builder setSignInLink(String signInLink) {
+            this.signInLink = signInLink;
+            return this;
+        }
+
+        public Builder setSignOutLink(String signOutLink) {
+            this.signOutLink = signOutLink;
             return this;
         }
 
@@ -224,9 +287,25 @@ public class SMAuthInfo {
             return this;
         }
 
+        public Builder setMainAuth(boolean mainAuth) {
+            this.mainAuth = mainAuth;
+            return this;
+        }
+
         public SMAuthInfo build() {
             return new SMAuthInfo(
-                authStatus, error, authAttemptId, authData, redirectUrl, smAccessToken, smRefreshToken, authRole, authPermissions);
+                authStatus,
+                error,
+                authAttemptId,
+                authData,
+                signInLink,
+                signOutLink,
+                smAccessToken,
+                smRefreshToken,
+                authRole,
+                authPermissions,
+                mainAuth
+            );
         }
     }
 }

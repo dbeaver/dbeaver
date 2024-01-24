@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
@@ -30,7 +32,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+
+import java.util.function.Consumer;
 
 /**
  * NewConnectionDialog.
@@ -48,6 +53,14 @@ public class NewConnectionDialog extends ActiveWizardDialog {
     private NewConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard) {
         super(window, wizard);
         setAdaptContainerSizeToPages(true);
+    }
+
+    @Override
+    protected Control createDialogArea(Composite parent) {
+        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(parent);
+        Composite placeholder = UIUtils.createPlaceholder(scrolledComposite, 1);
+        UIUtils.configureScrolledComposite(scrolledComposite, placeholder);
+        return super.createDialogArea(placeholder);
     }
 
     @Override
@@ -111,12 +124,29 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         return openNewConnectionDialog(window, null, null);
     }
 
-    public static boolean openNewConnectionDialog(@NotNull IWorkbenchWindow window, @Nullable DBPDriver initialDriver, @Nullable DBPConnectionConfiguration initialConfiguration) {
+    public static boolean openNewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @Nullable DBPDriver initialDriver,
+        @Nullable DBPConnectionConfiguration initialConfiguration
+    ) {
+        return openNewConnectionDialog(window, initialDriver, initialConfiguration, null);
+    }
+
+    public static boolean openNewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @Nullable DBPDriver initialDriver,
+        @Nullable DBPConnectionConfiguration initialConfiguration,
+        @Nullable Consumer<NewConnectionWizard> wizardConfigurer
+    ) {
         if (dialogInstance != null) {
             dialogInstance.getShell().forceActive();
             return true;
         } else {
-            dialogInstance = new NewConnectionDialog(window, new NewConnectionWizard(initialDriver, initialConfiguration));
+            final NewConnectionWizard wizard = new NewConnectionWizard(initialDriver, initialConfiguration);
+            if (wizardConfigurer != null) {
+                wizardConfigurer.accept(wizard);
+            }
+            dialogInstance = new NewConnectionDialog(window, wizard);
             try {
                 return dialogInstance.open() == IDialogConstants.OK_ID;
             } finally {

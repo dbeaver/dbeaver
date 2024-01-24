@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public abstract class OraclePriv extends OracleObject<OracleGrantee> implements 
 
     public OraclePriv(OracleGrantee user, String name, ResultSet resultSet) {
         super(user, name, true);
-        this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", "Y");
+        this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", OracleConstants.RESULT_YES_VALUE);
     }
 
     @NotNull

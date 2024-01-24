@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.gef3.palette.PaletteDrawer;
-import org.eclipse.gef3.palette.SelectionToolEntry;
+import org.eclipse.gef.palette.PaletteDrawer;
+import org.eclipse.gef.palette.SelectionToolEntry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
  * Experimental drawer.
- * Unfortunately it is not possible to customize drawer look-and-feel. All UI rendering is performed by .gef3.
+ * Unfortunately it is not possible to customize drawer look-and-feel. All UI rendering is performed by .gef.
  */
 public class ERDPropertiesDrawer extends PaletteDrawer
 {

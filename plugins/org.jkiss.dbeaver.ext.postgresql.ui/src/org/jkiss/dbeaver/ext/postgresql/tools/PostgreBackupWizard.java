@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -109,8 +108,8 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
             PostgreMessages.wizard_backup_msgbox_success_title,
             NLS.bind(PostgreMessages.wizard_backup_msgbox_success_description, CommonUtils.truncateString(getObjectsName(), 255)),
             SWT.ICON_INFORMATION);
-        Set<File> set = getSettings().getExportObjects().stream().map(it -> getSettings().getOutputFolder(it)).collect(Collectors.toSet());
-        set.forEach(it -> ShellUtils.launchProgram(it.getAbsolutePath()));
+        Set<String> set = getSettings().getExportObjects().stream().map(it -> getSettings().getOutputFolder(it)).collect(Collectors.toSet());
+        set.forEach(ShellUtils::launchProgram);
     }
 
     @Override

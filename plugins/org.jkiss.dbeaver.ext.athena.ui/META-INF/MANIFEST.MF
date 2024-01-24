@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver AWS Athena UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.athena.ui;singleton:=true
-Bundle-Version: 1.0.68.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 1.0.93.qualifier
+Bundle-Release-Date: 20240122
 Bundle-Activator: org.jkiss.dbeaver.ext.athena.ui.AthenaActivator
 Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.athena,
@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.athena.ui

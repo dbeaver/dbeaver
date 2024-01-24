@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.meta.SecureProperty;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,16 +40,26 @@ public class DBWHandlerConfiguration {
     public static final String PROP_PORT = "port";
 
     @NotNull
-    private final DBWHandlerDescriptor descriptor;
-    private DBPDataSourceContainer dataSource;
+    private String id;
+    private transient DBWHandlerDescriptor descriptor;
+    private transient DBPDataSourceContainer dataSource;
     private boolean enabled;
+    @SecureProperty
     private String userName;
+    @SecureProperty
     private String password;
     private boolean savePassword = true;
     private final Map<String, Object> properties;
+    @SecureProperty
     private final Map<String, String> secureProperties;
 
+    DBWHandlerConfiguration() {
+        this.properties = new LinkedHashMap<>();
+        this.secureProperties = new LinkedHashMap<>();
+    }
+
     public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDataSourceContainer dataSource) {
+        this.id = descriptor.getId();
         this.descriptor = descriptor;
         this.dataSource = dataSource;
         this.properties = new LinkedHashMap<>();
@@ -55,6 +67,7 @@ public class DBWHandlerConfiguration {
     }
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration) {
+        this.id = configuration.id;
         this.descriptor = configuration.descriptor;
         this.dataSource = configuration.dataSource;
         this.enabled = configuration.enabled;
@@ -67,14 +80,20 @@ public class DBWHandlerConfiguration {
 
     @NotNull
     public DBWHandlerDescriptor getHandlerDescriptor() {
+        if (descriptor == null) {
+            descriptor = DBWorkbench.getPlatform().getNetworkHandlerRegistry().getDescriptor(this.id);
+            if (descriptor == null) {
+                throw new IllegalStateException("Network handler '" + id + "' not found");
+            }
+        }
         return descriptor;
     }
 
     public <T extends DBWNetworkHandler> T createHandler(Class<T> type) throws DBException {
         try {
-            return descriptor.createHandler(type);
+            return getHandlerDescriptor().createHandler(type);
         } catch (Exception e) {
-            throw new DBException("Cannot create tunnel '" + descriptor.getLabel() + "'", e);
+            throw new DBException("Cannot create tunnel '" + getHandlerDescriptor().getLabel() + "'", e);
         }
     }
 
@@ -91,20 +110,20 @@ public class DBWHandlerConfiguration {
     }
 
     public DBWHandlerType getType() {
-        return descriptor.getType();
+        return getHandlerDescriptor().getType();
     }
 
     public boolean isSecured() {
-        return descriptor.isSecured();
+        return getHandlerDescriptor().isSecured();
     }
 
     @NotNull
     public String getId() {
-        return descriptor.getId();
+        return this.id;
     }
 
     public String getTitle() {
-        return descriptor.getLabel();
+        return getHandlerDescriptor().getLabel();
     }
 
     public boolean isEnabled() {
@@ -245,7 +264,7 @@ public class DBWHandlerConfiguration {
         }
         DBWHandlerConfiguration source = (DBWHandlerConfiguration) obj;
         return
-            CommonUtils.equalObjects(this.descriptor, source.descriptor) &&
+            CommonUtils.equalObjects(this.id, source.id) &&
                 CommonUtils.equalObjects(this.dataSource, source.dataSource) &&
                 this.enabled == source.enabled &&
                 CommonUtils.equalObjects(this.userName, source.userName) &&
@@ -279,7 +298,7 @@ public class DBWHandlerConfiguration {
 
     @Override
     public String toString() {
-        return descriptor.toString();
+        return id;
     }
 
 }

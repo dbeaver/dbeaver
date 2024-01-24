@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.nio.file.Path;
 
 public class LocalFileController implements DBFileController {
 
-    private final Path dataFolder;
+    protected final Path dataFolder;
 
     public LocalFileController(Path dataFolder) {
         this.dataFolder = dataFolder;
@@ -35,17 +35,13 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
-        try {
-            return Files.readAllBytes(targetPath);
-        } catch (IOException e) {
-            throw new DBException("Error reading file '" + targetPath.toAbsolutePath() + "' data", e);
-        }
+        Path targetPath = getTargetPath(dataFolder, fileType, filePath);
+        return getBytes(targetPath);
     }
 
     @Override
     public void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
+        Path targetPath = getTargetPath(dataFolder, fileType, filePath);
         try {
             if (!Files.exists(targetPath.getParent())) {
                 Files.createDirectories(targetPath.getParent());
@@ -63,11 +59,25 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public void deleteFile(@NotNull String fileType, @NotNull String filePath, boolean recursive) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
+        Path targetPath = getTargetPath(dataFolder, fileType, filePath);
         try {
             Files.delete(targetPath);
         } catch (IOException e) {
             throw new DBException("Error deleting file '" + targetPath.toAbsolutePath() + "' data: " + e.getMessage(), e);
         }
+    }
+
+    @NotNull
+    protected byte[] getBytes(Path targetPath) throws DBException {
+        try {
+            return Files.readAllBytes(targetPath);
+        } catch (IOException e) {
+            throw new DBException("Error reading file '" + targetPath.toAbsolutePath() + "' data", e);
+        }
+    }
+
+    @NotNull
+    protected Path getTargetPath(@NotNull Path folder, @NotNull String fileType, @NotNull String filePath) {
+        return folder.resolve(fileType).resolve(Path.of(filePath));
     }
 }

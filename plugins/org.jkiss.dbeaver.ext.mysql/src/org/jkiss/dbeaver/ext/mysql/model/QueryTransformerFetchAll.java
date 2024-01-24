@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class QueryTransformerFetchAll implements DBCQueryTransformer {
     public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
         // Set fetch size to Integer.MIN_VALUE to enable result set streaming
         try {
-            if (!dataSource.isMariaDB()) {
+            if (!dataSource.isMariaDB() && dataSource.supportsFetchTransform()) {
                 ((Statement) statement).setFetchSize(Integer.MIN_VALUE);
             }
         } catch (SQLException e) {

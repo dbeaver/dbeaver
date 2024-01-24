@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,21 +51,11 @@ public class CommonUtils {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             switch (c) {
-                case '"':
-                    res.append("\\\"");
-                    break;
-                case '\n':
-                    res.append("\\n");
-                    break;
-                case '\r':
-                    res.append("\\r");
-                    break;
-                case '\t':
-                    res.append("\\t");
-                    break;
-                default:
-                    res.append(c);
-                    break;
+                case '"' -> res.append("\\\"");
+                case '\n' -> res.append("\\n");
+                case '\r' -> res.append("\\r");
+                case '\t' -> res.append("\\t");
+                default -> res.append(c);
             }
         }
         return res.toString();
@@ -191,8 +181,12 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static <T> T getFirstOrNull(@NotNull List<T> list) {
-        return list.isEmpty() ? null : list.get(0);
+    public static <T> T getFirstOrNull(@NotNull Iterable<T> iterable) {
+        Iterator<T> iterator = iterable.iterator();
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
     }
 
     @NotNull
@@ -285,8 +279,8 @@ public class CommonUtils {
     public static boolean getBoolean(@Nullable Object value, boolean defaultValue) {
         if (value == null) {
             return defaultValue;
-        } else if (value instanceof Boolean) {
-            return (Boolean) value;
+        } else if (value instanceof Boolean b) {
+            return b;
         } else {
             return getBoolean(value.toString(), defaultValue);
         }
@@ -304,9 +298,8 @@ public class CommonUtils {
         for (; ; ) {
             if (rootCause.getCause() != null) {
                 rootCause = rootCause.getCause();
-            } else if (rootCause instanceof InvocationTargetException
-                && ((InvocationTargetException) rootCause).getTargetException() != null) {
-                rootCause = ((InvocationTargetException) rootCause).getTargetException();
+            } else if (rootCause instanceof InvocationTargetException ite && ite.getTargetException() != null) {
+                rootCause = ite.getTargetException();
             } else {
                 break;
             }
@@ -350,8 +343,8 @@ public class CommonUtils {
     public static String toString(@Nullable Object object) {
         if (object == null) {
             return "";
-        } else if (object instanceof String) {
-            return (String) object;
+        } else if (object instanceof String s) {
+            return s;
         } else {
             String strValue = object.toString();
             return strValue == null ? "" : strValue;
@@ -361,8 +354,8 @@ public class CommonUtils {
     public static String toString(@Nullable Object object, String def) {
         if (object == null) {
             return def;
-        } else if (object instanceof String) {
-            return (String) object;
+        } else if (object instanceof String s) {
+            return s;
         } else {
             return object.toString();
         }
@@ -375,8 +368,8 @@ public class CommonUtils {
     public static int toInt(@Nullable Object object, int def) {
         if (object == null) {
             return def;
-        } else if (object instanceof Number) {
-            return ((Number) object).intValue();
+        } else if (object instanceof Number n) {
+            return n.intValue();
         } else {
             try {
                 return Integer.parseInt(toString(object));
@@ -416,8 +409,8 @@ public class CommonUtils {
     public static long toLong(@Nullable Object object, long defValue) {
         if (object == null) {
             return defValue;
-        } else if (object instanceof Number) {
-            return ((Number) object).longValue();
+        } else if (object instanceof Number n) {
+            return n.longValue();
         } else {
             try {
                 return Long.parseLong(toString(object));
@@ -1022,8 +1015,8 @@ public class CommonUtils {
      */
     @NotNull
     public static String replaceAll(@NotNull String input, @NotNull String regex, @NotNull Function<Matcher, String> replacer) {
-        final Matcher matcher = Pattern.compile(regex).matcher(input);
-        final StringBuffer sb = new StringBuffer();
+        Matcher matcher = Pattern.compile(regex).matcher(input);
+        StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             matcher.appendReplacement(sb, replacer.apply(matcher));
         }
@@ -1032,7 +1025,42 @@ public class CommonUtils {
     }
 
     @SafeVarargs
-    public static <T> T[] array(T ... elems) {
+    public static <T> T[] array(T... elems) {
         return elems;
+    }
+
+    /**
+     * Removes (single or multiple) starting '/' from {@code resourcePath} and replaces all '\' with '/'
+     */
+    @NotNull
+    public static String normalizeResourcePath(@NotNull String resourcePath) {
+        while (resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        resourcePath = resourcePath.replace('\\', '/');
+        return resourcePath;
+    }
+
+    /**
+     * Replaces the last {@code toReplace} entry in {@code string} with {@code replacement}
+     */
+    @NotNull
+    public static String replaceLast(@NotNull String string, @NotNull String toReplace, @NotNull String replacement) {
+        int pos = string.lastIndexOf(toReplace);
+        if (pos > -1) {
+            return string.substring(0, pos)
+                + replacement
+                + string.substring(pos + toReplace.length());
+        } else {
+            return string;
+        }
+    }
+
+    /**
+     * Sets prefix for sql queries params (f.e. schema names for tables)
+     */
+    @NotNull
+    public static String normalizeTableNames(@NotNull String sql, @Nullable String prefix) {
+        return sql.replaceAll("\\{table_prefix}", isEmpty(prefix) ? "" : prefix + ".");
     }
 }

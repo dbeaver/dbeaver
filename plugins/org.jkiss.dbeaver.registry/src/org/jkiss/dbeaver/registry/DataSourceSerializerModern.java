@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,9 +63,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
     static final String ATTR_NAVIGATOR_HIDE_VIRTUAL = "navigator-hide-virtual"; //$NON-NLS-1$
     static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
 
+    private static final String ATTR_ORIGINAL_PROVIDER = "original-provider"; //$NON-NLS-1$
+    private static final String ATTR_ORIGINAL_DRIVER = "original-driver"; //$NON-NLS-1$
+    private static final String ATTR_DRIVER_SUBSTITUTION = "driver-substitution"; //$NON-NLS-1$
+
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration"; //$NON-NLS-1$
+    public static final String ATTR_DPI_ENABLED = "dpi-enabled";
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
@@ -73,7 +78,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
-        .setPrettyPrinting()
         .create();
     private static final Gson SECURE_GSON = new GsonBuilder()
         .setLenient()
@@ -90,6 +94,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     //  1 level: object type (connection or handler id)
     //  2 level: map of secured properties
     private final Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
+    private final boolean isDetachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
 
     DataSourceSerializerModern(@NotNull DataSourceRegistry registry) {
         this.registry = registry;
@@ -105,7 +110,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
-                jsonWriter.setIndent("\t");
+                jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                 jsonWriter.beginObject();
 
                 // Save folders
@@ -156,10 +161,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         // Save virtual models
                         jsonWriter.name("virtual-models");
                         jsonWriter.beginObject();
+                        jsonWriter.setIndent(JSONUtils.EMPTY_INDENT);
                         for (DBVModel model : virtualModels.values()) {
                             model.serialize(monitor, jsonWriter);
                         }
                         jsonWriter.endObject();
+                        jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                     }
                     // Network profiles
                     List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();
@@ -196,7 +203,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.field(jsonWriter, "auto-commit", ct.isAutocommit());
                             JSONUtils.field(jsonWriter, "confirm-execute", ct.isConfirmExecute());
                             JSONUtils.field(jsonWriter, "confirm-data-change", ct.isConfirmDataChange());
+                            JSONUtils.field(jsonWriter, "smart-commit", ct.isSmartCommit());
+                            JSONUtils.field(jsonWriter, "smart-commit-recover", ct.isSmartCommitRecover());
                             JSONUtils.field(jsonWriter, "auto-close-transactions", ct.isAutoCloseTransactions());
+                            JSONUtils.field(jsonWriter, "close-transactions-period", ct.getCloseIdleTransactionPeriod());
                             serializeModifyPermissions(jsonWriter, ct);
                             jsonWriter.endObject();
                         }
@@ -220,7 +230,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     // External configurations
-                    if (!CommonUtils.isEmpty(externalConfigurations)) {
+                    if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser() && !CommonUtils.isEmpty(externalConfigurations)) {
                         jsonWriter.name("external-configurations");
                         jsonWriter.beginObject();
                         for (Map.Entry<String, DBPExternalConfiguration> ecfg : externalConfigurations.entrySet()) {
@@ -418,7 +428,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 Boolean autoCommit = JSONUtils.getObjectProperty(ctConfig, "auto-commit");
                 Boolean confirmExecute = JSONUtils.getObjectProperty(ctConfig, "confirm-execute");
                 Boolean confirmDataChange = JSONUtils.getObjectProperty(ctConfig, "confirm-data-change");
+                Boolean smartCommit = JSONUtils.getObjectProperty(ctConfig, "smart-commit");
+                Boolean smartCommitRecover = JSONUtils.getObjectProperty(ctConfig, "smart-commit-recover");
                 Boolean autoCloseTransactions = JSONUtils.getObjectProperty(ctConfig, "auto-close-transactions");
+                Object closeTransactionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-transactions-period");
                 DBPConnectionType ct = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(id, null);
                 if (ct == null) {
                     ct = new DBPConnectionType(
@@ -429,7 +442,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         CommonUtils.toBoolean(autoCommit),
                         CommonUtils.toBoolean(confirmExecute),
                         CommonUtils.toBoolean(confirmDataChange),
-                        CommonUtils.toBoolean(autoCloseTransactions));
+                        CommonUtils.toBoolean(smartCommit),
+                        CommonUtils.toBoolean(smartCommitRecover),
+                        CommonUtils.toBoolean(autoCloseTransactions),
+                        CommonUtils.toLong(closeTransactionsPeriod, RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
                 deserializeModifyPermissions(ctConfig, ct);
@@ -440,10 +456,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             // External configurations
             Map<String, DBPExternalConfiguration> externalConfigurations = new LinkedHashMap<>();
-            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
-                String id = ctMap.getKey();
-                Map<String, Object> configMap = ctMap.getValue();
-                externalConfigurations.put(id, new DBPExternalConfiguration(id, configMap));
+            if (!DBWorkbench.isDistributed()) {
+                // External configurations not used in distributed mode
+                for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
+                    String id = ctMap.getKey();
+                    Map<String, Object> configMap = ctMap.getValue();
+                    externalConfigurations.put(id, new DBPExternalConfiguration(id, () -> configMap));
+                }
             }
 
             // Virtual models
@@ -498,29 +517,35 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 String id = conMap.getKey();
                 Map<String, Object> conObject = conMap.getValue();
 
-                // Primary settings
-                String dsProviderID = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
-                if (CommonUtils.isEmpty(dsProviderID)) {
-                    log.debug("Empty datasource provider for datasource '" + id + "'");
+                final String originalProviderId = CommonUtils.toString(conObject.get(ATTR_ORIGINAL_PROVIDER));
+                final String originalDriverId = CommonUtils.toString(conObject.get(ATTR_ORIGINAL_DRIVER));
+                final String substitutedProviderId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
+                final String substitutedDriverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
+
+                DriverDescriptor originalDriver;
+                DriverDescriptor substitutedDriver;
+
+                if (CommonUtils.isEmpty(originalProviderId) || CommonUtils.isEmpty(originalDriverId)) {
+                    originalDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, !isDetachedProcess);
+                    substitutedDriver = originalDriver;
+                } else {
+                    originalDriver = parseDriver(id, originalProviderId, originalDriverId, !isDetachedProcess);
+                    substitutedDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, false);
+                }
+                if (originalDriver == null) {
                     continue;
                 }
-                DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(
-                    dsProviderID);
-                if (provider == null) {
-                    log.debug("Can't find datasource provider " + dsProviderID + " for datasource '" + id + "'");
-                    provider = (DataSourceProviderDescriptor) DataSourceProviderRegistry.getInstance().makeFakeProvider(dsProviderID);
+                if (substitutedDriver == null || substitutedDriver.isTemporary()) {
+                    substitutedDriver = originalDriver;
                 }
-                String driverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
-                DriverDescriptor driver = provider.getDriver(driverId);
-                if (driver == null) {
-                    log.debug("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + id + "'. Create new driver");
-                    driver = provider.createDriver(driverId);
-                    driver.setName(driverId);
-                    driver.setDescription("Missing driver " + driverId);
-                    driver.setDriverClassName("java.sql.Driver");
-                    driver.setTemporary(true);
-                    provider.addDriver(driver);
+
+                if (getReplacementDriver(substitutedDriver) == originalDriver) {
+                    final DriverDescriptor original = originalDriver;
+                    originalDriver = substitutedDriver;
+                    substitutedDriver = original;
                 }
+
+                substitutedDriver = getReplacementDriver(substitutedDriver);
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
@@ -544,7 +569,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         configurationStorage.isVirtual() ? registry.getDefaultStorage() : configurationStorage,
                         origin,
                         id,
-                        driver,
+                        originalDriver,
+                        substitutedDriver,
                         new DBPConnectionConfiguration());
                 } else {
                     oldDataSource = new DataSourceDescriptor(dataSource, registry);
@@ -555,10 +581,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
                 dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-                boolean savePassword = JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD);
-                dataSource.setSavePassword(savePassword);
                 dataSource.setSharedCredentials(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHARED_CREDENTIALS));
+                dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
+                dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
+                    .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
+                dataSource.setDetachedProcessEnabled(JSONUtils.getBoolean(conObject, ATTR_DPI_ENABLED));
 
                 DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
                 navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject,
@@ -591,9 +619,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
                         config.setUserName(creds.getUserName());
-                        if (savePassword) {
+                        if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
+                        } else {
+                            config.setUserPassword(null);
                         }
+                        boolean savePasswordApplicable = (!dataSource.getProject()
+                            .isUseSecretStorage() || dataSource.isSharedCredentials());
+                        if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {
+                            dataSource.setSavePassword(true);
+                        }
+                        dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
                         dataSource.forgetSecrets();
                     }
                     {
@@ -605,6 +641,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
+                    config.setConfigProfileSource(JSONUtils.getString(cfgObject, "config-profile-source"));
                     config.setConfigProfileName(JSONUtils.getString(cfgObject, "config-profile"));
                     config.setConnectionType(
                         DataSourceProviderRegistry.getInstance().getConnectionType(
@@ -629,7 +666,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
                     config.setAuthModelId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_AUTH_MODEL));
-                    config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, "auth-properties"));
+                    //backward compatibility
+                    //in the current version the configuration should not contain auth-properties, they should be in secrets
+                    if (cfgObject.containsKey(RegistryConstants.TAG_AUTH_PROPERTIES)) {
+                        config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, RegistryConstants.TAG_AUTH_PROPERTIES));
+                    }
 
                     // Events
                     for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
@@ -678,6 +719,25 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         bootstrap.setIgnoreErrors(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_IGNORE_ERRORS));
                     }
                     bootstrap.setInitQueries(JSONUtils.deserializeStringList(bootstrapCfg, RegistryConstants.TAG_QUERY));
+
+                    if (originalDriver != substitutedDriver) {
+                        if (substitutedDriver.getProviderDescriptor().supportsDriverMigration()) {
+                            final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
+                            if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
+                                final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
+                                if (migrator.migrationRequired(config)) {
+                                    final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
+                                    try {
+                                        migrator.migrateConfiguration(config, migrated);
+                                        dataSource.setConnectionInfo(migrated);
+                                        log.debug("Connection configuration for data source '" + id + "' was migrated successfully");
+                                    } catch (DBException e) {
+                                        log.error("Unable to migrate connection configuration for data source '" + id + "'", e);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Permissions
@@ -694,6 +754,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         dataSource.updateObjectFilter(typeName, objectID, filter);
                     }
                 }
+
+                // Properties
+                dataSource.getProperties().putAll(
+                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES)
+                );
 
                 // Preferences
                 dataSource.getPreferenceStore().getProperties().putAll(
@@ -729,7 +794,56 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     }
 
+    @Nullable
+    private static DriverDescriptor parseDriver(
+        @NotNull String id,
+        @NotNull String providerId,
+        @NotNull String driverId,
+        boolean createIfAbsent
+    ) {
+        if (CommonUtils.isEmpty(providerId)) {
+            log.debug("Empty datasource provider for datasource '" + id + "'");
+            return null;
+        }
+
+        if (CommonUtils.isEmpty(driverId)) {
+            log.debug("Empty driver for datasource '" + id + "'");
+            return null;
+        }
+
+        DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
+        if (provider == null) {
+            if (createIfAbsent) {
+                log.debug("Can't find datasource provider " + providerId + " for datasource '" + id + "'");
+                provider = (DataSourceProviderDescriptor) DataSourceProviderRegistry.getInstance().makeFakeProvider(providerId);
+            } else {
+                return null;
+            }
+        }
+
+        DriverDescriptor driver = provider.getOriginalDriver(driverId);
+        if (driver == null) {
+            if (createIfAbsent) {
+                log.debug("Can't find driver " + driverId + " in datasource provider "
+                    + provider.getId() + " for datasource '" + id + "'. Create new driver");
+                driver = provider.createDriver(driverId);
+                driver.setName(driverId);
+                driver.setDescription("Missing driver " + driverId);
+                driver.setDriverClassName("java.sql.Driver");
+                driver.setTemporary(true);
+                provider.addDriver(driver);
+            } else {
+                return null;
+            }
+        }
+
+        return driver;
+    }
+
     private void deserializeModifyPermissions(Map<String, Object> conObject, DBPDataSourcePermissionOwner permissionOwner) {
+        if (conObject == null) {
+            return;
+        }
         Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
         if (!CommonUtils.isEmpty(securityCfg)) {
             List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
@@ -764,7 +878,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
         NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
         if (handlerDescriptor == null) {
-            log.warn("Can't find network handler '" + handlerId + "'");
+            if (!isDetachedProcess) {
+                log.warn("Can't find network handler '" + handlerId + "'");
+            }
             return null;
         } else {
             DBWHandlerConfiguration curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
@@ -833,6 +949,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
         JSONUtils.field(json, RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
+        if (dataSource.getDriver() != dataSource.getOriginalDriver()) {
+            JSONUtils.field(json, ATTR_ORIGINAL_PROVIDER, dataSource.getOriginalDriver().getProviderDescriptor().getId());
+            JSONUtils.field(json, ATTR_ORIGINAL_DRIVER, dataSource.getOriginalDriver().getId());
+        }
+        if (dataSource.getDriverSubstitution() != null) {
+            JSONUtils.field(json, ATTR_DRIVER_SUBSTITUTION, dataSource.getDriverSubstitution().getId());
+        }
         DBPDataSourceOrigin origin = dataSource.getOriginSource();
         if (origin != DataSourceOriginLocal.INSTANCE) {
             Map<String, Object> originProps = new LinkedHashMap<>();
@@ -871,6 +994,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!CommonUtils.isEmpty(lockPasswordHash)) {
             JSONUtils.field(json, RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
         }
+        if (dataSource.isDetachedProcessEnabled()) JSONUtils.field(json, ATTR_DPI_ENABLED, true);
+
         if (dataSource.hasSharedVirtualModel()) {
             JSONUtils.field(json, "virtual-model-id", dataSource.getVirtualModel().getId());
         }
@@ -916,11 +1041,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
             if (connectionInfo.getCloseIdleInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
+            JSONUtils.fieldNE(json, "config-profile-source", connectionInfo.getConfigProfileSource());
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties(), true);
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_AUTH_MODEL, connectionInfo.getAuthModelId());
-            JSONUtils.serializeProperties(json, "auth-properties", connectionInfo.getAuthProperties());
 
             // Save events
             if (!ArrayUtils.isEmpty(connectionInfo.getDeclaredEvents())) {
@@ -1007,6 +1132,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.endArray();
             }
         }
+
+        // Properties
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, dataSource.getProperties());
 
         // Preferences
         {
@@ -1168,8 +1296,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
     {
         assert dataSource != null || profile != null;
 
-        DBPProject project = registry.getProject();
-
         SecureCredentials creds = new SecureCredentials();
 
         String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
@@ -1198,4 +1324,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
         return creds;
     }
 
+    @NotNull
+    private static DriverDescriptor getReplacementDriver(@NotNull DriverDescriptor driver) {
+        DriverDescriptor replacement = driver;
+
+        while (replacement.getReplacedBy() != null) {
+            replacement = replacement.getReplacedBy();
+        }
+
+        return replacement;
+    }
 }

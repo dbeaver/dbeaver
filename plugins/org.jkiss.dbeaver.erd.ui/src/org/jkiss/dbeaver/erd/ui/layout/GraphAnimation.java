@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout;
 
-import org.eclipse.draw2dl.Connection;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.Viewport;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.PointList;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.Connection;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Viewport;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.draw2d.geometry.Rectangle;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * GraphAnimation class lifted directly from the .gef3 flow example. The only
+ * GraphAnimation class lifted directly from the .gef flow example. The only
  * modification is in playBackState(): if either the width of height of a final
  * state figure bounds is greater, then the rectangle during animation is shown
  * as the final size from the outset
@@ -143,7 +143,7 @@ public class GraphAnimation
 		if (!PLAYBACK)
 			return false;
 
-		List<IFigure> children = container.getChildren();
+		List<? extends IFigure> children = container.getChildren();
 		Rectangle rect1, rect2;
 		for (IFigure child : children) {
 			rect1 = (Rectangle) initialStates.get(child);
@@ -272,7 +272,7 @@ public class GraphAnimation
 		if (!RECORDING)
 			return;
 
-		List<IFigure> children = container.getChildren();
+		List<? extends IFigure> children = container.getChildren();
 		for (IFigure child : children) {
 			initialStates.put(child, child.getBounds().getCopy());
 		}

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui;
 
-import org.eclipse.gef3.palette.PaletteContainer;
-import org.eclipse.gef3.palette.PaletteEntry;
+import org.eclipse.gef.palette.PaletteContainer;
+import org.eclipse.gef.palette.PaletteEntry;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -38,26 +40,22 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class ERDUIUtils
-{
+public class ERDUIUtils {
     private static final Log log = Log.getLog(ERDUIUtils.class);
 
     public static final boolean OPEN_OBJECT_PROPERTIES = true;
 
-    public static void openObjectEditor(@NotNull EntityDiagram diagram, @NotNull ERDObject object) {
+    public static void openObjectEditor(@Nullable EntityDiagram diagram, @NotNull ERDObject object) {
+        openObjectEditor(object);
+        return;
+    }
+
+    public static void openObjectEditor(@NotNull ERDObject object) {
         Object dbObject = object.getObject();
         if (dbObject instanceof DBSObject) {
             UIUtils.runUIJob("Open object editor", monitor -> {
                 if (!(dbObject instanceof DBSEntity) && OPEN_OBJECT_PROPERTIES) {
-                    try {
-                        IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
-                        IViewPart propsView = activePage.showView(IPageLayout.ID_PROP_SHEET);
-                        if (propsView != null) {
-                            propsView.setFocus();
-                        }
-                    } catch (PartInitException e) {
-                        DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
-                    }
+                    openProperties();
                 } else {
                     DBNDatabaseNode node = DBNUtils.getNodeByObject(
                         monitor,
@@ -72,20 +70,78 @@ public class ERDUIUtils
         }
     }
 
+    public static void openProperties() {
+        try {
+            IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+            IViewPart propsView = activePage.showView(IPageLayout.ID_PROP_SHEET);
+            if (propsView != null) {
+                propsView.setFocus();
+            }
+        } catch (PartInitException e) {
+            DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
+        }
+    }
+
+    public static void openOutline() {
+        try {
+            IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+            IViewPart propsView = activePage.showView(IPageLayout.ID_OUTLINE);
+            if (propsView != null) {
+                propsView.setFocus();
+            }
+        } catch (PartInitException e) {
+            DBWorkbench.getPlatformUI().showError("Object open", "Can't open outline view", e);
+        }
+    }
+
     public static String getFullAttributeLabel(EntityDiagram diagram, ERDEntityAttribute attribute, boolean includeType) {
+        return getFullAttributeLabel(diagram, attribute, includeType, false);
+    }
+
+    /**
+     *
+     * @param diagram diagram
+     * @param attribute attribute to provide label from
+     * @param includeType is type included in the label
+     * @param accessible is accessibility text needed
+     * @return attribute label
+     */
+    public static String getFullAttributeLabel(
+        EntityDiagram diagram,
+        ERDEntityAttribute attribute,
+        boolean includeType,
+        boolean accessible
+    ) {
         String attributeLabel = attribute.getName();
         if (includeType && diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
-            attributeLabel += ": " + attribute.getObject().getFullTypeName();
+            if (accessible) {
+                attributeLabel += NLS.bind(ERDUIMessages.erd_accessibility_attribute_part_type, attribute.getObject().getFullTypeName());
+            } else {
+                attributeLabel += ": " + attribute.getObject().getFullTypeName();
+            }
         }
         if (includeType && diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
+            String type = "";
             if (attribute.getObject().isRequired()) {
-                attributeLabel += " NOT NULL";
+                type += " NOT NULL";
+            } else if (accessible) {
+                type += " CAN BE NULL";
             }
+            if (accessible) {
+                attributeLabel += NLS.bind(ERDUIMessages.erd_accessibility_attribute_part_nullability, type);
+            } else {
+                attributeLabel += type;
+            }
+
         }
         if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
             String comment = attribute.getObject().getDescription();
             if (!CommonUtils.isEmpty(comment)) {
-                attributeLabel += " - " + comment;
+                if (accessible) {
+                    attributeLabel += NLS.bind(ERDUIMessages.erd_accessibility_attribute_part_comments, comment);
+                } else {
+                    attributeLabel += " - " + comment;
+                }
             }
         }
         return attributeLabel;

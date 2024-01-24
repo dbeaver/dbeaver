@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectJDBC;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -35,6 +35,9 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.JDBCType;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -42,7 +45,6 @@ import java.util.Date;
  * CustomTimeEditor
  */
 public class CustomTimeEditor {
-    private final static String FORMAT_PATTERN = "pattern";
     private final int style;
     private final boolean isPanel;
     private DateTime dateEditor;
@@ -55,7 +57,7 @@ public class CustomTimeEditor {
     private String dateAsText = "";
     private final boolean isInline;
 
-    private InputMode inputMode = InputMode.None;
+    private InputMode inputMode = InputMode.NONE;
     private final Calendar calendar = Calendar.getInstance();
     private Text textEditor;
     private Listener modifyListener;
@@ -66,14 +68,14 @@ public class CustomTimeEditor {
     private JDBCType jdbcType;
 
     private enum InputMode {
-        None,
-        Date,
-        Time,
-        DateTime
+        NONE,
+        DATE,
+        TIME,
+        DATETIME
     }
 
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
-        if (valueType instanceof JDBCTableColumn || valueType instanceof JDBCColumnMetaData) {
+        if (valueType instanceof DBSTypedObjectJDBC) {
             try {
                 jdbcType = JDBCType.valueOf(valueType.getTypeID());
             } catch (Exception e) {
@@ -89,15 +91,15 @@ public class CustomTimeEditor {
         if (jdbcType != null) {
             switch (jdbcType) {
                 case DATE:
-                    inputMode = InputMode.Date;
+                    inputMode = InputMode.DATE;
                     disposeEditor(timeEditor, timeLabel);
                     break;
                 case TIME:
-                    inputMode = InputMode.Time;
+                    inputMode = InputMode.TIME;
                     disposeEditor(dateEditor, dateLabel);
                     break;
                 default:
-                    inputMode = InputMode.DateTime;
+                    inputMode = InputMode.DATETIME;
                     break;
             }
         }
@@ -271,19 +273,26 @@ public class CustomTimeEditor {
         }
     }
 
-    public void setValue(@Nullable Date value) {
+    /**
+     * Sets value to the calendar
+     *
+     * @param value value to which calendar should be set
+     * @throws DBCException if it can't be adapted to Date type
+     */
+    public void setValue(@Nullable Object value) throws DBCException {
         updateWarningLabel(value);
-        if (value != null) {
-            calendar.setTime(value);
+        Date adaptedValue = adaptToDate(value);
+        if (adaptedValue != null) {
+            calendar.setTime(adaptedValue);
         } else {
             switch (inputMode) {
-                case Time:
+                case TIME:
                     calendar.setTime(new Time(System.currentTimeMillis()));
                     break;
-                case Date:
+                case DATE:
                     calendar.setTime(new Date(System.currentTimeMillis()));
                     break;
-                case DateTime:
+                case DATETIME:
                     calendar.setTime(new Timestamp(System.currentTimeMillis()));
                     break;
                 default:
@@ -322,13 +331,13 @@ public class CustomTimeEditor {
     public Date getValueAsDate() {
 
         switch (inputMode) {
-            case Time:
+            case TIME:
                 calendar.set(0, Calendar.JANUARY, 0, timeEditor.getHours(), timeEditor.getMinutes(), timeEditor.getSeconds());
                 break;
-            case Date:
+            case DATE:
                 calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay());
                 break;
-            case DateTime:
+            case DATETIME:
                 calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
                         timeEditor.getMinutes(), timeEditor.getSeconds());
                 break;
@@ -369,4 +378,25 @@ public class CustomTimeEditor {
         }
     }
 
+    /**
+     * Adapts values to date
+     *
+     * @param value value which should be adapted
+     * @return adapted value
+     * @throws DBCException when it can't be adapted, should be shown as text in presentation
+     */
+    @Nullable
+    public Date adaptToDate(@Nullable Object value) throws DBCException {
+        if (value == null) {
+            return null;
+        } else if (value instanceof Date) {
+            return (Date) value;
+        } else if (value instanceof Instant) {
+            return Date.from((Instant) value);
+        } else if (value instanceof LocalDateTime) {
+            return Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant());
+        } else {
+            throw new DBCException(value.toString());
+        }
+    }
 }

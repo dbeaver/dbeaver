@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllInfo;
@@ -30,8 +31,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardPage<PostgreBackupAllWizard> {
 
@@ -78,6 +81,8 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
             new Label(buttonsPanel, SWT.NONE).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, databasesTable);
         }
+
+        PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, dataSource);
 
         setControl(composite);
     }

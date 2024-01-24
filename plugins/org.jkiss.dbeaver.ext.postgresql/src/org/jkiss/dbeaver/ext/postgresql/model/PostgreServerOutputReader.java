@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,37 +18,26 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReaderExt;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReaderExt;
 import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.utils.BeanUtils;
 
-import java.util.Arrays;
+import java.util.Map;
 
 public class PostgreServerOutputReader extends AsyncServerOutputReader implements DBCServerOutputReaderExt {
     private static final String PSQL_WARNING_CLASS = "org.postgresql.util.PSQLWarning";
     private static final String PSQL_WARNING_GET_SERVER_ERROR_MESSAGE_METHOD = "getServerErrorMessage";
-    private static final String SERVER_ERROR_MESSAGE_GET_SEVERITY_METHOD = "getSeverity";
+    private static final String SERVER_ERROR_MESSAGE_MESSAGE_PARTS = "mesgParts";
+    private static final Character SERVER_ERROR_MESSAGE_SEVERITY_LOCALIZED = 'S';
+    private static final Character SERVER_ERROR_MESSAGE_SEVERITY = 'V';
 
     @NotNull
     @Override
     public DBCOutputSeverity[] getSupportedSeverities(@NotNull DBCExecutionContext context) {
-        final PostgreDataSource dataSource = (PostgreDataSource) context.getDataSource();
-        final PostgreSetting setting = dataSource.getSetting(PostgreConstants.OPTION_CLIENT_MIN_MESSAGES);
-        final PostgreOutputSeverity[] values = PostgreOutputSeverity.values();
-
-        if (setting != null) {
-            for (int i = 0; i < values.length; i++) {
-                if (values[i].name().equalsIgnoreCase(setting.getValue())) {
-                    return Arrays.copyOfRange(values, i, values.length);
-                }
-            }
-        }
-
-        return values;
+        return PostgreOutputSeverity.values();
     }
 
     @Override
@@ -56,6 +45,11 @@ public class PostgreServerOutputReader extends AsyncServerOutputReader implement
         output.println(getSeverity(warning), warning.getMessage());
     }
 
+    /**
+     * Retrieves severity of the warning.
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">55.8. Error and Notice Message Fields</a>
+     */
     @Nullable
     private static DBCOutputSeverity getSeverity(@NotNull Throwable warning) {
         if (!PSQL_WARNING_CLASS.equals(warning.getClass().getName())) {
@@ -63,7 +57,13 @@ public class PostgreServerOutputReader extends AsyncServerOutputReader implement
         }
         try {
             final Object obj = BeanUtils.invokeObjectMethod(warning, PSQL_WARNING_GET_SERVER_ERROR_MESSAGE_METHOD);
-            final String severity = (String) BeanUtils.invokeObjectMethod(obj, SERVER_ERROR_MESSAGE_GET_SEVERITY_METHOD);
+            final Map<Character, String> parts = BeanUtils.getFieldValue(obj, SERVER_ERROR_MESSAGE_MESSAGE_PARTS);
+            final String severity;
+            if (parts.containsKey(SERVER_ERROR_MESSAGE_SEVERITY)) {
+                severity = parts.get(SERVER_ERROR_MESSAGE_SEVERITY);
+            } else {
+                severity = parts.get(SERVER_ERROR_MESSAGE_SEVERITY_LOCALIZED);
+            }
             return PostgreOutputSeverity.valueOf(severity);
         } catch (Throwable ignored) {
             return null;
@@ -74,10 +74,10 @@ public class PostgreServerOutputReader extends AsyncServerOutputReader implement
     private enum PostgreOutputSeverity implements DBCOutputSeverity {
         DEBUG("Debug"),
         LOG("Log"),
+        INFO("Info"),
         NOTICE("Notice"),
         WARNING("Warning"),
-        ERROR("Error"),
-        INFO("Info");
+        ERROR("Error");
 
         private final String name;
 

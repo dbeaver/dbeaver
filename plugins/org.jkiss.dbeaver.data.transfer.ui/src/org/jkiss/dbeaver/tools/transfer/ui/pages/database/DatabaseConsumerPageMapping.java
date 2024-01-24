@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,9 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.custom.ControlEditor;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -39,14 +38,18 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.*;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -74,6 +77,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private static final String TARGET_NAME_BROWSE = "[browse]";
     private final List<DatabaseMappingContainer> model = new ArrayList<>();
     private TreeViewer mappingViewer;
+    private Button loadMappingsButton;
     private Button autoAssignButton;
     private Button upButton;
     private Button downButton;
@@ -119,7 +123,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 @Nullable
                 @Override
                 protected DBNNode getSelectedNode() {
-                    DBNNode selectedNode = settings.getContainerNode();
+                    DBSObjectContainer container = settings.getContainer();
+                    DBNNode selectedNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(container);
                     if (selectedNode == null && !settings.getDataMappings().isEmpty()) {
                         // Use first source object as cur selection (it's better than nothing)
                         DBSDataContainer firstSource = settings.getDataMappings().keySet().iterator().next();
@@ -137,7 +142,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 @Override
                 protected void setSelectedNode(DBNDatabaseNode node) {
-                    settings.setContainerNode(node);
+                    settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
+                    loadSettings(false);
                     setContainerInfo(node);
                     getWizard().runWithProgress(monitor -> {
                         // Reset mappings
@@ -207,7 +213,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        DBPDataSourceContainer dataSourceContainer = getDatabaseConsumerSettings().getContainerNode().getDataSourceContainer();
+                        DBPDataSourceContainer dataSourceContainer = getDatabaseConsumerSettings().getContainer().getDataSource().getContainer();
                         if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
                             UIUtils.showMessageBox(getShell(), DTMessages.data_transfer_wizard_restricted_title, NLS.bind(DTMessages.data_transfer_wizard_restricted_description, dataSourceContainer.getName()), SWT.ICON_WARNING);
                             return;
@@ -263,6 +269,18 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
 
             UIUtils.createEmptyLabel(buttonsPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
+
+            final Button mappingRules = UIUtils.createDialogButton(buttonsPanel,
+                DTMessages.data_transfer_db_consumer_mapping_rules_button,
+                null,
+                DTMessages.data_transfer_db_consumer_mapping_rules_button_tip,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        updateMappingRules();
+                    }
+                });
+            mappingRules.setEnabled(false);
 
             autoAssignButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_auto_assign,
@@ -347,11 +365,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DatabaseMappingObject mapping = getSelectedMapping();
                 mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
                 //createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
-                final boolean hasMappings = settings.getContainerNode() != null &&
+                final boolean hasMappings = settings.getContainer() != null &&
                     ((mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
                     (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified));
                 configureButton.setEnabled(hasMappings);
                 previewButton.setEnabled(hasMappings);
+                mappingRules.setEnabled(hasMappings);
                 updateUpAndDownButtons();
             });
             mappingViewer.addDoubleClickListener(event -> {
@@ -415,6 +434,23 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         mappingViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         mappingViewer.getTree().setLinesVisible(true);
         mappingViewer.getTree().setHeaderVisible(true);
+
+        final DBPDataSourceContainer container = DatabaseConsumerSettings.getDataSourceContainer(getWizard().getSettings());
+        if (container != null) {
+            loadMappingsButton = new Button(mappingViewer.getTree(), SWT.PUSH);
+            loadMappingsButton.setText(NLS.bind(DTUIMessages.columns_mapping_dialog_composite_button_reconnect, container.getName()));
+            loadMappingsButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_CONNECT));
+            loadMappingsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> loadSettings(true)));
+
+            final ControlEditor overlay = new ControlEditor(mappingViewer.getTree());
+            final Point buttonSize = loadMappingsButton.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            overlay.minimumWidth = buttonSize.x;
+            overlay.minimumHeight = buttonSize.y;
+            overlay.setEditor(loadMappingsButton);
+
+            // Lines look weird on an empty table and visually clash with the button
+            mappingViewer.getTree().setLinesVisible(false);
+        }
 
         UIUtils.setControlContextMenu(mappingViewer.getTree(), manager -> {
             IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
@@ -497,9 +533,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (!CommonUtils.isEmpty(targetName)) {
                             return targetName;
                         }
-                        String newName = transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()));
-                        //setValue(element, newName);
-                        return newName;
+                        return transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()), DatabaseMappingType.unspecified);
                     }
                     if (mapping instanceof DatabaseMappingContainer) {
                         DBSDataManipulator target = ((DatabaseMappingContainer) mapping).getTarget();
@@ -517,7 +551,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
                     String name = CommonUtils.toString(value);
                     DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
-                    if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
+                    if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE)
+                        && dataSource != null && !DBUtils.isQuotedIdentifier(dataSource, name)
+                    ) {
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     String finalName = name;
@@ -692,7 +728,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             public Object[] getChildren(Object parentElement)
             {
                 if (parentElement instanceof DatabaseMappingContainer) {
-                    return ((DatabaseMappingContainer) parentElement).getAttributeMappings(getWizard().getRunnableContext()).toArray();
+                    return ((DatabaseMappingContainer) parentElement).getAttributeMappings().toArray();
                 }
                 return null;
             }
@@ -747,7 +783,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean allowsCreate = true;
         List<String> items = new ArrayList<>();
         if (element instanceof DatabaseMappingContainer) {
-            if (settings.getContainerNode() == null) {
+            if (settings.getContainer() == null) {
                 allowsCreate = false;
             }
             if (settings.getContainer() != null) {
@@ -755,7 +791,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DBSObjectContainer container = settings.getContainer();
                 for (DBSObject child : container.getChildren(new LoggingProgressMonitor(log))) {
                     if (child instanceof DBSDataManipulator) {
-                        items.add(transformTargetName(DBUtils.getQuotedIdentifier(child)));
+                        items.add(transformTargetName(
+                            DBUtils.getQuotedIdentifier(child),
+                            ((DatabaseMappingContainer) element).getMappingType()));
                     }
                 }
 
@@ -773,11 +811,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (target instanceof DBSEntity) {
                 DBSEntity parentEntity = (DBSEntity) target;
                 for (DBSEntityAttribute attr : parentEntity.getAttributes(new LoggingProgressMonitor(log))) {
-                    items.add(transformTargetName(DBUtils.getQuotedIdentifier(attr)));
+                    items.add(transformTargetName(DBUtils.getQuotedIdentifier(attr), mapping.getMappingType()));
                 }
             } else if (target == null) {
                 // New table?
-                items.add(transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource())));
+                items.add(transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()), mapping.getMappingType()));
             }
 
         }
@@ -806,7 +844,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             } else if (name.equals(TARGET_NAME_BROWSE)) {
                 mapExistingTable((DatabaseMappingContainer) mapping);
             } else {
-                name = transformTargetName(name);
+                name = transformTargetName(name, mapping.getMappingType());
                 if (mapping instanceof DatabaseMappingContainer) {
                     DatabaseMappingContainer containerMapping = (DatabaseMappingContainer) mapping;
                     if (settings.getContainer() != null) {
@@ -887,14 +925,14 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 } else {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
                     DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
-                    if (targetDataSource != null) {
-                        name = DBUtils.getUnQuotedIdentifier(targetDataSource, name);
-                    }
                     if (attrMapping.getParent().getTarget() instanceof DBSEntity) {
                         DBSEntity parentEntity = (DBSEntity) attrMapping.getParent().getTarget();
                         Iterable<? extends DBSEntityAttribute> attributes = parentEntity.getAttributes(new LoggingProgressMonitor(log));
                         if (attributes != null) {
-                            DBSEntityAttribute matchingAttribute = CommonUtils.findBestCaseAwareMatch(attributes, name, DBSEntityAttribute::getName);
+                            DBSEntityAttribute matchingAttribute = CommonUtils.findBestCaseAwareMatch(
+                                attributes,
+                                targetDataSource != null ? DBUtils.getUnQuotedIdentifier(targetDataSource, name) : name, // unquote for better search
+                                DBSEntityAttribute::getName);
                             if (matchingAttribute != null) {
                                 attrMapping.setMappingType(DatabaseMappingType.existing);
                                 attrMapping.setTarget(matchingAttribute);
@@ -904,7 +942,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         }
                     }
                     attrMapping.setMappingType(DatabaseMappingType.create);
-                    attrMapping.setTargetName(name);
+                    attrMapping.setTargetName(updateAttributesNames && targetDataSource != null
+                        ? DBUtils.getUnQuotedIdentifier(targetDataSource, name) : name);
                 }
                 UIUtils.asyncExec(this::updateMappingsAndButtons);
             }
@@ -912,6 +951,25 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_mapping_error,
                 NLS.bind(DTUIMessages.database_consumer_page_mapping_message_error_auto_mapping_source_table, name),
                 e);
+        }
+    }
+
+    private void updateMappingRules() {
+        DBSObjectContainer container = getDatabaseConsumerSettings().getContainer();
+        if (container == null) {
+            return;
+        }
+        DBPDataSource dataSource = container.getDataSource();
+        if (dataSource == null) {
+            return;
+        }
+        List<Object> elementList = Arrays.stream(mappingViewer.getTree().getItems())
+            .map(Widget::getData).collect(Collectors.toList());
+        MappingRulesDialog dialog = new MappingRulesDialog(getShell(), dataSource, elementList);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            mappingViewer.refresh();
+            updateMappingsAndButtons();
+            updatePageCompletion();
         }
     }
 
@@ -956,7 +1014,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject != null) {
-            DBNNode rootNode = settings.getContainerNode();
+            DBNNode rootNode = DBNUtils.getNodeByObject(settings.getContainer());
             if (rootNode == null) {
                 rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(
                     activeProject).getDatabases();
@@ -1017,7 +1075,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         String tableName = EnterNameDialog.chooseName(
             getShell(),
             DTUIMessages.database_consumer_page_mapping_table_name,
-            transformTargetName(mapping.getMappingType() == DatabaseMappingType.create ? mapping.getTargetName() : ""));
+            transformTargetName(
+                mapping.getMappingType() == DatabaseMappingType.create ? mapping.getTargetName() : "",
+                mapping.getMappingType()));
         if (!CommonUtils.isEmpty(tableName)) {
             try {
                 mapping.setTargetName(tableName);
@@ -1031,10 +1091,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
     }
 
-    private String transformTargetName(String name) {
+    private String transformTargetName(String name, @NotNull DatabaseMappingType mappingType) {
         DBSObjectContainer container = getDatabaseConsumerSettings().getContainer();
-        if (container == null) {
+        if (container == null || container.getDataSource() == null) {
             return name;
+        }
+        if (mappingType == DatabaseMappingType.create) {
+            return DatabaseTransferUtils.getTransformedName(container.getDataSource(), name, false);
         }
         return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
     }
@@ -1119,9 +1182,25 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
     @Override
     public void activatePage() {
+        final DBPDataSourceContainer container = DatabaseConsumerSettings.getDataSourceContainer(getWizard().getSettings());
+        final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
+
+        if (getDatabaseConsumerSettings().getContainer() != null ||
+            container != null && container.isConnected() ||
+            preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)
+        ) {
+            loadSettings(true);
+        }
+    }
+
+    private void loadSettings(boolean loadContainerFromSettings) {
+        if (loadMappingsButton != null && !loadMappingsButton.isDisposed()) {
+            loadMappingsButton.dispose();
+            mappingViewer.getTree().setLinesVisible(true);
+        }
+
         getWizard().loadNodeSettings();
 
-        DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         // Detect producer container (e.g. schema)
         DBSObjectContainer producerContainer = null;
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
@@ -1135,14 +1214,28 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 }
             }
         }
-        settings.loadNode(getWizard().getRunnableContext(), getWizard().getSettings(), producerContainer);
-        DBNDatabaseNode containerNode = settings.getContainerNode();
-        if (containerNode != null) {
-            try {
-                containerPanel.checkValidContainerNode(containerNode);
-                containerPanel.setContainerInfo(containerNode);
-            } catch (DBException e) {
-                setErrorMessage(e.getMessage());
+
+        if (loadContainerFromSettings) {
+            DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
+            settings.loadObjectContainer(getWizard().getRunnableContext(), getWizard().getSettings(), producerContainer);
+            if (settings.getContainer() != null) {
+                final DBNDatabaseNode[] containerNode = new DBNDatabaseNode[1];
+                try {
+                    getWizard().getRunnableContext().run(
+                        true,
+                        true,
+                        monitor -> containerNode[0] = DBNUtils.getNodeByObject(monitor, settings.getContainer(), false)
+                    );
+                } catch (InvocationTargetException | InterruptedException ignored) {
+                }
+                if (containerNode[0] != null) {
+                    try {
+                        containerPanel.checkValidContainerNode(containerNode[0]);
+                        containerPanel.setContainerInfo(containerNode[0]);
+                    } catch (DBException e) {
+                        setErrorMessage(e.getMessage());
+                    }
+                }
             }
         }
 
@@ -1196,7 +1289,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     } else {
                         newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
                     }
-                    newMapping.getAttributeMappings(getWizard().getRunnableContext());
+                    newMapping.getAttributeMappings();
                     // Update current mapping if it differs from new one
                     if (mapping == null || !mapping.isSameMapping(newMapping)) {
                         mapping = newMapping;
@@ -1234,7 +1327,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     protected boolean determinePageCompletion()
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        if (settings.getContainerNode() == null) {
+        if (settings.getContainer() == null) {
             setErrorMessage(DTUIMessages.database_consumer_page_mapping_error_message_set_target_container);
             return false;
         }

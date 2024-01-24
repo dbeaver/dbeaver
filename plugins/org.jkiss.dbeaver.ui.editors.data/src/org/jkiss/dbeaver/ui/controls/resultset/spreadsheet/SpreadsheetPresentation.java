@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
@@ -60,6 +59,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -74,6 +74,7 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -91,6 +92,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 import org.jkiss.utils.xml.XMLUtils;
 
 import java.net.MalformedURLException;
@@ -103,10 +105,8 @@ import java.util.stream.Collectors;
  * Visualizes results as grid.
  */
 public class SpreadsheetPresentation extends AbstractPresentation
-    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
+    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, DBPAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
-
-    public static final String ATTR_OPTION_PINNED = "pinned";
 
     private static final int MAX_INLINE_COLLECTION_ELEMENTS = 3;
 
@@ -137,6 +137,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Color cellHeaderBackground;
     private Color cellHeaderSelectionBackground;
     private Color cellHeaderBorder;
+    private boolean isHighContrastTheme = false;
 
     private boolean showOddRows = true;
     private boolean highlightRowsWithSelectedCells;
@@ -226,6 +227,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
             @Override
             public void controlResized(ControlEvent e) {
                 spreadsheet.cancelInlineEditor();
+            }
+        });
+        spreadsheet.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                if (controller.isPanelsVisible()) {
+                    controller.getVisiblePanel().setFocus();
+                    e.doit = false;
+                }
             }
         });
 
@@ -627,11 +636,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (CommonUtils.isEmpty(strValue)) {
                     return;
                 }
-                GridPos focusPos = spreadsheet.getFocusPos();
-                int rowNum = focusPos.row;
-                if (rowNum < 0) {
+                final ArrayList<GridPos> selection = new ArrayList<>(spreadsheet.getSelection());
+                final Pair<GridPos, GridPos> targetRange = getContinuousRange(selection);
+                if (targetRange == null) {
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(
+                        "Advanced paste",
+                        "You can't perform this operation on a multiple range selection.\n\nPlease select a single range and try again."
+                    );
                     return;
                 }
+                final GridPos rangeStart = targetRange.getFirst();
+                final GridPos rangeEnd = targetRange.getSecond();
+                int rowNum = rangeStart.row;
                 //boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
@@ -644,8 +660,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                         spreadsheet.refreshRowsData();
                     } else {*/
-                    while (rowNum + newLines.length > spreadsheet.getItemCount()) {
-                        controller.addNewRow(false, true, false);
+                    while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
+                        controller.addNewRow(RowPlacement.AT_END, false, false);
                         spreadsheet.refreshRowsData();
                     }
                     //}
@@ -654,12 +670,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
 
                     for (String[] line : newLines) {
-                        int colNum = focusPos.col;
+                        int colNum = rangeStart.col;
                         IGridRow gridRow = spreadsheet.getRow(rowNum);
                         for (String value : line) {
-                            if (colNum >= spreadsheet.getColumnCount()) {
-                                break;
-                            }
                             IGridColumn colElement = spreadsheet.getColumn(colNum);
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
@@ -678,14 +691,24 @@ public class SpreadsheetPresentation extends AbstractPresentation
                                 IValueController.EditType.NONE, null).updateValue(newValue, false);
 
                             colNum++;
+                            if (colNum >= spreadsheet.getColumnCount()) {
+                                break;
+                            }
+                            if (rangeEnd != null && rangeStart.col != rangeEnd.col && colNum > rangeEnd.col) {
+                                // If we have the range end and it spans more than one column, then limit insertion to that range
+                                break;
+                            }
                         }
                         rowNum++;
                         if (rowNum >= spreadsheet.getItemCount()) {
-                            // Shouldn't be here
+                            break;
+                        }
+                        if (rangeEnd != null && rowNum > rangeEnd.row) {
                             break;
                         }
                     }
                 }
+                this.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
 
             } else {
                 Collection<GridPos> ssSelection = spreadsheet.getSelection();
@@ -742,6 +765,43 @@ public class SpreadsheetPresentation extends AbstractPresentation
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
         }
+    }
+
+    /**
+     * Retrieves a continuous range from a set of grid coordinates.
+     * <p>
+     * A continuous range is a range in which all grid coordinates are selected.
+     *
+     * @param selection a list of positions to retrieve a continuous range from
+     * @return a pair containing either:
+     * <ul>
+     *     <li>{@code null} if no selection is present or selected range is not continuous</li>
+     *     <li>{@code (GridPos, null)} if only one cell is selected</li>
+     *     <li>{@code (GridPos, GridPos)} if selected range is continuous</li>
+     * </ul>
+     */
+    @Nullable
+    private Pair<GridPos, GridPos> getContinuousRange(@NotNull List<GridPos> selection) {
+        return switch (selection.size()) {
+            case 0 -> null;
+            case 1 -> new Pair<>(selection.get(0), null);
+            default -> {
+                GridPos min = selection.get(0);
+                GridPos max = new GridPos(min);
+
+                for (int i = 0; i < selection.size(); i++) {
+                    final GridPos cur = selection.get(i);
+
+                    if (i > 0 && (cur.row - max.row > 1 || cur.col - max.col > 1)) {
+                        yield null;
+                    }
+
+                    max = cur;
+                }
+
+                yield new Pair<>(min, max);
+            }
+        };
     }
 
     private String[][] parseGridLines(String strValue, boolean splitRows) {
@@ -825,6 +885,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (spreadsheet.isDisposed()) {
             return;
         }
+        isHighContrastTheme = UIStyles.isHighContrastTheme();
 
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
@@ -952,10 +1013,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
                     final boolean allPinned = selectedColumns.stream()
                         .map(x -> dataFilter.getConstraint(((DBDAttributeBinding) x.getElement()).getTopParent()))
-                        .allMatch(x -> x != null && x.hasOption(ATTR_OPTION_PINNED));
+                        .allMatch(x -> x != null && x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED));
                     final boolean allUnpinned = selectedColumns.stream()
                         .map(x -> dataFilter.getConstraint(((DBDAttributeBinding) x.getElement()).getTopParent()))
-                        .allMatch(x -> x != null && !x.hasOption(ATTR_OPTION_PINNED));
+                        .allMatch(x -> x != null && !x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED));
 
                     if (allUnpinned != allPinned) {
                         final String pinnedTitle = allUnpinned
@@ -974,9 +1035,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                                     final DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute.getTopParent());
                                     if (constraint != null) {
                                         if (allUnpinned) {
-                                            constraint.setOption(ATTR_OPTION_PINNED, getNextPinIndex(dataFilter));
+                                            constraint.setOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED, getNextPinIndex(dataFilter));
                                         } else {
-                                            constraint.removeOption(ATTR_OPTION_PINNED);
+                                            constraint.removeOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
                                         }
                                     }
                                 }
@@ -987,25 +1048,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 {
                     // Hide/show
-                    List<DBDAttributeBinding> hiddenAttributes = new ArrayList<>();
-                    List<DBDAttributeConstraint> constraints = getController().getModel().getDataFilter().getConstraints();
-                    for (DBDAttributeConstraint ac : constraints) {
-                        DBSAttributeBase attribute = ac.getAttribute();
-                        if (!ac.isVisible() && attribute instanceof DBDAttributeBinding && DBDAttributeConstraint.isVisibleByDefault((DBDAttributeBinding) attribute)) {
-                            hiddenAttributes.add((DBDAttributeBinding) attribute);
-                        }
-                    }
-                    if (!hiddenAttributes.isEmpty()) {
-                        manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(ResultSetMessages.controls_resultset_viewer_show_hidden_columns) {
-                            @Override
-                            public void run() {
-                                ResultSetModel model = controller.getModel();
-                                for (DBDAttributeBinding attr : hiddenAttributes) {
-                                    model.setAttributeVisibility(attr, true);
-                                }
-                                refreshData(true, false, true);
-                            }
-                        });
+                    if (getController().getModel().getDataFilter().hasHiddenAttributes()) {
+                        manager.insertAfter(
+                            IResultSetController.MENU_GROUP_ADDITIONS,
+                            ActionUtils.makeCommandContribution(
+                                controller.getSite(),
+                                SpreadsheetCommandHandler.CMD_SHOW_COLUMNS,
+                                ResultSetMessages.controls_resultset_viewer_show_hidden_columns,
+                                null
+                            )
+                        );
                     }
 
                     String hideTitle;
@@ -1015,24 +1067,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     } else {
                         hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
-
-                    manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(hideTitle) {
-                        @Override
-                        public void run() {
-                            ResultSetModel model = controller.getModel();
-                            if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
-                                UIUtils.showMessageBox(
-                                    getControl().getShell(),
-                                    ResultSetMessages.controls_resultset_viewer_hide_columns_error_title,
-                                    ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
-                            } else {
-                                for (IGridColumn selectedColumn : selectedColumns) {
-                                    model.setAttributeVisibility((DBDAttributeBinding) selectedColumn.getElement(), false);
-                                }
-                                refreshData(true, false, true);
-                            }
-                        }
-                    });
+                    manager.insertAfter(
+                        IResultSetController.MENU_GROUP_ADDITIONS, 
+                        ActionUtils.makeCommandContribution(
+                            controller.getSite(),
+                            SpreadsheetCommandHandler.CMD_HIDE_COLUMNS,
+                            hideTitle,
+                            null
+                        )
+                    );
                 }
             }
         }
@@ -1085,7 +1128,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     public static int getNextPinIndex(@NotNull DBDDataFilter dataFilter) {
         int maxIndex = 0;
         for (DBDAttributeConstraint ac : dataFilter.getConstraints()) {
-            Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+            Integer pinIndex = ac.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
             if (pinIndex != null) {
                 maxIndex = Math.max(maxIndex, pinIndex + 1);
             }
@@ -1147,7 +1190,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (inline) {
             String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr);
             if (readOnlyStatus != null) {
-                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only: " + readOnlyStatus, DBPMessageType.ERROR);
+                controller.setStatus(
+                    NLS.bind(ResultSetMessages.controls_resultset_viewer_action_open_value_editor_column_readonly,
+                        DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI), readOnlyStatus),
+                    DBPMessageType.ERROR);
             }
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;
@@ -1542,6 +1588,67 @@ public class SpreadsheetPresentation extends AbstractPresentation
             fireSelectionChanged(selection);
         }
     }
+    
+    /**
+     * Moves specified columns to delta.
+     *
+     * @param columns - columns to move
+     * @param delta determines where columns should be moved. Negative number means to the left, positive - to the right
+     * @return true if all columns were moved, otherwise false
+     */
+    public boolean shiftColumns(@NotNull List<Object> columns, int delta) {
+        if (delta == 0) {
+            return false;
+        }
+        final DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
+        List<DBDAttributeConstraint> constraintsToMove = new ArrayList<>(columns.size());
+        int pinnedAttrsCount = 0;
+        int normalAttrsCount = 0;
+        for (Object column : columns) {
+            if (column instanceof DBDAttributeBinding) {
+                final DBDAttributeConstraint attrConstraint = dataFilter.getConstraint((DBDAttributeBinding) column);
+                if (attrConstraint != null) {
+                    constraintsToMove.add(attrConstraint);
+                    if (attrConstraint.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED)) {
+                        pinnedAttrsCount++;
+                    } else {
+                        normalAttrsCount++;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        if (pinnedAttrsCount != 0 && normalAttrsCount != 0) {
+            return false;
+        }
+        boolean pin = pinnedAttrsCount > 0;
+        int order = delta > 0 ? -1 : 1;
+        // right to left while shifting right, left to right while shifting left
+        constraintsToMove.sort((a, b) -> Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
+        List<DBDAttributeConstraint> allConstraints = getOrderedConstraints(dataFilter, pin);
+        int leftmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).min().getAsInt();
+        int rightmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).max().getAsInt();
+        if ((delta < 0 && leftmostIndex + delta < 0) || (delta > 0 && rightmostIndex + delta >= allConstraints.size())) {
+            return false;
+        }
+        // reorder constraints affecting the whole collection of them 
+        for (DBDAttributeConstraint constraint : constraintsToMove) {
+            int oldIndex = getConstraintPosition(constraint, pin);
+            int newIndex = oldIndex + delta;
+            allConstraints.remove(constraint);
+            allConstraints.add(newIndex, constraint);
+        }
+        // fix up the positions for all the affected constraints after the order modifications 
+        for (int i = 0; i < allConstraints.size(); i++) {
+            setConstraintPosition(allConstraints.get(i), pin, i);
+        }
+        controller.setDataFilter(dataFilter, false);
+        spreadsheet.refreshData(false, true, false);
+        return true;
+    }
 
     @Override
     public void moveColumn(Object dragColumn, Object dropColumn, DropLocation location) {
@@ -1552,7 +1659,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (dragC == null || dropC == null) {
                 return;
             }
-            final boolean pin = dragC.hasOption(ATTR_OPTION_PINNED) && dropC.hasOption(ATTR_OPTION_PINNED);
+            final boolean pin = dragC.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED) && dropC.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
             int sourcePosition = getConstraintPosition(dragC, pin);
             int targetPosition = getConstraintPosition(dropC, pin);
             switch (location) {
@@ -1596,7 +1703,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private static int getConstraintPosition(@NotNull DBDAttributeConstraint constraint, boolean pin) {
         if (pin) {
-            return constraint.getOption(ATTR_OPTION_PINNED);
+            return constraint.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
         } else {
             return constraint.getVisualPosition();
         }
@@ -1604,7 +1711,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private static void setConstraintPosition(@NotNull DBDAttributeConstraint constraint, boolean pin, int position) {
         if (pin) {
-            constraint.setOption(ATTR_OPTION_PINNED, position);
+            constraint.setOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED, position);
         } else {
             constraint.setVisualPosition(position);
         }
@@ -1615,8 +1722,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         final List<DBDAttributeConstraint> constraints = filter.getConstraints();
         if (pin) {
             return constraints.stream()
-                .filter(x -> x.hasOption(ATTR_OPTION_PINNED))
-                .sorted(Comparator.comparing(x -> x.getOption(ATTR_OPTION_PINNED)))
+                .filter(x -> x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED))
+                .sorted(Comparator.comparing(x -> x.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED)))
                 .collect(Collectors.toList());
         } else {
             return constraints.stream()
@@ -1916,20 +2023,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public int getSortOrder(@Nullable IGridColumn column) {
-            if (showAttrOrdering) {
-                if (column != null && column.getElement() instanceof DBDAttributeBinding) {
-                    DBDAttributeBinding binding = (DBDAttributeBinding) column.getElement();
-                    if (!binding.hasNestedBindings()) {
-                        DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
-                        if (co != null && co.getOrderPosition() > 0) {
-                            return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
-                        }
-                        return SWT.DEFAULT;
+            if (column != null && column.getElement() instanceof DBDAttributeBinding) {
+                DBDAttributeBinding binding = (DBDAttributeBinding) column.getElement();
+                if (!binding.hasNestedBindings()) {
+                    DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
+                    if (co != null && co.getOrderPosition() > 0) {
+                        return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
                     }
-                } else if (column == null && controller.isRecordMode()) {
-                    // Columns order in record mode
-                    return columnOrder;
+                    return SWT.DEFAULT;
                 }
+            } else if (column == null && controller.isRecordMode()) {
+                // Columns order in record mode
+                return columnOrder;
             }
             return SWT.NONE;
         }
@@ -1976,7 +2081,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 DBDAttributeBinding attr = (DBDAttributeBinding) element.getElement();
                 DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr);
                 if (ac != null) {
-                    Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+                    Integer pinIndex = ac.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
                     return pinIndex == null ? -1 : pinIndex;
                 }
             }
@@ -1985,7 +2090,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementSupportsFilter(IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
+            if (element != null && element.getElement() instanceof DBDAttributeBinding) {
                 return supportsAttributeFilter;
             }
             return false;
@@ -1993,8 +2098,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementSupportsSort(@Nullable IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                return true;
+            if (element != null && element.getElement() instanceof DBDAttributeBinding) {
+                return showAttrOrdering;
             }
             return false;
         }
@@ -2353,7 +2458,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (cellSelected) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
                     return backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
@@ -2390,7 +2495,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(rowPosition)) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
                 Color selectedCellColor;
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
                     selectedCellColor = backgroundSelected;
                 } else {
                     RGB mixRGB = UIUtils.blend(
@@ -2444,7 +2549,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (!controller.isRecordMode() && showOddRows) {
+            if (!controller.isRecordMode() && showOddRows && !isHighContrastTheme) {
                 // Determine odd/even row
                 if (rowBatchSize < 1) {
                     rowBatchSize = 1;
@@ -2721,7 +2826,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public String getToolTipText(IGridItem element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
+            if (element == null) {
+                String readOnlyStatus = getController().getReadOnlyStatus();
+                if (readOnlyStatus == null && controller.isAllAttributesReadOnly()) {
+                    readOnlyStatus = ModelMessages.all_columns_read_only;
+                }
+                if (readOnlyStatus != null) {
+                    return readOnlyStatus;
+                }
+            } else if (element.getElement() instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element.getElement();
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();

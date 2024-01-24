@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private DecimalFormat numberFormat;
     private StringBuffer buffer;
     private FieldPosition position;
+    private boolean nativeSpecialValues;
 
     public NumberDataFormatter() {
     }
@@ -65,8 +66,8 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (minIntDigits != null) {
             numberFormat.setMinimumIntegerDigits(CommonUtils.toInt(minIntDigits));
         }
-        if (type != null && type.getScale() != null) {
-            int typeScale = type.getScale();
+        if (type != null) {
+            int typeScale = type.getScale() != null ? type.getScale() : 0;
             // #6111 + #6914.
             // Here is a trick. We can't set max digiter bigger than scale (otherwise long numbers are corrupted)
             Object maxFractDigits = properties.get(NumberFormatSample.PROP_MAX_FRACT_DIGITS);
@@ -114,6 +115,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         }
         buffer = new StringBuffer();
         position = new FieldPosition(0);
+        nativeSpecialValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_NATIVE_SPECIAL_VALUES));
     }
 
     @Nullable
@@ -129,6 +131,14 @@ public class NumberDataFormatter implements DBDDataFormatter {
     {
         if (value == null) {
             return null;
+        }
+        if (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value)) {
+            if (nativeSpecialValues) {
+                return value.toString();
+            }
+        } else if (value instanceof Float || value instanceof Double) {
+            // Convert to BigDecimal so we don't have rounding issues with high minimum fraction digits set
+            value = new BigDecimal(value.toString());
         }
         try {
             synchronized (this) {

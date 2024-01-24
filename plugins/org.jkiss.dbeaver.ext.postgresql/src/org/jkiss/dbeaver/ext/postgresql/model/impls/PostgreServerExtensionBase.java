@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -271,7 +271,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 }
             }
             if (tableBase instanceof PostgreTablePartition && !alter) {
-                ddl.append(((PostgreTablePartition) tableBase).getPartitionExpression());                
+                String expression = ((PostgreTablePartition) tableBase).getPartitionExpression();
+                if (CommonUtils.isNotEmpty(expression)) {
+                    ddl.append(" ").append(expression);
+                }
+            }
+        }
+
+        if (tableBase instanceof PostgreTableRegular) {
+            if (!alter) {
+                createUsingClause((PostgreTableRegular) tableBase, ddl);
             }
         }
 
@@ -324,11 +333,6 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
-        return new PostgreTableColumn(monitor, table, dbResult);
-    }
-
-    @Override
     public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
         if (connectionInfo.getProperty(PostgreConstants.PROP_SSL) == null) {
             // We need to disable SSL explicitly (see #4928)
@@ -338,7 +342,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException {
-        List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl());
+        List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl(), false);
         if (!includeNestedObjects) {
             return tablePermissions;
         }
@@ -397,7 +401,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean supportsTeblespaceLocation() {
+    public boolean supportsTablespaceLocation() {
         return dataSource.isServerVersionAtLeast(9, 2);
     }
 
@@ -446,6 +450,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return withClauseBuilder.toString();
     }
 
+    public void createUsingClause(@NotNull PostgreTableRegular table, @NotNull StringBuilder ddl) {
+        // Do nothing
+    }
+
     @Override
     public boolean supportsPGConstraintExpressionColumn() {
         return true;
@@ -489,6 +497,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsCommentsOnRole() {
         return supportsRoles();
+    }
+
+    @Override
+    public boolean supportsDefaultPrivileges() {
+        return dataSource.isServerVersionAtLeast(9, 0);
     }
 
     @Override
@@ -564,5 +577,15 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsAlterTableColumnWithUSING() {
         return dataSource.isServerVersionAtLeast(8, 0);
+    }
+
+    @Override
+    public boolean supportsAlterTableForViewRename() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return true;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
-import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,38 +24,36 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.app.standalone.DBeaverCommandLine;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.rest.RestClient;
+import org.jkiss.utils.rest.RestServer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.net.InetAddress;
-import java.net.ServerSocket;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
-import java.rmi.server.RMISocketFactory;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 /**
@@ -66,15 +63,95 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     private static final Log log = Log.getLog(DBeaverInstanceServer.class);
     private DBPDataSourceContainer dataSourceContainer = null;
-    private static final String VAR_RMI_SERVER_HOSTNAME = "java.rmi.server.hostname";
 
-    private static int portNumber;
-    private static Registry registry;
-    private static FileChannel configFileChannel;
-    private static final List<File> filesToConnect = new ArrayList<>();
-    private static final RMIClientSocketFactory CSF_DEFAULT = RMISocketFactory.getDefaultSocketFactory();
-    private static final RMIServerSocketFactory SSF_LOCAL = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
-    private static boolean localRMI = false;
+    private final RestServer<IInstanceController> server;
+    private final FileChannel configFileChannel;
+    private final List<File> filesToConnect = new ArrayList<>();
+
+    private DBeaverInstanceServer() throws IOException {
+        server = RestServer
+            .builder(IInstanceController.class, this)
+            .setFilter(address -> address.getAddress().isLoopbackAddress())
+            .create();
+
+        configFileChannel = FileChannel.open(
+            getConfigPath(),
+            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE
+        );
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Properties props = new Properties();
+            props.setProperty("port", String.valueOf(server.getAddress().getPort()));
+            props.store(os, "DBeaver instance server properties");
+            configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
+        }
+
+        log.debug("Starting instance server at http://localhost:" + server.getAddress().getPort());
+    }
+
+    @Nullable
+    public static DBeaverInstanceServer createServer() throws IOException {
+        if (createClient() != null) {
+            log.debug("Can't start instance server because other instance is already running");
+            return null;
+        }
+
+        return new DBeaverInstanceServer();
+    }
+
+    @Nullable
+    public static IInstanceController createClient() {
+        return createClient(null);
+    }
+
+    @Nullable
+    public static IInstanceController createClient(@Nullable String workspacePath) {
+        final Path path = getConfigPath(workspacePath);
+
+        if (Files.notExists(path)) {
+            log.trace("No instance controller is available");
+            return null;
+        }
+
+        final Properties properties = new Properties();
+
+        try (Reader reader = Files.newBufferedReader(path)) {
+            properties.load(reader);
+        } catch (IOException e) {
+            log.error("Error reading instance controller configuration: " + e.getMessage());
+            return null;
+        }
+
+        final String port = properties.getProperty("port");
+
+        if (CommonUtils.isEmptyTrimmed(port)) {
+            log.error("No port specified for the instance controller to connect to");
+            return null;
+        }
+
+        final IInstanceController instance = RestClient
+            .builder(URI.create("http://localhost:" + port), IInstanceController.class)
+            .create();
+
+        try {
+            final long payload = System.currentTimeMillis();
+            final long response = instance.ping(payload);
+
+            if (response != payload) {
+                throw new IllegalStateException("Invalid ping response: " + response + ", was expecting " + payload);
+            }
+        } catch (Throwable e) {
+            log.error("Error accessing instance server: " + e.getMessage());
+            return null;
+        }
+
+        return instance;
+    }
+
+    @Override
+    public long ping(long payload) {
+        return payload;
+    }
 
     @Override
     public String getVersion() {
@@ -82,7 +159,7 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     @Override
-    public void openExternalFiles(final String[] fileNames) {
+    public void openExternalFiles(@NotNull String[] fileNames) {
         log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
 
         final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
@@ -92,7 +169,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 File file = new File(filePath);
                 if (file.exists()) {
                     filesToConnect.add(file);
-                    if (dataSourceContainer != null){
+                    if (dataSourceContainer != null) {
                         EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
                     }
                     EditorUtils.openExternalFileEditor(file, window);
@@ -106,7 +183,7 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     @Override
-    public void openDatabaseConnection(String connectionSpec) throws RemoteException {
+    public void openDatabaseConnection(@NotNull String connectionSpec) {
         // Do not log it (#3788)
         //log.debug("Open external database connection [" + connectionSpec + "]");
         InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
@@ -120,9 +197,9 @@ public class DBeaverInstanceServer implements IInstanceController {
             filesToConnect.clear();
             return;
         }
-        if (!CommonUtils.isEmpty(filesToConnect)){
+        if (!CommonUtils.isEmpty(filesToConnect)) {
             for (File file : filesToConnect) {
-                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource ));
+                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource));
             }
         }
         if (instanceConParameters.openConsole) {
@@ -181,18 +258,13 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     @Override
-    public void executeWorkbenchCommand(String commandId) throws RemoteException {
+    public void executeWorkbenchCommand(@NotNull String commandId) {
         log.debug("Execute workbench command " + commandId);
-
-        try {
-            ActionUtils.runCommand(commandId, UIUtils.getActiveWorkbenchWindow());
-        } catch (Exception e) {
-            throw new RemoteException("Can't execute command '" + commandId + "'", e);
-        }
+        ActionUtils.runCommand(commandId, UIUtils.getActiveWorkbenchWindow());
     }
 
     @Override
-    public void fireGlobalEvent(String eventId, Map<String, Object> properties) throws RemoteException {
+    public void fireGlobalEvent(@NotNull String eventId, @NotNull Map<String, Object> properties) {
         DBPPlatformDesktop.getInstance().getGlobalEventManager().fireGlobalEvent(eventId, properties);
     }
 
@@ -210,82 +282,35 @@ public class DBeaverInstanceServer implements IInstanceController {
         });
     }
 
-    public static IInstanceController startInstanceServer(CommandLine commandLine, IInstanceController server) {
+    public void stopInstanceServer() {
         try {
-            openRmiRegistry();
+            log.debug("Stop instance server");
 
-            {
-                IInstanceController stub;
-                if (localRMI) {
-                    stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0, null, SSF_LOCAL);
-                } else {
-                    stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
-                }
-
-                //IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
-                registry.bind(CONTROLLER_ID, stub);
-            }
-            if (commandLine != null) {
-                DBeaverCommandLine.getRemoteParameterHandlers(commandLine);
-            }
-
-            final IInstanceController client = InstanceClient.createClient(
-                GeneralUtils.getMetadataFolder().getParent().toAbsolutePath().toString(), true);
-            if (client != null) {
-                log.debug("Can't start RMI server because other instance is already running");
-                return null;
-            }
-
-            configFileChannel = FileChannel.open(
-                GeneralUtils.getMetadataFolder().resolve(RMI_PROP_FILE),
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE
-            );
-
-            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                Properties props = new Properties();
-                props.setProperty("port", String.valueOf(portNumber));
-                props.store(os, "DBeaver instance server properties");
-                configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
-            }
-
-            return server;
-        } catch (Exception e) {
-            log.error("Can't start RMI server", e);
-            return null;
-        }
-    }
-
-    private static void openRmiRegistry() throws RemoteException {
-        portNumber = IOUtils.findFreePort(20000, 65000);
-
-        log.debug("Starting RMI server at " + portNumber);
-        // We must bing to localhost only
-        // It is tricky (https://groups.google.com/g/comp.lang.java.programmer/c/QQT2EOTFoKk?pli=1)
-        if (System.getProperty(VAR_RMI_SERVER_HOSTNAME) == null) {
-            System.setProperty(VAR_RMI_SERVER_HOSTNAME, "127.0.0.1");
-            localRMI = true;
-
-            registry = LocateRegistry.createRegistry(portNumber, CSF_DEFAULT, SSF_LOCAL);
-        } else {
-            registry = LocateRegistry.createRegistry(portNumber);
-        }
-    }
-
-    public static void stopInstanceServer() {
-        try {
-            log.debug("Stop RMI server");
-            registry.unbind(CONTROLLER_ID);
+            server.stop();
 
             if (configFileChannel != null) {
                 configFileChannel.close();
-                Files.delete(GeneralUtils.getMetadataFolder().resolve(RMI_PROP_FILE));
+                Files.delete(getConfigPath());
             }
 
-            log.debug("RMI controller has been stopped");
+            log.debug("Instance server has been stopped");
         } catch (Exception e) {
-            log.error("Can't stop RMI server", e);
+            log.error("Can't stop instance server", e);
         }
+    }
 
+    @NotNull
+    private static Path getConfigPath() {
+        return getConfigPath(null);
+    }
+
+    @NotNull
+    private static Path getConfigPath(@Nullable String workspacePath) {
+        if (workspacePath != null) {
+            return Path.of(workspacePath).resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
+        } else {
+            return GeneralUtils.getMetadataFolder().resolve(CONFIG_PROP_FILE);
+        }
     }
 
     private static class InstanceConnectionParameters implements GeneralUtils.IParameterHandler {

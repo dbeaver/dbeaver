@@ -16,12 +16,16 @@
     <modules>
         <module>org.jkiss.dbeaver.test.platform</module>
         <module>org.jkiss.dbeaver.ext.clickhouse.test</module>
+        <module>org.jkiss.dbeaver.ext.generic.test</module>
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>
+        <module>org.jkiss.dbeaver.ext.hana.test</module>
         <module>org.jkiss.dbeaver.ext.mysql.test</module>
         <module>org.jkiss.dbeaver.ext.oracle.test</module>
         <module>org.jkiss.dbeaver.ext.postgresql.test</module>
+        <module>org.jkiss.dbeaver.ext.snowflake.test</module>
+        <module>org.jkiss.dbeaver.ext.sqlite.test</module>
         <module>org.jkiss.dbeaver.ext.test</module>
-
+        <module>org.jkiss.dbeaver.model.lsm.test</module>
     </modules>
 
     <build>
@@ -39,41 +43,11 @@
                     <application>org.jkiss.dbeaver.headless.application</application>
                     <product>org.jkiss.dbeaver.headless.product</product>
                     <testRuntime>default</testRuntime>
-                    <!-- Auto start bundles -->
-<!--
-                    <defaultStartLevel>
-                        <level>7</level>
-                        <autoStart>true</autoStart>
-                    </defaultStartLevel>
--->
+                    <!-- Auto activate headless bundle to instantiate test application -->
                     <bundleStartLevel>
-                        <bundle>
-                            <id>org.eclipse.osgi</id>
-                            <level>-1</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.apache.felix.scr</id>
-                            <level>2</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.eclipse.core.runtime</id>
-                            <level>4</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.eclipse.equinox.common</id>
-                            <level>2</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
-                        <bundle>
-                            <id>org.eclipse.equinox.event</id>
-                            <level>2</level>
-                            <autoStart>true</autoStart>
-                        </bundle>
+                        <bundle><id>org.jkiss.dbeaver.headless</id><level>4</level><autoStart>true</autoStart></bundle>
                     </bundleStartLevel>
-<!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5006,suspend=y</argLine>-->
+<!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:15001,suspend=y</argLine>-->
                 </configuration>
             </plugin>
         </plugins>

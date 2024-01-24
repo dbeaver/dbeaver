@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
@@ -46,7 +47,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         authTypeCombo.select(0);
 
         UIUtils.createControlLabel(authPanel, BigQueryMessages.label_key_path);
-        authCertFile = new ConfigurationFileSelector(authPanel, BigQueryMessages.label_private_key_path, new String[]{"*", "*.p12", "*.json"});
+        authCertFile = new ConfigurationFileSelector(authPanel, BigQueryMessages.label_private_key_path, new String[]{"*", "*.p12", "*.json"}, DBWorkbench.isDistributed());
         authCertFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
     }
 
@@ -59,7 +60,8 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         if (authTypeCombo != null) {
             authTypeCombo.select(CommonUtils.toInt(connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE)));
         }
-        String keyPath = connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH);
+        String keyPath = connectionInfo.getProperty(
+            DBWorkbench.isDistributed() ? BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEY : BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH);
         if (keyPath != null && authCertFile != null) {
             authCertFile.setText(keyPath);
         }
@@ -75,7 +77,9 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
             connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE, String.valueOf(authTypeCombo.getSelectionIndex()));
         }
         if (authCertFile != null) {
-            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH, authCertFile.getText().trim());
+            connectionInfo.setProperty(
+                DBWorkbench.isDistributed() ? BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEY : BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH,
+                authCertFile.getText().trim());
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -464,7 +465,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             {
                 contributionManager.add(ActionUtils.makeActionContribution(new Action(SessionEditorMessages.viewer_open_sql_editor_text, IAction.AS_PUSH_BUTTON) {
                     {
-                        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT));
+                        setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_SCRIPT));
                         setToolTipText(SessionEditorMessages.viewer_open_sql_editor_tip);
                     }
                     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,17 @@ import org.eclipse.core.internal.localstore.Bucket;
 import org.eclipse.core.internal.localstore.BucketTree;
 import org.eclipse.core.internal.properties.PropertyBucket;
 import org.eclipse.core.internal.resources.Workspace;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.IOUtils;
 
@@ -43,6 +43,9 @@ import java.util.Map;
 public class LocalProjectImpl extends BaseProjectImpl {
 
     private static final Log log = Log.getLog(LocalProjectImpl.class);
+
+    private static final String SETTINGS_FOLDER = ".settings";
+    private static final String PROJECT_FILE = ".project";
 
     private static final String EMPTY_PROJECT_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<projectDescription>\n" +
@@ -58,6 +61,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
 
     @NotNull
     private final IProject project;
+    private volatile boolean projectInvalidated;
 
     public LocalProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
@@ -78,6 +82,9 @@ public class LocalProjectImpl extends BaseProjectImpl {
     @NotNull
     @Override
     public Path getAbsolutePath() {
+        if (project.getLocation() == null) {
+            throw new IllegalStateException("Can't determine the workspace path for project " + project.getName());
+        }
         return project.getLocation().toFile().toPath();
     }
 
@@ -107,6 +114,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
                     try {
                         recoverProjectDescription();
                         project.open(monitor);
+                        hideConfigurationFiles();
                         project.refreshLocal(IFile.DEPTH_ONE, monitor);
                     } catch (Exception e2) {
                         log.error("Error opening project", e2);
@@ -115,30 +123,45 @@ public class LocalProjectImpl extends BaseProjectImpl {
                 }
             }
         }
-        if (isInMemory()) {
-            setFormat(ProjectFormat.MODERN);
-            return;
+        if (!projectInvalidated) {
+            try {
+                if (isInMemory()) {
+                    setFormat(ProjectFormat.MODERN);
+                    return;
+                }
+
+                if (DBWorkbench.getPlatform().getApplication() instanceof DesktopApplicationImpl && !DBWorkbench.isDistributed()) {
+                    // Validate project structure only for local desktop apps
+                    Path mdFolder = getMetadataFolder(false);
+
+                    Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
+                    if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
+                        setFormat(ProjectFormat.LEGACY);
+                    } else {
+                        setFormat(ProjectFormat.MODERN);
+                    }
+
+                    // Check project structure and migrate
+                    checkAndUpdateProjectStructure();
+                }
+
+                // Now project is in modern format
+                setFormat(ProjectFormat.MODERN);
+            } finally {
+                projectInvalidated = true;
+            }
         }
-
-        Path mdFolder = getMetadataFolder(false);
-
-        Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
-        if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
-            setFormat(ProjectFormat.LEGACY);
-        } else {
-            setFormat(ProjectFormat.MODERN);
-        }
-
-        // Check project structure and migrate
-        checkAndUpdateProjectStructure();
-
-        // Now project is in modern format
-        setFormat(ProjectFormat.MODERN);
     }
 
     @Override
     public boolean isUseSecretStorage() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public DBNModel getNavigatorModel() {
+        return getWorkspace().getPlatform().getNavigatorModel();
     }
 
     /**
@@ -206,6 +229,29 @@ public class LocalProjectImpl extends BaseProjectImpl {
         }
 
         return result;
+    }
+
+    public void hideConfigurationFiles() {
+        if (project.isOpen()) {
+            // To avoid accidental corruption of the workspace configuration by search/replace commands,
+            // we need to mark metadata folder as hidden (see dbeaver/dbeaver#20759)
+            IFolder metadataFolder = project.getFolder(DBPProject.METADATA_FOLDER);
+            hideResource(metadataFolder);
+            IFolder settingsFolder = project.getFolder(SETTINGS_FOLDER);
+            hideResource(settingsFolder);
+            IFile file = project.getFile(PROJECT_FILE);
+            hideResource(file);
+        }
+    }
+
+    private void hideResource(IResource file) {
+        if (file.exists() && !file.isHidden()) {
+            try {
+                file.setHidden(true);
+            } catch (CoreException e) {
+                log.error("Error hiding metadata folder", e);
+            }
+        }
     }
 
     public void recoverProjectDescription() throws IOException {

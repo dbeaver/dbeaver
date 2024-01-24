@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCUUIDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -30,21 +32,27 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject type) {
         String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
+        DBPDataKind dataKind = type.getDataKind();
         if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
             return ClickhouseEnumValueHandler.INSTANCE;
-        } else if (type.getDataKind() == DBPDataKind.ARRAY) {
+        } else if (dataKind == DBPDataKind.ARRAY) {
             return ClickhouseArrayValueHandler.INSTANCE;
-        } else if (type.getDataKind() == DBPDataKind.STRUCT) {
+        } else if (dataKind == DBPDataKind.STRUCT) {
             return ClickhouseStructValueHandler.INSTANCE;
-        } else if ("int128".equals(lowerTypeName) || "int256".equals(lowerTypeName)
-            || "uint64".equals(lowerTypeName) || "uint128".equals(lowerTypeName) || "uint256".equals(lowerTypeName)) {
-            return new ClickhouseBigNumberValueHandler(type, preferences);
         } else if ("bool".equals(lowerTypeName)) {
             return ClickhouseBoolValueHandler.INSTANCE;
         } else if ("uuid".equals(lowerTypeName)) {
             return JDBCUUIDValueHandler.INSTANCE;
-        } else {
-            return null;
+        } else if (dataKind == DBPDataKind.NUMERIC) {
+            if (lowerTypeName.contains("int128") || lowerTypeName.contains("int256")
+                || lowerTypeName.contains("uint64") || lowerTypeName.contains("uint128") || lowerTypeName.contains("uint256")) {
+                return new ClickhouseBigNumberValueHandler(type, preferences);
+            } else {
+                return new JDBCNumberValueHandler(type, preferences);
+            }
+        } else if (ClickhouseConstants.DATA_TYPE_IPV4.equals(lowerTypeName)) {
+            return ClikhouseInetTypeValueHandler.INSTANCE;
         }
+        return null;
     }
 }

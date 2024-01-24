@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,23 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.draw2dl.AbsoluteBendpoint;
-import org.eclipse.draw2dl.Bendpoint;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.RelativeBendpoint;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.AbsoluteBendpoint;
+import org.eclipse.draw2d.Bendpoint;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.RelativeBendpoint;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -35,11 +44,18 @@ import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,6 +68,7 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.*;
 
 /**
@@ -140,15 +157,48 @@ public class DiagramLoader extends ERDPersistedState {
 
         final Element entitiesElem = XMLUtils.getChildElement(diagramElem, TAG_ENTITIES);
         if (entitiesElem != null) {
+            final List<Element> dataSourceElements = XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE);
+            final Map<String, DBPDataSourceContainer> containers = new LinkedHashMap<>();
+
+            // Collect data sources
+            for (Element element : dataSourceElements) {
+                final String id = element.getAttribute(ATTR_ID);
+                if (CommonUtils.isEmpty(id)) {
+                    continue;
+                }
+                containers.put(id, projectMeta.getDataSourceRegistry().getDataSource(id));
+            }
+
+            // Check for missing data sources in the project
+            final String[] nonExistingDataSourceIds = containers.entrySet().stream()
+                .filter(entry -> entry.getValue() == null)
+                .map(Map.Entry::getKey)
+                .toArray(String[]::new);
+
+            if (nonExistingDataSourceIds.length > 0) {
+                UIUtils.syncExec(() -> {
+                    final ChooseDataSourcesDialog dialog = new ChooseDataSourcesDialog(
+                        UIUtils.getActiveWorkbenchWindow().getShell(),
+                        projectMeta,
+                        nonExistingDataSourceIds
+                    );
+
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        containers.putAll(dialog.containers);
+                        diagram.setDirty(true);
+                    }
+                });
+            }
+
             // Parse data source
-            for (Element dsElem : XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE)) {
+            for (Element dsElem : dataSourceElements) {
                 String dsId = dsElem.getAttribute(ATTR_ID);
                 if (CommonUtils.isEmpty(dsId)) {
                     log.warn("Missing datasource ID");
                     continue;
                 }
                 // Get connected datasource
-                final DBPDataSourceContainer dataSourceContainer = projectMeta.getDataSourceRegistry().getDataSource(dsId);
+                final DBPDataSourceContainer dataSourceContainer = containers.get(dsId);
                 if (dataSourceContainer == null) {
                     log.warn("Datasource '" + dsId + "' not found");
                     continue;
@@ -360,7 +410,7 @@ public class DiagramLoader extends ERDPersistedState {
     public static String serializeDiagram(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, boolean compact)
         throws IOException
     {
-        List<IFigure> allNodeFigures = diagramPart == null ? new ArrayList<>() : diagramPart.getFigure().getChildren();
+        List<? extends IFigure> allNodeFigures = diagramPart == null ? new ArrayList<>() : diagramPart.getFigure().getChildren();
         Map<DBPDataSourceContainer, DataSourceObjects> dsMap = createDataSourceObjectMap(diagram);
 
         Map<ERDElement<?>, ElementSaveInfo> elementInfoMap = new IdentityHashMap<>();
@@ -638,4 +688,112 @@ public class DiagramLoader extends ERDPersistedState {
         }
     }
 
+    private static class ChooseDataSourcesDialog extends BaseDialog {
+        private final DBPProject project;
+        private final String[] ids;
+        private final Map<String, DBPDataSourceContainer> containers;
+
+        public ChooseDataSourcesDialog(@NotNull Shell shell, @NotNull DBPProject project, @NotNull String[] ids) {
+            super(shell, "Missing data sources", null);
+
+            this.project = project;
+            this.ids = ids;
+            this.containers = new LinkedHashMap<>(ids.length);
+
+            for (String id : ids) {
+                containers.put(id, null);
+            }
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            final Composite composite = super.createDialogArea(parent);
+            composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+            UIUtils.createLabel(composite, "This diagram refers data sources that don't exist.\n\nPlease specify new data sources:");
+
+            final TableViewer viewer = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+
+            final Table table = viewer.getTable();
+            table.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(600, SWT.DEFAULT).create());
+            table.setHeaderVisible(true);
+            table.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (table.getSelectionIndex() < 0) {
+                    return;
+                }
+
+                final String id = ids[table.getSelectionIndex()];
+                final DBNNode root = project.getNavigatorModel().getRoot().getProjectNode(project);
+                final DBNNode leaf = DBWorkbench.getPlatformUI().selectObject(
+                    getShell(),
+                    "Select new data source",
+                    root,
+                    null,
+                    new Class[]{DBPDataSourceContainer.class},
+                    new Class[]{DBPDataSourceContainer.class},
+                    new Class[]{DBPDataSourceContainer.class}
+                );
+
+                if (leaf != null) {
+                    containers.put(id, ((DBNDataSource) leaf).getDataSourceContainer());
+                    viewer.refresh();
+                    updateCompletion();
+                }
+            }));
+
+            final ViewerColumnController<Object, Object> controller = new ViewerColumnController<>(ChooseDataSourcesDialog.class.getName(), viewer);
+            controller.addColumn("Original data source", null, SWT.LEFT, true, true, new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return (String) element;
+                }
+
+                @Override
+                public Image getImage(Object element) {
+                    return DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT);
+                }
+            });
+            controller.addColumn("New data source", null, SWT.LEFT, true, true, new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    final DBPDataSourceContainer container = containers.get((String) element);
+                    if (container != null) {
+                        return container.getName();
+                    } else {
+                        return "<unspecified>";
+                    }
+                }
+
+                @Override
+                public Image getImage(Object element) {
+                    final DBPDataSourceContainer container = containers.get((String) element);
+                    if (container != null) {
+                        return DBeaverIcons.getImage(container.getDriver().getIcon());
+                    } else {
+                        return DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT);
+                    }
+                }
+            });
+
+            controller.createColumns(false);
+
+            viewer.setContentProvider(new ListContentProvider());
+            viewer.setInput(ids);
+
+            UIUtils.asyncExec(() -> UIUtils.packColumns(viewer.getTable(), true));
+
+            updateCompletion();
+
+            return composite;
+        }
+
+        private void updateCompletion() {
+            UIUtils.asyncExec(() -> {
+                final Button button = getButton(IDialogConstants.OK_ID);
+                if (button != null) {
+                    button.setEnabled(!containers.containsValue(null));
+                }
+            });
+        }
+    }
 }

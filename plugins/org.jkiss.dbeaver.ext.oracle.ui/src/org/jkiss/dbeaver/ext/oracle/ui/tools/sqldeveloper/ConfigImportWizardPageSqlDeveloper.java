@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
+import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -173,6 +175,8 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         private String customUrl;
         @SerializedName("OS_AUTHENTICATION")
         private String OsAuth;
+        @SerializedName("OracleConnectionType")
+        private OracleConstants.ConnectionType connectionType;
 
         public String getRole() {
             return role;
@@ -238,6 +242,14 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
             this.OsAuth = OS_AUTHENTICATION;
         }
 
+        public OracleConstants.ConnectionType getConnectionType() {
+            return connectionType;
+        }
+
+        public void setConnectionType(OracleConstants.ConnectionType connectionType) {
+            this.connectionType = connectionType;
+        }
+
     }
 
     private void parseJsonConnections(File connectionsFile, ImportData importData) throws JsonSyntaxException {
@@ -256,9 +268,20 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                         continue;
                     }
 
-                    String dbName = CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
+                    boolean isTnsConnection = info.getConnectionType() == OracleConstants.ConnectionType.TNS;
 
-                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conn.getName(), info.getUrl(), info.getHost(), info.getPort(), dbName, info.getUser(), null);
+                    // for tns connection, connections file will contain network alias 
+                    // in url field instead of actual url
+                    String url = isTnsConnection ? getTnsUrl(info.getUrl()) : info.getUrl();
+
+                    // database name should be set to network alias as with connections
+                    // created within dbeaver
+                    String dbName = isTnsConnection ? info.getUrl() 
+                        : CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
+
+                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
+                            oraDriver, null, conn.getName(), url, info.getHost(), info.getPort(), dbName, info.getUser(), null
+                        );
                     if (!CommonUtils.isEmpty(info.getSID())) {
                         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
                     } else if (!CommonUtils.isEmpty(info.getServiceName())) {
@@ -269,9 +292,18 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                     }
                     if (!CommonUtils.isEmpty(info.getRole())) {
                         connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, info.getRole());
+                        // dbeaver only supports SYSDBA, SYSOPER, and default auth logon roles
+                        if (info.getRole().equals(OracleConnectionRole.SYSDBA.getTitle())
+                                || info.getRole().equals(OracleConnectionRole.SYSOPER.getTitle())) {
+                            connectionInfo.setProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS, info.getRole());
+                        }
                     }
-                    if (!CommonUtils.isEmpty(conn.getType())) {
-                        connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, conn.getType());
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, String.valueOf(info.getConnectionType()));
+
+                    if (isTnsConnection) {
+                        // try and set tns path property so that network alias drop down will
+                        // be populated after import
+                        connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, getDefaultTnsNamesPath());
                     }
 
                     importData.addConnection(connectionInfo);
@@ -335,4 +367,37 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         }
     }
 
+    private String getTnsUrl(String alias) {
+        StringBuilder url = new StringBuilder();
+        url.append("jdbc:oracle:thin:@");
+
+        // look for tnsNames
+        Map<String, String> tnsNames = OCIUtils.readTnsNames(OCIUtils.getDefaultOraHomePath(), false);
+        // if not found, check tnsAdmin
+        if (tnsNames == null) {
+            tnsNames = OCIUtils.readTnsNames(null, true);
+        }
+
+        // if tnsNames contains entry for alias, append to url
+        if (tnsNames != null && tnsNames.containsKey(alias)) {
+            url.append(tnsNames.get(alias));
+        }
+
+        return url.toString();
+    }
+    
+    private String getDefaultTnsNamesPath() {
+        String tnsNamesPath;
+        // try tnsAdmin by default
+        tnsNamesPath = System.getenv(OracleConstants.VAR_TNS_ADMIN);
+        if (tnsNamesPath != null) {
+            // if found, return as is
+            return tnsNamesPath;
+        } else {
+            // else check default oraHome
+            tnsNamesPath = OCIUtils.getDefaultOraHomePath().getPath();
+        }
+        // if found append tns path and return, else return nothing
+        return tnsNamesPath == null ? null : tnsNamesPath + "/" + OCIUtils.TNSNAMES_FILE_PATH;
+    }
 }

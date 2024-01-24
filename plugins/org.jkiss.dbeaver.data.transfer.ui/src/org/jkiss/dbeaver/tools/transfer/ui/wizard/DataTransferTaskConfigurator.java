@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -57,7 +56,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
@@ -118,7 +116,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 1,
                 GridData.FILL_BOTH,
                 0);
-            objectsTable = new Table(group, SWT.BORDER | SWT.SINGLE);
+            objectsTable = new Table(group, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             objectsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             objectsTable.setHeaderVisible(true);
             UIUtils.createTableColumn(objectsTable, SWT.NONE, DTUIMessages.data_transfer_task_configurator_table_column_text_object);
@@ -130,7 +128,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     Class<?> tableClass = isExport ? DBSDataContainer.class : DBSDataManipulator.class;
-                    DBNProjectDatabases rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
+                    DBNProjectDatabases rootNode = currentProject.getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
                     DBNNode selNode = null;
                     if (objectsTable.getItemCount() > 0) {
                         DBPDataSource lastDataSource = getLastDataSource();
@@ -167,7 +165,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         DBSObject dataSourceObject = null;
                         DBPDataSource dataSource = null;
 
-                        DBNProjectDatabases rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
+                        DBNProjectDatabases rootNode = currentProject.getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
                         DBNNode selNode = null;
                         if (objectsTable.getItemCount() > 0) {
                             DBPDataSource lastDataSource = getLastDataSource();
@@ -261,7 +259,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
 
                             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                             if (serviceSQL != null) {
-                                String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, UIIcon.SQL_SCRIPT, "");
+                                String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, DBIcon.TREE_SCRIPT, "");
                                 if (query != null) {
                                     SQLScriptContext scriptContext = new SQLScriptContext(null, contextProvider, null, new PrintWriter(System.err, true), null);
                                     SQLQueryDataContainer container = new SQLQueryDataContainer(contextProvider, new SQLQuery(dataSource, query), scriptContext, log);
@@ -299,7 +297,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                             String query = serviceSQL.openSQLEditor(
                                 contextProvider,
                                 DTUIMessages.data_transfer_task_configurator_sql_query_title,
-                                UIIcon.SQL_SCRIPT,
+                                DBIcon.TREE_SCRIPT,
                                 ((SQLQueryDataContainer) producer.getDatabaseObject()).getQuery().getText());
                             if (query != null) {
                                 SQLQueryDataContainer container = (SQLQueryDataContainer)producer.getDatabaseObject();
@@ -373,9 +371,17 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
             item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
             item.setText(0, CommonUtils.getSingleLineString(CommonUtils.toString(node.getObjectName(), "?")));
 
-            DBSObject object = node.getDatabaseObject();
-            if (object != null && object.getDataSource() != null) {
-                item.setText(1, object.getDataSource().getContainer().getName());
+            if (node.getDataSourceContainer() != null) {
+                item.setText(1, node.getDataSourceContainer().getName());
+                DBPImage dsIcon = node.getObjectContainerIcon();
+                if (dsIcon != null) {
+                    item.setImage(1, DBeaverIcons.getImage(dsIcon));
+                }
+            }
+            if (node.getDatabaseObject() == null) {
+                item.setBackground(
+                    PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get("org.jkiss.dbeaver.txn.color.reverted.background")
+                );
             }
         }
 
@@ -424,17 +430,19 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
         @Override
         public String getErrorMessage() {
             if (objectsTable.getItemCount() == 0) {
-                return "No objects selected";
+                return DTUIMessages.data_transfer_error_no_objects_selected;
             }
             for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
                 if (!dtWizard.getSettings().isProducerOptional()) {
                     if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
-                        return "Source not specified for " + (pipe.getConsumer() == null ? "?" : pipe.getConsumer().getObjectName());
+                        return NLS.bind(DTUIMessages.data_transfer_error_source_not_specified,
+                            (pipe.getConsumer() == null ? "?" : pipe.getConsumer().getObjectName()));
                     }
                 }
                 if (!dtWizard.getSettings().isConsumerOptional()) {
                     if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
-                        return "Target not specified for " + (pipe.getProducer() == null ? "?" : pipe.getProducer().getObjectName());
+                        return NLS.bind(DTUIMessages.data_transfer_error_target_not_specified,
+                            (pipe.getProducer() == null ? "?" : pipe.getProducer().getObjectName()));
                     }
                 }
             }

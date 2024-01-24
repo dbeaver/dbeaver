@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.ui.feature"
       label="%featureName"
-      version="1.0.89.qualifier"
+      version="1.0.114.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -13,127 +13,27 @@
       %copyright
    </copyright>
 
-   <includes
-         id="org.jkiss.dbeaver.db.feature"
-         version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
 
-   <plugin
-         id="org.jkiss.dbeaver.ext.mysql.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.db2.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.exasol.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.hana.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.mssql.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.oracle.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-         
-   <plugin
-         id="org.jkiss.dbeaver.ext.oceanbase.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.postgresql.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.generic.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.vertica.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.athena.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-           id="org.jkiss.dbeaver.ext.clickhouse.ui"
-           download-size="0"
-           install-size="0"
-           version="0.0.0"
-           unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.bigquery.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.spanner.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.snowflake.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.sqlite.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.wmi"
-         os="win32"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.ext.mysql.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.dameng.ui" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.ext.db2.ui" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.ext.exasol.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.hana.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.mssql.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.oracle.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.oceanbase.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.tidb.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.postgresql.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.generic.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.vertica.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.athena.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.clickhouse.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.bigquery.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.spanner.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.snowflake.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.sqlite.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.wmi" os="win32" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.altibase.ui" version="0.0.0" />
 
 </feature>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -61,15 +64,23 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     protected Color transientForeground;
     private ILabelDecorator labelDecorator;
 
-    public DatabaseNavigatorLabelProvider(Viewer viewer) {
-        this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
+    public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
+        this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
         this.themeChangeListener = e -> {
             final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
             normalFont = theme.getFontRegistry().get(TREE_TABLE_FONT);
             boldFont = theme.getFontRegistry().getBold(TREE_TABLE_FONT);
             italicFont = theme.getFontRegistry().getItalic(TREE_TABLE_FONT);
+
+            final TreeViewer viewer = tree.getViewer();
+            viewer.getControl().setFont(normalFont);
             viewer.refresh();
+
+            final Text filter = tree.getFilterControl();
+            if (filter != null) {
+                filter.setFont(normalFont);
+            }
         };
         this.themeChangeListener.propertyChange(null);
 
@@ -101,7 +112,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             text = ((DBSObject) obj).getName();
 */
         } else if (obj instanceof DBNNode) {
-            text = ((DBNNode) obj).getNodeName();
+            text = ((DBNNode) obj).getNodeDisplayName();
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS)) {
                 String briefInfo = ((DBNNode) obj).getNodeBriefInfo();
                 if (!CommonUtils.isEmpty(briefInfo)) {
@@ -168,6 +179,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             if (node instanceof DBSWrapper && ((DBSWrapper)node).getObject() != null && !((DBSWrapper)node).getObject().isPersisted()) {
                 return transientForeground;
             }
+        }
+        if (element instanceof TreeNodeSpecial) {
+            return lockedForeground;
         }
         return null;
     }
@@ -247,7 +261,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             if (!CommonUtils.isEmptyTrimmed(description)) {
                 return description;
             }
-            return ((DBNNode) element).getNodeName();
+            return ((DBNNode) element).getNodeDisplayName();
+        } else if (element instanceof IToolTipProvider provider) {
+            return provider.getToolTipText(element);
         }
         return null;
     }

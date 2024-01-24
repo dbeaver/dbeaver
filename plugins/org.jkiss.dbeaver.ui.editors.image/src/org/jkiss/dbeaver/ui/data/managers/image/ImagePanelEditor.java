@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,28 +26,29 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.controls.imageview.AbstractImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.SWTImageViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 
 /**
 * ImagePanelEditor
 */
-public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer> {
+public class ImagePanelEditor implements IStreamValueEditorPersistent<AbstractImageViewer> {
 
     @Override
     public AbstractImageViewer createControl(IValueController valueController) {
-        DBPPreferenceStore preferenceStore = valueController.getExecutionContext()
-            .getDataSource()
-            .getContainer()
-            .getPreferenceStore();
+        final DBPPreferenceStore preferenceStore = valueController.getExecutionContext() != null
+            ? valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore()
+            : DBWorkbench.getPlatform().getPreferenceStore();
         if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
             return new BrowserImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
         } else {
@@ -99,9 +100,9 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
 
     }
 
+    @Nullable
     @Override
-    public void disposeEditor() {
-
+    public Path getExternalFilePath(@NotNull AbstractImageViewer control) {
+        return control.getExternalFilePath();
     }
-
 }

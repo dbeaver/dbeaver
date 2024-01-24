@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,70 +18,87 @@ package org.jkiss.dbeaver.model.websocket.event.resource;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.rm.RMResource;
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractProjectEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 
-public class WSResourceUpdatedEvent extends WSAbstractProjectEvent {
+public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
     @NotNull
     private final String resourcePath;
     @NotNull
-    private final RMResource[] resourceParsedPath;
+    private final WSResourceProperty property;
+    @Nullable
+    private final String details;
 
     private WSResourceUpdatedEvent(
         @NotNull WSEventType eventType,
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
-    ) {
-        super(eventType, sessionId, projectId);
+        @NotNull WSResourceProperty property,
+        @Nullable String details
+        ) {
+        super(eventType, sessionId, userId, projectId);
+        this.property = property;
         this.resourcePath = resourcePath;
-        this.resourceParsedPath = resourceParsedPath;
+        this.details = details;
     }
 
     public static WSResourceUpdatedEvent create(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
+        @NotNull WSResourceProperty property,
+        @Nullable String details
+
     ) {
         return new WSResourceUpdatedEvent(
             WSEventType.RM_RESOURCE_CREATED,
             sessionId,
+            userId,
             projectId,
             resourcePath,
-            resourceParsedPath
+            property,
+            details
         );
     }
 
     public static WSResourceUpdatedEvent update(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
+        @NotNull WSResourceProperty property,
+        @Nullable String details
     ) {
         return new WSResourceUpdatedEvent(
             WSEventType.RM_RESOURCE_UPDATED,
             sessionId,
+            userId,
             projectId,
             resourcePath,
-            resourceParsedPath
+            property,
+            details
         );
     }
 
     public static WSResourceUpdatedEvent delete(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
+        @NotNull WSResourceProperty property,
+        @Nullable String details
     ) {
         return new WSResourceUpdatedEvent(
             WSEventType.RM_RESOURCE_DELETED,
             sessionId,
+            userId,
             projectId,
             resourcePath,
-            resourceParsedPath
+            property,
+            details
         );
     }
 
@@ -96,7 +113,12 @@ public class WSResourceUpdatedEvent extends WSAbstractProjectEvent {
     }
 
     @NotNull
-    public Object getResourceParsedPath() {
-        return resourceParsedPath;
+    public WSResourceProperty getProperty() {
+        return property;
+    }
+
+    @Nullable
+    public String getDetails() {
+        return details;
     }
 }

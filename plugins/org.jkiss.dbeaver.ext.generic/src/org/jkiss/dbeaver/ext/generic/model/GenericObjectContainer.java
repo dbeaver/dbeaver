@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -206,7 +207,9 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                             }
                             monitor.subTask("Read indexes for '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                             Collection<? extends GenericTableIndex> tableIndexes = table.getIndexes(monitor);
-                            newIndexCache.addAll(tableIndexes);
+                            if (!CommonUtils.isEmpty(tableIndexes)) {
+                                newIndexCache.addAll(tableIndexes);
+                            }
                             monitor.worked(1);
                         }
                     } finally {
@@ -390,6 +393,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Association
+    @Nullable
+    public GenericTrigger getTableTrigger(@NotNull DBRProgressMonitor monitor, String triggerName) throws DBException {
+        return getDataSource().getMetaModel().supportsTriggers(getDataSource()) ?
+            tableTriggerCache.getObject(monitor, this, triggerName) : null;
+    }
+
+    @Association
     public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getDataTypes(monitor);
     }
@@ -435,7 +445,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     public String toString() {
-        return getName() == null ? "<NONE>" : getName();
+        return getName() == null ? GenericMessages.generic_object_container_none : getName();
     }
 
     private synchronized void loadProcedures(DBRProgressMonitor monitor)

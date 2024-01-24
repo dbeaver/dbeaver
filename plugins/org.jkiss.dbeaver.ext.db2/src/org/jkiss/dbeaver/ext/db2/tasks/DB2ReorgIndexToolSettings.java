@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.db2.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -56,8 +58,8 @@ public class DB2ReorgIndexToolSettings extends SQLToolExecuteSettings<DB2TableBa
     }
 
     @Override
-    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
-        super.loadConfiguration(runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         tableAccess = JSONUtils.getString(config, "table_access"); //$NON-NLS-1$
         cleanupOption = JSONUtils.getString(config, "option"); //$NON-NLS-1$
     }

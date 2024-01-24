@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,8 +65,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         super();
     }
 
-    public DBNModel getModel()
-    {
+    @NotNull
+    public static DBNModel getGlobalNavigatorModel() {
         return DBWorkbench.getPlatform().getNavigatorModel();
     }
 
@@ -96,8 +96,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
      * it.
      */
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         this.tree = createNavigatorTree(parent, null);
         this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer(this));
 
@@ -110,8 +109,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         UIExecutionQueue.queueExec(() -> tree.setInput(getRootNode()));
     }
 
-    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
-    {
+    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode) {
         // Create tree
         final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle(), false, getNavigatorFilter());
 
@@ -137,6 +135,14 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             @Override
             public void mouseUp(MouseEvent e) {
                 super.mouseUp(e);
+                // Commented because it forced selection reset on connection expand
+/*
+                Point point = new Point(e.x, e.y);
+                TreeItem item = navigatorTree.getViewer().getTree().getItem(point);
+                if (item == null) {
+                    navigatorTree.getViewer().setSelection(new StructuredSelection());
+                } 
+*/
             }
         });
         navigatorTree.getViewer().addDoubleClickListener(event -> {
@@ -213,12 +219,16 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
         // Hook context menu
         NavigatorUtils.addContextMenu(this.getSite(), navigatorTree.getViewer());
-        // Add drag and drop support
-        NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
+        installDragAndDropSupport(navigatorTree);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
 
         return navigatorTree;
+    }
+
+    protected void installDragAndDropSupport(DatabaseNavigatorTree navigatorTree) {
+        // Add drag and drop support
+        NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
     }
 
     protected void createTreeColumns(DatabaseNavigatorTree tree) {
@@ -240,7 +250,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 // Don't display status message for root node - it has no meaningful information
                 getViewSite().getActionBars().getStatusLineManager().setMessage(null);
             } else if (lastSelection instanceof DBNNode) {
-                final String name = ((DBNNode) lastSelection).getNodeName();
+                final String name = ((DBNNode) lastSelection).getNodeDisplayName();
                 final String desc = ((DBNNode) lastSelection).getNodeDescription();
                 if (CommonUtils.isEmpty(desc)) {
                     getViewSite().getActionBars().getStatusLineManager().setMessage(name);

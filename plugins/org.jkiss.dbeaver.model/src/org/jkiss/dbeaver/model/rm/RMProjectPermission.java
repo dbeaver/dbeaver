@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ public enum RMProjectPermission {
 
     RESOURCE_VIEW(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW),
     RESOURCE_EDIT(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT, Set.of(RESOURCE_VIEW)),
+    TASK_MANAGER(RMConstants.PERMISSION_TASK_MANAGER),
 
-    PROJECT_ADMIN(RMConstants.PERMISSION_PROJECT_ADMIN, Set.of(RESOURCE_EDIT, DATA_SOURCES_EDIT));
+    PROJECT_ADMIN(RMConstants.PERMISSION_PROJECT_ADMIN, Set.of(RESOURCE_EDIT, DATA_SOURCES_EDIT, TASK_MANAGER));
 
     private final String permission;
     private final Set<RMProjectPermission> childPermissions;

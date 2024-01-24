@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.compare.simple.ui.internal.CompareUIMessages;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,7 +47,9 @@ public class CompareObjectsHandler extends AbstractHandler {
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
         if (ss.size() < 2) {
-            DBWorkbench.getPlatformUI().showError("Just one object selected", "At least two objects must be selected to perform structure compare");
+            DBWorkbench.getPlatformUI().showError(
+                CompareUIMessages.compare_objects_error_just_one_object_selected_title,
+                CompareUIMessages.compare_objects_error_just_one_object_selected_message);
             return null;
         }
         List<DBNDatabaseNode> nodes = new ArrayList<>();
@@ -70,7 +73,9 @@ public class CompareObjectsHandler extends AbstractHandler {
                 firstType = itemType;
             } else {
                 if (firstType != itemType || firstMeta != meta) {
-                    DBWorkbench.getPlatformUI().showError("Different object types", "Objects of different types were selected. You may compare only objects of the same type");
+                    DBWorkbench.getPlatformUI().showError(
+                        CompareUIMessages.compare_objects_error_different_object_types_title,
+                        CompareUIMessages.compare_objects_error_different_object_types_message);
                     return null;
                 }
             }

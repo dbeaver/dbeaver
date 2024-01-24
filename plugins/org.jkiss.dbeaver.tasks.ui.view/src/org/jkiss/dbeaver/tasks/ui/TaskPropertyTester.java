@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,8 @@ public class TaskPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.task";
     public static final String PROP_SCHEDULED = "scheduled";
-    public static final String TASK_EDITABLE = "editable";
+    public static final String PROP_EDITABLE = "editable";
+    public static final String PROP_CAN_OPEN_SCHEDULER_SETTINGS = "canOpenSchedulerSettings";
 
     public TaskPropertyTester() {
         super();
@@ -43,22 +44,20 @@ public class TaskPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (receiver instanceof DBTTaskFolder && TASK_EDITABLE.equals(property)) {
+        if (receiver instanceof DBTTaskFolder && PROP_EDITABLE.equals(property)) {
             return ((DBTTaskFolder) receiver).getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
         }
-        if (!(receiver instanceof DBTTask)) {
+        if (!(receiver instanceof DBTTask task)) {
             return false;
         }
-        DBTTask task = (DBTTask)receiver;
-        switch (property) {
-            case PROP_SCHEDULED:
-                DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
-                return (scheduler != null && scheduler.getScheduledTaskInfo(task) != null) == CommonUtils.getBoolean(expectedValue, true);
-            case TASK_EDITABLE:
-                return task.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
-        }
-
-        return false;
+        final DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
+        final boolean actualValue = switch (property) {
+            case PROP_SCHEDULED -> scheduler != null && scheduler.getScheduledTaskInfo(task) != null;
+            case PROP_EDITABLE -> task.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+            case PROP_CAN_OPEN_SCHEDULER_SETTINGS -> scheduler != null && scheduler.supportsFeature(DBTScheduler.FEATURE_OPEN_EXTERNAL_SETTINGS);
+            default -> false;
+        };
+        return actualValue == CommonUtils.getBoolean(expectedValue, true);
     }
 
     public static void firePropertyChange(String propName)

@@ -24,16 +24,17 @@
 
     <extension point="org.jkiss.dbeaver.language">
         <language code="en" label="%language.en.label"/>
-        <language code="zh" label="%language.zh.label"/>
-        <language code="ru" label="%language.ru.label"/>
         <language code="fr" label="%language.fr.label"/>
         <language code="de" label="%language.de.label"/>
         <language code="it" label="%language.it.label"/>
         <language code="ja" label="%language.ja.label"/>
-        <language code="es" label="%language.es.label"/>
-        <language code="pt_BR" label="%language.pt_BR.label"/>
         <language code="ko" label="%language.ko.label"/>
+        <language code="pt_BR" label="%language.pt_BR.label"/>
+        <language code="ru" label="%language.ru.label"/>
+        <language code="zh" label="%language.zh.label"/>
+        <language code="es" label="%language.es.label"/>
         <language code="tw" label="%language.tw.label"/>
+        <language code="uk" label="%language.uk.label"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.driverManager">
@@ -54,6 +55,7 @@
             codeName="Proxy"
             label="%handler.socks_proxy.label"
             description="%handler.socks_proxy.description"
+            desktop="true"
             secured="true"
             order="10"
             handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
@@ -83,11 +85,11 @@
         <content-type
                 file-extensions="bm"
                 id="org.jkiss.dbeaver.bookmark"
-                name="%content-type.org.jkiss.dbeaver.bookmark.name"
+                name="Database Bookmarks"
                 priority="normal"
                 describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
 
-        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="%content-type.org.jkiss.dbeaver.shortcut.name" priority="normal">
+        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="Windows shortcuts" priority="normal">
             <describer class="org.eclipse.core.runtime.content.BinarySignatureDescriber">
                 <!-- http://msdn.microsoft.com/en-us/library/dd871305%28PROT.10%29.aspx -->
                 <parameter name="signature" value="4C,00,00,00,01,14,02,00,00,00,00,00,C0,00,00,00,00,00,00,46"/>

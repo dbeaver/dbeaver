@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,6 +228,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             try (final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(database.getDataSource()) + " FROM pg_catalog.pg_type t" +
                     "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
                     "\nWHERE t.oid=? ")) {
                 dbStat.setLong(1, oid);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -255,6 +256,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             try (final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.oid,t.*," + getBaseTypeNameClause(database.getDataSource()) + " FROM pg_catalog.pg_type t" +
                     "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
                     "\nWHERE t.typname=? ")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

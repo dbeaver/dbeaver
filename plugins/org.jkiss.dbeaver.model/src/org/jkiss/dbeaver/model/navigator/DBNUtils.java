@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,11 +49,22 @@ public class DBNUtils {
     private static final Log log = Log.getLog(DBNUtils.class);
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object) {
-        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
+        DBNModel model = getNavigatorModel(object);
+        return model == null ? null : model.getNodeByObject(object);
+    }
+
+    @Nullable
+    public static DBNModel getNavigatorModel(DBSObject object) {
+        DBPProject project = DBUtils.getObjectOwnerProject(object);
+        if (project == null) {
+            return null;
+        }
+        return project.getNavigatorModel();
     }
 
     public static DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered) {
-        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, object, addFiltered);
+        DBNModel model = getNavigatorModel(object);
+        return model == null ? null : model.getNodeByObject(monitor, object, addFiltered);
     }
 
     public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
@@ -121,7 +132,7 @@ public class DBNUtils {
         // and if children are not folders
         if (children.length > 0) {
             DBNNode firstChild = children[0];
-            boolean isResources = firstChild instanceof DBNResource || firstChild instanceof DBNPath;
+            boolean isResources = firstChild instanceof DBNNodeWithResource;
             {
                 if (isResources) {
                     Arrays.sort(children, NodeFolderComparator.INSTANCE);
@@ -166,8 +177,12 @@ public class DBNUtils {
         return false;
     }
 
-    public static void refreshNavigatorResource(@NotNull IResource resource, Object source) {
-        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(resource.getProject());
+    public static void refreshNavigatorResource(@NotNull DBPProject project, @NotNull IResource resource, Object source) {
+        DBNModel navigatorModel = project.getNavigatorModel();
+        if (navigatorModel == null) {
+            return;
+        }
+        final DBNProject projectNode = navigatorModel.getRoot().getProjectNode(resource.getProject());
         if (projectNode != null) {
             final DBNResource fileNode = projectNode.findResource(resource);
             if (fileNode != null) {
@@ -193,7 +208,7 @@ public class DBNUtils {
         static NodeNameComparator INSTANCE = new NodeNameComparator();
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeName().compareToIgnoreCase(node2.getNodeName());
+            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
         }
     }
 

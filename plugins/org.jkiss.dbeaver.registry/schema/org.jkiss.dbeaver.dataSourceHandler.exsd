@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.dataSourcehandler" name="Datasource handler"/>
@@ -16,9 +17,6 @@
          </appInfo>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="handler"/>
-         </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
                <documentation>
@@ -36,5 +34,10 @@
          </documentation>
       </annotation>
    </element>
+
+
+
+
+
 
 </schema>

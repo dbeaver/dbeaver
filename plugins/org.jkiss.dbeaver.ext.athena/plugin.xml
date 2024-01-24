@@ -31,7 +31,8 @@
                         category="AWS"
                         webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
                         propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/doc/Simba+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"
-                        categories="bigdata,aws">
+                        categories="bigdata,aws"
+                        singleConnection="true">
                     <replace provider="generic" driver="aws_athena_42"/>
                     <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/AthenaJDBC42-2.0.34.1000.jar" bundle="!drivers.athena"/>
                     <file type="license" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/docs/LICENSE.txt" bundle="!drivers.athena"/>
@@ -41,7 +42,6 @@
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
-                    <parameter name="omit-catalog" value="true"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
@@ -51,6 +51,7 @@
                     <propertyGroup label="Settings">
                         <property id="AwsRegion" label="Region" type="string" description="Athena AWS Region" defaultValue="us-west-1" validValues="us-east-1,us-east-2,us-west-1,us-west-2,ca-central-1,eu-central-1,eu-west-1,eu-west-2,eu-west-3,ap-northeast-1,ap-northeast-2,ap-northeast-3,ap-southeast-1,ap-southeast-2,ap-south-1,sa-east-1,cn-north-1,cn-northwest-1"/>
                         <property id="S3OutputLocation" label="S3 Location" type="string" description="Athena AWS S3 Location"/>
+                        <property id="show-aws-catalogs" label="Show catalogs" type="string" description="To show multiple data catalogs with Athena (for example, when using an external Hive metastore or federated queries)"/>
                     </propertyGroup>
                 </provider-properties>
             </drivers>

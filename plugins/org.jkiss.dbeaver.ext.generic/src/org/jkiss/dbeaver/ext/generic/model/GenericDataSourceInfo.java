@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,35 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsSchemaSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
         supportsNullableUniqueConstraints = false;
         supportsConstraints = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CONSTRAINTS), true);
+
+        final Object supportsReferences = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
+        if (supportsReferences != null) {
+            this.setSupportsReferences(CommonUtils.toBoolean(supportsReferences));
+        }
+
+        final Object supportsIndexes = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_INDEXES);
+        if (supportsIndexes != null) {
+            this.setSupportsIndexes(CommonUtils.toBoolean(supportsIndexes));
+        }
+
+        final Object supportsViews = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_VIEWS);
+        if (supportsViews != null) {
+            this.setSupportsViews(CommonUtils.toBoolean(supportsViews));
+        }
+
+        final Object supportsStoredCode = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_STORED_CODE);
+        if (supportsStoredCode != null) {
+            this.setSupportsStoredCode(CommonUtils.toBoolean(supportsStoredCode));
+        }
+
+        final Object supportsCatalogSelection = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION);
+        if (supportsCatalogSelection != null) {
+            this.supportsCatalogSelection = CommonUtils.toBoolean(supportsCatalogSelection);
+        }
+        final Object supportSchemaSelection = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCHEMA_SELECTION);
+        if (supportSchemaSelection != null) {
+            this.supportsSchemaSelection = CommonUtils.toBoolean(supportSchemaSelection);
+        }
     }
 
     @Override

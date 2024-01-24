@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,8 +89,8 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     {
         super(db2DataSource, true);
         this.name = JDBCUtils.safeGetString(dbResult, "TBSPACE");
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.tbspaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
         this.tbspaceType = CommonUtils.valueOf(DB2TablespaceType.class, JDBCUtils.safeGetString(dbResult, "TBSPACETYPE"));
         this.dataType = CommonUtils.valueOf(DB2TablespaceDataType.class, JDBCUtils.safeGetString(dbResult, "DATATYPE"));
@@ -101,10 +101,10 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         this.pageSize = JDBCUtils.safeGetInteger(dbResult, "PAGESIZE");
         this.dbpgName = JDBCUtils.safeGetString(dbResult, "DBPGNAME");
         this.dropRecovery = JDBCUtils.safeGetBoolean(dbResult, "DROP_RECOVERY", DB2YesNo.Y.name());
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
         if (db2DataSource.isAtLeastV9_5()) {
             this.writeOverHead = JDBCUtils.safeGetDouble(dbResult, "WRITEOVERHEAD");

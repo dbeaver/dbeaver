@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Sample Database
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.sample.database;singleton:=true
-Bundle-Version: 1.0.135.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 1.0.160.qualifier
+Bundle-Release-Date: 20240122
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ext.sqlite
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.sample.database
 Automatic-Module-Name: org.jkiss.dbeaver.ext.sample.database

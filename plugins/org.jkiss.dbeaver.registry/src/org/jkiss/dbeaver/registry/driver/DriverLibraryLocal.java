@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,12 +36,14 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DriverLibraryLocal
  */
 public class DriverLibraryLocal extends DriverLibraryAbstract {
     private static final Log log = Log.getLog(DriverLibraryLocal.class);
+    private boolean useOriginalJar;
 
     public DriverLibraryLocal(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
@@ -90,8 +93,17 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     public Path getLocalFile() {
         // Try to use direct path
         String localFilePath = this.getLocalFilePath();
-        if (DBWorkbench.isDistributed()) {
-            Path resolvedCache = driver.getWorkspaceStorageFolder().resolve(localFilePath);
+        if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            Path resolvedCache;
+            List<DriverDescriptor.DriverFileInfo> driverFileInfos = driver.getResolvedFiles().get(this);
+            if (!CommonUtils.isEmpty(driverFileInfos) && driverFileInfos.size() == 1) {
+                DriverDescriptor.DriverFileInfo driverFileInfo = driverFileInfos.get(0);
+                resolvedCache = resolveCacheDir().resolve(driverFileInfo.getFile());
+            } else {
+                // need to correct driver initialization, otherwise, if at least one file was copied,
+                // the driver configuration will be incorrect and other driver files will not be copied
+                resolvedCache = resolveCacheDir().resolve(localFilePath);
+            }
             if (Files.exists(resolvedCache)) {
                 localFilePath = resolvedCache.toAbsolutePath().toString();
             }
@@ -141,6 +153,19 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         }
 
         return platformFile;
+    }
+
+    private Path resolveCacheDir() {
+        if (isUseOriginalJar()) {
+            return DriverDescriptor.getProvidedDriversStorageFolder();
+        }
+        if (DBWorkbench.isDistributed() || isCustom()) {
+            // we do not have any provided drivers in distributed mode
+            // and custom drivers stored in the workspace
+            return DriverDescriptor.getWorkspaceDriversStorageFolder();
+        }
+
+        return DriverDescriptor.getProvidedDriversStorageFolder();
     }
 
     @Nullable
@@ -195,4 +220,14 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         }
     }
 
+    /**
+     * Use original jar files and ignore all user changes
+     */
+    public boolean isUseOriginalJar() {
+        return useOriginalJar;
+    }
+
+    public void setUseOriginalJar(boolean useOriginalJar) {
+        this.useOriginalJar = useOriginalJar;
+    }
 }

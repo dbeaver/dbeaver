@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ import java.util.regex.Pattern;
 /**
  * Object filter configuration
  */
-public class DBSObjectFilter
-{
+public class DBSObjectFilter {
     private String name;
     private String description;
     private boolean enabled = true;
@@ -40,38 +39,34 @@ public class DBSObjectFilter
     private transient List<Object> includePatterns = null;
     private transient List<Object> excludePatterns = null;
 
-    public DBSObjectFilter()
-    {
+    public DBSObjectFilter() {
     }
 
-    public DBSObjectFilter(String includeString, @Nullable String excludeString)
-    {
-        if (include != null) {
+    public DBSObjectFilter(@Nullable String includeString, @Nullable String excludeString) {
+        if (includeString != null) {
             this.include = SQLUtils.splitFilter(includeString);
         }
-        if (exclude != null) {
+        if (excludeString != null) {
             this.exclude = SQLUtils.splitFilter(excludeString);
         }
     }
 
-    public DBSObjectFilter(DBSObjectFilter filter)
-    {
+    public DBSObjectFilter(DBSObjectFilter filter) {
         if (filter != null) {
             this.name = filter.name;
             this.description = filter.description;
             this.enabled = filter.enabled;
             this.include = filter.include == null ? null : new ArrayList<>(filter.include);
             this.exclude = filter.exclude == null ? null : new ArrayList<>(filter.exclude);
+            this.caseSensitive = filter.caseSensitive;
         }
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -83,33 +78,27 @@ public class DBSObjectFilter
         this.caseSensitive = caseSensitive;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public List<String> getInclude()
-    {
+    public List<String> getInclude() {
         return include;
     }
 
-    public void addInclude(String name)
-    {
+    public void addInclude(String name) {
         if (include == null) {
             include = new ArrayList<>();
         }
@@ -117,19 +106,16 @@ public class DBSObjectFilter
         this.includePatterns = null;
     }
 
-    public void setInclude(List<String> include)
-    {
+    public void setInclude(List<String> include) {
         this.include = include;
         this.includePatterns = null;
     }
 
-    public List<String> getExclude()
-    {
+    public List<String> getExclude() {
         return exclude;
     }
 
-    public void addExclude(String name)
-    {
+    public void addExclude(String name) {
         if (exclude == null) {
             exclude = new ArrayList<>();
         }
@@ -137,35 +123,29 @@ public class DBSObjectFilter
         this.excludePatterns = null;
     }
 
-    public void setExclude(List<String> exclude)
-    {
+    public void setExclude(List<String> exclude) {
         this.exclude = exclude;
         this.excludePatterns = null;
     }
 
-    public boolean isNotApplicable()
-    {
+    public boolean isNotApplicable() {
         return !enabled || isEmpty();
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return CommonUtils.isEmpty(include) && CommonUtils.isEmpty(exclude);
     }
 
-    public boolean hasSingleMask()
-    {
+    public boolean hasSingleMask() {
         return include != null && include.size() == 1 && CommonUtils.isEmpty(exclude);
     }
 
     @Nullable
-    public String getSingleMask()
-    {
+    public String getSingleMask() {
         return !CommonUtils.isEmpty(include) ? include.get(0) : null;
     }
-    
-    public synchronized boolean matches(String name)
-    {
+
+    public synchronized boolean matches(String name) {
         if (includePatterns == null && !CommonUtils.isEmpty(include)) {
             includePatterns = new ArrayList<>(include.size());
             for (String inc : include) {
@@ -210,9 +190,9 @@ public class DBSObjectFilter
 
     private static boolean matchesPattern(Object pattern, String name) {
         if (pattern instanceof Pattern) {
-            return ((Pattern)pattern).matcher(name).matches();
+            return ((Pattern) pattern).matcher(name).matches();
         } else {
-            return ((String)pattern).equalsIgnoreCase(name);
+            return ((String) pattern).equalsIgnoreCase(name);
         }
     }
 
@@ -232,7 +212,7 @@ public class DBSObjectFilter
         if (!(obj instanceof DBSObjectFilter)) {
             return false;
         }
-        DBSObjectFilter source = (DBSObjectFilter)obj;
+        DBSObjectFilter source = (DBSObjectFilter) obj;
 
         return CommonUtils.equalObjects(name, source.name) &&
             CommonUtils.equalObjects(description, source.description) &&
@@ -244,9 +224,9 @@ public class DBSObjectFilter
     @Override
     public int hashCode() {
         return CommonUtils.hashCode(name) +
-                CommonUtils.hashCode(description) +
-                (enabled ? 1 : 0) +
-                CommonUtils.hashCode(include) +
-                CommonUtils.hashCode(exclude);
+            CommonUtils.hashCode(description) +
+            (enabled ? 1 : 0) +
+            CommonUtils.hashCode(include) +
+            CommonUtils.hashCode(exclude);
     }
 }

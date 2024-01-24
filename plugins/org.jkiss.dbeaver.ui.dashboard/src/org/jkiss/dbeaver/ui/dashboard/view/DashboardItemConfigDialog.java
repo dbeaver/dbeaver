@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
@@ -93,7 +93,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
                 btnGroup.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 4, 1));
                 Button queriesButton = new Button(btnGroup, SWT.PUSH);
                 queriesButton.setText(UIDashboardMessages.dialog_dashboard_item_config_buttons_sqlqueries);
-                queriesButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                queriesButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
                 queriesButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false));
                 queriesButton.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -107,7 +107,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
                             serviceSQL.openSQLViewer(
                                 DBUtils.getDefaultContext(dashboardContainer.getDataSourceContainer().getDataSource(), true),
                                 UIDashboardMessages.dialog_dashboard_item_config_buttons_sqlqueries_dash,
-                                UIIcon.SQL_SCRIPT,
+                                DBIcon.TREE_SCRIPT,
                                 sql.toString(),
                                 false, false);
                         }

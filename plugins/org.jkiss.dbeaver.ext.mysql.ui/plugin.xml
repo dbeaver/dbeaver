@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
             main="false"
             label="%editor.schema_privileges.name"
-            description="Schema user privileges"
+            description="%editor.schema_privileges.description"
             position="additions_start"
             icon="#user">
         </editor>
@@ -97,7 +97,9 @@
             <supports dataSource="mysql"/>
         </editorContribution>
     </extension>
-
+    <extension point="org.jkiss.dbeaver.sql.executors">
+        <executor class="org.jkiss.dbeaver.ext.mysql.tools.MySQLScriptExecutor" datasource="mysql"/>
+    </extension>
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
             id="org.jkiss.dbeaver.ext.mysql.dataSourceWizardView"
@@ -140,76 +142,67 @@
                 label="Table Maintenance"
                 icon="#tools"/>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
                 description="%tools.exportDatabase.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
                 label="%tools.exportDatabase.label"
                 icon="#export"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
+                <task id="mysqlDatabaseBackup"/>
             </tool>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
                 description="%tools.importDatabase.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
                 label="%tools.importDatabase.label"
                 icon="#import"
                 singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                <task id="mysqlDatabaseRestore"/>
             </tool>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
                 description="%tools.executeScript.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
                 label="%tools.executeScript.label"
                 singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                <task id="mysqlScriptExecute"/>
             </tool>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
                 description="%tools.analyzeTable.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.analyzeTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolAnalyzeTable"/>
             </tool>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
                 description="%tools.checkTable.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.checkTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolCheckTable"/>
             </tool>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
                 description="%tools.optimizeTable.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.optimizeTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolOptimizeTable"/>
             </tool>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
                 description="%tools.repairTable.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.repairTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolRepairTable"/>
             </tool>
             <tool
-                class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
                 description="%tools.truncateTable.description"
                 id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.truncateTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolTruncateTable"/>
             </tool>
         </tools>
     </extension>

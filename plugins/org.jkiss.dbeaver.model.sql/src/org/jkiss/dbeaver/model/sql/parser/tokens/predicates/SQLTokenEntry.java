@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,12 @@ import java.util.Objects;
 public class SQLTokenEntry extends TokenPredicateNode implements TokenEntry {
     private final String string;
     private final SQLTokenType type;
+    private final boolean isInverted;
 
-    public SQLTokenEntry(@Nullable String string, @Nullable SQLTokenType type) {
+    public SQLTokenEntry(@Nullable String string, @Nullable SQLTokenType type, boolean isInverted) {
         this.string = string;
         this.type = type;
+        this.isInverted = isInverted;
     }
 
     @Override
@@ -45,21 +47,30 @@ public class SQLTokenEntry extends TokenPredicateNode implements TokenEntry {
 
     @Override
     @Nullable
-    public Enum getTokenType() {
+    public SQLTokenType getTokenType() {
         return this.type;
+    }
+    
+    public boolean isInverted() {
+        return this.isInverted;
     }
 
     @Override
     public boolean matches(@NotNull TokenEntry other) {
         boolean stringMatches = this.getString() == null || other.getString() == null || this.string.equalsIgnoreCase(other.getString());
         boolean typeMatches = this.getTokenType() == null || other.getTokenType() == null || this.type.equals(other.getTokenType());
-        return stringMatches && typeMatches;
+        boolean result = stringMatches && typeMatches;
+        if (this.isInverted) {
+            result = !result;
+        }
+        return result; 
     }
 
     public boolean equals(@NotNull TokenEntry other) {
         boolean stringEquals = (this.getString() == null && other.getString() == null) || (this.getString() != null && other.getString() != null && this.getString().equals(other.getString()));
         boolean typeEquals = (this.getTokenType() == null && other.getTokenType() == null) || (this.getTokenType() != null && other.getTokenType() != null && this.getTokenType().equals(other.getTokenType()));
-        return stringEquals && typeEquals;
+        boolean invertedEquals = this.isInverted() == other.isInverted();
+        return stringEquals && typeEquals && invertedEquals;
     }
 
     @Override
@@ -69,11 +80,14 @@ public class SQLTokenEntry extends TokenPredicateNode implements TokenEntry {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getString(), this.getTokenType());
+        return Objects.hash(this.getString(), this.getTokenType(), this.isInverted());
     }
 
     @NotNull
     public StringBuilder format(@NotNull StringBuilder sb) {
+        if (this.isInverted) {
+            sb.append("!");
+        }
         return sb.append("<").append(type != null ? type.name() : "?").append(">")
                 .append(this.string != null ? "'" + this.string + "'" : "any");
     }

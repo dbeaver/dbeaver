@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,12 @@ package org.jkiss.dbeaver.ui.e4;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.IResourceUtilities;
+import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.renderers.swt.StackRenderer;
 import org.eclipse.osgi.util.NLS;
@@ -32,13 +36,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
-import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -49,6 +54,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -56,13 +62,33 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.svg.SVGResourceUtility;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 
 public class DBeaverStackRenderer extends StackRenderer {
 
     private static final Log log = Log.getLog(DBeaverStackRenderer.class);
+
+    public DBeaverStackRenderer() {
+        try {
+            subscribePerspectiveSwitched();
+        } catch (Throwable e) {
+            log.error("Error setting perspective switch listener", e);
+        }
+
+        try {
+            final IWorkbench workbench = PlatformUI.getWorkbench();
+            final IEclipseContext context = workbench.getService(IEclipseContext.class);
+            context.set(IResourceUtilities.class, new SVGResourceUtility());
+        } catch (Throwable e) {
+            log.error("Error injecting resource utility", e);
+        }
+    }
 
     @Override
     public void showAvailableItems(MElementContainer<?> stack, CTabFolder folder, boolean forceCenter) {
@@ -127,14 +153,25 @@ public class DBeaverStackRenderer extends StackRenderer {
                 populateEditorMenu(menu, (IDatabaseEditorInput) editorInput);
             }
 
-            IFile localFile = EditorUtils.getFileFromInput(editorInput);
-            if (localFile != null) {
-                populateFileMenu(menu, workbenchPart, localFile);
+            IFile file = EditorUtils.getFileFromInput(editorInput);
+            File localFile = EditorUtils.getLocalFileFromInput(editorInput);
+            if (file != null || localFile != null) {
+                populateFileMenu(menu, workbenchPart, file, localFile);
             }
 
             if (localFile == null && workbenchPart instanceof SQLEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
+
+                final MenuItem saveAsScriptItem = new MenuItem(menu, SWT.PUSH);
+                saveAsScriptItem.setText(SQLEditorMessages.sql_editor_prefs_save_as_script_text);
+                saveAsScriptItem.setToolTipText(SQLEditorMessages.sql_editor_prefs_save_as_script_tip);
+                saveAsScriptItem.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ((SQLEditor) workbenchPart).saveAsNewScript();
+                    }
+                });
             }
             
             if (workbenchPart instanceof SQLEditor) {
@@ -157,12 +194,17 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
     }
 
-    private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @NotNull final IFile inputFile) {
+    private void populateFileMenu(
+        @NotNull final Menu menu,
+        @NotNull final IWorkbenchPart workbenchPart,
+        @Nullable final IFile inputFile,
+        @Nullable final File file
+    ) {
         new MenuItem(menu, SWT.SEPARATOR);
         if (workbenchPart instanceof SQLEditor) {
             addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_EDITOR_NEW);
         }
-        if (inputFile.getParent() instanceof IFolder && inputFile.getParent().getLocation() != null) {
+        if (inputFile != null && inputFile.getParent() instanceof IFolder && inputFile.getParent().getLocation() != null) {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
             menuItemOpenFolder.setText(CoreMessages.editor_file_open_in_explorer);
             menuItemOpenFolder.addSelectionListener(new SelectionAdapter() {
@@ -172,13 +214,24 @@ public class DBeaverStackRenderer extends StackRenderer {
                 }
             });
         }
-        if (inputFile.getLocation() != null) {
+        if (inputFile != null && (inputFile.getLocation() != null || inputFile.getLocationURI() != null) ||
+            file != null && file.getPath() != null
+        ) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             menuItemOthers.setText(CoreMessages.editor_file_copy_path);
             menuItemOthers.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String filePath = inputFile.getLocation().toFile().getAbsolutePath();
+                    String filePath;
+                    if (inputFile != null) {
+                        if (inputFile.getLocation() != null) {
+                            filePath = inputFile.getLocation().toFile().getAbsolutePath();
+                        } else {
+                            filePath = inputFile.getLocationURI().getPath();
+                        }
+                    } else {
+                        filePath = file.getPath();
+                    }
                     UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), filePath);
                 }
             });
@@ -186,7 +239,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         new MenuItem(menu, SWT.SEPARATOR);
 
-        if (!inputFile.isReadOnly()) {
+        if (inputFile!= null && !inputFile.isReadOnly()) {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }
@@ -274,5 +327,34 @@ public class DBeaverStackRenderer extends StackRenderer {
         } else {
             return new Point(0, 0);
         }
+    }
+
+    private void subscribePerspectiveSwitched() {
+        final IWorkbench workbench = PlatformUI.getWorkbench();
+        final IEventBroker broker = workbench.getService(IEventBroker.class);
+        final EventHandler handler = new EventHandler() {
+            @Override
+            public void handleEvent(Event event) {
+                final Object element = event.getProperty(UIEvents.EventTags.ELEMENT);
+
+                if (element instanceof MPerspective) {
+                    try {
+                        final Field field = StackRenderer.class.getDeclaredField("onboardingComposite");
+                        if (!field.canAccess(DBeaverStackRenderer.this)) {
+                            field.setAccessible(true);
+                        }
+                        final Composite composite = (Composite) field.get(DBeaverStackRenderer.this);
+                        if (composite != null) {
+                            HolidayDecorations.install(composite.getParent());
+                        }
+                    } catch (Exception e) {
+                        log.error("Can't access onboarding composite", e);
+                        broker.unsubscribe(this);
+                    }
+                }
+            }
+        };
+
+        broker.subscribe(UIEvents.UILifeCycle.PERSPECTIVE_SWITCHED, handler);
     }
 }

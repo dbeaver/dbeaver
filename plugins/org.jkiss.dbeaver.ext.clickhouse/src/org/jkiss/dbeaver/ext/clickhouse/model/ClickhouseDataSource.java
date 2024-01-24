@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.clickhouse.model.jdbc.ClickhouseJdbcFactory;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -102,7 +103,7 @@ public class ClickhouseDataSource extends GenericDataSource {
         properties.put(ClickhouseConstants.SSL_PARAM, "true");
         try {
             if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
-                if (DBWorkbench.isDistributed()) {
+                if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                     String clientCertProp =
                         sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT_VALUE);
                     if (!CommonUtils.isEmpty(clientCertProp)) {
@@ -130,7 +131,7 @@ public class ClickhouseDataSource extends GenericDataSource {
                     properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
                 }
             }
-            if (DBWorkbench.isDistributed()) {
+            if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                 String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT_VALUE);
                 if (!CommonUtils.isEmpty(caCertProp)) {
                     properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
@@ -152,7 +153,12 @@ public class ClickhouseDataSource extends GenericDataSource {
         if (shortName != null) {
             typeFullName = shortName;
         }
-
+        if (ClickhouseTypeParser.isComplexType(typeFullName)) {
+            final DBSDataType type = ClickhouseTypeParser.getType(monitor, this, typeFullName);
+            if (type != null) {
+                return type;
+            }
+        }
         return super.resolveDataType(monitor, typeFullName);
     }
 
@@ -187,6 +193,11 @@ public class ClickhouseDataSource extends GenericDataSource {
             @NotNull JDBCSession session,
             @NotNull ClickhouseDataSource clickhouseDataSource) throws SQLException {
             return session.prepareStatement("SELECT name FROM system.table_engines");
+        }
+        
+        @Override
+        protected void detectCaseSensitivity(DBSObject object) {
+            this.setCaseSensitive(true);
         }
 
         @Nullable

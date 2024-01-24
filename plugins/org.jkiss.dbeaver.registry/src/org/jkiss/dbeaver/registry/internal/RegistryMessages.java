@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +39,7 @@ public class RegistryMessages extends NLS {
     public static String navigator_settings_preset_advanced_view_description;
     public static String navigator_settings_preset_custom_view_name;
     public static String navigator_settings_preset_custom_view_description;
+    public static String project_description_comment;
 
 
     static {

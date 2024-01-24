@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -296,7 +297,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             return actions.toArray(new DBEPersistAction[0]);
         }
 
-        if (table.isPersisted() && isIncludeDropInDDL(table)) {
+        if (table.isPersisted() && isIncludeDropInDDL(table) &&
+            (table.getDataSource() == null ||
+                table.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO))
+        ) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
             for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, executionContext, options)) {
                 String script = delAction.getScript();
@@ -322,7 +326,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 command.aggregateCommand(tcm.makeCreateCommand(column, options));
             }
         }
-        if (pkm != null) {
+        if (pkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS)) {
             try {
                 for (DBSEntityConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
                     if (skipObject(constraint)) {
@@ -363,7 +367,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 log.debug(e);
             }
         }
-        if (im != null && table instanceof DBSTable) {
+        if (im != null && table instanceof DBSTable && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES)) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
                     if (!isIncludeIndexInDDL(monitor, index)) {

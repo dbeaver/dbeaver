@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,9 +97,13 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
             explainStat.append("EXPLAIN (FORMAT XML");
             for (Map.Entry<String, Object> entry : CommonUtils.safeCollection(parameters.entrySet())) {
                 String key = entry.getKey();
-                if (PostgreQueryPlaner.PARAM_COSTS.equals(key) || PostgreQueryPlaner.PARAM_TIMING.equals(key)
-                    || (PostgreQueryPlaner.PARAM_SUMMARY.equals(key)
-                    && CommonUtils.toBoolean(parameters.get(PostgreQueryPlaner.PARAM_ANALYSE)))) {
+                if (PostgreQueryPlaner.PARAM_TIMING.equals(key)
+                    && !CommonUtils.toBoolean(parameters.get(PostgreQueryPlaner.PARAM_ANALYSE))
+                ) {
+                    // We can't add TIMING if ANALYZE is not add
+                    continue;
+                }
+                if (PostgreQueryPlaner.PARAM_COSTS.equals(key) || PostgreQueryPlaner.PARAM_TIMING.equals(key)) {
                     // COSTS and TIMING are true by default, no need to add it to query if they are true, but we need to add them
                     // if they are false. And SUMMARY is true by default only for ANALYZE parameter
                     if (!CommonUtils.toBoolean(entry.getValue())) {

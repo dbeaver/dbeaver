@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,7 +83,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
         super(PAGE_NAME);
         this.wizard = wizard;
         setTitle(CoreMessages.dialog_connection_network_title);
-        setDescription(CoreMessages.dialog_tunnel_title);
+        setDescription(UIConnectionMessages.dialog_tunnel_title);
     }
 
     @Override
@@ -118,7 +119,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final Button useHandlerCheck = UIUtils.createCheckbox(composite, NLS.bind(CoreMessages.dialog_tunnel_checkbox_use_handler, descriptor.getLabel()), false);
+        final Button useHandlerCheck = UIUtils.createCheckbox(composite, NLS.bind(UIConnectionMessages.dialog_tunnel_checkbox_use_handler, descriptor.getLabel()), false);
         useHandlerCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)

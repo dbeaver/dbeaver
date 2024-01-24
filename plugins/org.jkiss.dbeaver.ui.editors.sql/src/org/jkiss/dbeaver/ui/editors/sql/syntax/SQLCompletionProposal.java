@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,8 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
     private String replacementLast;
+    
+    private boolean isNeverAddSpaceAfter = false;
 
     public SQLCompletionProposal(
         SQLCompletionRequest request,
@@ -77,6 +79,10 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
         } else {
             this.replacementLast = this.replacementFull.substring(divPos + 1);
         }
+        Object paramAlias = params.get(SQLCompletionProposalBase.PARAM_NO_SPACE);
+        if (paramAlias != null && ((boolean) paramAlias)) {
+            isNeverAddSpaceAfter = true;
+        }
     }
 
     @Override
@@ -90,7 +96,7 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
             if (replacementAfter != null) {
                 replaceOn += replacementAfter;
             }
-            if (getDataSource() != null) {
+            if (!isNeverAddSpaceAfter && getDataSource() != null) {
                 if (getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS)) {
                     boolean insertTrailingSpace;
                     boolean hasClosingParenthesis = false;

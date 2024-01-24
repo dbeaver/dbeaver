@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class QMEventCriteria {
     @Nullable
     private String containerId;
     @Nullable
-    private String sessionId;
+    private Long sessionId;
     @NotNull
     private QMObjectType[] objectTypes = new QMObjectType[0];
     @NotNull
@@ -44,11 +44,11 @@ public class QMEventCriteria {
     @Nullable
     private Long lastEventId;
     @NotNull
-    private Set<String> users = Collections.emptySet();
-    @NotNull
     private Set<String> driverIds = Collections.emptySet();
     @NotNull
     private Set<QMEventStatus> eventStatuses = Collections.emptySet();
+    @NotNull
+    private Set<String> projectIds = Collections.emptySet();
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
     @Nullable
@@ -56,6 +56,7 @@ public class QMEventCriteria {
     private boolean desc = true;
     private int fetchingSize = 200;
 
+    @Nullable
     public String getContainerId() {
         return containerId;
     }
@@ -64,11 +65,16 @@ public class QMEventCriteria {
         this.containerId = containerId;
     }
 
-    public String getSessionId() {
+    public boolean hasSessionId() {
+        return !(sessionId == null || sessionId == 0);
+    }
+
+    @Nullable
+    public Long getSessionId() {
         return sessionId;
     }
 
-    public void setSessionId(String sessionId) {
+    public void setSessionId(Long sessionId) {
         this.sessionId = sessionId;
     }
 
@@ -106,6 +112,7 @@ public class QMEventCriteria {
         return queryTypes.length > 0 && ArrayUtils.contains(queryTypes, type);
     }
 
+    @Nullable
     public String getSearchString() {
         return searchString;
     }
@@ -130,18 +137,8 @@ public class QMEventCriteria {
         this.skipEmptyQueries = skipEmptyQueries;
     }
 
-    public void setUsers(@NotNull Set<String> users) {
-        this.users = users;
-    }
 
-    public Set<String> getUsers() {
-        return users;
-    }
-
-    public boolean hasUsers() {
-        return !users.isEmpty();
-    }
-
+    @NotNull
     public Set<String> getDriverIds() {
         return driverIds;
     }
@@ -204,5 +201,18 @@ public class QMEventCriteria {
 
     public boolean hasLastEventId() {
         return lastEventId != null;
+    }
+
+    @NotNull
+    public Set<String> getProjectIds() {
+        return projectIds;
+    }
+
+    public void setProjectIds(@NotNull Set<String> projectIds) {
+        this.projectIds = projectIds;
+    }
+
+    public boolean hasProjectIds() {
+        return !projectIds.isEmpty();
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,9 +44,11 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -291,6 +295,10 @@ public class SQLEditorUtils {
         return "";
     }
 
+    public static IContentType getSQLContentType() {
+        return Platform.getContentTypeManager().getContentType("org.jkiss.dbeaver.sql");
+    }
+
     public static class ResourceInfo {
         private final IResource resource;
         @Deprecated
@@ -517,6 +525,7 @@ public class SQLEditorUtils {
     private static void notifyPrefs(@NotNull DBPPreferenceStore prefStore, boolean newServicesEnabled) {
         final boolean foldingEnabled = prefStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
         final boolean autoActivationEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
+        final boolean experimentalFeatureEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES);
         final boolean markWordUnderCursorEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
         final boolean markWordForSelectionEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
         final boolean oldServicesEnabled = !newServicesEnabled;
@@ -532,6 +541,11 @@ public class SQLEditorUtils {
             newServicesEnabled && autoActivationEnabled
         );
         prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES,
+            oldServicesEnabled && experimentalFeatureEnabled,
+            newServicesEnabled && experimentalFeatureEnabled
+        );
+        prefStore.firePropertyChangeEvent(
             SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR,
             oldServicesEnabled && markWordUnderCursorEnabled,
             newServicesEnabled && markWordUnderCursorEnabled
@@ -543,27 +557,44 @@ public class SQLEditorUtils {
         );
     }
     
+    
     /**
-     * Returns type id of the driver of data source container, associated with SQLEditor, 
-     * or {@code null} if editor is not instance of SQLEditor or data source container is null
+     * Checks whether template's context is suitable for the editor context
      */
-    @Nullable
-    public static String getEditorContextTypeId(@NotNull SQLEditorBase editor) {
-        String contextTypeId = null;
+    public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @NotNull SQLEditorBase editor) {
+        boolean result = false;
         if (editor instanceof SQLEditor) {
             DBPDataSourceContainer dsContainer = ((SQLEditor) editor).getDataSourceContainer();
             if (dsContainer != null) {
-                contextTypeId = SQLContextTypeDriver.getTypeId(dsContainer.getDriver());
+                DBPDriver driver = dsContainer.getDriver();
+                String driverContextTypeId = SQLContextTypeDriver.getTypeId(driver);
+                String providerContextTypeId = SQLContextTypeProvider.getTypeId(driver.getProviderId());
+                result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
+                if (!result) {
+                    for (Pair<String, String> replInfo : driver.getDriverReplacementsInfo()) {
+                        driverContextTypeId = SQLContextTypeDriver.getTypeId(replInfo.getFirst(), replInfo.getSecond());
+                        result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
+                        if (result) {
+                            break;
+                        }
+                    }
+                    
+                }
             }
         }
-        return contextTypeId;
+        return result;
     }
     
     /**
      * Checks whether template's context is suitable for the editor context
      */
-    public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @Nullable String editorContextId) {
-        return editorContextId != null && templateContextTypeId.equalsIgnoreCase(editorContextId) 
-            || templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL);
+    private static boolean isTemplateContextFitsEditorContext(
+        @NotNull String templateContextTypeId,
+        @Nullable String driverContextTypeId,
+        @Nullable String providerContextTypeId
+    ) {
+        return templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL) ||
+            templateContextTypeId.equalsIgnoreCase(driverContextTypeId) ||
+            templateContextTypeId.equalsIgnoreCase(providerContextTypeId);
     }
 }

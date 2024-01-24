@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
 public class GenericTableTrigger extends GenericTrigger<GenericTableBase> {
@@ -29,5 +31,11 @@ public class GenericTableTrigger extends GenericTrigger<GenericTableBase> {
     @Property(viewable = true, order = 4)
     public GenericTableBase getTable() {
         return getParentObject();
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(), getTable().getCatalog(), getTable().getSchema(), this);
     }
 }

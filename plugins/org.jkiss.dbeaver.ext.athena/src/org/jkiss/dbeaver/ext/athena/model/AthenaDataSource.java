@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,12 +49,18 @@ public class AthenaDataSource extends GenericDataSource {
         props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
         props.put(AthenaConstants.DRIVER_PROP_AWS_CREDENTIALS_PROVIDER_CLASS, "com.amazonaws.auth.DefaultAWSCredentialsProviderChain");
 
+        boolean useCatalogs = CommonUtils.toBoolean(connectionInfo.getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS));
+        if (useCatalogs) {
+            props.put(AthenaConstants.DRIVER_PROP_METADATA_RETRIEVAL_METHOD, "ProxyAPI");
+        }
+
         return props;
     }
 
     @Override
     public boolean isOmitCatalog() {
-        return true;
+        return !CommonUtils.toBoolean(
+            getContainer().getConnectionConfiguration().getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS));
     }
 
     @Override

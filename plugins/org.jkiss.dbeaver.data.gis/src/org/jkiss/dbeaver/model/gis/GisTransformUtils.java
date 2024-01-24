@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.cts.registry.RegistryException;
 import org.cts.registry.RegistryManager;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,6 +44,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -226,4 +229,18 @@ public class GisTransformUtils {
         }
     }
 
+    @Nullable
+    public static Geometry getJtsGeometry(@Nullable Object object) {
+        if (object instanceof Geometry) {
+            return (Geometry) object;
+        } else if (object instanceof org.cugos.wkg.Geometry) {
+            try {
+                return new WKTReader().read(object.toString());
+            } catch (ParseException e) {
+                log.debug("Unable to parse geometry for CRS transformation: " + e.getMessage());
+            }
+        }
+
+        return null;
+    }
 }

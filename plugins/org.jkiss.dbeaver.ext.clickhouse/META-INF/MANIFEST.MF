@@ -1,17 +1,20 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Clickhouse Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse;singleton:=true
-Bundle-Version: 1.0.103.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 1.0.128.qualifier
+Bundle-Release-Date: 20240122
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.parser.common,
- org.jkiss.dbeaver.ext.generic;visibility:=reexport
+ org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+ com.google.guava;resolution:=optional,
+ com.google.gson,
+ org.jkiss.bundle.antlr4
 Export-Package: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ext.clickhouse.model
+Import-Package: org.slf4j
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.clickhouse

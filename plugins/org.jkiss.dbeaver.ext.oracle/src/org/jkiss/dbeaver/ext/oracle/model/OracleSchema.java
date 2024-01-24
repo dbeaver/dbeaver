@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -619,7 +619,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
         TableCache()
         {
-            super("OBJECT_NAME");
+            super(OracleConstants.COLUMN_OBJECT_NAME);
             setListOrderComparator(DBUtils.nameComparator());
         }
 
@@ -659,7 +659,7 @@ public class OracleSchema extends OracleGlobalObject implements
         protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            final String tableType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+            final String tableType = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
             if ("TABLE".equals(tableType)) {
                 return new OracleTable(session.getProgressMonitor(), owner, dbResult);
             } else if ("MATERIALIZED VIEW".equals(tableType)) {
@@ -778,7 +778,7 @@ public class OracleSchema extends OracleGlobalObject implements
     class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
         ConstraintCache()
         {
-            super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
+            super(tableCache, OracleTableBase.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
         }
 
         @NotNull
@@ -931,7 +931,7 @@ public class OracleSchema extends OracleGlobalObject implements
         @Override
         protected void cacheChildren(DBRProgressMonitor monitor, OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
         {
-            constraint.setColumns(rows);
+            constraint.setAttributeReferences(rows);
         }
     }
     
@@ -994,7 +994,7 @@ public class OracleSchema extends OracleGlobalObject implements
                 
         ForeignKeyCache()
         {
-            super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
+            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
            
         }
 
@@ -1163,7 +1163,7 @@ public class OracleSchema extends OracleGlobalObject implements
         @SuppressWarnings("unchecked")
         protected void cacheChildren(DBRProgressMonitor monitor, OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
         {
-            foreignKey.setColumns((List)rows);
+            foreignKey.setAttributeReferences((List)rows);
         }
     }
 
@@ -1171,15 +1171,15 @@ public class OracleSchema extends OracleGlobalObject implements
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTablePhysical, OracleTableIndex, OracleTableIndexColumn> {
+    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableIndex, OracleTableIndexColumn> {
         IndexCache()
         {
-            super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
+            super(tableCache, OracleTableBase.class, "TABLE_NAME", "INDEX_NAME");
         }
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTablePhysical forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -1211,9 +1211,13 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Nullable
         @Override
-        protected OracleTableIndex fetchObject(JDBCSession session, OracleSchema owner, OracleTablePhysical parent, String indexName, JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+        protected OracleTableIndex fetchObject(
+            JDBCSession session,
+            OracleSchema owner,
+            OracleTableBase parent,
+            String indexName,
+            JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             return new OracleTableIndex(owner, parent, indexName, dbResult);
         }
 
@@ -1221,9 +1225,10 @@ public class OracleSchema extends OracleGlobalObject implements
         @Override
         protected OracleTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTablePhysical parent, OracleTableIndex object, JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+            OracleTableBase parent,
+            OracleTableIndex object,
+            JDBCResultSet dbResult
+        ) throws DBException {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION");
             boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND"));
@@ -1355,7 +1360,8 @@ public class OracleSchema extends OracleGlobalObject implements
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " OBJECT_NAME, STATUS FROM " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
+                    " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
                 OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
                 " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
                 " ORDER BY OBJECT_NAME");

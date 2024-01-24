@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,12 +28,10 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.util.*;
 
 /**
  * Stream transfer settings
@@ -72,12 +71,17 @@ public class StreamProducerSettings implements IDataTransferSettings {
         setProcessorProperties(dataTransferSettings.getProcessorProperties());
 
         try {
-            for (Map<String, Object> mapping : JSONUtils.getObjectList(settings, "mappings")) {
-                StreamEntityMapping em = new StreamEntityMapping(mapping);
-                entityMapping.put(em.getEntityName(), em);
-            }
-            runnableContext.run(true, true, monitor ->
-                updateMappingsFromStream(monitor, dataTransferSettings));
+            runnableContext.run(true, true, monitor -> {
+                for (Map<String, Object> mapping : JSONUtils.getObjectList(settings, "mappings")) {
+                    try {
+                        StreamEntityMapping em = new StreamEntityMapping(monitor, dataTransferSettings.getProject(), mapping);
+                        entityMapping.put(em.getEntityName(), em);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+                updateMappingsFromStream(monitor, dataTransferSettings);
+            });
         } catch (Exception e) {
             log.error("Error loading stream producer settings", e);
         }
@@ -90,6 +94,30 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 updateProducerSettingsFromStream(monitor, producer, dataTransferSettings);
             }
         }
+    }
+
+    public boolean extractExtraEntities(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StreamEntityMapping entityMapping,
+        @NotNull DataTransferSettings settings,
+        @NotNull Collection<StreamEntityMapping> pendingEntityMappings
+    ) {
+        if (!entityMapping.isChild() && settings.getProcessor().isMulti()) {
+            final IMultiStreamDataImporter importer = (IMultiStreamDataImporter) settings.getProcessor().getInstance();
+
+            monitor.beginTask("Extract extra entities from stream", 1);
+
+            try (InputStream is = Files.newInputStream(entityMapping.getInputFile())) {
+                return pendingEntityMappings.addAll(importer.readEntitiesInfo(entityMapping, is));
+            } catch (Exception e) {
+                settings.getState().addError(e);
+                log.error("IO error while reading entities from stream", e);
+            } finally {
+                monitor.done();
+            }
+        }
+
+        return false;
     }
 
     public void updateProducerSettingsFromStream(DBRProgressMonitor monitor, @NotNull StreamTransferProducer producer, DataTransferSettings dataTransferSettings) {
@@ -111,7 +139,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
         if (entityMapping != null && importer instanceof IStreamDataImporter) {
             IStreamDataImporter sdi = (IStreamDataImporter) importer;
-            try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
+            try (InputStream is = Files.newInputStream(entityMapping.getInputFile())) {
                 sdi.init(new StreamDataImporterSite(this, entityMapping, procProps));
                 try {
                     columnInfos = sdi.readColumnsInfo(entityMapping, is);

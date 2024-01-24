@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 
 import java.io.*;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -31,9 +32,11 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Some IO helper functions
@@ -344,6 +347,32 @@ public final class IOUtils {
         }
     }
 
+
+    public static void zipFolder(final File folder, final OutputStream outputStream) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+            processFolder(folder, zipOutputStream, folder.getPath().length() + 1);
+        }
+    }
+
+    private static void processFolder(final File folder, final ZipOutputStream zipOutputStream, final int prefixLength) throws IOException {
+        File[] folderFiles = folder.listFiles();
+        if (folderFiles == null) {
+            return;
+        }
+        for (File file : folderFiles) {
+            BasicFileAttributes fAttrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+            if (fAttrs.isRegularFile()) {
+                final ZipEntry zipEntry = new ZipEntry(file.getPath().substring(prefixLength));
+                zipOutputStream.putNextEntry(zipEntry);
+                try (FileInputStream inputStream = new FileInputStream(file)) {
+                    IOUtils.copyStream(inputStream, zipOutputStream);
+                }
+                zipOutputStream.closeEntry();
+            } else if (fAttrs.isDirectory()) {
+                processFolder(file, zipOutputStream, prefixLength);
+            }
+        }
+    }
     public static void deleteDirectory(@NotNull Path path) throws IOException {
         Files.walk(path)
             .sorted(Comparator.reverseOrder())
@@ -378,10 +407,38 @@ public final class IOUtils {
     @Nullable
     public static String getFileExtension(Path file) {
         String fileName = file.getFileName().toString();
+        return getFileExtension(fileName);
+    }
+
+    @Nullable
+    public static String getFileExtension(String fileName) {
         int divPos = fileName.lastIndexOf('.');
         if (divPos != -1) {
             return fileName.substring(divPos + 1);
         }
         return null;
     }
+
+    @NotNull
+    public static Path getPathFromString(@NotNull String pathOrUri) {
+        if (pathOrUri.contains("://")) {
+            return Path.of(URI.create(pathOrUri));
+        } else {
+            return Path.of(pathOrUri);
+        }
+    }
+
+
+    public static boolean isLocalFile(String filePath) {
+        return !filePath.contains("://") || filePath.startsWith("file:");
+    }
+
+    public static boolean isLocalURI(URI uri) {
+        return uri.getScheme().equals("file");
+    }
+
+    public static boolean isLocalPath(Path filePath) {
+        return isLocalURI(filePath.toUri());
+    }
+
 }

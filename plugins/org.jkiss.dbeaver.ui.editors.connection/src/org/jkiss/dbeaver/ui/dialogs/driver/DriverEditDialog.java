@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -85,9 +86,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private DataSourceProviderDescriptor provider;
     private DriverDescriptor driver;
 
-    private String defaultCategory;
     private String curFolder = null;
     private TreeViewer libTable;
+    private Button editButton;
     private Button deleteButton;
     private Button updateVersionButton;
     private Button detailsButton;
@@ -109,6 +110,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private Button anonymousDriverCheck;
     private Button allowsEmptyPasswordCheck;
     private Button nonInstantiableCheck;
+    private Button propagateDriverPropertiesCheck;
 
     private boolean showAddFiles = false;
 
@@ -122,7 +124,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.driver = (DriverDescriptor) driver;
         this.provider = this.driver.getProviderDescriptor();
-        this.defaultCategory = driver.getCategory();
         this.newDriver = false;
     }
 
@@ -130,7 +131,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.provider = provider;
         this.driver = provider.createDriver();
-        this.defaultCategory = category;
         this.newDriver = true;
     }
 
@@ -149,7 +149,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
 
-        this.defaultCategory = driver.getCategory();
         this.newDriver = true;
     }
 
@@ -310,6 +309,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
         optionsPanel.setLayoutData(gd);
         optionsPanel.setLayout(new RowLayout());
         embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_embedded_label, UIConnectionMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
+        propagateDriverPropertiesCheck = UIUtils.createCheckbox(
+            optionsPanel,
+            UIConnectionMessages.dialog_edit_driver_propagate_driver_properties_label,
+            UIConnectionMessages.dialog_edit_driver_propagate_driver_properties_tip,
+            driver.isPropagateDriverProperties(),
+            1
+        );
         anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_anonymous_label, UIConnectionMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
         allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_allows_empty_password_label, UIConnectionMessages.dialog_edit_driver_allows_empty_password_tip, driver.isAnonymousAccess(), 1);
         nonInstantiableCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_label, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_tip, !driver.isInstantiable(), 1);
@@ -423,19 +429,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             ColumnViewerToolTipSupport.enableFor(libTable);
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             libTable.getControl().addListener(SWT.Selection, event -> changeLibSelection());
-            libTable.addDoubleClickListener(event -> {
-                final DriverLibraryAbstract selectedLibrary = getSelectedLibrary();
-                if (selectedLibrary instanceof DriverLibraryMavenArtifact) {
-                    editMavenArtifact();
-                } else if (selectedLibrary instanceof DriverLibraryLocal) {
-                    Path localFile = selectedLibrary.getLocalFile();
-                    if (Files.isDirectory(localFile)) {
-                        ShellUtils.launchProgram(localFile.toAbsolutePath().toString());
-                    } else {
-                        ShellUtils.showInSystemExplorer(localFile.toAbsolutePath().toString());
-                    }
-                }
-            });
+            libTable.addDoubleClickListener(event -> editSelectedLibrary());
 
             // Find driver class
             boolean isReadOnly = !provider.isDriversManagable();
@@ -501,7 +495,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 addLibraryFolder();
             }
         });
-
         if (!DBWorkbench.isDistributed()) {
             UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
                 @Override
@@ -510,23 +503,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 }
             });
 
-            updateVersionButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
+            editButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_driver_manager_button_edit, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    driver.setDriverLibraries(libraries);
-                    driver.updateFiles();
-                    changeLibContent();
+                    editSelectedLibrary();
                 }
             });
+            editButton.setEnabled(false);
         }
 
-        detailsButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_details, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                new DriverLibraryDetailsDialog(getShell(), driver, getSelectedLibrary()).open();
-            }
-        });
-        detailsButton.setEnabled(false);
         deleteButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_delete, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -549,6 +534,25 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         UIUtils.createHorizontalLine(libsControlGroup);
 
+        if (!DBWorkbench.isDistributed()) {
+            updateVersionButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    driver.setDriverLibraries(libraries);
+                    driver.updateFiles();
+                    changeLibContent();
+                }
+            });
+        }
+
+        detailsButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_details, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                new DriverLibraryDetailsDialog(getShell(), driver, getSelectedLibrary()).open();
+            }
+        });
+        detailsButton.setEnabled(false);
+
         UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_classpath, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -562,6 +566,22 @@ public class DriverEditDialog extends HelpEnabledDialog {
         libsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_driver_libraries);
         libsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_driver_libraries);
         libsTab.setControl(libsGroup);
+    }
+
+    private void editSelectedLibrary() {
+        final DriverLibraryAbstract selectedLibrary = getSelectedLibrary();
+        if (selectedLibrary instanceof DriverLibraryMavenArtifact) {
+            editMavenArtifact();
+        } else if (selectedLibrary instanceof DriverLibraryLocal) {
+            Path localFile = selectedLibrary.getLocalFile();
+            if (localFile != null) {
+                if (Files.isDirectory(localFile)) {
+                    ShellUtils.launchProgram(localFile.toAbsolutePath().toString());
+                } else {
+                    ShellUtils.showInSystemExplorer(localFile.toAbsolutePath().toString());
+                }
+            }
+        }
     }
 
     private void addMavenArtifact() {
@@ -614,7 +634,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     libraries.add(
                         DriverLibraryAbstract.createFromPath(
                             driver,
-                            fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib,
+                            DBPDriverLibrary.FileType.getFileTypeByFileName(fileName),
                             new File(folderFile, fileName).getAbsolutePath(),
                             null));
                 }
@@ -747,6 +767,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
         DriverLibraryAbstract selectedLib = getSelectedLibrary();
         detailsButton.setEnabled(selectedLib != null);
         deleteButton.setEnabled(selectedLib != null);
+        if (editButton != null) {
+            editButton.setEnabled(selectedLib instanceof DriverLibraryMavenArtifact);
+        }
+
 /*
         upButton.setEnabled(libList.indexOf(selectedLib) > 0);
         downButton.setEnabled(libList.indexOf(selectedLib) < libList.size() - 1);
@@ -769,7 +793,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driverPortText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultPort() : driver.getDefaultPort()));
         driverDatabaseText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultDatabase() : driver.getDefaultDatabase()));
         driverUserText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultUser() : driver.getDefaultUser()));
-
+        propagateDriverPropertiesCheck.setSelection(original ? driver.isOrigPropagateDriverProperties() : driver.isPropagateDriverProperties());
         embeddedDriverCheck.setSelection(original ? driver.isOrigEmbedded() : driver.isEmbedded());
         anonymousDriverCheck.setSelection(original ? driver.isOrigAnonymousAccess() : driver.isAnonymousAccess());
         allowsEmptyPasswordCheck.setSelection(original ? driver.isOrigAllowsEmptyPassword() : driver.isAllowsEmptyPassword());
@@ -829,6 +853,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setDriverDefaultDatabase(driverDatabaseText.getText());
         driver.setDriverDefaultUser(driverUserText.getText());
         driver.setEmbedded(embeddedDriverCheck.getSelection());
+        driver.setPropagateDriverProperties(propagateDriverPropertiesCheck.getSelection());
         driver.setAnonymousAccess(anonymousDriverCheck.getSelection());
         driver.setAllowsEmptyPassword(allowsEmptyPasswordCheck.getSelection());
         driver.setInstantiable(!nonInstantiableCheck.getSelection());
@@ -930,7 +955,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private void syncAddDriverLibFile(DBPDriverLibrary library, Path localFilePath, String shortFileName) throws DBException {
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
-        String filePath = "drivers/" + driver.getId() + "/" + shortFileName;
+        String filePath = DBConstants.DEFAULT_DRIVERS_FOLDER + "/" + driver.getId() + "/" + shortFileName;
         try {
             byte[] fileData = Files.readAllBytes(localFilePath);
             fileController.saveFileData(

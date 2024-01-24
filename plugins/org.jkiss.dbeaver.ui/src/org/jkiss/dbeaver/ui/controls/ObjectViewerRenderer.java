@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -295,7 +295,7 @@ public abstract class ObjectViewerRenderer {
 
                 event.doit = false;
 
-            } else if (cellValue != null && isHyperlink(cellValue)) {
+            } else if (cellValue != null && isHyperlink(element, cellValue)) {
                 // Print link
                 prepareLinkStyle(cellValue, selected ? gc.getForeground() : JFaceColors.getHyperlinkText(event.item.getDisplay()));
                 Rectangle textBounds;
@@ -383,7 +383,7 @@ public abstract class ObjectViewerRenderer {
                 } else {
                     //tip = getCellString(cellValue);
                     boolean ctrlPressed = (stateMask & SWT.CTRL) != 0 || (stateMask & SWT.ALT) != 0;
-                    boolean isHyperlink = cellValue instanceof Boolean || (ctrlPressed && isHyperlink(cellValue));
+                    boolean isHyperlink = cellValue instanceof Boolean || (ctrlPressed && isHyperlink(element, cellValue));
                     if (isHyperlink && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(x, y)) {
                         getItemsViewer().getControl().setCursor(linkCursor);
                     } else {
@@ -470,7 +470,7 @@ public abstract class ObjectViewerRenderer {
                 Object element = hoverItem.getData();
                 int checkColumn = selectedColumn;
                 Object cellValue = getCellValue(element, checkColumn);
-                if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
+                if (isHyperlink(element, cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
                     navigateHyperlink(cellValue);
                 }
             }
@@ -478,7 +478,7 @@ public abstract class ObjectViewerRenderer {
 
     }
 
-    public boolean isHyperlink(@Nullable Object cellValue)
+    public boolean isHyperlink(Object element, @Nullable Object cellValue)
     {
         return false;
     }

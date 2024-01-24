@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver HANA Tests
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.hana.test
+Bundle-Version: 1.0.5.qualifier
+Bundle-Release-Date: 20240122
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
+Bundle-ClassPath: .
+Fragment-Host: org.jkiss.dbeaver.ext.hana
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.junit,
+ org.mockito.mockito-core,
+ org.jkiss.dbeaver.headless,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.registry

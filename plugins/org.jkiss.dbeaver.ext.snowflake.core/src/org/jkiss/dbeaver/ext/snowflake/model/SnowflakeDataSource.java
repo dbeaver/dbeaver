@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -33,8 +35,11 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class SnowflakeDataSource extends GenericDataSource {
+
+    private static final String APPLICATION_PROPERTY = "application";
 
     public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
         throws DBException
@@ -68,6 +73,20 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected boolean isPopulateClientAppName() {
         return false;
+    }
+
+    @Override
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        JDBCExecutionContext context,
+        String purpose,
+        DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        final String clientAppName = DBUtils.getClientApplicationName(container, context, null, false);
+        final String appName = "DBeaver_" + clientAppName.replace(" ", "");
+        props.put(APPLICATION_PROPERTY, appName);
+        return props;
     }
 
     @NotNull

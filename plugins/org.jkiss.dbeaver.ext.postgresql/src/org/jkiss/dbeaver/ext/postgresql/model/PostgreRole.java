@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -83,6 +85,7 @@ public class PostgreRole implements
     protected boolean persisted;
     private MembersCache membersCache = new MembersCache(true);
     private MembersCache belongsCache = new MembersCache(false);
+    private List<PostgreRoleSetting> extraSettings;
 
     private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
@@ -321,6 +324,42 @@ public class PostgreRole implements
         return this;
     }
 
+    private void loadExtraConfigParameters(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        extraSettings = new ArrayList<>();
+        if (!getDataSource().isServerVersionAtLeast(9, 0)) {
+            // Not supported
+            return;
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load configuration parameters")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "select s.setconfig, pd.datname from pg_catalog.pg_db_role_setting s\n" +
+                    "left join pg_catalog.pg_database pd on s.setdatabase = pd.oid\n" +
+                    "where s.setrole = ?")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String[] setconfig = PostgreUtils.safeGetStringArray(dbResult, "setconfig");
+                        if (ArrayUtils.isEmpty(setconfig)) {
+                            // something went wrong
+                            continue;
+                        }
+                        String databaseName = JDBCUtils.safeGetString(dbResult, "datname");
+                        PostgreDatabase database = null;
+                        if (CommonUtils.isNotEmpty(databaseName)) {
+                            database = getDataSource().getDatabase(databaseName);
+                        }
+                        for (String parameter : setconfig) {
+                            extraSettings.add(new PostgreRoleSetting(database, parameter));
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                log.error("Can't read extra role configuration parameters.");
+            }
+        }
+    }
+
     @Override
     public boolean supportsObjectDefinitionOption(String option) {
         return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
@@ -369,6 +408,20 @@ public class PostgreRole implements
             ddl.append("\tVALID UNTIL '").append(getValidUntil()).append("'");
         }
         ddl.append(";");
+
+        if (extraSettings == null) {
+            loadExtraConfigParameters(monitor);
+        }
+        if (!CommonUtils.isEmpty(extraSettings)) {
+            String beginning = "\nALTER ROLE " + roleName + " ";
+            for (PostgreRoleSetting setting : extraSettings) {
+                ddl.append(beginning);
+                if (setting.database != null) {
+                    ddl.append("IN DATABASE ").append(DBUtils.getQuotedIdentifier(setting.database)).append(" ");
+                }
+                ddl.append("SET ").append(setting.configurationParameter).append(";");
+            }
+        }
         if (CommonUtils.isNotEmpty(description)) {
             ddl.append("\n\n")
                 .append("COMMENT ON ROLE ")
@@ -453,7 +506,7 @@ public class PostgreRole implements
                     "\n\tn.oid AS relnamespace,\n" +
                     "\tnspacl AS relacl,\n" +
                     "\tn.nspname AS relname,\n" +
-                    "\t'C' AS relkind,\n" +
+                    "\tcast('C' as \"char\") AS relkind,\n" +
                     "(aclexplode(nspacl)).grantee as granteeI\n" +
                     "FROM\n" +
                     "\tpg_catalog.pg_namespace n\n" +
@@ -483,39 +536,88 @@ public class PostgreRole implements
                             PostgrePrivilegeGrant.Kind pKind = null;
                             if (supportsOnlySchemasPermissions) {
                                 pKind = PostgrePrivilegeGrant.Kind.SCHEMA;
-                                privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl);
+                                privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl, false);
                             } else if (objectType != null && objectName != null) {
                                 pKind = PostgrePrivilegeGrant.Kind.TABLE;
                                 if (objectType.equals("C")) {
-                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl);
+                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl, false);
                                     pKind = PostgrePrivilegeGrant.Kind.SCHEMA;
-                                } else if (objectType.equals("S")) {
+                                } else if (PostgreClass.RelKind.S.getCode().equals(objectType)) {
                                     PostgreSequence sequence = schema.getSequence(monitor, objectName);
-                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, sequence, acl);
+                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, sequence, acl, false);
                                     pKind = PostgrePrivilegeGrant.Kind.SEQUENCE;
                                 } else {
                                     PostgreMaterializedView materializedView = schema.getMaterializedView(monitor, objectName);
-                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, materializedView, acl);
+                                    privileges = PostgreUtils.extractPermissionsFromACL(monitor, materializedView, acl, false);
                                 }
                             }
                             for (PostgrePrivilege p : CommonUtils.safeCollection(privileges)) {
-                                if (p instanceof PostgreObjectPrivilege && getName().equals(((PostgreObjectPrivilege) p).getGrantee())) {
-                                    List<PostgrePrivilegeGrant> grants = new ArrayList<>();
-                                    for (PostgrePrivilege.ObjectPermission perm : p.getPermissions()) {
-                                        grants.add(new PostgrePrivilegeGrant(perm.getGrantor(), getName(), getDatabase().getName(),
+                                if (p instanceof PostgreObjectPrivilege) {
+                                    String grantee = ((PostgreObjectPrivilege) p).getGrantee();
+                                    if (CommonUtils.isNotEmpty(grantee) &&
+                                        getName().equals(DBUtils.getUnQuotedIdentifier(getDataSource(), grantee))
+                                    ) {
+                                        List<PostgrePrivilegeGrant> grants = new ArrayList<>();
+                                        for (PostgrePrivilege.ObjectPermission perm : p.getPermissions()) {
+                                            grants.add(new PostgrePrivilegeGrant(perm.getGrantor(), getName(), getDatabase().getName(),
                                                 schema.getName(), objectName, perm.getPrivilegeType(), false, false));
-                                    }
-                                    permissions.add(
+                                        }
+                                        permissions.add(
                                             new PostgreRolePrivilege(
-                                                    this,
-                                                    pKind,
-                                                    schema.getName(),
-                                                    objectName,
-                                                    grants));
+                                                this,
+                                                pKind,
+                                                schema.getName(),
+                                                objectName,
+                                                grants));
+                                    }
                                 }
                             }
                         }
                     }
+                }
+            }
+            if (getDataSource().getServerType().supportsDefaultPrivileges()) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT DISTINCT g.* FROM (\n" +
+                        "SELECT *,\n" +
+                        "(aclexplode(defaclacl)).grantee as grantee\n" +
+                        "FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g\n" +
+                        "where g.grantee = ?")) {
+                    dbStat.setLong(1, getObjectId());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.nextRow()) {
+                            long schemaId = JDBCUtils.safeGetLong(dbResult, "defaclnamespace");
+                            PostgreSchema schema = getDatabase().getSchema(monitor, schemaId);
+                            if (schema == null) {
+                                continue;
+                            }
+                            Object acl = JDBCUtils.safeGetObject(dbResult, "defaclacl");
+                            if (acl == null) {
+                                continue;
+                            }
+                            String objectType = JDBCUtils.safeGetString(dbResult, "defaclobjtype");
+                            if (CommonUtils.isEmpty(objectType)) {
+                                log.debug("Can't read default permissions object type for " + schema.getName());
+                                continue;
+                            }
+                            List<PostgrePrivilege> privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl, true);
+                            List<PostgrePrivilege> resultPrivileges = new ArrayList<>();
+                            for (PostgrePrivilege privilege : privileges) {
+                                if (privilege instanceof PostgreDefaultPrivilege) {
+                                    PostgreDefaultPrivilege defaultPrivilege = (PostgreDefaultPrivilege) privilege;
+                                    if (!defaultPrivilege.getGrantee().equals(getName())) {
+                                        continue;
+                                    }
+                                    defaultPrivilege.setUnderKind(objectType);
+                                    resultPrivileges.add(defaultPrivilege);
+                                }
+                            }
+                            permissions.addAll(resultPrivileges);
+                            schema.addDefaultPrivileges(resultPrivileges);
+                        }
+                    }
+                } catch (Throwable e) {
+                    log.error("Error reading default privileges", e);
                 }
             }
             Collections.sort(permissions);
@@ -613,6 +715,7 @@ public class PostgreRole implements
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
         membersCache.clearCache();
         belongsCache.clearCache();
+        extraSettings = null;
         return this;
     }
 
@@ -667,6 +770,17 @@ public class PostgreRole implements
         @Override
         public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsCommentsOnRole();
+        }
+    }
+
+    private class PostgreRoleSetting {
+
+        @Nullable PostgreDatabase database;
+        @NotNull String configurationParameter;
+
+        PostgreRoleSetting(@Nullable PostgreDatabase database, @NotNull String configurationParameter) {
+            this.database = database;
+            this.configurationParameter = configurationParameter;
         }
     }
 }

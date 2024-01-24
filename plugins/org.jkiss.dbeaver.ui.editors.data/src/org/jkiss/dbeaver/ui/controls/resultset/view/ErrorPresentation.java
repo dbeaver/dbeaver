@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -50,10 +49,9 @@ import java.util.Map;
  */
 public class ErrorPresentation extends AbstractPresentation {
 
-    private static final Log log = Log.getLog(ErrorPresentation.class);
-
     private static final String SETTINGS_SECTION_ERROR_PANEL = ErrorPresentation.class.getSimpleName();
     private static final String PROP_ERROR_WIDTH = "errorWidth";
+    private static final boolean REMEBER_SASH_RATIO = false;
 
     private final String sqlText;
     private final IStatus status;
@@ -98,16 +96,14 @@ public class ErrorPresentation extends AbstractPresentation {
                 textWidget.setText(sqlText);
             }
         }
-
-        try {
+        if (REMEBER_SASH_RATIO) {
             boolean widthSet = false;
             IDialogSettings viewSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_ERROR_PANEL);
             String errorWidth = viewSettings.get(PROP_ERROR_WIDTH);
             if (errorWidth != null) {
                 String[] widthStrs = errorWidth.split(":");
                 if (widthStrs.length == 2) {
-                    partDivider.setWeights(Integer.parseInt(widthStrs[0]),
-                        Integer.parseInt(widthStrs[1]));
+                    partDivider.setWeights(Integer.parseInt(widthStrs[0]), Integer.parseInt(widthStrs[1]));
                 }
                 widthSet = true;
             }
@@ -118,8 +114,6 @@ public class ErrorPresentation extends AbstractPresentation {
                 int[] weights = partDivider.getWeights();
                 viewSettings.put(PROP_ERROR_WIDTH, weights[0] + ":" + weights[1]);
             });
-        } catch (Throwable e) {
-            log.debug(e);
         }
     }
 

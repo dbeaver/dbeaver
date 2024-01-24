@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jkiss.dbeaver.ext.ai.feature"
+      label="%featureName"
+      version="1.0.25.qualifier"
+      provider-name="%providerName"
+      plugin="org.jkiss.dbeaver.ui.editors.sql.ai">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <requires>
+      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin id="org.jkiss.dbeaver.model.ai" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.editors.sql.ai" version="0.0.0" />
+   <plugin id="org.jkiss.bundle.jackson" version="0.0.0" />
+   <plugin id="org.jkiss.bundle.gpt3" version="0.0.0" />
+</feature>

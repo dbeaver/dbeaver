@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreSettings;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFileRemote;
 
 
 class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<PostgreRestoreWizard> {
@@ -104,7 +106,13 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
 
         Group inputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_input, 2, GridData.FILL_HORIZONTAL, 0);
         UIUtils.createControlLabel(inputGroup, PostgreMessages.wizard_restore_page_setting_label_backup_file);
-        inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*.sql","*"});
+        inputFileText = new TextWithOpenFileRemote(
+            inputGroup,
+            PostgreMessages.wizard_restore_page_setting_label_choose_backup_file,
+            new String[] {"*.backup","*.sql","*"},
+            SWT.OPEN | SWT.SINGLE,
+            true,
+            getWizard().getProject());
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
         inputFileText.setText(settings.getInputFile());
@@ -113,6 +121,8 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
+
+        PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, null);
 
         setControl(composite);
     }

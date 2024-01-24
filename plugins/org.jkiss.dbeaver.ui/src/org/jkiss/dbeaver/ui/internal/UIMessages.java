@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +60,10 @@ public class UIMessages extends NLS {
     public static String button_reset_to_defaults;
     public static String button_start;
     public static String button_skip_all;
+    public static String browse_button_choose;
+    public static String browse_button_choose_tooltip;
+    public static String bad_container_node;
+    public static String bad_container_node_message;
 
     public static String controls_locale_selector_group_locale;
     public static String controls_locale_selector_label_country;
@@ -103,6 +107,13 @@ public class UIMessages extends NLS {
 
     public static String utils_actions_copy_label;
     public static String utils_actions_copy_all_label;
+    public static String text_with_open_dialog_set_text;
+    public static String text_with_open_dialog_edit_text;
+    public static String text_with_open_dialog_browse;
+    public static String text_with_open_dialog_browse_remote;
+    public static String text_with_open_dialog_edit_file;
+
+    public static String notification_popup_context_message;
 
     static {
         // initialize resource bundle

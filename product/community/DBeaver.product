@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product"
-    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="22.3.3.qualifier" useFeatures="true"
+    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="23.3.3.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -10,9 +10,39 @@
 
     <launcherArgs>
         <programArgs></programArgs>
-        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
+        <programArgsMac>-nosplash -vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
 
-        <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM --add-opens=java.base/java.nio=ALL-UNNAMED -Dosgi.requiredJavaVersion=11 -Xms64m -Xmx1024m</vmArgs>
+        <vmArgs>
+            -XX:+IgnoreUnrecognizedVMOptions
+            -Dosgi.requiredJavaVersion=17
+            -Dfile.encoding=UTF-8
+            --add-modules=ALL-SYSTEM
+            --add-opens=java.base/java.io=ALL-UNNAMED
+            --add-opens=java.base/java.lang=ALL-UNNAMED
+            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens=java.base/java.net=ALL-UNNAMED
+            --add-opens=java.base/java.nio=ALL-UNNAMED
+            --add-opens=java.base/java.nio.charset=ALL-UNNAMED
+            --add-opens=java.base/java.text=ALL-UNNAMED
+            --add-opens=java.base/java.time=ALL-UNNAMED
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.base/jdk.internal.vm=ALL-UNNAMED
+            --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.fs=ALL-UNNAMED
+            --add-opens=java.base/sun.security.ssl=ALL-UNNAMED
+            --add-opens=java.base/sun.security.action=ALL-UNNAMED
+            --add-opens=java.base/sun.security.util=ALL-UNNAMED
+            --add-opens=java.security.jgss/sun.security.jgss=ALL-UNNAMED
+            --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.desktop/java.awt=ALL-UNNAMED
+            --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED
+            --add-opens=java.sql/java.sql=ALL-UNNAMED
+            -Xms64m
+            -Xmx1024m</vmArgs>
         <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
     </launcherArgs>
 
@@ -34,7 +64,7 @@
         <url>https://dbeaver.io/about/</url>
         <text>
             DBeaver - Universal Database Manager
-            Copyright (C) 2010-2022 DBeaver Corp and others
+            Copyright (C) 2010-2024 DBeaver Corp and others
 
             Licensed under the Apache License, Version 2.0 (the "License");
             you may not use this file except in compliance with the License.
@@ -61,7 +91,6 @@
         <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1"/>
         <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
         <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
-        <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4"/>
         <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
         <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
         <!-- This is important because simpleconfigurator conflicts with update.configurator -->

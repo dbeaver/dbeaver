@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1123,7 +1123,12 @@ public class ResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    result = DBUtils.compareDataValues(cell1, cell2);
+                    if (cell1 instanceof String && cell2 instanceof String) {
+                    	result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
+                    } else {
+                    	result = DBUtils.compareDataValues(cell1, cell2);
+                    }
+                          
                     if (co.isOrderDescending()) {
                         result = -result;
                     }

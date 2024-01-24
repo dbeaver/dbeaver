@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,16 +28,15 @@ public class DBeaverNotifications
 {
 
     public static final String NT_COMMIT = "commit";
+    public static final String NT_DISCONNECT_IDLE = "disconnect.idle";
     public static final String NT_ROLLBACK = "rollback";
-    public static final String NT_RECONNECT = "reconnect";
-    public static final String NT_GENERAL = "generalInfo";
+    public static final String NT_ROLLBACK_IDLE = "rollback.idle";
+    public static final String NT_RECONNECT_SUCCESS = "reconnect.success";
+    public static final String NT_RECONNECT_FAILURE = "reconnect.failure";
+    public static final String NT_GENERIC = "generic";
 
     @NotNull
     private static NotificationHandler notificationHandler = new ConsoleHandler();
-
-    public static void showNotification(DBPDataSource dataSource, String id, String text) {
-        showNotification(dataSource, id, text, null, null);
-    }
 
     public static void showNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType) {
         showNotification(dataSource, id, text, messageType, null);

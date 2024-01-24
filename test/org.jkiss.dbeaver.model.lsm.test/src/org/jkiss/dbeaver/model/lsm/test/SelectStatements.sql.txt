@@ -1,0 +1,110 @@
+select diSTinCt *
+from tablename as alias;
+
+select alias.*, columnname, alias.columnname
+from tablename as alias;
+
+select dbname1.schemaname1.tablename1.columnname1, schemaname2.tablename2.columnname2, tablename3.columnname3
+from dbname1.schemaname1.tablename1, dbname2.schemaname2.tablename2, schemaname3.tablename3;
+
+SELECT c.s.v.a, w.b AS x
+FROM xxx yy, cc.ss.vv AS sub
+cross JOIN aB c
+NATURAL INNER JOIN cd.er ON cd.er.id = aBc.id
+LEFT OUTER join qwe ON qwe.id = aBc.id
+UNION JOIN jd
+ORDER BY yyy, zzz;
+
+select a.*, columnname1 as alias1
+from t x inner join (select * from dbname1.tablename1) fromalias1;
+
+SELECT DISTINCT PRODUCT.ProductID, PRODUCT.Name_
+FROM Production.Product PRODUCT
+INNER JOIN Sales.SalesOrderDetail DETAIL
+ON PRODUCT.ProductID = DETAIL.ProductID
+OR PRODUCT.rowguid = DETAIL.rowguid;
+
+SELECT PRODUCT.ProductID, PRODUCT.Name_
+FROM Production.Product PRODUCT
+INNER JOIN Sales.SalesOrderDetail DETAIL
+ON PRODUCT.ProductID = DETAIL.ProductID
+UNION
+    SELECT PRODUCT.ProductID, PRODUCT.Name_
+    FROM Production.Product PRODUCT
+    INNER JOIN Sales.SalesOrderDetail DETAIL
+    ON PRODUCT.rowguid = DETAIL.rowguid;
+
+SELECT
+    Product.ProductID,
+    Product.ProductName,
+    Product.ProductNumber,
+    CostMeasure.UnitMeasureCode,
+    CostMeasure.Name AS CostMeasureName,
+    ProductVendor.AverageLeadTime,
+    ProductVendor.StandardPrice,
+    ProductReview.ReviewerName,
+    ProductReview.Rating,
+    Product.ProductCategory,
+    Product.ProductSubCategory
+FROM Product Product
+INNER JOIN Production.ProductModel
+ON ProductModel.ProductModelID = Product.ProductModelID
+LEFT JOIN Production.ProductReview
+ON ProductReview.ProductID = Product.ProductID
+LEFT JOIN Purchasing.ProductVendor
+ON ProductVendor.ProductID = Product.ProductID
+LEFT JOIN Production.UnitMeasure CostMeasure
+ON ProductVendor.UnitMeasureCode = CostMeasure.UnitMeasureCode;
+
+SELECT DISTINCT
+    Product.ProductID,
+    Product.Name AS ProductName,
+    Product.ProductNumber,
+    CostMeasure.UnitMeasureCode,
+    CostMeasure.Name AS CostMeasureName,
+    ProductVendor.AverageLeadTime,
+    ProductVendor.StandardPrice,
+    ProductReview.ReviewerName,
+    ProductReview.Rating,
+    ProductCategory.Name AS CategoryName,
+    ProductSubCategory.Name AS SubCategoryName
+FROM Production.Product
+INNER JOIN Production.ProductSubCategory
+ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID
+LEFT JOIN Production.ProductCategory
+ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID
+RIGHT JOIN Production.UnitMeasure SizeUnitMeasureCode
+ON Product.SizeUnitMeasureCode = SizeUnitMeasureCode.UnitMeasureCode
+FULL JOIN Production.UnitMeasure WeightUnitMeasureCode
+ON Product.WeightUnitMeasureCode = WeightUnitMeasureCode.UnitMeasureCode
+INNER OUTER JOIN Production.ProductModel
+ON ProductModel.ProductModelID = Product.ProductModelID
+NATURAL LEFT OUTER JOIN Production.ProductModelIllustration
+ON ProductModel.ProductModelID = ProductModelIllustration.ProductModelID
+NATURAL UNION JOIN Production.ProductModelProductDescriptionCulture
+ON ProductModelProductDescriptionCulture.ProductModelID = ProductModel.ProductModelID
+NATURAL FULL OUTER JOIN Production.ProductDescription
+ON ProductDescription.ProductDescriptionID = ProductModelProductDescriptionCulture.ProductDescriptionID
+CROSS JOIN Production.ProductReview
+ON ProductReview.ProductID = Product.ProductID
+NATURAL INNER JOIN Purchasing.ProductVendor
+ON ProductVendor.ProductID = Product.ProductID
+LEFT JOIN Production.UnitMeasure CostMeasure
+USING (MeasureID, Unit)
+ORDER BY Product.ProductID DESC;
+
+SELECT ALL
+    Product.ProductID,
+    Product.Name AS ProductName,
+    Product.ProductNumber,
+    ProductCategory.Name AS ProductCategory,
+    ProductSubCategory.Name AS ProductSubCategory,
+    Product.ProductModelID
+-- INTO Product
+FROM Production.Product
+INNER JOIN Production.ProductSubCategory
+ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID
+UNION JOIN Production.ProductCategory
+ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID
+ORDER BY Product.ModifiedDate DESC;
+

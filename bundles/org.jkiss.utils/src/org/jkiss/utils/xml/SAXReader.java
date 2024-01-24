@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,8 +90,7 @@ public final class SAXReader implements ContentHandler, EntityResolver, DTDHandl
     /**
      * Parse input stream and handle XML tags.
      */
-    public void parse(SAXListener listener)
-        throws IOException, XMLException {
+    public void parse(SAXListener listener) throws IOException, XMLException {
         // Initialize SAX parser
         Parser parser = acquireParser();
 
@@ -99,6 +98,7 @@ public final class SAXReader implements ContentHandler, EntityResolver, DTDHandl
         try {
             XMLReader saxReader = parser.getSAXParser().getXMLReader();
             saxReader.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true );
+            saxReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 
             saxReader.setErrorHandler(new ParseErrorHandler());
             saxReader.setContentHandler(this);

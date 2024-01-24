@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -96,7 +98,11 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
                         return ((DBNLocalFolder) element).hasConnected();
                     }
                 }
-                if (element instanceof TreeNodeSpecial || element instanceof DBNLocalFolder) {
+                if (element instanceof TreeNodeSpecial ||
+                    element instanceof DBNLocalFolder ||
+                    element instanceof DBNFileSystem ||
+                    element instanceof DBNPathBase
+                ) {
                     return true;
                 }
                 if (element instanceof DBNNode) {
@@ -107,7 +113,12 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
                     }
                     if (element instanceof DBNProject || element instanceof DBNProjectDatabases ||
                         element instanceof DBNDataSource ||
-                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass(), false))) {
+                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass(), false))
+                    ) {
+                        return true;
+                    }
+                    if (!(element instanceof DBNDatabaseNode) && !((DBNNode) element).isPersisted()) {
+                        // Show non-database nodes
                         return true;
                     }
                 }
@@ -117,7 +128,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
     }
 
     @Override
-    protected boolean matchesType(DBSObject object, boolean result) {
+    protected boolean matchesType(Object object, boolean result) {
         for (Class<?> ot : result ? resultTypes : allowedTypes) {
             if (ot.isAssignableFrom(object.getClass())) {
                 return true;

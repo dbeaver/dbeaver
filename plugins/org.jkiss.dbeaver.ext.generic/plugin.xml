@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,10 @@
                     <items label="#schema" path="schema" property="schemaList" icon="#schema" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                                <icon if="object.externalTable" icon="#table_external"/>
+                                <icon if="object.abstractTable" icon="#table_alias"/>
+                                <icon if="object.sharedTable" icon="#table_shared"/>
+
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
@@ -247,6 +251,8 @@
                     description="OpenSearch open source search and analytics suite"
                     categories="sql">
                     <file type="jar" path="https://artifacts.opensearch.org/opensearch-clients/jdbc/opensearch-sql-jdbc-1.1.0.1.jar" bundle="!drivers.opensearch"/>
+                    <file type="jar" path="drivers/opensearch" bundle="drivers.opensearch"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.opensearch"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
@@ -327,7 +333,7 @@
                 </driver>
                 <driver
                     id="odbc"
-                    label="ODBC"
+                    label="ODBC - Legacy"
                     icon="icons/odbc_icon.png"
                     iconBig="icons/odbc_icon_big.png"
                     class="sun.jdbc.odbc.JdbcOdbcDriver"
@@ -336,14 +342,9 @@
                     description="ODBC bridge driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
-                    promoted="1"
+                    deprecated="%driver.odbc.deprecation.reason"
                     categories="sql">
                     <os name="win32"/>
-                    <file type="jar" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
-
-                    <file type="jar" path="drivers/odbc" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64" bundle="drivers.odbc"/>
                 </driver>
                 <driver
                     id="derby"
@@ -360,12 +361,12 @@
                     supportsDistributedMode="false"
                     categories="sql,embedded">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
 
-                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
 
                     <parameter name="create-url-param" value=";create=true"/>
@@ -391,13 +392,13 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
@@ -501,7 +502,10 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
 <!--                    <replace provider="generic" driver="cache"/>-->
-                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/intersystems-jdbc-3.1.0.jar"/>
+                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/JDBC/JDK18/intersystems-jdbc-3.6.1.jar" bundle="!drivers.intersystem"/>
+                    <file type="license" path="https://raw.githubusercontent.com/intersystems-community/iris-driver-distribution/main/LICENSE" bundle="!drivers.intersystem"/>
+                    <file type="jar" path="drivers/intersystem" bundle="drivers.intersystem"/>
+                    <file type="license" path="drivers/mit_lic/LICENSE.txt" bundle="drivers.intersystem"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -564,10 +568,10 @@
                         anonymous="true"
                         description="DuckDB JDBC driver"
                         supportedConfigurationTypes="MANUAL,URL"
-                        promoted="1"
                         categories="sql,embedded">
-                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE"/>
-                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE"/>
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
+                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
+                    <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
                 </driver>
 
                 <!-- Teradata -->
@@ -576,7 +580,7 @@
                     label="Teradata"
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
-                    class="com.ncr.teradata.TeraDriver"
+                    class="com.teradata.jdbc.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
@@ -584,8 +588,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
 
-                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
-                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
+                    <file type="jar" path="maven:/com.teradata.jdbc:terajdbc:RELEASE" bundle="!drivers.teradata"/>
                     <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
 
                     <file type="jar" path="drivers/teradata" bundle="drivers.teradata"/>
@@ -667,6 +670,23 @@
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="repo:/drivers/dbf/dans-dbf-lib-1.0.0-beta-10.jar" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
+                </driver>
+                <driver
+                    id="jdbcx"
+                    label="JDBCX"
+                    class="io.github.jdbcx.WrappedDriver"
+                    sampleURL="jdbcx:[extension:][vendor://{host}[:{port}][/{database}]]"
+                    defaultPort=""
+                    icon="icons/jdbcx_icon.png"
+                    iconBig="icons/jdbcx_icon_big.png"
+                    description="Extended JDBC driver for dynamic multi-language queries with optional bridge server for federated datasource connectivity."
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/jdbcx/jdbcx"
+                    categories="codeql,graphql,prompt,prql,rest,script,shell,sql"
+                    singleConnection="true"
+                    propagateDriverProperties="true">
+                    <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -754,8 +774,10 @@
                     categories="hadoop"
                     singleConnection="true">
                     <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true" bundle="!drivers.apache_phoenix"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_phoenix"/>
+                    <file type="jar" path="drivers/apache_phoenix" bundle="drivers.apache_phoenix"/>
+                    <file type="license" path="drivers/apache_lic" bundle="drivers.apache_phoenix"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
@@ -950,6 +972,38 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
+                <!-- TDengine -->
+                <driver
+                    id="tdengine"
+                    label="TDengine"
+                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    sampleURL="jdbc:TAOS-RS://{host}:{port}/[{db}]"
+                    defaultPort="6041"
+                    description="TDengine driver"
+                    supportedConfigurationTypes="MANUAL"
+                    webURL="http://www.tdengine.com"
+                    icon="icons/tdengine_icon.png"
+                    iconBig="icons/tdengine_icon_big.png"
+                    categories="timeseries">
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- TDengine Cloud -->
+                <driver
+                    id="tdengine_cloud"
+                    label="TDengine Cloud"
+                    icon="icons/tdengine_icon.png"
+                    iconBig="icons/tdengine_icon_big.png"
+                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    anonymous="true"
+                    webURL="http://cloud.tdengine.com"
+                    description="TDengine Cloud driver"
+                    categories="timeseries">
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
                 <!-- Yandex ClickHouse -->
                 <driver
                     id="yandex_clickhouse"
@@ -1004,8 +1058,9 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
                     categories="graph">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
-                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
+                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE" bundle="!drivers.neo4j"/>
+                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.neo4j"/>
+                    <file type="jar" path="drivers/neo4j" bundle="drivers.neo4j"/>
                     <parameter name="supports-truncate" value="false"/>
                     <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
@@ -1128,6 +1183,7 @@
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
 <!--                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>-->
+                    <parameter name="omit-single-catalog" value="true"/>
                 </driver>
 
                 <!-- MonetDB -->
@@ -1160,7 +1216,10 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
                         categories="analytic,hadoop,sql">
-                    <file type="jar" path="https://download.dremio.com/jdbc-driver/3.0.6-201812082352540436-1f684f9/dremio-jdbc-driver-3.0.6-201812082352540436-1f684f9.jar"/>
+                    <file type="jar" path="https://download.dremio.com/jdbc-driver/24.0.0-202302100528110223-3a169b7c/dremio-jdbc-driver-24.0.0-202302100528110223-3a169b7c.jar" bundle="!drivers.dremio"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.dremio"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.dremio"/>
+                    <file type="jar" path="drivers/dremio" bundle="drivers.dremio"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
 
@@ -1178,8 +1237,10 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
-                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE" bundle="!drivers.apache_ignite"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_ignite"/>
+                    <file type="jar" path="drivers/apache_ignite" bundle="drivers.apache_ignite"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_ignite"/>
                 </driver>
 
                 <!-- OmniSci MapD -->
@@ -1204,7 +1265,7 @@
 
                 <driver
                     id="cratedb"
-                    label="CrateDB"
+                    label="CrateDB (Legacy)"
                     icon="icons/cratedb_icon.png"
                     iconBig="icons/cratedb_icon_big.png"
                     class="io.crate.client.jdbc.CrateDriver"
@@ -1308,7 +1369,10 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
                     categories="sql">
-                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]"/>
+                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.23.0]" bundle="!drivers.apache_calcite"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_calcite"/>
+                    <file type="jar" path="drivers/apache_calcite" bundle="drivers.apache_calcite"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_calcite"/>
 
                     <parameter name="omit-catalog-name" value="true"/>
                     <parameter name="supports-indexes" value="false"/>
@@ -1357,7 +1421,7 @@
                         webURL="https://www.mysql.com/products/connector/"
                         supportedConfigurationTypes="MANUAL,URL"
                         description="Driver for MySQL (4.x and earlier)">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                 </driver>
 
@@ -1374,7 +1438,7 @@
                         webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.2]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
 
@@ -1455,6 +1519,7 @@
                         category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="50000"
                         webURL="https://www.ibm.com/software/data/db2/express/download.html"
                         description="DB2 LUW driver for older DB2 versions (8.x)">
@@ -1534,8 +1599,6 @@
                         webURL="https://databricks.com/"
                         description="Azure Databricks driver"
                         categories="sql,analytic,cloud">
-
-                    <file type="jar" path="https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.22/SimbaSparkJDBC42-2.6.22.1040.zip" bundle="!drivers.databricks"/>
                 </driver>
 
                 <!--driver
@@ -1631,7 +1694,10 @@
                         description="Salesforce CDP JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         categories="sql">
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2021.12A/Salesforce-CDP-jdbc-1.11.0.jar"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2023.01a/Salesforce-CDP-jdbc-1.16.0.jar" bundle="!drivers.salesforce"/>
+                    <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>
                 </driver>
 
                 <!-- AWS -->
@@ -1680,6 +1746,7 @@
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"     objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager"       objectType="org.jkiss.dbeaver.ext.generic.model.GenericTrigger"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">

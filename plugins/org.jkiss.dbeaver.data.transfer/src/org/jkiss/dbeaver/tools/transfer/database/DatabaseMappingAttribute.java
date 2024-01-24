@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
@@ -146,7 +149,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
-                targetName = getSourceLabelOrName(getSource());
+                targetName = getSourceLabelOrName(getSource(), true, false);
                 break;
         }
     }
@@ -164,7 +167,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         mappingType = DatabaseMappingType.unspecified;
         if (parent.getTarget() instanceof DBSEntity) {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                targetName = getSourceLabelOrName(source);
+                targetName = getSourceLabelOrName(source, false, updateAttributesNames);
             }
             DBSEntity targetEntity = (DBSEntity) parent.getTarget();
             List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
@@ -230,9 +233,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
                 if (!updateAttributesNames && CommonUtils.isNotEmpty(targetName)) {
                     // We want to keep targetName in this case. It can be the targetName from a task as example
-                    targetName = getSourceLabelOrName(targetName);
+                    targetName = getSourceLabelOrName(targetName, false, false);
                 } else {
-                    targetName = getSourceLabelOrName(source);
+                    targetName = getSourceLabelOrName(source, true, updateAttributesNames);
                 }
             }
         }
@@ -242,12 +245,13 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             DBSObjectContainer container = parent.getSettings().getContainer();
             if (container != null && container.getDataSource() != null) {
                 DBPDataSource targetDataSource = container.getDataSource();
-                if (!DBUtils.isQuotedIdentifier(targetDataSource, targetName) && !isSkipNameTransformation()) {
-                    targetName = DBObjectNameCaseTransformer.transformName(targetDataSource, targetName);
-                }
+                targetName = DatabaseTransferUtils.getTransformedName(
+                    targetDataSource,
+                    targetName,
+                    DBUtils.isQuotedIdentifier(targetDataSource, targetName) || isSkipNameTransformation());
             }
         } else if (mappingType == DatabaseMappingType.unspecified && source != null && targetName != null) {
-            String sourceLabelOrName = getSourceLabelOrName(source);
+            String sourceLabelOrName = getSourceLabelOrName(source, false, updateAttributesNames);
             if (sourceLabelOrName != null && sourceLabelOrName.equalsIgnoreCase(targetName) && !sourceLabelOrName.equals(targetName)) {
                 // Here we change the target name if we switched from target container with identifier case X to container with identifier case Y
                 // See https://github.com/dbeaver/dbeaver/issues/13236
@@ -256,15 +260,22 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    String getSourceLabelOrName(DBSAttributeBase source) {
-        return getSourceLabelOrName(getSourceAttributeName(source));
+    String getSourceLabelOrName(DBSAttributeBase source, boolean addSpecialTransformation, boolean updateAttributesNames) {
+        return getSourceLabelOrName(getSourceAttributeName(source), addSpecialTransformation, updateAttributesNames);
     }
 
-    private String getSourceLabelOrName(String name) {
+    private String getSourceLabelOrName(String name, boolean addSpecialTransformation, boolean updateAttributesNames) {
         DBSObjectContainer container = parent.getSettings().getContainer();
 
-        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {
-            name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+        if (container != null && container.getDataSource() != null) {
+            if (addSpecialTransformation) {
+                name = DatabaseTransferUtils.getTransformedName(
+                    container.getDataSource(),
+                    name,
+                    DBUtils.isQuotedIdentifier(container.getDataSource(), name) || isSkipNameTransformation() || !updateAttributesNames);
+            } else if (!DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {
+                name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+            }
         }
 
         return name;
@@ -314,7 +325,27 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             return targetType;
         }
 
+        changeDataTypeLength(targetDataSource);
         return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
+    }
+
+    private void changeDataTypeLength(@NotNull DBPDataSource targetDataSource) {
+        if (source instanceof DBSTypedObjectExt2) {
+            DBPPreferenceStore preferenceStore = targetDataSource.getContainer().getPreferenceStore();
+            DBPPreferenceStore store = DTActivator.getDefault().getPreferences();
+            if (preferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) || store.contains(DTConstants.PREF_MAX_TYPE_LENGTH)) {
+                int maxDataTypeLength = preferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
+                    preferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : store.getInt(DTConstants.PREF_MAX_TYPE_LENGTH);
+                DBSTypedObjectExt2 sourceExt = (DBSTypedObjectExt2) source;
+                if (source.getDataKind() == DBPDataKind.NUMERIC &&
+                    source.getPrecision() != null && source.getPrecision() > maxDataTypeLength
+                ) {
+                    sourceExt.setPrecision(maxDataTypeLength);
+                } else if (source.getMaxLength() > maxDataTypeLength) {
+                    sourceExt.setMaxLength(maxDataTypeLength);
+                }
+            }
+        }
     }
 
     public void setTargetType(String targetType) {

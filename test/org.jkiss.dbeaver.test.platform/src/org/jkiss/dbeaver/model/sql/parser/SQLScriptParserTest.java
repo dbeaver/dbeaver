@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
@@ -177,6 +179,16 @@ public class SQLScriptParserTest {
             "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
             "    dbms_output.put_line('End');\n" +
             "END;\n" +
+            
+            "DECLARE\n" +
+            "    i int;\n" +
+            "BEGIN\n" +
+            "    i := 0;\n" +
+            "    IF i < 5 THEN\n" +
+            "        i := i + 1;\n" +
+            "        DBMS_OUTPUT.PUT_LINE ('This is: '||i);\n" +
+            "    END IF;\n" +
+            "END;\n" +
 
             "CREATE TRIGGER TRI_CODE_SYSTEM\n" +
             "BEFORE INSERT ON CODE_SYSTEM\n" +
@@ -294,6 +306,16 @@ public class SQLScriptParserTest {
                 "    dbms_output.put_line('Start');\n" +
                 "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
                 "    dbms_output.put_line('End');\n" +
+                "END;",
+                
+                "DECLARE\n" +
+                "    i int;\n" +
+                "BEGIN\n" +
+                "    i := 0;\n" +
+                "    IF i < 5 THEN\n" +
+                "        i := i + 1;\n" +
+                "        DBMS_OUTPUT.PUT_LINE ('This is: '||i);\n" +
+                "    END IF;\n" +
                 "END;",
 
                 "CREATE TRIGGER TRI_CODE_SYSTEM\n" +
@@ -501,6 +523,65 @@ public class SQLScriptParserTest {
     }
     
     @Test
+    public void parseOracleQStringRule() throws DBException {
+        final List<String> qstrings = List.of(
+            "q'[What's a quote among friends?]';",
+            "q'!What's a quote among friends?!';",
+            "q'(That's a really funny 'joke'.)';",
+            "q'#That's a really funny 'joke'.#';",
+            "q''All the king's horses'';",
+            "q'>All the king's horses>';",
+            "q'['Hello,' said the child, who didn't like goodbyes.]';",
+            "q'{'Hello,' said the child, who didn't like goodbyes.}';",
+            "Q'('Hello,' said the child, who didn't like goodbyes.)';",
+            "q'<'Hello,' said the child, who didn't like goodbyes.>';" 
+        );
+        
+        for (String qstring : qstrings) {
+            SQLParserContext context = createParserContext(setDialect("oracle"), qstring);
+            TPRuleBasedScanner scanner = context.getScanner();
+            scanner.setRange(context.getDocument(), 0, qstring.length());
+            Assert.assertEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            Assert.assertEquals(qstring.length() - 1, scanner.getTokenLength());
+            scanner.nextToken();
+        }
+        final List<String> badQstrings = List.of(
+            "q'(That''s a really funny ''joke''.(';",
+            "q'#That's a really funny 'joke'.$';",
+            "q'>All the king's horses<';",
+            "q'<All the king's horses<';",
+            "q'<All the king's horses<;",
+            "q'<All the king's horses>;'",
+            "q'abcd'"
+        );
+        
+        for (String badQstring : badQstrings) {
+            SQLParserContext context = createParserContext(setDialect("oracle"), badQstring);
+            TPRuleBasedScanner scanner = context.getScanner();
+            scanner.setRange(context.getDocument(), 0, badQstring.length());
+            Assert.assertNotEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            Assert.assertNotEquals(badQstring.length() - 1, scanner.getTokenLength());
+        }
+    }
+    
+    /**
+     * Check that QStringRule doesn't interfere in this case
+     * See #19319
+     */
+    @Test
+    public void parseOracleNamedByQTable() throws DBException {
+        String query = "select * from q;";
+        SQLParserContext context = createParserContext(setDialect("oracle"), query);
+        TPRuleBasedScanner scanner = context.getScanner();
+        scanner.setRange(context.getDocument(), 14, query.length());
+        Assert.assertEquals(SQLTokenType.T_OTHER, scanner.nextToken().getData());
+        Assert.assertEquals(1, scanner.getTokenLength());;
+        Assert.assertEquals(SQLTokenType.T_DELIMITER, scanner.nextToken().getData());
+        Assert.assertEquals(1, scanner.getTokenLength());
+    }
+    
+    
+    @Test
     public void parseBeginTransaction() throws DBException {
         String[] dialects = new String[] {"postgresql", "sqlserver"};
         for (String dialect : dialects) {
@@ -560,7 +641,7 @@ public class SQLScriptParserTest {
     }
 
     private SQLDialect setDialect(String name) throws DBException {
-        SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
+        SQLDialectMetadataRegistry registry = DBWorkbench.getPlatform().getSQLDialectRegistry();
         if (name.equals("oracle")) {
             Mockito.when(dataSource.isServerVersionAtLeast(12, 1)).thenReturn(true);
         }

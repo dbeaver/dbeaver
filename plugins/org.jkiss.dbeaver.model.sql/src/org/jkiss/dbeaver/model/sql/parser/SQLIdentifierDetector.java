@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
+import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzer;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
@@ -102,7 +102,7 @@ public class SQLIdentifierDetector extends TPWordDetector {
 
     public boolean isQuoted(String token) {
         for (String[] quoteString : quoteStrings) {
-            if (token.startsWith(quoteString[0])) {
+            if (quoteString[0] != null && token.startsWith(quoteString[0])) {
                 return true;
             }
         }
@@ -210,7 +210,7 @@ public class SQLIdentifierDetector extends TPWordDetector {
             while (!token.isEOF()) {
                 if (token instanceof TPTokenAbstract && !token.isWhitespace()) {
                     if (scanner.getTokenOffset() <= region.getOffset() && scanner.getTokenEndOffset() > region.getOffset()) {
-                        if (!SQLCompletionAnalyzer.isNamePartToken(token)) {
+                        if (!TableReferencesAnalyzer.isNamePartToken(token)) {
                             return id; // there is no identifier at the given position
                         }
                         tokenIndex = tokens.size();
@@ -243,7 +243,7 @@ public class SQLIdentifierDetector extends TPWordDetector {
                     break;
                 }
                 i--;
-                if (!SQLCompletionAnalyzer.isNamePartToken(tokens.get(i).getFirst())) {
+                if (!TableReferencesAnalyzer.isNamePartToken(tokens.get(i).getFirst())) {
                     break;
                 }
                 Region prefixWordRegion = tokens.get(i).getSecond();
@@ -261,7 +261,7 @@ public class SQLIdentifierDetector extends TPWordDetector {
                     break;
                 }
                 i++;
-                if (!SQLCompletionAnalyzer.isNamePartToken(tokens.get(i).getFirst())) {
+                if (!TableReferencesAnalyzer.isNamePartToken(tokens.get(i).getFirst())) {
                     break;
                 }
                 Region suffixWordRegion = tokens.get(i).getSecond();

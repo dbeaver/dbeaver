@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@ public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
 
     public static String dialog_view_sql_button_copy;
+    public static String dialog_view_sql_button_refresh;
     public static String dialog_view_sql_button_persist;
 
     public static String dialog_sql_param_title;
@@ -53,6 +54,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_variables;
     public static String editors_sql_variables_tip;
     public static String editors_sql_explain_plan;
+    public static String editors_sql_explain_refresh_plan_action_text;
+    public static String editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text;
     public static String editors_sql_output;
     public static String editors_sql_output_tip;
     public static String editors_sql_warning_many_subtables_title;
@@ -91,6 +94,7 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_unpin_all_tabs;
+    public static String action_result_tabs_detach_tab;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
     public static String action_result_tabs_assign_variable;
@@ -205,6 +209,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_group_sql_assistant;
     public static String pref_page_sql_completion_label_enable_auto_activation;
     public static String pref_page_sql_completion_label_enable_auto_activation_tip;
+    public static String pref_page_sql_completion_label_enable_experimental_features;
+    public static String pref_page_sql_completion_label_enable_experimental_features_tip;
     public static String pref_page_sql_completion_label_auto_activation_delay;
     public static String pref_page_sql_completion_label_set_auto_activation_delay_tip;
     public static String pref_page_sql_completion_label_activate_on_typing;
@@ -228,14 +234,21 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_show_values_tip;
     public static String pref_page_sql_completion_group_folding;
     public static String pref_page_sql_completion_group_misc;
+    public static String pref_page_code_editor_group_analysis;
     public static String pref_page_sql_completion_label_folding_enabled;
     public static String pref_page_sql_completion_label_folding_enabled_tip;
+    public static String pref_page_sql_completion_label_smart_word_iterator;
+    public static String pref_page_sql_completion_label_smart_word_iterator_tip;
     public static String pref_page_sql_completion_label_problem_markers_enabled;
     public static String pref_page_sql_completion_label_problem_markers_enabled_tip;
     public static String pref_page_sql_completion_label_mark_occurrences;
     public static String pref_page_sql_completion_label_mark_occurrences_tip;
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections;
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections_tip;
+    public static String pref_page_code_editor_label_advanced_highlighting_enabled;
+    public static String pref_page_code_editor_label_advanced_highlighting_enabled_tip;
+    public static String pref_page_code_editor_label_read_metadata_enabled;
+    public static String pref_page_code_editor_label_read_metadata_enabled_tip;
 
     public static String pref_page_sql_editor_checkbox_fetch_resultsets;
     public static String pref_page_sql_editor_text_statement_delimiter;
@@ -251,9 +264,17 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_file_name_pattern_tip;
     public static String pref_page_sql_editor_checkbox_delete_empty_scripts;
     public static String pref_page_sql_editor_checkbox_put_new_scripts;
+    public static String pref_page_sql_editor_checkbox_put_new_scripts_tip;
     public static String pref_page_sql_editor_checkbox_create_script_folders;
+    public static String pref_page_sql_editor_checkbox_create_script_folders_tip;
     public static String pref_page_sql_editor_checkbox_reset_cursor;
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
+    public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
+    public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
+    public static String pref_page_sql_editor_checkbox_select_statistics_tab;
+    public static String pref_page_sql_editor_checkbox_select_statistics_tab_tip;
+    public static String pref_page_sql_editor_checkbox_close_included_script_after_execution;
+    public static String pref_page_sql_editor_checkbox_close_included_script_after_execution_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
     public static String pref_page_sql_editor_text_anonymous_parameter_mark;
     public static String pref_page_sql_editor_text_named_parameter_prefix;
@@ -314,6 +335,9 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_full_DDL;
     public static String sql_generator_dialog_button_separate_fk_constraints_definition;
     public static String sql_generator_dialog_button_show_partitions_DDL;
+
+    public static String sql_generator_dialog_button_show_cast_params;
+    public static String sql_generator_dialog_button_show_cast_params_tip;
     public static String action_result_tabs_delete_variables_question;
     public static String script_selector_create_script;
     public static String script_selector_project_scripts;
@@ -339,7 +363,11 @@ public class SQLEditorMessages extends NLS {
     public static String source_viewer_show_partitions_ddl_tip;
 
     public static String sql_editor_action_clear;
+    
     public static String sql_editor_title_tooltip_path;
+    public static String sql_editor_data_receiver_result_name_tooltip_connection;
+    public static String sql_editor_data_receiver_result_name_tooltip_time;
+    public static String sql_editor_data_receiver_result_name_tooltip_query;
     public static String sql_editor_title_tooltip_connecton;
     public static String sql_editor_title_tooltip_type;
     public static String sql_editor_title_tooltip_url;
@@ -352,6 +380,8 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_nonsql_text;
 
     public static String sql_editor_separate_connection_no_editor_or_ds_selected;
+    public static String sql_editor_prefs_save_as_script_text;
+    public static String sql_editor_prefs_save_as_script_tip;
     public static String sql_editor_prefs_disable_services_text;
     public static String sql_editor_prefs_disable_services_tip;
     public static String sql_editor_prefs_script_advanced_settings;
@@ -362,8 +392,15 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
 
+    public static String dialog_save_script_title;
+    public static String dialog_save_script_message;
+
     public static String sql_editor_panel_output_filter_message;
     public static String sql_editor_panel_output_filter_hint;
+    public static String sql_generator_dialog_title;
+
+    public static String sql_editor_status_bar_rollback_label;
+    public static String sql_editor_status_bar_disconnect_label;
 
     static {
         // initialize resource bundle

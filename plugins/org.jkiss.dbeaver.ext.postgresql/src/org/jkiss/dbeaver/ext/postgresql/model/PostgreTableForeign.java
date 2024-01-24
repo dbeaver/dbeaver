@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
@@ -71,7 +72,7 @@ public class PostgreTableForeign extends PostgreTable implements DBPForeignObjec
         return "foreign table";
     }
 
-    @Property(viewable = false, order = 201)
+    @Property(viewable = false, length = PropertyLength.MULTILINE, order = 201)
     public String[] getForeignOptions(DBRProgressMonitor monitor) throws DBException {
         readForeignInfo(monitor);
         return foreignOptions;
@@ -91,7 +92,7 @@ public class PostgreTableForeign extends PostgreTable implements DBPForeignObjec
                 try (JDBCResultSet result = stat.executeQuery()) {
                     if (result.next()) {
                         foreignServerId = JDBCUtils.safeGetLong(result, "ftserver");
-                        foreignOptions = JDBCUtils.safeGetArray(result, "ftoptions");
+                        foreignOptions = PostgreUtils.safeGetStringArray(result, "ftoptions");
                     }
                 }
             } catch (SQLException e) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,25 @@ import java.util.Properties;
 /**
  * Oracle database native auth model.
  */
-public class SnowflakeAuthModelSnowflake extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelSnowflakeCredentials>
+    extends AuthModelDatabaseNative<CREDENTIALS> {
 
     public static final String ID = "snowflake_snowflake";
 
+    @NotNull
     @Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelDatabaseNativeCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public CREDENTIALS createCredentials() {
+        return (CREDENTIALS) new AuthModelSnowflakeCredentials();
+    }
+
+    @Override
+    public Object initAuthentication(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull CREDENTIALS credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties
+    ) throws DBException {
         if (connProperties.getProperty("authenticator") == null) {
             // If "authenticator" is already set by user then do not change it
             String authenticator = getAuthenticator(dataSource, credentials, configuration);
@@ -54,12 +67,34 @@ public class SnowflakeAuthModelSnowflake extends AuthModelDatabaseNative<AuthMod
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
 
+    @NotNull
     @Override
-    public void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) {
+    public CREDENTIALS loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
+        CREDENTIALS credentials = super.loadCredentials(dataSource, configuration);
+        credentials.setRole(configuration.getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE));
+        return credentials;
+    }
+
+    @Override
+    public void saveCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials) {
+        configuration.setAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE, credentials.getRole());
+        super.saveCredentials(dataSource, configuration, credentials);
+    }
+
+    @Override
+    public void endAuthentication(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties
+    ) {
         super.endAuthentication(dataSource, configuration, connProperties);
     }
 
-    protected String getAuthenticator(DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration) {
+    protected String getAuthenticator(
+        DBPDataSource dataSource,
+        AuthModelDatabaseNativeCredentials credentials,
+        DBPConnectionConfiguration configuration
+    ) {
         return configuration.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
     }
 

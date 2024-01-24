@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -83,12 +83,12 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-
         DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (objectContainer == null) {
             return;
         }
+
+        DBNModel navigatorModel = DBNUtils.getNavigatorModel(objectContainer);
 
         DBCExecutionContextDefaults contextDefaults = null;
         if (executionContext != null) {
@@ -132,7 +132,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
                     objectContainer.getChildren(monitor);
                 defaultObject = defObject;
 
-                if (readNodes) {
+                if (readNodes && navigatorModel != null) {
                     // Cache navigator nodes
                     if (objectList != null) {
                         for (DBSObject child : objectList) {

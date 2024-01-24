@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,32 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.websocket.WSEventHandler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * CB event handler descriptor
  */
 public class WSEventHandlerDescriptor extends AbstractDescriptor {
     private final ObjectType implType;
 
+    @NotNull
+    private final List<String> supportedTopics = new ArrayList<>();
+
     protected WSEventHandlerDescriptor(IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.implType = new ObjectType(contributorConfig, "class");
+        for (IConfigurationElement dsElement : contributorConfig.getChildren("topic")) {
+            String dsId = dsElement.getAttribute("id");
+            if (dsId != null) {
+                supportedTopics.add(dsId);
+            }
+        }
+    }
+
+    @NotNull
+    public List<String> getSupportedTopics() {
+        return supportedTopics;
     }
 
     @NotNull

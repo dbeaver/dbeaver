@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
+import org.jkiss.dbeaver.tasks.ui.TaskFeatures;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintStream;
 import java.util.Locale;
+import java.util.Map;
 
 public class TaskWizardExecutor extends TaskProcessorUI {
 
@@ -47,6 +49,8 @@ public class TaskWizardExecutor extends TaskProcessorUI {
     @Override
     protected void runTask() throws DBException {
         if (DBTaskUtils.confirmTask(getTask(), log, logWriter)) {
+            TaskFeatures.TASKS_EXECUTE.use(Map.of("type", getTask().getType().getId()));
+
             DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
             handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this);
         }

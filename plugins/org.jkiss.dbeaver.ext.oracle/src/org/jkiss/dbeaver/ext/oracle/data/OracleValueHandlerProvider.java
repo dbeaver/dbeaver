@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -33,7 +34,7 @@ import java.sql.Types;
 public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(@NotNull DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         switch (typedObject.getTypeID()) {
             case Types.BLOB:
@@ -47,7 +48,7 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
                 if (((OracleDataSource)dataSource).isDriverVersionAtLeast(12, 2)) {
                     return new OracleTemporalAccessorValueHandler(preferences);
                 } else {
-                    return new OracleTimestampValueHandler(preferences);
+                    return new OracleTimestampValueHandler(preferences, dataSource);
                 }
             case Types.STRUCT:
                 return OracleObjectValueHandler.INSTANCE;
@@ -67,7 +68,7 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
         }
 
         if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {
-            return new OracleTimestampValueHandler(preferences);
+            return new OracleTimestampValueHandler(preferences, dataSource);
         } else {
             return null;
         }

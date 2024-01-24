@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,23 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -65,18 +70,28 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             SQLBlockCompletions.ONE_INDENT_COMPLETION_PART, SQLBlockCompletions.NEW_LINE_COMPLETION_PART, "END IF", SQLBlockCompletions.NEW_LINE_COMPLETION_PART
         }, "END", "IF");   
     }};
+    public static final Locale DEF_LOCALE = Locale.ENGLISH;
 
+    private static class KeywordHolder {
+        DBPKeywordType type;
+        String original;
+
+        public KeywordHolder(DBPKeywordType type, String original) {
+            this.type = type;
+            this.original = original;
+        }
+    }
     // Keywords
-    private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
+    private final TreeMap<String, KeywordHolder> allKeywords = new TreeMap<>();
 
-    private final TreeSet<String> reservedWords = new TreeSet<>();
-    protected final TreeSet<String> functions = new TreeSet<>();
-    protected final TreeSet<String> types = new TreeSet<>();
-    protected final TreeSet<String> tableQueryWords = new TreeSet<>();
-    protected final TreeSet<String> columnQueryWords = new TreeSet<>();
+    private final TreeMap<String, String> reservedWords = new TreeMap<>();
+    private final TreeMap<String, String> functions = new TreeMap<>();
+    private final TreeMap<String, String> types = new TreeMap<>();
+    private final TreeMap<String, String> tableQueryWords = new TreeMap<>();
+    private final TreeMap<String, String> columnQueryWords = new TreeMap<>();
     // Comments
-    private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
-    private Map<String, Integer> keywordsIndent = new HashMap<>();
+    private final Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
+    private final Map<String, Integer> keywordsIndent = new HashMap<>();
 
     protected AbstractSQLDialect() {
     }
@@ -118,13 +133,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     protected void addSQLKeyword(String keyword) {
-        reservedWords.add(keyword);
-        allKeywords.put(keyword, DBPKeywordType.KEYWORD);
+        String ciWord = keyword.toUpperCase(DEF_LOCALE);
+        reservedWords.put(ciWord, keyword);
+        allKeywords.put(ciWord, new KeywordHolder(DBPKeywordType.KEYWORD, keyword));
     }
 
     protected void removeSQLKeyword(String keyword) {
-        reservedWords.remove(keyword);
-        allKeywords.remove(keyword);
+        String ciWord = keyword.toUpperCase(DEF_LOCALE);
+        reservedWords.remove(ciWord);
+        allKeywords.remove(ciWord);
     }
 
     protected void addSQLKeywords(Collection<String> allKeywords) {
@@ -144,7 +161,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     protected void addFunctions(Collection<String> allFunctions) {
-        functions.addAll(allFunctions);
+        for (String function : allFunctions) {
+            functions.put(function.toUpperCase(DEF_LOCALE), function);
+        }
         addKeywords(allFunctions, DBPKeywordType.FUNCTION);
     }
 
@@ -155,9 +174,29 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     protected void addDataTypes(Collection<String> allTypes) {
         for (String type : allTypes) {
-            types.add(type.toUpperCase(Locale.ENGLISH));
+            types.put(type.toUpperCase(DEF_LOCALE), type);
         }
         addKeywords(allTypes, DBPKeywordType.TYPE);
+    }
+
+    protected Collection<String> getTableQueryWords() {
+        return tableQueryWords.values();
+    }
+
+    protected void addTableQueryKeywords(String ... keywords) {
+        for (String keyword : keywords) {
+            tableQueryWords.put(keyword.toUpperCase(DEF_LOCALE), keyword);
+        }
+    }
+
+    public Collection<String> getColumnQueryWords() {
+        return columnQueryWords.values();
+    }
+
+    protected void addColumnQueryKeywords(String ... keywords) {
+        for (String keyword : keywords) {
+            columnQueryWords.put(keyword.toUpperCase(DEF_LOCALE), keyword);
+        }
     }
 
     /**
@@ -169,13 +208,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     protected void addKeywords(Collection<String> set, DBPKeywordType type) {
         if (set != null) {
             for (String keyword : set) {
-                keyword = keyword.toUpperCase(Locale.ENGLISH);
-                reservedWords.add(keyword);
-                DBPKeywordType oldType = allKeywords.get(keyword);
-                if (oldType != DBPKeywordType.KEYWORD) {
+                String ciKeyword = keyword.toUpperCase(DEF_LOCALE);
+                reservedWords.put(ciKeyword, keyword);
+                KeywordHolder oldType = allKeywords.get(ciKeyword);
+                if (oldType == null || oldType.type != DBPKeywordType.KEYWORD) {
                     // We can't mark keywords as functions or types because keywords are reserved and
                     // if some identifier conflicts with keyword it must be quoted.
-                    allKeywords.put(keyword, type);
+                    allKeywords.put(ciKeyword, new KeywordHolder(type, keyword));
                 }
             }
         }
@@ -183,35 +222,40 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public Set<String> getReservedWords() {
-        return reservedWords;
+    public Collection<String> getReservedWords() {
+        return reservedWords.values();
     }
 
     @NotNull
     @Override
-    public Set<String> getFunctions() {
-        return functions;
+    public Collection<String> getFunctions() {
+        return functions.values();
     }
 
     @NotNull
     @Override
-    public TreeSet<String> getDataTypes(@Nullable DBPDataSource dataSource) {
-        return types;
+    public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+        return types.values();
+    }
+
+    protected void clearDataTypes() {
+        types.clear();
     }
 
     @Override
     public DBPKeywordType getKeywordType(@NotNull String word) {
-        return allKeywords.get(word.toUpperCase(Locale.ENGLISH));
+        KeywordHolder keywordHolder = allKeywords.get(word.toUpperCase(DEF_LOCALE));
+        return keywordHolder == null ? null : keywordHolder.type;
     }
 
     @NotNull
     @Override
     public List<String> getMatchedKeywords(@NotNull String word) {
-        word = word.toUpperCase(Locale.ENGLISH);
+        word = word.toUpperCase(DEF_LOCALE);
         List<String> result = new ArrayList<>();
-        for (String keyword : allKeywords.tailMap(word).keySet()) {
-            if (keyword.startsWith(word)) {
-                result.add(keyword);
+        for (Map.Entry<String, KeywordHolder> keyword : allKeywords.tailMap(word).entrySet()) {
+            if (keyword.getKey().startsWith(word)) {
+                result.add(keyword.getValue().original);
             } else {
                 break;
             }
@@ -221,23 +265,23 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isKeywordStart(@NotNull String word) {
-        SortedMap<String, DBPKeywordType> map = allKeywords.tailMap(word.toUpperCase(Locale.ENGLISH));
+        SortedMap<String, KeywordHolder> map = allKeywords.tailMap(word.toUpperCase(DEF_LOCALE));
         return !map.isEmpty() && map.firstKey().startsWith(word);
     }
 
     @Override
     public boolean isEntityQueryWord(@NotNull String word) {
-        return tableQueryWords.contains(word.toUpperCase(Locale.ENGLISH));
+        return tableQueryWords.containsKey(word.toUpperCase(DEF_LOCALE));
     }
 
     @Override
     public boolean isAttributeQueryWord(@NotNull String word) {
-        return columnQueryWords.contains(word.toUpperCase(Locale.ENGLISH));
+        return columnQueryWords.containsKey(word.toUpperCase(DEF_LOCALE));
     }
 
     @Override
     public int getKeywordNextLineIndent(@NotNull String word) {
-        Integer indent = keywordsIndent.get(word.toUpperCase(Locale.ENGLISH));
+        Integer indent = keywordsIndent.get(word.toUpperCase(DEF_LOCALE));
         return indent == null ? 0 : indent;
     }
 
@@ -436,7 +480,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (!hasBadChars && forceCaseSensitive) {
             // Check for case of quoted indents. Do not check for unquoted case - we don't need to quote em anyway
             // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
-            // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
+            // unless database use case-insensitive search always (e.g. MySQL with lower_case_table_names <> 0)
             if (!this.useCaseInsensitiveNameLookup()) {
                 // See how unquoted identifiers are stored
                 // If passed identifier case differs from unquoted then we need to escape it
@@ -480,12 +524,20 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public String getUnquotedIdentifier(String identifier) {
+        return getUnquotedIdentifier(identifier, false);
+    }
+    
+    @Override
+    public String getUnquotedIdentifier(String identifier, boolean unescapeQuotesInsideIdentifier) {
         String[][] quoteStrings = this.getIdentifierQuoteStrings();
         if (ArrayUtils.isEmpty(quoteStrings)) {
             quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
         }
         for (int i = 0; i < quoteStrings.length; i++) {
             identifier = DBUtils.getUnQuotedIdentifier(identifier, quoteStrings[i][0], quoteStrings[i][1]);
+            if (unescapeQuotesInsideIdentifier) {
+                identifier = identifier.replace(quoteStrings[i][0] + quoteStrings[i][0], quoteStrings[i][0]);
+            }
         }
         return identifier;
     }
@@ -550,6 +602,33 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean supportsAliasInUpdate() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public String getAllAttributesAlias() {
+        return SQLConstants.COLUMN_ASTERISK;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultGroupAttribute() {
+        return getAllAttributesAlias();
+    }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return true;
+    }
+
+    @Override
+    public String getOffsetLimitQueryPart(int offset, int limit) {
+        return String.format("LIMIT %d OFFSET %d", limit, offset);
+    }
+
+    @Override
+    public boolean supportsAliasInHaving() {
+        return true;
     }
 
     @Override
@@ -642,7 +721,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (firstKeyword.isEmpty()) {
             return false;
         }
-        firstKeyword = firstKeyword.toUpperCase(Locale.ENGLISH);
+        firstKeyword = firstKeyword.toUpperCase(DEF_LOCALE);
         return isTransactionModifyingKeyword(firstKeyword);
     }
 
@@ -697,7 +776,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        typeName = CommonUtils.notEmpty(typeName).toUpperCase(Locale.ENGLISH);
+        typeName = CommonUtils.notEmpty(typeName).toUpperCase(DEF_LOCALE);
         if (column instanceof DBSObject) {
             // If type is UDT (i.e. we can find it in type list) and type precision == column precision
             // then do not use explicit precision in column definition
@@ -809,37 +888,60 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
+    public void generateStoredProcedureCall(
+        StringBuilder sql, 
+        DBSProcedure proc, 
+        Collection<? extends DBSProcedureParameter> parameters, 
+        boolean castParams
+    ) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
         }
         //getMaxParameterLength(parameters, inParameters);
+        DBPPreferenceStore prefStore;
+        DBPDataSource dataSource = proc.getDataSource();
+        if (dataSource != null) {
+            prefStore = dataSource.getContainer().getPreferenceStore();
+        } else {
+            prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        }
+        String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);        
         boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
             boolean first = true;
             for (DBSProcedureParameter parameter : inParameters) {
+                String typeName = parameter.getParameterType().getFullTypeName();
                 switch (parameter.getParameterKind()) {
                     case IN:
                         if (!first) {
-                            sql.append(",");
+                            sql.append(", ");
                         }
-                        sql.append(":").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                        if (castParams) {
+                            sql.append("cast(").append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()))
+                                .append(" as ").append(typeName).append(")");
+                        } else {
+                            sql.append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()));
+                        }
                         break;
                     case RETURN:
                         continue;
                     default:
                         if (isStoredProcedureCallIncludesOutParameters()) {
                             if (!first) {
-                                sql.append(",");
+                                sql.append(", ");
                             }
-                            sql.append("?");
+                            if (castParams) {
+                                sql.append("cast(?")
+                                    .append(" as ").append(typeName).append(")");
+                            } else {
+                                sql.append("?");
+                            }
                         }
                         break;
-                }
-                String typeName = parameter.getParameterType().getFullTypeName();
+                }                
 //                sql.append("\t-- put the ").append(parameter.getName())
 //                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")");
                 first = false;
@@ -879,6 +981,22 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsUuid() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public SQLTokenPredicateSet getSkipTokenPredicates() {
+        return EmptyTokenPredicateSet.INSTANCE;
+    }
+
+    @Override
+    public boolean isStripCommentsBeforeBlocks() {
         return false;
     }
 

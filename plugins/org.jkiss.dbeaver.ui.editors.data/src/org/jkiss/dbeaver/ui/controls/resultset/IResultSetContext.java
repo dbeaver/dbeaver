@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.meta.RuntimeAction;
 
@@ -38,6 +40,9 @@ public interface IResultSetContext
     boolean supportsReferences();
 
     String getDocumentContentType();
+
+    @Nullable
+    DBDAttributeBinding getDocumentAttribute();
 
     DBCResultSet getResultSet();
 

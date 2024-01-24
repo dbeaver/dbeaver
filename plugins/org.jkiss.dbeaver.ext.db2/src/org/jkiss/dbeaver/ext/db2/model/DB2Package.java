@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,13 +100,13 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
 
         DB2DataSource db2DataSource = schema.getDataSource();
 
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
 
         String defaultSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEFAULT_SCHEMA");
         this.defaultSchema = getDataSource().getSchema(new VoidProgressMonitor(), defaultSchemaName);
 
         this.uniqueId = JDBCUtils.safeGetString(dbResult, "UNIQUE_ID");
-        this.valid = JDBCUtils.safeGetBoolean(dbResult, "VALID", DB2YesNo.Y.name());
+        this.valid = JDBCUtils.safeGetBoolean(dbResult, DB2Constants.SYSCOLUMN_VALID, DB2YesNo.Y.name());
         this.version = JDBCUtils.safeGetString(dbResult, "PKGVERSION");
 
         this.totalSections = JDBCUtils.safeGetInteger(dbResult, "TOTAL_SECT");
@@ -126,14 +126,14 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
 
         this.lastBindTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_BIND_TIME");
         this.explicitBindTime = JDBCUtils.safeGetTimestamp(dbResult, "EXPLICIT_BIND_TIME");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
         if (db2DataSource.isAtLeastV9_7()) {
-            this.firstBindTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+            this.firstBindTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
+            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_ALTER_TIME);
             this.concurrentAccessResolution = JDBCUtils.safeGetString(dbResult, "CONCURRENTACCESSRESOLUTION");
             this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
             this.id = JDBCUtils.safeGetLong(dbResult, "PKGID");

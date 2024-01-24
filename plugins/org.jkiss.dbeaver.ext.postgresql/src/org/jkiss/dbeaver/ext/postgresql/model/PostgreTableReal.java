@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     protected transient volatile Long rowCount;
     protected transient volatile Long diskSpace;
     protected transient volatile long tableRelSize;
-    private final TriggerCache triggerCache = new TriggerCache();
+    private final TriggerCache triggerCache = getDataSource().getServerType().supportsTriggers() ? new TriggerCache() : null;
     private final RuleCache ruleCache = getDataSource().getServerType().supportsRules() ? new RuleCache() : null;
 
     public boolean isRefreshSchemaStatisticsOnTableRefresh () {
@@ -91,6 +91,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         }
     }
 
+    @Nullable
     public TriggerCache getTriggerCache() {
         return triggerCache;
     }
@@ -232,13 +233,14 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     public List<PostgreTrigger> getTriggers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return triggerCache.getAllObjects(monitor, this);
+        return triggerCache != null ? triggerCache.getAllObjects(monitor, this) : List.of();
     }
 
+    @Nullable
     public PostgreTrigger getTrigger(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return triggerCache.getObject(monitor, this, name);
+        return triggerCache != null ? triggerCache.getObject(monitor, this, name) : null;
     }
 
     @Association

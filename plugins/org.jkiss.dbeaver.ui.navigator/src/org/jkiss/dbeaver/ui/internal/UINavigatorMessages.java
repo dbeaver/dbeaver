@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,6 +53,8 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_filter_hint_text;
 
     public static String actions_navigator__objects;
+    public static String actions_navigator_hide_objects;
+    public static String actions_navigator_hide_object;
     public static String actions_navigator_copy_fqn_title;
     public static String actions_navigator_copy_fqn_titles;
     public static String actions_navigator_copy_object_copy_node;
@@ -82,6 +84,19 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_search_filter_container_description;
     public static String actions_navigator_search_filter_object_name;
     public static String actions_navigator_search_filter_object_description;
+    public static String actions_navigator_show_only_selected_objects;
+    public static String actions_navigator_show_only_object;
+    public static String actions_navigator_folder_name;
+    public static String actions_navigator_open_editors_title;
+    public static String actions_navigator_open_editors_question;
+    public static String actions_navigator_rename_object;
+    public static String actions_navigator_rename_object_exception_title;
+    public static String actions_navigator_rename_object_exception_message;
+    public static String actions_navigator_rename_script;
+    public static String actions_navigator_rename_database_object;
+    public static String actions_navigator_rename_database_object_exception_title;
+    public static String actions_navigator_rename_database_object_exception_message;
+    
 
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;
@@ -98,6 +113,7 @@ public class UINavigatorMessages extends NLS {
 
     // DatabaseNavigator
     public static String pref_page_database_general_label_expand_navigator_tree;
+    public static String pref_page_database_general_label_expand_navigator_tree_tip;
     public static String pref_page_database_general_label_restore_filter;
     public static String pref_page_database_general_label_restore_filter_tip;
     public static String pref_page_database_general_label_restore_state_depth;
@@ -109,6 +125,7 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_contents_in_tooltips;
     public static String pref_page_database_general_label_show_contents_in_tooltips_tip;
     public static String pref_page_database_general_label_order_elements_alphabetically;
+    public static String pref_page_database_general_label_order_elements_alphabetically_tip;
     public static String pref_page_database_general_label_folders_first;
     public static String pref_page_database_general_label_folders_first_tip;
     public static String pref_page_database_general_label_show_host_name;
@@ -176,6 +193,7 @@ public class UINavigatorMessages extends NLS {
     public static String controls_object_list_monitor_load_props;
     public static String controls_object_list_status_objects;
 
+    public static String editors_entity_read_expensive_props_action;
     public static String editors_entity_dialog_persist_title;
     public static String editors_entity_dialog_preview_title;
     public static String editors_entity_monitor_add_folder;
@@ -183,6 +201,8 @@ public class UINavigatorMessages extends NLS {
     public static String editors_entity_monitor_preview_changes;
     public static String editors_entity_properties_text;
     public static String editors_entity_properties_tooltip_suffix;
+    public static String editors_entity_title_uninitialized;
+    public static String editors_entity_title_initializing;
 
     public static String confirm_entity_delete_title;
     public static String confirm_entity_delete_message;
@@ -249,6 +269,8 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_project_explorer_columns_modified_description;
     public static String navigator_project_explorer_columns_type_text;
     public static String navigator_project_explorer_columns_type_description;
+    public static String navigator_filtered_nodes_text;
+    public static String navigator_filtered_nodes_tip;
 
     public static String datasource_list_action_empty;
     public static String filter_connection_name_placeholder;

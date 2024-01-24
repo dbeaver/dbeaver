@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-
-import java.util.LinkedHashMap;
+import org.jkiss.utils.BeanUtils;
 
 public class TaskHandlerCopy extends AbstractHandler {
 
@@ -64,14 +63,18 @@ public class TaskHandlerCopy extends AbstractHandler {
                             newTaskName,
                             oldTask.getDescription(),
                             oldTask.getTaskFolder() != null ? oldTask.getTaskFolder().getName() : null,
-                            new LinkedHashMap<>(oldTask.getProperties())
+                            BeanUtils.deepCopy(oldTask.getProperties())
                         );
                         taskManager.updateTaskConfiguration(newTask);
 
                         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
                         if (activePart instanceof DatabaseTasksView) {
                             UIUtils.asyncExec(() -> {
-                                ((DatabaseTasksView) activePart).getTasksTree().getViewer().setSelection(new StructuredSelection(newTask), true);
+                                DatabaseTasksTree tasksTree = ((DatabaseTasksView) activePart).getTasksTree();
+                                if (tasksTree == null) {
+                                    return;
+                                }
+                                tasksTree.getViewer().setSelection(new StructuredSelection(newTask), true);
                                 ActionUtils.runCommand(DatabaseTasksView.EDIT_TASK_CMD_ID, activePart.getSite());
                             });
                         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,10 +268,38 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        AdditionalInfo info = getAdditionalInfo(monitor);
         StringBuilder sql = new StringBuilder()
             .append("create sequence ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
 
+        getSequenceBody(monitor, sql, true);
+        sql.append(';');
+
+		if (!CommonUtils.isEmpty(getDescription())) {
+			sql.append("\ncomment on sequence ").append(DBUtils.getQuotedIdentifier(this)).append(" is ")
+					.append(SQLUtils.quoteString(this, getDescription())).append(";");
+		}
+        
+        List<DBEPersistAction> actions = new ArrayList<>();
+        PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
+        if (!actions.isEmpty()) {
+            sql.append("\n\n");
+            sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
+        }
+
+        return sql.toString();
+    }
+
+    /**
+     * Adds sequence body parts - only parameters - into the StringBuilder
+     *
+     * @param monitor to read additional info about sequence
+     * @param sql StringBuilder to append query parts
+     * @param hasIndentation add or not add tabulation and new line in the result
+     * @throws DBCException can happen during the additional info reading
+     */
+    public void getSequenceBody(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql, boolean hasIndentation)
+        throws DBCException {
+        AdditionalInfo info = getAdditionalInfo(monitor);
         if (info.getIncrementBy() > 0) {
             sql.append("\n  increment by ").append(info.getIncrementBy());
         }
@@ -292,21 +320,16 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
             sql.append("\n  cache ").append(info.getCacheValue());
             sql.append("\n  ").append(info.isCycled ? "" : "no ").append("cycle");
         }
-        sql.append(';');
+        addIndentation(sql, hasIndentation);
+        sql.append(info.isCycled() ? "" : "no ").append("cycle");
+    }
 
-		if (!CommonUtils.isEmpty(getDescription())) {
-			sql.append("\ncomment on sequence ").append(DBUtils.getQuotedIdentifier(this)).append(" is ")
-					.append(SQLUtils.quoteString(this, getDescription())).append(";");
-		}
-        
-        List<DBEPersistAction> actions = new ArrayList<>();
-        PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
-        if (!actions.isEmpty()) {
-            sql.append("\n\n");
-            sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
+    private void addIndentation(@NotNull StringBuilder sql, boolean hasIndentation) {
+        if (hasIndentation) {
+            sql.append("\n  ");
+        } else {
+            sql.append(" ");
         }
-
-        return sql.toString();
     }
 
     public String generateChangeOwnerQuery(String owner) {

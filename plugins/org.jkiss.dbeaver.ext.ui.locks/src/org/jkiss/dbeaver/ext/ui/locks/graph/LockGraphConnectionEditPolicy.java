@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.ConnectionEditPolicy;
-import org.eclipse.gef3.requests.GroupRequest;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.ConnectionEditPolicy;
+import org.eclipse.gef.requests.GroupRequest;
 
 public class LockGraphConnectionEditPolicy extends ConnectionEditPolicy {
 

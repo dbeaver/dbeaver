@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAObject;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -93,7 +94,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     }
 
     @Override
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return getPlainNodeName(false, true);
     }
 
@@ -273,7 +274,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, newChild));
         } else {
-            log.error("Cannot add child item to " + getNodeName() + ". Conditions doesn't met"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error("Cannot add child item to " + getNodeDisplayName() + ". Conditions doesn't met"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -345,7 +346,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
         if (isLocked()) {
-            log.warn("Attempt to refresh locked node '" + getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn("Attempt to refresh locked node '" + getNodeDisplayName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
         DBSObject object = getObject();
@@ -760,7 +761,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return null;
     }
 
-    public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter) {
+    public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
@@ -773,7 +774,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     childrenClass,
                     (DBSObject) parentObject,
                     filter);
-                dataSource.persistConfiguration();
+                if (saveConfiguration) {
+                    dataSource.persistConfiguration();
+                }
             } else {
                 log.error("Cannot detect child node type - can't save filter configuration");
             }
@@ -787,6 +790,17 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return filtered;
     }
 
+    @NotNull
+    @Override
+    public String getNodeId() {
+        String nodeId = super.getNodeId();
+        if (getObject() instanceof DBPObjectWithLongId longObject) {
+            nodeId += "_" + longObject.getObjectId();
+        }
+        return nodeId;
+    }
+
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         StringBuilder pathName = new StringBuilder(100);
@@ -816,7 +830,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (pathName.length() > 0) {
                 pathName.insert(0, '/');
             }
-            pathName.insert(0, node.getNodeName().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
+            pathName.insert(0, node.getNodeDisplayName().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
         }
         return pathName.toString();
     }
@@ -950,6 +964,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return object;
         }
         try {
+            if (object instanceof DPIClientObject) {
+                return ((DPIClientObject) object).dpiPropertyValue(monitor, meta.getPropertyName());
+            }
             Method getter = meta.getPropertyReadMethod(object.getClass());
             if (getter == null) {
                 log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
@@ -981,7 +998,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         try {
             Method getter = DBXTreeItem.findPropertyReadMethod(object.getClass(), propertyName);
             if (getter == null) {
-                log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
+                log.warn("Can't find dynamic property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
                 return null;
             }
             Class<?>[] paramTypes = getter.getParameterTypes();

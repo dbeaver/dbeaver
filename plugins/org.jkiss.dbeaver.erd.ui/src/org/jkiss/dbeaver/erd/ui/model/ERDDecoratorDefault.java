@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Insets;
-import org.eclipse.gef3.EditPartFactory;
-import org.eclipse.gef3.RequestConstants;
-import org.eclipse.gef3.palette.*;
-import org.eclipse.gef3.requests.CreationFactory;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.gef.EditPartFactory;
+import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.palette.*;
+import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.erd.ui.editor.tools.HandToolEntry;
 import org.jkiss.dbeaver.erd.ui.editor.tools.SelectionToolEntry;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
+import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -48,6 +50,8 @@ public class ERDDecoratorDefault implements ERDDecorator {
     public static final ImageDescriptor CONNECT_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TREE_ASSOCIATION);
     public static final ImageDescriptor FOREIGN_KEY_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TREE_FOREIGN_KEY);
     public static final ImageDescriptor NOTE_IMAGE = DBeaverIcons.getImageDescriptor(ERDIcon.NOTE);
+    private DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+    private ERDConnectionRouterRegistry connectionRouterRegistry = ERDConnectionRouterRegistry.getInstance();
 
     private static final Log log = Log.getLog(ERDDecoratorDefault.class);
 
@@ -77,18 +81,16 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @NotNull
     @Override
     public Insets getDefaultEntityInsets() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-            return new Insets(20, 20, 10, 20);
-        } else {
+        if (getConnectionRouterDescriptor().supportedAttributeAssociation()) {
             return new Insets(50, 50, 50, 50);
+        } else {
+            return new Insets(40, 40, 30, 30);
         }
     }
 
     @Nullable
     @Override
     public Dimension getEntitySnapSize() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         if (store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED)) {
             return new Dimension(
                 store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
@@ -158,6 +160,10 @@ public class ERDDecoratorDefault implements ERDDecorator {
         paletteRoot.add(controls);
 
         return controls;
+    }
+
+    protected ERDConnectionRouterDescriptor getConnectionRouterDescriptor() {
+        return connectionRouterRegistry.getActiveDescriptor();
     }
 
 }

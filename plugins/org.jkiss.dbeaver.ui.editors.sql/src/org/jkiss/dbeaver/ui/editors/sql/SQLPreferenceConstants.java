@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
-public class SQLPreferenceConstants
-{
-
-
+public class SQLPreferenceConstants {
 
     public enum EmptyScriptCloseBehavior {
         NOTHING(SQLEditorMessages.script_close_behavior_do_not_delete),
@@ -65,6 +63,9 @@ public class SQLPreferenceConstants
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
+    public static final String ENABLE_EXPERIMENTAL_FEATURES            = SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE;
+    public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
+    public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
@@ -99,14 +100,19 @@ public class SQLPreferenceConstants
     public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
     public static final String SQLEDITOR_CLOSE_BLOCKS                  = "SQLEditor.closeBlocks";
 
+    public static final String SMART_WORD_ITERATOR                     = "SQLEditor.smartWordIterator";
+
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
     public final static String MATCHING_BRACKETS_HIGHLIGHT              = "SQLEditor.matchingBracketsHighlight";
     // Reuse "AbstractTextEditor.Color.Foreground" color
-    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";//"org.jkiss.dbeaver.sql.editor.color.matchingBrackets.foreground";
+    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";
 
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
+    public static final String SHOW_STATISTICS_ON_EXECUTION             = "SQLEditor.showStatisticsForQueriesWithResults";
+    public static final String SET_SELECTION_TO_STATISTICS_TAB          = "SQLEditor.setSelectionToStatisticsTab";
+    public static final String CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION    = "SQLEditor.closeIncludedScriptAfterExecution";
 
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
     public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";
@@ -122,6 +128,7 @@ public class SQLPreferenceConstants
     public final static String RESULT_SET_REPLACE_CURRENT_TAB           = "SQLEditor.resultSet.replaceCurrentTab"; //$NON-NLS-1$
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
+    public static final String MULTIPLE_RESULTS_PER_TAB                 = "SQLEditor.resultSet.multipleResultsPerTab";
     public static final String EXTRA_PANEL_RATIO                        = "SQLEditor.extraPanels.ratio";
     public static final String EXTRA_PANEL_LOCATION                     = "SQLEditor.extraPanels.location";
     public static final String OUTPUT_PANEL_AUTO_SHOW                   = "SQLEditor.outputPanel.autoShow";
@@ -170,4 +177,43 @@ public class SQLPreferenceConstants
     public static final String LOCATION_BOTTOM      = "bottom";
     public static final String LOCATION_RESULTS     = "results";
 
+    public enum StatisticsTabOnExecutionBehavior {
+        NEVER("Only when no data"),
+        FOR_MULTIPLE_QUERIES("For multiple queries with results"),
+        ALWAYS("Always");
+
+        private final String title;
+
+        StatisticsTabOnExecutionBehavior(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public static StatisticsTabOnExecutionBehavior getByTitle(String title) {
+            for (StatisticsTabOnExecutionBehavior statisticsTabOnExecution : values()) {
+                if (statisticsTabOnExecution.getTitle().equals(title)) {
+                    return statisticsTabOnExecution;
+                }
+            }
+            return StatisticsTabOnExecutionBehavior.NEVER;
+        }
+        public static StatisticsTabOnExecutionBehavior getByName(String name) {
+            switch (name) {
+                case "true":
+                    return StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES;
+                case "false":
+                    return StatisticsTabOnExecutionBehavior.NEVER;
+                default:
+                    try {
+                        return StatisticsTabOnExecutionBehavior.valueOf(name);
+                    } catch (IllegalArgumentException e) {
+                        return StatisticsTabOnExecutionBehavior.NEVER;
+                    }
+            }
+        }
+
+    }
 }

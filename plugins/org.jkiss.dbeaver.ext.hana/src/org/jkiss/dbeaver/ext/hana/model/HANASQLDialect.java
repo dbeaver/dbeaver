@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider {
@@ -52,6 +51,12 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
         {"FOR", SQLConstants.BLOCK_END + " FOR"},
         {"WHILE", SQLConstants.BLOCK_END + " WHILE"}
     };
+
+    @Nullable
+    @Override
+    public String[] getBlockHeaderStrings() {
+        return new String[]{"DO"};
+    }
 
     private static String[] HANA_FUNCTIONS = new String[]{
         "ADD_DAYS",
@@ -193,10 +198,28 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
         return "\\";
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.FINAL) {
-            rules.add(new SQLVariableRule(this));
+            return new TPRule[] { new SQLVariableRule(this) };
         }
+        return new TPRule[0];
+    }
+
+    @Override
+    public boolean isStripCommentsBeforeBlocks() {
+        return true;
+    }
+
+    @Override
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
+        for (int i = 0; i < str.length(); i++) {
+            int c = str.charAt(i);
+            if (Character.isLetter(c) && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z')) {
+                return true;
+            }
+        }
+        return super.mustBeQuoted(str, forceCaseSensitive);
     }
 }

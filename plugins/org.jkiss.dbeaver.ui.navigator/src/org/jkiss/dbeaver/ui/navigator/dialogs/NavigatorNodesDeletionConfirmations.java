@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -70,8 +70,12 @@ public final class NavigatorNodesDeletionConfirmations {
             );
         }
         DBNNode node = (DBNNode) selectedObjects.iterator().next();
-        String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeType(), node.getNodeName());
-        String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName());
+        String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title,
+            node.getNodeTypeLabel(),
+            node.getNodeDisplayName());
+        String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message,
+            node.getNodeTypeLabel(),
+            node.getNodeDisplayName());
         return confirm(shell, title, message, selectedObjects, deleter);
     }
 
@@ -139,13 +143,13 @@ public final class NavigatorNodesDeletionConfirmations {
         );
         tableGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
-        objectsTable.setHeaderVisible(false);
+        objectsTable.setHeaderVisible(true);
         objectsTable.setLinesVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         int fontHeight = UIUtils.getFontHeight(objectsTable);
         int rowCount = selectedObjects.size();
         gd.widthHint = fontHeight * 7;
-        gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
+        //gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
         objectsTable.setLayoutData(gd);
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, "Type");
@@ -157,15 +161,15 @@ public final class NavigatorNodesDeletionConfirmations {
             DBNNode node = (DBNNode) obj;
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
-            if (node instanceof DBNResource) {
+            if (node instanceof DBNNodeWithResource) {
                 item.setText(0, node.getName());
-                IResource resource = ((DBNResource) node).getResource();
+                IResource resource = ((DBNNodeWithResource) node).getResource();
                 IPath resLocation = resource.getLocation();
                 item.setText(1, "File");
-                item.setText(2, resLocation == null ? "" : resLocation.toFile().getAbsolutePath());
+                item.setText(2, resLocation == null ? "" : resLocation.toString());
             } else {
                 item.setText(0, node.getNodeFullName());
-                item.setText(1, node.getNodeType());
+                item.setText(1, node.getNodeTypeLabel());
                 item.setText(2, CommonUtils.toString(node.getNodeDescription()));
             }
         }
@@ -177,7 +181,7 @@ public final class NavigatorNodesDeletionConfirmations {
             return;
         }
         IProject project = deleter.getProjectToDelete();
-        if (project == null) {
+        if (project == null || DBWorkbench.isDistributed()) {
             return;
         }
         Composite ph = UIUtils.createPlaceholder(parent, 2, 5);
@@ -194,13 +198,11 @@ public final class NavigatorNodesDeletionConfirmations {
                 deleter.setDeleteContents(deleteContentsCheck.getSelection());
             }
         });
-        if (!DBWorkbench.isDistributed()) {
-            UIUtils.createLabelText(ph,
-                UINavigatorMessages.confirm_deleting_project_location_label,
-                project.getLocation().toFile().getAbsolutePath(),
-                SWT.READ_ONLY
-            );
-        }
+        UIUtils.createLabelText(ph,
+            UINavigatorMessages.confirm_deleting_project_location_label,
+            project.getLocation().toFile().getAbsolutePath(),
+            SWT.READ_ONLY
+        );
     }
 
     private static void createCheckbox(

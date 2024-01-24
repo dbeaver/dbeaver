@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ui.editors.sql.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class SQLPresentationRegistry
@@ -55,6 +57,10 @@ public class SQLPresentationRegistry
                 this.presentations.add(presentationDescriptor);
             }
         }
+
+        presentations.sort(Comparator
+            .comparingInt(SQLPresentationDescriptor::getOrder)
+            .thenComparing(SQLPresentationDescriptor::getLabel));
     }
 
     public void dispose()
@@ -66,9 +72,15 @@ public class SQLPresentationRegistry
         return new ArrayList<>(presentations);
     }
 
-    public SQLPresentationDescriptor getPresentation(SQLEditor editor) {
-        return presentations.isEmpty() ? null : presentations.get(0);
-    }
+    @Nullable
+    public SQLPresentationDescriptor getPresentation(@NotNull String id) {
+        for (SQLPresentationDescriptor presentation : presentations) {
+            if (presentation.getId().equals(id)) {
+                return presentation;
+            }
+        }
 
+        return null;
+    }
 
 }

@@ -18,16 +18,6 @@
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.hex.description</description>
         </themeElementCategory>
 
-        <fontDefinition
-            id="org.jkiss.dbeaver.hex.editor.font.output"
-            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
-            label="%fontDefinition.org.jkiss.dbeaver.hex.editor.font.label"
-            value="Courier New-regular-10">
-            <description>%fontDefinition.org.jkiss.dbeaver.hex.editor.font.description</description>
-            <fontValue os="linux" value="Monospace-regular-10"/>
-            <fontValue os="macosx" value="Courier-regular-11"/>
-        </fontDefinition>
-
         <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.hex"
@@ -52,6 +42,13 @@
         <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.editors.binary.HexCommandHandler">
             <activeWhen><with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.ui.hexEditor"/></with></activeWhen>
         </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.main.resultset.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
     </extension>
 
 </plugin>

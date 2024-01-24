@@ -34,7 +34,7 @@
                         categories="sql,analytic"
                         singleConnection="true">
                     <replace provider="generic" driver="snowflake_generic"/>
-                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE[3.13.6]" bundle="!drivers.snowflake"/>
+                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE[3.14.4]" bundle="!drivers.snowflake"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.snowflake"/>
                     <file type="jar" path="drivers/snowflake" bundle="drivers.snowflake"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.snowflake"/>
@@ -51,6 +51,9 @@
                     <propertyGroup label="Settings">
                         <property id="warehouse" label="Warehouse" type="string" description="Snowflake warehouse name"/>
                         <property id="schema" label="Schema" type="string" description="Default schema name"/>
+                    </propertyGroup>
+                    <propertyGroup label="SQL">
+                        <property id="ddString" label="Show $$ quotes as String" type="boolean" supportedConfigurationTypes="MANUAL,URL"/>
                     </propertyGroup>
                 </provider-properties>
 

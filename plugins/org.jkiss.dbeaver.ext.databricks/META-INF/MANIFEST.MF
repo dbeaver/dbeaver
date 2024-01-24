@@ -1,13 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Vendor: %Bundle-Vendor
-Bundle-Name: %Bundle-Name
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Azure Databricks Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.databricks;singleton:=true
-Bundle-Version: 1.0.20.qualifier
-Bundle-Release-Date: 20230123
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 1.0.45.qualifier
+Bundle-Release-Date: 20240122
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic
 Export-Package: org.jkiss.dbeaver.ext.databricks,
  org.jkiss.dbeaver.ext.databricks.model

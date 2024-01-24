@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -33,18 +32,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
-import java.lang.reflect.Method;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 /**
  * Object type support
@@ -55,10 +50,12 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("'DATE '''yyyy-MM-dd''");
     private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''");
 
-    //private static Method TIMESTAMP_READ_METHOD = null, TIMESTAMPTZ_READ_METHOD = null, TIMESTAMPLTZ_READ_METHOD = null;
+    @NotNull
+    private DBPDataSource dataSource;
 
-    public OracleTimestampValueHandler(DBDFormatSettings formatSettings) {
+    OracleTimestampValueHandler(DBDFormatSettings formatSettings, @NotNull DBPDataSource dataSource) {
         super(formatSettings);
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -87,14 +84,11 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
-        if (object != null) {
-            String className = object.getClass().getName();
-            if (className.startsWith(OracleConstants.TIMESTAMP_CLASS_NAME)) {
-                try {
-                    return getTimestampReadMethod(object.getClass(), ((JDBCSession)session).getOriginal(), object);
-                } catch (Exception e) {
-                    throw new DBCException("Error extracting Oracle TIMESTAMP value", e);
-                }
+        if (object != null && object.getClass().getName().startsWith(OracleConstants.TIMESTAMP_CLASS_NAME)) {
+            try {
+                return OracleTimestampConverter.toTimestamp(object, ((JDBCSession) session).getOriginal());
+            } catch (Exception e) {
+                throw new DBCException("Error extracting Oracle TIMESTAMP value", e);
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
@@ -111,27 +105,6 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
             }
         }
         return super.getValueDisplayString(column, value, format);
-    }
-
-    private static Object getTimestampReadMethod(Class<?> aClass, Connection connection, Object object) throws Exception {
-        switch (aClass.getName()) {
-            case OracleConstants.TIMESTAMP_CLASS_NAME:
-                return getNativeMethod(aClass, "timestampValue")
-                    .invoke(object);
-            case OracleConstants.TIMESTAMPTZ_CLASS_NAME:
-                return getNativeMethod(aClass, "timestampValue", Connection.class)
-                    .invoke(object, connection);
-            case OracleConstants.TIMESTAMPLTZ_CLASS_NAME:
-                return getNativeMethod(aClass, "timestampValue", Connection.class, Calendar.class)
-                    .invoke(object, connection, Calendar.getInstance());
-        }
-        throw new DBException("Unsupported Oracle TIMESTAMP type: " + aClass.getName());
-    }
-
-    private static Method getNativeMethod(Class<?> aClass, String name, Class<?> ... args) throws NoSuchMethodException {
-        Method method = aClass.getMethod(name, args);
-        method.setAccessible(true);
-        return method;
     }
 
     @Nullable
@@ -195,17 +168,10 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @NotNull
-    protected String getFormatterId(DBSTypedObject column)
-    {
-        boolean showDateAsDate = false;
-        if (column instanceof DBSObject) {
-            DBPDataSource dataSource = ((DBSObject) column).getDataSource();
-            if (dataSource != null) {
-                showDateAsDate = CommonUtils.getBoolean(
-                    dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SHOW_DATE_AS_DATE),
-                    false);
-            }
-        }
+    protected String getFormatterId(DBSTypedObject column) {
+        boolean showDateAsDate = CommonUtils.getBoolean(
+                dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SHOW_DATE_AS_DATE),
+                false);
         if (showDateAsDate && OracleConstants.TYPE_NAME_DATE.equals(column.getTypeName())) {
             return DBDDataFormatter.TYPE_NAME_DATE;
         }

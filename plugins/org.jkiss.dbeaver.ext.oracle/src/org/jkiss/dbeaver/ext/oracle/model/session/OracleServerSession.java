@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -77,7 +78,7 @@ public class OracleServerSession extends AbstractServerSession {
         this.user = JDBCUtils.safeGetString(dbResult, "USERNAME");
         this.schema = JDBCUtils.safeGetString(dbResult, "SCHEMANAME");
         this.type = JDBCUtils.safeGetString(dbResult, "TYPE");
-        this.status = JDBCUtils.safeGetString(dbResult, "STATUS");
+        this.status = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS);
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
         this.sqlId = JDBCUtils.safeGetString(dbResult, "SQL_ID");
         this.sqlChildNumber = JDBCUtils.safeGetLong(dbResult, "SQL_CHILD_NUMBER");

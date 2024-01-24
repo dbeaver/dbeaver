@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,17 @@ public interface SQLEditorCommands
     String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement"; //$NON-NLS-1$
     String CMD_EXECUTE_STATEMENT_NEW = "org.jkiss.dbeaver.ui.editors.sql.run.statementNew"; //$NON-NLS-1$
     String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script"; //$NON-NLS-1$
+    String CMD_EXECUTE_SCRIPT_NATIVE = "org.jkiss.dbeaver.core.sql.script.run.scriptNative"; //$NON-NLS-1$
     String CMD_EXECUTE_SCRIPT_FROM_POSITION = "org.jkiss.dbeaver.ui.editors.sql.run.scriptFromPosition"; //$NON-NLS-1$
     String CMD_EXECUTE_SCRIPT_NEW = "org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"; //$NON-NLS-1$
+
     String CMD_EXECUTE_ROW_COUNT = "org.jkiss.dbeaver.ui.editors.sql.run.count"; //$NON-NLS-1$
+
     String CMD_EXECUTE_EXPRESSION = "org.jkiss.dbeaver.ui.editors.sql.run.expression"; //$NON-NLS-1$
     String CMD_EXECUTE_ALL_ROWS = "org.jkiss.dbeaver.ui.editors.sql.run.all.rows"; //$NON-NLS-1$
     String CMD_EXPLAIN_PLAN = "org.jkiss.dbeaver.ui.editors.sql.run.explain"; //$NON-NLS-1$
     String CMD_LOAD_PLAN = "org.jkiss.dbeaver.ui.editors.sql.load.plan"; //$NON-NLS-1$
+    String CMD_MULTIPLE_RESULTS_PER_TAB = "org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab"; //$NON-NLS-1$
     String CMD_SQL_EDITOR_DEF_COMMAND = "org.jkiss.dbeaver.core.sql.editor.defaultCommand";
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
     String CMD_SQL_EDITOR_NEW = "org.jkiss.dbeaver.core.sql.editor.create";
@@ -43,8 +47,10 @@ public interface SQLEditorCommands
     String CMD_SQL_SHOW_OUTPUT = "org.jkiss.dbeaver.ui.editors.sql.show.output";
     String CMD_SQL_SHOW_LOG = "org.jkiss.dbeaver.ui.editors.sql.show.log";
     String CMD_SQL_SHOW_VARIABLES = "org.jkiss.dbeaver.ui.editors.sql.show.variables";
+    String CMD_SQL_SHOW_OUTLINE = "org.jkiss.dbeaver.ui.editors.sql.show.outline";
     String CMD_SQL_EDITOR_MAXIMIZE_PANEL = "org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel";
     String CMD_SQL_EDITOR_CLOSE_TAB = "org.jkiss.dbeaver.ui.editors.sql.close.tab";
+    String CMD_SQL_EDITOR_TOGGLE_TAB_PINNED = "org.jkiss.dbeaver.ui.editors.sql.toggle.pinned.tab";
     String CMD_SQL_ASSIST_TEMPLATES = "org.jkiss.dbeaver.ui.editors.sql.assist.templates"; //$NON-NLS-1$
     String CMD_SYNC_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.sync.connection";
     String CMD_SQL_RENAME = "org.jkiss.dbeaver.ui.editors.sql.rename";

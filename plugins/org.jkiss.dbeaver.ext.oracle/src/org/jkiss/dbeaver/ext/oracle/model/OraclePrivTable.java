@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ public class OraclePrivTable extends OracleObject<OracleTableBase> implements DB
         super(table, JDBCUtils.safeGetString(resultSet, "PRIVILEGE"), true);
         this.grantee = JDBCUtils.safeGetString(resultSet, "GRANTEE");
         this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
-        this.grantable = JDBCUtils.safeGetBoolean(resultSet, "GRANTABLE", "Y");
-        this.hierarchy = JDBCUtils.safeGetBoolean(resultSet, "HIERARCHY", "Y");
+        this.grantable = JDBCUtils.safeGetBoolean(resultSet, "GRANTABLE", OracleConstants.RESULT_YES_VALUE);
+        this.hierarchy = JDBCUtils.safeGetBoolean(resultSet, "HIERARCHY", OracleConstants.RESULT_YES_VALUE);
     }
 
     @Property(viewable = true, order = 1)

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -37,6 +40,7 @@ import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +69,19 @@ public class NewConnectionWizard extends ConnectionWizard
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
         this.initialConfiguration = initialConfiguration;
+
+        addPropertyChangeListener(event -> {
+            if (ConnectionPageAbstract.PROP_DRIVER_SUBSTITUTION.equals(event.getProperty())) {
+                ((Dialog) getContainer()).close();
+
+                UIUtils.asyncExec(() -> NewConnectionDialog.openNewConnectionDialog(
+                    UIUtils.getActiveWorkbenchWindow(),
+                    getActiveDataSource().getDriver(),
+                    getActiveDataSource().getConnectionConfiguration(),
+                    wizard -> wizard.setDriverSubstitution((DBPDriverSubstitutionDescriptor) event.getNewValue())
+                ));
+            }
+        });
     }
 
     @Override
@@ -133,9 +150,7 @@ public class NewConnectionWizard extends ConnectionWizard
             availableProvides.add(provider);
             DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(provider, IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {
-                ConnectionPageSettings pageSettings = new ConnectionPageSettings(
-                    NewConnectionWizard.this,
-                    view);
+                ConnectionPageSettings pageSettings = new ConnectionPageSettings(this, view, null, getDriverSubstitution());
                 settingsPages.put(provider, pageSettings);
                 addPage(pageSettings);
             }
@@ -177,7 +192,13 @@ public class NewConnectionWizard extends ConnectionWizard
     public IWizardPage getNextPage(IWizardPage page)
     {
         if (page == pageDrivers) {
-            ConnectionPageSettings pageSettings = getPageSettings((DriverDescriptor) getSelectedDriver());
+            final DBPDriver driver = getSelectedDriver();
+            if (driver.isDeprecated()) {
+                final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver);
+                nextPage.setWizard(this);
+                return nextPage;
+            }
+            ConnectionPageSettings pageSettings = getPageSettings(driver);
             if (pageSettings == null) {
                 return pageGeneral;
             } else {
@@ -196,9 +217,11 @@ public class NewConnectionWizard extends ConnectionWizard
      * using wizard as execution context.
      */
     @Override
-    public boolean performFinish()
-    {
+    public boolean performFinish() {
         DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
+        if (driver.isDeprecated()) {
+            return true;
+        }
         ConnectionPageSettings pageSettings = getPageSettings();
         DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
         DBPDataSourceRegistry dataSourceRegistry = getDataSourceRegistry();
@@ -213,6 +236,7 @@ public class NewConnectionWizard extends ConnectionWizard
             DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
             return false;
         }
+        CoreFeatures.CONNECTION_CREATE.use(Map.of("driver", dataSourceNew.getDriver().getPreconfiguredId()));
         return true;
     }
 
@@ -224,7 +248,11 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
-        ConnectionPageSettings pageSettings = getPageSettings(dataSource.getDriver());
+        final DBPDriver driver = dataSource.getDriver();
+        if (driver.isDeprecated()) {
+            return;
+        }
+        ConnectionPageSettings pageSettings = getPageSettings(driver);
         if (pageSettings != null) {
             pageSettings.saveSettings(dataSource);
         }

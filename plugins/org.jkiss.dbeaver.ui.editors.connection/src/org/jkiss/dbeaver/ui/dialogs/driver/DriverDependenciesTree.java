@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -48,9 +51,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.net.ssl.SSLHandshakeException;
 
 class DriverDependenciesTree {
+    private static final Log log = Log.getLog(DriverDependenciesTree.class);
 
     public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
     private DBRRunnableContext runnableContext;
@@ -87,7 +90,6 @@ class DriverDependenciesTree {
             treeEditor.verticalAlignment = SWT.CENTER;
             treeEditor.grabHorizontal = true;
             treeEditor.minimumWidth = 50;
-
             filesTree.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseUp(MouseEvent e)
@@ -142,8 +144,12 @@ class DriverDependenciesTree {
         filesTree.removeAll();
         int totalItems = 1;
         for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
+            if (editable && node.library.getType().equals(DBPDriverLibrary.FileType.license)) {
+                continue;
+            }
             DBPDriverLibrary library = node.library;
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
+            grayOutInstalledArtifact(node, item);
             item.setData(node);
             item.setImage(DBeaverIcons.getImage(library.getIcon()));
             item.setText(0, library.getDisplayName());
@@ -175,6 +181,17 @@ class DriverDependenciesTree {
         return resolved;
     }
 
+    private void grayOutInstalledArtifact(DBPDriverDependencies.DependencyNode node, TreeItem item) {
+        Path localFile = node.library.getLocalFile();
+        try {
+            if (editable && localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) {
+                item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+            }
+        } catch (IOException ex) {
+            log.error("Error reading " + node.library.getDisplayName() + " local file", ex);
+        }
+    }
+
     public boolean handleDownloadError(DBException e) {
         try {
             checkNetworkAccessible();
@@ -193,7 +210,12 @@ class DriverDependenciesTree {
         } catch (IOException e) {
             String message;
             if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
-                message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg;
+                if (DBWorkbench.getPlatform()
+                    .getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
+                    message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg;
+                } else {
+                    message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg_advanced;
+                }
             } else {
                 message = UIConnectionMessages.dialog_driver_download_network_unavailable_msg;
             }
@@ -218,13 +240,14 @@ class DriverDependenciesTree {
         Collection<DBPDriverDependencies.DependencyNode> dependencies = node.dependencies;
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverDependencies.DependencyNode dep : dependencies) {
+
                 TreeItem item = new TreeItem(parent, SWT.NONE);
                 //item.setData(dep);
                 item.setImage(DBeaverIcons.getImage(dep.library.getIcon()));
                 item.setText(0, dep.library.getDisplayName());
                 item.setText(1, CommonUtils.notEmpty(dep.library.getVersion()));
                 item.setText(2, CommonUtils.notEmpty(dep.library.getDescription()));
-
+                grayOutInstalledArtifact(dep, item);
                 if (dep.duplicate) {
                     item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
                 } else {

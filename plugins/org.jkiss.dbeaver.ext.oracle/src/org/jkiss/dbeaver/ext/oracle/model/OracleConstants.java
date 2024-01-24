@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,9 +119,11 @@ public class OracleConstants {
     public static final String TYPE_OCTET = "OCTET";
     public static final String TYPE_INTERVAL_YEAR_MONTH = "INTERVAL YEAR TO MONTH";
     public static final String TYPE_INTERVAL_DAY_SECOND = "INTERVAL DAY TO SECOND";
-    public static final String TYPE_NAME_BOOLEAN = "BOOLEAN";
     public static final String TYPE_NAME_BLOB = "BLOB";
     public static final String TYPE_NAME_NUMERIC = "NUMERIC";
+    public static final String TYPE_UUID = "VARCHAR2(36)";
+    public static final String TYPE_BOOLEAN = "VARCHAR(1)";
+
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
     public static final int DATE_TYPE_LENGTH = 7;
@@ -139,6 +141,14 @@ public class OracleConstants {
     public static final String COL_TABLE_NAME = "TABLE_NAME";
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    static final String COLUMN_CREATED = "CREATED";
+    static final String COLUMN_LAST_DDL_TIME = "LAST_DDL_TIME";
+    static final String COLUMN_OBJECT_NAME = "OBJECT_NAME";
+    static final String COLUMN_OBJECT_TYPE = "OBJECT_TYPE";
+    public static final String COLUMN_STATUS = "STATUS";
+    static final String RESULT_STATUS_VALID = "VALID";
+    static final String RESULT_YES_VALUE = "Y";
+    static final String COLUMN_TEMPORARY = "TEMPORARY";
 
     public static final String XML_COLUMN_NAME = "XML";
     public static final String OBJECT_VALUE_COLUMN_NAME = "OBJECT_VALUE";

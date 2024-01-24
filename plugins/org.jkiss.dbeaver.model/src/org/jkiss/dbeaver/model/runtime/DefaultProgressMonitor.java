@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +31,9 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
 
     private static final Log log = Log.getLog(DefaultProgressMonitor.class);
 
-    private IProgressMonitor nestedMonitor;
+    private final IProgressMonitor nestedMonitor;
     private List<DBRBlockingObject> blocks = null;
-    private ProgressState[] states = new ProgressState[0];
+    private final List<ProgressState> states = new ArrayList<>();
 
     private static class ProgressState {
         final String taskName;
@@ -63,7 +62,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public void beginTask(String name, int totalWork)
     {
         ProgressState state = new ProgressState(name, totalWork);
-        states = ArrayUtils.add(ProgressState.class, states, state);
+        states.add(state);
 
         nestedMonitor.beginTask(name, totalWork);
     }
@@ -71,16 +70,16 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     @Override
     public void done()
     {
-        if (states.length == 0) {
+        if (states.isEmpty()) {
             log.trace(new DBCException("Progress ended without start"));
         } else {
-            states = ArrayUtils.remove(ProgressState.class, states, states.length - 1);
+            states.remove(states.size() - 1);
         }
         nestedMonitor.done();
 
         // Restore previous state
-        if (states.length > 0) {
-            ProgressState lastState = states[states.length - 1];
+        if (!states.isEmpty()) {
+            ProgressState lastState = states.remove(states.size() - 1);
             nestedMonitor.beginTask(lastState.taskName, lastState.totalWork);
             if (lastState.subTask != null) {
                 nestedMonitor.subTask(lastState.subTask);
@@ -94,10 +93,10 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     @Override
     public void subTask(String name)
     {
-        if (states.length == 0) {
+        if (states.isEmpty()) {
             log.trace(new DBCException("Progress sub task without start"));
         } else {
-            states[states.length - 1].subTask = name;
+            states.get(states.size() - 1).subTask = name;
         }
         nestedMonitor.subTask(name);
     }
@@ -105,10 +104,10 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     @Override
     public void worked(int work)
     {
-        if (states.length == 0) {
+        if (states.isEmpty()) {
             log.trace(new DBCException("Progress info without start"));
         } else {
-            states[states.length - 1].progress += work;
+            states.get(states.size() - 1).progress += work;
         }
         nestedMonitor.worked(work);
     }

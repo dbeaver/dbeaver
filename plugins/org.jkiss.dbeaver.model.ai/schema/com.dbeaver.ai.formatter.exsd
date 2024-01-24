@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="com.dbeaver.ai.formatter" id="com.dbeaver.ai.formatter" name="AI formatters"/>
+      </appInfo>
+      <documentation>
+         AI formatters
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="formatter" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="formatter">
+      <complexType>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.format.IAIFormatter"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+
+</schema>

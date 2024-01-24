@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
@@ -65,38 +67,45 @@ public class DatabaseEditorListener implements INavigatorListener
         DBWorkbench.getPlatform().getNavigatorModel().removeListener(this);
     }
 
-    @Nullable
-    public DBNNode getTreeNode()
-    {
-        IEditorInput input = databaseEditor.getEditorInput();
-        return input instanceof IDatabaseEditorInput ? ((IDatabaseEditorInput) input).getNavigatorNode() : null;
-    }
-
     @Override
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
-            boolean closeEditor = false;
+            Strategy strategy = Strategy.DO_NOTHING;
             if (event.getAction() == DBNEvent.Action.REMOVE) {
-                closeEditor = true;
+                strategy = Strategy.CLOSE;
             } else if (event.getAction() == DBNEvent.Action.UPDATE) {
                 if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
-                    if (getTreeNode() == event.getNode()) {
+                    if (isSameNode(event.getNode())) {
                         databaseEditor.refreshPart(
                             event,
                             event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
                             event.getSource() == DBNEvent.FORCE_REFRESH);
+                    } else if (event.getNodeChange() == DBNEvent.NodeChange.LOAD && event.getNode() instanceof DBNDataSource) {
+                        strategy = Strategy.LOAD;
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
-                    closeEditor = true;
+                    strategy = Strategy.UNLOAD;
                 }
             }
-            if (closeEditor) {
+            if (strategy != Strategy.DO_NOTHING) {
                 if (DBWorkbench.getPlatform().isShuttingDown()) {
                     // Do not update editors during shutdown, just remove listeners
                     dispose();
+                    return;
+                }
+                if (strategy == Strategy.LOAD) {
+                    if (databaseEditor instanceof ILazyEditor) {
+                        ((ILazyEditor) databaseEditor).loadEditorInput();
+                    }
+                    return;
+                }
+                if (strategy == Strategy.UNLOAD &&
+                    DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_KEEP_EDITORS_ON_DISCONNECT) &&
+                    databaseEditor instanceof ILazyEditor && ((ILazyEditor) databaseEditor).unloadEditorInput()
+                ) {
                     return;
                 }
                 IWorkbenchWindow workbenchWindow = databaseEditor.getSite().getWorkbenchWindow();
@@ -110,10 +119,56 @@ public class DatabaseEditorListener implements INavigatorListener
         }
     }
 
-    protected boolean isValuableNode(DBNNode node)
-    {
-        DBNNode editorNode = getTreeNode();
-        return node == editorNode || (editorNode != null && editorNode.isChildOf(node));
+    private boolean isSameNode(@NotNull DBNNode other) {
+        final DBNNode editorNode = getEditorNode();
+
+        if (editorNode != null) {
+            return editorNode == other;
+        } else {
+            final String path = getEditorNodePath();
+            return path != null && path.equals(other.getNodeUri());
+        }
     }
 
+    private boolean isValuableNode(@NotNull DBNNode node) {
+        final DBNNode editorNode = getEditorNode();
+
+        if (editorNode != null) {
+            return editorNode == node || editorNode.isChildOf(node);
+        } else {
+            final String path = getEditorNodePath();
+            return path != null && path.startsWith(node.getNodeUri());
+        }
+    }
+
+    @Nullable
+    private DBNNode getEditorNode() {
+        final IEditorInput input = databaseEditor.getEditorInput();
+
+        if (input instanceof INavigatorEditorInput) {
+            return ((INavigatorEditorInput) input).getNavigatorNode();
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    private String getEditorNodePath() {
+        final IEditorInput input = databaseEditor.getEditorInput();
+
+        if (input instanceof DatabaseLazyEditorInput) {
+            return ((DatabaseLazyEditorInput) input).getNodePath();
+        } else if (input instanceof IDatabaseEditorInput) {
+            return ((DBNNode) ((IDatabaseEditorInput) input).getNavigatorNode()).getNodeUri();
+        } else {
+            return null;
+        }
+    }
+
+    private enum Strategy {
+        DO_NOTHING,
+        CLOSE,
+        UNLOAD,
+        LOAD
+    }
 }

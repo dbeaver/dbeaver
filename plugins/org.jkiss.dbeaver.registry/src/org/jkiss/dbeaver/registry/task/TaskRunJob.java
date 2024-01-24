@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -35,8 +36,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -58,7 +62,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private long elapsedTime;
     private Throwable taskError;
 
-    protected TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
+    public TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
         setUser(true);
         setSystem(false);
@@ -71,16 +75,17 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
         Date startTime = new Date();
-
-        String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
+        SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.getDefault()); //$NON-NLS-1$
+        dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
+        String taskId = dateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
         TaskRunImpl taskRun = new TaskRunImpl(
             taskId,
             new Date(),
             System.getProperty(StandardConstants.ENV_USER_NAME),
             GeneralUtils.getProductTitle(),
-            0, null, null);
+            null, null);
         task.getTaskStatsFolder(true);
-        Path logFile = task.getRunLog(taskRun);
+        Path logFile = Objects.requireNonNull(task.getRunLog(taskRun)); // must exist on local machine
         task.addNewRun(taskRun);
 
         try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {

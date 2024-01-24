@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tasks.ui.view;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
@@ -40,6 +41,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.IViewDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -49,6 +51,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.TaskFeatures;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
@@ -59,9 +62,12 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
@@ -69,6 +75,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.tasks";
     private static final String TASKS_VIEW_MENU_ID = VIEW_ID + ".menu";
+    private static final String TASK_RUNS_MENU_ID = VIEW_ID + ".runs.menu";
 
     public static final String CREATE_TASK_CMD_ID = "org.jkiss.dbeaver.task.create";
     public static final String COPY_TASK_CMD_ID = "org.jkiss.dbeaver.task.copy";
@@ -85,10 +92,12 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private TreeViewer taskRunViewer;
     private ViewerColumnController<?,?> taskRunColumnController;
     private DBPProjectListener projectListener;
+    private transient DBTTask currentTask;
 
     public DatabaseTasksView() {
     }
 
+    @Nullable
     public DatabaseTasksTree getTasksTree() {
         return tasksTree;
     }
@@ -99,12 +108,17 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void createPartControl(Composite parent) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            log.debug("The user needs more permissions to see the Database Tasks View.");
+            return;
+        }
         SashForm sashForm = UIUtils.createPartDivider(this, parent, SWT.HORIZONTAL);
 
         createTaskTree(sashForm);
         createTaskRunTable(sashForm);
+        getSite().setSelectionProvider(tasksTree.getViewer());
 
-        sashForm.setWeights(new int[]{700, 300});
+        sashForm.setWeights(700, 300);
 
         loadViewConfig();
         loadTasks();
@@ -117,6 +131,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             }
         };
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
+
+        TaskFeatures.TASKS_VIEW_OPEN.use();
     }
 
     private void createTaskTree(Composite composite) {
@@ -131,7 +147,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite());
             }
         });
-        tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns());
+        tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns(false));
 
         DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
     }
@@ -142,7 +158,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskrunTree.setHeaderVisible(true);
         taskrunTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        taskRunColumnController = new ViewerColumnController("taskruns", taskRunViewer);
+        taskRunColumnController = new ViewerColumnController<>("taskruns", taskRunViewer);
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_time, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_start_time, SWT.LEFT, true, true, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
@@ -153,20 +169,22 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             @Override
             public String getText(Object element, boolean forUI) {
                 DBTTaskRun taskRun = (DBTTaskRun) element;
-                return forUI ? RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()) : String.valueOf(taskRun.getRunDuration());
+                return !taskRun.isFinished() ? "N/A" :
+                    (forUI ? RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()) : String.valueOf(taskRun.getRunDuration()));
             }
 
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                cell.setText(RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()));
+                cell.setText(!taskRun.isFinished() ? "N/A" : RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()));
             }
         }, null);
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_result, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_task_result, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                String resultMessage = taskRun.isRunSuccess()
-                                     ? TaskUIViewMessages.db_tasks_view_cell_text_success
-                                     : CommonUtils.notEmpty(taskRun.getErrorMessage());
+                String resultMessage =
+                    taskRun.isFinished() ?
+                        (taskRun.isRunSuccess() ? TaskUIViewMessages.db_tasks_view_cell_text_success : CommonUtils.notEmpty(taskRun.getErrorMessage())) :
+                        "In progress";
 
                 String extraMessage = taskRun.getExtraMessage();
                 if (CommonUtils.isNotEmpty(extraMessage)) {
@@ -182,13 +200,13 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskRunViewer.setContentProvider(new TreeRunContentProvider());
 
         MenuManager menuMgr = createTaskRunContextMenu(taskRunViewer);
-        getSite().registerContextMenu(menuMgr, taskRunViewer);
+        getSite().registerContextMenu(DatabaseTasksView.TASK_RUNS_MENU_ID, menuMgr, taskRunViewer);
 
         taskRunViewer.addDoubleClickListener(event -> new ViewRunLogAction().run());
     }
 
     private MenuManager createTaskContextMenu(TreeViewer viewer) {
-        final MenuManager menuMgr = new MenuManager();
+        final MenuManager menuMgr = new MenuManager(null, TASKS_VIEW_MENU_ID);
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(manager -> {
             boolean isVisible = true;
@@ -229,12 +247,16 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 {
                     ClipboardData clipboardData = new ClipboardData();
                     StringBuilder buf = new StringBuilder();
-                    for (TreeItem item : getTasksTree().getViewer().getTree().getSelection()) {
+                    DatabaseTasksTree tasksTree = getTasksTree();
+                    if (tasksTree == null) {
+                        return;
+                    }
+                    for (TreeItem item : tasksTree.getViewer().getTree().getSelection()) {
                         if (buf.length() > 0) buf.append(GeneralUtils.getDefaultLineSeparator());
                         buf.append(item.getText(0));
                     }
                     clipboardData.addTransfer(TextTransfer.getInstance(), buf.toString());
-                    clipboardData.pushToClipboard(getTasksTree().getViewer().getTree().getDisplay());
+                    clipboardData.pushToClipboard(tasksTree.getViewer().getTree().getDisplay());
                 }
             });
 
@@ -249,9 +271,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private MenuManager createTaskRunContextMenu(TreeViewer viewer) {
-        final MenuManager menuMgr = new MenuManager();
+        final MenuManager menuMgr = new MenuManager(null, TASK_RUNS_MENU_ID);
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(manager -> {
+            manager.add(new GroupMarker("start"));
             DBTTask task = tasksTree.getSelectedTask();
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null) {
@@ -275,6 +298,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void setFocus() {
+        if (tasksTree == null) {
+            return;
+        }
         tasksTree.getViewer().getControl().setFocus();
     }
 
@@ -319,22 +345,18 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         UIUtils.asyncExec(() -> {
             DBTTask task = event.getTask();
             switch (event.getAction()) {
-                case TASK_ADD:
+                case TASK_ADD -> {
                     refresh();
                     tasksTree.getViewer().setSelection(new StructuredSelection(task), true);
-                    break;
-                case TASK_REMOVE:
-                    refresh();
-                    break;
-                case TASK_UPDATE:
+                }
+                case TASK_REMOVE -> refresh();
+                case TASK_UPDATE -> {
                     tasksTree.getViewer().refresh(task);
                     if (task == tasksTree.getSelectedTask()) {
-                        loadTaskRuns();
+                        loadTaskRuns(true);
                     }
-                    break;
-                case TASK_EXECUTE:
-                    refresh();
-                    break;
+                }
+                case TASK_EXECUTE -> refresh();
             }
         });
     }
@@ -344,30 +366,31 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         UIUtils.asyncExec(() -> {
             DBTTaskFolder taskFolder = event.getTaskFolder();
             switch (event.getAction()) {
-                case TASK_FOLDER_ADD:
+                case TASK_FOLDER_ADD -> {
                     refresh();
                     tasksTree.getViewer().setSelection(new StructuredSelection(taskFolder), true);
-                    break;
-                case TASK_FOLDER_UPDATE:
-                    tasksTree.getViewer().refresh(taskFolder);
-                    break;
-                case TASK_FOLDER_REMOVE:
-                    refresh();
-                    break;
+                }
+                case TASK_FOLDER_UPDATE -> tasksTree.getViewer().refresh(taskFolder);
+                case TASK_FOLDER_REMOVE -> refresh();
             }
         });
     }
 
     private void loadViewConfig() {
+        if (tasksTree == null) {
+            return;
+        }
         tasksTree.loadViewConfig();
     }
 
     public void refresh() {
         updateViewTitle();
 
-        tasksTree.refresh();
+        if (tasksTree != null) {
+            tasksTree.refresh();
+        }
 
-        loadTaskRuns();
+        loadTaskRuns(true);
     }
 
     private void updateViewTitle() {
@@ -378,15 +401,26 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private void loadTasks() {
+        if (tasksTree == null) {
+            return;
+        }
         tasksTree.loadTasks();
     }
 
-    private void loadTaskRuns() {
+    private void loadTaskRuns(boolean force) {
+        if (tasksTree == null) {
+            return;
+        }
         DBTTask selectedTask = tasksTree.getSelectedTask();
+        if (!force && selectedTask == currentTask) {
+            return;
+        }
+        currentTask = selectedTask;
         if (selectedTask == null) {
             taskRunViewer.setInput(EMPTY_TASK_RUN_LIST);
         } else {
-            DBTTaskRun[] runs = selectedTask.getRunStatistics();
+            selectedTask.refreshRunStatistics();
+            DBTTaskRun[] runs = selectedTask.getAllRuns();
             if (ArrayUtils.isEmpty(runs)) {
                 taskRunViewer.setInput(EMPTY_TASK_RUN_LIST);
             } else {
@@ -396,7 +430,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         }
     }
 
-    private class TreeRunContentProvider implements ITreeContentProvider {
+    private static class TreeRunContentProvider implements ITreeContentProvider {
         @Override
         public Object[] getElements(Object inputElement) {
             return ((Collection<?>) inputElement).toArray();
@@ -418,7 +452,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         }
     }
 
-    public class NamedObjectPatternFilter extends PatternFilter {
+    public static class NamedObjectPatternFilter extends PatternFilter {
         NamedObjectPatternFilter() {
             setIncludeLeadingWildcard(true);
         }
@@ -499,6 +533,14 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null) {
                 Path runLog = task.getRunLog(taskRun);
+                if (runLog == null) {
+                    try {
+                        runLog = receiveLogFile(task, taskRun);
+                    } catch (InvocationTargetException e) {
+                        DBWorkbench.getPlatformUI().showError("Open log error", "Error while retrieving task run log", e.getCause());
+                        return;
+                    }
+                }
                 if (Files.exists(runLog)) {
                     try {
                         IEditorPart editorPart = EditorUtils.openExternalFileEditor(runLog.toFile(), getSite().getWorkbenchWindow());
@@ -514,9 +556,33 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                         DBWorkbench.getPlatformUI().showError("Open log error", "Error while opening task execution log", e);
                     }
                 } else {
-                    UIUtils.showMessageBox(getSite().getShell(), "Lof file not found", "Can't find log file '" + runLog.toAbsolutePath() + "'", SWT.ICON_ERROR);
+                    UIUtils.showMessageBox(getSite().getShell(), "Log file not found", "Can't find log file '" + runLog.toAbsolutePath() + "'", SWT.ICON_ERROR);
                 }
             }
+        }
+
+        @NotNull
+        private Path receiveLogFile(@NotNull DBTTask task, @NotNull DBTTaskRun run) throws InvocationTargetException {
+            final Path[] path = {null};
+
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    monitor.beginTask("Retrieve task run log contents", 1);
+
+                    try (InputStream is = task.getRunLogInputStream(run)) {
+                        final Path folder = DBWorkbench.getPlatform().getTempFolder(monitor, "task-runs");
+                        final Path file = folder.resolve(run.getId() + ".txt");
+                        Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
+                        path[0] = file;
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                } finally {
+                    monitor.done();
+                }
+            });
+
+            return Objects.requireNonNull(path[0]);
         }
     }
 
@@ -535,7 +601,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 	TaskUIViewMessages.db_tasks_view_run_log_confirm_remove,
                     NLS.bind(TaskUIViewMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), tasksTree.getDateFormat().format(taskRun.getStartTime()))))
             {
-                task.removeRunLog(taskRun);
+                task.removeRun(taskRun);
             }
         }
     }
@@ -566,7 +632,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         public void run() {
             DBTTask task = tasksTree.getSelectedTask();
             if (task != null) {
-                DBWorkbench.getPlatformUI().executeShellProgram(task.getRunLogFolder().toAbsolutePath().toString());
+                final Path path = task.getProject().getTaskManager().getStatisticsFolder(task);
+                DBWorkbench.getPlatformUI().executeShellProgram(path.toAbsolutePath().toString());
             }
         }
     }

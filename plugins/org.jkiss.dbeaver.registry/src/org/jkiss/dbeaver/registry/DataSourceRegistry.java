@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistryCache;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -54,7 +56,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry {
+public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry, DBPDataSourceRegistryCache {
     @Deprecated
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     @Deprecated
@@ -230,7 +232,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         synchronized (dataSources) {
             dsCopy = CommonUtils.copyList(dataSources.values());
         }
-        dsCopy.removeIf(ds -> !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileName(), profile.getProfileName()));
+        dsCopy.removeIf(ds ->
+            !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileSource(), profile.getProfileSource()) ||
+            !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileName(), profile.getProfileName()));
         return dsCopy;
     }
 
@@ -283,7 +287,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return createFolder(parent, name);
     }
 
-    DataSourceFolder createFolder(DBPDataSourceFolder parent, String name) {
+    protected DataSourceFolder createFolder(DBPDataSourceFolder parent, String name) {
         DataSourceFolder folder = new DataSourceFolder(this, (DataSourceFolder) parent, name, null);
         dataSourceFolders.add(folder);
         return folder;
@@ -421,9 +425,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Nullable
     @Override
-    public DBWNetworkProfile getNetworkProfile(String name) {
+    public DBWNetworkProfile getNetworkProfile(String source, String name) {
+        if (!CommonUtils.isEmpty(source)) {
+            // Search in external sources
+            DBWNetworkProfileProvider profileProvider = RuntimeUtils.getObjectAdapter(this.getProject(), DBWNetworkProfileProvider.class);
+            if (profileProvider != null) {
+                return profileProvider.getNetworkProfile(source, name);
+            }
+            return null;
+        }
+        // Search in project profiles
         synchronized (networkProfiles) {
-            return networkProfiles.stream().filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name)).findFirst().orElse(null);
+            return networkProfiles.stream()
+                .filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name))
+                .findFirst().orElse(null);
         }
     }
 
@@ -519,14 +534,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     public void addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
-        descriptor.persistSecretIfNeeded(true);
+        descriptor.persistSecretIfNeeded(true, true);
         if (!descriptor.isDetached()) {
             persistDataSourceCreate(dataSource);
         }
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 
-    void addDataSourceToList(@NotNull DataSourceDescriptor descriptor) {
+    @Override
+    public void addDataSourceToList(@NotNull DBPDataSourceContainer dataSource) {
+        final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         synchronized (dataSources) {
             this.dataSources.put(descriptor.getId(), descriptor);
             DBPDataSourceConfigurationStorage storage = descriptor.getStorage();
@@ -538,9 +555,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     public void removeDataSource(@NotNull DBPDataSourceContainer dataSource) {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
-        synchronized (dataSources) {
-            this.dataSources.remove(descriptor.getId());
-        }
+        removeDataSourceFromList(descriptor);
         if (!descriptor.isDetached()) {
             persistDataSourceDelete(dataSource);
         }
@@ -549,10 +564,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         } catch (DBException e) {
             log.error("Error deleting old secrets", e);
         }
+    }
+
+    @Override
+    public void removeDataSourceFromList(@NotNull DBPDataSourceContainer dataSource) {
+        synchronized (dataSources) {
+            this.dataSources.remove(dataSource.getId());
+        }
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
-            descriptor.dispose();
+            ((DataSourceDescriptor) dataSource).dispose();
         }
     }
 
@@ -567,7 +589,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 persistDataSourceUpdate(dataSource);
             }
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
-            descriptor.persistSecretIfNeeded(false);
+            descriptor.persistSecretIfNeeded(false, false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
@@ -753,7 +775,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, ds);
             }
             for (DBPDataSourceContainer ds : parseResults.addedDataSources) {
-                addDataSourceToList((DataSourceDescriptor) ds);
+                addDataSourceToList(ds);
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
             }
             for (DataSourceFolder folder : parseResults.addedFolders) {
@@ -782,13 +804,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     }
                 }
                 for (DataSourceFolder folder : removedFolder) {
-                    if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
+                    if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)
+                        && !DataSourceUtils.isFolderHasTemporaryDataSources(folder)
+                    ) {
                         dataSourceFolders.remove(folder);
                         folder.setParent(null);
                     }
                 }
             }
         }
+
+        updateProjectNature();
+
         return configChanged;
     }
 
@@ -808,7 +835,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 serializer = new DataSourceSerializerModern(this);
             }
             configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds, refresh);
-            updateProjectNature();
+
             lastError = null;
         } catch (Exception ex) {
             lastError = ex;

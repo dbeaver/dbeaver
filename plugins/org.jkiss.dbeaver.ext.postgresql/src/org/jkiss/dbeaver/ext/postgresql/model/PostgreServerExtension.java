@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,6 +32,8 @@ import java.util.Map;
 /**
  * PostgreServerExtension
  */
+@DPIObject
+@DPIElement
 public interface PostgreServerExtension {
     String getServerTypeName();
 
@@ -95,7 +99,7 @@ public interface PostgreServerExtension {
 
     boolean supportsTemporalAccessor();
 
-    boolean supportsTeblespaceLocation();
+    boolean supportsTablespaceLocation();
 
     boolean supportsTemplates();
 
@@ -117,8 +121,6 @@ public interface PostgreServerExtension {
     void configureDialect(PostgreDialect dialect);
 
     String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
-
-    PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException;
 
     // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
     void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
@@ -165,6 +167,11 @@ public interface PostgreServerExtension {
      */
     boolean supportsCommentsOnRole();
 
+    /**
+     * Determines whether the database supports syntax like {@code ALTER DEFAULT PRIVILEGES FOR roleName...} or not
+     */
+    boolean supportsDefaultPrivileges();
+
     // Data types
 
     /** True if supports serials - serial types are auto-incrementing integer data types */
@@ -210,4 +217,16 @@ public interface PostgreServerExtension {
      * like {@code ALTER TABLE tableName ALTER COLUMN columnName USING columnName::dataTypeName} or not
      */
     boolean supportsAlterTableColumnWithUSING();
+
+    /**
+     * Determines whether the database supports syntax
+     * like {@code ALTER TABLE schema.view RENAME TO schema.view_new}
+     * or use standard {@code ALTER VIEW schema.view RENAME TO schema.view_new}.
+     */
+    boolean supportsAlterTableForViewRename();
+
+    /**
+     * True if database can use pg_dump and pg_restore clients without errors.
+     */
+    boolean supportsNativeClient();
 }

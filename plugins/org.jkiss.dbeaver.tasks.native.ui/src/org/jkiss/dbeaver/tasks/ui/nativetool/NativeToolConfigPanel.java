@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -120,7 +121,9 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
                 @Override
                 protected boolean isDataSourceVisible(DBNDataSource dataSource) {
                     try {
-                        return providerClass.isInstance(dataSource.getDataSourceContainer().getDriver().getDataSourceProvider());
+                        DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
+                        return providerClass.isInstance(driver.getDataSourceProvider()) &&
+                            (driver.getNativeClientManager() != null && driver.getNativeClientManager().supportsNativeClients());
                     } catch (Exception e) {
                         log.debug(e);
                         return false;
@@ -162,11 +165,12 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
             }
         }
 
-        if (selectorPanel != null && selectedObject != null) {
+        DBPDataSourceContainer container = ieWizard.getSettings().getDataSourceContainer();
+        if (selectorPanel != null && (selectedObject != null || container != null)) {
             try {
                 DBNDatabaseNode[] catalogNode = new DBNDatabaseNode[1];
                 ieWizard.getRunnableContext().run(true, true, monitor ->
-                    catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedObject, false));
+                    catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedObject != null ? selectedObject : container, false));
                 if (catalogNode[0] != null) {
                     List<DBNNode> selCatalogs = Collections.singletonList(catalogNode[0]);
                     //selectorPanel.checkNodes(selCatalogs, true);

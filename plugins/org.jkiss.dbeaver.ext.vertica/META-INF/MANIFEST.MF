@@ -1,15 +1,16 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Vertica Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.vertica;singleton:=true
-Bundle-Version: 2.0.128.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 2.0.153.qualifier
+Bundle-Release-Date: 20240122
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.vertica
 Export-Package: org.jkiss.dbeaver.ext.vertica,

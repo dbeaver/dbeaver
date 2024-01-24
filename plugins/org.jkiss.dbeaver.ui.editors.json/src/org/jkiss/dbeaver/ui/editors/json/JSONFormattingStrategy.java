@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,30 +27,25 @@ import org.jkiss.utils.CommonUtils;
 /**
  * The formatting strategy that transforms SQL keywords to upper case
  */
-public class JSONFormattingStrategy extends ContextBasedFormattingStrategy
-{
+public class JSONFormattingStrategy extends ContextBasedFormattingStrategy {
     private ISourceViewer sourceViewer;
     private JSONSourceViewerConfiguration svConfig;
 
-    JSONFormattingStrategy(ISourceViewer sourceViewer, JSONSourceViewerConfiguration svConfig)
-    {
+    JSONFormattingStrategy(ISourceViewer sourceViewer, JSONSourceViewerConfiguration svConfig) {
         this.sourceViewer = sourceViewer;
         this.svConfig = svConfig;
     }
 
     @Override
-    public void formatterStarts(String initialIndentation)
-    {
+    public void formatterStarts(String initialIndentation) {
     }
 
     @Override
-    public String format(String content, boolean isLineStart, String indentation, int[] positions)
-    {
+    public String format(String content, boolean isLineStart, String indentation, int[] positions) {
         if (CommonUtils.isEmpty(content)) {
             return content;
         }
-        JsonParser parser = new JsonParser();
-        JsonElement jsonElement = parser.parse(content);
+        JsonElement jsonElement = JsonParser.parseString(content);
 
         Gson gson = new GsonBuilder()
             .serializeNulls()
@@ -58,13 +53,11 @@ public class JSONFormattingStrategy extends ContextBasedFormattingStrategy
             .setPrettyPrinting()
             .setLenient()
             .create();
-        String formattedJson = gson.toJson(jsonElement);
-        return formattedJson;
+        return gson.toJson(jsonElement);
     }
 
     @Override
-    public void formatterStops()
-    {
+    public void formatterStops() {
     }
 
 }

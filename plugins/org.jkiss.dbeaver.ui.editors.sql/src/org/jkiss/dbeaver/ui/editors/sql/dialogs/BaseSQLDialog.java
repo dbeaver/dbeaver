@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,9 +141,12 @@ public abstract class BaseSQLDialog extends BaseDialog {
 
     protected abstract String getSQLText();
 
-    protected void createCopyButton(Composite parent)
-    {
+    protected void createCopyButton(Composite parent) {
         createButton(parent, IDialogConstants.DETAILS_ID, SQLEditorMessages.dialog_view_sql_button_copy, false);
+    }
+    
+    protected void createRefreshButton(Composite parent) {
+        createButton(parent, IDialogConstants.RETRY_ID, SQLEditorMessages.dialog_view_sql_button_refresh, false);
     }
 
     protected void saveToClipboard()

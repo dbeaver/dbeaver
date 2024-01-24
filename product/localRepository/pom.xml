@@ -9,7 +9,7 @@
 	<name>DBeaver - 3rd party dependencies</name>
 
 	<properties>
-		<tycho-version>3.0.0</tycho-version>
+		<tycho-version>4.0.4</tycho-version>
 		<reficio-p2-version>1.4.1</reficio-p2-version>
 		<repo-name>DBeaver CE Update</repo-name>
 	</properties>
@@ -39,42 +39,54 @@
 
 								<artifact><id>org.apache.commons:commons-jexl3:3.1</id></artifact>
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
-								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id></artifact>
+								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
-								<!-- GEF3 -->
-								<artifact><id>org.eclipse.draw2dl.plugins:org.eclipse.draw2dl:3.12.100-SNAPSHOT</id></artifact>
-								<artifact><id>org.eclipse.gef3.plugins:org.eclipse.gef3:3.12.100-SNAPSHOT</id></artifact>
+								<!-- ANTLR -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-antlr4 -->
 
 								<!-- POI and dependencies -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-poi -->
 
 								<!-- GIS -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-gis -->
+
+								<!-- JSVG -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jsvg:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jsvg -->
 
 								<!-- JFreeChart -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jfreechart -->
 
 								<!-- SSH and BouncyCastle -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
+								<artifact><id>com.jcraft:jsch:0.2.8</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:jsch -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-sshj -->
 								<!-- Ant minimized -->
-								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact> <!-- repo:eclipse-bundle-apache-ant -->
+
+								<!-- Jackson -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jackson:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<!-- repo:eclipse-bundle-jackson -->
 
 								<!-- Batik -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-batik -->
 								<!-- GraphQL -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-graphql-java -->
 								<!-- DBCP -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-dbcp -->
 
-								<!-- Web sockets -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id></artifact>
+								<!-- Jetty -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jetty-server -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-jetty-websocket -->
 								<!-- GPT -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-gpt3 -->
 
 								<!-- Tests. Mockito-all is kept for old version build support. -->
 <!--								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>-->
-								<artifact><id>org.mockito:mockito-core:4.6.1</id></artifact>
+								<artifact><id>org.mockito:mockito-core:4.6.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+
+								<!-- Logback -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.logback:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-logback -->
 							</artifacts>
+
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
 						</configuration>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerGSS;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Properties;
 
@@ -38,18 +40,27 @@ public class SQLServerAuthModelKerberos extends SQLServerAuthModelAbstract {
 
     @Override
     public boolean isUserNameApplicable() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isUserPasswordApplicable() {
-        return false;
+        return true;
     }
 
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelDatabaseNativeCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         connProperties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
         connProperties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION_SCHEME, SQLServerConstants.AUTH_SCHEME_KERBEROS);
+
+        String userName = credentials.getUserName();
+        String userPassword = credentials.getUserPassword();
+        if (!CommonUtils.isEmpty(userName)) {
+            connProperties.put("userName", userName);
+        }
+        if (!CommonUtils.isEmpty(userPassword)) {
+            connProperties.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
+        }
 
         if (SQLServerConstants.USE_GSS) {
             // Disabled by default. Never really tested

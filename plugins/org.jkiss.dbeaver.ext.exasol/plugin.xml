@@ -92,7 +92,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript" label="%tree.scripts.node.name"
-                                icon="#procedures" description="%tree.scripts.node.description">
+                                icon="#procedures" id="scripts" description="%tree.scripts.node.description">
                             <folder
                                   icon="#procedures"
                                   label="%tree.scripts.adapter.node.name"
@@ -217,13 +217,14 @@
                       </folder>
                       <items
                             icon="#parameter"
+                            path="virtualsparameter"
                             label="%tree.virtualschemaparameters.node.name"
                             navigable="false"
                             property="virtualSchemaParameters">
                       </items>
                    </items>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin" description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder
@@ -313,6 +314,7 @@
                       visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
                    <items
                          icon="icons/role.gif"
+                         path="roles"
                          label="%tree.role.node.name"
                          property="roles">
                       <items
@@ -400,6 +402,7 @@
                 <folder
                       description="%tree.security.node.description"
                       icon="#folder_info"
+                      id="folderInfo"
                       label="%tree.security.node.name"
                       visibleIf="connected &amp;&amp; dataSource.hasPasswordPolicy">
                    <folder
@@ -427,7 +430,7 @@
                         useURL="false"
                         defaultPort="8563"
                         description="%driver.exasol.description"
-                        webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section"
+                        webURL="https://downloads.exasol.com/clients-and-drivers"
                         categories="sql,analytic,columns">
                     <file path="maven:/com.exasol:exasol-jdbc:RELEASE[7.1.16]" type="jar" bundle="!drivers.exasol"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.exasol"/>
@@ -435,11 +438,18 @@
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
-                    <property name="querytimeout" value="600"/>
-                    <property name="connecttimeout" value="1000"/>
+                    <property name="querytimeout" value="3600"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="@dbeaver-backupHostList" label="Use backup host list" type="boolean"/>
+                        <property id="@dbeaver-encrypt" label="Encrypt Communication" type="boolean"/>
+                        <property id="exasol.useLegacyEncryption" label="Use Legacy Encryption" type="boolean"
+                                  description="All connections created using Exasol-provided 7.1 drivers will try to establish TLS connections to Exasol first, regardless of the database version."/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
         </datasource>
     </extension>

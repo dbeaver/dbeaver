@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.gef3.EditPart;
-import org.eclipse.gef3.GraphicalEditPart;
-import org.eclipse.gef3.RootEditPart;
-import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.GraphicalEditPart;
+import org.eclipse.gef.RootEditPart;
+import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -34,6 +34,7 @@ import java.beans.PropertyChangeListener;
  * @author Serge Rider
  */
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener, DBPNamedObject {
+
     @NotNull
     public DiagramPart getDiagramPart() {
         RootEditPart root = getRoot();
@@ -101,5 +102,4 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 		 */
         ((GraphicalEditPart) (getViewer().getContents())).getFigure().revalidate();
     }
-
 }

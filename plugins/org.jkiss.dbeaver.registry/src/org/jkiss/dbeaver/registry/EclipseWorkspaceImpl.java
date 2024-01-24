@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBInterruptedException;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
@@ -56,40 +55,31 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
         workspaceId = readWorkspaceId();
 
-        this.projectListener = new ProjectListener();
-        this.getEclipseWorkspace().addResourceChangeListener(projectListener);
+        if (!isReadOnly()) {
+            this.projectListener = new ProjectListener();
+            this.getEclipseWorkspace().addResourceChangeListener(projectListener);
+        } else {
+            this.projectListener = null;
+        }
     }
 
     @Override
     public final void initializeProjects() {
-        // Acquire workspace session
+        initializeWorkspaceSession();
         try {
-            this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
-        } catch (DBException e) {
-            if (!(e instanceof DBInterruptedException)) {
-                log.debug(e);
-                DBWorkbench.getPlatformUI().showMessageBox(
-                    "Authentication error",
-                    "Error authenticating application user: " +
-                        "\n" + e.getMessage(),
-                    true);
-            }
-            dispose();
-            System.exit(101);
+            loadWorkspaceProjects();
+        } catch (DBException ex) {
+            log.error("Can't load workspace projects", ex);
         }
-
-        loadWorkspaceProjects();
-
-        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) &&
-            isDefaultProjectNeeded())
-        {
+        
+        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) && isDefaultProjectNeeded() && !isReadOnly()) {
             try {
                 createDefaultProject();
             } catch (CoreException e) {
                 log.error("Can't create default project", e);
             }
         }
-        if (getActiveProject() == null && !projects.isEmpty()) {
+        if (getActiveProject() == null && !projects.isEmpty() && !isReadOnly()) {
             // Set active project
             setActiveProject(projects.values().iterator().next());
         }
@@ -109,12 +99,14 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
     @Override
     public void dispose() {
-        this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+        if (projectListener != null) {
+            this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+        }
 
         super.dispose();
     }
 
-    protected void loadWorkspaceProjects() {
+    protected void loadWorkspaceProjects() throws DBException {
         String activeProjectName = getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         IWorkspaceRoot root = getEclipseWorkspace().getRoot();
@@ -138,6 +130,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
                     activeProject = projectMetadata;
                 }
+                projectMetadata.hideConfigurationFiles();
             }
         }
     }
@@ -167,7 +160,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
             project.create(monitor);
             project.open(monitor);
             final IProjectDescription description = getEclipseWorkspace().newProjectDescription(project.getName());
-            description.setComment("General DBeaver project");
+            description.setComment(RegistryMessages.project_description_comment);
             description.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
             project.setDescription(description, monitor);
 
@@ -206,6 +199,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                             if (delta.getKind() == IResourceDelta.REMOVED) {
                                 // Project deleted
                                 LocalProjectImpl projectMetadata = projects.remove(project);
+                                projectMetadata.dispose();
                                 fireProjectRemove(projectMetadata);
                                 if (projectMetadata == activeProject) {
                                     activeProject = null;

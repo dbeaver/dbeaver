@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.utils.CommonUtils;
 
@@ -77,7 +78,7 @@ public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
     public static boolean createFolder(IWorkbenchWindow workbenchWindow, IWorkbenchPart activePart, DBNProjectDatabases databases, final DBNLocalFolder parentFolder, final Collection<DBNDataSource> nodes, String newName)
     {
         if (newName == null) {
-            newName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Folder name");
+            newName = EnterNameDialog.chooseName(workbenchWindow.getShell(), UINavigatorMessages.actions_navigator_folder_name);
         }
         if (CommonUtils.isEmpty(newName)) {
             return false;

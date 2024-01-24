@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,8 +85,14 @@ public abstract class AbstractObjectReference<CONTAINER extends DBSObject> imple
         if (extraInfo != null) {
             return extraInfo;
         }
-        String fqName;
+        if (container == null) {
+            return name;
+        }
         DBPDataSource dataSource = container.getDataSource();
+        if (dataSource == null) {
+            return name;
+        }
+        String fqName;
         if (container == dataSource) {
             // In case if there are no schemas/catalogs supported
             // and data source is a root container

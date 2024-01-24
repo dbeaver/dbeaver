@@ -5,9 +5,20 @@
 
     <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
     <extension-point id="org.jkiss.dbeaver.ui.propertyConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.propertyConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.propertyConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.ui.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.dataSourceConfigurator.exsd"/>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
+        <dataSourceConfigurator>
+<!--
+            <dataSourcePage class="org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral"/>
+            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData"/>
+            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle"/>
+-->
+        </dataSourceConfigurator>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -65,6 +76,18 @@
         <feature id="database"/>
         <feature parent="database" id="administration"/>
         <feature parent="database/administration" id="advanced"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles"
+              id="org.jkiss.dbeaver.project.settings.networkProfiles"
+              name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name" >
+            <enabledWhen>
+                <adapt type="org.eclipse.core.resources.IProject">
+                    <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
+                </adapt>
+            </enabledWhen>
+        </page>
     </extension>
 
 </plugin>

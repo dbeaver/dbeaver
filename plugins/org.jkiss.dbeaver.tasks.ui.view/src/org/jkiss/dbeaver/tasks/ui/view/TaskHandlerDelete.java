@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.TaskFeatures;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -61,11 +62,13 @@ public class TaskHandlerDelete extends AbstractHandler {
                     }
                 } else {
                     if (confirmDeleteObjectAction(event, TaskUIViewMessages.task_handler_delete_confirm_title_delete_task, TaskUIViewMessages.task_handler_delete_confirm_question_delete_task, namedObject)) {
+                        TaskFeatures.TASKS_DELETE.use();
                         return null;
                     }
                 }
             } else {
                 if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_tasks, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_tasks, objectsToDelete.size()))) {
+                    TaskFeatures.TASKS_DELETE.use();
                     return null;
                 }
             }

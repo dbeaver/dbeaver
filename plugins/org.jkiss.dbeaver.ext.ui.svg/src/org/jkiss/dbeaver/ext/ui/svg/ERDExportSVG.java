@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ package org.jkiss.dbeaver.ext.ui.svg;
 import org.apache.batik.ext.awt.image.codec.png.PNGImageWriter;
 import org.apache.batik.ext.awt.image.spi.ImageWriterRegistry;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.eclipse.draw2dl.Graphics;
-import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.editparts.LayerManager;
-import org.jkiss.dbeaver.Log;
+import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.editparts.LayerManager;
 import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
@@ -38,7 +37,6 @@ import java.io.File;
  * SVG exporter
  */
 public class ERDExportSVG implements ERDExportFormatHandler {
-    private static final Log log = Log.getLog(ERDExportSVG.class);
 
     private static boolean pngWriterRegistered;
 
@@ -64,7 +62,7 @@ public class ERDExportSVG implements ERDExportFormatHandler {
             SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
             svgGenerator.setSVGCanvasSize(new Dimension(contentBounds.width, contentBounds.height));
 
-            // We need a converter from draw2dl.Graphics (.gef3) to awt.Graphics2D (Batik)
+            // We need a converter from draw2d.Graphics (.gef) to awt.Graphics2D (Batik)
             Graphics graphics = new GraphicsToGraphics2DAdaptor(svgGenerator);
 
             // Reset origin to make it the top/left most part of the diagram
@@ -96,27 +94,28 @@ public class ERDExportSVG implements ERDExportFormatHandler {
             // Iterate over the children to check whether a child is a(nother) layer or an actual figure
             // Not painting the layers themselves is likely to get rid of borders and graphics settings that are not
             // supported (like Graphics#setTextAntiAliassing())
-            for (IFigure child : figure.getChildren()) {
+            for (Object child : figure.getChildren()) {
                 if (child instanceof Layer) {
                     // Found another layer, process it to search for actual figures
-                    paintDiagram(g, child);
-                } else {
+                    paintDiagram(g, (IFigure) child);
+                } else if (child instanceof IFigure) {
+                    IFigure cf = (IFigure) child;
                     // Found something to draw
                     // Use same/similar method as being using in Figure#paintChildren() in order to get clipping right
-                    if (child.isVisible()) {
+                    if (cf.isVisible()) {
                         // determine clipping areas for child
-                        Rectangle[] clipping = null;
+                        Rectangle[] clipping;
                         if (clippingStrategy != null) {
-                            clipping = clippingStrategy.getClip(child);
+                            clipping = clippingStrategy.getClip(cf);
                         } else {
                             // default clipping behaviour is to clip at bounds
-                            clipping = new Rectangle[]{child.getBounds()};
+                            clipping = new Rectangle[]{cf.getBounds()};
                         }
                         // child may now paint inside the clipping areas
-                        for (int j = 0; j < clipping.length; j++) {
-                            if (clipping[j].intersects(g.getClip(Rectangle.SINGLETON))) {
-                                g.clipRect(clipping[j]);
-                                child.paint(g);
+                        for (Rectangle rectangle : clipping) {
+                            if (rectangle.intersects(g.getClip(Rectangle.SINGLETON))) {
+                                g.clipRect(rectangle);
+                                cf.paint(g);
                                 g.restoreState();
                             }
                         }
@@ -124,27 +123,28 @@ public class ERDExportSVG implements ERDExportFormatHandler {
                 }
             }
 
-            for (IFigure child : figure.getChildren()) {
+            for (Object child : figure.getChildren()) {
                 if (child instanceof Layer) {
                     // Found another layer, process it to search for actual figures
-                    paintDiagram(g, child);
-                } else {
+                    paintDiagram(g, (IFigure) child);
+                } if (child instanceof IFigure) {
+                    IFigure cf = (IFigure) child;
                     // Found something to draw
                     // Use same/similar method as being using in Figure#paintChildren() in order to get clipping right
-                    if (child.isVisible()) {
+                    if (cf.isVisible()) {
                         // determine clipping areas for child
-                        Rectangle[] clipping = null;
+                        Rectangle[] clipping;
                         if (clippingStrategy != null) {
-                            clipping = clippingStrategy.getClip(child);
+                            clipping = clippingStrategy.getClip(cf);
                         } else {
                             // default clipping behaviour is to clip at bounds
-                            clipping = new Rectangle[]{child.getBounds()};
+                            clipping = new Rectangle[]{cf.getBounds()};
                         }
                         // child may now paint inside the clipping areas
-                        for (int j = 0; j < clipping.length; j++) {
-                            if (clipping[j].intersects(g.getClip(Rectangle.SINGLETON))) {
-                                g.clipRect(clipping[j]);
-                                child.paint(g);
+                        for (Rectangle rectangle : clipping) {
+                            if (rectangle.intersects(g.getClip(Rectangle.SINGLETON))) {
+                                g.clipRect(rectangle);
+                                cf.paint(g);
                                 g.restoreState();
                             }
                         }

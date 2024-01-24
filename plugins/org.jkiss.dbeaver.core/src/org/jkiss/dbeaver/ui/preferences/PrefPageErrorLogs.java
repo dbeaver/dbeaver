@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,14 +58,18 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
             // Logs
             Group groupLogs = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_debug_logs, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            logsDebugEnabled = UIUtils.createCheckbox(groupLogs,
+            logsDebugEnabled = UIUtils.createCheckbox(
+                groupLogs,
                 CoreMessages.pref_page_ui_general_label_enable_debug_logs,
-                CoreMessages.pref_page_ui_general_label_enable_debug_logs_tip, false, 2);
+                CoreMessages.pref_page_ui_general_label_enable_debug_logs_tip,
+                store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED),
+                2);
             UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_ui_general_label_log_file_location);
             logsDebugLocation = new TextWithOpenFile(groupLogs, CoreMessages.pref_page_ui_general_label_open_file_text, new String[] { "*.log", "*.txt" } );
             ContentAssistUtils.installContentProposal(
@@ -75,6 +79,7 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
                     GeneralUtils.variablePattern(SystemVariablesResolver.VAR_WORKSPACE),
                     GeneralUtils.variablePattern(SystemVariablesResolver.VAR_HOME)));
             logsDebugLocation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            logsDebugLocation.setText(store.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
 
             final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_logs_files_max_size_label);
@@ -99,23 +104,16 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
         }
 
-        performDefaults();
-
         return composite;
     }
 
     @Override
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
-        logsDebugLocation.setText(store.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
-
-        long bigScriptSize = DBWorkbench.getPlatform().getPreferenceStore().getLong(LogOutputStream.LOGS_MAX_FILE_SIZE);
-        logFilesMaxSizeSpinner.setSelection((int) (bigScriptSize / 1024));
-
-        int debugLogFilesMaxCount = DBWorkbench.getPlatform().getPreferenceStore().getInt(LogOutputStream.LOGS_MAX_FILES_COUNT);
-        logFilesMaxCountSpinner.setSelection(debugLogFilesMaxCount);
+        logsDebugEnabled.setSelection(store.getDefaultBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
+        logsDebugLocation.setText(store.getDefaultString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
+        logFilesMaxSizeSpinner.setSelection((int) store.getDefaultLong(LogOutputStream.LOGS_MAX_FILE_SIZE) / 1024);
+        logFilesMaxCountSpinner.setSelection(store.getDefaultInt(LogOutputStream.LOGS_MAX_FILES_COUNT));
 
         super.performDefaults();
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreClass;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.Assert;
@@ -63,7 +62,7 @@ public class PostgreServerGreenplumTest {
 
     @Test
     public void createRelationOfClass_whenTableIsNotAGreenplumTable_returnsInstanceOfPostgresTableBase() {
-        Assert.assertEquals(PostgreTableRegular.class,
+        Assert.assertEquals(GreenplumTable.class,
                 server.createRelationOfClass(mockSchema, PostgreClass.RelKind.p, mockResults).getClass());
     }
 

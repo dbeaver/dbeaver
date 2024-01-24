@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -65,15 +68,22 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         //setNamesEditable(true);
     }
 
-    PropertySourceCustom makeProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    PropertySourceCustom makeProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @Nullable DBPDriverSubstitutionDescriptor driverSubstitution
+    ) {
         Map<String, Object> connectionProps = new HashMap<>();
         connectionProps.putAll(driver.getConnectionProperties());
         connectionProps.putAll(connectionInfo.getProperties());
         driverProvidedProperties = null;
         customProperties = null;
 
-        loadDriverProperties(monitor, driver, connectionInfo);
+        if (driverSubstitution == null) {
+            // for now, we do not support reading driver properties from substitution drivers
+            loadDriverProperties(monitor, driver, connectionInfo);
+        }
         loadCustomProperties(driver, connectionProps);
 
         return new PropertySourceCustom(

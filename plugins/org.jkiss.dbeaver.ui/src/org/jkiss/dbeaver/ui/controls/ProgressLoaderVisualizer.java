@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.PaintListener;
@@ -33,7 +34,8 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -167,23 +169,17 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                     (buttonBounds.x + buttonBounds.width / 2) - imageBounds.width / 2,
                     buttonBounds.y - imageBounds.height - 5);
 
-                long elapsedTime = System.currentTimeMillis() - loadStartTime;
-                String elapsedString = elapsedTime > 10000 ?
-                    String.valueOf(elapsedTime / 1000) :
-                    String.valueOf(((double) (elapsedTime / 100)) / 10);
-                String statusMessage = CommonUtils.truncateString(
-                    progressMessage.replaceAll("\\s", " "), 64);
-                String status = statusMessage + " - " + elapsedString + "s";
                 gc.setFont(cancelButton.getFont());
-                Point statusSize = gc.textExtent(status);
-
-                int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
-                int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                gc.setForeground(UIStyles.getDefaultTextForeground());
-                gc.setBackground(UIStyles.getDefaultTextBackground());
-                gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
-                gc.drawText(status, statusX, statusY, true);
-                gc.drawRoundRectangle(statusX - 3, statusY - 3, statusSize.x + 5, statusSize.y + 5, 5, 5);
+                UIUtils.drawTextWithBackground(
+                    gc,
+                    NLS.bind(
+                        "{0} - {1}",
+                        CommonUtils.truncateString(progressMessage.replaceAll("\\s", " "), 64),
+                        RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - loadStartTime)
+                    ),
+                    buttonBounds.x + buttonBounds.width / 2,
+                    buttonBounds.y - imageBounds.height - 10
+                );
             };
             progressPane.addPaintListener(painListener);
 

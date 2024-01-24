@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConfigurationController;
@@ -27,10 +26,12 @@ import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 
 import java.io.IOException;
@@ -47,7 +48,8 @@ public interface DBPPlatform {
     @NotNull
     DBPWorkspace getWorkspace();
 
-    @NotNull
+    @Deprecated // use navigator model from DBPProject
+    @Nullable
     DBNModel getNavigatorModel();
 
     @NotNull
@@ -70,6 +72,12 @@ public interface DBPPlatform {
 
     @NotNull
     DBFRegistry getFileSystemRegistry();
+
+    @NotNull
+    SQLDialectMetadataRegistry getSQLDialectRegistry();
+
+    @NotNull
+    DBWHandlerRegistry getNetworkHandlerRegistry();
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();
@@ -99,7 +107,7 @@ public interface DBPPlatform {
      * which keeps plugin configuration which can be shared with other users.
      */
     @NotNull
-    DBConfigurationController getPluginConfigurationController(@NotNull String pluginId);
+    DBConfigurationController getPluginConfigurationController(@Nullable String pluginId);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
@@ -29,6 +30,10 @@ public class HandlerDashboardOpen extends AbstractDataSourceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            DBWorkbench.getPlatformUI().showError("Permission denied", "The user needs more permissions to open dashboards.");
+            return null;
+        }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         DBPDataSourceContainer dataSourceContainer = getActiveDataSourceContainer(event, false);
         if (dataSourceContainer == null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.security.SMAuthProviderCustomConfiguration;
 import org.jkiss.dbeaver.model.security.SMController;
 
 import java.util.Map;
@@ -39,14 +40,14 @@ public interface SMAuthProvider<AUTH_SESSION extends SMSession> {
     String validateLocalAuth(
         @NotNull DBRProgressMonitor monitor,
         @NotNull SMController securityController,
-        @NotNull Map<String, Object> providerConfig,
+        @NotNull SMAuthProviderCustomConfiguration providerConfig,
         @NotNull Map<String, Object> userCredentials,
         @Nullable String activeUserId) throws DBException;
 
     AUTH_SESSION openSession(
         @NotNull DBRProgressMonitor monitor,
         @NotNull SMSession mainSession,
-        @NotNull Map<String, Object> providerConfig, // Auth provider configuration (e.g. 3rd party auth server address)
+        @Nullable SMAuthProviderCustomConfiguration customConfiguration, // Auth provider configuration (e.g. 3rd party auth server address)
         @NotNull Map<String, Object> userCredentials // Saved user credentials (e.g. associated 3rd party provider user name or realm)
     ) throws DBException;
 

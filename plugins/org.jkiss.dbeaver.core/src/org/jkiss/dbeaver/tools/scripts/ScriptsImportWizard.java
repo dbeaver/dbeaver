@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SimpleDatabaseEditorContext;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -138,8 +137,8 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 }
             }
             String targetName = file.getName();
-            if (!targetName.toLowerCase().endsWith("." + SQLEditorUtils.SCRIPT_FILE_EXTENSION)) { //$NON-NLS-1$
-                targetName += "." + SQLEditorUtils.SCRIPT_FILE_EXTENSION; //$NON-NLS-1$
+            if (!targetName.toLowerCase().endsWith(".sql")) { //$NON-NLS-1$
+                targetName += ".sql"; //$NON-NLS-1$
             }
 
             final IFile targetFile = targetDir.getFile(targetName);

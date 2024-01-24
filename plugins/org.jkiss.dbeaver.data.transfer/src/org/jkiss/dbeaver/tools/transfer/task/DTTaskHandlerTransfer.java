@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
-import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
@@ -42,7 +39,7 @@ import java.util.Locale;
 /**
  * DTTaskHandlerTransfer
  */
-public class DTTaskHandlerTransfer implements DBTTaskHandler {
+public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector {
     private static final Log log = Log.getLog(DTTaskHandlerTransfer.class);
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
@@ -85,7 +82,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         listener.taskStarted(task);
         int indexOfLastPipeWithDisabledReferentialIntegrity = -1;
         try {
-            indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings);
+            indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings, task);
             Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings);
             listener.taskFinished(task, null, error, settings);
         } catch (InvocationTargetException e) {
@@ -105,8 +102,11 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         }
     }
 
-    private int initializePipes(@NotNull DBRRunnableContext runnableContext, @NotNull DataTransferSettings settings)
-            throws InvocationTargetException, InterruptedException, DBException {
+    private int initializePipes(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DataTransferSettings settings,
+        @Nullable DBTTask task
+    ) throws InvocationTargetException, InterruptedException, DBException {
         int[] indexOfLastPipeWithDisabledReferentialIntegrity = new int[]{-1};
         DBException[] dbException = {null};
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
@@ -120,7 +120,12 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                     pipe.initPipe(settings, i, dataPipes.size());
                     IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
                     consumer.setRuntimeParameters(consumerRuntimeParameters);
-                    consumer.startTransfer(monitor);
+                    try {
+                        consumer.startTransfer(monitor);
+                    } catch (DBException e) {
+                        consumer.finishTransfer(monitor, e, task, true);
+                        throw e;
+                    }
                     if (enableReferentialIntegrity(consumer, monitor, false)) {
                         indexOfLastPipeWithDisabledReferentialIntegrity[0] = i;
                     }
@@ -140,9 +145,14 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
     }
 
     @Nullable
-    private Throwable runDataTransferJobs(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale,
-                                     @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
-                                     @NotNull DataTransferSettings settings) {
+    private Throwable runDataTransferJobs(
+        @NotNull DBRRunnableContext runnableContext,
+        DBTTask task,
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @NotNull DBTTaskExecutionListener listener,
+        @NotNull DataTransferSettings settings
+    ) {
         int totalJobs = settings.getDataPipes().size();
         if (totalJobs > settings.getMaxJobCount()) {
             totalJobs = settings.getMaxJobCount();
@@ -198,8 +208,11 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         }
     }
 
-    private static boolean enableReferentialIntegrity(@NotNull IDataTransferConsumer<?, ?> consumer,
-                                                   @NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+    private static boolean enableReferentialIntegrity(
+        @NotNull IDataTransferConsumer<?, ?> consumer,
+        @NotNull DBRProgressMonitor monitor,
+        boolean enable
+    ) throws DBException {
         if (!(consumer instanceof DatabaseTransferConsumer)) {
             return false;
         }
@@ -211,4 +224,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         }
         return false;
     }
+
+    @Override
+    public void collectTaskInfo(@NotNull DBTTask task, @NotNull TaskInformation information) {
+        DataTransferSettings.collectTaskInfo(task, information);
+    }
+
 }

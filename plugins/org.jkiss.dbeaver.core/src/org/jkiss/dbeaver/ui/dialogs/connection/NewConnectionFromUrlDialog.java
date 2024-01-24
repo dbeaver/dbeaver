@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -156,7 +156,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
 
     @Nullable
     public DBPConnectionConfiguration extractConnectionConfiguration() {
-        return JDBCURL.extractConfigurationFromUrl(driver.matchedUrl, url);
+        return DatabaseURL.extractConfigurationFromUrl(driver.matchedUrl, url);
     }
 
     @NotNull
@@ -172,13 +172,13 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                     continue;
                 }
 
-                if (JDBCURL.getPattern(driver.getSampleURL()).matcher(url).matches()) {
+                if (DatabaseURL.getPattern(driver.getSampleURL()).matcher(url).matches()) {
                     drivers.add(new DriverInfo(driver, driver.getSampleURL(), true));
                     scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                     continue;
                 }
 
-                final Matcher matcher = JDBCURL.getPattern(GENERIC_URL_TEMPLATE).matcher(url);
+                final Matcher matcher = DatabaseURL.getPattern(GENERIC_URL_TEMPLATE).matcher(url);
 
                 if (matcher.matches() && driver.getId().contains(matcher.group("driver"))) {
                     drivers.add(new DriverInfo(driver, GENERIC_URL_TEMPLATE, false));

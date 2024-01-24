@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
@@ -82,7 +77,7 @@ public class SQLScriptParserGenericsTest {
         Mockito.when(dataSource.getMetaModel()).thenReturn(metaModel);
         Mockito.when(metaModel.supportsUpsertStatement()).thenReturn(false);
     }
-    
+
     @Test
     public void parseBeginTransaction() throws DBException {
         assertParse("snowflake",
@@ -90,7 +85,7 @@ public class SQLScriptParserGenericsTest {
             new String[]{"begin transaction", "select 1 from dual"}
         );
     }
-    
+
     @Test
     public void parseFromCursorPositionBeginTransaction() throws DBException {
         String query = "begin transaction;\nselect 1 from dual;";
@@ -102,57 +97,102 @@ public class SQLScriptParserGenericsTest {
             Assert.assertEquals("begin transaction", element.getText());
         }
     }
-    
+
+    @Test
+    public void parseQueryWithCommentsBeforeBlockDeclaration() throws DBException {
+        SQLDialect hanaDialect = setDialect("sap_hana");
+        Assert.assertTrue(hanaDialect.isStripCommentsBeforeBlocks());
+        {
+            String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "/* Issue */" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "/* Issue */\n\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLDialect oracle = setDialect("oracle");
+            Assert.assertFalse(oracle.isStripCommentsBeforeBlocks());
+            SQLParserContext context = createParserContext(oracle, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;", element.getText());
+        }
+    }
+
+
     @Test
     public void parseSnowflakeCreateProcedureWithIfStatements() throws DBException {
-        String[] query = new String[]{ 
+        String[] query = new String[]{
             "CREATE OR REPLACE PROCEDURE testproc()\n"
-            + "RETURNS varchar\n"
-            + "LANGUAGE SQL AS\n"
-            + "$$\n"
-            + "  DECLARE\n"
-            + "    i int;\n"
-            + "  BEGIN\n"
-            + "    i:=1;\n"
-            + "    IF (i=1) THEN\n"
-            + "      i:=2;\n"
-            + "    END IF;\n"
-            + "    IF (i=2) THEN\n"
-            + "      i:=3;\n"
-            + "    END IF;\n"
-            + "  END\n"
-            + "$$"
+                + "RETURNS varchar\n"
+                + "LANGUAGE SQL AS\n"
+                + "$$\n"
+                + "  DECLARE\n"
+                + "    i int;\n"
+                + "  BEGIN\n"
+                + "    i:=1;\n"
+                + "    IF (i=1) THEN\n"
+                + "      i:=2;\n"
+                + "    END IF;\n"
+                + "    IF (i=2) THEN\n"
+                + "      i:=3;\n"
+                + "    END IF;\n"
+                + "  END\n"
+                + "$$"
         };
         assertParse("snowflake", query);
     }
-    
+
     @Test
     public void parseSnowflakeIfExistsStatements() throws DBException {
-        String[] query = new String[]{ 
+        String[] query = new String[]{
             "DROP TABLE\r\n"
-            + "IF\n"
-            + "EXISTS dim_appt;",
+                + "IF\n"
+                + "EXISTS dim_appt;",
             null,
             "DROP TABLE\n"
-            + "IF EXISTS dim_test;",
+                + "IF EXISTS dim_test;",
             null,
             "IF (i=1) THEN\n"
-            + "i:=2;\n"
-            + "END IF;",
+                + "i:=2;\n"
+                + "END IF;",
             null,
             "IF (i=2) THEN\n"
-            + "i:=1;\n"
-            + "END IF;",
+                + "i:=1;\n"
+                + "END IF;",
             null,
             "CREATE TABLE IF NOT EXISTS MART_FLSEDW_CI.DEPLOYMENT_SCRIPTS\n"
-            + "(\r\n"
-            + "    DEPLOYMENT_SCRIPTS_ID INTEGER IDENTITY(1,1) NOT NULL\n"
-            + "    , MODEL VARCHAR NOT NULL\n"
-            + "    , TYPE VARCHAR NOT NULL\n"
-            + "    , EXECUTION_DATE TIMESTAMP_LTZ NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
-            + "    , SCRIPT VARCHAR NOT NULL\n"
-            + "    , HASHDIFF BINARY(16)\n"
-            + ");",
+                + "(\r\n"
+                + "    DEPLOYMENT_SCRIPTS_ID INTEGER IDENTITY(1,1) NOT NULL\n"
+                + "    , MODEL VARCHAR NOT NULL\n"
+                + "    , TYPE VARCHAR NOT NULL\n"
+                + "    , EXECUTION_DATE TIMESTAMP_LTZ NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
+                + "    , SCRIPT VARCHAR NOT NULL\n"
+                + "    , HASHDIFF BINARY(16)\n"
+                + ");",
             null,
             "ALTER PROCEDURE IF EXISTS procedure1(FLOAT) RENAME TO procedure2;",
             null
@@ -174,9 +214,9 @@ public class SQLScriptParserGenericsTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2"), actualParamNames);
+        Assert.assertEquals(List.of("1", "\"SYs_B_1\"", "\"MyVar8\"", "AbC", "\"#d2\""), actualParamNames);
     }
-    
+
     @Test
     public void parseVariables() throws DBException {
         List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
@@ -189,9 +229,39 @@ public class SQLScriptParserGenericsTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("ABC", "PRE#%&@T", "A@C="), actualParamNames);
+        Assert.assertEquals(List.of("aBc", "PrE#%&@T", "a@c="), actualParamNames);
     }
-    
+
+    @Test
+    public void parseVariablesInStrings() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("'${" + p + "}'"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+    }
+
+    @Test
+    public void parseVariablesInComment() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "-- ", " ");
+        inputParamNames.stream().forEach(p -> joiner.add("${" + p + "}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+    }
+
     @Test
     public void parseParameterFromSetCommand() throws DBException {
         List<String> varNames = List.of("aBc", "\"aBc\"", "\"a@c=\"");
@@ -221,8 +291,8 @@ public class SQLScriptParserGenericsTest {
             Assert.assertEquals(varNames.get(i), text.substring(0, end).trim());
         }
     }
-    
-    
+
+
     private void assertParse(String dialectName, String[] expected) throws DBException {
         String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
         List<String> expectedParts = new ArrayList<>(expected.length);
@@ -236,7 +306,7 @@ public class SQLScriptParserGenericsTest {
         }
         assertParse(dialectName, source, expectedParts.toArray(new String[0]));
     }
-    
+
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
         SQLParserContext context = createParserContext(setDialect(dialectName), query);
         int docLen = context.getDocument().getLength();
@@ -256,7 +326,7 @@ public class SQLScriptParserGenericsTest {
     }
 
     private SQLDialect setDialect(String name) throws DBException {
-        SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
+        SQLDialectMetadataRegistry registry = DBWorkbench.getPlatform().getSQLDialectRegistry();
         SQLDialect dialect = registry.getDialect(name).createInstance();
         try {
             Mockito.when(databaseMetaData.getIdentifierQuoteString()).thenReturn("\"");

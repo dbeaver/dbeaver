@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.resources;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -29,8 +30,8 @@ import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
+import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -104,8 +106,13 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
-        if (resource instanceof NIOFile) {
-            NIOFileStore fileStore = new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath());
+        if (resource instanceof DBFFileStoreProvider) {
+            IFileStore fileStore = ((DBFFileStoreProvider) resource).getFileStore();
+            long length = fileStore.fetchInfo().getLength();
+            if (!UIUtils.confirmAction(null, "Open resource '" + resource.getFullPath() +
+                "'?\nSize = " + ByteNumberFormat.getInstance().format(length))) {
+                return;
+            }
 
             // open the editor on the file
             IEditorDescriptor editorDesc;
@@ -148,7 +155,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 } else {
                     IDE.openEditor(
                         UIUtils.getActiveWorkbenchWindow().getActivePage(),
-                        target[0].toUri(),
+                        DBFUtils.getUriFromPath(target[0]),
                         editorDesc.getId(),
                         true
                     );

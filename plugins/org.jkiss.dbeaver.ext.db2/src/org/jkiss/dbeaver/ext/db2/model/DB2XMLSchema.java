@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,13 +79,13 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
         this.targetNameSpace = JDBCUtils.safeGetString(dbResult, "TARGETNAMESPACE");
         this.schemaLocation = JDBCUtils.safeGetString(dbResult, "SCHEMALOCATION");
         this.objectType = CommonUtils.valueOf(DB2XSRType.class, JDBCUtils.safeGetString(dbResult, "OBJECTTYPE"));
-        this.owner = JDBCUtils.safeGetStringTrimmed(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+        this.owner = JDBCUtils.safeGetStringTrimmed(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
+        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_ALTER_TIME);
         this.status = CommonUtils.valueOf(DB2XSRStatus.class, JDBCUtils.safeGetString(dbResult, "STATUS"));
         this.decomposition = CommonUtils.valueOf(DB2XSRDecomposition.class, JDBCUtils.safeGetString(dbResult, "DECOMPOSITION"));
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         // TODO DF: @Properties does not handle SQLXML types.
         // Transform it into String

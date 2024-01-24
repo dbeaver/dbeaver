@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Tip of the day
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.tipoftheday;singleton:=true
-Bundle-Version: 1.0.104.qualifier
-Bundle-Release-Date: 20230123
+Bundle-Version: 1.0.129.qualifier
+Bundle-Release-Date: 20240122
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.ui.tipoftheday
 Require-Bundle: org.eclipse.ui.forms,
  org.eclipse.core.runtime,

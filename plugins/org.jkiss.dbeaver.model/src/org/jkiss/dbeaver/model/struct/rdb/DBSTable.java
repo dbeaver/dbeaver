@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
@@ -29,25 +30,27 @@ import java.util.List;
 /**
  * Table
  */
-public interface DBSTable extends DBSEntity, DBPQualifiedObject
-{
+public interface DBSTable extends DBSEntity, DBPQualifiedObject {
 
+    @DPIElement(cache = true)
     boolean isView();
 
     /**
      * Table indices
-     * @return list of indices
-     * @throws DBException  on any DB error
+     *
      * @param monitor progress monitor
+     * @return list of indices
+     * @throws DBException on any DB error
      */
     Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Keys are: primary keys and unique keys.
      * Foreign keys can be obtained with {@link #getReferences(org.jkiss.dbeaver.model.runtime.DBRProgressMonitor)}
+     *
+     * @param monitor progress monitor
      * @return list of constraints
      * @throws DBException on any DB error
-     * @param monitor progress monitor
      */
     @Nullable
     @Override
@@ -64,13 +67,13 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
 
     /**
      * Gets foreign keys which refers this table
+     *
+     * @param monitor progress monitor
      * @return foreign keys list
      * @throws DBException on any DB error
-     * @param monitor progress monitor
      */
 //    @Override
 //    Collection<? extends DBSTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException;
-
     @Nullable
     List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException;
 

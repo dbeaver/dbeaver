@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
-import org.eclipse.core.resources.IFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -25,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.rm.RMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
@@ -37,9 +37,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
-import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Locale;
@@ -62,12 +62,20 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
-        settings.loadConfiguration(runnableContext, task.getProperties());
+        settings.loadConfiguration(runnableContext, task);
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
         return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }
 
-    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, PrintStream logStream, @NotNull DBTTaskExecutionListener listener, SQLScriptExecuteSettings settings) throws DBException {
+    private void executeWithSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBTTask task,
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @NotNull PrintStream logStream,
+        @NotNull DBTTaskExecutionListener listener,
+        @NotNull SQLScriptExecuteSettings settings
+    ) throws DBException {
         log.debug("SQL Scripts Execute");
 
         // Start consumers
@@ -98,39 +106,32 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         List<DBPDataSourceContainer> dataSources = settings.getDataSources();
 
         for (String filePath : settings.getScriptFiles()) {
-            IFile sqlFile = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
-            try (InputStream sqlStream = sqlFile.getContents(true)) {
-                try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
-                    String sqlScriptContent = IOUtils.readToString(fileReader);
-                    try {
-                        for (DBPDataSourceContainer dataSourceContainer : dataSources) {
-                            if (!dataSourceContainer.isConnected()) {
-                                dataSourceContainer.connect(monitor, true, true);
-                            }
-                            DBPDataSource dataSource = dataSourceContainer.getDataSource();
-                            if (dataSource == null) {
-                                throw new DBException("Can't obtain data source connection");
-                            }
-                            DBCExecutionContext executionContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
-
-                            log.debug("> Execute script [" + filePath + "] in [" + dataSourceContainer.getName() + "]");
-                            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
-                            if (contextDefaults != null) {
-                                DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-                                if (defaultCatalog != null) {
-                                    log.debug("> Default catalog: " + defaultCatalog.getName());
-                                }
-                                DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                                if (defaultSchema != null) {
-                                    log.debug("> Default schema: " + defaultSchema.getName());
-                                }
-                            }
-
-                            processScript(monitor, task, settings, executionContext, filePath, sqlScriptContent, log, logStream);
-                        }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+            try {
+                for (DBPDataSourceContainer dataSourceContainer : dataSources) {
+                    var sqlScriptContent = RMUtils.readScriptContents(monitor, task.getProject(), filePath);
+                    if (!dataSourceContainer.isConnected()) {
+                        dataSourceContainer.connect(monitor, true, true);
                     }
+                    DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                    if (dataSource == null) {
+                        throw new DBException("Can't obtain data source connection");
+                    }
+                    DBCExecutionContext executionContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
+
+                    log.debug("> Execute script [" + filePath + "] in [" + dataSourceContainer.getName() + "]");
+                    DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                        if (defaultCatalog != null) {
+                            log.debug("> Default catalog: " + defaultCatalog.getName());
+                        }
+                        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                        if (defaultSchema != null) {
+                            log.debug("> Default schema: " + defaultSchema.getName());
+                        }
+                    }
+
+                    processScript(monitor, task, settings, executionContext, filePath, sqlScriptContent, log, logStream);
                 }
             } catch (Throwable e) {
                 Throwable error = e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e;

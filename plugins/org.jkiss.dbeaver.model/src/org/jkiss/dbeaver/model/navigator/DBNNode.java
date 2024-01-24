@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,7 +37,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPPersistedObject, IAdaptable {
+public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPPersistedObject, DBPAdaptable {
     static final Log log = Log.getLog(DBNNode.class);
 
     public enum NodePathType {
@@ -46,8 +45,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         dbvfs,
         folder,
         database,
-        ext,
-        other;
+        ext, other, node;
 
         public String getPrefix() {
             return name() + "://";
@@ -93,13 +91,23 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     }
 
     @NotNull
-    @Override
-    public String getName() {
-        return getNodeName();
+    public String getNodeId() {
+        return getName();
     }
 
+    @NotNull
+    @Override
+    public String getName() {
+        return getNodeDisplayName();
+    }
+
+    /**
+     * Internal node name. Usually it is the same as getName.
+     */
+    public abstract String getNodeDisplayName();
+
     protected String getSortName() {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
     @Override
@@ -107,9 +115,17 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return getName();
     }
 
+    /**
+     * Node type. May be used internally.
+     */
     public abstract String getNodeType();
 
-    public abstract String getNodeName();
+    /**
+     * Node type in display format.
+     */
+    public String getNodeTypeLabel() {
+        return getNodeType();
+    }
 
     @Nullable
     public String getNodeBriefInfo() {
@@ -136,14 +152,14 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     public String getNodeFullName() {
         StringBuilder pathName = new StringBuilder();
-        pathName.append(getNodeName());
+        pathName.append(getNodeDisplayName());
 
         for (DBNNode parent = getParentNode(); parent != null && !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
             if (parent instanceof DBNDatabaseFolder) {
                 // skip folders
                 continue;
             }
-            String parentName = parent.getNodeName();
+            String parentName = parent.getNodeDisplayName();
             if (!CommonUtils.isEmpty(parentName)) {
                 pathName.insert(0, '.').insert(0, parentName);
             }
@@ -156,7 +172,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      * Equals to regular node name by default.
      */
     public String getNodeTargetName() {
-        return getNodeName();
+        return getNodeDisplayName();
     }
 
     public boolean hasChildren(boolean navigableOnly) {
@@ -187,7 +203,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return false;
     }
 
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
         throw new DBException("Drop is not supported");
     }
 
@@ -239,8 +255,34 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      * Where typeN is path element for particular database item, name is database object name.
      *
      * @return full item node path
+     * @deprecated the path is not unique and does not contain complete information to find the correct node
+     * use {@link #getNodeUri()} instead
      */
+    @Deprecated
     public abstract String getNodeItemPath();
+
+    /**
+     * Node uri path in form [node://]<parentPath>/<path>
+     *
+     * @return a unique path to the node containing information about the reals hierarchy
+     */
+    @NotNull
+    public final String getNodeUri() {
+        var pathBuilder = new StringBuilder();
+        for (DBNNode currentNode = this; (currentNode != null && !(currentNode instanceof DBNRoot)); currentNode = currentNode.getParentNode()) {
+            if (!pathBuilder.isEmpty()) {
+                pathBuilder.insert(0, '/');
+            }
+            String nodeId = currentNode.getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
+            if (currentNode instanceof DBNResource && currentNode.getParentNode() instanceof DBNProject) {
+                //FIXME: remove after migration to the real resource root node
+                nodeId = DBNResource.FAKE_RESOURCE_ROOT_NODE + "/" + nodeId;
+            }
+            pathBuilder.insert(0, nodeId);
+        }
+
+        return NodePathType.node.getPrefix() + pathBuilder;
+    }
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
@@ -253,6 +295,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return null;
     }
 
+    @Nullable
     public DBPProject getOwnerProject() {
         for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBNProject) {
@@ -315,4 +358,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return false;
     }
 
+    @Override
+    public String toString() {
+        return getNodeUri();
+    }
 }

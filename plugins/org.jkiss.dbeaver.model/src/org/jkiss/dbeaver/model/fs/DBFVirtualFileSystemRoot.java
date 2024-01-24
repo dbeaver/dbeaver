@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
  * Virtual file system root
  */
-public interface DBFVirtualFileSystemRoot extends DBPNamedObject {
+public interface DBFVirtualFileSystemRoot extends DBPNamedObject, Closeable {
 
     @NotNull
     DBFVirtualFileSystem getFileSystem();
@@ -40,5 +42,8 @@ public interface DBFVirtualFileSystemRoot extends DBPNamedObject {
 
     @NotNull
     Path getRootPath(DBRProgressMonitor monitor) throws DBException;
+
+    @Override
+    default void close() throws IOException {}
 
 }

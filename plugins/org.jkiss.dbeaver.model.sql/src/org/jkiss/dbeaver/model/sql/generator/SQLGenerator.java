@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     private boolean useCustomDataFormat = false;
     private boolean useSeparateForeignKeys = true;
     private boolean showPartitionsDDL = false;
+    private boolean showCastParams = false;
 
     private final Map<String, Object> generatorOptions = new LinkedHashMap<>();
 
@@ -126,6 +127,14 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         this.showPartitionsDDL = showPartitionsDDL;
     }
 
+    public boolean isShowCastParams() {
+        return showCastParams;
+    }
+
+    public void setShowCastParams(boolean showCastParams) {
+        this.showCastParams = showCastParams;
+    }
+
     public boolean isDDLOption() {
         return false;
     }
@@ -135,6 +144,14 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     }
 
     public boolean isInsertOption() {
+        return false;
+    }
+
+    /**
+     * Set whether generator supports 'cast parameters' (or not) feature -
+     * if yes, additional checkbox in the SQL dialog will be shown
+     */
+    public boolean supportCastParams() {
         return false;
     }
 
@@ -177,6 +194,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         options.put(DBPScriptObject.OPTION_SCRIPT_USE_CUSTOM_DATA_FORMAT, isUseCustomDataFormat());
         options.put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, isUseSeparateForeignKeys());
         options.put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, isShowPartitionsDDL());
+        options.put(DBPScriptObject.OPTION_CAST_PARAMS, isShowCastParams());
         options.putAll(generatorOptions);
     }
 
@@ -194,7 +212,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         } catch (DBException e) {
             throw new InvocationTargetException(e);
         }
-        result = sql.toString();
+        result = sql.toString().trim();
     }
 
     protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, OBJECT object)

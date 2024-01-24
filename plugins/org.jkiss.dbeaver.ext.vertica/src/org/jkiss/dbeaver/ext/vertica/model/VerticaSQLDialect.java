@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.vertica.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -26,45 +28,54 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
-public class VerticaSQLDialect extends GenericSQLDialect {
+public class VerticaSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
     private static final String[][] VERTICA_BEGIN_END_BLOCK = new String[][]{
             {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
             {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END},
     };
 
+    private static String[] EXEC_KEYWORDS = {"CALL"};
+
     private static String[] VERTICA_KEYWORDS = new String[]{
-            // SELECT * FROM keywords WHERE reserved = 'R'
-            "BIT",
-            "CACHE",
-            "COMMENT",
-            "CORRELATION",
-            "ENCODED",
-            "FLEX",
-            "ILIKE",
-            "ILIKEB",
-            "INTERVALYM",
-            "ISNULL",
-            "KSAFE",
-            "LIKEB",
-            "MINUS",
-            "MONEY",
-            "NCHAR",
-            "NOTNULL",
-            "NULLSEQUAL",
-            "OFFSET",
-            "PINNED",
-            "PROJECTION",
-            "SMALLDATETIME",
-            "TEXT",
-            "TIMESERIES",
-            "TIMEZONE",
-            "TINYINT",
-            "UUID",
-            "VARCHAR2"
+        // SELECT * FROM keywords WHERE reserved = 'R'
+        "BIT",
+        "CACHE",
+        "COMMENT",
+        "CORRELATION",
+        "ENCODED",
+        "FLEX",
+        "ILIKE",
+        "ILIKEB",
+        "INTERVALYM",
+        "ISNULL",
+        "KSAFE",
+        "LIKEB",
+        "MINUS",
+        "MONEY",
+        "NCHAR",
+        "NOTNULL",
+        "NULLSEQUAL",
+        "OFFSET",
+        "PINNED",
+        "PROJECTION",
+        "SMALLDATETIME",
+        "TEXT",
+        "TIMESERIES",
+        "TIMEZONE",
+        "TINYINT",
+        "UUID",
+        "VARCHAR2",
+        "EXPLAIN",
+        "VERBOSE",
+        "JSON"
     };
 
     private static String[] VERTICA_FUNCTIONS = new String[]{
@@ -83,6 +94,12 @@ public class VerticaSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(Arrays.asList(VERTICA_KEYWORDS));
         addFunctions(Arrays.asList(VERTICA_FUNCTIONS));
+    }
+
+    @NotNull
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @Override
@@ -106,6 +123,24 @@ public class VerticaSQLDialect extends GenericSQLDialect {
     @Override
     public String[][] getBlockBoundStrings() {
         return VERTICA_BEGIN_END_BLOCK;
+    }
+
+    @NotNull
+    @Override
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
+        if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
+            return new TPRule[] {
+                new SQLDollarQuoteRule(
+                    position == RulePosition.PARTITION,
+                    false,
+                    false,
+                    dataSource == null ||
+                        CommonUtils.toBoolean(
+                            dataSource.getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING))
+                )
+            };
+        }
+        return new TPRule[0];
     }
 
     @Override

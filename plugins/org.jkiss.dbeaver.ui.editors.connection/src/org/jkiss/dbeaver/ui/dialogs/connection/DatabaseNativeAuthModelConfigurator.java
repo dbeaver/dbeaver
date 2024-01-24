@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
         if (this.passwordText != null) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
-            this.savePasswordCheck.setSelection(dataSource.isSavePassword());
+            this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
             this.passwordText.setEnabled(dataSource.isSavePassword());
         }
     }
@@ -128,6 +128,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     @Override
     public boolean isComplete() {
         return true;
+    }
+
+    protected boolean isForceSaveCredentials() {
+        return false;
     }
 
     protected Text createPasswordText(Composite parent, String label) {
@@ -162,15 +166,18 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         panel.setLayoutData(gd);
 
         savePasswordCheck = UIUtils.createCheckbox(panel,
-            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
-            dataSource == null || dataSource.isSavePassword());
-        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally);
+            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
+            dataSource == null || dataSource.isSavePassword() || isForceSaveCredentials());
+        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password);
         savePasswordCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 passwordText.setEnabled(savePasswordCheck.getSelection());
             }
         });
+        if (isForceSaveCredentials()) {
+            this.savePasswordCheck.setEnabled(false);
+        }
 
         if (supportsPasswordView) {
             userManagementToolbar = new ToolBar(panel, SWT.HORIZONTAL);
@@ -191,31 +198,22 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     private void showPasswordText(UIServiceSecurity serviceSecurity) {
-        Composite passContainer = passwordText.getParent();
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
             if (!serviceSecurity.validatePassword(
                 dataSource.getProject(),
                 "Enter project password",
-                "Enter project master password to unlock connection password view",
+                "Enter project password to unlock connection password view",
                 true))
             {
                 return;
             }
         }
 
-        Object layoutData = passwordText.getLayoutData();
-        String curValue = passwordText.getText();
-        passwordText.dispose();
-
-        if (passHidden) {
-            passwordText = new Text(passContainer, SWT.BORDER);
-        } else {
-            passwordText = new Text(passContainer, SWT.PASSWORD | SWT.BORDER);
-        }
-        passwordText.setLayoutData(layoutData);
-        passwordText.setText(curValue);
-        passContainer.layout(true, true);
+        passwordText = UIUtils.recreateTextControl(
+            passwordText,
+            passHidden ? SWT.BORDER : SWT.BORDER | SWT.PASSWORD
+        );
     }
 
 }

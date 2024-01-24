@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -229,6 +229,43 @@ public class PostgreValueParserTest {
 
     }
 
+    @Test
+    public void testParsePrimitiveArray() {
+        Assert.assertArrayEquals(
+            new String[]{},
+            PostgreValueParser.parsePrimitiveArray("{}", Function.identity(), String[]::new));
+        Assert.assertArrayEquals(
+            new String[]{null, "NULL"},
+            PostgreValueParser.parsePrimitiveArray("{NULL,\"NULL\"}", Function.identity(), String[]::new));
+        Assert.assertArrayEquals(
+            new String[]{"ab", "cd", null, "NULL", " spa ce "},
+            PostgreValueParser.parsePrimitiveArray("{ ab , cd ,NULL,\"NULL\",\" spa ce \"}", Function.identity(), String[]::new));
+        Assert.assertArrayEquals(
+            new Integer[]{1, null, 3},
+            PostgreValueParser.parsePrimitiveArray("{1,NULL,3}", Integer::valueOf, Integer[]::new));
+
+        Assert.assertThrows(
+            "Array value must start with \"{\"",
+            IllegalArgumentException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("1}", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Unexpected \"}\" character",
+            IllegalArgumentException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{1,}", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Unexpected \",\" character",
+            IllegalArgumentException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{,}", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Unexpected end of input",
+            IllegalArgumentException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{1,", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Junk after closing right brace",
+            IllegalArgumentException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{1},", Function.identity(), String[]::new));
+    }
+
     private void setupGeneralWhenMocks() throws Exception {
 //        Mockito.when(dataSource.getSQLDialect()).thenReturn(sqlDialect);
         Mockito.when(session.getProgressMonitor()).thenReturn(new VoidProgressMonitor());
@@ -254,6 +291,7 @@ public class PostgreValueParserTest {
 //        Mockito.when(stringItemType.getFullTypeName()).thenReturn("test_stringItemType");
         Mockito.when(stringItemType.getDataKind()).thenReturn(DBPDataKind.STRING);
         Mockito.when(stringItemType.getTypeID()).thenReturn(Types.VARCHAR);
+        Mockito.when(stringItemType.getArrayDelimiter()).thenReturn(",");
 //        Mockito.when(stringItemType.getDataSource()).thenReturn(dataSource);
 
 //        Mockito.when(arrayStringItemType.getFullTypeName()).thenReturn("test_arrayStringItemType");

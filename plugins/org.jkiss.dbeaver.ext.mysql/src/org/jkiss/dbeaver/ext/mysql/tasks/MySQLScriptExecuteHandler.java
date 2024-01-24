@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -30,8 +31,9 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -94,10 +96,18 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLScriptExecuteSettings settings, MySQLCatalog arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
-        File inputFile = new File(settings.getInputFile());
-        if (!inputFile.exists()) {
-            throw new IOException("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
+    protected void startProcessHandler(
+        DBRProgressMonitor monitor,
+        DBTTask task,
+        MySQLScriptExecuteSettings settings,
+        MySQLCatalog arg,
+        ProcessBuilder processBuilder,
+        Process process,
+        Log log
+    ) throws IOException, DBException {
+        Path inputFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
+        if (!Files.exists(inputFile)) {
+            throw new IOException("File '" + inputFile + "' doesn't exist");
         }
         if (settings.isImport()) {
             super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);

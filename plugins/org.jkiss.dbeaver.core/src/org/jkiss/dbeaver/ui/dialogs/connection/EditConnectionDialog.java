@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,15 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -33,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * NewConnectionDialog.
@@ -44,6 +49,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     private static final Map<DBPDataSourceContainer, EditConnectionDialog> openDialogs = Collections.synchronizedMap(new IdentityHashMap<>());
 
     private static final int TEST_BUTTON_ID = 2000;
+
     private static String lastActivePage;
 
     private Button testButton;
@@ -68,21 +74,35 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         return UIUtils.getDialogSettings("DBeaver.EditConnectionDialog");
     }
 
+    @NotNull
+    @Override
+    protected IWizardPage getStartingPage() {
+/*
+        String defPage = defaultPageName;
+        if (defPage == null) {
+            defPage = lastActivePage;
+        }
+        if (defPage != null) {
+            IWizardPage page = getWizard().getPage(defPage);
+            if (page != null) {
+                return page;
+            }
+        }
+*/
+        return super.getStartingPage();
+    }
+
     @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
-
         String activePage = defaultPageName;
         if (CommonUtils.isEmpty(activePage)) {
             activePage = lastActivePage;
         }
         if (!CommonUtils.isEmpty(activePage)) {
             String finalActivePage = activePage;
-            UIUtils.asyncExec(() -> {
-                getWizard().openSettingsPage(finalActivePage);
-            });
+            UIUtils.asyncExec(() -> getWizard().openSettingsPage(finalActivePage));
         }
-
         // Expand first page
         Tree pagesTree = getPagesTree();
         TreeItem[] items = pagesTree.getItems();
@@ -148,7 +168,17 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         getWizard().testConnection();
     }
 
+
     public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource, String defaultPageName) {
+        return openEditConnectionDialog(window, dataSource, defaultPageName, null);
+    }
+
+    public static boolean openEditConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull DBPDataSourceContainer dataSource,
+        @Nullable String defaultPageName,
+        @Nullable Consumer<EditConnectionWizard> wizardConfigurer
+    ) {
         EditConnectionDialog dialog = openDialogs.get(dataSource);
         if (dialog != null) {
             if (defaultPageName != null) {
@@ -158,7 +188,14 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             return true;
         }
 
+        CoreFeatures.CONNECTION_EDIT.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
+
         EditConnectionWizard wizard = new EditConnectionWizard((DataSourceDescriptor) dataSource);
+
+        if (wizardConfigurer != null) {
+            wizardConfigurer.accept(wizard);
+        }
+
         dialog = new EditConnectionDialog(window, wizard);
         dialog.defaultPageName = defaultPageName;
         openDialogs.put(dataSource, dialog);

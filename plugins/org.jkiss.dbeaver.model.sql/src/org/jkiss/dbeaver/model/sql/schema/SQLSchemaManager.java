@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@
 
 package org.jkiss.dbeaver.model.sql.schema;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
@@ -41,7 +41,6 @@ import java.sql.Statement;
  * SQL schema manager.
  * Upgrades schema version if needed.
  * Converts schema create/update scripts into target database dialect.
- *
  */
 public final class SQLSchemaManager {
     private static final Log log = Log.getLog(SQLSchemaManager.class);
@@ -51,11 +50,12 @@ public final class SQLSchemaManager {
     private final SQLSchemaConnectionProvider connectionProvider;
     private final SQLSchemaVersionManager versionManager;
 
-    private SQLDialect targetDatabaseDialect;
-    private String targetDatabaseName;
+    private final SQLDialect targetDatabaseDialect;
+    private final String targetDatabaseName;
+    private final String targetSchemaName;
 
-    private int schemaVersionActual;
-    private int schemaVersionObsolete;
+    private final int schemaVersionActual;
+    private final int schemaVersionObsolete;
 
     public SQLSchemaManager(
         String schemaId,
@@ -64,9 +64,10 @@ public final class SQLSchemaManager {
         SQLSchemaVersionManager versionManager,
         SQLDialect targetDatabaseDialect,
         String targetDatabaseName,
+        String targetSchemaName,
         int schemaVersionActual,
-        int schemaVersionObsolete)
-    {
+        int schemaVersionObsolete
+    ) {
         this.schemaId = schemaId;
 
         this.scriptSource = scriptSource;
@@ -74,6 +75,7 @@ public final class SQLSchemaManager {
         this.versionManager = versionManager;
         this.targetDatabaseDialect = targetDatabaseDialect;
         this.targetDatabaseName = targetDatabaseName;
+        this.targetSchemaName = targetSchemaName;
 
         this.schemaVersionActual = schemaVersionActual;
         this.schemaVersionObsolete = schemaVersionObsolete;
@@ -83,49 +85,70 @@ public final class SQLSchemaManager {
         try {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
-                int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                // Do rollback in case some error happened during version check (makes sense for PG)
-                txn.rollback();
-                if (currentSchemaVersion < 0) {
-                    createNewSchema(monitor, dbCon);
+                try {
+                    int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetSchemaName);
+                    // Do rollback in case some error happened during version check (makes sense for PG)
+                    txn.rollback();
+                    if (currentSchemaVersion < 0) {
+                        createNewSchema(monitor, dbCon);
 
-                    // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
-                    dropSchema(monitor, dbCon);
-                    createNewSchema(monitor, dbCon);
+                        // Update schema version
+                        versionManager.updateCurrentSchemaVersion(
+                            monitor,
+                            dbCon,
+                            targetSchemaName,
+                            versionManager.getLatestSchemaVersion()
+                        );
+                    } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
+                        dropSchema(monitor, dbCon);
+                        createNewSchema(monitor, dbCon);
 
-                    // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                } else if (schemaVersionActual > currentSchemaVersion) {
-                    upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
+                        // Update schema version
+                        versionManager.updateCurrentSchemaVersion(
+                            monitor,
+                            dbCon,
+                            targetSchemaName,
+                            versionManager.getLatestSchemaVersion()
+                        );
+                    } else if (schemaVersionActual > currentSchemaVersion) {
+                        upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
+                    }
+
+                    txn.commit();
+                } catch (Exception e) {
+                    txn.rollback();
+                    log.warn(schemaId + " migration has been rolled back");
+                    throw e;
                 }
-
-                txn.commit();
             }
-        }
-        catch (IOException | SQLException e) {
+        } catch (IOException | SQLException e) {
             throw new DBException("Error updating " + schemaId + " schema version", e);
         }
     }
 
-    private void upgradeSchemaVersion(DBRProgressMonitor monitor, Connection connection, int currentSchemaVersion) throws IOException, DBException, SQLException {
+    private void upgradeSchemaVersion(
+        DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        @NotNull JDBCTransaction txn,
+        int currentSchemaVersion
+    ) throws IOException, DBException, SQLException {
         for (int curVer = currentSchemaVersion; curVer < schemaVersionActual; curVer++) {
             int updateToVer = curVer + 1;
             Reader ddlStream = scriptSource.openSchemaUpdateScript(monitor, updateToVer);
-            if (ddlStream != null) {
-                log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
-                try {
-                    executeScript(monitor, connection, ddlStream, true);
-                } catch (Exception e) {
-                    log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
-                    throw e;
-                } finally {
-                    ContentUtils.close(ddlStream);
-                }
+            if (ddlStream == null) {
+                continue;
+            }
+            log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
+            try {
+                executeScript(monitor, connection, ddlStream, true);
                 // Update schema version
-                versionManager.updateCurrentSchemaVersion(
-                    monitor, connection, targetDatabaseName);
+                versionManager.updateCurrentSchemaVersion(monitor, connection, targetSchemaName, updateToVer);
+                txn.commit();
+            } catch (Exception e) {
+                log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
+                throw e;
+            } finally {
+                ContentUtils.close(ddlStream);
             }
         }
     }
@@ -145,17 +168,9 @@ public final class SQLSchemaManager {
 
     private void executeScript(DBRProgressMonitor monitor, Connection connection, Reader ddlStream, boolean logQueries) throws SQLException, IOException, DBException {
         // Read DDL script
-        String ddlText = IOUtils.readToString(ddlStream);
-
+        String ddlText = CommonUtils.normalizeTableNames(IOUtils.readToString(ddlStream), targetSchemaName);
         // Translate script to target dialect
-        DBPPreferenceStore prefStore = new SimplePreferenceStore() {
-            @Override
-            public void save() throws IOException {
-
-            }
-        };
-        prefStore.setValue(SQLModelPreferences.SQL_FORMAT_FORMATTER, "default");
-
+        DBPPreferenceStore prefStore = SQLQueryTranslator.getDefaultPreferenceStore();
         BasicSQLDialect sourceDialect = new BasicSQLDialect() {
         };
         ddlText = SQLQueryTranslator.translateScript(sourceDialect, targetDatabaseDialect, prefStore, ddlText);
@@ -172,14 +187,15 @@ public final class SQLSchemaManager {
             }
             try (Statement dbStat = connection.createStatement()) {
                 try {
+                    log.debug("Execute migration query: " + line);
                     dbStat.execute(line);
                 } catch (SQLException e) {
                     //TODO: find a better way to avoid migration errors
                     // 11 migration version sometimes crashes in h2
                     log.error("Error during sql migration", e);
-                    log.info("Trying to apply the migration again");
+                    log.debug("Trying to apply the migration again");
                     dbStat.execute(line);
-                    log.error("The second attempt was successful");
+                    log.debug("The second schema migration attempt was successful");
                 }
             }
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -92,9 +91,6 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
 
     private void sendNotification(@Nullable DBTTask task, @Nullable Throwable error, long elapsedTime, @Nullable Object settings) {
         UIUtils.asyncExec(() -> {
-            // Make a sound
-            Display.getCurrent().beep();
-            // Notify agent
             boolean hasErrors = error != null;
             DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
             StringBuilder completeMessage = new StringBuilder();
@@ -112,15 +108,20 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
             }
 
             if (isShowFinalMessage() && !hasErrors) {
-                // Show message box
                 DBeaverNotifications.showNotification(
-                    "task",
+                    "task.execute.success",
                     task == null ? this.task.getName() : task.getName(),
                     completeMessage.toString(),
                     DBPMessageType.INFORMATION,
                     null);
-            } else if (error != null && !(error instanceof InterruptedException)) {
-                DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error);
+            } else if (error != null && !(error instanceof InterruptedException)) { ;
+                DBeaverNotifications.showNotification(
+                    "task.execute.failure",
+                    task == null ? this.task.getName() : task.getName(),
+                    error.getMessage(),
+                    DBPMessageType.ERROR,
+                    () -> DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error)
+                );
             }
         });
     }

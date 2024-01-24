@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_SHOW_CELL_ICONS = "resultset.show.cellIcons"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ATTR_ICONS = "resultset.show.attIcons"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ATTR_FILTERS = "resultset.show.attFilters"; //$NON-NLS-1$
-    public static final String RESULT_SET_SHOW_ATTR_ORDERING = "resultset.show.attOrdering"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_ATTR_ORDERING = "resultset.show.attrOrder"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_DESCRIPTION = "resultset.show.columnDescription"; //$NON-NLS-1$
 
     public static final String RESULT_SET_SHOW_SEL_ROWS = "resultset.show.selected.rows"; //$NON-NLS-1$
@@ -65,6 +65,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_RIGHT_JUSTIFY_NUMBERS = "resultset.show.rightJustifyNumbers"; //$NON-NLS-1$
     public static final String RESULT_SET_RIGHT_JUSTIFY_DATETIME = "resultset.show.rightJustifyDateTime"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTO_SWITCH_MODE = "resultset.behavior.autoSwitchMode"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE = "resultset.behavior.showFiltersPanelInSingleTabMode"; //$NON-NLS-1$
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
     public static final String RESULT_SET_INLINE_ENTER = "resultset.behavior.inlineEnter";
     public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$

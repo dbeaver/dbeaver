@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import org.eclipse.draw2dl.ConnectionAnchor;
-import org.eclipse.draw2dl.GridData;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.gef3.ConnectionEditPart;
-import org.eclipse.gef3.EditPolicy;
-import org.eclipse.gef3.Request;
-import org.eclipse.gef3.editparts.AbstractGraphicalEditPart;
-import org.eclipse.gef3.editpolicies.NonResizableEditPolicy;
+import org.eclipse.draw2d.ConnectionAnchor;
+import org.eclipse.draw2d.GridData;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.gef.ConnectionEditPart;
+import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphEdge;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;

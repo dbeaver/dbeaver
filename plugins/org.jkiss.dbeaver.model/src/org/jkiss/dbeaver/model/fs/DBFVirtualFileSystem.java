@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
+
 /**
  * Virtual file system
  */
-public interface DBFVirtualFileSystem {
+public interface DBFVirtualFileSystem extends Closeable {
 
     @NotNull
     String getFileSystemDisplayName();
@@ -41,6 +46,27 @@ public interface DBFVirtualFileSystem {
     String getId();
 
     @NotNull
+    String getProviderId();
+
+    @NotNull
     DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
+
+    @NotNull
+    Path getPathByURI(@NotNull DBRProgressMonitor monitor, @NotNull URI uri) throws DBException;
+
+    /**
+     * Splits URI to path segments corresponding to file hierarchy.
+     * Typical case: /root/folder/folder/file
+     */
+    String[] getURISegments(URI uri);
+
+    default void refreshRoots(DBRProgressMonitor monitor) throws DBException {}
+
+    default boolean supportsEmptyFolders() {
+        return true;
+    }
+
+    @Override
+    default void close() throws IOException {}
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,11 +78,31 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
     }
 
+    @Override
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+        if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
+            addColumnCommentAction(actions, command.getObject(), command.getObject().getTable());
+        }
+    }
+
     /**
      * Is is pretty standard
      */
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actionList,
+        ObjectChangeCommand command,
+        Map<String, Object> options
+    ) throws DBException {
         final FireBirdTableColumn column = (FireBirdTableColumn) command.getObject();
 
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";

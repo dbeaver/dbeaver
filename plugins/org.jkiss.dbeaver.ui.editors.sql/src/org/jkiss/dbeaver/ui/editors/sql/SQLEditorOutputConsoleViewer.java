@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,9 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -119,12 +120,17 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
     public void refreshStyles() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Font outputFont = currentTheme.getFontRegistry().get(SQLConstants.CONFIG_FONT_OUTPUT);
+        Font outputFont = currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
         if (outputFont != null) {
             getTextWidget().setFont(outputFont);
         }
-        getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
-        getTextWidget().setBackground(UIStyles.getDefaultTextBackground());
+        if (UIStyles.isDarkHighContrastTheme()) {
+            getTextWidget().setForeground(UIUtils.COLOR_WHITE);
+            getTextWidget().setBackground(UIStyles.getDefaultWidgetBackground());
+        } else {
+            getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
+            getTextWidget().setBackground(UIStyles.getDefaultTextBackground());
+        }
     }
 
     public StyledText getText() {

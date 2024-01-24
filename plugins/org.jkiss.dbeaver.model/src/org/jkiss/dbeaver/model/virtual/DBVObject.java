@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,10 @@ public abstract class DBVObject implements DBSObject {
         return properties == null ? Collections.emptyMap() : properties;
     }
 
+    protected void clearProperties() {
+        this.properties = null;
+    }
+
     protected void copyFrom(@NotNull DBVObject src) {
         if (!CommonUtils.isEmpty(src.properties)) {
             this.properties = new LinkedHashMap<>(src.properties);
@@ -110,4 +114,5 @@ public abstract class DBVObject implements DBSObject {
         DBPDataSourceContainer ds = getDataSourceContainer();
         return ds == null ? null : ds.getProject();
     }
+
 }

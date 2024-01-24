@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,7 +32,11 @@ import java.util.Map;
 /**
  * GenericTrigger
  */
-public abstract class GenericTrigger<OWNER extends DBSObject> implements DBSTrigger, GenericScriptObject, DBPNamedObject2
+public abstract class GenericTrigger<OWNER extends DBSObject> implements
+    DBSTrigger,
+    GenericScriptObject,
+    DBPNamedObject2,
+    DBPQualifiedObject
 {
     @NotNull
     private final OWNER container;

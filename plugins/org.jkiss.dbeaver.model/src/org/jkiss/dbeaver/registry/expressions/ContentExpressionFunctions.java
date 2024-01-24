@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.registry.expressions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentXML;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -35,6 +36,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +91,9 @@ public class ContentExpressionFunctions {
     }
 
     public static Object xml(Object object, String returnType, String expression) {
-        if (object == null || CommonUtils.isEmpty(expression) || !(object instanceof JDBCContentXML)) {
+        if (object == null || CommonUtils.isEmpty(expression) ||
+            !(object instanceof DBDContent) || !((DBDContent) object).getContentType().equals(MimeTypes.TEXT_XML)
+        ) {
             return null;
         }
         XMLExpressionResultType resultType = XMLExpressionResultType.fromValue(returnType);
@@ -97,7 +101,14 @@ public class ContentExpressionFunctions {
             resultType = XMLExpressionResultType.STRING;
         }
         try {
-            Document document = XMLUtils.parseDocument(new StringReader(((JDBCContentXML) object).getRawValue().getString()));
+            Object rawValue = ((DBDContent) object).getRawValue();
+            String xmlValue;
+            if (rawValue instanceof SQLXML) {
+                xmlValue = ((SQLXML) rawValue).getString();
+            } else {
+                xmlValue = rawValue.toString();
+            }
+            Document document = XMLUtils.parseDocument(new StringReader(xmlValue));
             XPath xPath = XPathFactory.newInstance().newXPath();
             Object result = xPath.evaluate(expression, document, resultType.getConstant());
             if (result instanceof NodeList) {

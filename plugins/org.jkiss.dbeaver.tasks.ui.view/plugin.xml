@@ -25,7 +25,7 @@
             class="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             id="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             namespace="org.jkiss.dbeaver.task"
-            properties="scheduled,editable"
+            properties="scheduled,editable,canOpenSchedulerSettings"
             type="org.jkiss.dbeaver.model.task.DBTTask"/>
     </extension>
 
@@ -155,7 +155,10 @@
             <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
                 <visibleWhen>
                     <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.core.tools.hasTools"/>
+                        <and>
+                            <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                            <test property="org.jkiss.dbeaver.core.tools.hasTools"/>
+                        </and>
                     </with>
                 </visibleWhen>
                 <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.tasks.ui.DataSourceToolsContributor"/>
@@ -166,13 +169,32 @@
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
             <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
                 <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.tasks.ui.DataSourceToolsContributor"/>
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
             </menu>
-            <command commandId="org.jkiss.dbeaver.ui.tools.menu"/>
+            <command commandId="org.jkiss.dbeaver.ui.tools.menu">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
-            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.category.name" icon="icons/task_list.png"><parameter name="group" value="category"/></command>
-            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.type.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"><parameter name="group" value="type"/></command>
+            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.category.name"
+                     icon="icons/task_list.png">
+                <parameter name="group" value="category"/>
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.type.name"
+                     icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png">
+                <parameter name="group" value="type"/>
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
+            </command>
             <separator name="additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.task.run"/>
             <separator name="additions" visible="true"/>
@@ -180,16 +202,20 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.tasks">
             <command commandId="org.jkiss.dbeaver.task.create">
-                <visibleWhen checkEnabled="true"/>
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.folder.task.create">
-                <visibleWhen checkEnabled="true"/>
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
             </command>
             <command commandId="org.eclipse.ui.edit.delete">
                 <visibleWhen checkEnabled="true"/>
             </command>
             <separator name="additions" visible="true"/>
-            <menu label="Project">
+            <menu label="%org.jkiss.dbeaver.tasks.menu.project.label">
                 <dynamic id="org.jkiss.dbeaver.tasks.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
             </menu>
         </menuContribution>
@@ -198,13 +224,20 @@
             <separator name="tasks" visible="false"/>
             <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
-
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                <visibleWhen>
+                    <and>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </and>
+                </visibleWhen>
             </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
             <menu id="org.jkiss.dbeaver.menu.tasks" label="%menu.database.tasks.label"  icon="icons/task_list.png"/>
+            <visibleWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+            </visibleWhen>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.menu.tasks">
@@ -215,13 +248,20 @@
             </command>
             <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
             </command>
             <separator name="tasks" visible="true"/>
             <dynamic id="org.jkiss.dbeaver.menu.tasks.recent" class="org.jkiss.dbeaver.tasks.ui.RecentTasksMenuContributor"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:window?before=primary.views">
-            <command commandId="org.jkiss.dbeaver.core.view.toggle" style="toggle"><parameter name="viewId" value="org.jkiss.dbeaver.tasks"/></command>
+            <command commandId="org.jkiss.dbeaver.core.view.toggle" style="toggle"><parameter name="viewId" value="org.jkiss.dbeaver.tasks"/>
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
     </extension>

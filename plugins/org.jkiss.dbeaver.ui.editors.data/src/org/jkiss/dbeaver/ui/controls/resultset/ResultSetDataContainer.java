@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -39,7 +39,7 @@ import java.util.List;
  * Client-side data container.
  * Wraps RSV model and original data container.
  */
-public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvider, IAdaptable, DBDAttributeFilter {
+public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvider, DBPAdaptable, DBDAttributeFilter {
 
     private static final Log log = Log.getLog(ResultSetDataContainer.class);
 

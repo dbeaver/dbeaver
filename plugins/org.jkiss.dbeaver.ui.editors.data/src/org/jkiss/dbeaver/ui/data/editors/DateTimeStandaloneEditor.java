@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,16 +28,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.dialogs.ValueViewDialog;
 
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -112,12 +113,14 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     @Override
     public void primeEditorValue(@Nullable Object value) {
         timeEditor.setTextValue(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT));
-        if (value instanceof Time) {
-            timeEditor.setValue((Time) value);
-        } else if (value instanceof Timestamp) {
-            timeEditor.setValue((Timestamp) value);
-        } else if (value instanceof Date) {
-            timeEditor.setValue((Date) value);
+        try {
+            timeEditor.setValue(value);
+        } catch (DBCException e) {
+            DBWorkbench.getPlatformUI()
+                .showWarningMessageBox(
+                    ResultSetMessages.dialog_value_view_error_parsing_date_title,
+                    ResultSetMessages.dialog_value_view_error_parsing_date_message
+                );
         }
     }
 

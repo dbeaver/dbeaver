@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingAttribute;
@@ -43,7 +44,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingType;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,10 +52,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * ColumnsMappingDialog
@@ -68,10 +65,10 @@ class ColumnsMappingDialog extends DialogPage {
     private TableViewer mappingViewer;
     private Font boldFont;
 
-    ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
+    ColumnsMappingDialog(DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
         this.settings = settings;
         this.mapping = mapping;
-        attributeMappings = mapping.getAttributeMappings(wizard.getRunnableContext());
+        attributeMappings = mapping.getAttributeMappings();
     }
 
     @Override
@@ -242,16 +239,34 @@ class ColumnsMappingDialog extends DialogPage {
             protected CellEditor getCellEditor(Object element) {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
 
-                Set<String> types = new TreeSet<>();
-                DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, settings.getContainer());
-                if (dataTypeProvider != null) {
-                    for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
-                        types.add(type.getName());
+                Map<String, String> types = new TreeMap<>();
+                DBSObjectContainer container = settings.getContainer();
+                if (container != null) {
+                    DBPDataSource dataSource = container.getDataSource();
+                    if (dataSource != null) {
+                        // Also add data types with aliases
+                        Collection<String> dataTypes = dataSource.getSQLDialect().getDataTypes(dataSource);
+                        if (!CommonUtils.isEmpty(dataTypes)) {
+                            for (String dataType : dataTypes) {
+                                types.put(dataType.toUpperCase(Locale.ROOT), dataType);
+                            }
+                        }
                     }
                 }
-                types.add(attrMapping.getTargetType(settings.getTargetDataSource(attrMapping), true));
+                DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, container);
+                if (dataTypeProvider != null) {
+                    for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
+                        types.put(type.getName().toUpperCase(Locale.ROOT), type.getName());
+                    }
+                }
+                String targetType = attrMapping.getTargetType(settings.getTargetDataSource(attrMapping), true);
+                types.put(targetType.toUpperCase(Locale.ROOT), targetType);
 
-                return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), types.toArray(new String[0]), SWT.BORDER);
+                return new CustomComboBoxCellEditor(
+                    mappingViewer,
+                    mappingViewer.getTable(),
+                    types.values().toArray(new String[0]),
+                    SWT.BORDER);
             }
 
             @Override

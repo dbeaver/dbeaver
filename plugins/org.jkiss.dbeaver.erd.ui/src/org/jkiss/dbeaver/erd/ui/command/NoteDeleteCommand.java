@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
@@ -42,7 +42,7 @@ public class NoteDeleteCommand extends Command
     }
 
 	/**
-	 * @see org.eclipse.gef3.commands.Command#execute()
+	 * @see org.eclipse.gef.commands.Command#execute()
 	 */
 	@Override
     public void execute()
@@ -51,7 +51,7 @@ public class NoteDeleteCommand extends Command
 	}
 
 	/**
-	 * @see org.eclipse.gef3.commands.Command#redo()
+	 * @see org.eclipse.gef.commands.Command#redo()
 	 */
 	@Override
     public void redo()

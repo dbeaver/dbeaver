@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -154,6 +155,22 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP);
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM);
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        textTabSize.setSelection(store.getDefaultInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE));
+        textMaxColumnSize.setSelection(store.getDefaultInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
+        textValueFormat.select(DBDDisplayFormat.EDIT);
+        showNulls.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS));
+        textDelimiterLeading.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING));
+        textDelimiterTrailing.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING));
+        textDelimiterTop.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP));
+        textDelimiterBottom.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM));
+        textExtraSpaces.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES));
+        textLineNumber.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER));
+        super.performDefaults();
     }
 
     @Override

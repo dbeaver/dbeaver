@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.erd.ui.export;
 
-import org.eclipse.draw2dl.FreeformLayeredPane;
-import org.eclipse.draw2dl.Graphics;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.SWTGraphics;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.FreeformLayeredPane;
+import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.SWTGraphics;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;

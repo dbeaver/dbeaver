@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -96,7 +97,14 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     }
                     if (failedToPasteResources.isEmpty()) {
                         for (DBNNode nodeObject : cbNodes) {
-                            if (nodeObject instanceof DBNDatabaseNode) {
+                            if (curNode instanceof DBNResource && ((DBNResource) curNode).supportsPaste(nodeObject)) {
+                                try {
+                                    ((DBNResource) curNode).pasteNodes(List.of(nodeObject));
+                                } catch (DBException e) {
+                                    DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste node '" + nodeObject.getName() + "'", e);
+                                    failedToPasteResources.add(nodeObject.getName());
+                                }
+                            } else if (nodeObject instanceof DBNDatabaseNode) {
                                 createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
                             } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
                                 pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
@@ -226,13 +234,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        final IFile targetFile = targetFolder.getFile(new Path(file.getName()));
-                        if (targetFile.exists()) {
-                            throw new IOException("Target file '" + targetFile.getFullPath() + "' already exists");
-                        }
-                        try (InputStream is = new FileInputStream(file)) {
-                            targetFile.create(is, true, monitor.getNestedMonitor());
-                        }
+                        copyFileInFolder(monitor, targetFolder, file);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -242,6 +244,32 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             DBWorkbench.getPlatformUI().showError("Copy error", "Error copying resource", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
+        }
+    }
+
+    private void copyFileInFolder(DBRProgressMonitor monitor, IContainer targetFolder, File file) throws IOException, CoreException {
+        if (monitor.isCanceled()) {
+            return;
+        }
+        if (file.isDirectory()) {
+            IFolder subFolder = targetFolder.getFolder(new Path(file.getName()));
+            if (!subFolder.exists()) {
+                subFolder.create(true, true, monitor.getNestedMonitor());
+            }
+            File[] folderFile = file.listFiles();
+            if (folderFile != null) {
+                for (File subFile : folderFile) {
+                    copyFileInFolder(monitor, subFolder, subFile);
+                }
+            }
+        } else {
+            final IFile targetFile = targetFolder.getFile(new Path(file.getName()));
+            if (targetFile.exists()) {
+                throw new IOException("Target file '" + targetFile.getFullPath() + "' already exists");
+            }
+            try (InputStream is = new FileInputStream(file)) {
+                targetFile.create(is, true, monitor.getNestedMonitor());
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -37,8 +39,8 @@ public class OracleToolTableTruncateSettings extends SQLToolExecuteSettings<Orac
     }
 
     @Override
-    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
-        super.loadConfiguration(runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         isReusable = JSONUtils.getBoolean(config, "reuse_storage");
     }
 

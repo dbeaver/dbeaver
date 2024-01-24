@@ -1,10 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver PostgreSQL Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
-Bundle-Version: 2.1.171.qualifier
-Bundle-Release-Date: 20230123
-Require-Bundle: org.jkiss.dbeaver.model,
+Bundle-Version: 2.1.196.qualifier
+Bundle-Release-Date: 20240122
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
@@ -15,8 +16,8 @@ Require-Bundle: org.jkiss.dbeaver.model,
  com.sun.jna.platform,
  org.jkiss.dbeaver.model.sql
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.edit,

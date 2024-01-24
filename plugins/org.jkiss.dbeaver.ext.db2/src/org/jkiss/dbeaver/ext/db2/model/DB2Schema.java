@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,12 +126,12 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     {
         this(db2DataSource, JDBCUtils.safeGetStringTrimmed(dbResult, "SCHEMANAME"));
 
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
         if (db2DataSource.isAtLeastV10_1()) {
             this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
@@ -673,8 +673,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
                 "    TABNAME,\n" +
                 "    SUM(DATA_OBJECT_P_SIZE + INDEX_OBJECT_P_SIZE + LONG_OBJECT_P_SIZE + LOB_OBJECT_P_SIZE + XML_OBJECT_P_SIZE) AS TOTAL_SIZE_IN_KB\n" +
-                "FROM SYSIBMADM.ADMINTABINFO\n" +
-                "WHERE TABSCHEMA=?\n" +
+                "FROM TABLE(ADMIN_GET_TAB_INFO(?,''))\n" +
                 "GROUP BY TABNAME")) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

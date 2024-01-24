@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNModelExtender;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Model extender descriptor
@@ -28,12 +29,14 @@ public class DBNModelExtenderDescriptor extends AbstractDescriptor {
 
     private String id;
     private ObjectType implType;
+    private final boolean isRoot;
     private DBNModelExtender instance;
 
     DBNModelExtenderDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
         this.implType = new ObjectType(config, "class");
+        this.isRoot = CommonUtils.toBoolean(config.getAttribute("root"));
     }
 
     public String getId() {
@@ -51,4 +54,12 @@ public class DBNModelExtenderDescriptor extends AbstractDescriptor {
         return instance;
     }
 
+    public boolean isRoot() {
+        return isRoot;
+    }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }
