@@ -29,6 +29,8 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.eclipse.equinox.internal.launcher.Constants;
+
 /**
  * The launcher for Eclipse.
  *
