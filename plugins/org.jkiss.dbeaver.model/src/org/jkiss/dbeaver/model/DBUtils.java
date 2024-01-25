@@ -521,13 +521,15 @@ public final class DBUtils {
     @NotNull
     public static DBSObject[] getObjectPath(@NotNull DBSObject object, boolean includeSelf) {
         int depth = 0;
-        final DBSObject root = includeSelf ? object : object.getParentObject();
+        final DBSObject root = includeSelf ? object :
+            ((object instanceof DBSTablePartition part) && part.needFullPath() && part.isSubPartition()) ? part.getPartitionParent() :
+        object.getParentObject();
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
             obj = getPublicObjectContainer(obj);
             depth++;
         }
         if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
-            // For the parent table
+            // For a parent table
             depth++;
         }
         DBSObject[] path = new DBSObject[depth];

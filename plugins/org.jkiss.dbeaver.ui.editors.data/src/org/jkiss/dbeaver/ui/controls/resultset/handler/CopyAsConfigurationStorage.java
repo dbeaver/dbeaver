@@ -66,7 +66,7 @@ class CopyAsConfigurationStorage {
                 jsonWriter.name(COPY_AS_CFG);
                 jsonWriter.beginObject();
                 for (Map.Entry<DataTransferProcessorDescriptor, Map<String, Object>> entries: properties.entrySet()) {
-                    JSONUtils.serializeProperties(jsonWriter, entries.getKey().getFullId(), entries.getValue());
+                    JSONUtils.serializeProperties(jsonWriter, entries.getKey().getFullId(), entries.getValue(), true);
                 }
                 jsonWriter.endObject();
                 jsonWriter.endObject();

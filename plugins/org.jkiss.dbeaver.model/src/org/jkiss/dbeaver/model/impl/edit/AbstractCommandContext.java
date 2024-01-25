@@ -608,7 +608,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         CommandInfo aggregator = null;
         // Create queues from commands
         for (CommandInfo commandInfo : commands) {
-            if (commandInfo.command instanceof DBECommandAggregator) {
+            if (commandInfo.command instanceof DBECommandAggregator && !commandInfo.command.ignoreNestedCommands()) {
                 aggregator = commandInfo;
             }
             DBPObject object = commandInfo.command.getObject();

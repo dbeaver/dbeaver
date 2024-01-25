@@ -425,6 +425,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return schemaCache == null ? null : schemaCache.getObject(monitor, this, name);
     }
 
+    /**
+     * OracleSchema or its children classes can be created by this method.
+     */
+    public OracleSchema createSchemaImpl(@NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) {
+        return new OracleSchema(owner, resultSet);
+    }
+
     @Association
     public Collection<OracleTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
         return tablespaceCache.getAllObjects(monitor, this);
@@ -819,6 +826,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return null;
     }
 
+    /**
+     * Returns true if partitions creation is supported.
+     */
+    public boolean supportsPartitionsCreation() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-partitions-creation"), false);
+    }
+
     ///////////////////////////////////////////////
     // Statistics
 
@@ -966,7 +980,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
         @Override
         protected OracleSchema fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new OracleSchema(owner, resultSet);
+            return owner.createSchemaImpl(owner, resultSet);
         }
 
         @Override

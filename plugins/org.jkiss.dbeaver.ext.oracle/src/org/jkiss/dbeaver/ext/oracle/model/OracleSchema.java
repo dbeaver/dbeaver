@@ -169,7 +169,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Association
-    public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
+    public Collection<? extends OracleTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getTypedObjects(monitor, this, OracleTable.class);
@@ -217,6 +217,13 @@ public class OracleSchema extends OracleGlobalObject implements
         throws DBException
     {
         return dataTypeCache.getAllObjects(monitor, this);
+    }
+
+    /**
+     * OracleTable or its children classes can be created by this method.
+     */
+    public OracleTable createTableImpl(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult) {
+        return new OracleTable(monitor, owner, dbResult);
     }
 
     public OracleDataType getDataType(DBRProgressMonitor monitor, String name)
@@ -661,7 +668,7 @@ public class OracleSchema extends OracleGlobalObject implements
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
             if ("TABLE".equals(tableType)) {
-                return new OracleTable(session.getProgressMonitor(), owner, dbResult);
+                return owner.createTableImpl(session.getProgressMonitor(), owner, dbResult);
             } else if ("MATERIALIZED VIEW".equals(tableType)) {
                 return new OracleMaterializedView(owner, dbResult);
             } else {
