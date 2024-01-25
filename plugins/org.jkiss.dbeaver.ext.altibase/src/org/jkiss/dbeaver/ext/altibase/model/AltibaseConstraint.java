@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-
-import java.util.List;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
 
 /*
  * AltibaseConstraint types except "0: FOREIGN KEY".
@@ -30,27 +30,39 @@ import java.util.List;
  * 
  * Refer to SQL: AltibaseMetaModel.prepareUniqueConstraintsLoadStatement
  */
-public class AltibaseConstraint extends GenericUniqueKey {
+public class AltibaseConstraint extends GenericUniqueKey implements DBSTableCheckConstraint {
 
     public static final DBSEntityConstraintType LOCAL_UNIQUE_KEY = new DBSEntityConstraintType(
             "localunique", "LOCAL UNIQUE", "LOCAL UNIQUE", false, true, true, false);
     public static final DBSEntityConstraintType TIMESTAMP = new DBSEntityConstraintType(
             "timestamp", "TIMESTAMP", "TIMESTAMP", false, false, true, false);
 
-    protected List<GenericTableConstraintColumn> columns;
-    protected String condition;
-    protected boolean validated;
+    private String condition;
+    private boolean validated;
 
-    public AltibaseConstraint(GenericTableBase table, String name, String remarks,
-            DBSEntityConstraintType constraintType, boolean persisted, String condition, boolean validated) {
+    public AltibaseConstraint(
+        @NotNull GenericTableBase table,
+        @NotNull String name,
+        @Nullable String remarks,
+        @NotNull DBSEntityConstraintType constraintType,
+        boolean persisted,
+        @Nullable String condition,
+        boolean validated
+    ) {
         super(table, name, remarks, constraintType, persisted);
         this.condition = condition;
         this.validated = validated;
     }
 
     @Property(viewable = true, order = 10)
-    public String getCondition() {
+    @Override
+    public String getCheckConstraintDefinition() {
         return condition;
+    }
+
+    @Override
+    public void setCheckConstraintDefinition(String expression) {
+        this.condition = expression;
     }
 
     @Property(viewable = true, order = 10)

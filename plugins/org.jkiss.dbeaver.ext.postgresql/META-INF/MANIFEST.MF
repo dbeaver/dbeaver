@@ -13,7 +13,6 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.native;visibility:=reexport,
  com.google.gson,
- com.sun.jna.platform,
  org.jkiss.dbeaver.model.sql
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
