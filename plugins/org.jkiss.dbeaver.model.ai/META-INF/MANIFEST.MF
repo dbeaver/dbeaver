@@ -10,7 +10,8 @@ Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.internal,
  org.jkiss.dbeaver.model.ai.openai,
  org.jkiss.dbeaver.model.ai.openai.service,
- org.jkiss.dbeaver.model.ai.translator
+ org.jkiss.dbeaver.model.ai.translator,
+ org.jkiss.dbeaver.model.ai.metadata
 Bundle-Release-Date: 20240122
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy

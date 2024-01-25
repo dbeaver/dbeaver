@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.ai.openai.GPTModel;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -73,7 +74,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     }
 
     @NotNull
-    private static List<DAICompletionMessage> filterMessages(List<DAICompletionMessage> messages, boolean includeAssistantMessages ) {
+    protected List<DAICompletionMessage> filterMessages(List<DAICompletionMessage> messages, boolean includeAssistantMessages ) {
         if (includeAssistantMessages) {
             return messages;
         }
@@ -140,9 +141,9 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         return mainObject;
     }
 
-    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages);
+    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages) throws DBCException;
 
-    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize);
+    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) throws DBCException;
 
     protected abstract SERVICE getServiceInstance(@NotNull DBCExecutionContext executionContext) throws DBException;
 
@@ -156,13 +157,13 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull DBSObjectContainer mainObject,
         @Nullable String completionText,
         @NotNull IAIFormatter formatter,
-        @NotNull GPTModel model
+        @NotNull boolean isChatAPI
     ) {
         if (CommonUtils.isEmpty(completionText)) {
             return null;
         }
 
-        if (!model.isChatAPI()) {
+        if (!isChatAPI) {
             completionText = "SELECT " + completionText.trim() + ";";
         }
 
