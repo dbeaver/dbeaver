@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.security.user.SMTeam;
-import org.jkiss.dbeaver.model.security.user.SMUser;
-import org.jkiss.dbeaver.model.security.user.SMUserFilter;
-import org.jkiss.dbeaver.model.security.user.SMUserImportList;
+import org.jkiss.dbeaver.model.security.user.*;
 
 import java.util.List;
 import java.util.Map;
@@ -100,7 +97,12 @@ public interface SMAdminController extends SMController {
     @NotNull
     String[] getTeamMembers(String teamId) throws DBException;
 
-    void createTeam(String teamId, String name, String description, String grantor) throws DBException;
+    void createTeam(
+        @NotNull String teamId,
+        @Nullable String name,
+        @Nullable String description,
+        @NotNull String grantor
+    ) throws DBException;
 
     void updateTeam(String teamId, String name, String description) throws DBException;
 
@@ -108,6 +110,15 @@ public interface SMAdminController extends SMController {
 
     ///////////////////////////////////////////
     // Credentials
+
+    @NotNull
+    SMCredentialsProfile[] readAllCredentialsProfiles() throws DBException;
+
+    void createCredentialsProfile(@NotNull SMCredentialsProfile credentialsProfile) throws DBException;
+
+    void deleteCredentialsProfile(@NotNull String credentialsProfileId) throws DBException;
+
+    void setUserCredentialsProfile(@NotNull String userId, @Nullable String credentialsProfileId) throws DBException;
 
     /**
      * Sets user credentials for specified provider.

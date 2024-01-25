@@ -26,14 +26,18 @@ public class SMUser extends SMSubject {
 
     private String[] userTeams;
     private boolean enabled;
+    @Nullable
     private String authRole;
+    @Nullable
+    private String credentialsProfileId;
 
     public SMUser(
         @NotNull String userId,
         boolean enabled,
-        @Nullable String authRole
+        @Nullable String authRole,
+        @Nullable String credentialsProfileId
     ) {
-        this(userId, null, new String[0], enabled, authRole);
+        this(userId, null, new String[0], enabled, authRole, credentialsProfileId);
     }
 
     public SMUser(
@@ -41,12 +45,14 @@ public class SMUser extends SMSubject {
         @Nullable Map<String, String> metaParameters,
         @NotNull String[] teams,
         boolean enabled,
-        @Nullable String authRole
+        @Nullable String authRole,
+        @Nullable String credentialsProfileId
     ) {
         super(userId, metaParameters);
         this.userTeams = teams;
         this.enabled = enabled;
         this.authRole = authRole;
+        this.credentialsProfileId = credentialsProfileId;
     }
 
     @NotNull
@@ -70,7 +76,7 @@ public class SMUser extends SMSubject {
         this.userTeams = userTeams;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 4)
     public boolean isEnabled() {
         return enabled;
     }
@@ -86,5 +92,11 @@ public class SMUser extends SMSubject {
 
     public void setAuthRole(String authRole) {
         this.authRole = authRole;
+    }
+
+    @Nullable
+    @Property(viewable = true, order = 3)
+    public String getCredentialsProfileId() {
+        return credentialsProfileId;
     }
 }
