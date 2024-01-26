@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -146,16 +144,9 @@ public class CubridMetaModel extends GenericMetaModel
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult)
     {
-        DBRProgressMonitor monitor;
-        if (dbResult != null) {
-            monitor = dbResult.getSession().getProgressMonitor();
-        } else {
-            monitor = new VoidProgressMonitor();
-        }
-
         if (tableType != null && isView(tableType)) {
-            return new CubridView(monitor, container, tableName, tableType, dbResult);
+            return new CubridView(container, tableName, tableType, dbResult);
         }
-        return new CubridTable(monitor, container, tableName, tableType, dbResult);
+        return new CubridTable(container, tableName, tableType, dbResult);
     }
 }

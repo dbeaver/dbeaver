@@ -38,7 +38,6 @@ import java.util.Collection;
 public class CubridTable extends GenericTable
 {
     public CubridTable(
-            DBRProgressMonitor monitor,
             GenericStructContainer container,
             @Nullable String tableName,
             @Nullable String tableType,

@@ -28,12 +28,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class CubridView extends GenericView
 {
     public CubridView(
-            DBRProgressMonitor monitor,
             GenericStructContainer container,
             String tableName,
             String tableType,
