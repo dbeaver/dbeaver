@@ -421,9 +421,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     private void configureVariables() {
         Map<String, Object> variables = getTaskVariables();
-        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), variables);
+        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), Map.of(currentTask, variables));
         if (dialog.open() == IDialogConstants.OK_ID) {
-            this.variables = dialog.getVariables();
+            this.variables = dialog.getVariables(currentTask);
         }
     }
 
