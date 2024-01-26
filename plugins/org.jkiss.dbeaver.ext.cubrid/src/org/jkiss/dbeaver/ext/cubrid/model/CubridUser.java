@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.util.Collection;
-
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
@@ -25,82 +23,105 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class CubridUser implements DBSObject {
+import java.util.Collection;
 
-	private String name;
-	private String comment;
-	private CubridObjectContainer container;
+public class CubridUser implements DBSObject
+{
 
-	public CubridUser(String name) {
-		this.name = name;
-	}
+    private String name;
+    private String comment;
+    private CubridObjectContainer container;
 
-	public CubridUser(CubridObjectContainer container, String name, String comment) {
-		this.name = name;
-		this.comment = comment;
-		this.container = container;
-	}
+    public CubridUser(String name)
+    {
+        this.name = name;
+    }
 
-	@Property(viewable = true, order = 1)
-	public String getName() {
-		return name;
-	}
+    public CubridUser(CubridObjectContainer container, String name, String comment)
+    {
+        this.name = name;
+        this.comment = comment;
+        this.container = container;
+    }
 
-	@Nullable
-	@Property(viewable = true, order = 2)
-	public String getComment() {
-		return comment;
-	}
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return name;
+    }
 
-	@Override
-	public String getDescription() {
-		return null;
-	}
+    @Nullable
+    @Property(viewable = true, order = 2)
+    public String getComment()
+    {
+        return comment;
+    }
 
-	@Override
-	public boolean isPersisted() {
-		return true;
-	}
+    @Override
+    public String getDescription()
+    {
+        return null;
+    }
 
-	public boolean supportsSystemTable() {
-		return name.equals("DBA") ? true : false;
-	}
+    @Override
+    public boolean isPersisted()
+    {
+        return true;
+    }
 
-	public boolean supportsSystemView() {
-		return name.equals("DBA") ? true : false;
-	}
+    public boolean supportsSystemTable()
+    {
+        return name.equals("DBA") ? true : false;
+    }
 
-	public boolean showSystemTableFolder() {
-		return this.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
-	}
+    public boolean supportsSystemView()
+    {
+        return name.equals("DBA") ? true : false;
+    }
 
-	@Override
-	public CubridObjectContainer getParentObject() {
-		return this.container;
-	}
+    public boolean showSystemTableFolder()
+    {
+        return this.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
+    }
 
-	public CubridDataSource getDataSource() {
-		return this.container.getDataSource();
-	}
+    @Override
+    public CubridObjectContainer getParentObject()
+    {
+        return this.container;
+    }
 
-	public Collection<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
-		return this.container.getPhysicalTables(monitor, name);
-	}
+    public CubridDataSource getDataSource()
+    {
+        return this.container.getDataSource();
+    }
 
-	public Collection<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor) throws DBException {
-		return this.container.getPhysicalSystemTables(monitor, name);
-	}
+    public Collection<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return this.container.getPhysicalTables(monitor, name);
+    }
 
-	public Collection<? extends CubridView> getViews(DBRProgressMonitor monitor) throws DBException {
-		return this.container.getViews(monitor, name);
-	}
+    public Collection<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return this.container.getPhysicalSystemTables(monitor, name);
+    }
 
-	public Collection<? extends CubridView> getSystemViews(DBRProgressMonitor monitor) throws DBException {
-		return this.container.getSystemViews(monitor, name);
-	}
+    public Collection<? extends CubridView> getViews(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return this.container.getViews(monitor, name);
+    }
 
-	public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-		return this.container.getIndexes(monitor);
-	}
+    public Collection<? extends CubridView> getSystemViews(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return this.container.getSystemViews(monitor, name);
+    }
 
+    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return this.container.getIndexes(monitor);
+    }
 }

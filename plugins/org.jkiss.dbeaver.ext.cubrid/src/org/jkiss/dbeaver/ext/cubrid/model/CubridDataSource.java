@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.util.Collection;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel;
@@ -25,37 +24,45 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class CubridDataSource extends GenericDataSource {
+import java.util.Collection;
 
-	private final CubridMetaModel metaModel;
-	private CubridObjectContainer structureContainer;
+public class CubridDataSource extends GenericDataSource
+{
 
-	public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel)
-			throws DBException {
-		super(monitor, container, metaModel, new CubridSQLDialect());
-		this.metaModel = new CubridMetaModel();
-	}
+    private final CubridMetaModel metaModel;
+    private CubridObjectContainer structureContainer;
 
-	@DPIContainer
-	@NotNull
-	@Override
-	public CubridDataSource getDataSource() {
-		return this;
-	}
+    public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel)
+            throws DBException
+    {
+        super(monitor, container, metaModel, new CubridSQLDialect());
+        this.metaModel = new CubridMetaModel();
+    }
 
-	public Collection<? extends CubridUser> getCubridUsers(DBRProgressMonitor monitor) throws DBException {
-		return structureContainer == null ? null : structureContainer.getCubridUsers(monitor);
-	}
+    @DPIContainer
+    @NotNull
+    @Override
+    public CubridDataSource getDataSource()
+    {
+        return this;
+    }
 
-	@NotNull
-	public CubridMetaModel getMetaModel() {
-		return metaModel;
-	}
+    public Collection<? extends CubridUser> getCubridUsers(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return structureContainer == null ? null : structureContainer.getCubridUsers(monitor);
+    }
 
-	@Override
-	public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-		super.initialize(monitor);
-		structureContainer = new CubridObjectContainer(this);
-	}
+    @NotNull
+    public CubridMetaModel getMetaModel()
+    {
+        return metaModel;
+    }
 
+    @Override
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException
+    {
+        super.initialize(monitor);
+        structureContainer = new CubridObjectContainer(this);
+    }
 }

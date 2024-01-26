@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
-import java.util.Map;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
@@ -32,37 +31,52 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-public class CubridTableManager extends SQLTableManager<CubridTable, CubridObjectContainer> {
+import java.util.Map;
 
-	private static final String NEW_TABLE_NAME = "NEW_TABLE";
-	private static final String TABLE_TYPE_TABLE = "TABLE";
-	private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(CubridTableColumn.class,
-			GenericUniqueKey.class, GenericTableForeignKey.class, GenericTableIndex.class);
+public class CubridTableManager extends SQLTableManager<CubridTable, CubridObjectContainer>
+{
 
-	@Override
-	public Class<? extends DBSObject>[] getChildTypes() {
-		return CHILD_TYPES;
-	}
+    private static final String NEW_TABLE_NAME = "NEW_TABLE";
+    private static final String TABLE_TYPE_TABLE = "TABLE";
+    private static final Class<? extends DBSObject>[] CHILD_TYPES =
+            CommonUtils.array(
+                    CubridTableColumn.class,
+                    GenericUniqueKey.class,
+                    GenericTableForeignKey.class,
+                    GenericTableIndex.class);
 
-	@Override
-	public boolean canCreateObject(Object container) {
-		return super.canCreateObject(((CubridUser) container).getParentObject());
-	}
+    @Override
+    public Class<? extends DBSObject>[] getChildTypes()
+    {
+        return CHILD_TYPES;
+    }
 
-	@Override
-	public DBSObjectCache<? extends DBSObject, CubridTable> getObjectsCache(CubridTable object) {
-		return object.getContainer().getCubridTableCache();
-	}
+    @Override
+    public boolean canCreateObject(Object container)
+    {
+        return super.canCreateObject(((CubridUser) container).getParentObject());
+    }
 
-	@Override
-	protected CubridTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
-			Object copyFrom, Map<String, Object> options) throws DBException {
+    @Override
+    public DBSObjectCache<? extends DBSObject, CubridTable> getObjectsCache(CubridTable object)
+    {
+        return object.getContainer().getCubridTableCache();
+    }
 
-		CubridObjectContainer objectContainer = ((CubridUser) container).getParentObject();
+    @Override
+    protected CubridTable createDatabaseObject(
+            DBRProgressMonitor monitor,
+            DBECommandContext context,
+            Object container,
+            Object copyFrom,
+            Map<String, Object> options)
+            throws DBException
+    {
 
-		CubridTable table = new CubridTable(monitor, objectContainer, NEW_TABLE_NAME, TABLE_TYPE_TABLE, null);
-		setNewObjectName(monitor, objectContainer, table);
-		return table;
-	}
+        CubridObjectContainer objectContainer = ((CubridUser) container).getParentObject();
 
+        CubridTable table = new CubridTable(monitor, objectContainer, NEW_TABLE_NAME, TABLE_TYPE_TABLE, null);
+        setNewObjectName(monitor, objectContainer, table);
+        return table;
+    }
 }

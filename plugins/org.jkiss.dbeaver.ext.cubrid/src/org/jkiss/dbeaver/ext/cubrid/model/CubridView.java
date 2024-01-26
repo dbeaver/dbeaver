@@ -16,30 +16,38 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-public class CubridView extends CubridTable implements DBSView {
+import java.util.Map;
 
-	public CubridView(DBRProgressMonitor monitor, CubridObjectContainer container, String tableName, String tableType,
-			JDBCResultSet dbResult) {
-		super(monitor, container, tableName, tableType, dbResult);
-	}
+public class CubridView extends CubridTable implements DBSView
+{
 
-	@Override
-	public boolean isView() {
-		return true;
-	}
+    public CubridView(
+            DBRProgressMonitor monitor,
+            CubridObjectContainer container,
+            String tableName,
+            String tableType,
+            JDBCResultSet dbResult)
+    {
+        super(monitor, container, tableName, tableType, dbResult);
+    }
 
-	@Override
-	@Property(hidden = true, editable = true, updatable = true, order = -1)
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-		return getDataSource().getMetaModel().getViewDDL(monitor, null, options);
-	}
+    @Override
+    public boolean isView()
+    {
+        return true;
+    }
 
+    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+            throws DBException
+    {
+        return getDataSource().getMetaModel().getViewDDL(monitor, null, options);
+    }
 }

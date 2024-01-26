@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.util.Collection;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,141 +35,170 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class CubridTable extends GenericTable {
+import java.util.Collection;
+import java.util.Map;
 
-	private static final Log log = Log.getLog(CubridTable.class);
-	private String ddl;
-	private CubridUser owner;
-	private boolean isSystemTable;
-	private Collection<? extends CubridUser> owners;
+public class CubridTable extends GenericTable
+{
 
-	public CubridTable(DBRProgressMonitor monitor, CubridObjectContainer container, @Nullable String tableName,
-			@Nullable String tableType, @Nullable JDBCResultSet dbResult) {
-		super(container, tableName, tableType, dbResult);
-		this.owners = getUsers(monitor);
-		String owner_name;
+    private static final Log log = Log.getLog(CubridTable.class);
+    private String ddl;
+    private CubridUser owner;
+    private boolean isSystemTable;
+    private Collection<? extends CubridUser> owners;
 
-		if (dbResult != null) {
-			owner_name = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
-			isSystemTable = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS).equals("YES");
-		} else {
-			owner_name = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
-			isSystemTable = false;
-		}
+    public CubridTable(
+            DBRProgressMonitor monitor,
+            CubridObjectContainer container,
+            @Nullable String tableName,
+            @Nullable String tableType,
+            @Nullable JDBCResultSet dbResult)
+    {
+        super(container, tableName, tableType, dbResult);
+        this.owners = getUsers(monitor);
+        String owner_name;
 
-		for (CubridUser cbOwner : getUsers(monitor)) {
-			if (cbOwner.getName().equals(owner_name)) {
-				this.owner = cbOwner;
-				break;
-			}
-		}
-	}
+        if (dbResult != null) {
+            owner_name = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
+            isSystemTable = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS).equals("YES");
+        } else {
+            owner_name = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+            isSystemTable = false;
+        }
 
-	@Override
-	public boolean isView() {
-		return false;
-	}
+        for (CubridUser cbOwner : getUsers(monitor)) {
+            if (cbOwner.getName().equals(owner_name)) {
+                this.owner = cbOwner;
+                break;
+            }
+        }
+    }
 
-	@Override
-	public String getDDL() {
-		return ddl;
-	}
+    @Override
+    public boolean isView()
+    {
+        return false;
+    }
 
-	@Override
-	@Property(hidden = true, editable = true, updatable = true, order = -1)
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-		if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
-			ddl = null;
-		}
-		if (!isPersisted()) {
-			return DBStructUtils.generateTableDDL(monitor, this, options, false);
-		}
-		if (ddl == null || !isCacheDDL()) {
-			ddl = getDataSource().getMetaModel().getTableDDL(monitor, this, options);
-		}
-		return ddl;
-	}
+    @Override
+    public String getDDL()
+    {
+        return ddl;
+    }
 
-	protected boolean isCacheDDL() {
-		return true;
-	}
+    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+            throws DBException
+    {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
+            ddl = null;
+        }
+        if (!isPersisted()) {
+            return DBStructUtils.generateTableDDL(monitor, this, options, false);
+        }
+        if (ddl == null || !isCacheDDL()) {
+            ddl = getDataSource().getMetaModel().getTableDDL(monitor, this, options);
+        }
+        return ddl;
+    }
 
-	@Override
-	public boolean supportsObjectDefinitionOption(String option) {
-		return true;
-	}
+    protected boolean isCacheDDL()
+    {
+        return true;
+    }
 
-	boolean isHideVirtualModel() {
-		return true;
-	}
+    @Override
+    public boolean supportsObjectDefinitionOption(String option)
+    {
+        return true;
+    }
 
-	public boolean isPhysicalTable() {
-		return !isView();
-	}
+    boolean isHideVirtualModel()
+    {
+        return true;
+    }
 
-	@Override
-	public boolean isSystem() {
-		return isSystemTable;
-	}
+    public boolean isPhysicalTable()
+    {
+        return !isView();
+    }
 
-	public CubridObjectContainer getContainer() {
-		return (CubridObjectContainer) super.getContainer();
-	}
+    @Override
+    public boolean isSystem()
+    {
+        return isSystemTable;
+    }
 
-	public Collection<? extends CubridUser> getUsers(DBRProgressMonitor monitor) {
-		try {
-			return getContainer().getDataSource().getCubridUsers(monitor);
-		} catch (DBException e) {
-			log.error("Cannot get user", e);
-		}
-		return null;
-	}
+    public CubridObjectContainer getContainer()
+    {
+        return (CubridObjectContainer) super.getContainer();
+    }
 
-	public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-		return this.getContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);
-	}
+    public Collection<? extends CubridUser> getUsers(DBRProgressMonitor monitor)
+    {
+        try {
+            return getContainer().getDataSource().getCubridUsers(monitor);
+        } catch (DBException e) {
+            log.error("Cannot get user", e);
+        }
+        return null;
+    }
 
-	@Nullable
-	@Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
-	public CubridUser getOwner() {
-		return owner;
-	}
+    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        return this.getContainer().getCubridIndexCache().getObjects(monitor, getContainer(), this);
+    }
 
-	public void setOwner(CubridUser owner) {
-		this.owner = owner;
-	}
+    @Nullable
+    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
+    public CubridUser getOwner()
+    {
+        return owner;
+    }
 
-	public String getUniqueName() {
-		return this.owner.getName() + "." + this.getName();
-	}
+    public void setOwner(CubridUser owner)
+    {
+        this.owner = owner;
+    }
 
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-		super.refreshObject(monitor);
-		return this.getContainer().getCubridTableCache().refreshObject(monitor, getContainer(), this);
-	}
+    public String getUniqueName()
+    {
+        return this.owner.getName() + "." + this.getName();
+    }
 
-	@NotNull
-	@Override
-	public String getFullyQualifiedName(DBPEvaluationContext context) {
-		if (isSystemTable) {
-			return DBUtils.getFullQualifiedName(getDataSource(), this);
-		} else {
-			return DBUtils.getFullQualifiedName(getDataSource(), getOwner(), this);
-		}
-	}
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    {
+        super.refreshObject(monitor);
+        return this.getContainer().getCubridTableCache().refreshObject(monitor, getContainer(), this);
+    }
 
-	public static class OwnerListProvider implements IPropertyValueListProvider<CubridTable> {
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context)
+    {
+        if (isSystemTable) {
+            return DBUtils.getFullQualifiedName(getDataSource(), this);
+        } else {
+            return DBUtils.getFullQualifiedName(getDataSource(), getOwner(), this);
+        }
+    }
 
-		@Override
-		public boolean allowCustomValue() {
-			return false;
-		}
+    public static class OwnerListProvider implements IPropertyValueListProvider<CubridTable>
+    {
 
-		@Override
-		public Object[] getPossibleValues(CubridTable object) {
-			return object.owners.toArray();
-		}
-	}
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
 
+        @Override
+        public Object[] getPossibleValues(CubridTable object)
+        {
+            return object.owners.toArray();
+        }
+    }
 }
