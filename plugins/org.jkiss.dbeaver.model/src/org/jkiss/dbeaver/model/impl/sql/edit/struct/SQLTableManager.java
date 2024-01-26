@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
+//import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+//import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager.ColumnModifier;
@@ -95,7 +95,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         int maxNameLength = 0;
         int maxmodifierLength = 0;
         
-        for (NestedObjectCommand nestedCommand : orderedCommands) {
+        /*for (NestedObjectCommand nestedCommand : orderedCommands) {
         	DBPObject column = nestedCommand.getObject();
             if (column != null && column instanceof JDBCTableColumn) {
         	    String columnName = ((JDBCTableColumn)column).getName();
@@ -123,7 +123,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             if (maxmodifierLength > 0) {
             	options.put("maxColumnModifierLength", Integer.valueOf(maxmodifierLength));
             }
-        }
+        }*/
         
         for (NestedObjectCommand nestedCommand : orderedCommands) {
             if (nestedCommand.getObject() == table) {
@@ -179,7 +179,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
         
-        int delta = actions.size();
+        /*int delta = actions.size();
         if (actions.size() > 0) {
             actions.add(new SQLDatabasePersistAction("Empty line", ""));
             delta++;
@@ -209,7 +209,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 }
             }
             actions.add(actions.size() - delta, new SQLDatabasePersistAction("Empty line", ""));
-        }
+        }*/
     }
 
     @Override

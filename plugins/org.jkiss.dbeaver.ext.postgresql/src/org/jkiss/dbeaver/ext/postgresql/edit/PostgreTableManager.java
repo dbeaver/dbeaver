@@ -154,7 +154,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
         final PostgreTable table = (PostgreTable) command.getObject();
-        final String alterPrefix = "alter " + table.getTableTypeName().toLower() + " " + //$NON-NLS-1$
+        final String alterPrefix = "alter " + table.getTableTypeName().toLowerCase() + " " + //$NON-NLS-1$
             command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
 
         if (command.hasProperty("partitionKey")) {//$NON-NLS-1$
