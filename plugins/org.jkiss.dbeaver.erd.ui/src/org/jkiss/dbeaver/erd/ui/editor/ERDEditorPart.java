@@ -1272,7 +1272,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     private void refreshEntityAndAttributes() {
-        for (ERDEntity entity : getDiagram().getEntities()) {
+        List<ERDEntity> entities = getDiagram().getEntities();
+        for (ERDEntity entity : entities) {
             entity.reloadAttributes(getDiagram());
         }
         for (Object object : getGraphicalViewer().getContents().getChildren()) {
