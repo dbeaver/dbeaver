@@ -48,7 +48,8 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         OracleTableColumn.class,
         OracleTableConstraint.class,
         OracleTableForeignKey.class,
-        OracleTableIndex.class
+        OracleTableIndex.class,
+        OracleTablePartition.class
     );
 
     @Nullable
@@ -58,7 +59,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+    protected OracleTable createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        Object container,
+        Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         OracleSchema schema = (OracleSchema) container;
 
         OracleTable table = new OracleTable(schema, ""); //$NON-NLS-1$
@@ -67,7 +74,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
@@ -77,7 +90,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        NestedObjectCommand<OracleTable, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         OracleTable table = command.getObject();
         if (command.getProperty("comment") != null) { //$NON-NLS-1$
             actions.add(new SQLDatabasePersistAction(
@@ -97,7 +116,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        OracleTable table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter
+    ) throws DBException {
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
             Object tablespace = table.getTablespace();
@@ -112,7 +137,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",

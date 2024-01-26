@@ -137,8 +137,9 @@ public class MySQLPartition extends MySQLTable implements DBSTablePartition {
         return table;
     }
 
-    public MySQLPartition getParent()
-    {
+    @Nullable
+    @Override
+    public MySQLPartition getPartitionParent() {
         return parent;
     }
 
@@ -147,6 +148,13 @@ public class MySQLPartition extends MySQLTable implements DBSTablePartition {
     {
         return subPartitions;
     }
+
+    @Override
+    public boolean isSubPartition() {
+        return parent != null;
+    }
+
+
 
     @NotNull
     @Override

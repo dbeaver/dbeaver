@@ -251,7 +251,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         writeWorkspaceInfo();
 
         // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
-        updateSplashHandler();
+        if (!RuntimeUtils.isMacOsSomona()) {
+            updateSplashHandler();
+        }
+
         if (RuntimeUtils.isWindows() && isStandalone()) {
             SWTBrowserRegistry.overrideBrowser();
         }

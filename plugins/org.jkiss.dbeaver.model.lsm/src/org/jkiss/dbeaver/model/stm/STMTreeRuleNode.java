@@ -58,6 +58,10 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     @NotNull
     public Interval getRealInterval() {
+        if (this.start == null || this.stop == null) {
+            return Interval.INVALID;
+        }
+        
         return new Interval(this.getStart().getStartIndex(), this.getStop().getStopIndex());
     }
 

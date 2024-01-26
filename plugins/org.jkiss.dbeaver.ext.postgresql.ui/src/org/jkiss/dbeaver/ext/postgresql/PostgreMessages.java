@@ -246,6 +246,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_connection_pgpass_hostname_override;
     public static String dialog_connection_pgpass_hostname_override_tip;
 
+    public static String wizard_info_label_incompatible_tool;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);

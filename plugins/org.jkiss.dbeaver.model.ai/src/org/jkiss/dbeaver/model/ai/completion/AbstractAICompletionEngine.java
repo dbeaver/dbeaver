@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai.completion;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,10 +31,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DAICompletionEngine<SERVICE> {
 
@@ -48,17 +48,36 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     }
 
     @NotNull
-    @Override
     public List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull DAICompletionSession session,
         @NotNull IAIFormatter formatter
     ) throws DBException {
-        final String result = requestCompletion(monitor, context, session.getMessages(), formatter);
+        return performQueryCompletion(monitor, context, session, formatter, false);
+    }
+
+    @NotNull
+    @Override
+    public List<DAICompletionResponse> performQueryCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionContext context,
+        @NotNull DAICompletionSession session,
+        @NotNull IAIFormatter formatter,
+        boolean includeAssistantMessages
+    ) throws DBException {
+        final String result = requestCompletion(monitor, context, filterMessages(session.getMessages(), includeAssistantMessages), formatter);
         final DAICompletionResponse response = new DAICompletionResponse();
         response.setResultCompletion(result);
         return List.of(response);
+    }
+
+    @NotNull
+    private static List<DAICompletionMessage> filterMessages(List<DAICompletionMessage> messages, boolean includeAssistantMessages ) {
+        if (includeAssistantMessages) {
+            return messages;
+        }
+        return messages.stream().filter(it -> DAICompletionMessage.Role.USER.equals(it.role())).toList();
     }
 
     public abstract Map<String, SERVICE> getServiceMap();
