@@ -100,27 +100,28 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
         SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns);
 
+        SQLQueryDataContext filtersContext = resolvedResult.combine(unresolvedResult);
         if (this.whereClause != null) {
             this.whereClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult,
                 statistics
             );
         }
         if (this.havingClause != null) {
             this.havingClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? filtersContext : unresolvedResult,
                 statistics
             );
         }
         if (this.groupByClause != null) {
             this.groupByClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult,
                 statistics
             );
         }
         if (this.orderByClause != null) {
             this.orderByClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? filtersContext : unresolvedResult,
                 statistics
             );
         }

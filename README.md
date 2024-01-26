@@ -9,7 +9,7 @@
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
 Supports any database which has JDBC driver (which basically means - ANY database). 
 <a href="https://dbeaver.com/download/">Commercial versions</a> also support non-JDBC datasources such as 
-MongoDB, Cassandra, Couchbase, Redis, BigTable, DynamoDB, etc.
+MongoDB, Cassandra, Couchbase, Redis, BigTable, ScyllaDB, DynamoDB, etc.
 You can find the list of all databases supported in commercial versions 
 <a href="https://dbeaver.com/databases/">here</a>.
 
