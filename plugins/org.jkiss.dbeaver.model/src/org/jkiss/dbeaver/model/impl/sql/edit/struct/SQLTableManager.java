@@ -171,8 +171,13 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         );
     }
 
-    protected void appendTableModifiers(DBRProgressMonitor monitor, OBJECT_TYPE table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
-    {
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        OBJECT_TYPE table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter
+    ) throws DBException {
 
     }
 

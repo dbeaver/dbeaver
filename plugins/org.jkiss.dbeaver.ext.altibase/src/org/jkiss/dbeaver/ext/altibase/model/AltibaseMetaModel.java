@@ -630,17 +630,21 @@ public class AltibaseMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, 
-            DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
-        
-        if (dbResult != null) {            
-            String condition = constraintType.equals(DBSEntityConstraintType.CHECK) ? 
+    public GenericUniqueKey createConstraintImpl(
+        GenericTableBase table,
+        String constraintName,
+        DBSEntityConstraintType constraintType,
+        JDBCResultSet dbResult,
+        boolean persisted
+    ) {
+        String condition = "";
+        boolean validated = true;
+        if (dbResult != null) {
+            condition = constraintType.equals(DBSEntityConstraintType.CHECK) ?
                     JDBCUtils.safeGetString(dbResult, "CHECK_CONDITION") : "";
-            boolean validated = JDBCUtils.safeGetString(dbResult, "VALIDATED").equals("T");
-            return new AltibaseConstraint(table, constraintName, null, constraintType, persisted, condition, validated);
-        } else {
-            return super.createConstraintImpl(table, constraintName, constraintType, dbResult, persisted);
+            validated = "T".equals(JDBCUtils.safeGetString(dbResult, "VALIDATED"));
         }
+        return new AltibaseConstraint(table, constraintName, null, constraintType, persisted, condition, validated);
     }
 
     @Override
@@ -672,6 +676,16 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 log.error(exMsg);
                 throw new DBException(exMsg);
         }
+    }
+
+    @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsCheckConstraints() {
+        return true;
     }
 
     //////////////////////////////////////////////////////

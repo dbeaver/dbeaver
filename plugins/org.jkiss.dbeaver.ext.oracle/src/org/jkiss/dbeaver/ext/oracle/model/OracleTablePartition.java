@@ -66,14 +66,24 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         private long partitionCount;
         private Object partitionTablespace;
 
-        @Property(category = CAT_PARTITIONING, order = 120)
+        @NotNull
+        @Property(editable = true, category = CAT_PARTITIONING, order = 120)
         public PartitionType getPartitionType() {
             return partitionType;
         }
 
-        @Property(category = CAT_PARTITIONING, order = 121)
+        public void setPartitionType(PartitionType partitionType) {
+            this.partitionType = partitionType;
+        }
+
+        @NotNull
+        @Property(editable = true, category = CAT_PARTITIONING, order = 121)
         public PartitionType getSubpartitionType() {
             return subpartitionType;
+        }
+
+        public void setSubpartitionType(PartitionType subpartitionType) {
+            this.subpartitionType = subpartitionType;
         }
 
         @Property(category = CAT_PARTITIONING, order = 122)
@@ -92,7 +102,9 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         }
 
         public PartitionInfoBase(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) {
-            this.partitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PARTITIONING_TYPE"));
+            this.partitionType = CommonUtils.valueOf(
+                PartitionType.class,
+                JDBCUtils.safeGetStringTrimmed(dbResult, "PARTITIONING_TYPE"), PartitionType.RANGE);
             this.subpartitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "SUBPARTITIONING_TYPE"));
             String partitionTablespaceName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEF_TABLESPACE_NAME");
             this.partitionInterval = JDBCUtils.safeGetString(dbResult, "INTERVAL");
@@ -104,6 +116,12 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
                     log.debug("Can not find tablespace " + partitionTablespaceName, e);
                 }
             }
+        }
+
+        // Creation constructor
+        public PartitionInfoBase() {
+            this.partitionType = PartitionType.RANGE;
+            this.subpartitionType = PartitionType.NONE;
         }
 
         public void setPartitionTablespace(Object partitionTablespace) {
@@ -119,7 +137,6 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
     private long sampleSize;
     private Timestamp lastAnalyzed;
     private List<OracleTablePartition> subPartitions;
-    private boolean partitionByRange;
     private String valuesForCreating;
 
     OracleTablePartition(
@@ -199,6 +216,16 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return subPartitions;
     }
 
+    /**
+     * Returns list of already cached subpartitions. First of all - for newly created tables.
+     */
+    public List<OracleTablePartition> getCachedSubPartitions() {
+        if (partitionParent != null) {
+            return Collections.emptyList();
+        }
+        return subPartitions;
+    }
+
     private List<OracleTablePartition> readSubPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
         subPartitions = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read subpartitions")) {
@@ -266,20 +293,15 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return parent;
     }
 
+    @Nullable
+    @Override
     public OracleTablePartition getPartitionParent() {
         return partitionParent;
     }
 
+    @Override
     public boolean isSubPartition() {
         return partitionParent != null;
-    }
-
-    public boolean isPartitionByRange() {
-        return partitionByRange;
-    }
-
-    public void setPartitionByRange(boolean partitionByRange) {
-        this.partitionByRange = partitionByRange;
     }
 
     public String getValuesForCreating() {

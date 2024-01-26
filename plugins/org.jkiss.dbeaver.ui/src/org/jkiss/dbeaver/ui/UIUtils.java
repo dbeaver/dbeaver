@@ -622,6 +622,16 @@ public class UIUtils {
     }
 
     @NotNull
+    public static Control createWarningLabel(
+        @NotNull Composite parent,
+        @NotNull String text,
+        int gridStyle,
+        int hSpan
+    ) {
+        return createInfoLabel(parent, text, gridStyle, hSpan, null, DBeaverIcons.getImage(DBIcon.SMALL_WARNING));
+    }
+
+    @NotNull
     public static Control createInfoLabel(
         @NotNull Composite parent,
         @NotNull String text,
@@ -629,11 +639,23 @@ public class UIUtils {
         int hSpan,
         @Nullable Runnable callback
     ) {
+        return createInfoLabel(parent, text, gridStyle, hSpan, callback, DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+    }
+
+    @NotNull
+    public static Control createInfoLabel(
+        @NotNull Composite parent,
+        @NotNull String text,
+        int gridStyle,
+        int hSpan,
+        @Nullable Runnable callback,
+        @NotNull Image image
+    ) {
         final Control control;
 
         if (callback == null) {
             final CLabel label = new CLabel(parent, SWT.NONE);
-            label.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+            label.setImage(image);
             label.setText(text);
             control = label;
         } else {
