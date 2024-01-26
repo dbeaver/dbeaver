@@ -18,30 +18,27 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
-public class CubridUser implements DBSObject
+public class CubridUser extends GenericSchema
 {
 
     private String name;
     private String comment;
-    private CubridObjectContainer container;
 
-    public CubridUser(String name)
+    public CubridUser(GenericDataSource dataSource, String schemaName, String comment)
     {
-        this.name = name;
-    }
-
-    public CubridUser(CubridObjectContainer container, String name, String comment)
-    {
-        this.name = name;
+        super(dataSource, null, schemaName);
+        this.name = schemaName;
         this.comment = comment;
-        this.container = container;
     }
 
     @Property(viewable = true, order = 1)
@@ -57,26 +54,14 @@ public class CubridUser implements DBSObject
         return comment;
     }
 
-    @Override
-    public String getDescription()
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted()
-    {
-        return true;
-    }
-
     public boolean supportsSystemTable()
     {
-        return name.equals("DBA") ? true : false;
+        return name.equals("DBA");
     }
 
     public boolean supportsSystemView()
     {
-        return name.equals("DBA") ? true : false;
+        return name.equals("DBA");
     }
 
     public boolean showSystemTableFolder()
@@ -85,43 +70,49 @@ public class CubridUser implements DBSObject
     }
 
     @Override
-    public CubridObjectContainer getParentObject()
+    public List<CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException
     {
-        return this.container;
+        List<CubridTable> tables = new ArrayList<>();
+        for (GenericTable table : super.getPhysicalTables(monitor)) {
+            if (!table.isSystem()) {
+                tables.add((CubridTable) table);
+            }
+        }
+        return tables;
     }
 
-    public CubridDataSource getDataSource()
-    {
-        return this.container.getDataSource();
-    }
-
-    public Collection<? extends CubridTable> getPhysicalTables(DBRProgressMonitor monitor)
+    public List<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor)
             throws DBException
     {
-        return this.container.getPhysicalTables(monitor, name);
+        List<CubridTable> tables = new ArrayList<>();
+        for (GenericTable table : super.getPhysicalTables(monitor)) {
+            if (table.isSystem()) {
+                tables.add((CubridTable) table);
+            }
+        }
+        return tables;
     }
 
-    public Collection<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor)
-            throws DBException
+    @Override
+    public List<CubridView> getViews(DBRProgressMonitor monitor) throws DBException
     {
-        return this.container.getPhysicalSystemTables(monitor, name);
+        List<CubridView> views = new ArrayList<>();
+        for (GenericView view : super.getViews(monitor)) {
+            if (!view.isSystem()) {
+                views.add((CubridView) view);
+            }
+        }
+        return views;
     }
 
-    public Collection<? extends CubridView> getViews(DBRProgressMonitor monitor)
-            throws DBException
+    public List<CubridView> getSystemViews(DBRProgressMonitor monitor) throws DBException
     {
-        return this.container.getViews(monitor, name);
-    }
-
-    public Collection<? extends CubridView> getSystemViews(DBRProgressMonitor monitor)
-            throws DBException
-    {
-        return this.container.getSystemViews(monitor, name);
-    }
-
-    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
-            throws DBException
-    {
-        return this.container.getIndexes(monitor);
+        List<CubridView> views = new ArrayList<>();
+        for (GenericView view : super.getViews(monitor)) {
+            if (view.isSystem()) {
+                views.add((CubridView) view);
+            }
+        }
+        return views;
     }
 }

@@ -17,26 +17,35 @@
 package org.jkiss.dbeaver.ext.cubrid.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CubridDataSource extends GenericDataSource
 {
 
     private final CubridMetaModel metaModel;
-    private CubridObjectContainer structureContainer;
+    private final CubridObjectContainer structureContainer;
+    private boolean supportMultiSchema;
 
     public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel)
             throws DBException
     {
         super(monitor, container, metaModel, new CubridSQLDialect());
         this.metaModel = new CubridMetaModel();
+        this.structureContainer = new CubridObjectContainer(this);
     }
 
     @DPIContainer
@@ -47,10 +56,26 @@ public class CubridDataSource extends GenericDataSource
         return this;
     }
 
-    public Collection<? extends CubridUser> getCubridUsers(DBRProgressMonitor monitor)
+    public List<GenericSchema> getCubridUsers(DBRProgressMonitor monitor) throws DBException
+    {
+        return this.getSchemas();
+    }
+
+    @Nullable
+    @Override
+    public GenericTableBase findTable(
+            @NotNull DBRProgressMonitor monitor,
+            @Nullable String catalogName,
+            @Nullable String schemaName,
+            @NotNull String tableName)
             throws DBException
     {
-        return structureContainer == null ? null : structureContainer.getCubridUsers(monitor);
+        String[] schema = tableName.split("\\.");
+        if (schema.length > 1) {
+            CubridUser user = (CubridUser) this.getSchema(schema[0].toUpperCase());
+            return user.getTable(monitor, schema[1]);
+        }
+        return null;
     }
 
     @NotNull
@@ -59,10 +84,24 @@ public class CubridDataSource extends GenericDataSource
         return metaModel;
     }
 
+    public CubridObjectContainer getObjectContainer()
+    {
+        return structureContainer;
+    }
+
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.initialize(monitor);
-        structureContainer = new CubridObjectContainer(this);
+    }
+
+    public boolean getSupportMultiSchema()
+    {
+        return this.supportMultiSchema;
+    }
+
+    public void setSupportMultiSchema(boolean supportMultiSchema)
+    {
+        this.supportMultiSchema = supportMultiSchema;
     }
 }

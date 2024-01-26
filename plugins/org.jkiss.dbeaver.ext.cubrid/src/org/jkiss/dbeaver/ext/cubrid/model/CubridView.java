@@ -16,38 +16,85 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-import java.util.Map;
-
-public class CubridView extends CubridTable implements DBSView
+public class CubridView extends GenericView
 {
-
     public CubridView(
             DBRProgressMonitor monitor,
-            CubridObjectContainer container,
+            GenericStructContainer container,
             String tableName,
             String tableType,
             JDBCResultSet dbResult)
     {
-        super(monitor, container, tableName, tableType, dbResult);
+        super(container, tableName, tableType, dbResult);
+        if (dbResult != null) {
+            String type = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS);
+            if (type != null) {
+                this.setSystem(type.equals("YES"));
+            }
+        }
     }
 
     @Override
-    public boolean isView()
+    public CubridDataSource getDataSource()
     {
-        return true;
+        return (CubridDataSource) super.getDataSource();
     }
 
-    @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
-            throws DBException
+    public String getUniqueName()
     {
-        return getDataSource().getMetaModel().getViewDDL(monitor, null, options);
+        if (getDataSource().getSupportMultiSchema()) {
+            return this.getSchema().getName() + "." + this.getName();
+        } else {
+            return this.getName();
+        }
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
+    public GenericSchema getSchema()
+    {
+        return super.getSchema();
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context)
+    {
+        if (this.isSystem()) {
+            return DBUtils.getFullQualifiedName(getDataSource(), this);
+        } else {
+            return DBUtils.getFullQualifiedName(getDataSource(), this.getSchema(), this);
+        }
+    }
+
+    public static class OwnerListProvider implements IPropertyValueListProvider<CubridView>
+    {
+
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(CubridView object)
+        {
+            return object.getDataSource().getSchemas().toArray();
+        }
     }
 }

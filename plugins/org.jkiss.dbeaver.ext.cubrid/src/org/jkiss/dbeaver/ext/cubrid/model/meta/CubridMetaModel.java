@@ -20,44 +20,80 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridObjectContainer;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CubridMetaModel extends GenericMetaModel
 {
-
     private static final Log log = Log.getLog(CubridMetaModel.class);
 
-    public CubridMetaModel()
+    public String getTableOrViewName(GenericTableBase base) 
     {
+        if (base != null) {
+            if (base.isView()) {
+                return ((CubridView) base).getUniqueName();
+            } else {
+                return ((CubridTable) base).getUniqueName();
+            }
+        }
+        return null;
     }
 
-    public boolean isSupportMultiSchema(JDBCSession session)
+    @Override
+    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
+            throws DBException
     {
+        List<GenericSchema> users = new ArrayList<>();
         try {
-            int major = session.getMetaData().getDatabaseMajorVersion();
-            int minor = session.getMetaData().getDatabaseMinorVersion();
-            if (major > 11 || (major == 11 && minor >= 2)) {
-                return true;
+            final JDBCPreparedStatement dbStat = session.prepareStatement("select * from db_user");
+            dbStat.executeStatement();
+            JDBCResultSet dbResult = dbStat.getResultSet();
+
+            while (dbResult.next()) {
+                String name = JDBCUtils.safeGetStringTrimmed(dbResult, "name");
+                String description = JDBCUtils.safeGetStringTrimmed(dbResult, "comment");
+                CubridUser user = new CubridUser(dataSource, name, description);
+                users.add(user);
             }
         } catch (SQLException e) {
-            log.error("Can't get database version", e);
+        	log.error("Cannot load user", e);
         }
-        return false;
+        return users;
+    }
+
+    @Override
+    public JDBCStatement prepareTableLoadStatement(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner,
+            @Nullable GenericTableBase object,
+            @Nullable String objectName)
+            throws SQLException
+    {
+        String sql = "select a.*,a.class_name as TABLE_NAME, case when class_type = 'CLASS' then 'TABLE' \r\n"
+                + "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
+                + "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
+                + "a.class_name = b.class_name "
+                + "where a.owner_name = ?";
+
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, owner.getName());
+        return dbStat;
     }
 
     @Override
@@ -67,11 +103,7 @@ public class CubridMetaModel extends GenericMetaModel
             @Nullable GenericTableBase forTable)
             throws SQLException
     {
-        if (isSupportMultiSchema(session) && forTable instanceof CubridTable) {
-            CubridTable table = (CubridTable) forTable;
-            return session.getMetaData().getColumns(null, null, table != null ? table.getUniqueName() : null, null).getSourceStatement();
-        }
-        return super.prepareTableColumnLoadStatement(session, owner, forTable);
+        return session.getMetaData().getColumns(null, null, this.getTableOrViewName(forTable), null).getSourceStatement();
     }
 
     @Override
@@ -81,11 +113,7 @@ public class CubridMetaModel extends GenericMetaModel
             @Nullable GenericTableBase forTable)
             throws SQLException, DBException
     {
-        if (isSupportMultiSchema(session) && forTable instanceof CubridTable) {
-            CubridTable table = (CubridTable) forTable;
-            return session.getMetaData().getPrimaryKeys(null, null, table != null ? table.getUniqueName() : null).getSourceStatement();
-        }
-        return super.prepareUniqueConstraintsLoadStatement(session, owner, forTable);
+        return session.getMetaData().getPrimaryKeys(null, null, this.getTableOrViewName(forTable)).getSourceStatement();
     }
 
     @Override
@@ -95,44 +123,36 @@ public class CubridMetaModel extends GenericMetaModel
             @Nullable GenericTableBase forTable)
             throws SQLException
     {
-        if (isSupportMultiSchema(session) && forTable instanceof CubridTable) {
-            CubridTable table = (CubridTable) forTable;
-            return session.getMetaData().getImportedKeys(null, null, table != null ? table.getUniqueName() : null).getSourceStatement();
-        }
-        return super.prepareForeignKeysLoadStatement(session, owner, forTable);
+        return session.getMetaData().getImportedKeys(null, null, this.getTableOrViewName(forTable)).getSourceStatement();
     }
 
-    public JDBCStatement prepareIndexLoadStatement(@NotNull JDBCSession session, CubridTable table)
-            throws SQLException
-    {
-        String tableName = isSupportMultiSchema(session) ? table.getUniqueName() : table.getName();
-        return session.getMetaData().getIndexInfo(null, null, tableName, false, true).getSourceStatement();
-    }
-
-    public CubridTable createTableImpl(
+    @Override
+    public GenericTableBase createTableImpl(
             @NotNull JDBCSession session,
-            @NotNull CubridObjectContainer owner,
+            @NotNull GenericStructContainer owner,
             @NotNull GenericMetaObject tableObject,
             @NotNull JDBCResultSet dbResult)
     {
-
-        String tableName = JDBCUtils.safeGetString(dbResult, CubridConstants.CLASS_NAME);
+        String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
         String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
-
-        CubridTable table = this.createTableImpl(session.getProgressMonitor(), owner, tableName, tableType, dbResult);
-        if (table == null) {
-            return null;
-        }
+        GenericTableBase table = createTableOrViewImpl(owner, tableName, tableType, dbResult);
         return table;
     }
 
-    public CubridTable createTableImpl(
-            DBRProgressMonitor monitor,
-            CubridObjectContainer container,
+    @Override
+    public GenericTableBase createTableOrViewImpl(
+            GenericStructContainer container,
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult)
     {
+        DBRProgressMonitor monitor;
+        if (dbResult != null) {
+            monitor = dbResult.getSession().getProgressMonitor();
+        } else {
+            monitor = new VoidProgressMonitor();
+        }
+
         if (tableType != null && isView(tableType)) {
             return new CubridView(monitor, container, tableName, tableType, dbResult);
         }

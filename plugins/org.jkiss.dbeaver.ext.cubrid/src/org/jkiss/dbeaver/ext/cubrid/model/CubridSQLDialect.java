@@ -16,14 +16,50 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+
+import java.sql.SQLException;
 
 public class CubridSQLDialect extends GenericSQLDialect
 {
     public static final String CUBRID_DIALECT_ID = "cubrid";
+    private static final Log log = Log.getLog(CubridSQLDialect.class);
 
     public CubridSQLDialect()
     {
         super("Cubrid", "cubrid");
+    }
+
+    @Override
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData)
+    {
+        super.initDriverSettings(session, dataSource, metaData);
+        CubridDataSource source = (CubridDataSource) dataSource;
+        source.setSupportMultiSchema(isSupportMultiSchema(session));
+    }
+
+    public boolean isSupportMultiSchema(JDBCSession session)
+    {
+        try {
+            int major = session.getMetaData().getDatabaseMajorVersion();
+            int minor = session.getMetaData().getDatabaseMinorVersion();
+            if (major > 11 || (major == 11 && minor >= 2)) {
+                return true;
+            }
+        } catch (SQLException e) {
+            log.error("Can't get database version", e);
+        }
+        return false;
+    }
+
+    @Override
+    public int getSchemaUsage()
+    {
+        return SQLDialect.USAGE_ALL;
     }
 }
