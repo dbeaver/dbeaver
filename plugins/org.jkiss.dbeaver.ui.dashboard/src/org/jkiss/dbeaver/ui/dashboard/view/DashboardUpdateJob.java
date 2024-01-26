@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
@@ -31,6 +33,8 @@ public class DashboardUpdateJob extends AbstractJob {
     private static final Log log = Log.getLog(DashboardUpdateJob.class);
 
     private static final int JOB_DELAY = 1000;
+    
+    private AtomicBoolean isSchedule = new AtomicBoolean(true);
 
     private DashboardUpdateJob() {
         super("Dashboard update");
@@ -45,14 +49,26 @@ public class DashboardUpdateJob extends AbstractJob {
             log.error("Error running dashboard updater", e);
         }
 
-        if (!DBWorkbench.getPlatform().isShuttingDown()) {
+        if (isSchedule.get() && !DBWorkbench.getPlatform().isShuttingDown()) {
             schedule(JOB_DELAY);
         }
         return Status.OK_STATUS;
     }
 
-    public static void startUpdating() {
-        new DashboardUpdateJob().schedule(JOB_DELAY);
+    public static DashboardUpdateJob startUpdating() {
+    	DashboardUpdateJob dashboardUpdateJob = new DashboardUpdateJob();
+    	dashboardUpdateJob.schedule(JOB_DELAY);
+    	return dashboardUpdateJob;
+    }
+    
+    public void startScheduling() {
+    	if (isSchedule.compareAndSet(false, true)) {
+    		schedule(JOB_DELAY);
+    	}
+    }
+    
+    public void stopScheduling() {
+    	isSchedule.compareAndSet(true, false);
     }
 
 }
