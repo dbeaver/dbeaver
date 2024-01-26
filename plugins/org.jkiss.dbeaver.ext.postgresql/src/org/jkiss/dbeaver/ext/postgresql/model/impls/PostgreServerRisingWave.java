@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class PostgreServerRisingWave extends PostgreServerExtensionBase {
+
+    private static final Log log = Log.getLog(PostgreServerRisingWave.class);
 
     public PostgreServerRisingWave(PostgreDataSource dataSource) {
         super(dataSource);
@@ -185,7 +187,7 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
     }
 
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load table DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE TABLE " +
                 table.getFullyQualifiedName(DBPEvaluationContext.DDL))
@@ -199,12 +201,13 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, table.getDataSource());
+            log.warn("Can't get native DDL. Use generated one.", e);
+            return null;
         }
     }
 
     @Override
-    public String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) throws DBException {
+    public String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, view, "Load view DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE " + view.getTableTypeName() + " " +
                 view.getFullyQualifiedName(DBPEvaluationContext.DDL))
@@ -218,7 +221,8 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, view.getDataSource());
+            log.warn("Can't get native DDL. Use generated one.", e);
+            return null;
         }
     }
 }
