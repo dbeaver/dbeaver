@@ -28,10 +28,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -131,6 +129,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             });
             exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, tablesTable);
+        }
+        {
+            PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, dataBase != null ? dataBase.getDataSource() : null);
         }
 
         setControl(composite);

@@ -88,4 +88,17 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         return partitionOf;
     }
 
+    @Override
+    public boolean isSubPartition() {
+        return partitionOf instanceof PostgreTablePartition;
+    }
+
+    @Nullable
+    @Override
+    public DBSTablePartition getPartitionParent() {
+        if (partitionOf instanceof PostgreTablePartition) {
+            return (PostgreTablePartition) partitionOf;
+        }
+        return null;
+    }
 }

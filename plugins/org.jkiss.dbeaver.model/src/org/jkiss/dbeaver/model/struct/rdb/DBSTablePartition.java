@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -33,5 +34,13 @@ public interface DBSTablePartition extends DBSObject {
     default boolean needFullPath() {
         return true;
     }
+
+    /**
+     * Return true if partition is subpartition
+     */
+    boolean isSubPartition();
+
+    @Nullable
+    DBSTablePartition getPartitionParent();
 
 }

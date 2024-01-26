@@ -418,6 +418,15 @@ public final class RuntimeUtils {
         return IS_OS_ARCH_AMD64;
     }
 
+    /**
+     * Determine OS Sonoma
+     * 
+     * @return - true if Os Sonoma, version 14.x
+     */
+    public static boolean isMacOsSomona() {
+        return isMacOS() && System.getProperty("os.version").startsWith("14");
+    }
+
     public static void setThreadName(String name) {
         Thread.currentThread().setName("DBeaver: " + name);
     }

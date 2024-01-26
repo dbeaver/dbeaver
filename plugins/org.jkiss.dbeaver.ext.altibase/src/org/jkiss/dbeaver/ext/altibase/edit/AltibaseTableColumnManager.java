@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -37,36 +38,52 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
     implements DBEObjectRenamer<GenericTableColumn> {
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTableColumn object, 
-            Map<String, Object> options, String newName) throws DBException {
+    public boolean canRenameObject(GenericTableColumn object) {
+        return true;
+    }
+
+    @Override
+    public void renameObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableColumn object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final GenericTableBase table = command.getObject().getParentObject();
-        StringBuilder sql = new StringBuilder();
-        
-        sql
-        .append("ALTER TABLE ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL))
-        .append(" ADD COLUMN ( ").append(getNestedDeclaration(monitor, table, command, options)).append(" )");
-        
+
+        String sql = "ALTER TABLE " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
+            " ADD COLUMN (" + getNestedDeclaration(monitor, table, command, options) + ")";
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
-                sql.toString()));
+                sql));
     }
     
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final GenericTableColumn column = command.getObject();
 
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(column.getTable()) + " RENAME COLUMN " +
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) +
                     " TO " + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }
