@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.utils.ListNode;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.List;
 
@@ -405,7 +406,10 @@ public class SQLBackgroundParsingJob {
                 }
                 try {
                     SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, isReadMetadataForQueryAnalysis);
-                    SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(element.getOriginalText());
+                    SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(
+                        element.getOriginalText(),
+                        RuntimeUtils.makeMonitor(monitor)
+                    );
                 
                     if (queryModel != null) {
                         if (DEBUG) {

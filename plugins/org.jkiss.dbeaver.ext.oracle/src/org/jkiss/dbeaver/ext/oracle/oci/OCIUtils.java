@@ -17,12 +17,11 @@
 
 package org.jkiss.dbeaver.ext.oracle.oci;
 
-import com.sun.jna.platform.win32.Advapi32Util;
-import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.registry.LocalSystemRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -185,11 +184,12 @@ public class OCIUtils
         // find Oracle homes in Windows registry
         if (RuntimeUtils.isWindows()) {
             try {
-                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE)) {
-                    String[] oracleKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
+                LocalSystemRegistry.Registry registry = LocalSystemRegistry.getInstance();
+                if (registry.registryKeyExists("HKEY_LOCAL_MACHINE", WIN_REG_ORACLE)) {
+                    String[] oracleKeys = registry.registryGetKeys("HKEY_LOCAL_MACHINE", WIN_REG_ORACLE);
                     if (oracleKeys != null) {
                         for (String oracleKey : oracleKeys) {
-                            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
+                            Map<String, Object> valuesMap = registry.registryGetValues("HKEY_LOCAL_MACHINE", WIN_REG_ORACLE + "\\" + oracleKey);
                             for (String key : valuesMap.keySet()) {
                                 if (WIN_REG_ORA_HOME.equals(key)) {
                                     try {
@@ -213,15 +213,16 @@ public class OCIUtils
     public static String readWinRegistry(String oraHome, String name) {
         if (RuntimeUtils.isWindows()) {
             try {
-                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE)) {
-                    String[] oracleKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
+                LocalSystemRegistry.Registry registry = LocalSystemRegistry.getInstance();
+                if (registry.registryKeyExists("HKEY_LOCAL_MACHINE", WIN_REG_ORACLE)) {
+                    String[] oracleKeys = registry.registryGetKeys("HKEY_LOCAL_MACHINE", WIN_REG_ORACLE);
                     if (oracleKeys != null) {
                         for (String oracleKey : oracleKeys) {
                             String keyName = WIN_REG_ORACLE + "\\" + oracleKey;
-                            if (Advapi32Util.registryValueExists(WinReg.HKEY_LOCAL_MACHINE, keyName, WIN_REG_ORA_HOME)) {
-                                String home = Advapi32Util.registryGetStringValue(WinReg.HKEY_LOCAL_MACHINE, keyName, WIN_REG_ORA_HOME);
+                            if (registry.registryValueExists("HKEY_LOCAL_MACHINE", keyName, WIN_REG_ORA_HOME)) {
+                                String home = registry.registryGetStringValue("HKEY_LOCAL_MACHINE", keyName, WIN_REG_ORA_HOME);
                                 if (oraHome.equals(home)) {
-                                    return Advapi32Util.registryGetStringValue(WinReg.HKEY_LOCAL_MACHINE, keyName, name);
+                                    return registry.registryGetStringValue("HKEY_LOCAL_MACHINE", keyName, name);
                                 }
                             }
                         }

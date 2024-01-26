@@ -102,7 +102,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
 
     @Override
     public String generateSessionReadQuery(Map<String, Object> options) {
-        if (CommonUtils.toBoolean(options.get(OPTION_SHOW_PERFORMANCE))) {
+        if (dataSource.supportsSysSchema() && CommonUtils.toBoolean(options.get(OPTION_SHOW_PERFORMANCE))) {
             return "SELECT\n" +
                 "\tip.*,\n" +
                 "\tsp.statement_latency,\n" +
