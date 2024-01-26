@@ -156,9 +156,8 @@ correlationName: identifier;
 
 withClause: WITH RECURSIVE? cteList;
 cteList: with_list_element (Comma with_list_element)*;
-with_list_element: queryName (LeftParen withColumnList RightParen)? AS anyWordsWithProperty? subquery;
-withColumnList: columnName (Comma columnName)*;
-queryName: Identifier;
+with_list_element: queryName (LeftParen columnNameList RightParen)? AS anyWordsWithProperty? subquery;
+queryName: identifier;
 
 // select, subquery
 scalarSubquery: subquery;
