@@ -250,10 +250,10 @@ public class ShortPathRouting extends ERDConnectionRouter {
                     Rectangle bounds = ((EntityFigure) current.getSourceAnchor().getOwner()).getBounds().getCopy();
                     srcTrgAngel = 90 - getDirection(bounds, points.getPoint(0));
                 }
-                
+
                 if (current.getTargetAnchor().getOwner() instanceof EntityFigure) {
                     Rectangle bounds = ((EntityFigure) current.getTargetAnchor().getOwner()).getBounds().getCopy();
-                    trgSrcAngel = -90+getDirection(bounds, points.getPoint(points.size() - 1));
+                    trgSrcAngel = -90 + getDirection(bounds, points.getPoint(points.size() - 1));
                 }
                 int dxSrcTrg = (int) (Math.cos(Math.toRadians(srcTrgAngel)) * indentation);
                 int dySrcTrg = (int) (Math.sin(Math.toRadians(srcTrgAngel)) * indentation);
@@ -272,15 +272,15 @@ public class ShortPathRouting extends ERDConnectionRouter {
                         int dyEnd = Math.abs(end.y - p.y);
                         if (dxStart == 0 && dyStart < POINT_DISTANCE) {
                             start = new Point(start.x + dxSrcTrg, start.y - dySrcTrg);
-                            Point pFirst = points.getPoint(0);
-                            pFirst = new Point(pFirst.x + dxSrcTrg, pFirst.y - dySrcTrg);
-                            points.setPoint(pFirst, 0);
+                            Point firstPoint = points.getPoint(0);
+                            firstPoint = new Point(firstPoint.x + dxSrcTrg, firstPoint.y - dySrcTrg);
+                            points.setPoint(firstPoint, 0);
                         }
                         if (dxEnd == 0 && dyEnd < POINT_DISTANCE) {
                             end = new Point(end.x - dxTrgSrc, end.y - dyTrgSrc);
-                            Point pEnd = points.getPoint(points.size() - 1);
-                            pEnd = new Point(pEnd.x - dxTrgSrc, pEnd.y - dyTrgSrc);
-                            points.setPoint(pEnd, points.size() - 1);
+                            Point endPoint = points.getPoint(points.size() - 1);
+                            endPoint = new Point(endPoint.x - dxTrgSrc, endPoint.y - dyTrgSrc);
+                            points.setPoint(endPoint, points.size() - 1);
                         }
                     }
                 }
