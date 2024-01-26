@@ -387,16 +387,16 @@ public class DashboardUpdater {
                     if (view.getId().equalsIgnoreCase(DashboardView.VIEW_ID)) {
                         IWorkbenchPart part = view.getPart(false);
                         if (part instanceof DashboardView) {
-                        	activeViewDashboards += getViewDashboards((DashboardView) part, dashboards);
+                            activeViewDashboards += getViewDashboards((DashboardView) part, dashboards);
                         }
                     }
                 }
             }
         }
         if (0 == activeViewDashboards) {
-        	UIDashboardActivator.getDefault().getDashboardUpdateJob().stopScheduling();
+            UIDashboardActivator.getDefault().getDashboardUpdateJob().stopScheduling();
         } else {
-        	UIDashboardActivator.getDefault().getDashboardUpdateJob().startScheduling();
+            UIDashboardActivator.getDefault().getDashboardUpdateJob().startScheduling();
         }
         return dashboards;
     }

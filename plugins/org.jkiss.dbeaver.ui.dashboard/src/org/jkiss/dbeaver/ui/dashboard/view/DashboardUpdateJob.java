@@ -56,19 +56,19 @@ public class DashboardUpdateJob extends AbstractJob {
     }
 
     public static DashboardUpdateJob startUpdating() {
-    	DashboardUpdateJob dashboardUpdateJob = new DashboardUpdateJob();
-    	dashboardUpdateJob.schedule(JOB_DELAY);
-    	return dashboardUpdateJob;
+        DashboardUpdateJob dashboardUpdateJob = new DashboardUpdateJob();
+        dashboardUpdateJob.schedule(JOB_DELAY);
+        return dashboardUpdateJob;
     }
     
     public void startScheduling() {
-    	if (isSchedule.compareAndSet(false, true)) {
-    		schedule(JOB_DELAY);
-    	}
+        if (isSchedule.compareAndSet(false, true)) {
+            schedule(JOB_DELAY);
+        }
     }
     
     public void stopScheduling() {
-    	isSchedule.compareAndSet(true, false);
+        isSchedule.compareAndSet(true, false);
     }
 
 }

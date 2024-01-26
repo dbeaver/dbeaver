@@ -51,7 +51,7 @@ public class UIDashboardActivator extends AbstractUIPlugin {
         plugin = null;
         super.stop(context);
         if (null != dashboardUpdateJob) {
-        	dashboardUpdateJob.stopScheduling();
+            dashboardUpdateJob.stopScheduling();
             dashboardUpdateJob = null;
         }
     }
@@ -69,6 +69,6 @@ public class UIDashboardActivator extends AbstractUIPlugin {
     }
     
     public DashboardUpdateJob getDashboardUpdateJob() {
-    	return dashboardUpdateJob;
+        return dashboardUpdateJob;
     }
 }
