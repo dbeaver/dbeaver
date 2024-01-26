@@ -84,6 +84,16 @@ public class CubridDataSource extends GenericDataSource
         return metaModel;
     }
 
+    @Override
+    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException
+    {
+        Map<String, DBSDataType> types = new HashMap<>();
+        for (DBSDataType dataType : super.getDataTypes(monitor)) {
+            types.put(dataType.getName(), dataType);
+        }
+        return types.values();
+    }
+
     public CubridObjectContainer getObjectContainer()
     {
         return structureContainer;
