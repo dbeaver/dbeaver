@@ -11,4 +11,11 @@
   <artifactId>org.jkiss.dbeaver.ext.postgresql</artifactId>
   <version>2.1.196-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.jkiss.dbeaver</groupId>
+  		<artifactId>org.jkiss.dbeaver.model.jdbc</artifactId>
+  		<version>1.0.16-SNAPSHOT</version>
+  	</dependency>
+  </dependencies>
 </project>

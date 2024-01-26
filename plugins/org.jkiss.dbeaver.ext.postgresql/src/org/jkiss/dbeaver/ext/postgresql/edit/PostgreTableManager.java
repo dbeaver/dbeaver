@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -30,14 +32,18 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor.NestedObjectCommand;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -108,6 +114,42 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
             return "foreign table";//$NON-NLS-1$
         } else {
             return table.getPersistence().getTableTypeClause().toLowerCase();
+        }
+    }
+    
+    @Override
+    protected void fillColumns(final Collection<NestedObjectCommand> orderedCommands, Map<String, Object> options, DBRProgressMonitor monitor, final DBSEntity table) {
+    	int maxNameLength = 0;
+        int maxmodifierLength = 0;
+        
+    	for (NestedObjectCommand nestedCommand : orderedCommands) {
+        	DBPObject column = nestedCommand.getObject();
+            if (column != null && column instanceof JDBCTableColumn) {
+        	    String columnName = ((JDBCTableColumn)column).getName();
+        	    if (columnName != null && columnName.length() > maxNameLength) {
+        	    	maxNameLength = columnName.length();
+        	    }
+            }
+        }
+        
+        if (maxNameLength > 0) {
+        	options.put("maxColumnNameLength", Integer.valueOf(maxNameLength));
+        	
+        	Map<String, Object> attrOptions = new HashMap(options);
+            attrOptions.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, false);
+            for (NestedObjectCommand nestedCommand : orderedCommands) {
+            	DBPObject column = nestedCommand.getObject();
+                if (column != null && column instanceof JDBCTableColumn) {            	
+                	String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, attrOptions);
+                	int attrLength = nestedDeclaration.length() - maxNameLength - 1;
+                	if (attrLength > 0 && maxmodifierLength < attrLength && attrLength + maxNameLength < 71) {
+                		maxmodifierLength = attrLength;
+                	}
+                }
+            }
+            if (maxmodifierLength > 0) {
+            	options.put("maxColumnModifierLength", Integer.valueOf(maxmodifierLength));
+            }
         }
     }
 

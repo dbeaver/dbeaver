@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
-//import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -28,10 +27,8 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
-//import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager.ColumnModifier;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -72,12 +69,16 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
         return true;
     }
+    
+    protected void fillColumns(final Collection<NestedObjectCommand> orderedCommands, Map<String, Object> options, DBRProgressMonitor monitor, final DBSEntity table) {
+    	
+    }
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
         final OBJECT_TYPE table = command.getObject();
 
-        final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
+        final NestedObjectCommand<?, ?> tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
             log.warn("Object change command not found"); //$NON-NLS-1$
             return;
@@ -92,38 +93,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         boolean hasForeignKeys = false;
         
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
-        int maxNameLength = 0;
-        int maxmodifierLength = 0;
         
-        /*for (NestedObjectCommand nestedCommand : orderedCommands) {
-        	DBPObject column = nestedCommand.getObject();
-            if (column != null && column instanceof JDBCTableColumn) {
-        	    String columnName = ((JDBCTableColumn)column).getName();
-        	    if (columnName != null && columnName.length() > maxNameLength) {
-        	    	maxNameLength = columnName.length();
-        	    }
-            }
-        }
-        
-        if (maxNameLength > 0) {
-        	options.put("maxColumnNameLength", Integer.valueOf(maxNameLength));
-        	
-        	Map<String, Object> attrOptions = new HashMap(options);
-            attrOptions.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, false);
-            for (NestedObjectCommand nestedCommand : orderedCommands) {
-            	DBPObject column = nestedCommand.getObject();
-                if (column != null && column instanceof JDBCTableColumn) {            	
-                	String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, attrOptions);
-                	int attrLength = nestedDeclaration.length() - maxNameLength - 1;
-                	if (attrLength > 0 && maxmodifierLength < attrLength && attrLength + maxNameLength < 71) {
-                		maxmodifierLength = attrLength;
-                	}
-                }
-            }
-            if (maxmodifierLength > 0) {
-            	options.put("maxColumnModifierLength", Integer.valueOf(maxmodifierLength));
-            }
-        }*/
+        fillColumns(orderedCommands, options, monitor, table);
         
         for (NestedObjectCommand nestedCommand : orderedCommands) {
             if (nestedCommand.getObject() == table) {
@@ -179,7 +150,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
         
-        /*int delta = actions.size();
+        int delta = actions.size();
         if (actions.size() > 0) {
             actions.add(new SQLDatabasePersistAction("Empty line", ""));
             delta++;
@@ -209,7 +180,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 }
             }
             actions.add(actions.size() - delta, new SQLDatabasePersistAction("Empty line", ""));
-        }*/
+        }
     }
 
     @Override
