@@ -31,8 +31,6 @@ public class UIDashboardActivator extends AbstractUIPlugin {
     // The shared instance
     private static UIDashboardActivator plugin;
     private DBPPreferenceStore preferences;
-    
-    private DashboardUpdateJob dashboardUpdateJob;
 
     public UIDashboardActivator() {
     }
@@ -43,17 +41,13 @@ public class UIDashboardActivator extends AbstractUIPlugin {
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
 
-        dashboardUpdateJob = DashboardUpdateJob.startUpdating();
+        DashboardUpdateJob.startUpdating();
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
-        if (null != dashboardUpdateJob) {
-            dashboardUpdateJob.stopScheduling();
-            dashboardUpdateJob = null;
-        }
     }
 
     public static UIDashboardActivator getDefault() {
@@ -68,7 +62,4 @@ public class UIDashboardActivator extends AbstractUIPlugin {
         return preferences;
     }
     
-    public DashboardUpdateJob getDashboardUpdateJob() {
-        return dashboardUpdateJob;
-    }
 }

@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
-import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
@@ -60,11 +59,20 @@ public class DashboardUpdater {
     public DashboardUpdater() {
     }
 
-    public void updateDashboards(DBRProgressMonitor monitor) {
-        List<DashboardContainer> dashboards = getDashboardsToUpdate();
+    /**
+     * 
+     * @param monitor
+     * @return true if need pause to update dashboard, false if not
+     */
+    public boolean updateDashboards(DBRProgressMonitor monitor) {
+        List<DashboardContainer> dashboards = new ArrayList<>();
+        if (getDashboardsToUpdate(dashboards)) {
+            return true;
+        }
 
         updateDashboards(monitor, dashboards);
-
+        
+        return false;
     }
 
     private void updateDashboards(DBRProgressMonitor monitor, List<DashboardContainer> dashboards) {
@@ -378,35 +386,35 @@ public class DashboardUpdater {
         return newDataset;
     }
 
-    public List<DashboardContainer> getDashboardsToUpdate() {
-        List<DashboardContainer> dashboards = new ArrayList<>();
-        int activeViewDashboards = 0;
+    public boolean getDashboardsToUpdate(List<DashboardContainer> dashboards) {
+        boolean pauseDashboardUpdate = true;
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IViewReference view : page.getViewReferences()) {
                     if (view.getId().equalsIgnoreCase(DashboardView.VIEW_ID)) {
                         IWorkbenchPart part = view.getPart(false);
-                        if (part instanceof DashboardView) {
-                            activeViewDashboards += getViewDashboards((DashboardView) part, dashboards);
+                        if (part instanceof DashboardView && checkViewDashboards((DashboardView) part)) {
+                            getViewDashboards((DashboardView) part, dashboards);
+                            pauseDashboardUpdate = false;
                         }
                     }
                 }
             }
         }
-        if (0 == activeViewDashboards) {
-            UIDashboardActivator.getDefault().getDashboardUpdateJob().stopScheduling();
-        } else {
-            UIDashboardActivator.getDefault().getDashboardUpdateJob().startScheduling();
-        }
-        return dashboards;
+        return pauseDashboardUpdate;
     }
-
-    private int getViewDashboards(DashboardView view, List<DashboardContainer> dashboards) {
-        long currentTime = System.currentTimeMillis();
+    
+    private boolean checkViewDashboards(DashboardView view) {
         DashboardListViewer viewManager = view.getDashboardListViewer();
         if (viewManager == null || !viewManager.getDataSourceContainer().isConnected()) {
-            return 0;
+            return false;
         }
+        return true;
+    }
+
+    private void getViewDashboards(DashboardView view, List<DashboardContainer> dashboards) {
+        long currentTime = System.currentTimeMillis();
+        DashboardListViewer viewManager = view.getDashboardListViewer();
         for (DashboardGroupContainer group : viewManager.getGroups()) {
             for (DashboardContainer dashboard : group.getItems()) {
                 Date lastUpdateTime = dashboard.getLastUpdateTime();
@@ -415,7 +423,6 @@ public class DashboardUpdater {
                 }
             }
         }
-        return 1;
     }
 
     private MapQueryInfo getMapQueryData(DashboardContainer dashboard) {

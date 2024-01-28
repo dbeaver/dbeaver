@@ -34,7 +34,9 @@ public class DashboardUpdateJob extends AbstractJob {
 
     private static final int JOB_DELAY = 1000;
     
-    private AtomicBoolean isSchedule = new AtomicBoolean(true);
+    private static DashboardUpdateJob updateJob;
+    
+    private final AtomicBoolean isSchedule = new AtomicBoolean(true);
 
     private DashboardUpdateJob() {
         super("Dashboard update");
@@ -44,7 +46,9 @@ public class DashboardUpdateJob extends AbstractJob {
     protected IStatus run(DBRProgressMonitor monitor) {
 
         try {
-            new DashboardUpdater().updateDashboards(monitor);
+            if (new DashboardUpdater().updateDashboards(monitor)) {
+                pauseDashboardUpdate();
+            }
         } catch (Exception e) {
             log.error("Error running dashboard updater", e);
         }
@@ -55,20 +59,23 @@ public class DashboardUpdateJob extends AbstractJob {
         return Status.OK_STATUS;
     }
 
-    public static DashboardUpdateJob startUpdating() {
-        DashboardUpdateJob dashboardUpdateJob = new DashboardUpdateJob();
-        dashboardUpdateJob.schedule(JOB_DELAY);
-        return dashboardUpdateJob;
+    public static void startUpdating() {
+        updateJob = new DashboardUpdateJob();
+        updateJob.schedule(JOB_DELAY);
     }
     
-    public void startScheduling() {
+    public static DashboardUpdateJob getDefault() {
+        return updateJob;
+    }
+    
+    public void resumeDashboardUpdate() {
         if (isSchedule.compareAndSet(false, true)) {
             schedule(JOB_DELAY);
         }
     }
     
-    public void stopScheduling() {
-        isSchedule.compareAndSet(true, false);
+    public void pauseDashboardUpdate() {
+        isSchedule.set(false);
     }
 
 }
