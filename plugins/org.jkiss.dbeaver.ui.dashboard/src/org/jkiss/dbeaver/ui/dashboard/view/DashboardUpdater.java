@@ -406,10 +406,7 @@ public class DashboardUpdater {
     
     private boolean checkViewDashboards(DashboardView view) {
         DashboardListViewer viewManager = view.getDashboardListViewer();
-        if (viewManager == null || !viewManager.getDataSourceContainer().isConnected()) {
-            return false;
-        }
-        return true;
+        return viewManager != null && viewManager.getDataSourceContainer().isConnected();
     }
 
     private void getViewDashboards(DashboardView view, List<DashboardContainer> dashboards) {
