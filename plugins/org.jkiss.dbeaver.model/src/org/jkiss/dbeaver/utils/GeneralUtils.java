@@ -253,6 +253,15 @@ public class GeneralUtils {
         }
     }
 
+    public static boolean hasCause(Throwable ex, Class<? extends Throwable> causeClass) {
+        for (Throwable e = ex; e != null; e = e.getCause()) {
+            if (causeClass.isAssignableFrom(e.getClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public static IStatus makeInfoStatus(String message) {
         return new Status(
