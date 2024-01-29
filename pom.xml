@@ -3,6 +3,14 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.dbeaver.common</groupId>
+        <artifactId>com.dbeaver.common.main</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../dbeaver-common/pom.xml</relativePath>
+    </parent>
+
     <groupId>org.jkiss.dbeaver</groupId>
     <artifactId>dbeaver</artifactId>
     <version>1.0.0-SNAPSHOT</version>
@@ -11,19 +19,10 @@
     <properties>
         <dbeaver-version>23.3.4</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>4.0.4</tycho-version>
-        <eclipse-version>2023-12</eclipse-version>
-        <eclipse-repo-url>https://download.eclipse.org/releases</eclipse-repo-url>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
-
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
 
         <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
         <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/${local-p2-repo.version}</local-p2-repo.url>
         <!-- <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo</local-p2-repo.url> -->
-        <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
         <!-- Orbit deps. We need it for CB at least -->
         <orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository</orbit-repo.url>
 
@@ -32,7 +31,6 @@
     </properties>
 
     <modules>
-        <module>bundles</module>
         <module>plugins</module>
         <module>features</module>
     </modules>
@@ -41,11 +39,6 @@
         <repository>
             <id>local-contrib</id>
             <url>${local-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-        <repository>
-            <id>eclipse-p2-repo</id>
-            <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
         <repository>
