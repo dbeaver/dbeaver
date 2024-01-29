@@ -1019,11 +1019,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
 
             if (dataSource.getProject().isUseSecretStorage()) {
-                // For secured projects save only shared credentials
-                // Others are stored in secret storage
-                if (dataSource.isSharedCredentials()) {
-                    savePlainCredentials(json, new SecureCredentials(dataSource));
-                }
+                // should be stored in secrets
             } else if (configurationManager.isSecure()) {
                 // Secure manager == save to buffer
                 savePlainCredentials(json, new SecureCredentials(dataSource));

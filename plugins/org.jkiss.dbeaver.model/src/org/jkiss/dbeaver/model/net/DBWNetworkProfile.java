@@ -133,14 +133,14 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
 
         String secretValue = DBInfoUtils.SECRET_GSON.toJson(props);
 
-        secretController.setSecretValue(
+        secretController.setPrivateSecretValue(
             getSecretKeyId(),
             secretValue);
     }
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        String secretValue = secretController.getSecretValue(getSecretKeyId());
+        String secretValue = secretController.getPrivateSecretValue(getSecretKeyId());
         if (secretValue == null) {
             if (!DBWorkbench.isDistributed()) {
                 // Backward compatibility
@@ -173,16 +173,16 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
                 String secretId = secret.getId();
                 switch (secret.getName()) {
                     case "user":
-                        cfg.setUserName(secretController.getSecretValue(secretId));
+                        cfg.setUserName(secretController.getPrivateSecretValue(secretId));
                         break;
                     case "password":
-                        cfg.setPassword(secretController.getSecretValue(secretId));
+                        cfg.setPassword(secretController.getPrivateSecretValue(secretId));
                         break;
                     case "name":
                         // Skip it
                         continue;
                     default:
-                        secureProps.put(secret.getName(), secretController.getSecretValue(secretId));
+                        secureProps.put(secret.getName(), secretController.getPrivateSecretValue(secretId));
                         break;
                 }
             }
