@@ -94,19 +94,22 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     {
         if (source == null) {
             if (isPersisted()) {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
-                    // Do not use view id as a parameter. For some reason it doesn't work for Redshift
-                    String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(" + getObjectId() + ", true)");
-                    if (definition == null) {
-                        throw new DBException ("View '"  + getName() + "' doesn't exist");
+                source = getDataSource().getServerType().readViewDDL(monitor, this);
+                if (source == null) {
+                    try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
+                        // Do not use view id as a parameter. For some reason it doesn't work for Redshift
+                        String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(" + getObjectId() + ", true)");
+                        if (definition == null) {
+                            throw new DBException("View '" + getName() + "' doesn't exist");
+                        }
+                        this.source = PostgreUtils.getViewDDL(monitor, this, definition);
+                        String extDefinition = readExtraDefinition(session, options);
+                        if (extDefinition != null) {
+                            this.source += "\n" + extDefinition;
+                        }
+                    } catch (SQLException e) {
+                        throw new DBException("Error reading view definition: " + e.getMessage(), e);
                     }
-                    this.source = PostgreUtils.getViewDDL(monitor, this, definition);
-                    String extDefinition = readExtraDefinition(session, options);
-                    if (extDefinition != null) {
-                        this.source += "\n" + extDefinition;
-                    }
-                } catch (SQLException e) {
-                    throw new DBException("Error reading view definition: " + e.getMessage(), e);
                 }
             } else {
                 source = "";
