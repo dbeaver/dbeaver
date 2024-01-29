@@ -67,6 +67,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private AbstractUIJob refreshJob = new AbstractUIJob("SQL editor outline refresh") {
         @Override
         protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+            if (treeViewer.getTree().isDisposed()) {
+                return Status.CANCEL_STATUS;
+            }
             treeViewer.refresh();
             return Status.OK_STATUS;
         }
@@ -127,12 +130,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         this.treeViewer.setContentProvider(new ILazyTreeContentProvider() {
             @Override
             public void updateElement(@NotNull Object parent, int index) {
-                if (parent == editor.getEditorInput()) {
-                    this.updateChildNode(parent, index, rootNodes.get(index));
-                } else if (parent instanceof OutlineNode node) {
+                if (parent instanceof OutlineNode node) {
                     this.updateChildNode(parent, index, node.getChild(index));
                 } else {
-                    throw new UnsupportedOperationException();
+                    if (index <= rootNodes.size() - 1) {
+                        OutlineNode outlineNode = rootNodes.get(index);
+                        this.updateChildNode(parent, index, outlineNode);
+                        treeViewer.setExpandedElements(outlineNode);
+                    }
                 }
             }
 
@@ -148,7 +153,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 } else if (element instanceof OutlineNode node) {
                     treeViewer.setChildCount(element, node.getChildrenCount());
                 } else {
-                    throw new UnsupportedOperationException();
+                    treeViewer.setChildCount(element, rootNodes.size());
                 }
             }
 
