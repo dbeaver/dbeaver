@@ -28,4 +28,17 @@ public interface IDialogPageProvider {
     @Nullable
     IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate);
 
+    /**
+     * Pages what should be saved during creation, even if they were
+     * never opened
+     *
+     * @return array of IDialogPage[] to create at the initialisation,
+     *      null if no additional pages should be created.
+     */
+    @Nullable
+    default IDialogPage[] getRequiredDialogPages() {
+        return null;
+    }
+
+
 }
