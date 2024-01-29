@@ -178,7 +178,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             dataSourceRegistry.checkForErrors();
         } catch (Throwable e) {
             project.dispose();
-            throw e;
+            return new DBNNode[]{} ;
         }
 
         final List<DBNNode> children = new ArrayList<>();

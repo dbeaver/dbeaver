@@ -377,13 +377,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         // Read in this particular order to handle configuration reading errors first, but process in reverse order later
         Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
         Map<String, Object> configurationMap = null;
-        try {
-            configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
-            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
-        } catch (DBException e) {
-            log.error(e);
-            return false;
-        }
+        configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
 
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
@@ -822,7 +817,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         log.error("Error backing up secure credentials", e1);
                     }
                 } else {
-                    log.error("Project opening canceled by user");
+                    throw new DBException("Project opening canceled by user");
                 }
             }
             log.error("Error reading secure credentials", e);
