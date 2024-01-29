@@ -68,8 +68,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         cfgGroup.setLayout(gl);

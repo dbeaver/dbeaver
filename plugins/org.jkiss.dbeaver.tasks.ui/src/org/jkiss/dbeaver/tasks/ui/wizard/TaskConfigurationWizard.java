@@ -215,34 +215,37 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     public boolean canFinish() {
         boolean noErrors = getContainer().getCurrentPage() == null
             || getContainer().getCurrentPage().getErrorMessage() == null;
+        if (containsPagesWithErrors()) {
+            return false;
+        }
+        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+        return taskPage == null || taskPage.isPageComplete();
+    }
+
+    private boolean containsPagesWithErrors() {
+        IWizardPage currentPage = getContainer().getCurrentPage();
+        if (currentPage != null && currentPage.getErrorMessage() == null) {
+            getContainer().setErrorMessage(null);
+        }
         for (IWizardPage page : getPages()) {
             // We need to make sure that change at the current page didn't break any other loaded pages
             if (
                 page instanceof ActiveWizardPage activeWizardPage
-                && getContainer().getCurrentPage() != activeWizardPage
-                && page.getControl() != null
-                && !page.getControl().isDisposed()
+                    && currentPage != activeWizardPage
+                    && page.getControl() != null
+                    && !page.getControl().isDisposed()
             ) {
                 activeWizardPage.updatePageCompletion();
                 if (activeWizardPage.getErrorMessage() != null && getContainer().getErrorMessage() == null) {
                     getContainer().setErrorMessage(
                         activeWizardPage.getTitle() + ": " + activeWizardPage.getErrorMessage());
-                    noErrors = false;
                 }
             }
             if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
-                return false;
+                return true;
             }
         }
-        if (noErrors) {
-            getContainer().setErrorMessage(null);
-        }
-        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
-        if (taskPage != null && !taskPage.isPageComplete()) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     private void checkErrorStatus() {
@@ -258,10 +261,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (page instanceof TaskConfigurationWizardPageTask) {
             return false;
         }
-        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
-            return false;
-        }
-        return true;
+        return !(page instanceof IWizardPageNavigable) || ((IWizardPageNavigable) page).isPageApplicable();
     }
 
     @Override
@@ -271,9 +271,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         }
 
         if (isRunTaskOnFinish()) {
-            if (!runTask()) {
-                return false;
-            }
+            return runTask();
         }
 
         return true;

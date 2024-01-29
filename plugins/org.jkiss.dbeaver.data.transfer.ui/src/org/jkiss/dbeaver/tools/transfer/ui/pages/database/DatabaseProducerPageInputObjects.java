@@ -232,13 +232,14 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
     }
 
     @Override
-    protected boolean determinePageCompletion()
-    {
+    protected boolean determinePageCompletion() {
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getConsumer() == null || pipe.getProducer() == null || pipe.getProducer().getDatabaseObject() == null) {
+                setErrorMessage("Page contains incomplete mapping");
                 return false;
             }
         }
+        setErrorMessage(null);
         return true;
     }
 
