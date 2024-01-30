@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
@@ -33,10 +30,8 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -64,18 +59,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private List<OutlineNode> rootNodes;
     private SelectionSyncOperation currentSelectionSyncOp = SelectionSyncOperation.NONE;
     private SQLOutlineNodeBuilder currentNodeBuilder = new SQLOutlineNodeFullBuilder();
-   
-    private AbstractUIJob refreshJob = new AbstractUIJob("SQL editor outline refresh") {
-        @Override
-        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
-            if (treeViewer.getTree().isDisposed()) {
-                return Status.CANCEL_STATUS;
-            }
-            treeViewer.refresh();
-            return Status.OK_STATUS;
-        }
-    };
-    
+
     private final CaretListener caretListener = event -> {
         if (currentSelectionSyncOp == SelectionSyncOperation.NONE) {
             LinkedList<OutlineNode> path = new LinkedList<>();
@@ -147,9 +131,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
             @Override
             public void updateChildCount(@NotNull Object element, int currentChildCount) {
-                if (element == editor.getEditorInput()) {
-                    treeViewer.setChildCount(element, rootNodes.size());
-                } else if (element instanceof OutlineNode node) {
+                if (element instanceof OutlineNode node) {
                     treeViewer.setChildCount(element, node.getChildrenCount());
                 } else {
                     treeViewer.setChildCount(element, rootNodes.size());
@@ -165,14 +147,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         this.treeViewer.setUseHashlookup(true);
         this.treeViewer.setLabelProvider(new SQLOutlineLabelProvider());
-        this.treeViewer.setInput(editor);
+        this.treeViewer.setInput(editor.getEditorInput());
         this.treeViewer.setAutoExpandLevel(3);
 
         TextViewer textViewer = this.editor.getTextViewer();
         if (textViewer != null) {
             textViewer.getTextWidget().addCaretListener(this.caretListener);
         }
-        
+
         SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
         scheduleRefresh();
     }
@@ -194,12 +176,16 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private void scheduleRefresh() {
-//        switch (this.refreshJob.getState()) {
-//            case Job.WAITING, Job.SLEEPING -> this.refreshJob.cancel();
-//        }
-//        this.refreshJob.schedule(500);
+        UIUtils.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!treeViewer.getTree().isDisposed()) {
+                    treeViewer.refresh();
+                }
+            }
+        });
     }
-    
+
     @NotNull
     private String prepareQueryPreview(@NotNull SQLDocumentScriptItemSyntaxContext scriptElement) {
         return this.prepareQueryPreview(scriptElement.getOriginalText());
