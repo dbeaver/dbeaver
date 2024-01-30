@@ -59,6 +59,10 @@ public class EditorsMessages extends NLS {
 	public static String dialog_struct_edit_fk_label_ref_table;
 	public static String dialog_struct_edit_fk_label_table;
 	public static String dialog_struct_edit_fk_title;
+	public static String dialog_struct_edit_fk_virtual_page_title;
+	public static String dialog_struct_edit_fk_page_title;
+	public static String dialog_struct_edit_fk_custom_uk_button_create;
+	public static String dialog_struct_edit_fk_label_key_type;
 	public static String dialog_struct_edit_index_label_type;
 
 	public static String dialog_struct_edit_dictionary_tip;
