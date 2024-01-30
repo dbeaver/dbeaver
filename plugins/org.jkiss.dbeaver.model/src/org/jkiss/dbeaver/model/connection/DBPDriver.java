@@ -137,6 +137,9 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isDeprecated();
 
+    /** For teaser-drivers from commercial versions */
+    boolean isNotAvailableDriver();
+
     @NotNull
     String getDeprecationReason();
 

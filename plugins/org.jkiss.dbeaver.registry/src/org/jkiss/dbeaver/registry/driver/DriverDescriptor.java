@@ -178,6 +178,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage logoImage;
     private boolean embedded, origEmbedded;
     private boolean supportsDistributedMode;
+    private boolean notAvailableDriver;
     private boolean singleConnection;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
@@ -249,6 +250,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.instantiable = true;
         this.promoted = 0;
         this.supportsDistributedMode = true;
+        this.notAvailableDriver = false;
 
         this.origName = null;
         this.origDescription = null;
@@ -325,6 +327,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.configurationTypes.addAll(copyFrom.configurationTypes);
             this.supportedPageFields.addAll(copyFrom.supportedPageFields);
             this.supportsDistributedMode = copyFrom.supportsDistributedMode;
+            this.notAvailableDriver = copyFrom.notAvailableDriver;
             this.deprecationReason = copyFrom.deprecationReason;
         } else {
             this.categories = new ArrayList<>();
@@ -366,6 +369,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
+        this.notAvailableDriver = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NOT_AVAILABLE_DRIVER), false);
         this.deprecationReason = config.getAttribute(RegistryConstants.ATTR_DEPRECATED);
         this.custom = false;
         this.isLoaded = false;
@@ -1734,6 +1738,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setSupportsDistributedMode(boolean supportsDistributedMode) {
         this.supportsDistributedMode = supportsDistributedMode;
+    }
+
+    @Override
+    public boolean isNotAvailableDriver() {
+        return notAvailableDriver;
     }
 
     public DBPNativeClientLocation getDefaultClientLocation() {

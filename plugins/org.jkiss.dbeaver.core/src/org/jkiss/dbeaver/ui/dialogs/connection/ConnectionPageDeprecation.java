@@ -38,8 +38,13 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
         super(ConnectionPageDeprecation.class.getName());
         this.driver = driver;
 
-        setTitle(CoreMessages.dialog_connection_deprecated_title);
-        setDescription(CoreMessages.dialog_connection_deprecated_description);
+        if (driver.isNotAvailableDriver()) {
+            setTitle(CoreMessages.dialog_connection_not_available_title);
+            setDescription(CoreMessages.dialog_connection_not_available_description);
+        } else {
+            setTitle(CoreMessages.dialog_connection_deprecated_title);
+            setDescription(CoreMessages.dialog_connection_deprecated_description);
+        }
         setPageComplete(false);
     }
 

@@ -1727,6 +1727,27 @@
                         description="%driver.redshift.description"
                         webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                         categories="sql,analytic,cloud"/>
+                <!-- Drivers Teasers -->
+                <driver
+                        id="mongo-ce"
+                        label="MongoDB"
+                        description="Driver for MongoDB"
+                        iconBig="icons/mongodb_icon_big.png"
+                        supportsDistributedMode="false"
+                        notAvailableDriver="true"
+                        deprecated="%driver.mongodb.reason"
+                        categories="nosql,bigdata,document">
+                </driver>
+                <driver
+                        id="cql-ce"
+                        label="Cassandra"
+                        description="Driver for Apache Cassandra 2.x/3.x/4.x"
+                        iconBig="icons/cassandra_icon_big.png"
+                        supportsDistributedMode="false"
+                        notAvailableDriver="true"
+                        deprecated="%driver.cassandra.reason"
+                        categories="nosql,bigdata,keyvalue">
+                </driver>
 
             </drivers>
 

@@ -574,6 +574,8 @@ public class CoreMessages extends NLS {
 
     public static String dialog_connection_deprecated_title;
     public static String dialog_connection_deprecated_description;
+    public static String dialog_connection_not_available_title;
+    public static String dialog_connection_not_available_description;
 
     // Driver edit
 
