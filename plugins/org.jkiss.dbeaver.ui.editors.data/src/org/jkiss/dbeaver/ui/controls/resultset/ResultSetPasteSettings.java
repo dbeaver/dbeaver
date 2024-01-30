@@ -20,11 +20,13 @@ import org.jkiss.code.NotNull;
 
 public class ResultSetPasteSettings {
     private boolean insertMultipleRows;
+    private boolean ignoreQuotes;
     private boolean insertNulls;
     private String nullValueMark;
 
     public ResultSetPasteSettings() {
         this.insertMultipleRows = true;
+        this.ignoreQuotes = false;
         this.insertNulls = false;
         this.nullValueMark = "";
     }
@@ -35,6 +37,14 @@ public class ResultSetPasteSettings {
 
     public void setInsertMultipleRows(boolean insertMultipleRows) {
         this.insertMultipleRows = insertMultipleRows;
+    }
+
+    public boolean isIgnoreQuotes() {
+        return ignoreQuotes;
+    }
+
+    public void setIgnoreQuotes(boolean ignoreQuotes) {
+        this.ignoreQuotes = ignoreQuotes;
     }
 
     public boolean isInsertNulls() {

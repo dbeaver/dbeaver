@@ -240,6 +240,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_paste_as_title;
     public static String dialog_paste_as_insert_multiple_rows_text;
     public static String dialog_paste_as_insert_multiple_rows_tip;
+    public static String dialog_paste_as_ignore_quotes_text;
+    public static String dialog_paste_as_ignore_quotes_tip;
     public static String dialog_paste_as_insert_nulls_text;
     public static String dialog_paste_as_insert_nulls_tip;
     public static String dialog_paste_as_null_value_mark_text;
