@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.model.task;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Scheduled task configration
@@ -40,8 +42,6 @@ public class DBTTaskScheduleConfiguration {
     public String taskName;
     public String taskDescription;
 
-    public String osUserName;
-
     public Frequency frequency;
 
     public Date startTime;
@@ -61,4 +61,6 @@ public class DBTTaskScheduleConfiguration {
     public int maxDuration;
 
     public int executionMinute;
+
+    public final Map<String, Object> properties = new HashMap<>();
 }
