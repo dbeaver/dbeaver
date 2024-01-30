@@ -428,9 +428,6 @@ public class DataSourceDescriptor
     }
 
     public boolean isCredentialsSaved() throws DBException {
-        if (sharedCredentials) {
-            return true;
-        }
         if (!getProject().isUseSecretStorage()) {
             return savePassword;
         }
@@ -893,6 +890,15 @@ public class DataSourceDescriptor
             if (!isNewDataSource || secret != null) {
                 secretController.setPrivateSecretValue(getSecretObjectId(), secret);
             }
+        } else {
+            var secret = saveToSecret();
+            if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
+                secretController.setSubjectSecretValue(teamProvider.getDefaultTeamId(), this, new DBSSecretValue(
+                    getSecretValueId(), "", secret
+                ));
+            } else {
+                throw new DBException("Application does not support shared secrets");
+            }
         }
         secretsResolved = true;
     }
@@ -1061,6 +1067,17 @@ public class DataSourceDescriptor
             secretController = DBSSecretController.getProjectSecretController(getProject());
         }
         resolveSecretsIfNeeded();
+
+        if (isSharedCredentials() && !isSharedCredentialsSelected()) {
+            var sharedCreds = listSharedCredentials();
+            if (!CommonUtils.isEmpty(sharedCreds)) {
+                log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
+                setSelectedSharedCredentials(sharedCreds.get(0));
+                monitor.subTask("Use first available shared credentials");
+            } else {
+                log.debug("Shared credentials not found - attempt to connect as is");
+            }
+        }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
 
@@ -1311,16 +1328,6 @@ public class DataSourceDescriptor
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
-        if (isSharedCredentials() && !isSharedCredentialsSelected()) {
-            var sharedCreds = listSharedCredentials();
-            if (!CommonUtils.isEmpty(sharedCreds)) {
-                this.selectedSharedCredentials = sharedCreds.get(0);
-                log.debug("Shared credentials not selected - use first one");
-                monitor.subTask("Use first available shared credentials");
-            } else {
-                log.debug("Shared credentials not found - attempt to connect as is");
-            }
-        }
         final DBPDataSourceProvider provider = driver.getDataSourceProvider();
         final DBPDataSourceProviderSynchronizable providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
 

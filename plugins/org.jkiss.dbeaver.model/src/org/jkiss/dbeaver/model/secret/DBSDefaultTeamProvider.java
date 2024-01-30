@@ -16,25 +16,7 @@
  */
 package org.jkiss.dbeaver.model.secret;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-public class DBSSharedSecretValue extends DBSSecretValue {
-    @NotNull
-    private final String subjectId;
-
-    public DBSSharedSecretValue(
-        @NotNull String id,
-        @NotNull String displayName,
-        @Nullable String value,
-        @NotNull String subjectId
-    ) {
-        super(id, displayName, value);
-        this.subjectId = subjectId;
-    }
-
-    @NotNull
-    public String getSubjectId() {
-        return subjectId;
-    }
+// workaround for secrets backward compatibility
+public interface DBSDefaultTeamProvider {
+    String getDefaultTeamId();
 }

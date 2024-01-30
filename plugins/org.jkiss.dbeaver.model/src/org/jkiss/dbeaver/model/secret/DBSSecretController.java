@@ -46,7 +46,7 @@ public interface DBSSecretController {
     }
 
     @NotNull
-    default List<DBSSharedSecretValue> listAllSharedSecrets(
+    default List<DBSSecretValue> listAllSharedSecrets(
         @NotNull DBSSecretObject secretObject
     ) throws DBException {
         return List.of();
