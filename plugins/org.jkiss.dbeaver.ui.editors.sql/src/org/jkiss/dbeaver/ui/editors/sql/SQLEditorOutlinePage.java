@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.SQLDocumentSyntaxContextListener;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.CompleteTupleSpec;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.TupleSpec;
@@ -553,6 +554,19 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private class SQLOutlineNodeFullBuilder implements SQLOutlineNodeBuilder {
+
+        @Nullable
+        @Override
+        public Object visitRowsCte(@NotNull SQLQueryRowsCteModel cte, @NotNull OutlineQueryNode node) {
+            this.makeNode(node, cte, "CTE", DBIcon.TREE_FOLDER_LINK, cte.getAllQueries().toArray(SQLQueryRowsSourceModel[]::new));
+            return null;
+        }
+
+        @Nullable
+        public Object visitRowsCteSubquery(@NotNull SQLQueryRowsCteSubqueryModel cteSubquery, @NotNull OutlineQueryNode node) {
+            this.makeNode(node, cteSubquery, cteSubquery.subqueryName.getRawName(), DBIcon.TREE_TABLE_LINK, cteSubquery.source);
+            return null;
+        }
 
         @Nullable
         @Override
