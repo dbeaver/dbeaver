@@ -64,6 +64,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private List<OutlineNode> rootNodes;
     private SelectionSyncOperation currentSelectionSyncOp = SelectionSyncOperation.NONE;
     private SQLOutlineNodeBuilder currentNodeBuilder = new SQLOutlineNodeFullBuilder();
+   
     private AbstractUIJob refreshJob = new AbstractUIJob("SQL editor outline refresh") {
         @Override
         protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
@@ -133,11 +134,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 if (parent instanceof OutlineNode node) {
                     this.updateChildNode(parent, index, node.getChild(index));
                 } else {
-                    if (index <= rootNodes.size() - 1) {
-                        OutlineNode outlineNode = rootNodes.get(index);
-                        this.updateChildNode(parent, index, outlineNode);
-                        treeViewer.setExpandedElements(outlineNode);
-                    }
+                    OutlineNode outlineNode = rootNodes.get(index);
+                    this.updateChildNode(parent, index, outlineNode);
+                    treeViewer.setExpandedElements(outlineNode);
                 }
             }
 
@@ -166,7 +165,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         this.treeViewer.setUseHashlookup(true);
         this.treeViewer.setLabelProvider(new SQLOutlineLabelProvider());
-        this.treeViewer.setInput(editor.getEditorInput());
+        this.treeViewer.setInput(editor);
         this.treeViewer.setAutoExpandLevel(3);
 
         TextViewer textViewer = this.editor.getTextViewer();
@@ -195,10 +194,10 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private void scheduleRefresh() {
-        switch (this.refreshJob.getState()) {
-            case Job.WAITING, Job.SLEEPING -> this.refreshJob.cancel();
-        }
-        this.refreshJob.schedule(500);
+//        switch (this.refreshJob.getState()) {
+//            case Job.WAITING, Job.SLEEPING -> this.refreshJob.cancel();
+//        }
+//        this.refreshJob.schedule(500);
     }
     
     @NotNull
