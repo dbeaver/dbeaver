@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+
+import java.util.List;
 
 /**
  * Scheduler descriptor
@@ -26,6 +30,11 @@ public interface DBTSchedulerDescriptor {
     String getName();
 
     String getDescription();
+
+    @NotNull
+    List<DBPPropertyDescriptor> getProperties();
+
+    boolean isEnabled();
 
     DBTScheduler getInstance() throws DBException;
 
