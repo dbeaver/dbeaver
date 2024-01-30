@@ -156,7 +156,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        //gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
         dbText.setMessage(PostgreMessages.dialog_database_name_hint);
@@ -173,7 +172,12 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         createAuthPanel(mainGroup, 1);
 
         if (isSessionRoleSupported() || serverType.supportsClient()) {
-            Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Group advancedGroup = UIUtils.createControlGroup(
+                mainGroup,
+                PostgreMessages.dialog_setting_connection_advanced_group_label,
+                4,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0);
 
             if (isSessionRoleSupported()) {
                 roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_session_role, null, SWT.BORDER);
@@ -257,9 +261,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             dbText.setText(databaseName);
         }
         if (showNonDefault != null) {
-            showNonDefault.setSelection(
-                CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
-                    DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
+            showNonDefault.setSelection(CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
         }
         if (roleText != null) {
             roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
