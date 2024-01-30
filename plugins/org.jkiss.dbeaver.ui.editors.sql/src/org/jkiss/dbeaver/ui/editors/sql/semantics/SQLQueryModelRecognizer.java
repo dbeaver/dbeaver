@@ -181,8 +181,9 @@ public class SQLQueryModelRecognizer {
             STMKnownRuleNames.sqlQuery,
             STMKnownRuleNames.directSqlDataStatement,
             STMKnownRuleNames.selectStatement,
-            // STMKnownRuleNames.withClause, // TODO
-                
+            STMKnownRuleNames.withClause,
+            STMKnownRuleNames.cteList,
+            STMKnownRuleNames.with_list_element,
             STMKnownRuleNames.subquery,
             STMKnownRuleNames.unionTerm,
             STMKnownRuleNames.exceptTerm,
@@ -209,6 +210,36 @@ public class SQLQueryModelRecognizer {
         );
         
         private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations = Map.ofEntries(
+            Map.entry(STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> { 
+                if (cc.isEmpty()) {
+                    return r.queryDataContext.getDefaultTable(n.getRealInterval());
+                } else if (cc.size() == 1) {
+                    return cc.get(0);
+                } else {
+                    List<SQLQueryRowsSourceModel> subqueries = cc.subList(0, cc.size() - 1);
+                    SQLQueryRowsSourceModel resultQuery = cc.get(cc.size() - 1);
+                    
+                    STMTreeNode withNode = n.findChildOfName(STMKnownRuleNames.withClause);
+                    boolean isRecursive = withNode.getChildCount() > 2; // is RECURSIVE keyword presented
+                    
+                    SQLQueryRowsCteModel cte = new SQLQueryRowsCteModel(n.getRealInterval(), isRecursive, resultQuery);
+                    
+                    STMTreeNode cteListNode = withNode.getStmChild(withNode.getChildCount() - 1);
+                    for (int i = 0, j = 0; i < cteListNode.getChildCount(); i += 2, j++) {
+                        STMTreeNode cteSubqueryNode = cteListNode.getStmChild(i);
+                        
+                        SQLQuerySymbolEntry subqueryName = r.collectIdentifier(cteSubqueryNode.getStmChild(0));
+                        
+                        STMTreeNode columnListNode = cteSubqueryNode.findChildOfName(STMKnownRuleNames.columnNameList);
+                        List<SQLQuerySymbolEntry> columnList = columnListNode != null ? r.collectColumnNameList(columnListNode) : List.of();
+                        
+                        SQLQueryRowsSourceModel subquerySource = subqueries.get(j);
+                        cte.addSubquery(cteSubqueryNode.getRealInterval(), subqueryName, columnList, subquerySource);
+                    }
+                    
+                    return cte;
+                }
+            }),
             Map.entry(STMKnownRuleNames.queryExpression, (n, cc, r) -> {
                 if (cc.isEmpty()) {
                     return r.queryDataContext.getDefaultTable(n.getRealInterval());
@@ -369,7 +400,7 @@ public class SQLQueryModelRecognizer {
                             lastSubnode.getStmChild(lastSubnode.getChildCount() == 1 || lastSubnode.getChildCount() == 4 ? 0 : 1)
                         ); 
                         source = new SQLQueryRowsCorrelatedSourceModel(
-                            n.getRealInterval(), source, correlationName, r.collectColumnNameList(lastSubnode), !cc.isEmpty()
+                            n.getRealInterval(), source, correlationName, r.collectColumnNameList(lastSubnode)
                         );
                     }
                 }
@@ -684,7 +715,8 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.catalogName,
         STMKnownRuleNames.correlationName,
         STMKnownRuleNames.authorizationIdentifier,
-        STMKnownRuleNames.columnName
+        STMKnownRuleNames.columnName,
+        STMKnownRuleNames.queryName
     );
     
     @NotNull

@@ -94,7 +94,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryDataContext unresolvedResult = fromSource.propagateContext(context, statistics);
+        SQLQueryDataContext unresolvedResult = this.fromSource.propagateContext(context, statistics);
         EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);

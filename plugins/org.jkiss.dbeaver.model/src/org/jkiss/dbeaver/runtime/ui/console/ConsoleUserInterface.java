@@ -101,7 +101,12 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return false;
     }
-    
+
+    @Override
+    public boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning) {
+        return false;
+    }
+
     @NotNull
     @Override
     public UserChoiceResponse showUserChoice(
@@ -143,13 +148,31 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         }
     }
 
+    @Nullable
     @Override
-    public DBPAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly, boolean showSavePassword) {
+    public DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @Nullable String userName,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
         throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
     }
 
+    @Nullable
     @Override
-    public DBPAuthInfo promptUserCredentials(String prompt, String userNameLabel, String userName, String passwordLabel, String userPassword, boolean passwordOnly, boolean showSavePassword) {
+    public DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @NotNull String userNameLabel,
+        @Nullable String userName,
+        @NotNull String passwordLabel,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
         throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
     }
 
