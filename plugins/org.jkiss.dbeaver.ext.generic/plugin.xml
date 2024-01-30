@@ -544,7 +544,7 @@
                     categories="sql,embedded">
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
-                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
                     <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
 
                     <parameter name="supports-references" value="true"/>
@@ -987,6 +987,9 @@
                     categories="timeseries">
                     <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="stored-quoted-case" value="lower"/>
+                    <parameter name="stored-unquoted-case" value="lower"/>
+                    <parameter name="identifier-quotes" value="`:`"/>
                 </driver>
 
                 <!-- TDengine Cloud -->
@@ -1002,6 +1005,9 @@
                     categories="timeseries">
                     <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="stored-quoted-case" value="lower"/>
+                    <parameter name="stored-unquoted-case" value="lower"/>
+                    <parameter name="identifier-quotes" value="`:`"/>
                 </driver>
 
                 <!-- Yandex ClickHouse -->

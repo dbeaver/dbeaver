@@ -156,9 +156,8 @@ correlationName: identifier;
 
 withClause: WITH RECURSIVE? cteList;
 cteList: with_list_element (Comma with_list_element)*;
-with_list_element: queryName (LeftParen withColumnList RightParen)? AS anyWordsWithProperty? subquery;
-withColumnList: columnName (Comma columnName)*;
-queryName: Identifier;
+with_list_element: queryName (LeftParen columnNameList RightParen)? AS anyWordsWithProperty? subquery;
+queryName: identifier;
 
 // select, subquery
 scalarSubquery: subquery;
@@ -223,6 +222,8 @@ searchedWhenClause: WHEN searchCondition THEN result;
 castSpecification: CAST LeftParen castOperand AS dataType RightParen;
 castOperand: (valueExpression|NULL);
 
+overClause: OVER LeftParen (PARTITION BY valueExpression (Comma valueExpression)*)? orderByClause? ((ROWS|RANGE) anyUnexpected)? RightParen;
+
 // functions and operators
 //valueExpression: (numericValueExpression|characterValueExpression|datetimeValueExpression|intervalValueExpression);
 
@@ -246,7 +247,7 @@ intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign 
 
 valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |anyWordsWithProperty2|columnReference|anyWordsWithProperty;
+    |aggregateExpression|anyWordsWithProperty2|columnReference|anyWordsWithProperty;
 
 
 numericPrimary: (valueExpressionPrimary|extractExpression|anyWordsWithProperty);
@@ -331,8 +332,8 @@ selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetLi
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
 sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
 deleteStatement: DELETE FROM tableName whereClause?;
-insertStatement: INSERT INTO tableName insertColumnsAndSource;
-insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
+insertStatement: INSERT INTO tableName? insertColumnsAndSource;
+insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
 insertColumnList: columnNameList;
 
 // UPDATE
@@ -372,7 +373,10 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-anyWordsWithProperty2: anyWord+ anyProperty;
+anyWordsWithProperty2: anyWord+ anyProperty overClause?;
+
+aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
+aggregateExprParam: DISTINCT|ALL|ORDER|BY|ASC|DESC|LIMIT|SEPARATOR|OFFSET|rowValueConstructor;
 
 /*
 All the logical boundary terms between query construct levels should be explicitly mentioned here for the anyUnexpected to NOT cross them

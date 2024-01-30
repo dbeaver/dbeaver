@@ -53,7 +53,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            1800,
+            1800, //30 minutes
+            true,
+            3600, //1 hour
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
@@ -67,7 +69,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            1800,
+            900, //30 minutes
+            true,
+            1800, //30 minutes
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         PROD = new DBPConnectionType(
@@ -81,7 +85,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            600,
+            600, //10 minutes
+            true,
+            900, //15 minutes
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
 
@@ -99,6 +105,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean smartCommit;
     private boolean smartCommitRecover;
     private boolean autoCloseTransactions;
+    private long closeIdleTransactionPeriod;
+    private boolean autoCloseConnections;
     private long closeIdleConnectionPeriod;
 
     private final boolean predefined;
@@ -116,6 +124,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             source.smartCommit,
             source.smartCommitRecover,
             source.autoCloseTransactions,
+            source.closeIdleTransactionPeriod,
+            source.autoCloseConnections,
             source.closeIdleConnectionPeriod,
             source.predefined,
             source.connectionModifyRestrictions);
@@ -132,6 +142,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommit,
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
+        long closeIdleTransactionPeriod,
+        boolean autoCloseConnections,
         long closeIdleConnectionPeriod)
     {
         this(
@@ -145,6 +157,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             smartCommit,
             smartCommitRecover,
             autoCloseTransactions,
+            closeIdleTransactionPeriod,
+            autoCloseConnections,
             closeIdleConnectionPeriod,
             false,
             null);
@@ -161,6 +175,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean smartCommit,
         boolean smartCommitRecover,
         boolean autoCloseTransactions,
+        long closeIdleTransactionPeriod,
+        boolean autoCloseConnections,
         long closeIdleConnectionPeriod,
         boolean predefined,
         List<DBPDataSourcePermission> connectionModifyRestrictions)
@@ -175,6 +191,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.smartCommit = smartCommit;
         this.smartCommitRecover = smartCommitRecover;
         this.autoCloseTransactions = autoCloseTransactions;
+        this.closeIdleTransactionPeriod = closeIdleTransactionPeriod;
+        this.autoCloseConnections = autoCloseConnections;
         this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
         this.predefined = predefined;
         if (connectionModifyRestrictions != null) {
@@ -266,6 +284,22 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.autoCloseTransactions = autoCloseTransactions;
     }
 
+    public long getCloseIdleTransactionPeriod() {
+        return closeIdleTransactionPeriod;
+    }
+
+    public void setCloseIdleTransactionPeriod(long closeIdleTransactionPeriod) {
+        this.closeIdleTransactionPeriod = closeIdleTransactionPeriod;
+    }
+
+    public boolean isAutoCloseConnections() {
+        return autoCloseConnections;
+    }
+
+    public void setAutoCloseConnections(boolean autoCloseConnections) {
+        this.autoCloseConnections = autoCloseConnections;
+    }
+    
     public long getCloseIdleConnectionPeriod() {
         return closeIdleConnectionPeriod;
     }
@@ -315,8 +349,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof DBPConnectionType) {
-            DBPConnectionType ct = (DBPConnectionType)obj;
+        if (obj instanceof DBPConnectionType ct) {
             return CommonUtils.equalObjects(id, ct.id) &&
                 CommonUtils.equalObjects(name, ct.name) &&
                 CommonUtils.equalObjects(color, ct.color) &&
@@ -327,6 +360,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
                 smartCommit == ct.smartCommit &&
                 smartCommitRecover == ct.smartCommitRecover &&
                 autoCloseTransactions == ct.autoCloseTransactions &&
+                CommonUtils.equalObjects(closeIdleTransactionPeriod, ct.closeIdleTransactionPeriod) &&
+                autoCloseConnections == ct.autoCloseConnections &&
                 CommonUtils.equalObjects(closeIdleConnectionPeriod, ct.closeIdleConnectionPeriod) &&
                 predefined == ct.predefined &&
                 CommonUtils.equalObjects(connectionModifyRestrictions, ct.connectionModifyRestrictions);

@@ -522,15 +522,6 @@ public class DataSourceDescriptor
         this.secretsContainsDatabaseCreds = false;
     }
 
-    @Override
-    public boolean isAutoCloseTransactions() {
-        if (getPreferenceStore().contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
-            // First check data source settings
-            return getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
-        }
-        return connectionInfo.getConnectionType().isAutoCloseTransactions();
-    }
-
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {
@@ -1129,7 +1120,7 @@ public class DataSourceDescriptor
                     tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                     try {
                         if (!tunnelConfiguration.isSavePassword()) {
-                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
+                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, null);
                             if (rc != DBWTunnel.AuthCredentials.NONE) {
                                 if (!askForPassword(this, tunnelConfiguration, rc)) {
                                     tunnelHandler = null;
@@ -1254,26 +1245,27 @@ public class DataSourceDescriptor
     }
 
     private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
-        if (tunnelConfiguration.getBooleanProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_ENABLED)) {
+        String jumpServerSettingsPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
+        if (tunnelConfiguration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED)) {
             DBPConnectionConfiguration actualConfig = getActualConnectionConfiguration();
             DBPConnectionConfiguration connConfig = getConnectionConfiguration();
             String prompt = NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, "SSH jump server");
-            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, getJumpServerSettingsPrefix(0));
+            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, jumpServerSettingsPrefix);
             if (rc != DBWTunnel.AuthCredentials.NONE) {
                 DBPAuthInfo dbpAuthInfo = askCredentials(this, rc, prompt,
-                    tunnelConfiguration.getStringProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME),
+                    tunnelConfiguration.getStringProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME),
                     //$NON-NLS-1$
-                    tunnelConfiguration.getSecureProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_FEATURE_PASSWORD),
+                    tunnelConfiguration.getSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD),
                     //$NON-NLS-1$
                     false
                 );
                 if (dbpAuthInfo != null) {
                     if (rc.equals(DBWTunnel.AuthCredentials.CREDENTIALS)) {
-                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME, //$NON-NLS-1$
+                        tunnelConfiguration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME, //$NON-NLS-1$
                             dbpAuthInfo.getUserName()
                         );
                     }
-                    tunnelConfiguration.setSecureProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_FEATURE_PASSWORD, //$NON
+                    tunnelConfiguration.setSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD, //$NON
                         // -NLS-1$
                         dbpAuthInfo.getUserPassword()
                     );
@@ -1320,6 +1312,7 @@ public class DataSourceDescriptor
             monitor.subTask("Initialize data source");
             try {
                 dataSource.initialize(monitor);
+                dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
             } catch (Throwable e) {
                 log.error("Error initializing datasource", e);
                 throw e;
@@ -2007,10 +2000,6 @@ public class DataSourceDescriptor
         }
 
         return true;
-    }
-
-    public static String getJumpServerSettingsPrefix(int index) {
-        return "jumpServer" + index + ".";
     }
 
     private static DBPAuthInfo askCredentials(@NotNull DataSourceDescriptor dataSourceContainer,

@@ -521,13 +521,15 @@ public final class DBUtils {
     @NotNull
     public static DBSObject[] getObjectPath(@NotNull DBSObject object, boolean includeSelf) {
         int depth = 0;
-        final DBSObject root = includeSelf ? object : object.getParentObject();
+        final DBSObject root = includeSelf ? object :
+            ((object instanceof DBSTablePartition part) && part.needFullPath() && part.isSubPartition()) ? part.getPartitionParent() :
+        object.getParentObject();
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
             obj = getPublicObjectContainer(obj);
             depth++;
         }
         if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
-            // For the parent table
+            // For a parent table
             depth++;
         }
         DBSObject[] path = new DBSObject[depth];
@@ -2570,5 +2572,27 @@ public final class DBUtils {
     public interface ChildExtractor<PARENT, CHILD> {
         @Nullable
         CHILD extract(@NotNull PARENT parent, @NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException;
+    }
+
+    /**
+     * The method returns true if index based by source attributes is UNIQUE
+     */
+    public static boolean isUniqueIndexForAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBSEntityAttribute> attributes,
+        @NotNull DBSEntity entity
+    ) throws DBException, InterruptedException {
+        Collection<? extends DBSTableIndex> tableIndexes = ((DBSTable) entity).getIndexes(monitor);
+        for (DBSTableIndex tableIndex : tableIndexes) {
+            if (monitor.isCanceled()) {
+                break;
+            }
+            // find composite index that presented as a compositions of columns (source attributes)
+            List<DBSEntityAttribute> indexAttributes = DBUtils.getEntityAttributes(monitor, tableIndex);
+            if (tableIndex.isUnique() && indexAttributes.equals(attributes)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

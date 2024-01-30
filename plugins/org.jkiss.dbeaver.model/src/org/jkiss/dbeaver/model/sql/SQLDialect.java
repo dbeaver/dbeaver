@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.Pair;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -60,6 +61,14 @@ public interface SQLDialect {
         PLAIN,
         INSERT_ALL
     }
+
+    enum ProjectionAliasVisibilityScope {
+        WHERE,
+        HAVING,
+        GROUP_BY,
+        ORDER_BY;
+    }
+
     @NotNull
     SQLDialectQueryGenerator getQueryGenerator();
 
@@ -503,4 +512,16 @@ public interface SQLDialect {
      * @return a set of SQLBlockCompletions with information about blocks for autoedit
      */
     SQLBlockCompletions getBlockCompletions();
+
+    default EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.WHERE,
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.HAVING,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
+    }
+
+    default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
+    }
 }

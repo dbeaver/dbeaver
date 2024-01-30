@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.SQLDocumentSyntaxContextListener;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.CompleteTupleSpec;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.TupleSpec;
@@ -566,6 +567,19 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
+        public Object visitRowsCte(@NotNull SQLQueryRowsCteModel cte, @NotNull OutlineQueryNode node) {
+            this.makeNode(node, cte, "CTE", DBIcon.TREE_FOLDER_LINK, cte.getAllQueries().toArray(SQLQueryRowsSourceModel[]::new));
+            return null;
+        }
+
+        @Nullable
+        public Object visitRowsCteSubquery(@NotNull SQLQueryRowsCteSubqueryModel cteSubquery, @NotNull OutlineQueryNode node) {
+            this.makeNode(node, cteSubquery, cteSubquery.subqueryName.getRawName(), DBIcon.TREE_TABLE_LINK, cteSubquery.source);
+            return null;
+        }
+
+        @Nullable
+        @Override
         public Object visitValueSubqueryExpr(@NotNull SQLQueryValueSubqueryExpression subqueryExpr, @NotNull OutlineQueryNode node) {
             this.makeNode(node, subqueryExpr, "Scalar subquery", UIIcon.FILTER_VALUE, subqueryExpr.getSource());
             return null;
@@ -648,31 +662,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return null;
         }
 
-        @Nullable
-        @Override
-        public Object visitRowsSelectionFilter(SQLQueryRowsSelectionFilterModel selectionFilter, OutlineQueryNode node) {
-            selectionFilter.getFromSource().apply(this, node);
-
-            if (selectionFilter.getWhereClause() != null) {
-                this.makeNode(node, selectionFilter.getWhereClause(), "WHERE", UIIcon.FILTER, selectionFilter.getWhereClause());
-            }
-            if (selectionFilter.getHavingClause() != null) {
-                this.makeNode(node, selectionFilter.getHavingClause(), "HAVING", UIIcon.FILTER, selectionFilter.getHavingClause());
-            }
-            if (selectionFilter.getGroupByClause() != null) {
-                this.makeNode(
-                    node,
-                    selectionFilter.getGroupByClause(),
-                    "GROUP BY",
-                    UIIcon.GROUP_BY_ATTR,
-                    selectionFilter.getGroupByClause()
-                );
-            }
-            if (selectionFilter.getOrderByClause() != null) {
-                this.makeNode(node, selectionFilter.getOrderByClause(), "ORDER BY", UIIcon.SORT, selectionFilter.getOrderByClause());
-            }
-            return null;
-        }
 
         @Nullable
         @Override
@@ -751,12 +740,31 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
-        public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode arg) {
+        public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode node) {
             String suffix = projection.getDataContext().getColumnsList().stream()
-                .map(SQLQuerySymbol::getName)
+                .map(c -> c.symbol.getName())
                 .collect(Collectors.joining(", ", "(", ")"));
-            this.makeNode(arg, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());
-            this.makeNode(arg, projection.getFromSource(), "FROM", DBIcon.TREE_FOLDER_TABLE, projection.getFromSource());
+            this.makeNode(node, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());
+            this.makeNode(node, projection.getFromSource(), "FROM", DBIcon.TREE_FOLDER_TABLE, projection.getFromSource());
+
+            if (projection.getWhereClause() != null) {
+                this.makeNode(node, projection.getWhereClause(), "WHERE", UIIcon.FILTER, projection.getWhereClause());
+            }
+            if (projection.getGroupByClause() != null) {
+                this.makeNode(
+                    node,
+                    projection.getGroupByClause(),
+                    "GROUP BY",
+                    UIIcon.GROUP_BY_ATTR,
+                    projection.getGroupByClause()
+                );
+            }
+            if (projection.getHavingClause() != null) {
+                this.makeNode(node, projection.getHavingClause(), "HAVING", UIIcon.FILTER, projection.getHavingClause());
+            }
+            if (projection.getOrderByClause() != null) {
+                this.makeNode(node, projection.getOrderByClause(), "ORDER BY", UIIcon.SORT, projection.getOrderByClause());
+            }
             return null;
         }
 

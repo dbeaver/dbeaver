@@ -43,6 +43,9 @@ public interface PostgreServerExtension {
 
     boolean supportsIndexes();
 
+    /** True if supports foreign/imported keys */
+    boolean supportsForeignKeys();
+
     boolean supportsMaterializedViews();
 
     boolean supportsPartitions();
@@ -66,6 +69,11 @@ public interface PostgreServerExtension {
     boolean supportsEncodings();
 
     boolean supportsCollations();
+
+    /**
+     * True if database can read data from the pg_catalog.pg_language system view.
+     */
+    boolean supportsLanguages();
 
     boolean supportsTablespaces();
 
@@ -111,6 +119,9 @@ public interface PostgreServerExtension {
     // Table DDL extraction
     String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
 
+    /** View/Materialized view DDL extraction */
+    String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) throws DBException;
+
     // Custom schema cache.
     JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> createSchemaCache(PostgreDatabase database);
 
@@ -140,6 +151,9 @@ public interface PostgreServerExtension {
 
     /** True if supports special "Has OIDs" metadata column*/
     boolean supportsHasOidsColumn();
+
+    /** True if supports NULL/NOT NULL column data types modifiers */
+    boolean supportsColumnsRequiring();
 
     boolean supportsDatabaseSize();
 

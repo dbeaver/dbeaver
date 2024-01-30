@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
@@ -43,23 +44,23 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
 
     @NotNull
     @Override
-    public DBSEntity findRealTable(@NotNull List<String> tableName) {
-        return anyOfTwo(parent.findRealTable(tableName), otherParent.findRealTable(tableName)); // TODO consider ambiguity
+    public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        return anyOfTwo(parent.findRealTable(monitor, tableName), otherParent.findRealTable(monitor, tableName)); // TODO consider ambiguity
     }
 
     @NotNull
     @Override
-    public SourceResolutionResult resolveSource(@NotNull List<String> tableName) {
-        return anyOfTwo(parent.resolveSource(tableName), otherParent.resolveSource(tableName)); // TODO consider ambiguity
+    public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        return anyOfTwo(parent.resolveSource(monitor, tableName), otherParent.resolveSource(monitor, tableName)); // TODO consider ambiguity
     }
 
 
     @NotNull
-    private static List<SQLQuerySymbol> combineColumns(
-        @NotNull List<SQLQuerySymbol> leftColumns,
-        @NotNull List<SQLQuerySymbol> rightColumns
+    private static List<SQLQueryResultColumn> combineColumns(
+        @NotNull List<SQLQueryResultColumn> leftColumns,
+        @NotNull List<SQLQueryResultColumn> rightColumns
     ) {
-        List<SQLQuerySymbol> symbols = new ArrayList<>(leftColumns.size() + rightColumns.size());
+        List<SQLQueryResultColumn> symbols = new ArrayList<>(leftColumns.size() + rightColumns.size());
         symbols.addAll(leftColumns);
         symbols.addAll(rightColumns);
         return symbols;

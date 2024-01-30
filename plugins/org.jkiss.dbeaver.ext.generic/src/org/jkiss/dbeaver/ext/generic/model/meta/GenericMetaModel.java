@@ -756,6 +756,14 @@ public class GenericMetaModel {
         return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
+    public boolean supportsUniqueKeys() {
+        return false;
+    }
+
+    public boolean supportsCheckConstraints() {
+        return false;
+    }
+
     @NotNull
     public GenericTableForeignKey createTableForeignKeyImpl(GenericTableBase table, String name, @Nullable String remarks, DBSEntityReferrer referencedKey, DBSForeignKeyModifyRule deleteRule, DBSForeignKeyModifyRule updateRule, DBSForeignKeyDeferability deferability, boolean persisted) {
         return new GenericTableForeignKey(table, name, remarks, referencedKey, deleteRule, updateRule, deferability, persisted);
@@ -938,10 +946,6 @@ public class GenericMetaModel {
 
     public boolean hasFunctionSupport() {
         return true;
-    }
-
-    public boolean supportsCheckConstraints() {
-        return false;
     }
 
     public boolean supportsViews(@NotNull GenericDataSource dataSource) {

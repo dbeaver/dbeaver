@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -60,7 +61,7 @@ public class DamengDataFile implements DBSObject {
         this.tablespace = tablespace;
         this.name = JDBCUtils.safeGetString(dbResult, "PATH");
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.status = JDBCUtils.safeGetInt(dbResult, "STATUS$") == 1 ? Status.ONLINE : Status.OFFLINE;
+        this.status = JDBCUtils.safeGetInt(dbResult, DamengConstants.STATUS$) == 1 ? Status.ONLINE : Status.OFFLINE;
         this.pageSize = JDBCUtils.safeGetInt(dbResult, "PAGE_SIZE");
         this.totalSize = JDBCUtils.safeGetLong(dbResult, "TOTAL_SIZE") * pageSize;
         this.freeSize = JDBCUtils.safeGetLong(dbResult, "FREE_SIZE") * pageSize;

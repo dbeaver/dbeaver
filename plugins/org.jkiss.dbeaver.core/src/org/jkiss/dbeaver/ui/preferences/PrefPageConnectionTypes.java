@@ -73,6 +73,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     private Button confirmDataChangeCheck;
     private Button autoCloseTransactionsCheck;
     private Text autoCloseTransactionsTtlText;
+    private Button autoCloseConnectionsCheck;
+    private Text autoCloseConnectionsTtlText;
     private Button smartCommitCheck;
     private Button smartCommitRecoverCheck;
     private ToolItem deleteButton;
@@ -137,6 +139,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         true,
                         false,
                         true,
+                        true,
+                        1800,
                         true,
                         1800);
                     addTypeToTable(newType, newType);
@@ -311,7 +315,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     getSelectedType().setSmartCommitRecover(smartCommitRecoverCheck.getSelection());
                 }
             });
-
+            // transactions
             autoCloseTransactionsCheck = UIUtils.createCheckbox(
                 placeholder,
                 CoreMessages.action_menu_transaction_auto_close_enabled,
@@ -324,7 +328,6 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     getSelectedType().setAutoCloseTransactions(autoCloseTransactionsCheck.getSelection());
                 }
             });
-
             autoCloseTransactionsTtlText = new Text(placeholder, SWT.BORDER);
             autoCloseTransactionsTtlText.setToolTipText(CoreMessages.pref_page_connection_types_label_auto_close_ttl_tip);
             autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
@@ -332,7 +335,28 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(grd);
             autoCloseTransactionsTtlText.addModifyListener(e ->
-                getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
+                getSelectedType().setCloseIdleTransactionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
+            // connections
+            autoCloseConnectionsCheck = UIUtils.createCheckbox(
+                placeholder,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip,
+                true,
+                1);
+            autoCloseConnectionsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setAutoCloseConnections(autoCloseConnectionsCheck.getSelection());
+                }
+            });
+            autoCloseConnectionsTtlText = new Text(placeholder, SWT.BORDER);
+            autoCloseConnectionsTtlText.setToolTipText(CoreMessages.pref_page_connection_types_label_auto_close_ttl_tip);
+            autoCloseConnectionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            GridData grdConnections = new GridData();
+            grdConnections.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
+            autoCloseConnectionsTtlText.setLayoutData(grdConnections);
+            autoCloseConnectionsTtlText.addModifyListener(e ->
+                getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseConnectionsTtlText.getText(), 1800)));
 
             Button epButton = UIUtils.createDialogButton(
                 placeholder,
@@ -403,8 +427,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         smartCommitCheck.setSelection(connectionType.isSmartCommit());
         smartCommitRecoverCheck.setSelection(connectionType.isSmartCommitRecover());
         autoCloseTransactionsCheck.setSelection(connectionType.isAutoCloseTransactions());
-        autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
-
+        autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleTransactionPeriod()));
+        autoCloseConnectionsCheck.setSelection(connectionType.isAutoCloseConnections());
+        autoCloseConnectionsTtlText.setText(String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
         deleteButton.setEnabled(!connectionType.isPredefined());
     }
 
@@ -536,7 +561,11 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setModifyPermissions(changed.getModifyPermission());
                 source.setSmartCommit(changed.isSmartCommit());
                 source.setSmartCommitRecover(changed.isSmartCommitRecover());
+                // transaction
                 source.setAutoCloseTransactions(changed.isAutoCloseTransactions());
+                source.setCloseIdleTransactionPeriod(changed.getCloseIdleTransactionPeriod());
+                // connections
+                source.setAutoCloseConnections(changed.isAutoCloseConnections());
                 source.setCloseIdleConnectionPeriod(changed.getCloseIdleConnectionPeriod());
                 hasChanges = true;
             }

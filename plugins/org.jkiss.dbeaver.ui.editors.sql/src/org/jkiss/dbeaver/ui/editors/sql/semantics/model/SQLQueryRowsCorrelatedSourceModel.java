@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,20 +32,17 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
     private final SQLQueryRowsSourceModel source;
     private final SQLQuerySymbolEntry alias;
     private final List<SQLQuerySymbolEntry> correlationColumNames;
-    private final boolean forSubquery;
 
     public SQLQueryRowsCorrelatedSourceModel(
         @NotNull Interval range,
         @NotNull SQLQueryRowsSourceModel source,
         @NotNull SQLQuerySymbolEntry alias,
-        @NotNull List<SQLQuerySymbolEntry> correlationColumNames,
-        boolean forSubquery
+        @NotNull List<SQLQuerySymbolEntry> correlationColumNames
     ) {
         super(range);
         this.source = source;
         this.alias = alias;
         this.correlationColumNames = correlationColumNames;
-        this.forSubquery = forSubquery;
     }
 
     public SQLQueryRowsSourceModel getSource() {
@@ -72,20 +70,30 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
                 this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
             }
 
-            if (correlationColumNames.size() > 0) {
-                List<SQLQuerySymbol> columns = new ArrayList<>(context.getColumnsList());
-                for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
-                    SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
-                    if (correlatedNameDef.isNotClassified()) {
-                        SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
-                        correlatedName.setDefinition(correlatedNameDef);
-                        correlatedName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
-                        correlatedNameDef.setDefinition(columns.get(i).getDefinition());
-                        columns.set(i, correlatedName);
-                    }
+            context = prepareColumnsCorrelation(context, this.correlationColumNames, this);
+        }
+        return context;
+    }
+
+    @NotNull
+    public static SQLQueryDataContext prepareColumnsCorrelation(
+        @NotNull SQLQueryDataContext context,
+        @NotNull List<SQLQuerySymbolEntry> correlationColumNames,
+        @NotNull SQLQueryRowsSourceModel columnsSource
+    ) {
+        if (correlationColumNames.size() > 0) {
+            List<SQLQueryResultColumn> columns = new ArrayList<>(context.getColumnsList());
+            for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
+                SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
+                if (correlatedNameDef.isNotClassified()) {
+                    SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
+                    correlatedName.setDefinition(correlatedNameDef);
+                    correlatedName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
+                    correlatedNameDef.setDefinition(columns.get(i).symbol.getDefinition());
+                    columns.set(i, new SQLQueryResultColumn(correlatedName, columnsSource, null, null));
                 }
-                context = context.overrideResultTuple(columns);
             }
+            context = context.overrideResultTuple(columns);
         }
         return context;
     }

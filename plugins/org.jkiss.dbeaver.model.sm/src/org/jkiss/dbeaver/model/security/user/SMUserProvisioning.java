@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.Map;
 
@@ -27,9 +28,13 @@ public class SMUserProvisioning {
     @NotNull
     private final Map<String, String> metaParameters;
 
-    public SMUserProvisioning(@NotNull String userId, @NotNull Map<String, String> metaParameters) {
+    @Nullable
+    private final String authRole;
+
+    public SMUserProvisioning(@NotNull String userId, @NotNull Map<String, String> metaParameters, @Nullable String authRole) {
         this.userId = userId;
         this.metaParameters = metaParameters;
+        this.authRole = authRole;
     }
 
     @NotNull
@@ -42,4 +47,8 @@ public class SMUserProvisioning {
         return metaParameters;
     }
 
+    @Nullable
+    public String getAuthRole() {
+        return authRole;
+    }
 }

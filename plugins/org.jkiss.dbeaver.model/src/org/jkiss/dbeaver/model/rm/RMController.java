@@ -20,13 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
+import org.jkiss.dbeaver.model.app.DBPPingController;
 
 import java.util.List;
 
 /**
  * Resource manager API.
  */
-public interface RMController extends DBPObjectController {
+public interface RMController extends DBPObjectController, DBPPingController {
 
     ////////////////////////////////////////////
     // Projects

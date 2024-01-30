@@ -20,13 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.app.DBPPingController;
 import org.jkiss.utils.rest.RequestMapping;
 import org.jkiss.utils.rest.RequestParameter;
 
 /**
  * Detached data source proxy.
  */
-public interface DPIController extends AutoCloseable {
+public interface DPIController extends DBPPingController, AutoCloseable {
 
     @RequestMapping
     String ping() throws DBException;

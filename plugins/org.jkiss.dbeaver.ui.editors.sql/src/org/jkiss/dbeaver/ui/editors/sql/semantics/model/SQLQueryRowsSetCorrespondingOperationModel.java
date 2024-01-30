@@ -20,10 +20,9 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,11 +59,11 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         SQLQueryDataContext left = this.left.propagateContext(context, statistics);
         SQLQueryDataContext right = this.right.propagateContext(context, statistics);
 
-        List<SQLQuerySymbol> resultColumns;
+        List<SQLQueryResultColumn> resultColumns;
         boolean nonMatchingColumnSets = false;
         if (correspondingColumnNames.isEmpty()) { // require left and right to have the same tuples
-            List<SQLQuerySymbol> leftColumns = left.getColumnsList();
-            List<SQLQuerySymbol> rightColumns = right.getColumnsList();
+            List<SQLQueryResultColumn> leftColumns = left.getColumnsList();
+            List<SQLQueryResultColumn> rightColumns = right.getColumnsList();
             resultColumns = new ArrayList<>(Math.max(leftColumns.size(), rightColumns.size()));
 
             for (int i = 0; i < resultColumns.size(); i++) {
@@ -74,8 +73,8 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                 } else if (i >= rightColumns.size()) {
                     resultColumns.add(leftColumns.get(i));
                     nonMatchingColumnSets = true;
-                } else {
-                    resultColumns.add(leftColumns.get(i).merge(rightColumns.get(i)));
+                } else { // TODO validate corresponding names to be the same?
+                    resultColumns.add(new SQLQueryResultColumn(leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol), this, null, null));
                 }
             }
         } else { // require left and right to have columns subset as given with correspondingColumnNames
@@ -83,15 +82,15 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
             for (int i = 0; i < resultColumns.size(); i++) {
                 SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
                 if (column.isNotClassified()) {
-                    SQLQuerySymbolDefinition leftDef = left.resolveColumn(column.getName());
-                    SQLQuerySymbolDefinition rightDef = right.resolveColumn(column.getName());
+                    SQLQueryResultColumn leftDef = left.resolveColumn(statistics.getMonitor(), column.getName());
+                    SQLQueryResultColumn rightDef = right.resolveColumn(statistics.getMonitor(), column.getName());
 
                     if (leftDef == null || rightDef == null) {
                         nonMatchingColumnSets = true;
                     }
 
                     column.getSymbol().setDefinition(column); // TODO combine multiple definitions
-                    resultColumns.add(column.getSymbol());
+                    resultColumns.add(new SQLQueryResultColumn(column.getSymbol(), this, null, null));
                 }
             }
         }

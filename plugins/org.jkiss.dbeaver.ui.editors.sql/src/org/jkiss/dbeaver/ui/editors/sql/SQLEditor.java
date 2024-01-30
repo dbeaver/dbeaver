@@ -864,6 +864,10 @@ public class SQLEditor extends SQLEditorBase implements
         return super.isDirty();
     }
 
+    public SQLEditorPresentation getActivePresentation() {
+        return extraPresentationManager.activePresentation;
+    }
+
     @Nullable
     @Override
     public IResultSetController getResultSetController() {
