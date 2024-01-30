@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.eclipse.equinox.launcher;
+package org.jkiss.dbeaver.launcher;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.eclipse.equinox.internal.launcher.Constants;
+
 
 /**
  * The launcher for Eclipse.
@@ -172,7 +173,7 @@ public class Main {
     /**
      * Indicates whether this instance is running in debug mode.
      */
-    protected boolean debug = false;
+    protected boolean debug = true;
     /**
      * The location of the launcher to run.
      */
@@ -1272,6 +1273,9 @@ public class Main {
     }
 
     private URL buildLocation(String property, URL defaultLocation, String userDefaultAppendage) {
+        if(debug)
+        System.out.println(
+            "buildLocation: " + property + " defaultLocation: " + defaultLocation + " userDefaultAppendage: " + userDefaultAppendage);
         URL result = null;
         String location = System.getProperty(property);
         System.clearProperty(property);
@@ -1294,6 +1298,8 @@ public class Main {
                     } else {
                         base = resolveLocation(location, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
                     }
+                    if (debug)
+                        System.out.println("Base location: "+ base);
                     location = new File(base, userDefaultAppendage).getAbsolutePath();
                 }
                 if (location.startsWith(USER_HOME)) {
