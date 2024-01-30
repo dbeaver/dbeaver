@@ -20,8 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,6 +41,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
     private DBPAuthInfo authInfo = new DBPAuthInfo();
     private String savePasswordText;
     private String savePasswordToolTipText;
+    private String description;
 
     private Text usernameText;
     private Text passwordText;
@@ -109,6 +112,15 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
         this.savePasswordToolTipText = text;
     }
 
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(@Nullable String description) {
+        this.description = description;
+    }
+
     @Override
     protected Composite createDialogArea(Composite parent)
     {
@@ -119,6 +131,10 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
         addrGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
+
+        if (CommonUtils.isNotEmpty(description)) {
+            UIUtils.createInfoLabel(addrGroup, description);
+        }
 
         {
             Group credGroup = new Group(addrGroup, SWT.NONE);

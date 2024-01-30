@@ -26,6 +26,7 @@ public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
         super(range, left, right);
     }
 
+    @NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(
         @NotNull SQLQueryDataContext context,
