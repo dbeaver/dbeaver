@@ -58,6 +58,7 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
     private static class AdvancedPasteConfigDialog extends BaseDialog {
         private static final String DIALOG_ID = "AdvancedPasteOptions";
         private static final String PROP_INSERT_MULTIPLE_ROWS = "insertMultipleRows";
+        private static final String PROP_IGNORE_QUOTES = "ignoreQuotes";
         private static final String PROP_INSERT_NULLS = "insertNulls";
         private static final String PROP_NULL_VALUE_MARK = "nullValueMark";
 
@@ -65,6 +66,7 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
         private final ResultSetPasteSettings pasteSettings;
 
         private Button insertMultipleRowsCheck;
+        private Button ignoreQuotesCheck;
         private Button insertNullsCheck;
         private Combo nullValueMarkCombo;
 
@@ -76,6 +78,9 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
             this.pasteSettings = new ResultSetPasteSettings();
             if (dialogSettings.get(PROP_INSERT_MULTIPLE_ROWS) != null) {
                 pasteSettings.setInsertMultipleRows(dialogSettings.getBoolean(PROP_INSERT_MULTIPLE_ROWS));
+            }
+            if (dialogSettings.get(PROP_IGNORE_QUOTES) != null) {
+                pasteSettings.setIgnoreQuotes(dialogSettings.getBoolean(PROP_IGNORE_QUOTES));
             }
             if (dialogSettings.get(PROP_INSERT_NULLS) != null) {
                 pasteSettings.setInsertNulls(dialogSettings.getBoolean(PROP_INSERT_NULLS));
@@ -94,6 +99,14 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
                 ResultSetMessages.dialog_paste_as_insert_multiple_rows_text,
                 ResultSetMessages.dialog_paste_as_insert_multiple_rows_tip,
                 pasteSettings.isInsertMultipleRows(),
+                1
+            );
+
+            ignoreQuotesCheck = UIUtils.createCheckbox(
+                composite,
+                ResultSetMessages.dialog_paste_as_ignore_quotes_text,
+                ResultSetMessages.dialog_paste_as_ignore_quotes_tip,
+                pasteSettings.isIgnoreQuotes(),
                 1
             );
 
@@ -128,10 +141,12 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
         @Override
         protected void okPressed() {
             pasteSettings.setInsertMultipleRows(insertMultipleRowsCheck.getSelection());
+            pasteSettings.setIgnoreQuotes(ignoreQuotesCheck.getSelection());
             pasteSettings.setInsertNulls(insertNullsCheck.getSelection());
             pasteSettings.setNullValueMark(nullValueMarkCombo.getText());
 
             dialogSettings.put(PROP_INSERT_MULTIPLE_ROWS, pasteSettings.isInsertMultipleRows());
+            dialogSettings.put(PROP_IGNORE_QUOTES, pasteSettings.isIgnoreQuotes());
             dialogSettings.put(PROP_INSERT_NULLS, pasteSettings.isInsertNulls());
             dialogSettings.put(PROP_NULL_VALUE_MARK, pasteSettings.getNullValueMark());
 

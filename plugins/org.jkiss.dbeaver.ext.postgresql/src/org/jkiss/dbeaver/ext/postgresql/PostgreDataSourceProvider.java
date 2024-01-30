@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import com.sun.jna.platform.win32.Advapi32Util;
-import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.LocalSystemRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -162,11 +161,12 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         if (RuntimeUtils.isWindows()) {
             localClients = new HashSet<>();
             try {
-                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY)) {
-                    String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY);
+                LocalSystemRegistry.Registry registry = LocalSystemRegistry.getInstance();
+                if (registry.registryKeyExists("HKEY_LOCAL_MACHINE", PostgreConstants.PG_INSTALL_REG_KEY)) {
+                    String[] homeKeys = registry.registryGetKeys("HKEY_LOCAL_MACHINE", PostgreConstants.PG_INSTALL_REG_KEY);
                     if (homeKeys != null) {
                         for (String homeKey : homeKeys) {
-                            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY + "\\" + homeKey);
+                            Map<String, Object> valuesMap = registry.registryGetValues("HKEY_LOCAL_MACHINE", PostgreConstants.PG_INSTALL_REG_KEY + "\\" + homeKey);
                             for (String key : valuesMap.keySet()) {
                                 if (PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY.equalsIgnoreCase(key)) {
                                     String baseDir = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY)));

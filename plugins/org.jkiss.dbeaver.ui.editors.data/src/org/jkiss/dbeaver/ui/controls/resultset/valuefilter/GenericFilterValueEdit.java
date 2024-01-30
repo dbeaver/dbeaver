@@ -675,6 +675,7 @@ class GenericFilterValueEdit {
         KeyLoadJob(String name, @Nullable Consumer<Result> onFinish) {
             super(name);
             this.onFinish = onFinish;
+            setSkipErrorOnCanceling(true);
         }
 
         @Override

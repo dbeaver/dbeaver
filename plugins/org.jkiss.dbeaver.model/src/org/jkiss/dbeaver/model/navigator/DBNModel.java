@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -450,6 +451,14 @@ public class DBNModel implements IResourceChangeListener {
             }
         }
         DBSObject[] path = DBUtils.getObjectPath(object, false);
+        DBSObject parentObject = object.getParentObject();
+        if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
+            if (part.isSubPartition()) {
+                parentObject = part.getPartitionParent();
+            } else {
+                parentObject = part.getParentTable();
+            }
+        }
         for (int i = 0; i < path.length; i++) {
             DBSObject item = path[i];
             node = getNodeByObject(item);
@@ -463,7 +472,7 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
 
-            if (item == DBUtils.getPublicObjectContainer(object.getParentObject())) {
+            if (item == DBUtils.getPublicObjectContainer(parentObject)) {
                 // Try to find parent node withing children
                 for (DBNDatabaseNode child : children) {
                     if (child instanceof DBNDatabaseFolder) {

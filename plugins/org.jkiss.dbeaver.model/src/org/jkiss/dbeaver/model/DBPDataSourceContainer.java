@@ -133,8 +133,6 @@ public interface DBPDataSourceContainer extends
 
     void setDefaultAutoCommit(boolean autoCommit);
 
-    boolean isAutoCloseTransactions();
-
     @Nullable
     DBPTransactionIsolation getActiveTransactionsIsolation();
 
