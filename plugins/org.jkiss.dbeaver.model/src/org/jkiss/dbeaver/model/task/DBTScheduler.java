@@ -74,7 +74,13 @@ public interface DBTScheduler {
         return true;
     }
 
-    void setTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
+    /**
+     * Sets task schedule.
+     *
+     * @return {@code true} if task schedule was set successfully, or {@code false} if the operation was cancelled.
+     * @throws DBException on any error
+     */
+    boolean setTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
 
     void removeTaskSchedule(@NotNull DBTTask task, DBTTaskScheduleInfo scheduleInfo) throws DBException;
 

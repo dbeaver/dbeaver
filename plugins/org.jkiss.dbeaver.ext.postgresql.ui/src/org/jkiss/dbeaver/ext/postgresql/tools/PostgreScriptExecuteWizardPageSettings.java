@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFileRemote;
@@ -67,6 +68,8 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPag
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
+
+        PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, null);
 
         setControl(composite);
     }

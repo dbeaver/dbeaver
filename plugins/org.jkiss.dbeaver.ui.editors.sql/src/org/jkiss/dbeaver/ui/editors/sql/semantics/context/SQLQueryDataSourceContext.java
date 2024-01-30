@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
@@ -59,11 +60,11 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public DBSEntity findRealTable(@NotNull List<String> tableName) {
+    public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         if (this.executionContext.getDataSource() instanceof DBSObjectContainer container) {
             List<String> tableName2 = new ArrayList<>(tableName);
             DBSObject obj = SQLSearchUtils.findObjectByFQN(
-                new VoidProgressMonitor(),
+                monitor,
                 container,
                 this.executionContext,
                 tableName2,
@@ -94,7 +95,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull String simpleName) {
+    public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName) {
         return null;
     }
 

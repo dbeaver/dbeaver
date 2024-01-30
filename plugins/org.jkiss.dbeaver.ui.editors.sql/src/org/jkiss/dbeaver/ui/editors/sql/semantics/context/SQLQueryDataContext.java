@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
@@ -26,27 +27,16 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
 import java.util.List;
 
-// // TODO
-//
-//class SQLQueryCteSubqueryModel implements SQLQueryRowsSource {
-//    private final SQLQueryCorrelationSpec correlation;
-//    private final SQLQueryRowsSource subquery;
-//}
-//
-//class SQLQueryCteModel {
-//    private final boolean isRecursive;
-//    private final Map<String, SQLQueryCteSubqueryModel> subqueries = new HashMap<>();
-//}
 public abstract class SQLQueryDataContext {
     
     public abstract List<SQLQueryResultColumn> getColumnsList();
 
-    public abstract DBSEntity findRealTable(List<String> tableName);
+    public abstract DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName);
 
-    public abstract SQLQueryResultColumn resolveColumn(String simpleName);  // TODO consider ambiguous column names
+    public abstract SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName);  // TODO consider ambiguous column names
     
-    public SourceResolutionResult resolveSource(List<String> tableName) { // TODO consider ambiguous table names
-        DBSEntity table = this.findRealTable(tableName);
+    public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) { // TODO consider ambiguous table names
+        DBSEntity table = this.findRealTable(monitor, tableName);
         SQLQueryRowsSourceModel source = this.findRealSource(table);
         return source == null ? null : SourceResolutionResult.forRealTableByName(source, table); 
     }

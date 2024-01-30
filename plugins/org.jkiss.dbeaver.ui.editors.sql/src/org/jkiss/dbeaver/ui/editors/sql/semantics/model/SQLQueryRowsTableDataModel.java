@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -81,13 +82,14 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.name.isNotClassified()) {
-            this.table = context.findRealTable(this.name.toListOfStrings());
+            List<String> nameStrings = this.name.toListOfStrings();
+            this.table = context.findRealTable(statistics.getMonitor(), nameStrings);
 
             if (this.table != null) {
                 this.name.setDefinition(table);
                 context = context.extendWithRealTable(this.table, this);
                 try {
-                    List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(new VoidProgressMonitor());
+                    List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(statistics.getMonitor());
                     if (attributes != null) {
                         List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(context, attributes);
                         context = context.overrideResultTuple(columns);
@@ -96,8 +98,15 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                     statistics.appendError(this.name.entityName, "Failed to resolve table", ex);
                 }
             } else {
-                this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                statistics.appendError(this.name.entityName, "Table not found");
+                SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
+                if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
+                    // seems cte reference resolved
+                    this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
+                    context = context.overrideResultTuple(rr.source.getDataContext().getColumnsList());
+                } else {
+                    this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
+                    statistics.appendError(this.name.entityName, "Table not found");
+                }
             }
         }
         return context;

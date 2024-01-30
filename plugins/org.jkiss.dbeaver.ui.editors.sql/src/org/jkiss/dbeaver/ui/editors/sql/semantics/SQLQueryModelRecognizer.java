@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.stm.*;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Field;
@@ -178,8 +181,9 @@ public class SQLQueryModelRecognizer {
             STMKnownRuleNames.sqlQuery,
             STMKnownRuleNames.directSqlDataStatement,
             STMKnownRuleNames.selectStatement,
-            // STMKnownRuleNames.withClause, // TODO
-                
+            STMKnownRuleNames.withClause,
+            STMKnownRuleNames.cteList,
+            STMKnownRuleNames.with_list_element,
             STMKnownRuleNames.subquery,
             STMKnownRuleNames.unionTerm,
             STMKnownRuleNames.exceptTerm,
@@ -206,6 +210,36 @@ public class SQLQueryModelRecognizer {
         );
         
         private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations = Map.ofEntries(
+            Map.entry(STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> { 
+                if (cc.isEmpty()) {
+                    return r.queryDataContext.getDefaultTable(n.getRealInterval());
+                } else if (cc.size() == 1) {
+                    return cc.get(0);
+                } else {
+                    List<SQLQueryRowsSourceModel> subqueries = cc.subList(0, cc.size() - 1);
+                    SQLQueryRowsSourceModel resultQuery = cc.get(cc.size() - 1);
+                    
+                    STMTreeNode withNode = n.findChildOfName(STMKnownRuleNames.withClause);
+                    boolean isRecursive = withNode.getChildCount() > 2; // is RECURSIVE keyword presented
+                    
+                    SQLQueryRowsCteModel cte = new SQLQueryRowsCteModel(n.getRealInterval(), isRecursive, resultQuery);
+                    
+                    STMTreeNode cteListNode = withNode.getStmChild(withNode.getChildCount() - 1);
+                    for (int i = 0, j = 0; i < cteListNode.getChildCount(); i += 2, j++) {
+                        STMTreeNode cteSubqueryNode = cteListNode.getStmChild(i);
+                        
+                        SQLQuerySymbolEntry subqueryName = r.collectIdentifier(cteSubqueryNode.getStmChild(0));
+                        
+                        STMTreeNode columnListNode = cteSubqueryNode.findChildOfName(STMKnownRuleNames.columnNameList);
+                        List<SQLQuerySymbolEntry> columnList = columnListNode != null ? r.collectColumnNameList(columnListNode) : List.of();
+                        
+                        SQLQueryRowsSourceModel subquerySource = subqueries.get(j);
+                        cte.addSubquery(cteSubqueryNode.getRealInterval(), subqueryName, columnList, subquerySource);
+                    }
+                    
+                    return cte;
+                }
+            }),
             Map.entry(STMKnownRuleNames.queryExpression, (n, cc, r) -> {
                 if (cc.isEmpty()) {
                     return r.queryDataContext.getDefaultTable(n.getRealInterval());
@@ -366,7 +400,7 @@ public class SQLQueryModelRecognizer {
                             lastSubnode.getStmChild(lastSubnode.getChildCount() == 1 || lastSubnode.getChildCount() == 4 ? 0 : 1)
                         ); 
                         source = new SQLQueryRowsCorrelatedSourceModel(
-                            n.getRealInterval(), source, correlationName, r.collectColumnNameList(lastSubnode), !cc.isEmpty()
+                            n.getRealInterval(), source, correlationName, r.collectColumnNameList(lastSubnode)
                         );
                     }
                 }
@@ -449,7 +483,18 @@ public class SQLQueryModelRecognizer {
      * A debugging facility
      */
 
-    private final SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext() {
+    private class RecognitionContext implements SQLQueryRecognitionContext {
+        private final DBRProgressMonitor monitor;
+
+        public RecognitionContext(@NotNull DBRProgressMonitor monitor) {
+            this.monitor = monitor;
+        }
+
+        @NotNull
+        @Override
+        public DBRProgressMonitor getMonitor() {
+            return this.monitor;
+        }
 
         @Override
         public void appendError(@NotNull SQLQuerySymbolEntry symbol, @NotNull String error, @NotNull DBException ex) {
@@ -559,7 +604,7 @@ public class SQLQueryModelRecognizer {
     }
 
     @Nullable
-    public SQLQuerySelectionModel recognizeQuery(@NotNull String text) {
+    public SQLQuerySelectionModel recognizeQuery(@NotNull String text, DBRProgressMonitor monitor) {
         STMSource querySource = STMSource.fromString(text);
         LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(this.obtainSqlDialect());
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
@@ -571,7 +616,7 @@ public class SQLQueryModelRecognizer {
             if (source != null) {
                 SQLQuerySelectionModel model = new SQLQuerySelectionModel(tree.getRealInterval(), source, symbolEntries);
 
-                model.propagateContex(this.queryDataContext, recognitionContext);
+                model.propagateContex(this.queryDataContext, new RecognitionContext(monitor));
 
                 // var tt = new DebugGraphBuilder();
                 // tt.traverseObjs(model);
@@ -670,7 +715,8 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.catalogName,
         STMKnownRuleNames.correlationName,
         STMKnownRuleNames.authorizationIdentifier,
-        STMKnownRuleNames.columnName
+        STMKnownRuleNames.columnName,
+        STMKnownRuleNames.queryName
     );
     
     @NotNull
