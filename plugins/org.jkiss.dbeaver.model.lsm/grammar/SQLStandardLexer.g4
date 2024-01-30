@@ -233,7 +233,6 @@ FROM: F R O M ;
 FULL: F U L L ;
 GLOBAL: G L O B A L ;
 GROUP: G R O U P ;
-GROUP_CONCAT: G R O U P '_' C O N C A T  ;
 HAVING: H A V I N G ;
 HOUR: H O U R ;
 IMMEDIATE: I M M E D I A T E ;
