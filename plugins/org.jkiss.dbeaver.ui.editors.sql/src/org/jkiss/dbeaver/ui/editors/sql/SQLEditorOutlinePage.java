@@ -100,7 +100,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Override
         public void inputDocumentChanged(IDocument oldInput, IDocument newInput) {
-            treeViewer.setInput(newInput);
+            if (newInput != null) {
+                treeViewer.setInput(editor.getEditorInput());
+            }
         }
 
         @Override
@@ -130,16 +132,12 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         this.treeViewer.setContentProvider(new ILazyTreeContentProvider() {
             @Override
             public void updateElement(@NotNull Object parent, int index) {
-                if (parent instanceof OutlineNode node) {
-                    OutlineNode child = node.getChild(index);
-                    this.updateChildNode(parent, index, child);
-                    treeViewer.setExpandedElements(child);
-                } else if (parent == editor.getEditorInput()) {
-                    OutlineNode outlineNode = rootNodes.get(index);
-                    this.updateChildNode(parent, index, outlineNode);
-                    treeViewer.setExpandedElements(outlineNode);
+                if (parent == editor.getEditorInput()) {
+                    this.updateChildNode(parent, index, rootNodes.get(index));
+                } else if (parent instanceof OutlineNode node) {
+                    this.updateChildNode(parent, index, node.getChild(index));
                 } else {
-                    throw new UnsupportedOperationException();
+                    throw new IllegalStateException(); // should never happen
                 }
             }
 
@@ -150,12 +148,12 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
             @Override
             public void updateChildCount(@NotNull Object element, int currentChildCount) {
-                if (element instanceof OutlineNode node) {
-                    treeViewer.setChildCount(element, node.getChildrenCount());
-                } else if (element == editor.getEditorInput()) {
+                if (element == editor.getEditorInput()) {
                     treeViewer.setChildCount(element, rootNodes.size());
+                } else if (element instanceof OutlineNode node) {
+                    treeViewer.setChildCount(element, node.getChildrenCount());
                 } else {
-                    throw new UnsupportedOperationException();
+                    throw new IllegalStateException(); // should never happen
                 }
             }
 
