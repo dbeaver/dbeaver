@@ -234,6 +234,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         TextViewer textViewer = this.editor.getTextViewer();
         if (textViewer != null) {
             textViewer.getTextWidget().removeCaretListener(this.caretListener);
+            textViewer.removeTextInputListener(this.textInputListener);
         }
         
         this.scriptNode.dispose();
