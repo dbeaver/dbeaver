@@ -177,12 +177,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private void scheduleRefresh() {
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (!treeViewer.getTree().isDisposed()) {
-                    treeViewer.refresh();
-                }
+        UIUtils.asyncExec(() -> {
+            if (!treeViewer.getTree().isDisposed()) {
+                treeViewer.refresh();
             }
         });
     }
