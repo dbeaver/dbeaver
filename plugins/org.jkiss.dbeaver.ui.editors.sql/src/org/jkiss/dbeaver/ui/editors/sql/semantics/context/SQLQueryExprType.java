@@ -231,7 +231,11 @@ public abstract class SQLQueryExprType {
         private final T complexType;
         private final Map<String, DBSAttributeBase> attrs;
         
-        public SQLQueryExprComplexType(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull T complexType, @NotNull Map<String, DBSAttributeBase> attrs) {
+        public SQLQueryExprComplexType(
+            @Nullable SQLQuerySymbolDefinition declaratorDefinition,
+            @NotNull T complexType,
+            @NotNull Map<String, DBSAttributeBase> attrs
+        ) {
             super(declaratorDefinition, complexType);
             this.complexType = complexType;
             this.attrs = attrs;
@@ -322,7 +326,12 @@ public abstract class SQLQueryExprType {
             int depth,
             @Nullable boolean[] slicingSpec
         ) throws DBException {
-            return SQLQueryExprType.forDescribedIfPresented(monitor, this.typedObject, this.typeDesc.getIndexableItemType(depth, slicingSpec), this.getDeclaratorDefinition());
+            return SQLQueryExprType.forDescribedIfPresented(
+                monitor,
+                this.typedObject,
+                this.typeDesc.getIndexableItemType(depth, slicingSpec),
+                this.getDeclaratorDefinition()
+            );
         }
     }
     

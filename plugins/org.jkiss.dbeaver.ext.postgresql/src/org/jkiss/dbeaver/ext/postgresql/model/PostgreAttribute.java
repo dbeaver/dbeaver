@@ -527,7 +527,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     @Override
     public DBSTypeDescriptor getTypeDescriptor() {
-        return this.arrayDim > 0 ? new PostgreArrayAttrTypeDescriptor(false, this.arrayDim, this.getDataType()) : null;
+        return this.arrayDim > 0 && this.getDataType() != null
+            ? new PostgreArrayAttrTypeDescriptor(false, this.arrayDim, this.getDataType())
+            : null;
     }
 
     /**
@@ -575,7 +577,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public DBSTypeDescriptor getIndexableItemType(int depth, boolean[] slicingSpecOrNull) {
             if (isItemType) {
-                 return null;
+                return null;
             } else {
                 if (slicingSpecOrNull == null) {
                     return depth == arrayDim ? new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.itemType)
