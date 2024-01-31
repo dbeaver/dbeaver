@@ -104,6 +104,11 @@
             categoryId="org.jkiss.dbeaver.core.util"
             name="Clear History..."
             description="Clear logs, query history and restart"/>
+        <command
+                id="org.jkiss.dbeaver.core.try.pro"
+                name="%command.org.jkiss.dbeaver.ui.try.pro.name"
+                description="%command.org.jkiss.dbeaver.ui.try.pro.description"
+                categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -188,6 +193,7 @@
         <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
         <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -310,6 +316,15 @@
             <command commandId="org.jkiss.dbeaver.core.util.resetSettings" style="push"/>
             <command commandId="org.jkiss.dbeaver.core.util.clearHistory" style="push"/>
             <separator name="misc_end" visible="true"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:help?after=org.jkiss.dbeaver.core.util.clearHistory">
+            <separator name="commercial" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.try.pro">
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.ui.app.standalone.menu.configuration.isCommunity" value="true"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
         <!-- Main toolbar -->
@@ -480,6 +495,15 @@
             <editorOnboardingCommand id="org.eclipse.ui.window.showKeyAssist"/>
             <editorOnboardingCommand id="org.eclipse.ui.window.quickAccess"/>
         </perspectiveExtension>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.app.standalone.actions.MenuConfigurationPropertyTester"
+                id="org.jkiss.dbeaver.ui.app.standalone.actions.MenuConfigurationPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.app.standalone.menu.configuration"
+                properties="isCommunity"
+                type="java.lang.Object"/>
     </extension>
 
 </plugin>

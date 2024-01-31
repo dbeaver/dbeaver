@@ -14,27 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
+package org.jkiss.dbeaver.ui.app.standalone.actions;
 
-import org.antlr.v4.runtime.misc.Interval;
-import org.jkiss.code.NotNull;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.jkiss.dbeaver.ui.ShellUtils;
 
-public abstract class SQLQueryNodeModel {
+public class TryPROHandler extends AbstractHandler {
 
-    private final Interval region;
-
-    protected SQLQueryNodeModel(@NotNull Interval region) {
-        this.region = region;
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        ShellUtils.launchProgram("https://dbeaver.com/download/");
+        return null;
     }
-
-    @NotNull
-    public final Interval getInterval() {
-        return this.region;
-    }
-
-    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-        return this.applyImpl(visitor, arg);
-    }
-
-    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg);
 }
