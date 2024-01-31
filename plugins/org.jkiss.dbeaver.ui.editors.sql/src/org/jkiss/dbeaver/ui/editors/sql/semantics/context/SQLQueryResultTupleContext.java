@@ -89,10 +89,12 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
         for (DBSEntity source : this.realSources) {
             try {
                 DBSEntityAttribute attr = source.getAttribute(monitor, unquoted);
-                result = columns.stream()
-                    .filter(c -> c.realAttr == attr)
-                    .findFirst()
-                    .orElse(null);
+                if (attr != null) {
+                    result = columns.stream()
+                        .filter(c -> c.realAttr == attr)
+                        .findFirst()
+                        .orElse(null);
+                }
             } catch (DBException e) {
                 log.debug("Failed to resolve column", e);
                 result = null;

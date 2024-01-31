@@ -146,7 +146,16 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
-        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier, PostgreCollateModifier, PostgreGeneratedModifier};
+        ColumnModifier[] modifiers = {
+            PostgreDataTypeModifier,
+            PostgreDefaultModifier,
+            PostgreIdentityModifier,
+            PostgreCollateModifier,
+            PostgreGeneratedModifier
+        };
+        if (column.getDataSource().getServerType().supportsColumnsRequiring()) {
+            modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, NullNotNullModifier);
+        }
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
         }
