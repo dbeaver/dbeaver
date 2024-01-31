@@ -33,9 +33,12 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSTypeDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx2;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -51,7 +54,7 @@ import java.util.function.Function;
  * PostgreAttribute
  */
 public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER>
-    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject, DBSTypedObjectExt4<PostgreDataType>
+    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject, DBSTypedObjectExt4<PostgreDataType>, DBSTypedObjectEx2
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -520,4 +523,84 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             }
         }
     }
+
+    @Nullable
+    @Override
+    public DBSTypeDescriptor getTypeDescriptor() {
+        return this.arrayDim > 0 ? new PostgreArrayAttrTypeDescriptor(false, this.arrayDim, this.getDataType()) : null;
+    }
+
+    /**
+     * Represents the type description for the attribute of the array type
+     * <p>
+     * Array column type in postgre can
+     *     either be completely indexed through all the dimensions till the single item reflected with its data type,
+     *     or sliced with any other way of indexing producing an array of the same structural type.
+     * Partial exposure is questionable, didn't find working example for PostgreSQL, but some other databases supports that.
+     */
+    private static class PostgreArrayAttrTypeDescriptor implements DBSTypeDescriptor {
+        private final boolean isItemType;
+        private final int arrayDim;
+        private final DBSDataType itemType;
+
+        public  PostgreArrayAttrTypeDescriptor(boolean isItemType, int arrayDim, @NotNull DBSDataType itemType) {
+            this.isItemType = isItemType;
+            this.arrayDim = arrayDim;
+            this.itemType = itemType;
+        }
+
+        @Nullable
+        @Override
+        public DBSDataType getUnderlyingType() {
+            return isItemType ? itemType : null;
+        }
+
+        @Override
+        public boolean isIndexable() {
+            return !isItemType;
+        }
+
+        @NotNull
+        @Override
+        public String getTypeName() {
+            return this.itemType.getFullTypeName() + "[]".repeat(isItemType ? 0 : arrayDim);
+        }
+
+        @Override
+        public int getIndexableDimensions() {
+            return isItemType ? 0 : arrayDim;
+        }
+
+        @Nullable
+        @Override
+        public DBSTypeDescriptor getIndexableItemType(int depth, boolean[] slicingSpecOrNull) {
+            if (isItemType) {
+                 return null;
+            } else {
+                if (slicingSpecOrNull == null) {
+                    return depth == arrayDim ? new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.itemType)
+                        : (depth > arrayDim ? null : this);
+                } else if (slicingSpecOrNull.length != arrayDim) {
+                    return slicingSpecOrNull.length > arrayDim ? null : this;
+                } else {
+                    for (int i = 0; i < slicingSpecOrNull.length; i++) {
+                        if (slicingSpecOrNull[i]) {
+                            return this;
+                        }
+                    }
+                    return new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.itemType);
+                }
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof PostgreArrayAttrTypeDescriptor other && ((
+                    !this.isItemType && !other.isItemType && this.arrayDim == other.arrayDim && this.itemType.equals(other.itemType)
+                ) || (
+                    this.isItemType && other.isItemType && this.itemType.equals(other.itemType)
+                ));
+        }
+    }
+    
 }

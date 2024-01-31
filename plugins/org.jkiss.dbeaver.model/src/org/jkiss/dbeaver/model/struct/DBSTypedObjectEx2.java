@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
+package org.jkiss.dbeaver.model.struct;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPObject;
 
-public abstract class SQLQueryNodeModel {
+/**
+ * Extends DBPObject with the ability to provide extra data type description, not covered by the database model
+ */
+public interface DBSTypedObjectEx2 extends DBPObject {
 
-    private final Interval region;
-
-    protected SQLQueryNodeModel(@NotNull Interval region) {
-        this.region = region;
-    }
-
-    @NotNull
-    public final Interval getInterval() {
-        return this.region;
-    }
-
-    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-        return this.applyImpl(visitor, arg);
-    }
-
-    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg);
+    /**
+     * Returs type description
+     */
+    @Nullable
+    DBSTypeDescriptor getTypeDescriptor();
 }

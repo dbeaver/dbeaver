@@ -86,11 +86,12 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
             for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
                 SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
                 if (correlatedNameDef.isNotClassified()) {
+                    SQLQueryResultColumn oldColumn = columns.get(i);
                     SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
                     correlatedName.setDefinition(correlatedNameDef);
                     correlatedName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
-                    correlatedNameDef.setDefinition(columns.get(i).symbol.getDefinition());
-                    columns.set(i, new SQLQueryResultColumn(correlatedName, columnsSource, null, null));
+                    correlatedNameDef.setDefinition(oldColumn.symbol.getDefinition());
+                    columns.set(i, new SQLQueryResultColumn(correlatedName, columnsSource, null, null, oldColumn.type));
                 }
             }
             context = context.overrideResultTuple(columns);
