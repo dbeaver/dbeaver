@@ -1288,6 +1288,13 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.schema.foreground.description</description>
         </colorDefinition>
         <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.composite.field.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.composite.field.foreground"
+            value="100,0,100">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.composite.field.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.semanticError.foreground"

@@ -18,40 +18,57 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 
-import java.util.List;
+public class SQLQueryValueIndexingExpression extends SQLQueryValueExpression {
 
-public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
-    private final List<SQLQueryValueExpression> operands;
+    private static final Log log = Log.getLog(SQLQueryValueIndexingExpression.class);
+
     private final String content;
-
-    public SQLQueryValueFlattenedExpression(
-        @NotNull Interval range,
+    
+    private final SQLQueryValueExpression owner;
+    private final boolean[] slicingDepthSpec;
+    
+    public SQLQueryValueIndexingExpression(
+        @NotNull Interval region,
         @NotNull String content,
-        @NotNull List<SQLQueryValueExpression> operands
+        @NotNull SQLQueryValueExpression owner,
+        @NotNull boolean[] slicingDepthSpec
     ) {
-        super(range);
+        super(region);
         this.content = content;
-        this.operands = operands;
+        this.owner = owner;
+        this.slicingDepthSpec = slicingDepthSpec;
     }
 
-    public String getContent() {
+    @NotNull
+    public String getExprContent() {
         return this.content;
     }
-
-    public List<SQLQueryValueExpression> getOperands() {
-        return operands;
-    }
-
+    
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.operands.forEach(opnd -> opnd.propagateContext(context, statistics));
+        this.owner.propagateContext(context, statistics);
+        
+        SQLQueryExprType type = this.owner.getValueType();
+        try {
+            type = type.findIndexedItemType(statistics.getMonitor(), slicingDepthSpec.length, slicingDepthSpec);
+        } catch (DBException e) {
+            // TODO statistics.appendError(null, null);
+            log.debug(e);
+            type = null;
+        }
+        
+        this.type = type != null ? type : SQLQueryExprType.UNKNOWN;
     }
 
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-        return visitor.visitValueFlatExpr(this, arg);
+        return visitor.visitValueIndexingExpr(this, arg);
     }
+    
 }

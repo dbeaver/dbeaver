@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.List;
 
@@ -50,10 +51,15 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
     @Nullable
     @Override
     public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
+        IHyperlink[] localScopeRefs = findLocalScopeReference(region.getOffset());
+        if (localScopeRefs != null) {
+            return localScopeRefs;
+        }
+        
         this.contextInformer.searchInformation(region);
         if (!this.contextInformer.hasObjects() || this.contextInformer.getKeywordType() == DBPKeywordType.KEYWORD) {
             // Long task - just return no links for now
-            return findLocalScopeReference(region.getOffset());
+            return null;
         } else {
             // Create hyperlinks based on references
             final SQLIdentifierDetector.WordRegion wordRegion = this.contextInformer.getWordRegion();
@@ -74,9 +80,13 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
             SQLQuerySymbolEntry token = context.findToken(offset);
             if (token != null) {
                 final IRegion refRegion = new Region(context.getLastAccessedTokenOffset(), token.getInterval().length());
-                if (token.getDefinition() instanceof SQLQuerySymbolEntry def) {
+                SQLQuerySymbolEntry symbolEntry = token.getDefinition() instanceof SQLQuerySymbolEntry def ? def
+                    : token.getDefinition() instanceof SQLQueryRowsTableDataModel tab && tab.getTable() != null ? tab.getName().entityName 
+                    : null; 
+                
+                if (symbolEntry != null) {
                     // TODO consider multiple definitions
-                    Interval interval = def.getInterval();
+                    Interval interval = symbolEntry.getInterval();
                     final IRegion defRegion = new Region(interval.a + context.getLastAccessedScriptElementOffset(), interval.length());
                     return new IHyperlink[] {
                         new IHyperlink() {
@@ -92,7 +102,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
 
                             @Override
                             public String getHyperlinkText() {
-                                return def.getName();
+                                return symbolEntry.getName();
                             }
 
                             @Override
