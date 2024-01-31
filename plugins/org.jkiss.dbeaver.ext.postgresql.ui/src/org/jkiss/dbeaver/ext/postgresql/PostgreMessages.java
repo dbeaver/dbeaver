@@ -154,6 +154,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_show_not_available_for_conn_tip;
     public static String dialog_setting_connection_database_statistics;
     public static String dialog_setting_connection_database_statistics_tip;
+    public static String dialog_setting_connection_advanced_group_label;
     public static String dialog_setting_connection_read_all_data_types;
     public static String dialog_setting_connection_read_all_data_types_tip;
     public static String dialog_setting_connection_read_keys_with_columns;
