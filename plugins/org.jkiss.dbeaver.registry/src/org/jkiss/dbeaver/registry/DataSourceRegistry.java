@@ -461,7 +461,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     public void removeNetworkProfile(DBWNetworkProfile profile) {
         try {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-            secretController.setSecretValue(
+            secretController.setPrivateSecretValue(
                 profile.getSecretKeyId(),
                 null);
         } catch (DBException e) {
@@ -514,7 +514,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         if (getProject().isUseSecretStorage()) {
             try {
                 DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-                secretController.setSecretValue(
+                secretController.setPrivateSecretValue(
                     profile.getSecretKeyId(),
                     null);
             } catch (DBException e) {

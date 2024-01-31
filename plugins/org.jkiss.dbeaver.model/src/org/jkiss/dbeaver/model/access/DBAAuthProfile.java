@@ -119,14 +119,14 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         }
         String secretValue = DBInfoUtils.SECRET_GSON.toJson(props);
 
-        secretController.setSecretValue(
+        secretController.setPrivateSecretValue(
             getSecretKeyId(),
             secretValue);
     }
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        String secretValue = secretController.getSecretValue(
+        String secretValue = secretController.getPrivateSecretValue(
             getSecretKeyId());
         if (secretValue == null) {
             // Backward compatibility
