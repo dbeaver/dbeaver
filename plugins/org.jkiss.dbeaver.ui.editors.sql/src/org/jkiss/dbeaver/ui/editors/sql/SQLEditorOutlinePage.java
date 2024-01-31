@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextInputListener;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.viewers.*;
@@ -94,6 +96,18 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
     };
 
+    private final ITextInputListener textInputListener = new ITextInputListener() {
+
+        @Override
+        public void inputDocumentChanged(IDocument oldInput, IDocument newInput) {
+            treeViewer.setInput(newInput);
+        }
+
+        @Override
+        public void inputDocumentAboutToBeChanged(IDocument oldInput, IDocument newInput) {
+        }
+    };
+
     public SQLEditorOutlinePage(@NotNull SQLEditorBase editor) {
         this.editor = editor;
         this.rootNodes = List.of(this.scriptNode = new OutlineScriptNode());
@@ -117,11 +131,15 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @Override
             public void updateElement(@NotNull Object parent, int index) {
                 if (parent instanceof OutlineNode node) {
-                    this.updateChildNode(parent, index, node.getChild(index));
-                } else {
+                    OutlineNode child = node.getChild(index);
+                    this.updateChildNode(parent, index, child);
+                    treeViewer.setExpandedElements(child);
+                } else if (parent == editor.getEditorInput()) {
                     OutlineNode outlineNode = rootNodes.get(index);
                     this.updateChildNode(parent, index, outlineNode);
                     treeViewer.setExpandedElements(outlineNode);
+                } else {
+                    throw new UnsupportedOperationException();
                 }
             }
 
@@ -134,8 +152,10 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             public void updateChildCount(@NotNull Object element, int currentChildCount) {
                 if (element instanceof OutlineNode node) {
                     treeViewer.setChildCount(element, node.getChildrenCount());
-                } else {
+                } else if (element == editor.getEditorInput()) {
                     treeViewer.setChildCount(element, rootNodes.size());
+                } else {
+                    throw new UnsupportedOperationException();
                 }
             }
 
@@ -154,6 +174,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         TextViewer textViewer = this.editor.getTextViewer();
         if (textViewer != null) {
             textViewer.getTextWidget().addCaretListener(this.caretListener);
+            textViewer.addTextInputListener(this.textInputListener);
         }
 
         SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
