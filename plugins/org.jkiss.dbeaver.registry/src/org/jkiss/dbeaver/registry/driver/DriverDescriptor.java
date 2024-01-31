@@ -178,6 +178,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage logoImage;
     private boolean embedded, origEmbedded;
     private boolean supportsDistributedMode;
+    private boolean notAvailableDriver;
     private boolean singleConnection;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
@@ -205,7 +206,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
     private DriverDescriptor replacedBy;
-    private String deprecationReason;
+    private String nonAvailabilityTitle;
+    private String nonAvailabilityDescription;
+    private String nonAvailabilityReason;
 
     private final Map<String, Object> defaultParameters = new HashMap<>();
     private final Map<String, Object> customParameters = new HashMap<>();
@@ -249,6 +252,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.instantiable = true;
         this.promoted = 0;
         this.supportsDistributedMode = true;
+        this.notAvailableDriver = false;
 
         this.origName = null;
         this.origDescription = null;
@@ -325,7 +329,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.configurationTypes.addAll(copyFrom.configurationTypes);
             this.supportedPageFields.addAll(copyFrom.supportedPageFields);
             this.supportsDistributedMode = copyFrom.supportsDistributedMode;
-            this.deprecationReason = copyFrom.deprecationReason;
+            this.notAvailableDriver = copyFrom.notAvailableDriver;
+            this.nonAvailabilityTitle = copyFrom.nonAvailabilityTitle;
+            this.nonAvailabilityDescription = copyFrom.nonAvailabilityDescription;
+            this.nonAvailabilityReason = copyFrom.nonAvailabilityReason;
         } else {
             this.categories = new ArrayList<>();
             this.name = "";
@@ -366,7 +373,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
-        this.deprecationReason = config.getAttribute(RegistryConstants.ATTR_DEPRECATED);
         this.custom = false;
         this.isLoaded = false;
 
@@ -475,6 +481,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 }
             }
         }
+
+        {
+            IConfigurationElement[] notAvailable = config.getChildren(RegistryConstants.ATTR_NOT_AVAILABLE_DRIVER);
+            for (IConfigurationElement element : notAvailable) {
+                this.nonAvailabilityReason = element.getAttribute(RegistryConstants.ATTR_MESSAGE);
+                this.nonAvailabilityTitle = element.getAttribute(RegistryConstants.ATTR_TITLE);
+                this.nonAvailabilityDescription = element.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+            }
+        }
     }
 
     Map<String, Object> getDefaultParameters() {
@@ -499,14 +514,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    public boolean isDeprecated() {
-        return deprecationReason != null;
+    public boolean isNotAvailable() {
+        return nonAvailabilityReason != null;
     }
 
     @NotNull
     @Override
-    public String getDeprecationReason() {
-        return deprecationReason;
+    public String getNonAvailabilityReason() {
+        return nonAvailabilityReason;
+    }
+
+    @Nullable
+    @Override
+    public String getNonAvailabilityTitle() {
+        return nonAvailabilityTitle;
+    }
+
+    @Nullable
+    @Override
+    public String getNonAvailabilityDescription() {
+        return nonAvailabilityDescription;
     }
 
     public void setReplacedBy(DriverDescriptor replaceBy) {
