@@ -80,6 +80,7 @@ public interface DBPPlatformUI {
     void showWarningMessageBox(@NotNull final String title, @Nullable final String message);
     boolean confirmAction(String title, String message);
     boolean confirmAction(String title, String message, boolean isWarning);
+    boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning);
 
     /**
      * Show user-choice dialog for a user to mandatory select one of the options described with the labels
