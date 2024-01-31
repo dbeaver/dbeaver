@@ -39,7 +39,4 @@ public interface DBCDocumentHierarchical<ENTITY extends DBSEntity> {
 
     void deleteChildEntity(String name, @NotNull DBRProgressMonitor monitor) throws DBCException;
 
-    String getPath();
-
-    Object getDocumentId();
 }
