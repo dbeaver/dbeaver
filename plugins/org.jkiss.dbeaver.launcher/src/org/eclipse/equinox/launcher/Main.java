@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.launcher;
+package org.eclipse.equinox.launcher;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
