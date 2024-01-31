@@ -33,17 +33,28 @@ public class SMUser extends SMSubject {
         boolean enabled,
         @Nullable String authRole
     ) {
-        this(userId, null, new String[0], enabled, authRole);
+        this(userId, null, new String[0], enabled, authRole, true);
     }
+
+    public SMUser(
+        @NotNull String userId,
+        boolean enabled,
+        @Nullable String authRole,
+        boolean secretStorage
+    ) {
+        this(userId, null, new String[0], enabled, authRole, secretStorage);
+    }
+
 
     public SMUser(
         @NotNull String userId,
         @Nullable Map<String, String> metaParameters,
         @NotNull String[] teams,
         boolean enabled,
-        @Nullable String authRole
+        @Nullable String authRole,
+        boolean secretStorage
     ) {
-        super(userId, metaParameters);
+        super(userId, metaParameters, secretStorage);
         this.userTeams = teams;
         this.enabled = enabled;
         this.authRole = authRole;
