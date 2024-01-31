@@ -302,7 +302,25 @@ public class DesktopUI implements DBPPlatformUI {
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
     }
-    
+
+    @Override
+    public boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning) {
+        final Reply confirm = new Reply(buttonLabel);
+        final Reply[] decision = new Reply[1];
+
+        UIUtils.syncExec(() -> {
+            decision[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                .setTitle(title)
+                .setMessage(message)
+                .setReplies(confirm, Reply.CANCEL)
+                .setDefaultReply(Reply.CANCEL)
+                .setPrimaryImage(isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION)
+                .showMessageBox();
+        });
+
+        return decision[0] == confirm;
+    }
+
     @NotNull
     @Override
     public UserChoiceResponse showUserChoice(
@@ -389,19 +407,40 @@ public class DesktopUI implements DBPPlatformUI {
         return null;
     }
 
+    @Nullable
     @Override
-    public DBPAuthInfo promptUserCredentials(final String prompt, final String userName, final String userPassword, final boolean passwordOnly, boolean showSavePassword) {
-        return promptUserCredentials(prompt,
+    public DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @Nullable String userName,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
+        return promptUserCredentials(
+            prompt,
+            description,
             UIConnectionMessages.dialog_connection_auth_label_username,
             userName,
             UIConnectionMessages.dialog_connection_auth_label_password,
             userPassword,
             passwordOnly,
-            showSavePassword);
+            showSavePassword
+        );
     }
 
+    @Nullable
     @Override
-    public DBPAuthInfo promptUserCredentials(String prompt, String userNameLabel, String userName, String passwordLabel, String userPassword, boolean passwordOnly, boolean showSavePassword) {
+    public DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @NotNull String userNameLabel,
+        @Nullable String userName,
+        @NotNull String passwordLabel,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
         return new UITask<DBPAuthInfo>() {
             @Override
             public DBPAuthInfo runTask() {
@@ -409,6 +448,7 @@ public class DesktopUI implements DBPPlatformUI {
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
                 authDialog.setUserNameLabel(userNameLabel);
                 authDialog.setPasswordLabel(passwordLabel);
+                authDialog.setDescription(description);
                 if (!passwordOnly) {
                     authDialog.setUserName(userName);
                 }

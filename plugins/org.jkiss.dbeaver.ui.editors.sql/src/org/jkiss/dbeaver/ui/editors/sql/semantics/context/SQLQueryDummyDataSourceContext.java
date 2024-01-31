@@ -474,6 +474,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return SQLQuerySymbolClass.TABLE;
         }
 
+        @NotNull
         @Override
         protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
             try {
