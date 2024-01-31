@@ -235,7 +235,6 @@ public class SQLBackgroundParsingJob {
                 return;
             }
 
-            // TODO should we really schedule a new task each time this method called? or maybe at least cancel it at first
             if (this.job.getState() != Job.RUNNING) {
                 this.job.cancel();
             }
