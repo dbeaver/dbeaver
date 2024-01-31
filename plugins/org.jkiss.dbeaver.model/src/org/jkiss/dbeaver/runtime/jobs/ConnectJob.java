@@ -61,9 +61,9 @@ public class ConnectJob extends AbstractJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
-            if (container.getDriver().isDeprecated()) {
+            if (container.getDriver().isNotAvailable()) {
                 throw new DBException(
-                    "Driver " + container.getDriver().getFullName()+ " is deprecated." +
+                    "Driver " + container.getDriver().getFullName()+ " is not available." +
                     " Please see the connection page for more info.");
             }
 
