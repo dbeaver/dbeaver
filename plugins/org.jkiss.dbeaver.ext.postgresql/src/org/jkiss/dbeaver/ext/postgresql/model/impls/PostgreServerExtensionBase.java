@@ -70,6 +70,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsForeignKeys() {
+        return true;
+    }
+
+    @Override
     public boolean supportsMaterializedViews() {
         return dataSource.isServerVersionAtLeast(9, 3);
     }
@@ -125,6 +130,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsLanguages() {
+        return true;
+    }
+
+    @Override
     public boolean supportsTablespaces() {
         return true;
     }
@@ -176,6 +186,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+        return null;
+    }
+
+    @Override
+    public String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) throws DBException {
         return null;
     }
 
@@ -461,6 +476,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public boolean supportsHasOidsColumn() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsColumnsRequiring() {
         return true;
     }
 

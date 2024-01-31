@@ -154,10 +154,12 @@ public class TaskRegistry implements DBTTaskRegistry
 
     @Override
     public DBTSchedulerDescriptor getActiveScheduler() {
-        // TODO: support active scheduler configuration
-        return schedulers.isEmpty() ? null : schedulers.get(0);
+        return schedulers.stream()
+            .filter(SchedulerDescriptor::isEnabled)
+            .findFirst().orElse(null);
     }
 
+    @Nullable
     public DBTScheduler getActiveSchedulerInstance() {
         DBTSchedulerDescriptor activeScheduler = getActiveScheduler();
         if (activeScheduler != null) {
