@@ -27,17 +27,6 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
 import java.util.List;
 
-// // TODO
-//
-//class SQLQueryCteSubqueryModel implements SQLQueryRowsSource {
-//    private final SQLQueryCorrelationSpec correlation;
-//    private final SQLQueryRowsSource subquery;
-//}
-//
-//class SQLQueryCteModel {
-//    private final boolean isRecursive;
-//    private final Map<String, SQLQueryCteSubqueryModel> subqueries = new HashMap<>();
-//}
 public abstract class SQLQueryDataContext {
     
     public abstract List<SQLQueryResultColumn> getColumnsList();
