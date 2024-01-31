@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionMessage;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
-import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -88,7 +87,7 @@ public class MetadataProcessor {
                     isRequiresFullyQualifiedName(child, context)
                 );
                 if (description.length() + childText.length() > maxRequestLength * 3) {
-                    log.debug("Trim GPT metadata prompt  at table '" + child.getName() + "' - too long request");
+                    log.debug("Trim AI metadata prompt  at table '" + child.getName() + "' - too long request");
                     break;
                 }
                 description.append(childText);
@@ -106,7 +105,7 @@ public class MetadataProcessor {
         @NotNull DAICompletionContext context,
         @Nullable DBSObjectContainer mainObject,
         @NotNull IAIFormatter formatter,
-        @NotNull GPTModel model,
+        boolean isChatAPI,
         int maxRequestTokens
     ) throws DBException {
         if (mainObject == null || mainObject.getDataSource() == null) {
@@ -117,7 +116,7 @@ public class MetadataProcessor {
 
         final StringBuilder sb = new StringBuilder();
 
-        if (model.isChatAPI()) {
+        if (isChatAPI) {
             sb.append("You must perform SQL completion. " +
                 "Your query must start with \"SELECT\" and be enclosed with triple backslash on new lines. " +
                 "Talk naturally, as if you were talking to a human.");

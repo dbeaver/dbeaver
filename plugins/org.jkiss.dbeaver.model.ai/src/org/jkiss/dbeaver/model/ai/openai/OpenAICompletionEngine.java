@@ -163,7 +163,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             context,
             mainObject,
             formatter,
-            model,
+            model.isChatAPI(),
             getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS
         );
 
@@ -185,7 +185,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             mainObject,
             completionText,
             formatter,
-            model
+            model.isChatAPI()
         );
     }
 
@@ -227,7 +227,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     ) throws DBException {
         monitor.subTask("Request GPT completion");
         try {
-            if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.GPT_LOG_QUERY))) {
+            if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.AI_LOG_QUERY))) {
                 if (completionRequest instanceof ChatCompletionRequest) {
                     log.debug("Chat GPT request:\n" + ((ChatCompletionRequest) completionRequest).getMessages().stream()
                         .map(message -> "# " + message.getRole() + "\n" + message.getContent())
@@ -289,7 +289,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
                 } else {
                     completionText = ((ChatCompletionChoice) choice).getMessage().getContent();
                 }
-                if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.GPT_LOG_QUERY))) {
+                if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.AI_LOG_QUERY))) {
                     log.debug("GPT response:\n" + completionText);
                 }
                 return completionText;
@@ -351,7 +351,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
     protected Object createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) {
         Double temperature =
-            CommonUtils.toDouble(getSettings().getProperties().get(AIConstants.GPT_MODEL_TEMPERATURE), 0.0);
+            CommonUtils.toDouble(getSettings().getProperties().get(AIConstants.AI_TEMPERATURE), 0.0);
         final GPTModel model = getModel();
         if (model.isChatAPI()) {
             return buildChatRequest(messages, responseSize, temperature, model.getName());
