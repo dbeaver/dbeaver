@@ -352,13 +352,7 @@ public class SQLBackgroundParsingJob {
             log.error(ex);
             return;
         }
-        
-        String textTitle = UIUtils.syncExec(new RunnableWithResult<String>() {
-            @Override
-            public String runWithResult() {
-                return editor.getTitle();
-            }
-        });
+
         IProgressMonitor monitor = jobMonitor.getNestedMonitor(); //Job.getJobManager().createProgressGroup();
         try {
             if (workLength == 0) {
@@ -401,7 +395,7 @@ public class SQLBackgroundParsingJob {
             boolean isReadMetadataForQueryAnalysis = this.editor.isReadMetadataForQueryAnalysisEnabled();
             DBCExecutionContext executionContext = this.editor.getExecutionContext();
             
-            monitor.beginTask("Background query analysis for " + textTitle, 1 + elements.size());
+            monitor.beginTask("Background query analysis for " + editor.getTitle(), 1 + elements.size());
             monitor.worked(1);
             
             int i = 1;
