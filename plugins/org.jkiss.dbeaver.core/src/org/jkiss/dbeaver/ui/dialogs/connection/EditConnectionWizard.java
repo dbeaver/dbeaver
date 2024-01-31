@@ -141,7 +141,7 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public void addPages() {
-        if (dataSource.getDriver().isDeprecated()) {
+        if (dataSource.getDriver().isNotAvailable()) {
             addPage(new ConnectionPageDeprecation(dataSource.getDriver()));
             return;
         }
@@ -249,7 +249,7 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public boolean performFinish() {
-        if (dataSource.getDriver().isDeprecated()) {
+        if (dataSource.getDriver().isNotAvailable()) {
             return true;
         }
 
@@ -340,7 +340,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
-        if (dataSource.getDriver().isDeprecated()) {
+        if (dataSource.getDriver().isNotAvailable()) {
             return;
         }
 

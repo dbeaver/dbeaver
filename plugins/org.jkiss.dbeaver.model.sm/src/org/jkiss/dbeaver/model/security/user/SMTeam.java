@@ -30,11 +30,11 @@ public class SMTeam extends SMSubject {
     private Set<String> permissions = new LinkedHashSet<>();
 
     public SMTeam(String teamId) {
-        this(teamId, null, null);
+        this(teamId, null, null, true);
     }
 
-    public SMTeam(String teamId, String name, String description) {
-        super(teamId, null);
+    public SMTeam(String teamId, String name, String description, boolean secretStorage) {
+        super(teamId, null, secretStorage);
         this.teamName = name;
         this.description = description;
     }

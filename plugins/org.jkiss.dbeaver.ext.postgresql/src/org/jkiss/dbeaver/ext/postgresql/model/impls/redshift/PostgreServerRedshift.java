@@ -331,7 +331,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     @Override
     public boolean supportsStoredProcedures() {
-        return isRedshiftVersionAtLeast(1, 0, 7562);
+        return isRedshiftVersionAtLeast(1, 0, 6118);
     }
 
     @Override

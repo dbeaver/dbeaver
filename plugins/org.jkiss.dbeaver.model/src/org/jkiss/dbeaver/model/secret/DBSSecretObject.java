@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
+package org.jkiss.dbeaver.model.secret;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 
-public abstract class SQLQueryNodeModel {
-
-    private final Interval region;
-
-    protected SQLQueryNodeModel(@NotNull Interval region) {
-        this.region = region;
-    }
+/**
+ * An object for which secrets may exist
+ */
+public interface DBSSecretObject {
+    @NotNull
+    String getProjectId();
 
     @NotNull
-    public final Interval getInterval() {
-        return this.region;
-    }
+    String getSecretObjectId();
 
-    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
-        return this.applyImpl(visitor, arg);
-    }
-
-    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg);
+    @NotNull
+    String getSecretObjectType();
 }
