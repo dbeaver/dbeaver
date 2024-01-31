@@ -29,6 +29,7 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     }
 
 
+    @NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         // TODO

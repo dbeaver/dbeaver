@@ -12,8 +12,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
- org.eclipse.ui.workbench.texteditor,
- org.jkiss.wmi;visibility:=reexport
+ org.eclipse.ui.workbench.texteditor
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

@@ -22,6 +22,7 @@
    <plugin id="org.jkiss.dbeaver.ext.athena" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.bigquery" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.clickhouse" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.cubrid" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.db2.zos" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.db2.i" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.derby" version="0.0.0" />
@@ -51,7 +52,6 @@
    <plugin id="org.jkiss.dbeaver.ext.vertica" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.ocient" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.datavirtuality" version="0.0.0" />
-   <plugin id="org.jkiss.wmi" os="win32" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.denodo" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.databricks" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.altibase" version="0.0.0" />

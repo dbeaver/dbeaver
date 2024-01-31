@@ -133,7 +133,6 @@ public class STMKnownRuleNames {
     public static final String withClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_withClause];
     public static final String cteList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_cteList];
     public static final String with_list_element = SQLStandardParser.ruleNames[SQLStandardParser.RULE_with_list_element];
-    public static final String withColumnList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_withColumnList];
     public static final String queryName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_queryName];
 
     // select, subquery
