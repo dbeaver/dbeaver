@@ -22,6 +22,8 @@ import org.eclipse.jface.text.ITextInputListener;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.graphics.Font;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineVi
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.SQLDocumentSyntaxContextListener;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
@@ -165,7 +168,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         });
 
         this.treeViewer.setUseHashlookup(true);
-        this.treeViewer.setLabelProvider(new SQLOutlineLabelProvider());
+        this.treeViewer.setLabelProvider(new DecoratingStyledCellLabelProvider(new SQLOutlineLabelProvider(), null, null));
         this.treeViewer.setInput(editor.getEditorInput());
         this.treeViewer.setAutoExpandLevel(3);
 
@@ -246,7 +249,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private interface SQLOutlineNodeBuilder extends SQLQueryNodeModelVisitor<OutlineQueryNode, Object> {
     }
 
-    private static class SQLOutlineLabelProvider implements ILabelProvider, IFontProvider {
+    private static class SQLOutlineLabelProvider implements ILabelProvider, IFontProvider, IStyledLabelProvider {
+        private final Styler extraTextStyler = StyledString.createColorRegistryStyler(JFacePreferences.DECORATIONS_COLOR, null);
 
         @Override
         public void addListener(@Nullable ILabelProviderListener listener) {
@@ -282,13 +286,31 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return element instanceof OutlineNode node ? node.getText() : element.toString();
         }
 
+        @NotNull
+        @Override
+        public StyledString getStyledText(@NotNull Object element) {
+            StyledString result = new StyledString();
+            if (element instanceof OutlineNode node) {
+                String text = node.getText();
+                result.append(text);
+                
+                String extra = node.getExtraText(); 
+                if (extra != null) {
+                    result.append(extra);
+                    result.setStyle(text.length(), extra.length(), extraTextStyler);
+                }
+            } else {
+                result.append(element.toString());
+            }
+            return result;
+        }
+
         @Override
         public void dispose() {
         }
     }
 
     private abstract class OutlineNode {
-        public static final OutlineNode[] EMPTY_NODES_ARRAY = new OutlineNode[0];
 
         private OutlineNode parentNode;
 
@@ -304,6 +326,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
 
         public abstract String getText();
+
+        @Nullable
+        public String getExtraText() {
+            return null;
+        }
 
         @Nullable
         public Image getImage() {
@@ -473,6 +500,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 parent,
                 scriptElement.getQueryModel(),
                 prepareQueryPreview(scriptElement),
+                null,
                 UIIcon.SQL_EXECUTE,
                 scriptElement.getQueryModel()
             );
@@ -494,6 +522,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private class OutlineQueryNode extends OutlineNode {
         private final SQLQueryNodeModel model;
         private final String text;
+        private final String extraText;
         private final DBPImage icon;
         private final SQLQueryNodeModel[] childModels;
         private final IRegion textRange;
@@ -503,12 +532,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @NotNull OutlineNode parentNode,
             @NotNull SQLQueryNodeModel model,
             @NotNull String text,
+            @Nullable String extraText,
             @NotNull DBPImage icon,
             @NotNull SQLQueryNodeModel... childModels
         ) {
             super(parentNode);
             this.model = model;
             this.text = text;
+            this.extraText = extraText;
             this.icon = icon;
             this.childModels = childModels;
 
@@ -551,6 +582,12 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return this.text;
         }
 
+        @Nullable
+        @Override
+        public String getExtraText() {
+            return this.extraText;
+        }
+        
         @NotNull
         @Override
         protected DBPImage getIcon() {
@@ -602,11 +639,10 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     this.makeNode(
                         node,
                         flattenedExpr,
-                        prepareQueryPreview(
-                            flattenedExpr.getContent()),
-                            DBIcon.TREE_FUNCTION,
-                            flattenedExpr.getOperands().toArray(SQLQueryNodeModel[]::new)
-                        );
+                        prepareQueryPreview(flattenedExpr.getContent()),
+                        DBIcon.TREE_FUNCTION,
+                        flattenedExpr.getOperands().toArray(SQLQueryNodeModel[]::new)
+                    );
             }
             return null;
         }
@@ -625,14 +661,52 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 def = s.getDefinition();
             }
 
-            DBPImage icon = def instanceof SQLQuerySymbolByDbObjectDefinition o && o.getDbObject() instanceof DBSTypedObject to ?
-                DBValueFormatting.getTypeImage(to)
-                : DBIcon.TYPE_UNKNOWN;
-
-            this.makeNode(node, columnRefExpr, tableRefString + columnRefExpr.getColumnNameIfTrivialExpression().getName(), icon);
+            String text = tableRefString + columnRefExpr.getColumnNameIfTrivialExpression().getName();
+            String extraText = this.obtainExprTypeNameString(columnRefExpr);
+            DBPImage icon = this.obtainExprTypeIcon(columnRefExpr);
+            
+            this.makeNode(node, columnRefExpr, text, extraText, icon);
             return null;
         }
 
+        @Nullable
+        @Override
+        public Object visitValueMemberReferenceExpr(@NotNull SQLQueryValueMemberExpression memberRefExpr, @NotNull OutlineQueryNode node) {
+            String text = prepareQueryPreview(memberRefExpr.getExprContent());
+            String extraText = this.obtainExprTypeNameString(memberRefExpr);
+            DBPImage icon = this.obtainExprTypeIcon(memberRefExpr);
+            
+            this.makeNode(node, memberRefExpr, text, extraText, icon);
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitValueIndexingExpr(@NotNull SQLQueryValueIndexingExpression indexingExpr, @NotNull OutlineQueryNode node) {
+            String text = prepareQueryPreview(indexingExpr.getExprContent());
+            String extraText = this.obtainExprTypeNameString(indexingExpr);
+            DBPImage icon = this.obtainExprTypeIcon(indexingExpr);
+            
+            this.makeNode(node, indexingExpr, text, extraText, icon);
+            return null;
+        }
+
+        @Nullable
+        private String obtainExprTypeNameString(@NotNull SQLQueryValueExpression expr) {
+            SQLQueryExprType type = expr.getValueType();
+            String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+            return typeName == null ? null : (" : " + typeName);
+        }
+
+        @NotNull
+        private DBPImage obtainExprTypeIcon(@NotNull SQLQueryValueExpression expr) {
+            SQLQueryExprType type = expr.getValueType();
+            return type == null || type == SQLQueryExprType.UNKNOWN ? DBIcon.TYPE_UNKNOWN
+                : type == SQLQueryExprType.STRING ? DBIcon.TYPE_STRING
+                : type.getTypedDbObject() == null ? DBIcon.TYPE_UNKNOWN
+                : DBValueFormatting.getTypeImage(type.getTypedDbObject());
+        }
+        
         @Nullable
         @Override
         public Object visitSelectionResult(@NotNull SQLQuerySelectionResultModel selectionResult, @NotNull OutlineQueryNode node) {
@@ -818,9 +892,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         public Object visitSelectColumnSpec(@NotNull ColumnSpec columnSpec, @NotNull OutlineQueryNode arg) {
             SQLQuerySymbolEntry alias = columnSpec.getAlias();
             SQLQuerySymbol mayBeColumnName = columnSpec.getValueExpression().getColumnNameIfTrivialExpression();
-            this.makeNode(arg, columnSpec, alias == null ?
-                (mayBeColumnName == null ? "?" : mayBeColumnName.getName()) :
-                alias.getRawName(), DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
+            
+            String text = alias != null ? alias.getRawName() : (mayBeColumnName == null ? "?" : mayBeColumnName.getName());
+            String extraText = this.obtainExprTypeNameString(columnSpec.getValueExpression());
+            
+            this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
             return null;
         }
 
@@ -831,7 +907,18 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @NotNull DBPImage icon,
             @NotNull SQLQueryNodeModel... childModels
         ) {
-            parent.children.add(new OutlineQueryNode(parent, model, text, icon, childModels));
+            parent.children.add(new OutlineQueryNode(parent, model, text, null, icon, childModels));
+        }
+        
+        private void makeNode(
+            @NotNull OutlineQueryNode parent,
+            @NotNull SQLQueryNodeModel model,
+            @NotNull String text,
+            @NotNull String extraText,
+            @NotNull DBPImage icon,
+            @NotNull SQLQueryNodeModel... childModels
+        ) {
+            parent.children.add(new OutlineQueryNode(parent, model, text, extraText, icon, childModels));
         }
     }
 }

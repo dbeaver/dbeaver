@@ -60,7 +60,7 @@ public class SQLQuerySelectionModel extends SQLQueryNodeModel {
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitSelectionModel(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitSelectionModel(this, arg);
     }
 }

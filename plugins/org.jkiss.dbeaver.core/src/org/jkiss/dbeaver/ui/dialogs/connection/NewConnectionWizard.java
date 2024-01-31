@@ -193,7 +193,7 @@ public class NewConnectionWizard extends ConnectionWizard
     {
         if (page == pageDrivers) {
             final DBPDriver driver = getSelectedDriver();
-            if (driver.isDeprecated()) {
+            if (driver.isNotAvailable()) {
                 final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver);
                 nextPage.setWizard(this);
                 return nextPage;
@@ -219,7 +219,7 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish() {
         DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
-        if (driver.isDeprecated()) {
+        if (driver.isNotAvailable()) {
             return true;
         }
         ConnectionPageSettings pageSettings = getPageSettings();
@@ -249,7 +249,7 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
         final DBPDriver driver = dataSource.getDriver();
-        if (driver.isDeprecated()) {
+        if (driver.isNotAvailable()) {
             return;
         }
         ConnectionPageSettings pageSettings = getPageSettings(driver);
