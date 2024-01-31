@@ -25,7 +25,7 @@ public class TryPROHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        ShellUtils.launchProgram("https://dbeaver.com/trial/");
+        ShellUtils.launchProgram("https://dbeaver.com/download/");
         return null;
     }
 }

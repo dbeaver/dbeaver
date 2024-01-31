@@ -342,9 +342,9 @@
                     description="ODBC bridge driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
-                    deprecated="%driver.odbc.deprecation.reason"
                     categories="sql">
                     <os name="win32"/>
+                    <notAvailableDriver title="%deprecated.title" description="%deprecated.description" message="%driver.odbc.deprecation.reason"/>
                 </driver>
                 <driver
                     id="derby"
@@ -1734,9 +1734,8 @@
                         description="Driver for MongoDB"
                         iconBig="icons/mongodb_icon_big.png"
                         supportsDistributedMode="false"
-                        notAvailableDriver="true"
-                        deprecated="%driver.mongodb.reason"
                         categories="nosql,bigdata,document">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.mongodb.reason"/>
                 </driver>
                 <driver
                         id="cql-ce"
@@ -1744,9 +1743,8 @@
                         description="Driver for Apache Cassandra 2.x/3.x/4.x"
                         iconBig="icons/cassandra_icon_big.png"
                         supportsDistributedMode="false"
-                        notAvailableDriver="true"
-                        deprecated="%driver.cassandra.reason"
                         categories="nosql,bigdata,keyvalue">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.cassandra.reason"/>
                 </driver>
 
             </drivers>
