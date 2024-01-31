@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai.completion;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -33,6 +29,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DAICompletionEngine<SERVICE> {
 
     @NotNull
@@ -43,33 +43,28 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull DAICompletionMessage message,
         @NotNull IAIFormatter formatter
     ) throws DBException {
-        String result = requestCompletion(monitor, context, List.of(message), formatter);
+        String result = requestCompletion(monitor, context, List.of(message), formatter, false);
         DAICompletionResponse response = createCompletionResponse(context, result);
         return Collections.singletonList(response);
     }
 
     @NotNull
-    public List<DAICompletionResponse> performQueryCompletion(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionContext context,
-        @NotNull DAICompletionSession session,
-        @NotNull IAIFormatter formatter
-    ) throws DBException {
-        return performQueryCompletion(monitor, context, session, formatter, false);
-    }
-
-    @NotNull
     @Override
-    public List<DAICompletionResponse> performQueryCompletion(
+    public List<DAICompletionResponse> performSessionCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull DAICompletionSession session,
         @NotNull IAIFormatter formatter,
         boolean includeAssistantMessages
     ) throws DBException {
-        final String result = requestCompletion(monitor, context, filterMessages(session.getMessages(), includeAssistantMessages), formatter);
         final DAICompletionResponse response = new DAICompletionResponse();
-        response.setResultCompletion(result);
+        response.setResultCompletion(requestCompletion(
+            monitor,
+            context,
+            filterMessages(session.getMessages(), includeAssistantMessages),
+            formatter,
+            true
+        ));
         return List.of(response);
     }
 
@@ -90,7 +85,8 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull List<DAICompletionMessage> messages,
-        @NotNull IAIFormatter formatter
+        @NotNull IAIFormatter formatter,
+        boolean chatCompletion
     ) throws DBException;
 
     @NotNull

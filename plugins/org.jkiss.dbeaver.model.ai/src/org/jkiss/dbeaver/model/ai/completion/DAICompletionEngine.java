@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.model.ai.completion;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Completion engine
@@ -50,26 +50,13 @@ public interface DAICompletionEngine<SERVICE> {
      * Do query completion in a session
      */
     @NotNull
-    @Deprecated
-    List<DAICompletionResponse> performQueryCompletion(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionContext context,
-        @NotNull DAICompletionSession session,
-        @NotNull IAIFormatter formatter
-    ) throws DBException;
-
-    /**
-     * Do query completion in a session
-     */
-    @NotNull
-    List<DAICompletionResponse> performQueryCompletion(
+    List<DAICompletionResponse> performSessionCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull DAICompletionSession session,
         @NotNull IAIFormatter formatter,
         boolean allMessages
     ) throws DBException;
-
 
     boolean isValidConfiguration();
 

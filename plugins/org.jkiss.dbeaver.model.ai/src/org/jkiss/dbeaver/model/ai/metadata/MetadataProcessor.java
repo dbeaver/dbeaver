@@ -106,7 +106,8 @@ public class MetadataProcessor {
         @Nullable DBSObjectContainer mainObject,
         @NotNull IAIFormatter formatter,
         boolean isChatAPI,
-        int maxRequestTokens
+        int maxRequestTokens,
+        boolean chatCompletion
     ) throws DBException {
         if (mainObject == null || mainObject.getDataSource() == null) {
             throw new DBException("Invalid completion request");
@@ -116,10 +117,12 @@ public class MetadataProcessor {
 
         final StringBuilder sb = new StringBuilder();
 
-        if (isChatAPI) {
+        if (chatCompletion && isChatAPI) {
             sb.append("You must perform SQL completion. " +
                 "Your query must start with \"SELECT\" and be enclosed with triple backslash on new lines. " +
                 "Talk naturally, as if you were talking to a human.");
+        } else if (isChatAPI) {
+            sb.append("Perform SQL completion. Start response with SELECT keyword. Start every line with \"--\".");
         } else {
             sb.append("Perform SQL completion.");
         }
