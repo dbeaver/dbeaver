@@ -128,6 +128,8 @@ public class DataSourceDescriptor
     // Password is shared.
     // It will be saved in local configuration even if project uses secured storage
     private boolean sharedCredentials;
+    // store type changed and all exists secrets must be removed
+    private transient boolean credentialsStoreTypeChanged;
     @Nullable
     private transient List<DBSSecretValue> availableSharedCredentials;
     @Nullable
@@ -450,8 +452,14 @@ public class DataSourceDescriptor
         return sharedCredentials;
     }
 
+    //ignore changed store type
+    public void forceSetSharedCredentials(boolean sharedCredentials) {
+        this.sharedCredentials = sharedCredentials;
+    }
+
     @Override
     public void setSharedCredentials(boolean sharedCredentials) {
+        this.credentialsStoreTypeChanged = this.sharedCredentials != sharedCredentials;
         this.sharedCredentials = sharedCredentials;
     }
 
@@ -859,6 +867,11 @@ public class DataSourceDescriptor
             // Do not save secrets for hidden or temporary datasources
             return false;
         }
+
+        if (shouldRemoveExistsSecrets()) {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+            secretController.deleteObjectSecrets(this);
+        }
         // Save only if secrets were already resolved or it is a new connection
         if (secretsResolved || (force && getProject().isUseSecretStorage())) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
@@ -925,6 +938,10 @@ public class DataSourceDescriptor
 
     private synchronized boolean isSharedCredentialsSelected() {
         return selectedSharedCredentials != null;
+    }
+
+    private boolean shouldRemoveExistsSecrets() {
+        return credentialsStoreTypeChanged;
     }
 
     @Override
