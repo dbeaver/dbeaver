@@ -24,14 +24,15 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreFeatures;
@@ -41,10 +42,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -53,12 +52,15 @@ import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 
 public class DataSourceHandler {
@@ -78,9 +80,8 @@ public class DataSourceHandler {
         @NotNull DBPDataSourceContainer dataSourceContainer,
         @Nullable final DBRProgressListener onFinish
     ) {
-        if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
-            final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) dataSourceContainer;
-            Job[] connectJobs = Job.getJobManager().find(dataSourceDescriptor);
+        if (dataSourceContainer instanceof final DataSourceDescriptor dataSource && !dataSourceContainer.isConnected()) {
+            Job[] connectJobs = Job.getJobManager().find(dataSource);
             if (!ArrayUtils.isEmpty(connectJobs)) {
                 // Already connecting/disconnecting - just return
                 if (monitor != null && connectJobs.length == 1) {
@@ -93,10 +94,37 @@ public class DataSourceHandler {
                 return;
             }
 
+            // Ask for additional credentials if needed
+            if (dataSource.isSharedCredentials() && !dataSource.isSharedCredentialsSelected()) {
+                try {
+                    List<DBSSecretValue> sharedCredentials = dataSource.listSharedCredentials();
+                    if (sharedCredentials.size() == 1) {
+                        dataSource.setSelectedSharedCredentials(sharedCredentials.get(0));
+                    } else if (!sharedCredentials.isEmpty()) {
+                        // Show credentials selector
+                        DBSSecretValue selectedCredentials = selectSharedCredentials(dataSource, sharedCredentials);
+                        if (selectedCredentials != null) {
+                            dataSource.setSelectedSharedCredentials(selectedCredentials);
+                        } else {
+                            if (onFinish != null) {
+                                onFinish.onTaskFinished(Status.CANCEL_STATUS);
+                            }
+                            return;
+                        }
+                    }
+                } catch (DBException e) {
+                    if (onFinish != null) {
+                        onFinish.onTaskFinished(GeneralUtils.makeExceptionStatus(e));
+                    }
+                    DBWorkbench.getPlatformUI().showError(dataSource.getName(), null, e);
+                    return;
+                }
+            }
+
             CoreFeatures.CONNECTION_OPEN.use(Map.of(
                 "driver", dataSourceContainer.getDriver().getPreconfiguredId()
             ));
-            final ConnectJob connectJob = new ConnectJob(dataSourceDescriptor);
+            final ConnectJob connectJob = new ConnectJob(dataSource);
             final JobChangeAdapter jobChangeAdapter = new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
@@ -104,10 +132,7 @@ public class DataSourceHandler {
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
-                            connectJob.getName(),
-                            null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
-                            result));
+                        DBWorkbench.getPlatformUI().showError(connectJob.getName(), null, result);
                     }
                 }
             };
@@ -176,10 +201,7 @@ public class DataSourceHandler {
                     if (onFinish != null) {
                         onFinish.run();
                     } else if (result != null && !result.isOK()) {
-                        DBWorkbench.getPlatformUI().showError(
-                            disconnectJob.getName(),
-                            null,
-                            result);
+                        DBWorkbench.getPlatformUI().showError(disconnectJob.getName(), null, result);
                     }
                     //DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
                 }
@@ -410,6 +432,57 @@ public class DataSourceHandler {
             Button okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
             Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
             setButtons(okButton, cancelButton);
+        }
+    }
+
+    private static DBSSecretValue selectSharedCredentials(DataSourceDescriptor dataSource, List<DBSSecretValue> credentials) {
+        return UIUtils.syncExec(new RunnableWithResult<>() {
+            @Override
+            public DBSSecretValue runWithResult() {
+                CredentialsSelectorDialog dialog = new CredentialsSelectorDialog(dataSource, credentials);
+                if (dialog.open() == IDialogConstants.OK_ID) {
+                    return dialog.selected;
+                }
+                return null;
+            }
+        });
+    }
+
+    static class CredentialsSelectorDialog extends BaseDialog {
+
+        private final DataSourceDescriptor dataSource;
+        private final List<DBSSecretValue> credentials;
+        private DBSSecretValue selected;
+        public CredentialsSelectorDialog(DataSourceDescriptor dataSource, List<DBSSecretValue> credentials) {
+            super(UIUtils.getActiveShell(),
+                "Select credentials",
+                null);
+            this.dataSource = dataSource;
+            this.credentials = credentials;
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            final Composite composite = super.createDialogArea(parent);
+
+            //UIUtils.createInfoLabel(composite, "Please select credentials you want to use to connect to '" + dataSource.getName() + "'");
+            final Table credsTable = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+            credsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            for (DBSSecretValue sv : credentials) {
+                TableItem item = new TableItem(credsTable, SWT.NONE);
+                item.setText(sv.getDisplayName());
+                item.setData(sv);
+            }
+
+            credsTable.setSelection(0);
+            selected = credentials.get(0);
+
+            credsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent ->
+                selected = (DBSSecretValue) selectionEvent.item.getData()
+                ));
+
+            return composite;
         }
     }
 

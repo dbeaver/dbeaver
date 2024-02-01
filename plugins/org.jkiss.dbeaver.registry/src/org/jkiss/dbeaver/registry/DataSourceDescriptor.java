@@ -904,7 +904,7 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    private synchronized List<DBSSecretValue> listSharedCredentials() throws DBException {
+    public synchronized List<DBSSecretValue> listSharedCredentials() throws DBException {
         if (!isSharedCredentials()) {
             return List.of();
         }
@@ -923,7 +923,7 @@ public class DataSourceDescriptor
         loadFromSecret(this.selectedSharedCredentials.getValue());
     }
 
-    private synchronized boolean isSharedCredentialsSelected() {
+    public synchronized boolean isSharedCredentialsSelected() {
         return selectedSharedCredentials != null;
     }
 
@@ -1507,6 +1507,11 @@ public class DataSourceDescriptor
 
             this.dataSource = null;
             this.resolvedConnectionInfo = null;
+            // Reset resolved secrets
+            this.availableSharedCredentials = null;
+            this.selectedSharedCredentials = null;
+            this.secretsResolved = false;
+
             this.connectTime = null;
 
             if (reflect) {
