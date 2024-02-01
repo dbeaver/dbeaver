@@ -115,6 +115,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     }
 
     private PolylineConnection createConnectionFigure(DBRProgressMonitor monitor) {
+        if (monitor.isCanceled()) {
+            return null;
+        }
         PolylineConnection conn;
         ERDConnectionRouter router = getDiagramPart().getActiveRouter();
         if (router != null) {
