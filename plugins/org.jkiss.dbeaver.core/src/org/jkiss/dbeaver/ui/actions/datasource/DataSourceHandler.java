@@ -113,10 +113,11 @@ public class DataSourceHandler {
                         }
                     }
                 } catch (DBException e) {
+                    dataSource.forgetSecrets();
                     if (onFinish != null) {
                         onFinish.onTaskFinished(GeneralUtils.makeExceptionStatus(e));
                     }
-                    DBWorkbench.getPlatformUI().showError(dataSource.getName(), null, e);
+                    DBWorkbench.getPlatformUI().showError(dataSource.getName(), e.getMessage(), e);
                     return;
                 }
             }

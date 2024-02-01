@@ -517,6 +517,8 @@ public class DataSourceDescriptor
     public void forgetSecrets() {
         this.secretsResolved = false;
         this.secretsContainsDatabaseCreds = false;
+        this.availableSharedCredentials = null;
+        this.selectedSharedCredentials = null;
     }
 
     @Nullable
@@ -1508,9 +1510,7 @@ public class DataSourceDescriptor
             this.dataSource = null;
             this.resolvedConnectionInfo = null;
             // Reset resolved secrets
-            this.availableSharedCredentials = null;
-            this.selectedSharedCredentials = null;
-            this.secretsResolved = false;
+            forgetSecrets();
 
             this.connectTime = null;
 
