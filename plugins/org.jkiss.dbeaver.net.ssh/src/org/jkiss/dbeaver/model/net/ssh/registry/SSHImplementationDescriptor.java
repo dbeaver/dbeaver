@@ -17,10 +17,11 @@
 package org.jkiss.dbeaver.model.net.ssh.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.net.ssh.SSHImplementation;
+import org.jkiss.dbeaver.model.net.ssh.SSHSessionController;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,6 +36,7 @@ public class SSHImplementationDescriptor extends AbstractContextDescriptor
     private final String id;
     private final String label;
     private final boolean supportsJumpServer;
+    private volatile SSHSessionController instance;
 
     SSHImplementationDescriptor(
         IConfigurationElement config)
@@ -59,14 +61,21 @@ public class SSHImplementationDescriptor extends AbstractContextDescriptor
         return label;
     }
 
-    public boolean isSupportsJumpServer() {
+    public boolean supportsJumpServer() {
         return supportsJumpServer;
     }
 
-    public SSHImplementation createImplementation()
-        throws DBException
-    {
-        return implClass.createInstance(SSHImplementation.class);
+    @NotNull
+    public SSHSessionController getInstance() throws DBException {
+        if (instance == null) {
+            synchronized (this) {
+                if (instance == null) {
+                    instance = implClass.createInstance(SSHSessionController.class);
+                }
+            }
+        }
+
+        return instance;
     }
 
 }

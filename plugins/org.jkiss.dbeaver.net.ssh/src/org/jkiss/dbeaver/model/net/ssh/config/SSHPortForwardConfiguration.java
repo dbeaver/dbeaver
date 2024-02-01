@@ -48,4 +48,9 @@ public class SSHPortForwardConfiguration {
     public int getRemotePort() {
         return remotePort;
     }
+
+    @Override
+    public String toString() {
+        return localHost + ":" + localPort + " <- " + remoteHost + ":" + remotePort;
+    }
 }

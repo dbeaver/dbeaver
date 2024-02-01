@@ -54,7 +54,12 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     private transient volatile Session[] sessions;
 
     @Override
-    protected synchronized void setupTunnel(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration, @NotNull SSHHostConfiguration[] hosts, @NotNull SSHPortForwardConfiguration portForward) throws DBException, IOException {
+    protected synchronized void setupTunnel(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull SSHHostConfiguration[] hosts,
+        @NotNull SSHPortForwardConfiguration portForward
+    ) throws DBException, IOException {
         if (jsch == null) {
             jsch = new JSch();
             JSch.setLogger(new JschLoggerProxy());
@@ -85,7 +90,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
             try {
                 if (index > 0) {
-                    final int port = sessions[index - 1].setPortForwardingL(0, host.getHostname(), host.getPort());
+                    final int port = sessions[index - 1].setPortForwardingL("127.0.0.1", 0, host.getHostname(), host.getPort());
                     monitor.subTask("Instantiate tunnel " + hosts[index - 1].getHostname() + ":" + port + " -> " + host.getHostname() + ":" + host.getPort());
                     session = jsch.getSession(host.getUsername(), "localhost", port);
                 } else {
@@ -145,8 +150,9 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                     session.setConfig("StrictHostKeyChecking", "ask");
                 } catch (JSchException e) {
                     if (e.getCause() instanceof ArrayIndexOutOfBoundsException) {
-                        if (DBWorkbench.getPlatformUI().confirmAction(JSCHUIMessages.ssh_file_corrupted_dialog_title, 
-                            JSCHUIMessages.ssh_file_corrupted_dialog_message, true)) {
+                        if (DBWorkbench.getPlatformUI().confirmAction(JSCHUIMessages.ssh_file_corrupted_dialog_title,
+                            JSCHUIMessages.ssh_file_corrupted_dialog_message, true
+                        )) {
                             session.setConfig("StrictHostKeyChecking", "no");
                         } else {
                             throw e;
@@ -191,7 +197,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     @Override
     public void invalidateTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
         // Do not test - just reopen the tunnel. Otherwise it may take too much time.
-        boolean isAlive = false;//session != null && session.isConnected();
+        boolean isAlive = false;// session != null && session.isConnected();
         if (isAlive) {
             try {
                 for (Session session : sessions) {
@@ -269,7 +275,12 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private void addIdentityKeyFile(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, Path key, String password) throws IOException, JSchException {
+    private void addIdentityKeyFile(
+        DBRProgressMonitor monitor,
+        DBPDataSourceContainer dataSource,
+        Path key,
+        String password
+    ) throws IOException, JSchException {
         String header;
 
         try (BufferedReader reader = Files.newBufferedReader(key)) {
@@ -305,7 +316,8 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                     "-N", password,
                     "-m", "PEM",
                     "-f", tmp.toAbsolutePath().toString(),
-                    "-q")
+                    "-q"
+                )
                 .start();
 
             try {
@@ -386,9 +398,15 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
 
         @Override
-        public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
+        public String[] promptKeyboardInteractive(
+            String destination,
+            String name,
+            String instruction,
+            String[] prompt,
+            boolean[] echo
+        ) {
             log.debug("JSCH keyboard interactive auth");
-            return new String[]{ configuration.getPassword() };
+            return new String[]{configuration.getPassword()};
         }
     }
 
@@ -424,13 +442,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private static class SftpProgressMonitorAdapter implements SftpProgressMonitor {
-        private final DBRProgressMonitor delegate;
-
-        public SftpProgressMonitorAdapter(@NotNull DBRProgressMonitor delegate) {
-            this.delegate = delegate;
-        }
-
+    private record SftpProgressMonitorAdapter(@NotNull DBRProgressMonitor delegate) implements SftpProgressMonitor {
         @Override
         public void init(int op, String src, String dst, long max) {
             if (op == PUT) {

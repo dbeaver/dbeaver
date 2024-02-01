@@ -211,7 +211,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     protected boolean isSupportsJumpServer() {
         for (SSHImplementationDescriptor descriptor : SSHImplementationRegistry.getInstance().getDescriptors()) {
             if (descriptor.getImplClass().getObjectClass() == getClass()) {
-                return descriptor.isSupportsJumpServer();
+                return descriptor.supportsJumpServer();
             }
         }
         return false;
