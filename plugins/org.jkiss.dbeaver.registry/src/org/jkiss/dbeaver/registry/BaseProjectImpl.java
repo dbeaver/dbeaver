@@ -83,10 +83,11 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private final DBPWorkspace workspace;
     @NotNull
     private final SMSessionContext sessionContext;
+    @NotNull
+    private final DBFFileSystemManager fileSystemManager;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
-    private volatile DBFFileSystemManager fileSystemManager;
     protected volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
@@ -100,6 +101,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
         this.workspace = workspace;
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
+        this.fileSystemManager = new DBFFileSystemManager(this);
     }
 
     public void setInMemory(boolean inMemory) {
@@ -234,14 +236,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @NotNull
     @Override
     public DBFFileSystemManager getFileSystemManager() {
-        if (fileSystemManager == null) {
-            synchronized (this) {
-                if (fileSystemManager == null) {
-                    fileSystemManager = new DBFFileSystemManager(this);
-                }
-            }
-        }
-
         return fileSystemManager;
     }
 
@@ -496,12 +490,8 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public void dispose() {
         if (dataSourceRegistry != null) {
             dataSourceRegistry.dispose();
-            dataSourceRegistry = null;
         }
-        if (fileSystemManager != null) {
-            fileSystemManager.close();
-            fileSystemManager = null;
-        }
+        getFileSystemManager().close();
     }
 
     public ProjectFormat getFormat() {
