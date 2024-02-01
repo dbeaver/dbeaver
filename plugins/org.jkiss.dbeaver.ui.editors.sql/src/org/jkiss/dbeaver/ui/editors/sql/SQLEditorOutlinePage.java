@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextInputListener;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.viewers.*;
@@ -36,9 +35,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -68,14 +65,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private List<OutlineNode> rootNodes;
     private SelectionSyncOperation currentSelectionSyncOp = SelectionSyncOperation.NONE;
     private SQLOutlineNodeBuilder currentNodeBuilder = new SQLOutlineNodeFullBuilder();
-    private AbstractUIJob refreshJob = new AbstractUIJob("SQL editor outline refresh") {
-        @Override
-        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
-            treeViewer.refresh();
-            return Status.OK_STATUS;
-        }
-    };
-    
+
     private final CaretListener caretListener = event -> {
         if (currentSelectionSyncOp == SelectionSyncOperation.NONE) {
             LinkedList<OutlineNode> path = new LinkedList<>();
@@ -106,6 +96,20 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 treeViewer.getTree().setRedraw(true);
                 currentSelectionSyncOp = SelectionSyncOperation.NONE;
             }
+        }
+    };
+
+    private final ITextInputListener textInputListener = new ITextInputListener() {
+
+        @Override
+        public void inputDocumentChanged(IDocument oldInput, IDocument newInput) {
+            if (newInput != null) {
+                treeViewer.setInput(editor.getEditorInput());
+            }
+        }
+
+        @Override
+        public void inputDocumentAboutToBeChanged(IDocument oldInput, IDocument newInput) {
         }
     };
 
@@ -171,8 +175,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         TextViewer textViewer = this.editor.getTextViewer();
         if (textViewer != null) {
             textViewer.getTextWidget().addCaretListener(this.caretListener);
+            textViewer.addTextInputListener(this.textInputListener);
         }
-        
+
         SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
         scheduleRefresh();
     }
@@ -194,12 +199,13 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private void scheduleRefresh() {
-        switch (this.refreshJob.getState()) {
-            case Job.WAITING, Job.SLEEPING -> this.refreshJob.cancel();
-        }
-        this.refreshJob.schedule(500);
+        UIUtils.asyncExec(() -> {
+            if (!treeViewer.getTree().isDisposed()) {
+                treeViewer.refresh();
+            }
+        });
     }
-    
+
     @NotNull
     private String prepareQueryPreview(@NotNull SQLDocumentScriptItemSyntaxContext scriptElement) {
         return this.prepareQueryPreview(scriptElement.getOriginalText());
@@ -228,6 +234,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         TextViewer textViewer = this.editor.getTextViewer();
         if (textViewer != null) {
             textViewer.getTextWidget().removeCaretListener(this.caretListener);
+            textViewer.removeTextInputListener(this.textInputListener);
         }
         
         this.scriptNode.dispose();
