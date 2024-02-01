@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerModern;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -53,6 +54,8 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import javax.crypto.SecretKey;
 
 class DataSourceSerializerModern implements DataSourceSerializer
 {
@@ -314,7 +317,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         jsonWriter.endObject();
     }
 
-    private String loadConfigFile(InputStream stream, boolean decrypt) throws IOException {
+    private String loadConfigFile(InputStream stream, boolean decrypt) throws DBException, IOException {
         ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
         try {
             IOUtils.copyStream(stream, credBuffer);
@@ -324,7 +327,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!decrypt) {
             return credBuffer.toString(StandardCharsets.UTF_8);
         } else {
-            DBSValueEncryptor encryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
+            SecretKey localSecretKey = registry.getProject().getLocalSecretKey();
+            if (localSecretKey == null) {
+                throw new DBInterruptedException("Error getting user credentials (canceled)");
+            }
+            DBSValueEncryptor encryptor = new DefaultValueEncryptor(localSecretKey);
             try {
                 return new String(encryptor.decryptValue(credBuffer.toByteArray()), StandardCharsets.UTF_8);
             } catch (Exception e) {
@@ -801,7 +808,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
             return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
             }.getType());
         } catch (Exception e) {
-            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() &&
+                DBWorkbench.getPlatform().getApplication().isCommunity()) {
                 if (DBWorkbench.getPlatformUI().confirmAction(
                         RegistryMessages.project_open_cannot_read_credentials_title,
                         NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
@@ -820,9 +828,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     throw new DBException("Project opening canceled by user");
                 }
             }
-            log.error("Error reading secure credentials", e);
+            throw new DBException("Error reading secure credentials", e);
         }
-        return null;
     }
 
     @Nullable
