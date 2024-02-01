@@ -151,20 +151,21 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull List<DAICompletionMessage> messages,
-        @NotNull IAIFormatter formatter
+        @NotNull IAIFormatter formatter,
+        boolean chatCompletion
     ) throws DBException {
         final DBCExecutionContext executionContext = context.getExecutionContext();
         DBSObjectContainer mainObject = getScopeObject(context, executionContext);
 
         final GPTModel model = getModel();
-        GPTCompletionAdapter service = getServiceInstance(executionContext);
         final DAICompletionMessage metadataMessage = MetadataProcessor.INSTANCE.createMetadataMessage(
             monitor,
             context,
             mainObject,
             formatter,
-            model,
-            getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS
+            model.isChatAPI(),
+            getMaxTokens() - AIConstants.MAX_RESPONSE_TOKENS,
+            chatCompletion
         );
 
         final List<DAICompletionMessage> mergedMessages = new ArrayList<>();
@@ -175,6 +176,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             return "";
         }
 
+        GPTCompletionAdapter service = getServiceInstance(executionContext);
         Object completionRequest = createCompletionRequest(mergedMessages);
         String completionText = callCompletion(monitor, mergedMessages, service, completionRequest);
 
@@ -185,7 +187,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             mainObject,
             completionText,
             formatter,
-            model
+            model.isChatAPI()
         );
     }
 
@@ -227,7 +229,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     ) throws DBException {
         monitor.subTask("Request GPT completion");
         try {
-            if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.GPT_LOG_QUERY))) {
+            if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.AI_LOG_QUERY))) {
                 if (completionRequest instanceof ChatCompletionRequest) {
                     log.debug("Chat GPT request:\n" + ((ChatCompletionRequest) completionRequest).getMessages().stream()
                         .map(message -> "# " + message.getRole() + "\n" + message.getContent())
@@ -289,7 +291,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
                 } else {
                     completionText = ((ChatCompletionChoice) choice).getMessage().getContent();
                 }
-                if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.GPT_LOG_QUERY))) {
+                if (CommonUtils.toBoolean(getSettings().getProperties().get(AIConstants.AI_LOG_QUERY))) {
                     log.debug("GPT response:\n" + completionText);
                 }
                 return completionText;
@@ -351,7 +353,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
 
     protected Object createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) {
         Double temperature =
-            CommonUtils.toDouble(getSettings().getProperties().get(AIConstants.GPT_MODEL_TEMPERATURE), 0.0);
+            CommonUtils.toDouble(getSettings().getProperties().get(AIConstants.AI_TEMPERATURE), 0.0);
         final GPTModel model = getModel();
         if (model.isChatAPI()) {
             return buildChatRequest(messages, responseSize, temperature, model.getName());

@@ -90,10 +90,10 @@ public class SQLQueryQualifiedName { // qualifier
             if (this.entityName != null) {
                 this.entityName.setDefinition(tableModel);
                 if (this.schemaName != null) {
-                    this.entityName.setDefinition(tableModel);
+                    this.schemaName.setDefinition(tableModel);
                 }
                 if (this.catalogName != null) {
-                    this.entityName.setDefinition(tableModel);
+                    this.catalogName.setDefinition(tableModel);
                 }
             }
         }
