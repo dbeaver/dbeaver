@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
@@ -34,10 +29,6 @@ import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.progress.IProgressService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
@@ -58,7 +49,6 @@ import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -200,51 +190,32 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     public void rearrangeDiagram() {
-        Job job = new Job(ERDUIMessages.erd_job_rearrange_diagram_title) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                monitor.beginTask(ERDUIMessages.erd_job_rearrange_diagram_title, 10);
-                monitor.subTask(ERDUIMessages.erd_job_rearrange_connection_lbl);
-                for (Object part : getChildren()) {
-                    if (part instanceof NodePart) {
-                        Display.getDefault().syncExec(() -> {
-                            resetConnectionConstraints(SubMonitor.convert(monitor),
-                                    ((NodePart) part).getSourceConnections());
-                        });
+        UIUtils.runUIJob(ERDUIMessages.erd_job_rearrange_diagram_title, monitor -> {
+            for (Object part : getChildren()) {
+                if (part instanceof NodePart) {
+                    if (monitor.isCanceled()) {
+                        break;
                     }
+                    resetConnectionConstraints(monitor, ((NodePart) part).getSourceConnections());
                 }
-                monitor.worked(3);
-                monitor.subTask(ERDUIMessages.erd_job_rearrange_entity_lbl);
-                Display.getDefault().syncExec(() -> {
-                    delegatingLayoutManager.rearrange(getFigure());
-                });
-                monitor.worked(3);
-                monitor.subTask(ERDUIMessages.erd_job_repaint_diagram_lbl);
-                Display.getDefault().syncExec(() -> {
-                    getFigure().repaint();
-                });
-                monitor.worked(4);
-                monitor.done();
-                return Status.OK_STATUS;
             }
-        };
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IProgressService progressService = workbench.getProgressService();
-        job.setPriority(Job.INTERACTIVE);
-        job.setUser(true);
-        progressService.showInDialog(UIUtils.getActiveShell(), job);
-        job.schedule();
+            if (monitor.isCanceled()) {
+                return;
+            }
+            delegatingLayoutManager.rearrange(monitor, getFigure());
+            getFigure().repaint();
+            monitor.done();
+        });
     }
 
-    private void resetConnectionConstraints(IProgressMonitor monitor, List<?> sourceConnections) {
+    private void resetConnectionConstraints(DBRProgressMonitor monitor, List<?> sourceConnections) {
         if (!CommonUtils.isEmpty(sourceConnections)) {
             for (Object sc : sourceConnections) {
                 if (sc instanceof AbstractConnectionEditPart) {
                     ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
                     if (sc instanceof AssociationPart) {
                         ((AssociationPart) sc).getAssociation().setInitBends(null);
-                        DBRProgressMonitor dbMonitor = new DefaultProgressMonitor(monitor);
-                        ((AssociationPart) sc).setConnectionRouting(dbMonitor,
+                        ((AssociationPart) sc).setConnectionRouting(monitor,
                                 (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
                     }
                 }
