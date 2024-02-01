@@ -64,8 +64,8 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
         text.insert(contents);
 
         // Always insert the cursor at the end of inserted text
-        if(wordStartingPosition != -1) {
-            text.setSelection(wordStartingPosition + contents.length(),wordStartingPosition + contents.length());
+        if (wordStartingPosition != -1) {
+            text.setSelection(wordStartingPosition + contents.length(), wordStartingPosition + contents.length());
         }
     }
 

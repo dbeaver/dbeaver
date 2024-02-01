@@ -238,7 +238,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                         e.doit = false;
                         setCustomDataFilter();
-                    } else if(e.keyCode == SWT.SPACE) {
+                    } else if (e.keyCode == SWT.SPACE) {
                         // close the proposal window, if space is pressed.
                         filtersProposalAdapter.closeProposalPopup();
                     }
