@@ -16,23 +16,23 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Locale;
 
 /**
  * Data transfer job
  */
-public class DataTransferJob implements DBRRunnableWithProgress {
+public class DataTransferJob extends AbstractJob {
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
     private final DataTransferSettings settings;
@@ -40,17 +40,13 @@ public class DataTransferJob implements DBRRunnableWithProgress {
     private long elapsedTime;
     private boolean hasErrors;
 
-    private final Locale locale;
     private final Log log;
-    private final DBTTaskExecutionListener listener;
 
-    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener)
-    {
+    public DataTransferJob(@NotNull DataTransferSettings settings, @NotNull DBTTask task, @NotNull Log log, int index) {
+        super("Data transfer job [" + index + "]: " + settings.getConsumer().getName());
         this.settings = settings;
         this.task = task;
-        this.locale = locale;
         this.log = log;
-        this.listener = listener;
     }
 
     public DataTransferSettings getSettings() {
@@ -70,7 +66,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
     }
 
     @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+    protected IStatus run(DBRProgressMonitor monitor) {
         monitor.beginTask("Perform data transfer", 1);
         hasErrors = false;
         long startTime = System.currentTimeMillis();
@@ -87,12 +83,13 @@ public class DataTransferJob implements DBRRunnableWithProgress {
                     hasErrors = true;
                 }
             } catch (Exception e) {
-                throw new InvocationTargetException(e);
+                return GeneralUtils.makeExceptionStatus(e);
             }
         }
         monitor.done();
 //        listener.subTaskFinished(task, null);
         elapsedTime = System.currentTimeMillis() - startTime;
+        return Status.OK_STATUS;
     }
 
     private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws Exception

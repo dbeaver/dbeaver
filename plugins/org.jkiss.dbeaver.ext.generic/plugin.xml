@@ -342,9 +342,9 @@
                     description="ODBC bridge driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
-                    deprecated="%driver.odbc.deprecation.reason"
                     categories="sql">
                     <os name="win32"/>
+                    <notAvailableDriver title="%deprecated.title" description="%deprecated.description" message="%driver.odbc.deprecation.reason"/>
                 </driver>
                 <driver
                     id="derby"
@@ -987,6 +987,9 @@
                     categories="timeseries">
                     <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="stored-quoted-case" value="lower"/>
+                    <parameter name="stored-unquoted-case" value="lower"/>
+                    <parameter name="identifier-quotes" value="`:`"/>
                 </driver>
 
                 <!-- TDengine Cloud -->
@@ -1002,6 +1005,9 @@
                     categories="timeseries">
                     <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="stored-quoted-case" value="lower"/>
+                    <parameter name="stored-unquoted-case" value="lower"/>
+                    <parameter name="identifier-quotes" value="`:`"/>
                 </driver>
 
                 <!-- Yandex ClickHouse -->
@@ -1721,6 +1727,25 @@
                         description="%driver.redshift.description"
                         webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                         categories="sql,analytic,cloud"/>
+                <!-- Drivers Teasers -->
+                <driver
+                        id="mongo-ce"
+                        label="MongoDB"
+                        description="Driver for MongoDB"
+                        iconBig="icons/mongodb_icon_big.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,bigdata,document">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.mongodb.reason"/>
+                </driver>
+                <driver
+                        id="cql-ce"
+                        label="Cassandra"
+                        description="Driver for Apache Cassandra 2.x/3.x/4.x"
+                        iconBig="icons/cassandra_icon_big.png"
+                        supportsDistributedMode="false"
+                        categories="nosql,bigdata,keyvalue">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.cassandra.reason"/>
+                </driver>
 
             </drivers>
 

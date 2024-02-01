@@ -26,6 +26,7 @@ public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
         super(range, left, right);
     }
 
+    @NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(
         @NotNull SQLQueryDataContext context,
@@ -35,7 +36,7 @@ public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsCrossJoin(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitRowsCrossJoin(this, arg);
     }
 }

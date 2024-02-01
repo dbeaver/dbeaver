@@ -114,9 +114,49 @@ public interface DBPPlatformUI {
     /**
      * Asks for user credentials. Returns null if user canceled this action.
      */
-    DBPAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly, boolean showSavePassword);
+    @Nullable
+    default DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String userName,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
+        return promptUserCredentials(null, prompt, userName, userPassword, passwordOnly, showSavePassword);
+    }
 
-    DBPAuthInfo promptUserCredentials(String prompt, String userNameLabel, String userName, String passwordLabel, String userPassword, boolean passwordOnly, boolean showSavePassword);
+    @Nullable
+    DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @Nullable String userName,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword);
+
+    @Nullable
+    default DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @NotNull String userNameLabel,
+        @Nullable String userName,
+        @NotNull String passwordLabel,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
+        return promptUserCredentials(null, prompt, userNameLabel, userName, passwordLabel, userPassword, passwordOnly, showSavePassword);
+    }
+
+    @Nullable
+    DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @NotNull String userNameLabel,
+        @Nullable String userName,
+        @NotNull String passwordLabel,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword);
 
     /**
      * Asks for password change. Returns null if user canceled this action.

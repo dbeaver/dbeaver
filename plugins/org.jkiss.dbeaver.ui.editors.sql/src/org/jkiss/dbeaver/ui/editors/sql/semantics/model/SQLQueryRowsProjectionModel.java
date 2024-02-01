@@ -94,7 +94,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryDataContext unresolvedResult = fromSource.propagateContext(context, statistics);
+        SQLQueryDataContext unresolvedResult = this.fromSource.propagateContext(context, statistics);
         EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
@@ -129,7 +129,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsProjection(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitRowsProjection(this, arg);
     }
 }

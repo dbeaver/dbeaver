@@ -825,7 +825,7 @@ public class PropertyTreeViewer extends TreeViewer {
         this.expandMode = expandMode;
     }
 
-    protected void setExpandSingleRoot(boolean expandSingleRoot) {
+    public void setExpandSingleRoot(boolean expandSingleRoot) {
         this.expandSingleRoot = expandSingleRoot;
     }
 

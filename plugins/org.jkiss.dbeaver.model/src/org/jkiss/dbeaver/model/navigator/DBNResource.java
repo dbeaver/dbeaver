@@ -51,7 +51,7 @@ import java.util.*;
 /**
  * DBNResource
  */
-public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStreamData {
+public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStreamData, DBNLazyNode {
     private static final Log log = Log.getLog(DBNResource.class);
 
     //TODO: create real resource root node
@@ -637,4 +637,10 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     public boolean isRemoteResource() {
         return false;
     }
+
+    @Override
+    public boolean needsInitialization() {
+        return children == null;
+    }
+
 }

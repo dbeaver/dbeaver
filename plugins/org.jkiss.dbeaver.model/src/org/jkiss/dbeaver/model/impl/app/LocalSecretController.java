@@ -53,7 +53,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
 
     @Nullable
     @Override
-    public String getSecretValue(@NotNull String secretId) throws DBException {
+    public String getPrivateSecretValue(@NotNull String secretId) throws DBException {
         try {
             Path keyPath = root.resolve(escapeSecretKey(secretId));
 
@@ -68,7 +68,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     }
 
     @Override
-    public void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException {
+    public void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException {
         try {
             Path keyPath = root.resolve(escapeSecretKey(secretId));
 
