@@ -329,7 +329,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         } else {
             SecretKey localSecretKey = registry.getProject().getLocalSecretKey();
             if (localSecretKey == null) {
-                throw new DBInterruptedException("Error getting user credentials (canceled)");
+                throw new DBInterruptedException("Error getting user credentials (operation was canceled)");
             }
             DBSValueEncryptor encryptor = new DefaultValueEncryptor(localSecretKey);
             try {
