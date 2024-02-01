@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.CompleteTupleSpec;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.TupleSpec;
@@ -33,6 +34,12 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     @Nullable
     R visitValueColumnRefExpr(SQLQueryValueColumnReferenceExpression columnRefExpr, T arg);
+    
+    @Nullable
+    R visitValueMemberReferenceExpr(@NotNull SQLQueryValueMemberExpression memberRefExpr, T arg);
+    
+    @Nullable
+    R visitValueIndexingExpr(@NotNull SQLQueryValueIndexingExpression indexingExpr, T arg);
 
     @Nullable
     R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);
@@ -72,4 +79,10 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     @Nullable
     R visitSelectColumnSpec(@NotNull ColumnSpec columnSpec, @NotNull T arg);
+
+    @Nullable
+    R visitRowsCte(@NotNull SQLQueryRowsCteModel cte, T arg);
+
+    @Nullable
+    R visitRowsCteSubquery(@NotNull SQLQueryRowsCteSubqueryModel cteSubquery, @NotNull T arg);
 }

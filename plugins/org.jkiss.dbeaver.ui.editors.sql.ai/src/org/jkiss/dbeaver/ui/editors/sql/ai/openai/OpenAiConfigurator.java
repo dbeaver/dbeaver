@@ -141,10 +141,10 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
             );
         }
         temperature = CommonUtils.toString(aiSettings.getProperties().get(
-            AIConstants.GPT_MODEL_TEMPERATURE),
+            AIConstants.AI_TEMPERATURE),
             "0.0"
         );
-        logQuery = CommonUtils.toBoolean(aiSettings.getProperties().get(AIConstants.GPT_LOG_QUERY)) ;
+        logQuery = CommonUtils.toBoolean(aiSettings.getProperties().get(AIConstants.AI_LOG_QUERY)) ;
         applySettings();
     }
 
@@ -163,8 +163,8 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         if (isUsesModel()) {
             aiSettings.getProperties().put(AIConstants.GPT_MODEL, model);
         }
-        aiSettings.getProperties().put(AIConstants.GPT_MODEL_TEMPERATURE, temperature);
-        aiSettings.getProperties().put(AIConstants.GPT_LOG_QUERY, logQuery);
+        aiSettings.getProperties().put(AIConstants.AI_TEMPERATURE, temperature);
+        aiSettings.getProperties().put(AIConstants.AI_LOG_QUERY, logQuery);
     }
 
     @Override

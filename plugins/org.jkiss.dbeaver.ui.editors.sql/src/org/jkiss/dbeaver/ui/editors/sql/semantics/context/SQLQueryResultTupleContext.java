@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
@@ -44,17 +43,20 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
         public final SQLQueryRowsSourceModel source;
         public final DBSEntity realSource;
         public final DBSEntityAttribute realAttr;
+        public final SQLQueryExprType type;
         
         public SQLQueryResultColumn(
             @NotNull SQLQuerySymbol symbol,
             @NotNull SQLQueryRowsSourceModel source,
             @Nullable DBSEntity realSource,
-            @Nullable DBSEntityAttribute realAttr
+            @Nullable DBSEntityAttribute realAttr, 
+            @NotNull SQLQueryExprType type
         ) {
             this.symbol = symbol;
             this.source = source;
             this.realSource = realSource;
             this.realAttr = realAttr;
+            this.type = type;
         }   
     }
     
@@ -89,10 +91,12 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
         for (DBSEntity source : this.realSources) {
             try {
                 DBSEntityAttribute attr = source.getAttribute(monitor, unquoted);
-                result = columns.stream()
-                    .filter(c -> c.realAttr == attr)
-                    .findFirst()
-                    .orElse(null);
+                if (attr != null) {
+                    result = columns.stream()
+                        .filter(c -> c.realAttr == attr)
+                        .findFirst()
+                        .orElse(null);
+                }
             } catch (DBException e) {
                 log.debug("Failed to resolve column", e);
                 result = null;
