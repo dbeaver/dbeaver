@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.utils.ListNode;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.List;
 
@@ -63,7 +64,19 @@ public class SQLBackgroundParsingJob {
     private final SQLEditorBase editor;
     private final SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext();
     private IDocument document = null;
-    private volatile AbstractJob task = null;
+    private final AbstractJob job = new AbstractJob("Background parsing job") {
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                SQLBackgroundParsingJob.this.doWork(monitor);
+                return Status.OK_STATUS;
+            } catch (BadLocationException e) {
+                log.debug(e);
+                return Status.CANCEL_STATUS;
+            }
+        }
+    };
+
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
@@ -222,29 +235,16 @@ public class SQLBackgroundParsingJob {
                 return;
             }
 
-            // TODO should we really schedule a new task each time this method called? or maybe at least cancel it at first
-            this.task = new AbstractJob("Background parsing job") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    try {
-                        SQLBackgroundParsingJob.this.doWork();
-                        return Status.OK_STATUS;
-                    } catch (BadLocationException e) {
-                        log.debug(e);
-                        return Status.CANCEL_STATUS;
-                    }
-                }
-            };
-            this.task.schedule(schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1));
+            if (this.job.getState() != Job.RUNNING) {
+                this.job.cancel();
+            }
+            this.job.schedule(schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1));
         }
     }
 
     private void cancel() {
         synchronized (this.syncRoot) {
-            if (this.task != null) {
-                this.task.cancel();
-                this.task = null;
-            }
+            this.job.cancel();
         }
     }
 
@@ -271,7 +271,7 @@ public class SQLBackgroundParsingJob {
         }
     }
 
-    private void doWork() throws BadLocationException {
+    private void doWork(DBRProgressMonitor jobMonitor) throws BadLocationException {
         TextViewer viewer = editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
             return;
@@ -294,7 +294,6 @@ public class SQLBackgroundParsingJob {
         int workLength;
         try {
             synchronized (this.syncRoot) {
-                this.task = null;
                 this.isRunning = true;
                 
                 int stepsToKeep = 2;
@@ -353,7 +352,8 @@ public class SQLBackgroundParsingJob {
             log.error(ex);
             return;
         }
-        IProgressMonitor monitor = Job.getJobManager().createProgressGroup();
+
+        IProgressMonitor monitor = jobMonitor.getNestedMonitor(); //Job.getJobManager().createProgressGroup();
         try {
             if (workLength == 0) {
                 return;
@@ -395,7 +395,7 @@ public class SQLBackgroundParsingJob {
             boolean isReadMetadataForQueryAnalysis = this.editor.isReadMetadataForQueryAnalysisEnabled();
             DBCExecutionContext executionContext = this.editor.getExecutionContext();
             
-            monitor.beginTask("Background query analysis", 1 + elements.size());
+            monitor.beginTask("Background query analysis for " + editor.getTitle(), 1 + elements.size());
             monitor.worked(1);
             
             int i = 1;
@@ -405,7 +405,10 @@ public class SQLBackgroundParsingJob {
                 }
                 try {
                     SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, isReadMetadataForQueryAnalysis);
-                    SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(element.getOriginalText());
+                    SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(
+                        element.getOriginalText(),
+                        RuntimeUtils.makeMonitor(monitor)
+                    );
                 
                     if (queryModel != null) {
                         if (DEBUG) {

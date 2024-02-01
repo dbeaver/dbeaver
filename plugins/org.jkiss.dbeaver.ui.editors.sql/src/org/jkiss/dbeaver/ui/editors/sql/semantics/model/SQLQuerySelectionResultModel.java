@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
@@ -141,9 +142,10 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
                 }
             }
 
-            return Stream.of(underlyingColumn == null ?
-                new SQLQueryResultColumn(columnName, rowsSourceModel, null, null) :
-                new SQLQueryResultColumn(columnName, rowsSourceModel, underlyingColumn.realSource, underlyingColumn.realAttr)
+            SQLQueryExprType type = valueExpression.getValueType();
+            return Stream.of(underlyingColumn == null
+                ? new SQLQueryResultColumn(columnName, rowsSourceModel, null, null, type)
+                : new SQLQueryResultColumn(columnName, rowsSourceModel, underlyingColumn.realSource, underlyingColumn.realAttr, type)
             );
         }
 
@@ -181,7 +183,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         ) {
             if (this.tableName.isNotClassified()) {
                 // TODO consider multiple joins of one table
-                SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
+                SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
                 if (rr != null) {
                     this.tableName.setDefinition(rr);
                     this.resolutionResult = rr;
@@ -219,8 +221,8 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         }
 
         @Override
-        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-            return visitor.visitSelectCompleteTupleSpec(this, node);
+        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+            return visitor.visitSelectCompleteTupleSpec(this, arg);
         }
     }
 }

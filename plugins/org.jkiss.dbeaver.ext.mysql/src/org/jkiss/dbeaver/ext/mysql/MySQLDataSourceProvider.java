@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
-import com.sun.jna.platform.win32.Advapi32Util;
-import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -30,6 +28,7 @@ import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.registry.LocalSystemRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -230,11 +229,12 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         String installDirKey
     ) {
         try {
-            if (!Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, registryRoot)) {
+            LocalSystemRegistry.Registry registry = LocalSystemRegistry.getInstance();
+            if (!registry.registryKeyExists("HKEY_LOCAL_MACHINE", registryRoot)) {
                 return;
             }
-            for (String homeKey : ArrayUtils.safeArray(Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, registryRoot))) {
-                for (var entry : Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey).entrySet()) {
+            for (String homeKey : ArrayUtils.safeArray(registry.registryGetKeys("HKEY_LOCAL_MACHINE", registryRoot))) {
+                for (var entry : registry.registryGetValues("HKEY_LOCAL_MACHINE", registryRoot + "\\" + homeKey).entrySet()) {
                     if (installDirKey.equalsIgnoreCase(entry.getKey())) {
                         String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(entry.getValue()));
                         if (new File(serverPath, "bin").exists()) {

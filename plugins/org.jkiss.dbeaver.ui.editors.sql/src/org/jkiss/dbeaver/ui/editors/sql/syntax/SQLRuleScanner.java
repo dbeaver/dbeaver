@@ -110,6 +110,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         }
         setRules(result);
         this.editor = editor;
+        this.extraSyntaxTokens.clear();
     }
 
     private IRule adaptRule(TPRule rule) {

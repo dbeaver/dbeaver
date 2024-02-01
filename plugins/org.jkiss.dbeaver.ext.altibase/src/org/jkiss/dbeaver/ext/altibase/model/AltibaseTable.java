@@ -46,6 +46,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPObjectStatistics {
 
@@ -73,27 +74,39 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
      * In order to use a conversion function for geometry type.
      */
     @Override
-    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, 
-            String tableAlias, DBDPseudoAttribute rowIdAttribute) {
-        int i = 0;
-        String tableAliasName = null;
-        
+    protected void appendSelectSource(
+        DBRProgressMonitor monitor,
+        StringBuilder query,
+        String tableAlias,
+        DBDPseudoAttribute rowIdAttribute
+    ) {
+        String tableAliasName;
         try {
             tableAliasName = (tableAlias != null) ? tableAlias + "." : "";
-            
-            for (GenericTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
+
+            List<? extends GenericTableColumn> attributes = getAttributes(monitor);
+            boolean hasGeometryColumns = CommonUtils.safeCollection(attributes).stream()
+                .anyMatch(e -> AltibaseConstants.TYPE_NAME_GEOMETRY.equalsIgnoreCase(e.getTypeName()));
+            if (!hasGeometryColumns) {
+                super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
+                return;
+            }
+            // Use this hack for geometry columns data reading
+            int i = 0;
+            for (GenericTableColumn col : CommonUtils.safeCollection(attributes)) {
+                String columnName = DBUtils.getQuotedIdentifier(col);
                 if (i++ > 0) {
                     query.append(",");
                 }
 
-                if (col.getTypeName().equalsIgnoreCase(AltibaseConstants.TYPE_NAME_GEOMETRY)) {
-                    query.append("ASEWKT(").append(tableAliasName).append(col.getName()).append(", 32000) as ").append(col.getName());
+                if (AltibaseConstants.TYPE_NAME_GEOMETRY.equalsIgnoreCase(col.getTypeName())) {
+                    query.append("ASEWKT(").append(tableAliasName).append(columnName).append(", 32000) as ").append(columnName);
                 } else {
-                    query.append(tableAliasName).append(col.getName()).append(" as ").append(col.getName());
+                    query.append(tableAliasName).append(columnName).append(" as ").append(columnName);
                 }
             }
         } catch (DBException e) {
-            log.warn(e);
+            log.warn("Can't read table attributes.", e);
         }
     }
 

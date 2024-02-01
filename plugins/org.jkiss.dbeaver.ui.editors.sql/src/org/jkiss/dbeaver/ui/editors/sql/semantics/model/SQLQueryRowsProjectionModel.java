@@ -94,33 +94,34 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryDataContext unresolvedResult = fromSource.propagateContext(context, statistics);
+        SQLQueryDataContext unresolvedResult = this.fromSource.propagateContext(context, statistics);
         EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
         SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(resultColumns);
 
+        SQLQueryDataContext filtersContext = resolvedResult.combine(unresolvedResult);
         if (this.whereClause != null) {
             this.whereClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult,
                 statistics
             );
         }
         if (this.havingClause != null) {
             this.havingClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? filtersContext : unresolvedResult,
                 statistics
             );
         }
         if (this.groupByClause != null) {
             this.groupByClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult,
                 statistics
             );
         }
         if (this.orderByClause != null) {
             this.orderByClause.propagateContext(
-                aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? resolvedResult : unresolvedResult,
+                aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? filtersContext : unresolvedResult,
                 statistics
             );
         }
@@ -128,7 +129,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsProjection(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitRowsProjection(this, arg);
     }
 }

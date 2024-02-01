@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
@@ -76,18 +77,21 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLDialect dialect = context.getDialect();
+        SQLQueryExprType type;
         if (this.tableName != null && this.tableName.isNotClassified() && this.columnName.isNotClassified()) {
-            SourceResolutionResult rr = context.resolveSource(this.tableName.toListOfStrings());
+            SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
-                SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(this.columnName.getName());
+                SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
                 this.propagateColumnDefinition(resultColumn, statistics);
+                type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
                 statistics.appendError(this.tableName.entityName, "Table or subquery not found");
+                type = SQLQueryExprType.UNKNOWN;
             }
         } else if (this.tableName == null && this.columnName.isNotClassified()) {
-            SQLQueryResultColumn resultColumn = context.resolveColumn(this.columnName.getName());
+            SQLQueryResultColumn resultColumn = context.resolveColumn(statistics.getMonitor(), this.columnName.getName());
 
             SQLQuerySymbolClass forcedClass = null;
             if (resultColumn == null) {
@@ -110,14 +114,27 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
 
             if (forcedClass != null) {
                 this.columnName.getSymbol().setSymbolClass(forcedClass);
+                type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
             } else {
                 this.propagateColumnDefinition(resultColumn, statistics);
+                type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             }
+        } else {
+            type = SQLQueryExprType.UNKNOWN;
         }
+        this.type = type;
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitValueColumnRefExpr(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitValueColumnRefExpr(this, arg);
+    }
+    
+    @Override
+    public String toString() {
+        String name = this.tableName == null ? this.columnName.getName() 
+                : this.tableName.toIdentifierString() + "." + this.columnName.getName();
+        String type = this.type == null ? "<NULL>" : this.type.toString();
+        return "ColumnReference[" + name + ":" + type + "]";
     }
 }

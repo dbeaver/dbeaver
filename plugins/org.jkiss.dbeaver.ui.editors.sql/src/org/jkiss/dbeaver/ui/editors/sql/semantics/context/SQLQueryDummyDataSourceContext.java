@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -37,7 +36,6 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
@@ -53,10 +51,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private final Set<String> knownSchemaNames;
     private final Set<String> knownCatalogNames;
 
-
     @FunctionalInterface
     private static interface DummyObjectCtor {
         DummyDbObject apply(DummyDbObject parent, String name, int index);
+    }
+    
+    public static boolean isDummyObject(@Nullable Object obj) {
+        return obj instanceof DummyDbObject;
     }
     
     private class DummyDbObject implements DBSEntityAttribute, DBSTable, DBSSchema, DBSCatalog, DBPDataSource, DBPImageProvider {
@@ -433,7 +434,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public DBSEntity findRealTable(List<String> tableName) {
+    public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
         List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
         DummyDbObject catalog = rawTableName.size() > 2
             ? this.dummyDataSource.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
@@ -448,7 +449,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     }
     
     @Override
-    public SQLQueryResultColumn resolveColumn(String simpleName) {
+    public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName) {
         return null;
     }
     
@@ -474,12 +475,15 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return SQLQuerySymbolClass.TABLE;
         }
 
+        @NotNull
         @Override
         protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
             try {
-                List<? extends DBSEntityAttribute> attributes = defaultDummyTable.getAttributes(new VoidProgressMonitor());
+                List<? extends DBSEntityAttribute> attributes = defaultDummyTable.getAttributes(statistics.getMonitor());
                 if (attributes != null) {
-                    List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(context, attributes);
+                    List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
+                        this.getName().entityName, context, statistics, attributes
+                    );
                     context = context.overrideResultTuple(columns);
                 }
             } catch (DBException ex) {

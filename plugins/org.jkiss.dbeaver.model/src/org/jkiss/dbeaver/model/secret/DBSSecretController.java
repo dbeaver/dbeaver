@@ -26,15 +26,46 @@ import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionSecretKeeper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.List;
+
 /**
  * Secret manager API
  */
 public interface DBSSecretController {
 
     @Nullable
-    String getSecretValue(@NotNull String secretId) throws DBException;
+    String getPrivateSecretValue(@NotNull String secretId) throws DBException;
 
-    void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
+    void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
+
+    @NotNull
+    default List<DBSSecretValue> discoverCurrentUserSecrets(
+        @NotNull DBSSecretObject secretObject
+    ) throws DBException {
+        return List.of();
+    }
+
+    @NotNull
+    default List<DBSSecretValue> listAllSharedSecrets(
+        @NotNull DBSSecretObject secretObject
+    ) throws DBException {
+        return List.of();
+    }
+
+    default void setSubjectSecretValue(
+        @NotNull String subjectId,
+        @NotNull DBSSecretObject secretObject,
+        @NotNull DBSSecretValue secretValue
+    ) throws DBException {
+    }
+
+    default void deleteSubjectSecrets(@NotNull String subjectId) throws DBException {
+    }
+
+    default void deleteObjectSecrets(
+        @NotNull DBSSecretObject secretObject
+    ) throws DBException {
+    }
 
     /**
      * Syncs any changes with file system/server

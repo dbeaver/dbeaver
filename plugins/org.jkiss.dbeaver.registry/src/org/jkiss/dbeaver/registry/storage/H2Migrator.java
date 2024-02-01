@@ -110,7 +110,7 @@ public class H2Migrator {
         var oldDriver = databaseConfiguration.getDriver();
         try {
             migrateDatabase(workspacePaths);
-            log.info("H2 v1->v2 migration was successful");
+            log.debug("H2 v1->v2 migration was successful");
         } catch (Exception e) {
             log.error("Migration H2 v1->v2 failed", e);
             rollback(workspacePaths, oldUrl, oldDriver);
@@ -186,7 +186,7 @@ public class H2Migrator {
 
     private void updateConfig(@NotNull WorkspacePaths workspacePaths) {
         if (!V2_DRIVER_NAME.equals(databaseConfiguration.getDriver())) {
-            log.info("Using database driver '" + V2_DRIVER_NAME + "' instead of '" + V1_DRIVER_NAME + "' from config");
+            log.debug("Using database driver '" + V2_DRIVER_NAME + "' instead of '" + V1_DRIVER_NAME + "' from config");
             databaseConfiguration.setDriver(V2_DRIVER_NAME);
         }
 
@@ -196,7 +196,7 @@ public class H2Migrator {
             workspacePaths.v2Paths.dbName
         );
         if (!updatedDbUrl.equals(databaseConfiguration.getUrl())) {
-            log.info("Using database file '" + workspacePaths.v2Paths.dbDataFile + "' instead of '"
+            log.debug("Using database file '" + workspacePaths.v2Paths.dbDataFile + "' instead of '"
                 + workspacePaths.v1Paths.dbDataFile + "' from config");
             databaseConfiguration.setUrl(updatedDbUrl);
         }
@@ -218,7 +218,7 @@ public class H2Migrator {
             if (workspacePaths.v1TraceBackupPath.toFile().exists()) {
                 Files.move(workspacePaths.v1TraceBackupPath, workspacePaths.v1Paths.dbTraceFile, StandardCopyOption.REPLACE_EXISTING);
             }
-            log.info("v1 files restored");
+            log.debug("v1 files restored");
         } catch (IOException e) {
             log.error("Unable to restore old database file '" + workspacePaths.v1Paths.dbDataFile + "'", e);
         }

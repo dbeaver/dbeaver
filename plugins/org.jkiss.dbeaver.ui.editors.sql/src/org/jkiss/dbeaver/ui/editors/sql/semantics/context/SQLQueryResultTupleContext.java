@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
@@ -43,17 +43,20 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
         public final SQLQueryRowsSourceModel source;
         public final DBSEntity realSource;
         public final DBSEntityAttribute realAttr;
+        public final SQLQueryExprType type;
         
         public SQLQueryResultColumn(
             @NotNull SQLQuerySymbol symbol,
             @NotNull SQLQueryRowsSourceModel source,
             @Nullable DBSEntity realSource,
-            @Nullable DBSEntityAttribute realAttr
+            @Nullable DBSEntityAttribute realAttr, 
+            @NotNull SQLQueryExprType type
         ) {
             this.symbol = symbol;
             this.source = source;
             this.realSource = realSource;
             this.realAttr = realAttr;
+            this.type = type;
         }   
     }
     
@@ -74,7 +77,7 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
 
     @Nullable
     @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull String columnName) {  // TODO consider reporting ambiguity
+    public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String columnName) {  // TODO consider reporting ambiguity
         SQLQueryResultColumn result = columns.stream()
             .filter(c -> c.symbol.getName().equals(columnName))
             .findFirst()
@@ -87,11 +90,13 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
         String unquoted = this.getDialect().getUnquotedIdentifier(columnName);
         for (DBSEntity source : this.realSources) {
             try {
-                DBSEntityAttribute attr = source.getAttribute(new VoidProgressMonitor(), unquoted);
-                result = columns.stream()
-                    .filter(c -> c.realAttr == attr)
-                    .findFirst()
-                    .orElse(null);
+                DBSEntityAttribute attr = source.getAttribute(monitor, unquoted);
+                if (attr != null) {
+                    result = columns.stream()
+                        .filter(c -> c.realAttr == attr)
+                        .findFirst()
+                        .orElse(null);
+                }
             } catch (DBException e) {
                 log.debug("Failed to resolve column", e);
                 result = null;

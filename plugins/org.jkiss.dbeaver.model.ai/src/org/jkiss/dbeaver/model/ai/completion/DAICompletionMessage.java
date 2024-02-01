@@ -30,13 +30,15 @@ public record DAICompletionMessage(@NotNull Role role, @NotNull String content) 
      */
     public enum Role {
         SYSTEM,
-        USER;
+        USER,
+        ASSISTANT;
 
         @NotNull
         public String getId() {
             return switch (this) {
                 case SYSTEM -> "system";
                 case USER -> "user";
+                case ASSISTANT -> "assistant";
             };
         }
     }

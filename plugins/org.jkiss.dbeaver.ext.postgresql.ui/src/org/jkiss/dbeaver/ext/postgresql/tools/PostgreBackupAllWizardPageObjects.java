@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllInfo;
@@ -80,6 +81,8 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
             new Label(buttonsPanel, SWT.NONE).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, databasesTable);
         }
+
+        PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, dataSource);
 
         setControl(composite);
     }

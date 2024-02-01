@@ -69,8 +69,8 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
             for (SQLQuerySymbolEntry column : columsToJoin) {
                 if (column.isNotClassified()) {
                     SQLQuerySymbol symbol = column.getSymbol();
-                    SQLQueryResultColumn leftColumnDef = left.resolveColumn(column.getName());
-                    SQLQueryResultColumn rightColumnDef = right.resolveColumn(column.getName());
+                    SQLQueryResultColumn leftColumnDef = left.resolveColumn(statistics.getMonitor(), column.getName());
+                    SQLQueryResultColumn rightColumnDef = right.resolveColumn(statistics.getMonitor(), column.getName());
                     if (leftColumnDef != null && rightColumnDef != null) {
                         symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
@@ -94,7 +94,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsNaturalJoin(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitRowsNaturalJoin(this, arg);
     }
 }

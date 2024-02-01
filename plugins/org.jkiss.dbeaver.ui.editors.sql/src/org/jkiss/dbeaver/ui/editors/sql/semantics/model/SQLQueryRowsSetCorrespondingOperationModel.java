@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 
 import java.util.ArrayList;
@@ -51,6 +54,26 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
     }
 
     @NotNull
+    private SQLQueryExprType obtainCommonType(@Nullable SQLQueryResultColumn leftDef, @Nullable SQLQueryResultColumn rightDef) {
+        SQLQueryExprType type;
+        
+        if (leftDef == null && rightDef == null) {
+            type = SQLQueryExprType.UNKNOWN;
+        } else if (leftDef == null) {
+            type = rightDef.type;
+        } else if (rightDef == null) {
+            type = leftDef.type; 
+        } else {        
+            type = SQLQueryExprType.tryCombineIfMatches(leftDef.type, rightDef.type);
+            if (type == null) {
+                type = SQLQueryExprType.UNKNOWN;
+            }
+        }
+        
+        return type;
+    }
+    
+    @NotNull
     @Override
     protected SQLQueryDataContext propagateContextImpl(
         @NotNull SQLQueryDataContext context,
@@ -74,7 +97,9 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                     resultColumns.add(leftColumns.get(i));
                     nonMatchingColumnSets = true;
                 } else { // TODO validate corresponding names to be the same?
-                    resultColumns.add(new SQLQueryResultColumn(leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol), this, null, null));
+                    SQLQueryExprType type = this.obtainCommonType(leftColumns.get(i), rightColumns.get(i));
+                    SQLQuerySymbol symbol = leftColumns.get(i).symbol.merge(rightColumns.get(i).symbol);
+                    resultColumns.add(new SQLQueryResultColumn(symbol, this, null, null, type));
                 }
             }
         } else { // require left and right to have columns subset as given with correspondingColumnNames
@@ -82,15 +107,16 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
             for (int i = 0; i < resultColumns.size(); i++) {
                 SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
                 if (column.isNotClassified()) {
-                    SQLQueryResultColumn leftDef = left.resolveColumn(column.getName());
-                    SQLQueryResultColumn rightDef = right.resolveColumn(column.getName());
+                    SQLQueryResultColumn leftDef = left.resolveColumn(statistics.getMonitor(), column.getName());
+                    SQLQueryResultColumn rightDef = right.resolveColumn(statistics.getMonitor(), column.getName());
 
                     if (leftDef == null || rightDef == null) {
                         nonMatchingColumnSets = true;
                     }
+                    SQLQueryExprType type = this.obtainCommonType(leftDef, rightDef);
 
                     column.getSymbol().setDefinition(column); // TODO combine multiple definitions
-                    resultColumns.add(new SQLQueryResultColumn(column.getSymbol(), this, null, null));
+                    resultColumns.add(new SQLQueryResultColumn(column.getSymbol(), this, null, null, type));
                 }
             }
         }
@@ -103,8 +129,8 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsSetCorrespondingOp(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitRowsSetCorrespondingOp(this, arg);
     }
 }
 

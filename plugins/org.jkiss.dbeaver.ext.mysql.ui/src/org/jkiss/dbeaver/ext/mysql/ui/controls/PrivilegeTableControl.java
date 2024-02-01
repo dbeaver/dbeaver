@@ -236,10 +236,12 @@ public class PrivilegeTableControl extends Composite {
                 if (isStatic && !grant.isStatic()) {
                     continue;
                 }
-                if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME) && grant.isGrantOption()) {
-                    // WITH GRANT OPTION is enabled only in this case
-                    privilegeEnabled = true;
-                    break;
+                if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
+                    if (grant.isGrantOption()) {
+                        // WITH GRANT OPTION is enabled only in this case
+                        privilegeEnabled = true;
+                        break;
+                    }
                 } else if (grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege)) {
                     privilegeEnabled = true;
                     break;
