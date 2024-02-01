@@ -885,8 +885,7 @@ public class DataSourceDescriptor
         // Delete secrets (on connection delete)
         if (getProject().isUseSecretStorage()) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-
-            secretController.setPrivateSecretValue(getSecretObjectId(), null);
+            secretController.deleteObjectSecrets(this);
         }
     }
 
