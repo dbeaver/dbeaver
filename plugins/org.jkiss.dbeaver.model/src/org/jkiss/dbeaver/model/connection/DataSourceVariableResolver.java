@@ -17,12 +17,17 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.utils.BeanUtils;
 
 public class DataSourceVariableResolver extends SystemVariablesResolver {
+    private static final Log log = Log.getLog(DataSourceVariableResolver.class);
+
     private final DBPDataSourceContainer dataSourceContainer;
     private final DBPConnectionConfiguration configuration;
 
@@ -36,7 +41,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
         return false; // see dbeaver/pro#1861
     }
 
-    protected DBPDataSourceContainer getDataSourceContainer() {
+    public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
 
@@ -91,6 +96,19 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                     return dataSourceContainer.getProject().getName();
                 case DBPConnectionConfiguration.VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
+            }
+
+            if (name.startsWith(DBPConnectionConfiguration.VARIABLE_PREFIX_ORIGIN)) {
+                String originProperty = name.substring(DBPConnectionConfiguration.VARIABLE_PREFIX_ORIGIN.length());
+                DBPDataSourceOrigin origin = dataSourceContainer.getOrigin();
+                try {
+                    Object value = BeanUtils.readObjectProperty(origin, originProperty);
+                    if (value != null) {
+                        return value.toString();
+                    }
+                } catch (Exception e) {
+                    log.debug("Invalid datasource origin property '" + originProperty + "': " + e.getMessage(), e);
+                }
             }
         }
         return super.get(name);
