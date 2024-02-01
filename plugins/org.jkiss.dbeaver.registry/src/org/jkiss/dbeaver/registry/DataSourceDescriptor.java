@@ -134,7 +134,7 @@ public class DataSourceDescriptor
     private transient DBSSecretValue selectedSharedCredentials;
 
     private boolean connectionReadOnly;
-    private boolean forceUseSingleConnection = false;
+    private boolean forceUseSingleConnection;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private DBDDataFormatterProfile formatterProfile;
@@ -1235,6 +1235,9 @@ public class DataSourceDescriptor
                     tunnelHandler = null;
                 }
             }
+            if (isSharedCredentials()) {
+                this.forgetSecrets();
+            }
             proxyHandler = null;
             // Failed
             connectFailed = true;
@@ -1405,12 +1408,8 @@ public class DataSourceDescriptor
 
         for (DataSourceHandlerDescriptor handlerDesc : DataSourceProviderRegistry.getInstance().getDataSourceHandlers()) {
             switch (eventType) {
-                case BEFORE_CONNECT:
-                    handlerDesc.getInstance().beforeConnect(monitor, this);
-                    break;
-                case AFTER_DISCONNECT:
-                    handlerDesc.getInstance().beforeDisconnect(monitor, this);
-                    break;
+                case BEFORE_CONNECT -> handlerDesc.getInstance().beforeConnect(monitor, this);
+                case AFTER_DISCONNECT -> handlerDesc.getInstance().beforeDisconnect(monitor, this);
             }
         }
     }
@@ -1547,8 +1546,7 @@ public class DataSourceDescriptor
             monitor.beginTask("Waiting for all active tasks to finish", jobCount);
             // Stop all jobs
             for (DBPDataSourceTask user : usersStamp) {
-                if (user instanceof Job) {
-                    Job job = (Job) user;
+                if (user instanceof Job job) {
                     monitor.subTask("Stop '" + job.getName() + "'");
                     if (job.getState() == Job.RUNNING) {
                         job.cancel();
@@ -1863,10 +1861,9 @@ public class DataSourceDescriptor
     }
 
     public boolean equalSettings(Object obj) {
-        if (!(obj instanceof DataSourceDescriptor)) {
+        if (!(obj instanceof DataSourceDescriptor source)) {
             return false;
         }
-        DataSourceDescriptor source = (DataSourceDescriptor) obj;
         return
             CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
                 CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
@@ -1946,28 +1943,18 @@ public class DataSourceDescriptor
             }
 
             name = name.toLowerCase(Locale.ENGLISH);
-            switch (name) {
-                case DBPConnectionConfiguration.VARIABLE_HOST:
-                    return configuration.getHostName();
-                case DBPConnectionConfiguration.VARIABLE_PORT:
-                    return configuration.getHostPort();
-                case DBPConnectionConfiguration.VARIABLE_SERVER:
-                    return configuration.getServerName();
-                case DBPConnectionConfiguration.VARIABLE_DATABASE:
-                    return configuration.getDatabaseName();
-                case DBPConnectionConfiguration.VARIABLE_USER:
-                    return configuration.getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD:
-                    return configuration.getUserPassword();
-                case DBPConnectionConfiguration.VARIABLE_URL:
-                    return configuration.getUrl();
-                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
-                    return configuration.getConnectionType().getId();
-                case DBPConnectionConfiguration.VARIABLE_DATE:
-                    return RuntimeUtils.getCurrentDate();
-                default:
-                    return SystemVariablesResolver.INSTANCE.get(name);
-            }
+            return switch (name) {
+                case DBPConnectionConfiguration.VARIABLE_HOST -> configuration.getHostName();
+                case DBPConnectionConfiguration.VARIABLE_PORT -> configuration.getHostPort();
+                case DBPConnectionConfiguration.VARIABLE_SERVER -> configuration.getServerName();
+                case DBPConnectionConfiguration.VARIABLE_DATABASE -> configuration.getDatabaseName();
+                case DBPConnectionConfiguration.VARIABLE_USER -> configuration.getUserName();
+                case DBPConnectionConfiguration.VARIABLE_PASSWORD -> configuration.getUserPassword();
+                case DBPConnectionConfiguration.VARIABLE_URL -> configuration.getUrl();
+                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE -> configuration.getConnectionType().getId();
+                case DBPConnectionConfiguration.VARIABLE_DATE -> RuntimeUtils.getCurrentDate();
+                default -> SystemVariablesResolver.INSTANCE.get(name);
+            };
         };
     }
 
@@ -1997,8 +1984,7 @@ public class DataSourceDescriptor
     @Override
     public String getRequiredExternalAuth() {
         var dsOrigin = getOrigin();
-        if (dsOrigin instanceof DBPDataSourceOriginExternal) {
-            var externalOrigin = (DBPDataSourceOriginExternal) dsOrigin;
+        if (dsOrigin instanceof DBPDataSourceOriginExternal externalOrigin) {
             return externalOrigin.getSubType();
         }
 
@@ -2074,7 +2060,8 @@ public class DataSourceDescriptor
         return true;
     }
 
-    private static DBPAuthInfo askCredentials(@NotNull DataSourceDescriptor dataSourceContainer,
+    private static DBPAuthInfo askCredentials(
+        @NotNull DataSourceDescriptor dataSourceContainer,
         @NotNull DBWTunnel.AuthCredentials authType,
         String prompt,
         String user,
@@ -2232,10 +2219,9 @@ public class DataSourceDescriptor
     }
 
     private void loadFromLegacySecret(DBSSecretController secretController) {
-        if (!(secretController instanceof DBSSecretBrowser)) {
+        if (!(secretController instanceof DBSSecretBrowser sBrowser)) {
             return;
         }
-        DBSSecretBrowser sBrowser = (DBSSecretBrowser)secretController;
 
         // Datasource props
         String keyPrefix = "datasources/" + getId();
@@ -2245,15 +2231,9 @@ public class DataSourceDescriptor
                 String secretId = secret.getId();
                 String secretValue = secretController.getPrivateSecretValue(secretId);
                 switch (secret.getName()) {
-                    case RegistryConstants.ATTR_USER:
-                        connectionInfo.setUserName(secretValue);
-                        break;
-                    case RegistryConstants.ATTR_PASSWORD:
-                        connectionInfo.setUserPassword(secretValue);
-                        break;
-                    default:
-                        connectionInfo.setAuthProperty(secretId, secretValue);
-                        break;
+                    case RegistryConstants.ATTR_USER -> connectionInfo.setUserName(secretValue);
+                    case RegistryConstants.ATTR_PASSWORD -> connectionInfo.setUserPassword(secretValue);
+                    default -> connectionInfo.setAuthProperty(secretId, secretValue);
                 }
             }
             // Handlers
@@ -2262,19 +2242,13 @@ public class DataSourceDescriptor
                 for (DBSSecret secret : sBrowser.listSecrets(itemPath.toString())) {
                     String secretId = secret.getId();
                     switch (secret.getName()) {
-                        case RegistryConstants.ATTR_USER:
-                            hc.setUserName(
-                                secretController.getPrivateSecretValue(secretId));
-                            break;
-                        case RegistryConstants.ATTR_PASSWORD:
-                            hc.setPassword(
-                                secretController.getPrivateSecretValue(secretId));
-                            break;
-                        default:
-                            hc.setProperty(
-                                secretId,
-                                secretController.getPrivateSecretValue(secretId));
-                            break;
+                        case RegistryConstants.ATTR_USER -> hc.setUserName(
+                            secretController.getPrivateSecretValue(secretId));
+                        case RegistryConstants.ATTR_PASSWORD -> hc.setPassword(
+                            secretController.getPrivateSecretValue(secretId));
+                        default -> hc.setProperty(
+                            secretId,
+                            secretController.getPrivateSecretValue(secretId));
                     }
                 }
             }

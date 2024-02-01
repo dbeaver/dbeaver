@@ -72,6 +72,14 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
             if (DBPConnectionConfiguration.VARIABLE_PASSWORD.equals(name) && isSecure()) {
                 return configuration.getUserPassword();
             }
+            if (name.startsWith(DBPConnectionConfiguration.VARIABLE_PREFIX_PROPERTIES)) {
+                return configuration.getProperty(
+                    name.substring(DBPConnectionConfiguration.VARIABLE_PREFIX_PROPERTIES.length()));
+            }
+            if (name.startsWith(DBPConnectionConfiguration.VARIABLE_PREFIX_AUTH)) {
+                return configuration.getAuthProperty(
+                    name.substring(DBPConnectionConfiguration.VARIABLE_PREFIX_AUTH.length()));
+            }
         }
         if (dataSourceContainer != null) {
             switch (name) {
