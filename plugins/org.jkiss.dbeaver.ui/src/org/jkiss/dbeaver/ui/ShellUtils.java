@@ -71,9 +71,23 @@ public final class ShellUtils {
         }
     }
 
-    public static void showInSystemExplorer(@NotNull String path) {
-        final File file = new File(path);
+    /**
+     * Opens the default file system explorer and highlights the file denoted by the supplied path. 
+     * 
+     * @param path of a file to highlight
+     * @return {@code true} on success, {@code false} on failure 
+     */
+    public static boolean showInSystemExplorer(@NotNull String path) {
+        return showInSystemExplorer(new File(path));
+    }
 
+    /**
+     * Opens the default file system explorer and highlights the file denoted by the supplied path. 
+     * 
+     * @param file a file to highlight
+     * @return {@code true} on success, {@code false} on failure 
+     */
+    public static boolean showInSystemExplorer(@NotNull File file) {
         try {
             final String cmd = formShowInSystemExplorerCommand(file);
             final Process process;
@@ -88,14 +102,16 @@ public final class ShellUtils {
 
             if (code != 0 && !Util.isWindows()) {
                 log.debug("Execution of '" + cmd + "' failed with return code: " + code);
+                return false;
             }
+            return true;
         } catch (IOException | InterruptedException e) {
             log.debug("Error opening file in explorer", e);
 
             if (file.isDirectory()) {
-                launchProgram(file.getAbsolutePath());
+                return launchProgram(file.getAbsolutePath());
             } else {
-                launchProgram(file.getParent());
+                return launchProgram(file.getParent());
             }
         }
     }

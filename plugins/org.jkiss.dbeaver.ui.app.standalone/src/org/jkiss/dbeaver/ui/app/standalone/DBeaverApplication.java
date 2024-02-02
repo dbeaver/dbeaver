@@ -35,18 +35,15 @@ import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.LogOutputStream;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.core.DesktopUI;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
+import org.jkiss.dbeaver.model.app.DBPLogLocations;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
@@ -128,6 +125,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private OutputStream debugWriter;
     private PrintStream oldSystemOut;
     private PrintStream oldSystemErr;
+    @Nullable
+    private DBPLogLocations logLocations;
 
     private Display display = null;
 
@@ -697,18 +696,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     private void initDebugWriter() {
-        DBPPreferenceStore preferenceStore = DBeaverActivator.getInstance().getPreferences();
-        if (!preferenceStore.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED)) {
+        DBPLogLocations logLoc = getLogLocations();
+        if (logLoc.getDebugLog() == null) {
             return;
         }
-        String logLocation = preferenceStore.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
-        if (CommonUtils.isEmpty(logLocation)) {
-            logLocation = GeneralUtils.getMetadataFolder().resolve(DBConstants.DEBUG_LOG_FILE_NAME).toAbsolutePath().toString(); //$NON-NLS-1$
-        }
-        logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
-        File debugLogFile = new File(logLocation);
         try {
-            debugWriter = new LogOutputStream(debugLogFile);
+            debugWriter = new LogOutputStream(logLoc);
             oldSystemOut = System.out;
             oldSystemErr = System.err;
             System.setOut(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemOut)));
@@ -726,6 +719,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             IOUtils.close(debugWriter);
             debugWriter = null;
         }
+    }
+
+    @Override
+    @NotNull
+    public DBPLogLocations getLogLocations() {
+        if (logLocations == null) {
+            logLocations = new DesktopLogLocations();
+        }
+        return logLocations;
     }
 
     @Nullable

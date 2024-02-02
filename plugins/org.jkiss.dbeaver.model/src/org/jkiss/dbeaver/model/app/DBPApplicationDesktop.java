@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DB desktop application.
  */
@@ -28,4 +30,13 @@ public interface DBPApplicationDesktop extends DBPApplication {
      */
     long getLastUserActivityTime();
 
+    /**
+     * Returns the log locations the app works with. 
+     * 
+     * <p> Note that the app user can change log locations during app runtime, but they won't be changed until the next start.
+     * 
+     * @return log locations
+     */
+    @NotNull
+    DBPLogLocations getLogLocations();
 }

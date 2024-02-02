@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
 /**
@@ -28,6 +29,7 @@ public class HelpUtils {
 
     public static final String GLOBAL_HELP_PREFIX = "https://dbeaver.com/docs/wiki/";
 
+    @NotNull
     public static final String getHelpExternalReference(String topicId) {
         return GLOBAL_HELP_PREFIX + topicId;
     }

@@ -84,6 +84,7 @@ import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -459,7 +460,7 @@ public class UIUtils {
         }
     }
 
-    public static void showMessageBox(final Shell shell, final String title, final String info, final int messageType) {
+    public static void showMessageBox(@Nullable Shell shell, @NotNull String title, @NotNull String info, int messageType) {
         DBPImage icon = null;
         if (messageType == SWT.ICON_ERROR) {
             icon = DBIcon.STATUS_ERROR;
@@ -1642,6 +1643,12 @@ public class UIUtils {
         link.setText(text);
         link.addSelectionListener(listener);
         return link;
+    }
+
+    public static Link createDocumentationLink(@NotNull Composite parent, @NotNull String text, @NotNull String documentationPageName) {
+        String linkToDocs = HelpUtils.getHelpExternalReference(documentationPageName);
+        String href = "<a href=\"" + linkToDocs + "\">" + text + "</a>";
+        return createInfoLink(parent, href, () -> ShellUtils.launchProgram(linkToDocs));
     }
 
     public static void postEvent(Control ownerControl, final Event event) {
