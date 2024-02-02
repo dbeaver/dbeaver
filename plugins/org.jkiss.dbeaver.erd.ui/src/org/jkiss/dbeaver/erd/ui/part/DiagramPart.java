@@ -196,19 +196,15 @@ public class DiagramPart extends PropertyAwarePart {
      * to original
      */
     public void rearrangeDiagram() {
-        try {
-            UIUtils.runInProgressService(monitor -> {
-                getChildren().forEach(c -> {
-                    if (c instanceof NodePart) {
-                        resetConnectionConstraints(monitor, ((NodePart) c).getSourceConnections());
-                    }
-                });
-                delegatingLayoutManager.rearrange(monitor, getFigure());
-                getFigure().repaint();
+        UIUtils.runUIJob(ERDUIMessages.erd_job_rearrange_diagram_title, monitor -> {
+            getChildren().forEach(c -> {
+                if (c instanceof NodePart) {
+                    resetConnectionConstraints(monitor, ((NodePart) c).getSourceConnections());
+                }
             });
-        } catch (InvocationTargetException | InterruptedException e) {
-            log.error(e.getMessage(), e);
-        }
+            delegatingLayoutManager.rearrange(monitor, getFigure());
+            getFigure().repaint();
+        });
     }
 
     private void resetConnectionConstraints(DBRProgressMonitor monitor, List<?> sourceConnections) {
