@@ -20,7 +20,6 @@ import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Interface of ER Diagram style notation
