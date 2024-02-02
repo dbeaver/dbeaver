@@ -216,7 +216,7 @@ public class DiagramPart extends PropertyAwarePart {
                     if (sc instanceof AssociationPart) {
                         ((AssociationPart) sc).getAssociation().setInitBends(null);
                         ((AssociationPart) sc).setConnectionRouting(monitor,
-                                (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                            (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
                     }
                 }
             }

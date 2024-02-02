@@ -48,11 +48,11 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
 
     @Override
     public void applyNotationForArrows(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull PolylineConnection conn, 
-            @NotNull ERDAssociation association, 
-            @NotNull Color bckColor, 
-            @NotNull Color frgColor
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
     ) {
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
         if (constraintType == DBSEntityConstraintType.PRIMARY_KEY) {
@@ -122,11 +122,11 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
 
     @Override
     public void applyNotationForEntities(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull PolylineConnection conn, 
-            @NotNull ERDAssociation association, 
-            @NotNull Color bckColor, 
-            @NotNull Color frgColor
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
     ) {
         // nothing
     }

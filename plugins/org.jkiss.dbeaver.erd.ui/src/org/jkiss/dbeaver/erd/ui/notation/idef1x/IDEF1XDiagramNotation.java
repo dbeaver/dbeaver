@@ -36,11 +36,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotation {
     @Override
     public void applyNotationForArrows(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull PolylineConnection conn, 
-            @NotNull ERDAssociation association, 
-            @NotNull Color bckColor, 
-            @NotNull Color frgColor
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
     ) {
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
@@ -78,11 +78,11 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
 
     @Override
     public void applyNotationForEntities(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull PolylineConnection conn, 
-            @NotNull ERDAssociation association, 
-            @NotNull Color bckColor, 
-            @NotNull Color frgColor
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
     ) {
         // nothing
     }

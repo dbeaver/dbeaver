@@ -44,6 +44,7 @@ public interface ERDNotation {
 
     /**
      * Method designed to display diagram entity notation
+     *
      * @param monitor     - monitor
      * @param conn        - connection class specification
      * @param association - ERD association
