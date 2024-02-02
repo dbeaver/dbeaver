@@ -36,7 +36,14 @@ public interface DBSSecretController {
     @Nullable
     String getPrivateSecretValue(@NotNull String secretId) throws DBException;
 
+
+    @Deprecated
     void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
+
+    default void setPrivateSecretValue(@NotNull DBSSecretObject secretObject, @NotNull DBSSecretValue secretValue)
+        throws DBException {
+        setPrivateSecretValue(secretValue.getId(), secretValue.getValue());
+    }
 
     @NotNull
     default List<DBSSecretValue> discoverCurrentUserSecrets(
