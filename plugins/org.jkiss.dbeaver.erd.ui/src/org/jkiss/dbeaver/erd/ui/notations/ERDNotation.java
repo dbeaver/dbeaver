@@ -29,14 +29,12 @@ public interface ERDNotation {
     /**
      * Method designed to display diagram relation notation
      *
-     * @param monitor     - monitor
      * @param conn        - connection class specification
      * @param association - ERD association
      * @param bckColor    - back end color
      * @param frgColor    - front end color
      */
     public void applyNotationForArrows(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull PolylineConnection conn,
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,
@@ -45,14 +43,12 @@ public interface ERDNotation {
     /**
      * Method designed to display diagram entity notation
      *
-     * @param monitor     - monitor
      * @param conn        - connection class specification
      * @param association - ERD association
      * @param bckColor    - back end color
      * @param frgColor    - front end color
      */
     public void applyNotationForEntities(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull PolylineConnection conn,
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,

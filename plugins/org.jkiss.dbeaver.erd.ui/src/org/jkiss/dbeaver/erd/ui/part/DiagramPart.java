@@ -31,6 +31,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -53,6 +54,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +65,7 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-
+    private static final Log log = Log.getLog(DiagramPart.class);
     private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
@@ -189,34 +191,38 @@ public class DiagramPart extends PropertyAwarePart {
         return boldItalicFont;
     }
 
+    /**
+     * The method designed for re-arrangement of diagram, reset alignment elements
+     * to original
+     */
     public void rearrangeDiagram() {
-        UIUtils.runUIJob(ERDUIMessages.erd_job_rearrange_diagram_title, monitor -> {
-            for (Object part : getChildren()) {
-                if (part instanceof NodePart) {
-                    if (monitor.isCanceled()) {
-                        break;
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                getChildren().forEach(c -> {
+                    if (c instanceof NodePart) {
+                        resetConnectionConstraints(monitor, ((NodePart) c).getSourceConnections());
                     }
-                    resetConnectionConstraints(monitor, ((NodePart) part).getSourceConnections());
-                }
-            }
-            if (monitor.isCanceled()) {
-                return;
-            }
-            delegatingLayoutManager.rearrange(monitor, getFigure());
-            getFigure().repaint();
-            monitor.done();
-        });
+                });
+                delegatingLayoutManager.rearrange(monitor, getFigure());
+                getFigure().repaint();
+            });
+        } catch (InvocationTargetException | InterruptedException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     private void resetConnectionConstraints(DBRProgressMonitor monitor, List<?> sourceConnections) {
+        if (monitor.isCanceled()) {
+            return;
+        }
         if (!CommonUtils.isEmpty(sourceConnections)) {
             for (Object sc : sourceConnections) {
                 if (sc instanceof AbstractConnectionEditPart) {
                     ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
                     if (sc instanceof AssociationPart) {
                         ((AssociationPart) sc).getAssociation().setInitBends(null);
-                        ((AssociationPart) sc).setConnectionRouting(monitor,
-                            (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                        ((AssociationPart) sc)
+                            .setConnectionRouting((PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
                     }
                 }
             }

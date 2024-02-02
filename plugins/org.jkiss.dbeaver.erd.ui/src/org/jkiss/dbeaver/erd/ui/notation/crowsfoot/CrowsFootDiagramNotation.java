@@ -31,14 +31,15 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDAssociationType;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 
@@ -48,7 +49,6 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
 
     @Override
     public void applyNotationForArrows(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull PolylineConnection conn,
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,
@@ -63,33 +63,39 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
             association.getTargetEntity() instanceof ERDEntity) {
             // source - 1..n
             try {
-                ERDEntity src = (ERDEntity) association.getSourceEntity();
-                DBSEntity entity = src.getObject();
-                Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
-                if (!CommonUtils.isEmpty(indexes)) {
-                    // get index for require source attributes
-                    List<ERDEntityAttribute> erdSourceAttributes = association.getSourceAttributes();
-                    List<DBSEntityAttribute> attributes = erdSourceAttributes.stream()
-                        .map(ERDEntityAttribute::getObject)
-                        .toList();
-                    if (DBUtils.isUniqueIndexForAttributes(monitor, attributes, entity)) {
-                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
-                    } else {
-                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        ERDEntity src = (ERDEntity) association.getSourceEntity();
+                        DBSEntity entity = src.getObject();
+                        Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
+                        if (!CommonUtils.isEmpty(indexes)) {
+                            // get index for require source attributes
+                            List<ERDEntityAttribute> erdSourceAttributes = association.getSourceAttributes();
+                            List<DBSEntityAttribute> attributes = erdSourceAttributes.stream()
+                                .map(ERDEntityAttribute::getObject)
+                                .toList();
+                            if (DBUtils.isUniqueIndexForAttributes(monitor, attributes, entity)) {
+                                createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
+                            } else {
+                                createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                            }
+                        } else {
+                            createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                        }
+                        if (ERDUtils.isOptionalAssociation(association)) {
+                            // target - 0..1
+                            createTargetDecorator(conn, bckColor, frgColor, ERDAssociationType.ZERO_OR_ONE, LABEL_0_TO_1);
+                        } else {
+                            // target - 1
+                            createTargetDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
+                        }
+                    } catch (DBException e) {
+                        log.error(e.getMessage(), e);
+                    } catch (InterruptedException e) {
+                        log.error(e.getMessage(), e);
                     }
-                } else {
-                    createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
-                }
-                if (ERDUtils.isOptionalAssociation(association)) {
-                    // target - 0..1
-                    createTargetDecorator(conn, bckColor, frgColor, ERDAssociationType.ZERO_OR_ONE, LABEL_0_TO_1);
-                } else {
-                    // target - 1
-                    createTargetDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
-                }
-            } catch (DBException e) {
-                log.error(e.getMessage(), e);
-            } catch (InterruptedException e) {
+                });
+            } catch (InvocationTargetException | InterruptedException e) {
                 log.error(e.getMessage(), e);
             }
         }
@@ -122,7 +128,6 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
 
     @Override
     public void applyNotationForEntities(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull PolylineConnection conn,
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,

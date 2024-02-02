@@ -30,13 +30,11 @@ import org.jkiss.dbeaver.erd.ui.part.AssociationPart.CircleDecoration;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.RhombusDecoration;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotation {
     @Override
     public void applyNotationForArrows(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull PolylineConnection conn,
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,
@@ -78,7 +76,6 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
 
     @Override
     public void applyNotationForEntities(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull PolylineConnection conn,
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,
