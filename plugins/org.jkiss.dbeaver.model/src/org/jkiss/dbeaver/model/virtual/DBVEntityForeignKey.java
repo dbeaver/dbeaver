@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -251,9 +250,9 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             return null;
         }
         DBPProject project = getParentObject().getProject();
-        DBNModel navModel = DBWorkbench.getPlatform().getNavigatorModel();
+        DBNModel navModel = project.getNavigatorModel();
 
-        DBNDataSource dsNode = navModel.getDataSourceByPath(project, refEntityId);
+        DBNDataSource dsNode = navModel == null ? null : navModel.getDataSourceByPath(project, refEntityId);
         return dsNode == null ? null : dsNode.getDataSourceContainer();
     }
 

@@ -167,35 +167,38 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
-    protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
-        if (getModel().isGlobal() && !project.isOpen()) {
-            project.ensureOpen();
+    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
+        project.ensureOpen();
+
+        if (project.getEclipseProject() != null && !project.getEclipseProject().isOpen()) {
+            return new DBNNode[0];
         }
-
-        final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-
-        try {
-            dataSourceRegistry.checkForErrors();
-        } catch (Throwable e) {
-            project.dispose();
-            return new DBNNode[] {};
-        }
-
-        final List<DBNNode> children = new ArrayList<>();
-
-        children.add(new DBNProjectDatabases(this, dataSourceRegistry));
-        children.addAll(List.of(super.readChildNodes(monitor)));
-
+        List<DBNNode> childrenFiltered = new ArrayList<>();
+        Collections.addAll(childrenFiltered, super.getChildren(monitor));
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
             // Remove non-existing resources (placeholders)
-            children.removeIf(node -> node instanceof DBNResource && !((DBNResource) node).isResourceExists());
+            childrenFiltered.removeIf(node ->
+                node instanceof DBNResource && !((DBNResource) node).isResourceExists());
         }
-
         if (!CommonUtils.isEmpty(extraNodes)) {
-            children.addAll(extraNodes);
+            childrenFiltered.addAll(extraNodes);
         }
+        return childrenFiltered.toArray(new DBNNode[0]);
+    }
 
-        return children.toArray(DBNNode[]::new);
+    @Override
+    protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+        DBNModel model = getModel();
+        if (model.isGlobal() && !project.isOpen()) {
+            project.ensureOpen();
+        }
+        DBNNode[] children = super.readChildNodes(monitor);
+
+        DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
+        children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[]{
+            new DBNProjectDatabases(this, dataSourceRegistry)});
+
+        return children;
     }
 
     @Override
