@@ -146,14 +146,18 @@ public class PostgreUtils {
 
     @Nullable
     public static <OWNER extends DBSObject, OBJECT extends PostgreObject> OBJECT getObjectById(
-            @NotNull DBRProgressMonitor monitor,
+            @Nullable DBRProgressMonitor monitor,
             @NotNull AbstractObjectCache<OWNER, OBJECT> cache,
             @NotNull OWNER owner,
             long objectId)
             throws DBException {
-        for (OBJECT object : cache.getAllObjects(monitor, owner)) {
-            if (object.getObjectId() == objectId) {
-                return object;
+        if (monitor == null) {
+            log.debug("Can't load object by ID with nullable monitor.");
+        } else {
+            for (OBJECT object : cache.getAllObjects(monitor, owner)) {
+                if (object.getObjectId() == objectId) {
+                    return object;
+                }
             }
         }
         return null;
