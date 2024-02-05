@@ -35,6 +35,6 @@ public interface DBSDocumentLocator extends DBSDocumentContainer
      * @throws DBException on any DB error
      */
     @Nullable
-    DBDDocument findDocument(@NotNull DBRProgressMonitor monitor, Map<String, Object> key) throws DBException;
+    DBDDocument findDocument(@NotNull DBRProgressMonitor monitor, Map<String, Object> key,  Map<String, Object> metaData) throws DBException;
 
 }
