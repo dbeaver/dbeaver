@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -37,7 +36,6 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
@@ -53,10 +51,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     private final Set<String> knownSchemaNames;
     private final Set<String> knownCatalogNames;
 
-
     @FunctionalInterface
     private static interface DummyObjectCtor {
         DummyDbObject apply(DummyDbObject parent, String name, int index);
+    }
+    
+    public static boolean isDummyObject(@Nullable Object obj) {
+        return obj instanceof DummyDbObject;
     }
     
     private class DummyDbObject implements DBSEntityAttribute, DBSTable, DBSSchema, DBSCatalog, DBPDataSource, DBPImageProvider {
@@ -480,7 +481,9 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             try {
                 List<? extends DBSEntityAttribute> attributes = defaultDummyTable.getAttributes(statistics.getMonitor());
                 if (attributes != null) {
-                    List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(context, attributes);
+                    List<SQLQueryResultColumn> columns = this.prepareResultColumnsList(
+                        this.getName().entityName, context, statistics, attributes
+                    );
                     context = context.overrideResultTuple(columns);
                 }
             } catch (DBException ex) {

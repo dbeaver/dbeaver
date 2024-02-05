@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.struct;
+
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * GPT preference constants
+ * Extends DBPObject with the ability to provide extra data type description, not covered by the database model
  */
-public class AIConstants {
-    public static final String CORE_FORMATTER = "core";
+public interface DBSTypedObjectEx2 extends DBPObject {
 
-    public static final String OPENAI_ENGINE = "openai";
-
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String AI_TEMPERATURE = "gpt.model.temperature";
-    public static final String AI_LOG_QUERY = "gpt.log.query";
-
-    public static final int MAX_RESPONSE_TOKENS = 2000;
+    /**
+     * Returs type description
+     */
+    @Nullable
+    DBSTypeDescriptor getTypeDescriptor();
 }
-

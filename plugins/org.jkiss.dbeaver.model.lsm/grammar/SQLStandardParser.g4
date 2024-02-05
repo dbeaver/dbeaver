@@ -151,6 +151,12 @@ indicatorParameter: (INDICATOR)? parameterName;
 dynamicParameterSpecification: QuestionMark;
 columnReference: (qualifier Period)? columnName;
 //columnReference: identifier (Period identifier (Period identifier (Period identifier)?)?)?;
+valueReference: (columnReference|valueRefNestedExpr) valueRefIndexingStep* (valueRefMemberStep valueRefIndexingStep*)*;
+valueRefNestedExpr: LeftParen valueReference RightParen;
+valueRefIndexingStep: LeftBracket (valueRefIndexingStepDirect|valueRefIndexingStepSlice) RightBracket;
+valueRefIndexingStepDirect: signedNumericLiteral;
+valueRefIndexingStepSlice: signedNumericLiteral? Colon signedNumericLiteral?;
+valueRefMemberStep: Period identifier;
 qualifier: (tableName|correlationName);
 correlationName: identifier;
 
@@ -205,7 +211,7 @@ joinColumnList: columnNameList;
 whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
 groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnReference)*;
-groupingColumnReference: columnReference | anyWordsWithProperty;
+groupingColumnReference: valueReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES (rowValueConstructor (Comma rowValueConstructor)*);
 explicitTable: TABLE tableName;
@@ -247,15 +253,14 @@ intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign 
 
 valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |aggregateExpression|anyWordsWithProperty2|columnReference|anyWordsWithProperty;
+    |aggregateExpression|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
 
-
-numericPrimary: (valueExpressionPrimary|extractExpression|anyWordsWithProperty);
+numericPrimary: (valueExpressionPrimary|extractExpression);
 factor: sign? numericPrimary;
 term: factor ((Asterisk|Solidus) factor)*;
-numericValueExpression: term (sign term)*;
+// numericValueExpression: term (sign term)*;
 
-characterPrimary: (valueExpressionPrimary|anyWordsWithProperty);
+characterPrimary: (valueExpressionPrimary);
 characterValueExpression: characterPrimary (ConcatenationOperator characterPrimary)*;
 
 intervalPrimary: valueExpressionPrimary (intervalQualifier)?;
@@ -287,7 +292,7 @@ orderByClause: ORDER BY sortSpecificationList;
 limitClause: LIMIT valueExpression (OFFSET valueExpression)? (Comma valueExpression)?;
 sortSpecificationList: sortSpecification (Comma sortSpecification)*;
 sortSpecification: sortKey (orderingSpecification)?;
-sortKey: columnReference | UnsignedInteger | anyWordsWithProperty;
+sortKey: valueReference | UnsignedInteger | anyWordsWithProperty;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
@@ -340,8 +345,8 @@ insertColumnList: columnNameList;
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
 setClause: ((setTarget | setTargetList) (EqualsOperator updateSource)?)|anyUnexpected??;
-setTarget: columnReference;
-setTargetList: LeftParen columnReference? (Comma columnReference)* RightParen?;
+setTarget: valueReference;
+setTargetList: LeftParen valueReference? (Comma valueReference)* RightParen?;
 updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
 updateValue: valueExpression|nullSpecification|DEFAULT;
 
