@@ -135,10 +135,16 @@ public interface DBPDriver extends DBPNamedObject
     boolean isDisabled();
     DBPDriver getReplacedBy();
 
-    boolean isDeprecated();
+    boolean isNotAvailable();
 
-    @NotNull
-    String getDeprecationReason();
+    @Nullable
+    String getNonAvailabilityTitle();
+
+    @Nullable
+    String getNonAvailabilityDescription();
+
+    @Nullable
+    String getNonAvailabilityReason();
 
     /**
      * @return a pair of providerId and driverId for each of driver replacement

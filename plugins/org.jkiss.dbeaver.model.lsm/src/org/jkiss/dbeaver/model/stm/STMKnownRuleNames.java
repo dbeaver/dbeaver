@@ -126,7 +126,8 @@ public class STMKnownRuleNames {
     public static final String indicatorParameter = SQLStandardParser.ruleNames[SQLStandardParser.RULE_indicatorParameter];
     public static final String dynamicParameterSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicParameterSpecification];
     public static final String columnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnReference];
-    //columnReference: identifier (Period identifier (Period identifier (Period identifier)?)?)?;
+    public static final String valueReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueReference];
+
     public static final String qualifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifier];
     public static final String correlationName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_correlationName];
 
@@ -222,7 +223,6 @@ public class STMKnownRuleNames {
     public static final String numericPrimary = SQLStandardParser.ruleNames[SQLStandardParser.RULE_numericPrimary];
     public static final String factor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_factor];
     public static final String term = SQLStandardParser.ruleNames[SQLStandardParser.RULE_term];
-    public static final String numericValueExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_numericValueExpression];
 
     public static final String characterPrimary = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterPrimary];
     public static final String characterValueExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterValueExpression];
