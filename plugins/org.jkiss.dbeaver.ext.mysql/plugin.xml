@@ -172,7 +172,7 @@
                 <driver id="mysql3"/>
                 <driver
                         id="mysql5"
-                        label="MySQL 5"
+                        label="MySQL 5 (Legacy)"
                         icon="icons/mysql_icon.png"
                         iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
