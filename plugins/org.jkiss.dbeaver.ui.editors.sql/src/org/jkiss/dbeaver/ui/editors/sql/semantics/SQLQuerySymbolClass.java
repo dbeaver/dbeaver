@@ -30,6 +30,7 @@ public enum SQLQuerySymbolClass {
     TABLE_ALIAS(SQLTokenType.T_TABLE_ALIAS),
     COLUMN(SQLTokenType.T_COLUMN),
     COLUMN_DERIVED(SQLTokenType.T_COLUMN_DERIVED),
+    COMPOSITE_FIELD(SQLTokenType.T_COMPOSITE_FIELD),
     ERROR(SQLTokenType.T_SEMANTIC_ERROR);
     
     private final SQLTokenType tokenType;

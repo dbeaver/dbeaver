@@ -105,10 +105,10 @@ public class AISettings {
             if (model != null) {
                 settings.getProperties().put(AIConstants.GPT_MODEL, model);
             }
-            Double temperature = preferenceStore.getDouble(AIConstants.GPT_MODEL_TEMPERATURE);
-            settings.getProperties().put(AIConstants.GPT_MODEL_TEMPERATURE, temperature);
-            Boolean logQuery = preferenceStore.getBoolean(AIConstants.GPT_LOG_QUERY);
-            settings.getProperties().put(AIConstants.GPT_LOG_QUERY, logQuery);
+            Double temperature = preferenceStore.getDouble(AIConstants.AI_TEMPERATURE);
+            settings.getProperties().put(AIConstants.AI_TEMPERATURE, temperature);
+            Boolean logQuery = preferenceStore.getBoolean(AIConstants.AI_LOG_QUERY);
+            settings.getProperties().put(AIConstants.AI_LOG_QUERY, logQuery);
         }
     }
 

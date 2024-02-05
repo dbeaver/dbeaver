@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 
 public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     private final SQLQueryRowsSourceModel source;
@@ -36,10 +37,11 @@ public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     @Override
     void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.source.propagateContext(context, statistics);
+        this.type = SQLQueryExprType.forScalarSubquery(this.source);
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitValueSubqueryExpr(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitValueSubqueryExpr(this, arg);
     }
 }
