@@ -170,7 +170,7 @@ public class SQLBackgroundParsingJob {
                 if (it.getCurrValue() != null || it.prev()) {
                     firstAffectedReparseOffset = it.getCurrOffset();
                     if (firstAffectedReparseOffset < reparseStart &&
-                        firstAffectedReparseOffset + it.getCurrValue().length > insertedLength
+                        firstAffectedReparseOffset + it.getCurrValue().length > reparseStart + insertedLength
                     ) {
                         return; // modified region is a subrange of already queued for reparse 
                     }
