@@ -51,7 +51,7 @@ public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitValueFlatExpr(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitValueFlatExpr(this, arg);
     }
 }

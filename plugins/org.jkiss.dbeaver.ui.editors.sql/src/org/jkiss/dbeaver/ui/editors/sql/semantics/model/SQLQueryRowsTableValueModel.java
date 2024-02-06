@@ -37,7 +37,7 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsTableValue(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitRowsTableValue(this, arg);
     }
 }
