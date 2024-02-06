@@ -47,6 +47,7 @@ import java.util.Map;
 public class HSQLMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(HSQLMetaModel.class);
+    private static final String PROHIBITED_FUNCTION = "file";
 
     public HSQLMetaModel() {
         super();
@@ -54,6 +55,10 @@ public class HSQLMetaModel extends GenericMetaModel
 
     @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        String url = container.getConnectionConfiguration().getUrl();
+        if (url != null && url.contains(PROHIBITED_FUNCTION)) {
+            throw new DBException("File is forbidden for this driver, use embedded driver");
+        }
         return new HSQLDataSource(monitor, container, this);
     }
 
