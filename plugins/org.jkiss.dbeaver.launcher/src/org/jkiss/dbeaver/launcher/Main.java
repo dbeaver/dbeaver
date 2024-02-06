@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.eclipse.equinox.launcher;
+package org.jkiss.dbeaver.launcher;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.eclipse.equinox.internal.launcher.Constants;
-
+import org.jkiss.dbeaver.launcher.Main;
 
 /**
  * The launcher for Eclipse.
@@ -1334,7 +1334,8 @@ public class Main {
     }
 
     private String resolveLocation(String source, String var, String location) {
-        return location + source.substring(var.length());
+        String result = location + source.substring(var.length());
+        return result.replaceFirst("^~", System.getProperty(PROP_USER_HOME)); 
     }
 
     private String substituteVar(String source, String var, String prop) {
