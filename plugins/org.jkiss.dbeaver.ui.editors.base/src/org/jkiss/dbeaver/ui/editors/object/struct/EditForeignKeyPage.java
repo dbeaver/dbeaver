@@ -244,7 +244,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey.getParentObject(), DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
             if (allowedKeyTypes.length > 1) {
-                UIUtils.createControlLabel(tableGroup, "Key type");
+                UIUtils.createControlLabel(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_key_type);
                 Composite ktPanel = UIUtils.createFormPlaceholder(tableGroup, allowedKeyTypes.length, 1);
                 //keyTypeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 for (FKType type : allowedKeyTypes) {
@@ -319,7 +319,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             });
             if (enableCustomKeys) {
-                customUKButton = UIUtils.createDialogButton(pkGroup, "Create", new SelectionAdapter() {
+                customUKButton = UIUtils.createDialogButton(
+                    pkGroup,
+                    EditorsMessages.dialog_struct_edit_fk_custom_uk_button_create,
+                    new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         defineRefTableConstraint();
@@ -418,7 +421,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         DBVEntityConstraint constraint = vRefEntity.getBestIdentifier();
 
         EditConstraintPage page = new EditConstraintPage(
-            "Define unique key",
+            EditorsMessages.dialog_struct_edit_fk_page_title,
             constraint);
         if (page.edit()) {
             constraint.setAttributes(page.getSelectedAttributes());
@@ -632,9 +635,6 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             DBSObject object = refTableNode.getObject();
             if (object instanceof DBSEntity) {
                 curRefTable = (DBSEntity) refTableNode.getObject();
-            }
-            if (fkNameText != null) {
-                fkNameText.setText("FK_" + refTableNode.getObject().getName());
             }
         } else {
             curRefTable = null;
@@ -1036,7 +1036,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     {
         DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
         EditForeignKeyPage editDialog = new EditForeignKeyPage(
-            "Define virtual foreign keys",
+            EditorsMessages.dialog_struct_edit_fk_virtual_page_title,
             virtualFK,
             new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION},
             Collections.emptyMap());
