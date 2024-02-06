@@ -162,31 +162,34 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         if (totalJobs == 0) {
             return null;
         }
-        Throwable error = null;
+        Throwable[] error = {null};
         final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
         for (int i = 0; i < totalJobs; i++) {
             DataTransferJob job = new DataTransferJob(settings, task, log, i);
             job.schedule();
             jobs[i] = job;
         }
-        for (DataTransferJob job : jobs) {
-            try {
-                job.join();
-            } catch (InterruptedException e) {
-                break;
-            }
-            final IStatus result = job.getResult();
-            if (result.getException() != null) {
-                if (error == null) {
-                    error = result.getException();
-                } else {
-                    error.addSuppressed(result.getException());
-                }
-            }
-            totalStatistics.accumulate(job.getTotalStatistics());
-        }
         try {
             runnableContext.run(true, true, monitor -> {
+                monitor.beginTask("Waiting for jobs to finish", jobs.length);
+                for (DataTransferJob job : jobs) {
+                    try {
+                        job.join();
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                    final IStatus result = job.getResult();
+                    if (result.getException() != null) {
+                        if (error[0] == null) {
+                            error[0] = result.getException();
+                        } else {
+                            error[0].addSuppressed(result.getException());
+                        }
+                    }
+                    totalStatistics.accumulate(job.getTotalStatistics());
+                    monitor.worked(1);
+                }
+                monitor.done();
                 monitor.beginTask("Finalizing data transfer", 1);
                 try {
                     // End of transfer - signal last pipe about it
@@ -196,14 +199,14 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                 }
             });
         } catch (InvocationTargetException e) {
-            if (error == null) {
-                error = e.getTargetException();
+            if (error[0] == null) {
+                error[0] = e.getTargetException();
             } else {
-                error.addSuppressed(e.getTargetException());
+                error[0].addSuppressed(e.getTargetException());
             }
         } catch (InterruptedException ignored) {
         }
-        return error;
+        return error[0];
     }
 
     private void restoreReferentialIntegrity(@NotNull DBRRunnableContext runnableContext,
