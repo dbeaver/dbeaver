@@ -33,6 +33,7 @@ public interface DBSDocumentLocator extends DBSDocumentContainer
     /**
      * Find document by key attributes
      * @param session session
+     *
      * @throws DBException on any DB error
      */
     @Nullable
