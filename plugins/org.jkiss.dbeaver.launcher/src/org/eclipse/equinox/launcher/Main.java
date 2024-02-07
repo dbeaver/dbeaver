@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.launcher;
+package org.eclipse.equinox.launcher;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.eclipse.equinox.internal.launcher.Constants;
-import org.jkiss.dbeaver.launcher.Main;
+import org.eclipse.equinox.launcher.Main;
 
 /**
  * The launcher for Eclipse.
