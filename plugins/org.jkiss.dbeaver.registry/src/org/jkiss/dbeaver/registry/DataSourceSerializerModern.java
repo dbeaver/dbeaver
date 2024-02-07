@@ -329,7 +329,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         } else {
             SecretKey localSecretKey = registry.getProject().getLocalSecretKey();
             if (localSecretKey == null) {
-                throw new DBInterruptedException("Error getting user credentials (operation was canceled)");
+                throw new DBInterruptedException("Error of getting user credentials (operation was canceled)");
             }
             DBSValueEncryptor encryptor = new DefaultValueEncryptor(localSecretKey);
             try {
@@ -798,8 +798,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             return null;
         }
         final String name = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX
-            + configurationStorage.getStorageSubId()
-            + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
+                + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
         try (InputStream is = configurationManager.readConfiguration(name, dataSourceIds)) {
             if (is == null) {
                 return null;
@@ -807,29 +806,30 @@ class DataSourceSerializerModern implements DataSourceSerializer
             final String data = loadConfigFile(is, true);
             return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
             }.getType());
-        } catch (Exception e) {
-            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() &&
-                DBWorkbench.getPlatform().getApplication().isCommunity()) {
+        } catch (DBInterruptedException e) {
+            // when user cancelled enter project password (not a community level)
+            throw new DBException("Project opening canceled by user");
+        } catch (IOException e) {
+            // here we catch IO exceptions that happens in community for secure credential
+            // reading
+            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+                    && DBWorkbench.getPlatform().getApplication().isCommunity()) {
                 if (DBWorkbench.getPlatformUI().confirmAction(
                         RegistryMessages.project_open_cannot_read_credentials_title,
                         NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
                                 registry.getProject().getName()),
                         RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
-                    final String backupName = name + ".bak";
-                    try (InputStream is = configurationManager.readConfiguration(backupName, dataSourceIds)) {
-                        if (is != null) { // just sanity check
-                            configurationManager.writeConfiguration(backupName, is.readAllBytes());
-                        }
-                        log.debug("A backup file was created that contains secure credentials: " + backupName);
-                    } catch (Exception e1) {
-                        log.error("Error backing up secure credentials", e1);
-                    }
+                    return null;
                 } else {
-                    throw new DBException("Project opening canceled by user");
+                    throw new DBInterruptedException("Project opening canceled by user");
                 }
             }
-            throw new DBException("Error reading secure credentials", e);
+            log.error("Error reading secure credentials", e);
+        } catch (Exception e) {
+            log.error("Unexpected error during read secure credentials", e);
+            throw new DBException(e.getMessage(), e);
         }
+        return null;
     }
 
     @Nullable
