@@ -551,6 +551,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 xml.addAttribute(RegistryConstants.ATTR_SMART_COMMIT_RECOVER, connectionType.isSmartCommitRecover());
                 xml.addAttribute(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS, connectionType.isAutoCloseTransactions());
                 xml.addAttribute(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD, connectionType.getCloseIdleTransactionPeriod());
+                xml.addAttribute(RegistryConstants.ATTR_AUTO_CLOSE_CONNECTIONS, connectionType.isAutoCloseConnections());
+                xml.addAttribute(RegistryConstants.ATTR_CLOSE_CONNECTIONS_PERIOD, connectionType.getCloseIdleConnectionPeriod());
                 List<DBPDataSourcePermission> modifyPermission = connectionType.getModifyPermission();
                 if (modifyPermission != null) {
                     xml.addAttribute("modifyPermission",
@@ -704,10 +706,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         atts.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
                         origType != null ? origType.getCloseIdleTransactionPeriod() : RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD),
                     CommonUtils.getBoolean(
-                        atts.getValue("autoCloseConnections"),
+                        atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_CONNECTIONS),
                         origType != null && origType.isAutoCloseConnections()),
                     CommonUtils.toLong(
-                        atts.getValue("closeConnectionsPeriod"),
+                        atts.getValue(RegistryConstants.ATTR_CLOSE_CONNECTIONS_PERIOD),
                         origType != null ? origType.getCloseIdleConnectionPeriod() : 0)
                     );
                 String modifyPermissionList = atts.getValue("modifyPermission");
