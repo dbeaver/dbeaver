@@ -210,7 +210,7 @@ public class SQLQueryModelRecognizer {
         private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations = Map.ofEntries(
             Map.entry(STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> { 
                 if (cc.isEmpty()) {
-                    return r.queryDataContext.getDefaultTable(n.getRealInterval());
+                    return null;
                 } else if (cc.size() == 1) {
                     return cc.get(0);
                 } else {
