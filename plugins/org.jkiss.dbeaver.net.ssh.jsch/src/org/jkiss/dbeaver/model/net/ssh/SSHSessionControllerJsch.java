@@ -561,18 +561,6 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             session.release();
         }
 
-        @Override
-        public String toString() {
-            final Session inner = session.get();
-            final StringBuilder sb = new StringBuilder();
-            sb.append(inner.getUserName()).append("@").append(inner.getHost()).append(":").append(inner.getPort());
-            if (portForward != null) {
-                sb.append(", ").append(portForward);
-            }
-            sb.append(", connections=").append(session.getCount());
-            return sb.toString();
-        }
-
         @Property(name = "Destination", viewable = true, order = 1)
         public String getDestinationInfo() {
             return session.get().getUserName() + "@" + session.get().getHost() + ":" + session.get().getPort();

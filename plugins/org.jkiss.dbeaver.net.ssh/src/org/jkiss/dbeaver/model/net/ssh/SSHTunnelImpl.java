@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -80,21 +80,21 @@ public class SSHTunnelImpl implements DBWTunnel {
             implId = DEF_IMPLEMENTATION;
         }
 
-        SSHImplementationDescriptor implDesc = SSHImplementationRegistry.getInstance().getDescriptor(implId);
-        if (implDesc == null) {
-            implDesc = SSHImplementationRegistry.getInstance().getDescriptor(DEF_IMPLEMENTATION);
+        SSHSessionControllerDescriptor descriptor = SSHSessionControllerRegistry.getInstance().getDescriptor(implId);
+        if (descriptor == null) {
+            descriptor = SSHSessionControllerRegistry.getInstance().getDescriptor(DEF_IMPLEMENTATION);
         }
-        if (implDesc == null) {
+        if (descriptor == null) {
             throw new DBException("Can't find SSH tunnel implementation '" + implId + "'");
         }
 
         try {
-            sessionController = implDesc.getInstance();
+            sessionController = descriptor.getInstance();
         } catch (DBException e) {
             throw new DBException("Can't create SSH tunnel implementation '" + implId + "'", e);
         }
 
-        return initTunnel(monitor, configuration, connectionInfo, sessionController, implDesc);
+        return initTunnel(monitor, configuration, connectionInfo, sessionController);
     }
 
     @Override
@@ -166,7 +166,7 @@ public class SSHTunnelImpl implements DBWTunnel {
                 } finally {
                     monitor.done();
                 }
-            }, "Ping SSH tunnel " + dataSource.getContainer().getName(), timeout);
+            }, "Invalidate SSH tunnel " + dataSource.getContainer().getName(), timeout);
         }
     }
 
@@ -186,10 +186,9 @@ public class SSHTunnelImpl implements DBWTunnel {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull DBPConnectionConfiguration connectionInfo,
-        @NotNull SSHSessionController controller,
-        @NotNull SSHImplementationDescriptor descriptor
+        @NotNull SSHSessionController controller
     ) throws DBException, IOException {
-        final SSHHostConfiguration[] hosts = loadHostConfigurations(configuration, descriptor);
+        final SSHHostConfiguration[] hosts = loadHostConfigurations(configuration);
         final SSHPortForwardConfiguration portForward = loadPortForwardConfiguration(configuration, connectionInfo);
         final SSHSession[] sessions = new SSHSession[hosts.length];
 
@@ -243,20 +242,17 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     @NotNull
     private static SSHHostConfiguration[] loadHostConfigurations(
-        @NotNull DBWHandlerConfiguration configuration,
-        @NotNull SSHImplementationDescriptor descriptor
+        @NotNull DBWHandlerConfiguration configuration
     ) throws DBException {
         final List<SSHHostConfiguration> hostConfigurations = new ArrayList<>();
 
         // primary host
         hostConfigurations.add(loadHostConfiguration(configuration, ""));
 
-        // jump hosts, if supported and present
-        if (descriptor.supportsJumpServer()) {
-            final String prefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
-            if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
-                hostConfigurations.add(0, loadHostConfiguration(configuration, prefix));
-            }
+        // jump host, if present
+        final String jumpServerPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
+        if (configuration.getBooleanProperty(jumpServerPrefix + RegistryConstants.ATTR_ENABLED)) {
+            hostConfigurations.add(0, loadHostConfiguration(configuration, jumpServerPrefix));
         }
 
         return hostConfigurations.toArray(SSHHostConfiguration[]::new);

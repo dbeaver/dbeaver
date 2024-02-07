@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -96,12 +94,10 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         // primary host
         hostConfigurations.add(loadConfiguration(configuration, ""));
 
-        // jump hosts, if supported and present
-        if (isSupportsJumpServer()) {
-            final String prefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
-            if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
-                hostConfigurations.add(0, loadConfiguration(configuration, prefix));
-            }
+        // jump host, if present
+        final String jumpServerPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
+        if (configuration.getBooleanProperty(jumpServerPrefix + RegistryConstants.ATTR_ENABLED)) {
+            hostConfigurations.add(0, loadConfiguration(configuration, jumpServerPrefix));
         }
 
         for (SSHHostConfiguration host : hostConfigurations) {
@@ -206,14 +202,5 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         }
 
         return new SSHHostConfiguration(username, hostname, port, authentication);
-    }
-
-    protected boolean isSupportsJumpServer() {
-        for (SSHImplementationDescriptor descriptor : SSHImplementationRegistry.getInstance().getDescriptors()) {
-            if (descriptor.getImplClass().getObjectClass() == getClass()) {
-                return descriptor.supportsJumpServer();
-            }
-        }
-        return false;
     }
 }
