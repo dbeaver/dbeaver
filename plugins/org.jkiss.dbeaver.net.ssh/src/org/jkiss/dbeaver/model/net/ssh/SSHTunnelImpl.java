@@ -53,6 +53,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     private static final String DEF_IMPLEMENTATION = "sshj";
 
     private DBWHandlerConfiguration configuration;
+    private SSHSessionController sessionController;
     private SSHSession session;
     private final List<Runnable> listeners = new ArrayList<>();
 
@@ -87,15 +88,13 @@ public class SSHTunnelImpl implements DBWTunnel {
             throw new DBException("Can't find SSH tunnel implementation '" + implId + "'");
         }
 
-        final SSHSessionController controller;
-
         try {
-            controller = implDesc.getInstance();
+            sessionController = implDesc.getInstance();
         } catch (DBException e) {
             throw new DBException("Can't create SSH tunnel implementation '" + implId + "'", e);
         }
 
-        return initTunnel(monitor, configuration, connectionInfo, controller, implDesc);
+        return initTunnel(monitor, configuration, connectionInfo, sessionController, implDesc);
     }
 
     @Override
@@ -210,6 +209,11 @@ public class SSHTunnelImpl implements DBWTunnel {
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
         DBWUtils.updateConfigWithTunnelInfo(configuration, connectionInfo, portForward.getLocalHost(), portForward.getLocalPort());
         return connectionInfo;
+    }
+
+    @NotNull
+    public SSHSessionController getSessionController() {
+        return sessionController;
     }
 
     @NotNull

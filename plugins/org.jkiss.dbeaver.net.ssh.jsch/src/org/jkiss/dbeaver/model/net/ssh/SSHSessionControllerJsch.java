@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
@@ -48,7 +49,7 @@ import java.util.stream.Collectors;
 public class SSHSessionControllerJsch implements SSHSessionController {
     private static final Log log = Log.getLog(SSHSessionControllerJsch.class);
 
-    private final Map<SSHHostConfiguration, Rc<Session>> sessions = new ConcurrentHashMap<>();
+    private final Map<SSHHostConfiguration, JschSession> sessions = new ConcurrentHashMap<>();
     private final JSch jsch;
     private AgentIdentityRepository agentIdentityRepository;
 
@@ -78,7 +79,13 @@ public class SSHSessionControllerJsch implements SSHSessionController {
     }
 
     @NotNull
-    private JschNestedSession acquireNestedSession(
+    @Override
+    public SSHSession[] getSessions() {
+        return sessions.values().toArray(SSHSession[]::new);
+    }
+
+    @NotNull
+    private JschJumpSession acquireNestedSession(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination,
@@ -104,7 +111,7 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             portForward
         );
 
-        return new JschNestedSession(jumpSession, origin, jumpPortForward);
+        return new JschJumpSession(jumpSession, origin, jumpPortForward);
     }
 
     @NotNull
@@ -114,24 +121,23 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHPortForwardConfiguration portForward
     ) throws DBException, IOException {
-        Rc<Session> session = sessions.get(destination);
+        JschSession session = sessions.get(destination);
 
         if (session == null) {
-            final Consumer<Session> disconnect = target -> {
+            final Consumer<Session> onDisconnect = target -> {
                 log.debug("SSHSessionController: Closing session to %s:%d".formatted(target.getHost(), target.getPort()));
                 target.disconnect();
                 sessions.remove(destination);
             };
 
             log.debug("SSHSessionController: Creating new session to " + destination);
-            session = new Rc<>(createNewSession(monitor, configuration, destination), disconnect);
+            session = new JschSession(createNewSession(monitor, configuration, destination), portForward, onDisconnect);
             sessions.put(destination, session);
-        } else {
-            log.debug("SSHSessionController: Reusing existing session to " + destination);
-            session.retain();
+            return session;
         }
 
-        return new JschSession(session, portForward);
+        log.debug("SSHSessionController: Reusing existing session to " + destination);
+        return new JschSharedSession(session, portForward);
     }
 
     @NotNull
@@ -446,9 +452,24 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         }
     }
 
-    private static class JschSession implements SSHSession {
+    public static class JschSession implements SSHSession {
         private final Rc<Session> session;
         private final SSHPortForwardConfiguration portForward;
+
+        public JschSession(
+            @NotNull Session session,
+            @Nullable SSHPortForwardConfiguration portForward,
+            @NotNull Consumer<Session> onDisconnect
+        ) throws DBException {
+            this.session = new Rc<>(session, onDisconnect);
+            this.portForward = portForward;
+
+            if (portForward != null) {
+                setupPortForward(portForward);
+            }
+
+            log.debug("JschSession.new");
+        }
 
         public JschSession(
             @NotNull Rc<Session> session,
@@ -460,6 +481,8 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             if (portForward != null) {
                 setupPortForward(portForward);
             }
+
+            log.debug("JschSession.new");
         }
 
         @Override
@@ -538,6 +561,33 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             session.release();
         }
 
+        @Override
+        public String toString() {
+            final Session inner = session.get();
+            final StringBuilder sb = new StringBuilder();
+            sb.append(inner.getUserName()).append("@").append(inner.getHost()).append(":").append(inner.getPort());
+            if (portForward != null) {
+                sb.append(", ").append(portForward);
+            }
+            sb.append(", connections=").append(session.getCount());
+            return sb.toString();
+        }
+
+        @Property(name = "Destination", viewable = true, order = 1)
+        public String getDestinationInfo() {
+            return session.get().getUserName() + "@" + session.get().getHost() + ":" + session.get().getPort();
+        }
+
+        @Property(name = "Port Forwarding", viewable = true, order = 2)
+        public String getPortForwardInfo() {
+            return portForward != null ? portForward.getLocalPort() + " <- " + portForward.getRemotePort() : null;
+        }
+
+        @Property(name = "Connections", viewable = true, order = 3)
+        public int getConnections() {
+            return session.getCount();
+        }
+
         @NotNull
         protected SSHPortForwardConfiguration setupPortForward(
             @NotNull String remoteHost,
@@ -582,11 +632,18 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         }
     }
 
-    private static class JschNestedSession extends JschSession {
+    public static class JschSharedSession extends JschSession {
+        public JschSharedSession(@NotNull JschSession parent, @Nullable SSHPortForwardConfiguration portForward) throws DBException {
+            super(parent.session.retain(), portForward);
+            log.debug("JschSharedSession.new");
+        }
+    }
+
+    public static class JschJumpSession extends JschSession {
         private final JschSession origin;
         private final SSHPortForwardConfiguration portForward;
 
-        public JschNestedSession(
+        public JschJumpSession(
             @NotNull JschSession destination,
             @NotNull JschSession origin,
             @NotNull SSHPortForwardConfiguration portForward
@@ -594,6 +651,7 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             super(destination.session, null);
             this.origin = origin;
             this.portForward = portForward;
+            log.debug("JschJumpSession.new");
         }
 
         @Override

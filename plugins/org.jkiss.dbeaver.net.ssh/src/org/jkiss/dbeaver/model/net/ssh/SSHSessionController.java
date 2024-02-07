@@ -71,4 +71,10 @@ public interface SSHSessionController {
         @Nullable SSHSession origin,
         @Nullable SSHPortForwardConfiguration portForward
     ) throws DBException, IOException;
+
+    /**
+     * Returns a list of shared sessions. A shared session is a session that can be used for multiple connections.
+     */
+    @NotNull
+    SSHSession[] getSessions();
 }

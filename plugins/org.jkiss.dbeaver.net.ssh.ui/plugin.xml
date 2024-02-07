@@ -13,4 +13,15 @@
         </factory>
     </extension>
 
+    <extension point="org.eclipse.ui.views">
+        <view
+            id="com.dbeaver.ssh.tunnels"
+            category="org.jkiss.dbeaver.core.category"
+            class="org.jkiss.dbeaver.ui.net.ssh.SSHTunnelView"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"
+            name="SSH tunnel explorer">
+            <description>SSH tunnel explorer. Allows to view and manage SSH tunnels.</description>
+        </view>
+    </extension>
+
 </plugin>
