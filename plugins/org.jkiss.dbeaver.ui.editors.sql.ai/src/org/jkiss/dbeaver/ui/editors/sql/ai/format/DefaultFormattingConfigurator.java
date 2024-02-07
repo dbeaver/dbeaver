@@ -35,20 +35,38 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     private Button includeSourceTextInCommentCheck;
     private Button executeQueryImmediatelyCheck;
 
+    private Button sendTypeInfoCheck;
+
+    private Button sendDescriptionCheck;
+
+
     @Override
-    public void createControl(@NotNull Composite parent,
+    public void createControl(
+        @NotNull Composite parent,
         IAIFormatter object,
-        @NotNull Runnable propertyChangeListener) {
+        @NotNull Runnable propertyChangeListener
+    ) {
         Composite settingsPanel = UIUtils.createComposite(parent, 2);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Group completionGroup = UIUtils.createControlGroup(settingsPanel,
+        Composite completionComposite = UIUtils.createPlaceholder(settingsPanel, 1);
+        Group completionGroup = UIUtils.createControlGroup(
+            completionComposite,
             AIUIMessages.gpt_preference_page_completion_group,
             2,
             SWT.NONE,
             5
         );
+        completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createCompletionSettings(completionGroup, propertyChangeListener);
-        createFormattingSettings(settingsPanel, propertyChangeListener);
+        createFormattingSettings(completionComposite, propertyChangeListener);
+        Group schemaGroup = UIUtils.createControlGroup(
+            settingsPanel,
+            AIUIMessages.gpt_preference_page_schema_group,
+            2,
+            SWT.NONE,
+            5
+        );
+        createSchemaSettings(schemaGroup);
     }
 
     protected void createCompletionSettings(Composite completionGroup, Runnable propertyChangeListener) {
@@ -68,9 +86,24 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
 
     }
 
-    protected void createFormattingSettings(Composite settingsPanel, Runnable propertyChangeListener) {
-        UIUtils.createEmptyLabel(settingsPanel, 1, 1);
+    protected void createSchemaSettings(Composite schemaGroup) {
+        schemaGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+        sendTypeInfoCheck = UIUtils.createCheckbox(
+            schemaGroup,
+            AIUIMessages.gpt_preference_page_completion_send_type_label,
+            AIUIMessages.gpt_preference_page_completion_send_type_tip,
+            false,
+            2);
+        sendDescriptionCheck = UIUtils.createCheckbox(
+            schemaGroup,
+            AIUIMessages.gpt_preference_page_completion_execute_description_label,
+            AIUIMessages.gpt_preference_page_completion_execute_description_tip,
+            false,
+            2);
+    }
 
+    protected void createFormattingSettings(Composite settingsPanel, Runnable propertyChangeListener) {
+//        UIUtils.createEmptyLabel(settingsPanel, 0, 0);
     }
 
 
@@ -79,6 +112,8 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         includeSourceTextInCommentCheck.setSelection(store.getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
         executeQueryImmediatelyCheck.setSelection(store.getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
+        sendTypeInfoCheck.setSelection(store.getBoolean(AICompletionConstants.AI_SEND_TYPE_INFO));
+        sendDescriptionCheck.setSelection(store.getBoolean(AICompletionConstants.AI_SEND_DESCRIPTION));
     }
 
     @Override
@@ -86,6 +121,8 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
         store.setValue(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
+        store.setValue(AICompletionConstants.AI_SEND_TYPE_INFO, sendTypeInfoCheck.getSelection());
+        store.setValue(AICompletionConstants.AI_SEND_DESCRIPTION, sendDescriptionCheck.getSelection());
     }
 
     @Override
