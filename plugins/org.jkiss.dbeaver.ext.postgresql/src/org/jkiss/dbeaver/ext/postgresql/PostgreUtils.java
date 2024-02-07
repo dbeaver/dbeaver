@@ -151,13 +151,16 @@ public class PostgreUtils {
             @NotNull OWNER owner,
             long objectId)
             throws DBException {
+        Collection<OBJECT> objects;
         if (monitor == null) {
-            log.debug("Can't load object by ID with nullable monitor.");
+            // The monitor is null. Let's find our object in the cached objects list.
+            objects = cache.getCachedObjects();
         } else {
-            for (OBJECT object : cache.getAllObjects(monitor, owner)) {
-                if (object.getObjectId() == objectId) {
-                    return object;
-                }
+            objects = cache.getAllObjects(monitor, owner);
+        }
+        for (OBJECT object : objects) {
+            if (object.getObjectId() == objectId) {
+                return object;
             }
         }
         return null;
