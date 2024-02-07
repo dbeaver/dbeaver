@@ -808,7 +808,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }.getType());
         } catch (DBInterruptedException e) {
             // when user cancelled enter project password (not a community level)
-            throw new DBException("Project opening canceled by user");
+            throw e; //new DBInterruptedException("Project opening canceled by user", e);
         } catch (IOException e) {
             // here we catch IO exceptions that happens in community for secure credential
             // reading
@@ -820,9 +820,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                                 registry.getProject().getName()),
                         RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                     return null;
-                } else {
-                    throw new DBInterruptedException("Project opening canceled by user");
                 }
+                throw new DBException("Project configuration can not be open", e);
             }
             log.error("Error reading secure credentials", e);
         } catch (Exception e) {
@@ -850,16 +849,20 @@ class DataSourceSerializerModern implements DataSourceSerializer
         try (is) {
             final String data = loadConfigFile(is, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
             return JSONUtils.parseMap(CONFIG_GSON, new StringReader(data));
+        } catch (DBInterruptedException e) {
+            // happens only if user cancelled entering password
+            // not a community level
+            throw e;
         } catch (Exception e) {
-            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            // intercept exceptions for crypted configuration
+            // for community provide a dialog
+            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+                    && DBWorkbench.getPlatform().getApplication().isCommunity()) {
                 DBWorkbench.getPlatformUI().showWarningMessageBox(
-                    RegistryMessages.project_open_cannot_read_configuration_title,
-                    NLS.bind(
-                        RegistryMessages.project_open_cannot_read_configuration_message,
-                        registry.getProject().getName()
-                    )
-                );
-                throw new DBException("Project opening canceled", e);
+                        RegistryMessages.project_open_cannot_read_configuration_title,
+                        NLS.bind(RegistryMessages.project_open_cannot_read_configuration_message,
+                                registry.getProject().getName()));
+                throw new DBException("Can not open project with encrypted configuration");
             } else {
                 throw e;
             }
