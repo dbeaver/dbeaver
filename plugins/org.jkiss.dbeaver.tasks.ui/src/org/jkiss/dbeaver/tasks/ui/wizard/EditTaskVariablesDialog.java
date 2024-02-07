@@ -156,12 +156,17 @@ public class EditTaskVariablesDialog extends StatusDialog {
 
             @Override
             protected Object getValue(Object element) {
-                return ((TaskVariable) element).name;
+                final String value = ((TaskVariable) element).name;
+                if (value.chars().anyMatch(Character::isLowerCase)) {
+                    return BasicSQLDialect.INSTANCE.getQuotedIdentifier(value, true, false);
+                } else {
+                    return value;
+                }
             }
 
             @Override
             protected void setValue(Object element, Object value) {
-                ((TaskVariable) element).name = (String) value;
+                ((TaskVariable) element).name = SQLCommandSet.prepareVarName(BasicSQLDialect.INSTANCE, (String) value);
                 viewer.update(element, null);
             }
         });
@@ -190,17 +195,12 @@ public class EditTaskVariablesDialog extends StatusDialog {
 
             @Override
             protected Object getValue(Object element) {
-                final String value = ((TaskVariable) element).value;
-                if (value.chars().anyMatch(Character::isLowerCase)) {
-                    return BasicSQLDialect.INSTANCE.getQuotedIdentifier(value, true, false);
-                } else {
-                    return value;
-                }
+                return ((TaskVariable) element).value;
             }
 
             @Override
             protected void setValue(Object element, Object value) {
-                ((TaskVariable) element).value = SQLCommandSet.prepareVarName(BasicSQLDialect.INSTANCE, (String) value);
+                ((TaskVariable) element).value = (String) value;
                 viewer.update(element, null);
             }
         });
