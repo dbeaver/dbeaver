@@ -808,7 +808,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }.getType());
         } catch (DBInterruptedException e) {
             // when user cancelled enter project password (not a community level)
-            throw e; //new DBInterruptedException("Project opening canceled by user", e);
+            throw e;
         } catch (IOException e) {
             // here we catch IO exceptions that happens in community for secure credential
             // reading
@@ -820,15 +820,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
                                 registry.getProject().getName()),
                         RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                     return null;
+                } else {
+                    // in case of cancelling erase credentials intercept original exception
+                    throw new DBInterruptedException("Project opening canceled by user");
                 }
-                throw new DBException("Project configuration can not be open", e);
             }
             log.error("Error reading secure credentials", e);
+            throw new DBException("Project configuration can not be open", e);
         } catch (Exception e) {
             log.error("Unexpected error during read secure credentials", e);
             throw new DBException(e.getMessage(), e);
         }
-        return null;
     }
 
     @Nullable
