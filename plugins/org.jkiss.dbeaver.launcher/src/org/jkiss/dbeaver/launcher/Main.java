@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.eclipse.equinox.launcher;
+package org.jkiss.dbeaver.launcher;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -24,13 +24,14 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.eclipse.equinox.internal.launcher.Constants;
-import org.eclipse.equinox.launcher.Main;
+
 
 /**
  * The launcher for Eclipse.
@@ -1298,9 +1299,21 @@ public class Main {
                     } else {
                         base = resolveLocation(location, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
                     }
+                    //
+                    String appVersion = getProductVersion();
+                    Path basePath = null;
+                    if (appVersion.isEmpty()) {
+                        basePath = Paths.get(base);
+                    } else {
+                        basePath = Paths.get(appVersion, base);
+                    }
+                    //
+                    
                     if (debug)
-                        System.out.println("Base location: "+ base);
-                    location = new File(base, userDefaultAppendage).getAbsolutePath();
+                        System.out.println("basePath location: "+ basePath);
+                        
+                    location = basePath.toFile().getAbsolutePath();
+                    //location = new File(basePath, userDefaultAppendage).getAbsolutePath();
                 }
                 if (location.startsWith(USER_HOME)) {
                     String base = substituteVar(location, USER_HOME, PROP_USER_HOME);
@@ -1433,6 +1446,33 @@ public class Main {
         appName += '_' + OS_WS_ARCHToString();
         String userHome = System.getProperty(PROP_USER_HOME);
         return new File(userHome, appName + "/" + pathAppendage).getAbsolutePath(); //$NON-NLS-1$
+    }
+    
+    
+    private String getProductVersion() {
+        String appVersion = "";
+        URL installURL = getInstallLocation();
+        if (installURL == null) {
+            return null;
+        }
+        if (debug)
+            System.out.println("installURL is: " + installURL); //$NON-NLS-1$
+        
+        File installDir = new File(installURL.getFile());
+        File eclipseProduct = new File(installDir, ".eclipseproduct");
+        if (eclipseProduct.exists()) {
+            Properties props = new Properties();
+            try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
+                props.load(inStream);
+                appVersion = props.getProperty(PRODUCT_SITE_VERSION);
+                if (appVersion == null || appVersion.trim().length() == 0)
+                    appVersion = ""; //$NON-NLS-1$
+           
+            } catch (IOException e) {
+               // nothing 
+            }
+        }
+        return appVersion;
     }
 
     private String computeConfigurationLocationForMacOS() {
