@@ -32,9 +32,9 @@ public abstract class SQLQueryNodeModel {
         return this.region;
     }
 
-    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return this.applyImpl(visitor, node);
+    public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return this.applyImpl(visitor, arg);
     }
 
-    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node);
+    protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg);
 }

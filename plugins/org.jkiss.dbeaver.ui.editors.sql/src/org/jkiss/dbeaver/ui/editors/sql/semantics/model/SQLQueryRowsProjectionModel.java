@@ -129,7 +129,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     }
 
     @Override
-    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-        return visitor.visitRowsProjection(this, node);
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
+        return visitor.visitRowsProjection(this, arg);
     }
 }

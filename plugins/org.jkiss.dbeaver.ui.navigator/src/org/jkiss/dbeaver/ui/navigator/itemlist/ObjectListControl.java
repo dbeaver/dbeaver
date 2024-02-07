@@ -383,6 +383,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate, boolean forceUpdateItems) {
+        if (items == null) {
+            return;
+        }
         final Control itemsControl = itemsViewer.getControl();
         if (itemsControl.isDisposed()) {
             return;

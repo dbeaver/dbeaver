@@ -45,7 +45,6 @@ import org.jkiss.utils.CommonUtils;
  */
 public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
 {
-    private Button showNonDefault;
     private Button showTemplates;
     private Button showUnavailable;
     private Button showDatabaseStatistics;
@@ -82,13 +81,6 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             secureGroup.setLayout(new GridLayout(2, false));
 
-            showNonDefault = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_nondefaultDatabase, PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip, false, 2);
-            showNonDefault.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    setCheckboxesState();
-                }
-            });
             showTemplates = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_templates, PostgreMessages.dialog_setting_connection_show_templates_tip, false, 2);
             showUnavailable = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_not_available_for_conn, PostgreMessages.dialog_setting_connection_show_not_available_for_conn_tip, false, 2);
             showDatabaseStatistics = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_database_statistics, PostgreMessages.dialog_setting_connection_database_statistics_tip, false, 2);
@@ -133,16 +125,6 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         loadSettings();
     }
 
-    private void setCheckboxesState() {
-        boolean enable = showNonDefault.getSelection();
-        if (!enable) {
-            showUnavailable.setSelection(false);
-            showTemplates.setSelection(false);
-        }
-        showUnavailable.setEnabled(enable);
-        showTemplates.setEnabled(enable);
-    }
-
     @Override
     public boolean isComplete()
     {
@@ -165,16 +147,12 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         setTitle(site.getActiveDataSource().getDriver().getName());
 
-        showNonDefault.setSelection(
-            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
-            globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
         showTemplates.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
             globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)));
         showUnavailable.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
             globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)));
-        setCheckboxesState();
         showDatabaseStatistics.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS),
                 globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS)));
@@ -202,7 +180,6 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     {
         DBPConnectionConfiguration connectionCfg = dataSource.getConnectionConfiguration();
 
-        connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));

@@ -88,12 +88,16 @@ public class SQLQueryQualifiedName { // qualifier
             this.entityName.merge(rr.aliasOrNull);
         } else if (rr.source instanceof SQLQueryRowsTableDataModel tableModel) {
             if (this.entityName != null) {
-                this.entityName.setDefinition(tableModel);
+                SQLQueryQualifiedName tableName = tableModel.getName();
+                this.entityName.setDefinition(tableName.entityName);
                 if (this.schemaName != null) {
-                    this.entityName.setDefinition(tableModel);
-                }
-                if (this.catalogName != null) {
-                    this.entityName.setDefinition(tableModel);
+                    SQLQuerySymbolEntry schemaDef = tableName.schemaName != null ? tableName.schemaName : tableName.entityName;
+                    this.schemaName.setDefinition(schemaDef);
+                    
+                    if (this.catalogName != null) {
+                        SQLQuerySymbolEntry catalogDef = tableName.catalogName != null ? tableName.catalogName : schemaDef;
+                        this.catalogName.setDefinition(catalogDef);
+                    }
                 }
             }
         }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -55,7 +56,12 @@ public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<Oracl
             }
 
             foreignKey.setReferencedConstraint((OracleTableConstraint) editPage.getUniqueConstraint());
-            foreignKey.setName(editPage.getName());
+            String customName = editPage.getName();
+            if (CommonUtils.isNotEmpty(customName)) {
+                foreignKey.setName(customName);
+            } else {
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+            }
             foreignKey.setDeleteRule(editPage.getOnDeleteRule());
             int colIndex = 1;
             for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
