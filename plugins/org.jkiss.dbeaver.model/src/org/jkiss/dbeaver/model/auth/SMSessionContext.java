@@ -36,10 +36,10 @@ public interface SMSessionContext {
     @Nullable
     SMSession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull SMAuthSpace space, boolean open) throws DBException;
 
-    @Nullable
     /**
      * Workaround to determine the correct context in QM
      */
+    @Nullable
     SMAuthSpace getPrimaryAuthSpace();
 
     @Nullable

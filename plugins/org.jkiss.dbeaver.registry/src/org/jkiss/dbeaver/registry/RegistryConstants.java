@@ -102,6 +102,7 @@ public class RegistryConstants {
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
     public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$
+    public static final String ATTR_CLOSE_IDLE_ENABLED = "closeIdleConnection";
     public static final String ATTR_CLOSE_IDLE = "closeIdle";
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
     public static final String ATTR_TXN_ISOLATION = "txnIsolation"; //$NON-NLS-1$
@@ -114,6 +115,8 @@ public class RegistryConstants {
     public static final String ATTR_SMART_COMMIT_RECOVER = "smartCommitRecover"; //$NON-NLS-1$
     public static final String ATTR_AUTO_CLOSE_TRANSACTIONS = "autoCloseTransactions"; //$NON-NLS-1$
     public static final String ATTR_CLOSE_TRANSACTIONS_PERIOD = "closeTransactionsPeriod"; //$NON-NLS-1$
+    public static final String ATTR_AUTO_CLOSE_CONNECTIONS = "autoCloseConnections"; //$NON-NLS-1$
+    public static final String ATTR_CLOSE_CONNECTIONS_PERIOD = "closeConnectionsPeriod"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
