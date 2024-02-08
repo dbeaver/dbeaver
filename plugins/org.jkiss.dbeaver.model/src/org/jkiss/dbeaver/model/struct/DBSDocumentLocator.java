@@ -39,4 +39,7 @@ public interface DBSDocumentLocator extends DBSDocumentContainer
     @Nullable
     DBDDocument findDocument(@NotNull DBCSession session, Map<String, Object> key, Map<String, Object> metaData) throws DBException;
 
+
+    boolean isDocumentValid(@Nullable DBDDocument documentId) throws DBException;
+
 }
