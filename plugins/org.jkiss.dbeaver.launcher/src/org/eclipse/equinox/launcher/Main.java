@@ -174,7 +174,7 @@ public class Main {
     /**
      * Indicates whether this instance is running in debug mode.
      */
-    protected boolean debug = true;
+    protected boolean debug = false;
     /**
      * The location of the launcher to run.
      */
