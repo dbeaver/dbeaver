@@ -12,7 +12,7 @@
  *     IBM Corporation - initial API and implementation
  *     Rapicorp, Inc - Default the configuration to Application Support (bug 461725)
  *******************************************************************************/
-package org.jkiss.dbeaver.launcher;
+package org.eclipse.equinox.launcher;
 
 /**
  * <b>Note:</b> This class should not be referenced programmatically by

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.launcher;
+package org.eclipse.equinox.launcher;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -1299,21 +1299,17 @@ public class Main {
                     } else {
                         base = resolveLocation(location, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
                     }
-                    //
                     String appVersion = getProductVersion();
                     Path basePath = null;
-                    if (appVersion.isEmpty()) {
-                        basePath = Paths.get(base);
+                    if (appVersion != null && !appVersion.isEmpty()) {
+                        basePath = Paths.get(base, appVersion);
                     } else {
-                        basePath = Paths.get(appVersion, base);
+                        basePath = Paths.get(base);
                     }
-                    //
-                    
-                    if (debug)
-                        System.out.println("basePath location: "+ basePath);
-                        
+                    if (debug) {
+                        System.out.println("basePath location: " + basePath);
+                    }
                     location = basePath.toFile().getAbsolutePath();
-                    //location = new File(basePath, userDefaultAppendage).getAbsolutePath();
                 }
                 if (location.startsWith(USER_HOME)) {
                     String base = substituteVar(location, USER_HOME, PROP_USER_HOME);
