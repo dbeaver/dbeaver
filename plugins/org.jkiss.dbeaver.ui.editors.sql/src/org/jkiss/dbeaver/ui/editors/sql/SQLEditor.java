@@ -5494,6 +5494,8 @@ public class SQLEditor extends SQLEditorBase implements
             return null;
         }
 
+        dataSourceMonitorJob = new DataSourceMonitorJob(DBWorkbench.getPlatform());
+
         final long lastUserActivityTime = dataSourceMonitorJob.getLastUserActivityTime(LAST_USER_ACTIVITY_TIME);
         if (lastUserActivityTime < 0) {
             return null;
