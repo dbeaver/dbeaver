@@ -59,4 +59,56 @@ public abstract class AbstractPreferenceStore extends EventManager implements DB
         removeListenerObject(listener);
     }
 
+
+    protected boolean toBoolean(String value) {
+        return value != null && value.equals(AbstractPreferenceStore.TRUE);
+    }
+
+    protected double toDouble(String value) {
+        double ival = DOUBLE_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
+
+    protected float toFloat(String value) {
+        float ival = FLOAT_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Float.parseFloat(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
+
+    protected int toInt(String value) {
+        int ival = INT_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
+
+    protected long toLong(String value) {
+        long ival = LONG_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
 }

@@ -113,10 +113,6 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         return toBoolean(getDefaultString(name));
     }
 
-    private boolean toBoolean(String value)
-    {
-        return value != null && value.equals(AbstractPreferenceStore.TRUE);
-    }
 
     @Override
     public double getDouble(String name)
@@ -128,19 +124,6 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     public double getDefaultDouble(String name)
     {
         return toDouble(getDefaultString(name));
-    }
-
-    private double toDouble(String value)
-    {
-        double ival = DOUBLE_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Double.parseDouble(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
     }
 
     @Override
@@ -155,18 +138,6 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         return toFloat(getDefaultString(name));
     }
 
-    private float toFloat(String value)
-    {
-        float ival = FLOAT_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Float.parseFloat(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
-    }
 
     @Override
     public int getInt(String name)
@@ -180,18 +151,6 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         return toInt(getDefaultString(name));
     }
 
-    private int toInt(String value)
-    {
-        int ival = INT_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
-    }
 
     @Override
     public long getLong(String name)
@@ -203,19 +162,6 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     public long getDefaultLong(String name)
     {
         return toLong(getDefaultString(name));
-    }
-
-    private long toLong(String value)
-    {
-        long ival = LONG_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Long.parseLong(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
     }
 
     @Override
