@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -83,7 +82,8 @@ public class DataTransferJob extends AbstractJob {
                     hasErrors = true;
                 }
             } catch (Exception e) {
-                return GeneralUtils.makeExceptionStatus(e);
+                // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
+                return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
             }
         }
         monitor.done();
