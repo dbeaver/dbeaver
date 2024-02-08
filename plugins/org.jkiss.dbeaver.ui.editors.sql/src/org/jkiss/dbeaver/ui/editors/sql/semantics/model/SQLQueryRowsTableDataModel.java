@@ -58,7 +58,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     @NotNull
     @Override
     public SQLQuerySymbolClass getSymbolClass() {
-        return this.table != null ? SQLQuerySymbolClass.TABLE : SQLQuerySymbolClass.ERROR; // TODO depends on connection availability
+        return this.table != null ? SQLQuerySymbolClass.TABLE : SQLQuerySymbolClass.ERROR;
     }
 
     @NotNull
