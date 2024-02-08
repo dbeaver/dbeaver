@@ -204,6 +204,7 @@ public class SQLEditor extends SQLEditorBase implements
         SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB, CommonUtils.toString(false));
 
     static final String STATS_CATEGORY_TRANSACTION_TIMEOUT = "TransactionTimeout";
+    public static final int LAST_USER_ACTIVITY_TIME = -1;
 
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
@@ -252,6 +253,7 @@ public class SQLEditor extends SQLEditorBase implements
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
     private TransactionStatusUpdateJob transactionStatusUpdateJob;
+    private DataSourceMonitorJob dataSourceMonitorJob;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -5492,7 +5494,7 @@ public class SQLEditor extends SQLEditorBase implements
             return null;
         }
 
-        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        final long lastUserActivityTime = dataSourceMonitorJob.getLastUserActivityTime(LAST_USER_ACTIVITY_TIME);
         if (lastUserActivityTime < 0) {
             return null;
         }

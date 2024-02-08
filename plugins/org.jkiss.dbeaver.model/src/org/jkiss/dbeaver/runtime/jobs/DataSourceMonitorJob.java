@@ -182,7 +182,7 @@ public class DataSourceMonitorJob extends AbstractJob {
             return false;
         }
 
-        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        final long lastUserActivityTime = getLastUserActivityTime(lastPingTime);
         if (lastUserActivityTime < 0) {
             return false;
         }
@@ -285,8 +285,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         return Math.max(0, ttlSeconds);
     }
 
-    public static long getLastUserActivityTime() {
-        long lastUserActivityTime = -1;
+    public long getLastUserActivityTime(long lastUserActivityTime) {
 
         if (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop app) {
             lastUserActivityTime = app.getLastUserActivityTime();
