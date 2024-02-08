@@ -172,7 +172,7 @@
                 <driver id="mysql3"/>
                 <driver
                         id="mysql5"
-                        label="MySQL 5"
+                        label="MySQL 5 (Legacy)"
                         icon="icons/mysql_icon.png"
                         iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
@@ -269,7 +269,7 @@
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.0.7]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.3.2]" bundle="!drivers.mariadb"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.mariadb"/>
 
                     <file type="license" path="drivers/mariadb/LICENSE.txt" bundle="drivers.mariadb"/>
