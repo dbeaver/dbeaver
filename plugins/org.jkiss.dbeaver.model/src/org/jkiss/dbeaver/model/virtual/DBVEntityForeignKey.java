@@ -56,18 +56,16 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     DBVEntityForeignKey(@NotNull DBVEntity entity, DBVEntityForeignKey copy, DBVModel targetModel) {
         this.entity = entity;
 
+        this.refEntityId = copy.refEntityId;
         // Here is a tricky part
         // refEntityId may refer to the current (old model owner) datasource
         // In this case we must fix it and refer to the new model owner.
         DBPDataSourceContainer copyDS = copy.getAssociatedDataSource();
-        if (copyDS == null) {
-            // Refer connection from other project?
-            this.refEntityId = null;
-        } else if (copyDS == copy.getParentObject().getDataSourceContainer()) {
+        if (copyDS != null && copyDS == copy.getParentObject().getDataSourceContainer()) {
             DBPDataSourceContainer newDS = targetModel.getDataSourceContainer();
-            this.refEntityId = copy.refEntityId.replace(copyDS.getId(), newDS.getId());
-        } else {
-            this.refEntityId = copy.refEntityId;
+            if (newDS != null) {
+                this.refEntityId = copy.refEntityId.replace(copyDS.getId(), newDS.getId());
+            }
         }
 
         this.refConstraintId = copy.refConstraintId;

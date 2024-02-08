@@ -39,11 +39,9 @@ public interface DBSSecretController {
     void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
 
     @NotNull
-    default List<DBSSecretValue> discoverCurrentUserSecrets(
+    List<DBSSecretValue> discoverCurrentUserSecrets(
         @NotNull DBSSecretObject secretObject
-    ) throws DBException {
-        return List.of();
-    }
+    ) throws DBException;
 
     @NotNull
     default List<DBSSecretValue> listAllSharedSecrets(
