@@ -305,6 +305,7 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                 "TAG",
                 "TASK"
             ));
+        removeSQLKeyword("VIEWS");
         
         addFunctions(Arrays.asList(SNOWFLAKE_AGGREGATE_AND_WINDOW_FUNCTIONS));
         addFunctions(Arrays.asList(SNOWFLAKE_BITWISE_FUNCTIONS));
