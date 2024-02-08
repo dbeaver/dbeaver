@@ -259,7 +259,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             }
         }
 
-        return new ArrayList<>(insertMethodDescriptors);
+        return insertMethodDescriptors != null ? new ArrayList<>(insertMethodDescriptors) : new ArrayList<>();
     }
 
     @Override
