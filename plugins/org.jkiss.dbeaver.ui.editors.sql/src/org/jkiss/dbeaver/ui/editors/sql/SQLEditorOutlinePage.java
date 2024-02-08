@@ -607,6 +607,19 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
     }
 
+    @NotNull
+    private OutlineScriptElementNode getScriptElementNode(@NotNull OutlineQueryNode node) {
+        OutlineNode n = node;
+        while (n != null) {
+            if (n instanceof OutlineScriptElementNode e) {
+                return e;
+            } else {
+                n = n.getParent();
+            }
+        }
+        throw new IllegalStateException();
+    }
+    
     private class SQLOutlineNodeFullBuilder implements SQLOutlineNodeBuilder {
 
         @Nullable
@@ -739,7 +752,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitRowsTableValue(SQLQueryRowsTableValueModel tableValue, OutlineQueryNode node) {
-            this.makeNode(node, tableValue, "Table value", DBIcon.TYPE_UNKNOWN); // TODO
+            this.makeNode(node, tableValue, "Default table", DBIcon.TYPE_UNKNOWN); // TODO
             return null;
         }
 
@@ -894,7 +907,17 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             SQLQuerySymbolEntry alias = columnSpec.getAlias();
             SQLQuerySymbol mayBeColumnName = columnSpec.getValueExpression().getColumnNameIfTrivialExpression();
             
-            String text = alias != null ? alias.getRawName() : (mayBeColumnName == null ? "?" : mayBeColumnName.getName());
+            String text;
+            if (alias != null) {
+                text = alias.getRawName();
+            } else {
+                if (mayBeColumnName != null) {
+                    text = mayBeColumnName.getName();
+                } else {
+                    text = getScriptElementNode(arg).scriptElement.getOriginalText()
+                        .substring(columnSpec.getInterval().a, columnSpec.getInterval().b + 1);
+                }
+            }
             String extraText = this.obtainExprTypeNameString(columnSpec.getValueExpression());
             
             this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
@@ -908,14 +931,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @NotNull DBPImage icon,
             @NotNull SQLQueryNodeModel... childModels
         ) {
-            parent.children.add(new OutlineQueryNode(parent, model, text, null, icon, childModels));
+            makeNode(parent, model, text, null, icon, childModels);
         }
         
         private void makeNode(
             @NotNull OutlineQueryNode parent,
             @NotNull SQLQueryNodeModel model,
             @NotNull String text,
-            @NotNull String extraText,
+            @Nullable String extraText,
             @NotNull DBPImage icon,
             @NotNull SQLQueryNodeModel... childModels
         ) {
