@@ -25,6 +25,7 @@ public enum WSEventTopic {
     SESSION("cb_session"),
     USER("cb_user"),
     DATASOURCE("cb_datasource"),
+    DATASOURCE_DISCONNECTED("cb_datasource_disconnected"),
     DATASOURCE_FOLDER("cb_datasource_folder"),
     TEMP_FOLDER("cb_delete_temp_folder"),
     USER_SECRET("cb_user_secret"),

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -203,12 +204,7 @@ public class DataSourceMonitorJob extends AbstractJob {
             DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
             disconnectJob.schedule();
 
-            DBeaverNotifications.showNotification(
-                dataSource,
-                DBeaverNotifications.NT_DISCONNECT_IDLE,
-                "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
-                DBPMessageType.ERROR);
-
+            showNotification(dataSource, dsDescriptor);
             return true;
         }
 
@@ -296,5 +292,13 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
 
         return lastUserActivityTime;
+    }
+
+    public void showNotification (DBPDataSource dataSource, DBPDataSourceContainer dsDescriptor) {
+        DBeaverNotifications.showNotification(
+                dataSource,
+                DBeaverNotifications.NT_DISCONNECT_IDLE,
+                "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
+                DBPMessageType.ERROR);
     }
 }
