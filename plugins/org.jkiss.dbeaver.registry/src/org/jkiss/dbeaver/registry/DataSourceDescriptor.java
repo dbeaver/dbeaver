@@ -894,6 +894,10 @@ public class DataSourceDescriptor
             }
         } else {
             var secret = saveToSecret();
+            String subjectId = null;
+            if (selectedSharedCredentials != null) {
+                subjectId = selectedSharedCredentials.getId();
+            }
             if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
                 secretController.setSubjectSecretValue(teamProvider.getDefaultTeamId(), this, new DBSSecretValue(
                     getSecretValueId(), "", secret
