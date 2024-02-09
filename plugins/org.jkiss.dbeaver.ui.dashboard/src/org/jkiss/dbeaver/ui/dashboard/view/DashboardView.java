@@ -147,6 +147,9 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
     }
 
     private void updateStatus() {
+        if (dataSourceContainer.isConnected()) {
+            DashboardUpdateJob.getDefault().resumeDashboardUpdate();
+        }
         UIUtils.asyncExec(() -> {
             setPartName(dataSourceContainer.getName() + (dataSourceContainer.isConnected() ? "" : UIDashboardMessages.dashboard_view_status_off));
         });

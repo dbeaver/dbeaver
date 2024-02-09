@@ -253,6 +253,9 @@ public class DataSourceMonitorJob extends AbstractJob {
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
         DBPConnectionConfiguration config = container.getConnectionConfiguration();
+        if (!config.isCloseIdleConnection()) {
+            return 0;
+        }
         final int timeout = config.getCloseIdleInterval();
         if (timeout > 0) {
             return timeout;

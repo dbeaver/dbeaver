@@ -115,6 +115,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private DBPDriverConfigurationType configurationType;
     private String connectionColor;
     private int keepAliveInterval;
+    private boolean closeIdleConnection;
     private int closeIdleInterval;
 
     private String authModelId;
@@ -130,6 +131,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
+        this.closeIdleConnection = true;
         this.closeIdleInterval = 0;
     }
 
@@ -162,6 +164,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.connectionColor = info.connectionColor;
         this.keepAliveInterval = info.keepAliveInterval;
+        this.closeIdleConnection = info.closeIdleConnection;
         this.closeIdleInterval = info.closeIdleInterval;
     }
 
@@ -408,6 +411,14 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = keepAliveInterval;
     }
 
+    public boolean isCloseIdleConnection() {
+        return closeIdleConnection;
+    }
+
+    public void setCloseIdleConnection(boolean closeIdleConnection) {
+        this.closeIdleConnection = closeIdleConnection;
+    }
+
     public int getCloseIdleInterval() {
         return closeIdleInterval;
     }
@@ -546,6 +557,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalObjects(this.handlers, source.handlers) &&
                 CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
                 this.keepAliveInterval == source.keepAliveInterval &&
+                this.closeIdleConnection == source.closeIdleConnection &&
                 this.closeIdleInterval == source.closeIdleInterval;
     }
 

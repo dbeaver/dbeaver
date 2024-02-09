@@ -16,34 +16,33 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
-import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * SQL Server Generic procedure manager
- */
-public class SQLServerGenericProcedureManager extends GenericProcedureManager {
+public class SQLServerGenericViewManager extends GenericViewManager {
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
-        // Always DROP PROCEDURE (SQL Server doesn't support functions?)
-        // Do not use database name (not supported)
-        GenericProcedure object = command.getObject();
-        actions.add(
-            new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table,
-                "DROP PROCEDURE " + DBUtils.getQuotedIdentifier(object.getContainer()) + "." + DBUtils.getQuotedIdentifier(object))
-        );
+    protected void addObjectModifyActions(
+        @Nullable DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectChangeCommand command,
+        @Nullable Map<String, Object> options
+    ) {
+        actionList.add(new SQLDatabasePersistAction(
+            "Create view",
+            SQLServerUtils.changeCreateToCreateOrReplace(command.getObject().getDDL())));
     }
-
 }
