@@ -205,8 +205,6 @@ public class SQLEditor extends SQLEditorBase implements
         SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB, CommonUtils.toString(false));
 
     static final String STATS_CATEGORY_TRANSACTION_TIMEOUT = "TransactionTimeout";
-    public static final int LAST_USER_ACTIVITY_TIME = -1;
-
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
