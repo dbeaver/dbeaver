@@ -834,13 +834,6 @@ public class DataSourceDescriptor
     @Override
     public boolean persistConfiguration() {
         try {
-            persistSecretIfNeeded(false, false);
-
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
-            return false;
-        }
-        try {
             registry.updateDataSource(this);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Datasource update error", "Error updating datasource", e);
