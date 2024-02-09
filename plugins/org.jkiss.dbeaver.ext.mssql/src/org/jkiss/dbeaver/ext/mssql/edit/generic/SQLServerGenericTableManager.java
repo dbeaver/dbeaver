@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ext.mssql.edit.generic;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericIndex;
 import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -34,7 +34,7 @@ public class SQLServerGenericTableManager extends GenericTableManager {
         SQLServerGenericTableColumn.class,
         GenericUniqueKey.class,
         GenericTableForeignKey.class,
-        GenericTableIndex.class
+        SQLServerGenericIndex.class
     );
 
     @NotNull
