@@ -252,7 +252,6 @@ public class SQLEditor extends SQLEditorBase implements
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
     private TransactionStatusUpdateJob transactionStatusUpdateJob;
-    private DataSourceMonitorJob dataSourceMonitorJob;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
