@@ -128,9 +128,10 @@ public class MetadataProcessor {
                 "Your query must start with \"SELECT\" and be enclosed with triple backslash on new lines. " +
                 "Talk naturally, as if you were talking to a human.");
         } else if (isChatAPI) {
-            sb.append("Perform SQL completion. Start response with SELECT keyword. Start every line with \"--\".");
+            sb.append("Perform SQL completion. Start response with SELECT keyword.\n" +
+                " Avoid using Markdown. Start every comment line with \"--\".");
         } else {
-            sb.append("Perform SQL completion.");
+            sb.append("Perform SQL completion. Avoid using Markdown");
         }
 
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
