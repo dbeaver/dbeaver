@@ -896,15 +896,14 @@ public class DataSourceDescriptor
             var secret = saveToSecret();
             String subjectId = null;
             if (selectedSharedCredentials != null) {
-                subjectId = selectedSharedCredentials.getId();
-            }
-            if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
-                secretController.setSubjectSecretValue(teamProvider.getDefaultTeamId(), this, new DBSSecretValue(
-                    getSecretValueId(), "", secret
-                ));
+                subjectId = selectedSharedCredentials.getSubjectId();
+            } else if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
+                subjectId = teamProvider.getDefaultTeamId();
             } else {
-                throw new DBException("Application does not support shared secrets");
+                throw new DBException("Can not determine secret subject. Shared secrets not supported.");
             }
+            secretController.setSubjectSecretValue(subjectId, this,
+                new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
         }
         secretsResolved = true;
     }
