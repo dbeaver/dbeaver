@@ -2386,6 +2386,7 @@ public class ResultSetViewer extends Viewer
         }
         this.curRow = null;
         this.model.setData(rows);
+        updateRowCount();
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
         if (focusRow > 0 && focusRow < model.getRowCount()) {
             this.curRow = model.getRow(focusRow);
