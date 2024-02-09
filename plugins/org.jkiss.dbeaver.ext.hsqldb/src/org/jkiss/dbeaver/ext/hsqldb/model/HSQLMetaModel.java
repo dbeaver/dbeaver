@@ -56,7 +56,7 @@ public class HSQLMetaModel extends GenericMetaModel
     @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         String url = container.getConnectionConfiguration().getUrl();
-        if (!container.getDriver().isEmbedded() && url != null && url.startsWith(PROHIBITED_FUNCTION)) {
+        if (url != null && url.startsWith(PROHIBITED_FUNCTION)) {
             throw new DBException("File is forbidden for this driver, use embedded driver");
         }
         return new HSQLDataSource(monitor, container, this);
