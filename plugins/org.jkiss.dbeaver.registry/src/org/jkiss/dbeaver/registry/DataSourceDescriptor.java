@@ -889,7 +889,7 @@ public class DataSourceDescriptor
             var secret = saveToSecret();
             String subjectId = null;
             if (selectedSharedCredentials != null) {
-                subjectId = selectedSharedCredentials.getSubjectId();
+                subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
             } else if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
                 subjectId = teamProvider.getDefaultTeamId();
             } else {

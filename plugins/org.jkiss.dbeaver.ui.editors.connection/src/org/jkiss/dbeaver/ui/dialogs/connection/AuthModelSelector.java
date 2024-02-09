@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
@@ -175,7 +176,7 @@ public class AuthModelSelector extends Composite {
         });
         UIUtils.createEmptyLabel(authModelComp, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (sharedConfigurator != null) {
-            sharedConfigurator.createControl(authModelComp, activeDataSource, () -> {});
+            sharedConfigurator.createControl(authModelComp, activeDataSource, this::refreshCredentials);
         } else {
             UIUtils.createEmptyLabel(authModelComp, 1, 1);
         }
@@ -234,6 +235,13 @@ public class AuthModelSelector extends Composite {
         if (modelConfigPlaceholder.getSize().x > 0 && parentFolder != null) {
             parentFolder.layout(true, true);
         }
+    }
+
+    private void refreshCredentials() {
+        if (activeDataSource instanceof DataSourceDescriptor dsd) {
+            dsd.forgetSecrets();
+        }
+        authModelConfigurator.loadSettings(activeDataSource);
     }
 
     public boolean isComplete() {

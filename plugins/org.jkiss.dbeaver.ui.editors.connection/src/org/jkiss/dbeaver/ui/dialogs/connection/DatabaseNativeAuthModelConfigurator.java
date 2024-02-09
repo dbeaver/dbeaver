@@ -108,11 +108,17 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
             this.passwordText.setEnabled(dataSource.isSavePassword());
         }
-        if (this.savePasswordCheck != null) {
-            this.savePasswordCheck.setEnabled(!dataSource.isTemporary());
-        }
-        if (this.userManagementToolbar != null) {
-            this.userManagementToolbar.setEnabled(!dataSource.isTemporary());
+        if (dataSource.isTemporary()) {
+            if (this.passwordText != null) {
+                this.passwordText.setEnabled(true);
+            }
+            if (this.savePasswordCheck != null) {
+                this.savePasswordCheck.setSelection(true);
+                this.savePasswordCheck.setEnabled(false);
+            }
+            if (this.userManagementToolbar != null) {
+                this.userManagementToolbar.setEnabled(false);
+            }
         }
     }
 
