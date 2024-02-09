@@ -44,6 +44,8 @@ public class AIUIMessages extends NLS {
 
     public static String gpt_preference_page_schema_group;
 
+    public static String gpt_preference_page_advanced_appearance_group;
+
     public static String gpt_preference_page_group_model;
 
 

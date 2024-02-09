@@ -49,6 +49,16 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         Composite settingsPanel = UIUtils.createComposite(parent, 2);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Composite completionComposite = UIUtils.createPlaceholder(settingsPanel, 1);
+        Group appearanceSettings = UIUtils.createControlGroup(
+            completionComposite,
+            AIUIMessages.gpt_preference_page_advanced_appearance_group,
+            2,
+            SWT.NONE,
+            5
+        );
+        appearanceSettings.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+
+        createAppearanceSettings(appearanceSettings, propertyChangeListener);
         Group completionGroup = UIUtils.createControlGroup(
             completionComposite,
             AIUIMessages.gpt_preference_page_completion_group,
@@ -58,7 +68,6 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         );
         completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createCompletionSettings(completionGroup, propertyChangeListener);
-        createFormattingSettings(completionComposite, propertyChangeListener);
         Group schemaGroup = UIUtils.createControlGroup(
             settingsPanel,
             AIUIMessages.gpt_preference_page_schema_group,
@@ -70,13 +79,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     }
 
     protected void createCompletionSettings(Composite completionGroup, Runnable propertyChangeListener) {
-        completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        includeSourceTextInCommentCheck = UIUtils.createCheckbox(
-            completionGroup,
-            AIUIMessages.gpt_preference_page_completion_include_source_label,
-            AIUIMessages.gpt_preference_page_completion_include_source_tip,
-            false,
-            2);
+        completionGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         executeQueryImmediatelyCheck = UIUtils.createCheckbox(
             completionGroup,
             AIUIMessages.gpt_preference_page_completion_execute_immediately_label,
@@ -102,8 +105,13 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             2);
     }
 
-    protected void createFormattingSettings(Composite settingsPanel, Runnable propertyChangeListener) {
-//        UIUtils.createEmptyLabel(settingsPanel, 0, 0);
+    protected void createAppearanceSettings(Composite appearanceGroup, Runnable propertyChangeListener) {
+        includeSourceTextInCommentCheck = UIUtils.createCheckbox(
+            appearanceGroup,
+            AIUIMessages.gpt_preference_page_completion_include_source_label,
+            AIUIMessages.gpt_preference_page_completion_include_source_tip,
+            false,
+            2);
     }
 
 
