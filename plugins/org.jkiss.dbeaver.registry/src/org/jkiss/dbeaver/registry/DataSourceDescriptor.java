@@ -128,6 +128,8 @@ public class DataSourceDescriptor
     // Password is shared.
     // It will be saved in local configuration even if project uses secured storage
     private boolean sharedCredentials;
+    // store original flag state to detect changes
+    private transient boolean originalShareCredentials;
     @Nullable
     private transient List<DBSSecretValue> availableSharedCredentials;
     @Nullable
@@ -250,6 +252,7 @@ public class DataSourceDescriptor
         this.description = source.description;
         this.savePassword = source.savePassword;
         this.sharedCredentials = source.sharedCredentials;
+        this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
@@ -448,6 +451,12 @@ public class DataSourceDescriptor
     @Override
     public boolean isSharedCredentials() {
         return sharedCredentials;
+    }
+
+    //ignore changed store type
+    public void forceSetSharedCredentials(boolean sharedCredentials) {
+        this.sharedCredentials = sharedCredentials;
+        this.originalShareCredentials = sharedCredentials;
     }
 
     @Override
@@ -854,6 +863,12 @@ public class DataSourceDescriptor
             // Do not save secrets for hidden or temporary datasources
             return false;
         }
+
+        if (shouldRemoveExistsSecrets()) {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+            secretController.deleteObjectSecrets(this);
+            this.originalShareCredentials = isSharedCredentials();
+        }
         // Save only if secrets were already resolved or it is a new connection
         if (secretsResolved || (force && getProject().isUseSecretStorage())) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
@@ -867,8 +882,7 @@ public class DataSourceDescriptor
         // Delete secrets (on connection delete)
         if (getProject().isUseSecretStorage()) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-
-            secretController.setPrivateSecretValue(getSecretObjectId(), null);
+            secretController.deleteObjectSecrets(this);
         }
     }
 
@@ -883,7 +897,7 @@ public class DataSourceDescriptor
             // Do not persist empty secrets for new datasources
             // If secret controller is external then it may take quite a time + may cause errors because of missing secret
             if (!isNewDataSource || secret != null) {
-                secretController.setPrivateSecretValue(getSecretObjectId(), secret);
+                secretController.setPrivateSecretValue(this, new DBSSecretValue(getSecretValueId(), "", secret));
             }
         } else {
             var secret = saveToSecret();
@@ -922,12 +936,16 @@ public class DataSourceDescriptor
         return selectedSharedCredentials != null;
     }
 
+    private boolean shouldRemoveExistsSecrets() {
+        return isSharedCredentials() != originalShareCredentials;
+    }
+
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
         try {
             if (!isSharedCredentials()) {
                 // try to load private user credentials
-                String secretValue = secretController.getPrivateSecretValue(getSecretObjectId());
+                String secretValue = secretController.getPrivateSecretValue(getSecretValueId());
                 loadFromSecret(secretValue);
                 if (secretValue == null && !DBWorkbench.isDistributed()) {
                     // Backward compatibility
