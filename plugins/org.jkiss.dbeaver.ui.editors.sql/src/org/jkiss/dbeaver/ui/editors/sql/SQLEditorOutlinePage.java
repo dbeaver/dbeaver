@@ -500,6 +500,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             super(
                 parent,
                 scriptElement.getQueryModel(),
+                OutlineQueryNodeKind.DEFAULT,
                 prepareQueryPreview(scriptElement),
                 null,
                 UIIcon.SQL_EXECUTE,
@@ -520,8 +521,17 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
     }
 
+    /**
+     * Outline-specific nodes classification
+     */
+    private enum OutlineQueryNodeKind {
+        DEFAULT,
+        NATURAL_JOIN_SUBROOT
+    }
+
     private class OutlineQueryNode extends OutlineNode {
         private final SQLQueryNodeModel model;
+        private final OutlineQueryNodeKind kind;
         private final String text;
         private final String extraText;
         private final DBPImage icon;
@@ -532,6 +542,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         public OutlineQueryNode(
             @NotNull OutlineNode parentNode,
             @NotNull SQLQueryNodeModel model,
+            @NotNull OutlineQueryNodeKind kind,
             @NotNull String text,
             @Nullable String extraText,
             @NotNull DBPImage icon,
@@ -539,6 +550,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         ) {
             super(parentNode);
             this.model = model;
+            this.kind = kind;
             this.text = text;
             this.extraText = extraText;
             this.icon = icon;
@@ -683,6 +695,16 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             return null;
         }
 
+        @Override
+        public Object visitValueTupleRefExpr(SQLQueryValueTupleReferenceExpression tupleRefExpr, OutlineQueryNode node) {
+            SQLQueryQualifiedName tableName = tupleRefExpr.getTableName();
+            String extraText = this.obtainExprTypeNameString(tupleRefExpr);
+            DBPImage icon = this.obtainExprTypeIcon(tupleRefExpr);
+
+            this.makeNode(node, tupleRefExpr, tableName.toIdentifierString(), extraText, icon);
+            return null;
+        }
+
         @Nullable
         @Override
         public Object visitValueMemberReferenceExpr(@NotNull SQLQueryValueMemberExpression memberRefExpr, @NotNull OutlineQueryNode node) {
@@ -787,19 +809,25 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitRowsNaturalJoin(@NotNull SQLQueryRowsNaturalJoinModel naturalJoin, @NotNull OutlineQueryNode node) {
             // TODO bring join kind here
-            if (node.model instanceof SQLQueryRowsNaturalJoinModel) {
-                if (naturalJoin.getCondition() != null) {
-                    // TODO add expression text to the ON node and remove its immediate and only child with the same text
-                    this.makeNode(node, naturalJoin.getCondition(), "ON ", DBIcon.TREE_UNIQUE_KEY, naturalJoin.getCondition());
-                } else {
-                    String suffix = naturalJoin.getColumsToJoin().stream()
-                        .map(SQLQuerySymbolEntry::getRawName)
-                        .collect(Collectors.joining(", ", "(", ")"));
-                    this.makeNode(node, naturalJoin, "USING " + suffix, DBIcon.TREE_UNIQUE_KEY);
+            switch (node.kind) {
+                case NATURAL_JOIN_SUBROOT -> {
+                    if (naturalJoin.getCondition() != null) {
+                        // TODO add expression text to the ON node and remove its immediate and only child with the same text
+                        this.makeNode(node, naturalJoin.getCondition(), "ON ", DBIcon.TREE_UNIQUE_KEY, naturalJoin.getCondition());
+                    } else {
+                        String suffix = naturalJoin.getColumsToJoin().stream()
+                            .map(SQLQuerySymbolEntry::getRawName)
+                            .collect(Collectors.joining(", ", "(", ")"));
+                        this.makeNode(node, naturalJoin, "USING " + suffix, DBIcon.TREE_UNIQUE_KEY);
+                    }
                 }
-            } else {
-                List<SQLQueryNodeModel> children = this.flattenRowSetsCombination(naturalJoin, x -> true, (x, l) -> l.add(x));
-                this.makeNode(node, naturalJoin, "NATURAL JOIN ", DBIcon.TREE_TABLE_LINK, children.toArray(SQLQueryNodeModel[]::new));
+                default -> {
+                    List<SQLQueryNodeModel> children = this.flattenRowSetsCombination(naturalJoin, x -> true, (x, l) -> l.add(x));
+                    this.makeNode(
+                        node, naturalJoin, OutlineQueryNodeKind.NATURAL_JOIN_SUBROOT,
+                        "NATURAL JOIN ", DBIcon.TREE_TABLE_LINK, children.toArray(SQLQueryNodeModel[]::new)
+                    );
+                }
             }
             return null;
         }
@@ -937,12 +965,35 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         private void makeNode(
             @NotNull OutlineQueryNode parent,
             @NotNull SQLQueryNodeModel model,
+            @NotNull OutlineQueryNodeKind kind,
+            @NotNull String text,
+            @NotNull DBPImage icon,
+            @NotNull SQLQueryNodeModel... childModels
+        ) {
+            makeNode(parent, model, kind, text, null, icon, childModels);
+        }
+            
+        private void makeNode(
+            @NotNull OutlineQueryNode parent,
+            @NotNull SQLQueryNodeModel model,
             @NotNull String text,
             @Nullable String extraText,
             @NotNull DBPImage icon,
             @NotNull SQLQueryNodeModel... childModels
         ) {
-            parent.children.add(new OutlineQueryNode(parent, model, text, extraText, icon, childModels));
+            makeNode(parent, model, OutlineQueryNodeKind.DEFAULT, text, extraText, icon, childModels);
+        }
+        
+        private void makeNode(
+            @NotNull OutlineQueryNode parent,
+            @NotNull SQLQueryNodeModel model,
+            @NotNull OutlineQueryNodeKind kind,
+            @NotNull String text,
+            @Nullable String extraText,
+            @NotNull DBPImage icon,
+            @NotNull SQLQueryNodeModel... childModels
+        ) {
+            parent.children.add(new OutlineQueryNode(parent, model, kind, text, extraText, icon, childModels));
         }
     }
 }
