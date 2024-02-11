@@ -3901,7 +3901,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             Listener scrollListener = event -> {
                 Control underScroll = (Control) event.widget;
-                if (underScroll.getShell() == tabContentScroller.getShell() && tabContentScroller.isVisible()) {
+                if (underScroll.getShell() == tabContentScroller.getShell() && tabContentScroller.isVisible() && ((event.stateMask & SWT.CTRL) == SWT.CTRL)) {
                     Point clickedPoint = underScroll.toDisplay(event.x, event.y);
                     if (tabContentScroller.getClientArea().contains(tabContentScroller.toControl(clickedPoint))) {
                         for (Control c = underScroll; c != null; c = c.getParent()) {
