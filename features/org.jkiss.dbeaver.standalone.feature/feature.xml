@@ -36,6 +36,7 @@
 
     <plugin id="org.eclipse.equinox.p2.updatesite" version="0.0.0" />
     <plugin id="org.eclipse.equinox.p2.ui.importexport" version="0.0.0" />
+
     <includes id="org.eclipse.equinox.p2.discovery.feature" version="0.0.0"/>
     <includes id="org.eclipse.equinox.p2.extras.feature" version="0.0.0"/>
 
