@@ -112,17 +112,23 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
     @Override
     protected void appendTableModifiers(DBRProgressMonitor monitor, MySQLTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
-        if (tableBase instanceof MySQLTable) {
-            MySQLTable table = (MySQLTable) tableBase;
+        if (tableBase instanceof MySQLTable table) {
             try {
+                final MySQLDataSource dataSource = table.getDataSource();
                 final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
                 if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
                     ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
                 }
-                if ((!table.isPersisted() || tableProps.getProperty("charset") != null) && additionalInfo.getCharset() != null) { //$NON-NLS-1$
+                if (dataSource.supportsCharsets() &&
+                    (!table.isPersisted() || tableProps.getProperty("charset") != null) && //$NON-NLS-1$
+                    additionalInfo.getCharset() != null
+                ) {
                     ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
                 }
-                if ((!table.isPersisted() || tableProps.getProperty("collation") != null) && additionalInfo.getCollation() != null) { //$NON-NLS-1$
+                if (dataSource.supportsCollations() &&
+                    (!table.isPersisted() || tableProps.getProperty("collation") != null) && //$NON-NLS-1$
+                    additionalInfo.getCollation() != null
+                ) {
                     ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
                 }
                 if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
