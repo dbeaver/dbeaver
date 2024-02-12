@@ -37,6 +37,6 @@ public class QMSessionInfo {
     }
 
     public String getUserIp() {
-        return userIp;
+        return userIp.replaceAll("[\\[\\]]", "");
     }
 }
