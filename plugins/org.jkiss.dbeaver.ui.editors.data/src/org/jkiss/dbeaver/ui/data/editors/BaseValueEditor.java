@@ -20,9 +20,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -43,6 +41,8 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -140,14 +140,14 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                         }
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
-                     } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                    } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
                         ((IMultiController) valueController).closeInlineEditor();
                         if (additionalTraverseActions != null) {
                             additionalTraverseActions.accept(e);
                         }
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
-                     } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                    } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
                         saveValue();
                         ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
                         if (additionalTraverseActions != null) {
@@ -155,23 +155,23 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                         }
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
-                     }
+                    }
 
                 });
-                 if (!UIUtils.isInDialog(inlineControl)) {
-                     if (inlineControl instanceof Composite) {
-                         for (Control childControl : ((Composite) inlineControl).getChildren()) {
-                             if (!childControl.isDisposed()) {
-                                 addAutoSaveSupport(childControl);
-                                 EditorUtils.trackControlContext(valueController.getValueSite(), childControl, RESULTS_EDIT_CONTEXT_ID);
-                             }
-                         }
-                     } else {
-                         addAutoSaveSupport(inlineControl);
-                     }
-                 } else {
-                     ((IMultiController) valueController).closeInlineEditor();
-                 }
+                if (!UIUtils.isInDialog(inlineControl)) {
+                    if (inlineControl instanceof Composite) {
+                        for (Control childControl : ((Composite) inlineControl).getChildren()) {
+                            if (!childControl.isDisposed()) {
+                                EditorUtils.trackControlContext(valueController.getValueSite(), childControl, RESULTS_EDIT_CONTEXT_ID);
+                            }
+                        }
+                        addAutoSaveSupport(inlineControl);
+                    } else {
+                        addAutoSaveSupport(inlineControl);
+                    }
+                } else {
+                    ((IMultiController) valueController).closeInlineEditor();
+                }
             }
 
             if (!UIUtils.isInDialog(inlineControl)) {
@@ -195,34 +195,16 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     }
 
     private void addAutoSaveSupport(final Control inlineControl) {
-        BaseValueEditor<?> editor = this;
-        // Do not use focus listener in dialogs (because dialog has controls like Ok/Cancel buttons)
-        inlineControl.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
+        inlineControl.addDisposeListener(getAutoSaveListener());
+    }
+
+    @NotNull
+    protected DisposeListener getAutoSaveListener() {
+        return e -> {
+            if (!valueController.isReadOnly()) {
+                onFocusLost(value -> valueController.updateValue(value, true));
             }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                // It feels like on Linux editor's control is 'invisible' for GTK and mouse clicks
-                // 'go through' the control and reach underlying spreadsheet. Workaround:
-                // check that in reality we clicked on editor by checking that cursor is in control's
-                // bounds. See [dbeaver#10561].
-                Rectangle controlBounds = editor.control.getBounds();
-                Point relativeCursorLocation = editor.control.toControl(e.display.getCursorLocation());
-                if (controlBounds.contains(relativeCursorLocation)) {
-                    return;
-                }
-
-                onFocusLost(valueController::updateSelectionValue);
-            }
-        });
-
-        // Unfortunately, focusLost events on macOS never reach the listener above.
-        // However, we rely on them to save the value when the user clicks somewhere on the grid and LightGrid forces focus on itself.
-        // The solution is to add dispose listener. But here is a catch: when inline control is about to be disposed of, the selection is already
-        // on some other cell on the grid. Hence, we need to use updateValue() on valueController, not updateSelectionValue().
-        UIUtils.installMacOSFocusLostSubstitution(inlineControl, () -> onFocusLost(value -> valueController.updateValue(value, true)));
+        };
     }
 
     private void onFocusLost(@NotNull Consumer<Object> valueSaver) {

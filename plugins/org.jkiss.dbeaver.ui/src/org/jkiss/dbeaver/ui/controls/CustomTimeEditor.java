@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -62,10 +63,14 @@ public class CustomTimeEditor {
     private Text textEditor;
     private Listener modifyListener;
     private SelectionAdapter selectionListener;
+    private TraverseListener textTraverseListener;
     private boolean editable;
     private CLabel warningLabel;
     private Composite mainComposite;
     private JDBCType jdbcType;
+    private TraverseListener traverseForwardListener;
+    private TraverseListener traverseBackwardsListener;
+
 
     private enum InputMode {
         NONE,
@@ -130,8 +135,6 @@ public class CustomTimeEditor {
         }
         basePart.setLayout(basePartLayout);
         setToDateComposite();
-
-
         //fixes calendar issues on inline mode
         basePart.pack();
         return isInline ? basePart : mainComposite;
@@ -141,7 +144,7 @@ public class CustomTimeEditor {
      * Disposes all DateTime editors and their labels and creates text editor
      */
     public void setToTextComposite() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isTextModeActive()) {
             return;
         }
         disposeEditor(timeEditor, timeLabel);
@@ -151,6 +154,7 @@ public class CustomTimeEditor {
         textEditor = new Text(basePart, isPanel && !isInline ? style : SWT.BORDER);
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
+
         if (warningLabel != null) {
             warningLabel.dispose();
             warningLabel = null;
@@ -208,16 +212,57 @@ public class CustomTimeEditor {
 
     public void updateListeners() {
         if (selectionListener != null) {
-            if (dateEditor != null && !dateEditor.isDisposed()) {
+            if (isDateEditorActive()) {
                 dateEditor.addSelectionListener(selectionListener);
             }
-            if (timeEditor != null && !timeEditor.isDisposed()) {
+            if (isTimeEditorActive()) {
                 timeEditor.addSelectionListener(selectionListener);
             }
         }
-        if (modifyListener != null && textEditor != null && !textEditor.isDisposed()) {
-            textEditor.addListener(SWT.Modify, modifyListener);
+        applyTraverseListeners();
+        if (isTextModeActive()) {
+            if (modifyListener != null) {
+                textEditor.addListener(SWT.Modify, modifyListener);
+            }
+            if (textTraverseListener != null) {
+                textEditor.addTraverseListener(textTraverseListener);
+            }
         }
+    }
+
+    private void applyTraverseListeners() {
+        if (traverseBackwardsListener != null && traverseForwardListener != null) {
+            if (isDateEditorActive()) {
+                dateEditor.addTraverseListener(traverseBackwardsListener);
+                if (isTimeEditorActive()) {
+                    dateEditor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT && !timeEditor.isDisposed()) {
+                            timeEditor.setFocus();
+                            e.doit = false;
+                        }
+                    });
+                    timeEditor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_PREVIOUS && !timeEditor.isDisposed()) {
+                            dateEditor.setFocus();
+                            e.doit = false;
+                        }
+                    });
+                    timeEditor.addTraverseListener(traverseForwardListener);
+                } else {
+                    dateEditor.addTraverseListener(traverseForwardListener);
+                }
+            } else if (isTimeEditorActive()) {
+                timeEditor.addTraverseListener(traverseBackwardsListener);
+                timeEditor.addTraverseListener(traverseForwardListener);
+            }
+        }
+    }
+    private boolean isTimeEditorActive() {
+        return timeEditor != null && !timeEditor.isDisposed();
+    }
+
+    private boolean isDateEditorActive() {
+        return dateEditor != null && !dateEditor.isDisposed();
     }
 
     /**
@@ -232,6 +277,21 @@ public class CustomTimeEditor {
 
     public void addModifyListener(@NotNull Listener listener) {
         modifyListener = listener;
+        updateListeners();
+    }
+
+    public void addTextModeTraverseListener(@NotNull TraverseListener listener) {
+        textTraverseListener = listener;
+        updateListeners();
+    }
+
+    public void addTraverseForwardListener(@NotNull TraverseListener listener) {
+        traverseForwardListener = listener;
+        updateListeners();
+    }
+
+    public void addTraverseBackwardsListener(@NotNull TraverseListener listener) {
+        traverseBackwardsListener = listener;
         updateListeners();
     }
 
@@ -268,7 +328,7 @@ public class CustomTimeEditor {
 
     public void setTextValue(@Nullable String value) {
         dateAsText = value;
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isTextModeActive()) {
             setWithoutListener(textEditor, modifyListener, () -> textEditor.setText(dateAsText));
         }
     }
@@ -307,8 +367,7 @@ public class CustomTimeEditor {
             dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH));
         }
-        if (timeEditor != null && !timeEditor.isDisposed()) {
-            timeEditor.addTraverseListener(e -> timeEditor.setFocus());
+        if (isTimeEditorActive()) {
             timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
             try {
                 millis = calendar.get(Calendar.MILLISECOND);
@@ -317,14 +376,22 @@ public class CustomTimeEditor {
                 millis = -1;
             }
         }
+        if (isDateEditorActive()) {
+            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+        }
     }
 
     @Nullable
     public String getValueAsString() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isTextModeActive()) {
             return textEditor.getText();
         }
         return null;
+    }
+
+    public boolean isTextModeActive() {
+        return textEditor != null && !textEditor.isDisposed();
     }
 
     @Nullable
@@ -357,13 +424,13 @@ public class CustomTimeEditor {
     }
 
     public void allowEdit() {
-        if (this.dateEditor != null && !this.dateEditor.isDisposed()) {
+        if (isDateEditorActive()) {
             this.dateEditor.setEnabled(editable);
         }
-        if (this.timeEditor != null && !this.timeEditor.isDisposed()) {
+        if (isTimeEditorActive()) {
             this.timeEditor.setEnabled(editable);
         }
-        if (this.textEditor != null && !this.textEditor.isDisposed()){
+        if (isTextModeActive()) {
             this.textEditor.setEditable(editable);
         }
     }
@@ -373,7 +440,7 @@ public class CustomTimeEditor {
     }
 
     public void selectAllContent() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isTextModeActive()) {
             textEditor.selectAll();
         }
     }

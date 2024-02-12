@@ -22,10 +22,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -53,7 +51,6 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     private TextMode textMode;
     private DateEditorMode dateEditorMode;
     private CustomTimeEditor timeEditor;
-
 
     /**
      * Action which sets edit mode to string edit
@@ -147,6 +144,22 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     protected void addInlineListeners(@NotNull Control inlineControl, @NotNull Listener listener) {
         super.addInlineListeners(inlineControl, listener);
+        timeEditor.addTextModeTraverseListener(e -> {
+            if (!inlineControl.isDisposed()) {
+                sendTraverseEvent(inlineControl, e);
+            }
+        });
+        timeEditor.addTraverseForwardListener(e -> {
+            if (!inlineControl.isDisposed() && e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                sendTraverseEvent(inlineControl, e);
+            }
+        });
+        timeEditor.addTraverseBackwardsListener(e -> {
+            if (!inlineControl.isDisposed() && e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                sendTraverseEvent(inlineControl, e);
+            }
+        });
+
         timeEditor.addSelectionAdapter(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -162,6 +175,13 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         });
     }
 
+    private static void sendTraverseEvent(@NotNull Control inlineControl, TraverseEvent e) {
+        e.doit = false;
+        Event event = new Event();
+        event.detail = e.detail;
+        inlineControl.notifyListeners(SWT.Traverse, event);
+    }
+
     @Override
     protected Control createControl(Composite editPlaceholder) {
         Object value = valueController.getValue();
@@ -175,8 +195,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         if (!isCalendarMode()) {
             textMode.run();
             textMode.setChecked(true);
-        } else dateEditorMode.setChecked(true);
-
+        } else {
+            dateEditorMode.setChecked(true);
+        }
         primeEditorValue(value);
         timeEditor.createDateFormat(valueController.getValueType());
         timeEditor.setEditable(!valueController.isReadOnly());
@@ -192,12 +213,14 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     public Object extractEditorValue() throws DBCException {
         try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
-            if (!isCalendarMode()) {
+            if (timeEditor.isTextModeActive()) {
                 final String strValue = timeEditor.getValueAsString();
-                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false, true);
+                return valueController.getValueHandler()
+                    .getValueFromObject(session, valueController.getValueType(), strValue, false, true);
             } else {
                 final Date dateValue = timeEditor.getValueAsDate();
-                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), dateValue, false, true);
+                return valueController.getValueHandler()
+                    .getValueFromObject(session, valueController.getValueType(), dateValue, false, true);
             }
         }
     }
