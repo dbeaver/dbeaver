@@ -19,7 +19,8 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -112,9 +113,19 @@ public class DataSourceHandlerUtils {
             credsTable.setSelection(0);
             selected = credentials.get(0);
 
-            credsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent ->
-                selected = (DBSSecretValue) selectionEvent.item.getData()
-                ));
+            credsTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    selected = (DBSSecretValue) e.item.getData();
+                }
+
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    if (selected != null) {
+                        okPressed();
+                    }
+                }
+            });
 
             return composite;
         }

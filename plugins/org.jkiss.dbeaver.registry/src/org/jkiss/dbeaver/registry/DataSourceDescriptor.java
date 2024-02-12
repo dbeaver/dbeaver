@@ -930,6 +930,12 @@ public class DataSourceDescriptor
         return availableSharedCredentials;
     }
 
+    @NotNull
+    public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
+        var secretController = DBSSecretController.getProjectSecretController(getProject());
+        return secretController.listAllSharedSecrets(this);
+    }
+
     public synchronized void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
         this.selectedSharedCredentials = secretValue;
         loadFromSecret(this.selectedSharedCredentials.getValue());
