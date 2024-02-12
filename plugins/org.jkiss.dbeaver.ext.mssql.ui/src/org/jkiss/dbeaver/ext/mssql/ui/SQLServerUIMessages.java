@@ -51,6 +51,8 @@ public class SQLServerUIMessages extends NLS {
 
     public static String dialog_create_check_constraint_title;
 
+    public static String dialog_create_procedure_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLServerUIMessages.class);
