@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Dameng UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.dameng.ui;singleton:=true
-Bundle-Version: 1.0.8.qualifier
-Bundle-Release-Date: 20240205
+Bundle-Version: 1.0.9.qualifier
+Bundle-Release-Date: 20240219
 Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
