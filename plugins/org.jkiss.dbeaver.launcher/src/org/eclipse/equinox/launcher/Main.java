@@ -33,6 +33,8 @@ import java.util.zip.ZipFile;
 import org.eclipse.equinox.internal.launcher.Constants;
 
 
+
+
 /**
  * The launcher for Eclipse.
  *
@@ -170,6 +172,9 @@ public class Main {
     private static final String BASE_TIMESTAMP_FILE_CONFIGINI = ".baseConfigIniTimestamp"; //$NON-NLS-1$
     private static final String KEY_CONFIGINI_TIMESTAMP = "configIniTimestamp"; //$NON-NLS-1$
     private static final String PROP_IGNORE_USER_CONFIGURATION = "eclipse.ignoreUserConfiguration"; //$NON-NLS-1$
+    
+    private static final String DBEAVER_CONFIGURATION_LOCTION = "@data.home/DBeaverData/install-data";
+    
     private final Thread splashHandler = new SplashHandler();
     /**
      * Indicates whether this instance is running in debug mode.
@@ -1290,27 +1295,6 @@ public class Main {
             else if (location.equalsIgnoreCase(NO_DEFAULT))
                 result = buildURL(location, true);
             else {
-                if (location.startsWith(DB_DATA_HOME)) {
-                    String base = "";
-                    if (Constants.OS_WIN32.equals(getOS())) {
-                        base = resolveEnv(location, DB_DATA_HOME, ENV_DATA_HOME_WIN);
-                    } else if (Constants.OS_MACOSX.equals(getOS())) {
-                        base = resolveLocation(location, DB_DATA_HOME, LOCATION_DATA_HOME_MAC);
-                    } else {
-                        base = resolveLocation(location, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
-                    }
-                    String appVersion = getProductVersion();
-                    Path basePath = null;
-                    if (appVersion != null && !appVersion.isEmpty()) {
-                        basePath = Paths.get(base, appVersion);
-                    } else {
-                        basePath = Paths.get(base);
-                    }
-                    if (debug) {
-                        System.out.println("basePath location: " + basePath);
-                    }
-                    location = basePath.toFile().getAbsolutePath();
-                }
                 if (location.startsWith(USER_HOME)) {
                     String base = substituteVar(location, USER_HOME, PROP_USER_HOME);
                     location = new File(base, userDefaultAppendage).getAbsolutePath();
@@ -1836,14 +1820,51 @@ public class Main {
         configurationLocation = buildLocation(PROP_CONFIG_AREA, null, ""); //$NON-NLS-1$
         if (configurationLocation == null) {
             configurationLocation = buildLocation(PROP_CONFIG_AREA_DEFAULT, null, ""); //$NON-NLS-1$
-            if (configurationLocation == null)
+            if (configurationLocation == null) {
+                configurationLocation = buildProductURL();
+            }
+            if (configurationLocation == null) {
                 configurationLocation = buildURL(computeDefaultConfigurationLocation(), true);
+            }
         }
         if (configurationLocation != null)
             System.setProperty(PROP_CONFIG_AREA, configurationLocation.toExternalForm());
         if (debug)
             System.out.println("Configuration location:\n    " + configurationLocation); //$NON-NLS-1$
         return configurationLocation;
+    }
+
+    /**
+     * Specific method for dbeaver products group designed to resolve product configuration location in
+     * common system place:
+     *  ~/user/APP_DATA - WinOS
+     *  ~/Library - MacOS
+     *  ~/.local/share - Unix 
+     *
+     * @return url of location
+     */
+    private URL buildProductURL() {
+        String productConfigurationLocation = DBEAVER_CONFIGURATION_LOCTION;
+        String base = "";
+        if (Constants.OS_WIN32.equals(getOS())) {
+            base = resolveEnv(productConfigurationLocation, DB_DATA_HOME, ENV_DATA_HOME_WIN);
+        } else if (Constants.OS_MACOSX.equals(getOS())) {
+            base = resolveLocation(productConfigurationLocation, DB_DATA_HOME, LOCATION_DATA_HOME_MAC);
+        } else {
+            base = resolveLocation(productConfigurationLocation, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
+        }
+        String appVersion = getProductVersion();
+        Path basePath = null;
+        if (appVersion != null && !appVersion.isEmpty()) {
+            basePath = Paths.get(base, appVersion);
+        } else {
+            basePath = Paths.get(base);
+        }
+        if (debug) {
+            System.out.println("basePath location: " + basePath);
+        }
+        productConfigurationLocation = basePath.toFile().getAbsolutePath();
+        return buildURL(productConfigurationLocation, true);
     }
 
     private void processConfiguration() {
