@@ -213,7 +213,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     public Object extractEditorValue() throws DBCException {
         try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
-            if (timeEditor.isTextModeActive()) {
+            if (timeEditor.isTextMode()) {
                 final String strValue = timeEditor.getValueAsString();
                 return valueController.getValueHandler()
                     .getValueFromObject(session, valueController.getValueType(), strValue, false, true);

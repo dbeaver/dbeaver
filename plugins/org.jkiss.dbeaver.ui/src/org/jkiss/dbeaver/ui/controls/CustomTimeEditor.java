@@ -105,7 +105,7 @@ public class CustomTimeEditor {
      * Disposes all DateTime editors and their labels and creates text editor
      */
     public void setToTextComposite() {
-        if (isTextModeActive()) {
+        if (isActive(textEditor)) {
             return;
         }
         disposeEditor(timeEditor, timeLabel);
@@ -164,15 +164,15 @@ public class CustomTimeEditor {
 
     public void updateListeners() {
         if (selectionListener != null) {
-            if (isDateEditorActive()) {
+            if (isActive(dateEditor)) {
                 dateEditor.addSelectionListener(selectionListener);
             }
-            if (isTimeEditorActive()) {
+            if (isActive(timeEditor)) {
                 timeEditor.addSelectionListener(selectionListener);
             }
         }
         applyTraverseListeners();
-        if (isTextModeActive()) {
+        if (isActive(textEditor)) {
             if (modifyListener != null) {
                 textEditor.addListener(SWT.Modify, modifyListener);
             }
@@ -180,14 +180,6 @@ public class CustomTimeEditor {
                 textEditor.addTraverseListener(textTraverseListener);
             }
         }
-    }
-
-    public boolean isTimeEditorActive() {
-        return timeEditor != null && !timeEditor.isDisposed();
-    }
-
-    public boolean isTextModeActive() {
-        return textEditor != null && !textEditor.isDisposed();
     }
 
     /**
@@ -240,6 +232,7 @@ public class CustomTimeEditor {
         updateListeners();
     }
 
+
     /**
      * Set value for the text field.
      *
@@ -247,7 +240,7 @@ public class CustomTimeEditor {
      */
     public void setTextValue(@Nullable String value) {
         dateAsText = value;
-        if (isTextModeActive()) {
+        if (isActive(textEditor)) {
             setWithoutListener(textEditor, modifyListener, () -> textEditor.setText(dateAsText));
         }
     }
@@ -281,9 +274,13 @@ public class CustomTimeEditor {
         setDateFromCalendar();
     }
 
+    public boolean isTextMode() {
+        return isActive(textEditor);
+    }
+
     @Nullable
     public String getValueAsString() {
-        if (isTextModeActive()) {
+        if (isActive(textEditor)) {
             return textEditor.getText();
         }
         return null;
@@ -319,13 +316,13 @@ public class CustomTimeEditor {
     }
 
     public void allowEdit() {
-        if (isDateEditorActive()) {
+        if (isActive(dateEditor)) {
             this.dateEditor.setEnabled(editable);
         }
-        if (isTimeEditorActive()) {
+        if (isActive(timeEditor)) {
             this.timeEditor.setEnabled(editable);
         }
-        if (isTextModeActive()) {
+        if (isActive(textEditor)) {
             this.textEditor.setEditable(editable);
         }
     }
@@ -335,7 +332,7 @@ public class CustomTimeEditor {
     }
 
     public void selectAllContent() {
-        if (isTextModeActive()) {
+        if (isActive(textEditor)) {
             textEditor.selectAll();
         }
     }
@@ -414,9 +411,9 @@ public class CustomTimeEditor {
 
     private void applyTraverseListeners() {
         if (traverseBackwardsListener != null && traverseForwardListener != null) {
-            if (isDateEditorActive()) {
+            if (isActive(dateEditor)) {
                 dateEditor.addTraverseListener(traverseBackwardsListener);
-                if (isTimeEditorActive()) {
+                if (isActive(timeEditor)) {
                     dateEditor.addTraverseListener(e -> {
                         if (e.detail == SWT.TRAVERSE_TAB_NEXT && !timeEditor.isDisposed()) {
                             timeEditor.setFocus();
@@ -433,15 +430,11 @@ public class CustomTimeEditor {
                 } else {
                     dateEditor.addTraverseListener(traverseForwardListener);
                 }
-            } else if (isTimeEditorActive()) {
+            } else if (isActive(timeEditor)) {
                 timeEditor.addTraverseListener(traverseBackwardsListener);
                 timeEditor.addTraverseListener(traverseForwardListener);
             }
         }
-    }
-
-    private boolean isDateEditorActive() {
-        return dateEditor != null && !dateEditor.isDisposed();
     }
 
     private void updateWarningLabel(@Nullable Object value) {
@@ -469,7 +462,7 @@ public class CustomTimeEditor {
             dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH));
         }
-        if (isTimeEditorActive()) {
+        if (isActive(timeEditor)) {
             timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
             try {
                 millis = calendar.get(Calendar.MILLISECOND);
@@ -478,10 +471,14 @@ public class CustomTimeEditor {
                 millis = -1;
             }
         }
-        if (isDateEditorActive()) {
+        if (isActive(dateEditor)) {
             dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
         }
+    }
+
+    private boolean isActive(Control control) {
+        return control != null && !control.isDisposed();
     }
 
     private enum InputMode {
