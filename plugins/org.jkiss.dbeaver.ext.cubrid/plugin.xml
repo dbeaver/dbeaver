@@ -7,6 +7,12 @@
         <meta id="cubrid" class="org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel" driverClass="cubrid.jdbc.driver.CUBRIDDriver"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="cubrid" parent="generic" class="org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect.java" label="Cubrid"
+                 description="Cubrid SQL dialect." icon="icons/cubrid_icon.png">
+        </dialect>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="cubrid-maven-repo" name="Cubrid Repository" url="https://maven.cubrid.org">
             <scope group="cubrid"/>
