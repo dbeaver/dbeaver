@@ -734,7 +734,7 @@ public class SQLQueryModelRecognizer {
             this.symbolEntries.add(entry);
             entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.QUOTED);
             return entry;
-        } else if (this.reservedWords.contains(rawIdentifierString)) {
+        } else if (this.reservedWords.contains(rawIdentifierString.toUpperCase())) { // keywords are uppercased in dialect
             SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody.getRealInterval(), rawIdentifierString, rawIdentifierString);
             this.symbolEntries.add(entry);
             entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.RESERVED);

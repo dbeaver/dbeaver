@@ -21,6 +21,7 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -68,7 +69,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     private Combo defaultCatalog;
     private Combo defaultSchema;
     private Spinner keepAliveInterval;
-    private Spinner closeIdleConnections;
+    private Button closeIdleConnectionsCheck;
+    private Spinner closeIdleConnectionsPeriod;
 
     private Font boldFont;
 
@@ -118,7 +120,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
-                closeIdleConnections.setSelection(conConfig.getCloseIdleInterval());
+                closeIdleConnectionsCheck.setSelection(conConfig.isCloseIdleConnection());
+                closeIdleConnectionsPeriod.setSelection(conConfig.getCloseIdleInterval());
+                closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection());
                 activated = true;
             }
         } else {
@@ -266,10 +270,16 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             ((GridData)defaultSchema.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultSchema) * 20;
             keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
                 CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
-           
-            closeIdleConnections = UIUtils.createLabelSpinner(txnGroup,
+
+            closeIdleConnectionsCheck = UIUtils.createCheckbox(txnGroup,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, true, 1);
+            closeIdleConnectionsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection());
+            }));
+            closeIdleConnectionsPeriod = UIUtils.createSpinner(txnGroup,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
+
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             UIUtils.createPreferenceLink(
@@ -358,7 +368,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         bootstrap.setInitQueries(bootstrapQueries);
 
         confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
-        confConfig.setCloseIdleInterval(closeIdleConnections.getSelection());
+        confConfig.setCloseIdleConnection(closeIdleConnectionsCheck.getSelection());
+        confConfig.setCloseIdleInterval(closeIdleConnectionsPeriod.getSelection());
     }
 
     @Override

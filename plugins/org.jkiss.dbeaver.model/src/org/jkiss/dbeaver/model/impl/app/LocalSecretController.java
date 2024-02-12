@@ -23,9 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
-import org.jkiss.dbeaver.model.secret.DBSSecret;
-import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.secret.*;
 import org.jkiss.dbeaver.runtime.DBSecurityException;
 
 import java.io.IOException;
@@ -84,6 +82,12 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
             }
             throw new DBSecurityException("Error setting preference value '" + secretId + "'", e);
         }
+    }
+
+    @NotNull
+    @Override
+    public List<DBSSecretValue> discoverCurrentUserSecrets(@NotNull DBSSecretObject secretObject) throws DBException {
+        throw new DBCFeatureNotSupportedException("Secrets discovery not supported");
     }
 
     @Override
