@@ -222,10 +222,15 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
                 case SQLServerConstants.TYPE_SQL_VARIANT:
                 case SQLServerConstants.TYPE_VARBINARY: {
                     long maxLength = column.getMaxLength();
+                    int maxStringLength = CommonUtils.toInt(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_MAX_STRING_LENGTH));
                     if (maxLength == 0) {
                         return null;
-                    } else if (maxLength == -1 || maxLength > 8000) {
-                        return "(MAX)";
+                    } else if (maxLength == -1 || maxLength >= maxStringLength) {
+                        if (dataSource instanceof SQLServerDataSource) {
+                            return "(MAX)";
+                        } else {
+                            return "(" + maxStringLength + ")";
+                        }
                     } else {
                         return "(" + maxLength + ")";
                     }
