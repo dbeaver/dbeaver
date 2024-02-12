@@ -640,6 +640,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @NotNull
     private IContentOutlinePage getOverviewOutlinePage() {
+        if (this.getSyntaxContext() == null) {
+            this.reloadSyntaxRules();
+        }
         if ((null == outlinePage || outlinePage.getControl().isDisposed()) && this.getSyntaxContext() != null) {
             outlinePage = new SQLEditorOutlinePage(this);
         }

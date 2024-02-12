@@ -95,11 +95,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         this.project = project;
         this.configurationManager = configurationManager;
 
-        loadDataSources(true);
-
-        if (!isMultiUser()) {
+        boolean isLoaded = loadDataSources(true);
+        if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
-
             addDataSourceListener(modelChangeListener);
         }
     }
@@ -463,7 +461,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     public void removeNetworkProfile(DBWNetworkProfile profile) {
         try {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-            secretController.setSecretValue(
+            secretController.setPrivateSecretValue(
                 profile.getSecretKeyId(),
                 null);
         } catch (DBException e) {
@@ -516,7 +514,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         if (getProject().isUseSecretStorage()) {
             try {
                 DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-                secretController.setSecretValue(
+                secretController.setPrivateSecretValue(
                     profile.getSecretKeyId(),
                     null);
             } catch (DBException e) {
@@ -735,8 +733,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return result;
     }
 
-    private void loadDataSources(boolean refresh) {
-        loadDataSources(
+    private boolean loadDataSources(boolean refresh) {
+       return loadDataSources(
             configurationManager.getConfigurationStorages(),
             configurationManager,
             null,
@@ -766,6 +764,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
             if (loadDataSources(cfgStorage, manager, dataSourceIds, false, parseResults)) {
                 configChanged = true;
+            } else {
+                if (lastError != null) {
+                    return false;
+                }
             }
         }
 

@@ -38,8 +38,8 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
         super(ConnectionPageDeprecation.class.getName());
         this.driver = driver;
 
-        setTitle(CoreMessages.dialog_connection_deprecated_title);
-        setDescription(CoreMessages.dialog_connection_deprecated_description);
+        setTitle(driver.getNonAvailabilityTitle());
+        setDescription(driver.getNonAvailabilityDescription());
         setPageComplete(false);
     }
 
@@ -53,7 +53,7 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
 
         final FormText text = new FormText(composite, SWT.NO_FOCUS);
         text.setFont("header", JFaceResources.getFont("org.eclipse.jface.headerfont"));
-        text.setText(driver.getDeprecationReason(), true, false);
+        text.setText(driver.getNonAvailabilityReason(), true, false);
         text.setHyperlinkSettings(toolkit.getHyperlinkGroup());
         text.addHyperlinkListener(IHyperlinkListener.linkActivatedAdapter(e -> ShellUtils.launchProgram(e.getHref().toString())));
         text.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(200, 200).create());

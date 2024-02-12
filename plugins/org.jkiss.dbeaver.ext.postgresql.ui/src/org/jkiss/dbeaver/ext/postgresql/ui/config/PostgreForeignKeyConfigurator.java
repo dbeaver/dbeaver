@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 import java.util.Map;
@@ -55,11 +56,18 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 EditPGForeignKeyPage editPage = new EditPGForeignKeyPage(
                     PostgreMessages.postgre_foreign_key_manager_header_edit_foreign_key,
                     foreignKey);
+                editPage.setSupportsCustomName(true);
                 if (!editPage.edit()) {
                     return null;
                 }
 
                 foreignKey.setReferencedConstraint(editPage.getUniqueConstraint());
+                String customName = editPage.getName();
+                if (CommonUtils.isNotEmpty(customName)) {
+                    foreignKey.setName(customName);
+                } else {
+                    SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+                }
                 foreignKey.setDeleteRule(editPage.getOnDeleteRule());
                 foreignKey.setUpdateRule(editPage.getOnUpdateRule());
                 int colIndex = 1;
@@ -73,7 +81,6 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 }
                 foreignKey.setDeferrable(editPage.isDeferrable);
                 foreignKey.setDeferred(editPage.isDeferred);
-                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
                 return foreignKey;
             }
         }.execute();

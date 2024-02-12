@@ -50,11 +50,12 @@ public interface DAICompletionEngine<SERVICE> {
      * Do query completion in a session
      */
     @NotNull
-    List<DAICompletionResponse> performQueryCompletion(
+    List<DAICompletionResponse> performSessionCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull DAICompletionSession session,
-        @NotNull IAIFormatter formatter
+        @NotNull IAIFormatter formatter,
+        boolean allMessages
     ) throws DBException;
 
     boolean isValidConfiguration();

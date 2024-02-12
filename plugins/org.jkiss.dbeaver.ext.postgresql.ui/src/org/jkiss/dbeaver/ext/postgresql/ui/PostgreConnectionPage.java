@@ -24,10 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -59,6 +56,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text hostText;
     private Text portText;
     private Text dbText;
+    private Button showNonDefault;
     private Text roleText; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
@@ -158,16 +156,28 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
         dbText.setMessage(PostgreMessages.dialog_database_name_hint);
         addControlToGroup(GROUP_CONNECTION, dbText);
 
+        showNonDefault = UIUtils.createCheckbox(
+            addrGroup,
+            PostgreMessages.dialog_setting_connection_nondefaultDatabase,
+            PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip,
+            false,
+            2);
+        addControlToGroup(GROUP_CONNECTION, showNonDefault);
+
         createAuthPanel(mainGroup, 1);
 
         if (isSessionRoleSupported() || serverType.supportsClient()) {
-            Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Group advancedGroup = UIUtils.createControlGroup(
+                mainGroup,
+                PostgreMessages.dialog_setting_connection_advanced_group_label,
+                4,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0);
 
             if (isSessionRoleSupported()) {
                 roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_session_role, null, SWT.BORDER);
@@ -250,6 +260,11 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             }
             dbText.setText(databaseName);
         }
+        if (showNonDefault != null) {
+            showNonDefault.setSelection(CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
+        }
         if (roleText != null) {
             roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
         }
@@ -283,6 +298,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         }
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
+        }
+        if (showNonDefault != null) {
+            connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         }
         if (roleText != null) {
             connectionInfo.setProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE, roleText.getText().trim());

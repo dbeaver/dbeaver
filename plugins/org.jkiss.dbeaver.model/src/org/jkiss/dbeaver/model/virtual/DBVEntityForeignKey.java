@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,18 +56,16 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     DBVEntityForeignKey(@NotNull DBVEntity entity, DBVEntityForeignKey copy, DBVModel targetModel) {
         this.entity = entity;
 
+        this.refEntityId = copy.refEntityId;
         // Here is a tricky part
         // refEntityId may refer to the current (old model owner) datasource
         // In this case we must fix it and refer to the new model owner.
         DBPDataSourceContainer copyDS = copy.getAssociatedDataSource();
-        if (copyDS == null) {
-            // Refer connection from other project?
-            this.refEntityId = null;
-        } else if (copyDS == copy.getParentObject().getDataSourceContainer()) {
+        if (copyDS != null && copyDS == copy.getParentObject().getDataSourceContainer()) {
             DBPDataSourceContainer newDS = targetModel.getDataSourceContainer();
-            this.refEntityId = copy.refEntityId.replace(copyDS.getId(), newDS.getId());
-        } else {
-            this.refEntityId = copy.refEntityId;
+            if (newDS != null) {
+                this.refEntityId = copy.refEntityId.replace(copyDS.getId(), newDS.getId());
+            }
         }
 
         this.refConstraintId = copy.refConstraintId;
@@ -251,9 +248,9 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             return null;
         }
         DBPProject project = getParentObject().getProject();
-        DBNModel navModel = DBWorkbench.getPlatform().getNavigatorModel();
+        DBNModel navModel = project.getNavigatorModel();
 
-        DBNDataSource dsNode = navModel.getDataSourceByPath(project, refEntityId);
+        DBNDataSource dsNode = navModel == null ? null : navModel.getDataSourceByPath(project, refEntityId);
         return dsNode == null ? null : dsNode.getDataSourceContainer();
     }
 

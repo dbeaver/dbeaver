@@ -26,32 +26,54 @@ import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionSecretKeeper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.List;
+
 /**
  * Secret manager API
  */
 public interface DBSSecretController {
 
     @Nullable
-    String getSecretValue(@NotNull String secretId) throws DBException;
+    String getPrivateSecretValue(@NotNull String secretId) throws DBException;
 
-    void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
 
-    default String getSubjectSecretValue(@NotNull String subjectId, @NotNull String secretId) throws DBException { return null; }
+    @Deprecated
+    void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
 
-    default String setSubjectSecretValue(
+    default void setPrivateSecretValue(@NotNull DBSSecretObject secretObject, @NotNull DBSSecretValue secretValue)
+        throws DBException {
+        setPrivateSecretValue(secretValue.getId(), secretValue.getValue());
+    }
+
+    @NotNull
+    List<DBSSecretValue> discoverCurrentUserSecrets(
+        @NotNull DBSSecretObject secretObject
+    ) throws DBException;
+
+    @NotNull
+    default List<DBSSecretValue> listAllSharedSecrets(
+        @NotNull DBSSecretObject secretObject
+    ) throws DBException {
+        return List.of();
+    }
+
+    default void setSubjectSecretValue(
         @NotNull String subjectId,
-        @NotNull String secretId,
-        @Nullable String projectId,
-        @Nullable String objectType,
-        @Nullable String objectID
-    ) throws DBException { return null; }
+        @NotNull DBSSecretObject secretObject,
+        @NotNull DBSSecretValue secretValue
+    ) throws DBException {
+    }
 
-    default void deleteSubjectSecrets(@NotNull String subjectId) throws DBException {}
+    default void deleteSubjectSecrets(@NotNull String subjectId) throws DBException {
+    }
+
+    default void deleteProjectSecrets(@NotNull String projectId) throws DBException {
+    }
 
     default void deleteObjectSecrets(
-        @NotNull String projectId,
-        @Nullable String objectType,
-        @Nullable String objectId) throws DBException {}
+        @NotNull DBSSecretObject secretObject
+    ) throws DBException {
+    }
 
     /**
      * Syncs any changes with file system/server
@@ -70,14 +92,19 @@ public interface DBSSecretController {
 
     @NotNull
     static DBSSecretController getSessionSecretController(SMSession spaceSession) throws DBException {
-        SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
-        if (secretKeeper != null) {
-            DBSSecretController secretController = secretKeeper.getSecretController();
-            if (secretController != null) {
-                return secretController;
-            }
+        var secretController = getSessionSecretControllerOrNull(spaceSession);
+        if (secretController != null) {
+            return secretController;
         }
         throw new IllegalStateException("Session secret controller not found");
     }
 
+    @Nullable
+    static DBSSecretController getSessionSecretControllerOrNull(SMSession spaceSession) throws DBException {
+        SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
+        if (secretKeeper != null) {
+            return secretKeeper.getSecretController();
+        }
+        return null;
+    }
 }

@@ -435,11 +435,11 @@ public class ActionUtils
             } catch (Exception e) {
                 log.warn("Error evaluating property [" + propertyName + "]");
             }
-        }
-        
-        PropertyChangeEvent ev = new PropertyChangeEvent(service, propertyName, null, null); 
-        for (IPropertyChangeListener listener : List.copyOf(propertyEvaluationRequestListeners)) {
-            listener.propertyChange(ev);
+
+            PropertyChangeEvent ev = new PropertyChangeEvent(service, propertyName, null, null);
+            for (IPropertyChangeListener listener : List.copyOf(propertyEvaluationRequestListeners)) {
+                listener.propertyChange(ev);
+            }
         }
     }
 
