@@ -48,18 +48,17 @@ import java.util.Date;
 public class CustomTimeEditor {
     private final int style;
     private final boolean isPanel;
+    private final boolean isInline;
+    private final Calendar calendar = Calendar.getInstance();
+
     private DateTime dateEditor;
     private DateTime timeEditor;
     private Composite basePart;
-
     private Label timeLabel;
     private Label dateLabel;
     private int millis = -1;
     private String dateAsText = "";
-    private final boolean isInline;
-
     private InputMode inputMode = InputMode.NONE;
-    private final Calendar calendar = Calendar.getInstance();
     private Text textEditor;
     private Listener modifyListener;
     private SelectionAdapter selectionListener;
@@ -72,11 +71,21 @@ public class CustomTimeEditor {
     private TraverseListener traverseBackwardsListener;
 
 
-    private enum InputMode {
-        NONE,
-        DATE,
-        TIME,
-        DATETIME
+    public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
+        this.isInline = isInline;
+        this.isPanel = isPanel;
+        this.style = style;
+        initEditor(parent, style);
+    }
+
+    private static void setWithoutListener(@NotNull Control control, Listener listener, @NotNull Runnable blockToRun) {
+        if (listener != null) {
+            control.removeListener(SWT.Modify, listener);
+            blockToRun.run();
+            control.addListener(SWT.Modify, listener);
+        } else {
+            blockToRun.run();
+        }
     }
 
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
@@ -90,54 +99,6 @@ public class CustomTimeEditor {
             jdbcType = JDBCType.TIMESTAMP;
         }
         disposeNotNeededEditors();
-    }
-
-    private void disposeNotNeededEditors() {
-        if (jdbcType != null) {
-            switch (jdbcType) {
-                case DATE:
-                    inputMode = InputMode.DATE;
-                    disposeEditor(timeEditor, timeLabel);
-                    break;
-                case TIME:
-                    inputMode = InputMode.TIME;
-                    disposeEditor(dateEditor, dateLabel);
-                    break;
-                default:
-                    inputMode = InputMode.DATETIME;
-                    break;
-            }
-        }
-    }
-
-    public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
-        this.isInline = isInline;
-        this.isPanel = isPanel;
-        this.style = style;
-        initEditor(parent, style);
-    }
-
-    @NotNull
-    private Composite initEditor(@NotNull Composite parent, int style) {
-
-        if (!isInline) {
-            GridLayout layout = new GridLayout(1, false);
-            mainComposite = new Composite(parent, style);
-            mainComposite.setLayout(layout);
-            mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
-        basePart = new Composite(isInline ? parent : mainComposite, style);
-        basePart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout basePartLayout = new GridLayout(2, false);
-        if (isInline) {
-            basePartLayout.marginHeight = 0;
-            basePartLayout.marginWidth = 0;
-        }
-        basePart.setLayout(basePartLayout);
-        setToDateComposite();
-        //fixes calendar issues on inline mode
-        basePart.pack();
-        return isInline ? basePart : mainComposite;
     }
 
     /**
@@ -166,15 +127,6 @@ public class CustomTimeEditor {
             mainComposite.layout();
         }
         basePart.layout();
-    }
-
-    private void disposeEditor(Control editor, Label editorLabel) {
-        if (editor != null) {
-            editor.dispose();
-            if (editorLabel != null) {
-                editorLabel.dispose();
-            }
-        }
     }
 
     /**
@@ -230,39 +182,12 @@ public class CustomTimeEditor {
         }
     }
 
-    private void applyTraverseListeners() {
-        if (traverseBackwardsListener != null && traverseForwardListener != null) {
-            if (isDateEditorActive()) {
-                dateEditor.addTraverseListener(traverseBackwardsListener);
-                if (isTimeEditorActive()) {
-                    dateEditor.addTraverseListener(e -> {
-                        if (e.detail == SWT.TRAVERSE_TAB_NEXT && !timeEditor.isDisposed()) {
-                            timeEditor.setFocus();
-                            e.doit = false;
-                        }
-                    });
-                    timeEditor.addTraverseListener(e -> {
-                        if (e.detail == SWT.TRAVERSE_TAB_PREVIOUS && !timeEditor.isDisposed()) {
-                            dateEditor.setFocus();
-                            e.doit = false;
-                        }
-                    });
-                    timeEditor.addTraverseListener(traverseForwardListener);
-                } else {
-                    dateEditor.addTraverseListener(traverseForwardListener);
-                }
-            } else if (isTimeEditorActive()) {
-                timeEditor.addTraverseListener(traverseBackwardsListener);
-                timeEditor.addTraverseListener(traverseForwardListener);
-            }
-        }
-    }
-    private boolean isTimeEditorActive() {
+    public boolean isTimeEditorActive() {
         return timeEditor != null && !timeEditor.isDisposed();
     }
 
-    private boolean isDateEditorActive() {
-        return dateEditor != null && !dateEditor.isDisposed();
+    public boolean isTextModeActive() {
+        return textEditor != null && !textEditor.isDisposed();
     }
 
     /**
@@ -275,57 +200,51 @@ public class CustomTimeEditor {
         updateListeners();
     }
 
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
     public void addModifyListener(@NotNull Listener listener) {
         modifyListener = listener;
         updateListeners();
     }
 
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
     public void addTextModeTraverseListener(@NotNull TraverseListener listener) {
         textTraverseListener = listener;
         updateListeners();
     }
 
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
     public void addTraverseForwardListener(@NotNull TraverseListener listener) {
         traverseForwardListener = listener;
         updateListeners();
     }
 
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
     public void addTraverseBackwardsListener(@NotNull TraverseListener listener) {
         traverseBackwardsListener = listener;
         updateListeners();
     }
 
-    private static void setWithoutListener(@NotNull Control control, Listener listener, @NotNull Runnable blockToRun) {
-        if (listener != null) {
-            control.removeListener(SWT.Modify, listener);
-            blockToRun.run();
-            control.addListener(SWT.Modify, listener);
-        } else {
-            blockToRun.run();
-        }
-    }
-
-
-    private void updateWarningLabel(@Nullable Object value) {
-        if (isInline) {
-            return;
-        }
-        if (value == null && (textEditor == null || textEditor.isDisposed())) {
-            if (warningLabel != null && !warningLabel.isDisposed()) {
-                return;
-            }
-            warningLabel = new CLabel(mainComposite, style);
-            warningLabel.setText("Original value was null, using current time");
-            warningLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-            mainComposite.layout();
-        } else {
-            if (warningLabel != null) {
-                warningLabel.dispose();
-                mainComposite.layout();
-            }
-        }
-    }
-
+    /**
+     * Set value for the text field.
+     *
+     * @param value text to add
+     */
     public void setTextValue(@Nullable String value) {
         dateAsText = value;
         if (isTextModeActive()) {
@@ -362,36 +281,12 @@ public class CustomTimeEditor {
         setDateFromCalendar();
     }
 
-    private void setDateFromCalendar() {
-        if (dateEditor != null && !dateEditor.isDisposed()) {
-            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH));
-        }
-        if (isTimeEditorActive()) {
-            timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
-            try {
-                millis = calendar.get(Calendar.MILLISECOND);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                //Calendar doesn't have any way to
-                millis = -1;
-            }
-        }
-        if (isDateEditorActive()) {
-            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH));
-        }
-    }
-
     @Nullable
     public String getValueAsString() {
         if (isTextModeActive()) {
             return textEditor.getText();
         }
         return null;
-    }
-
-    public boolean isTextModeActive() {
-        return textEditor != null && !textEditor.isDisposed();
     }
 
     @Nullable
@@ -465,5 +360,134 @@ public class CustomTimeEditor {
         } else {
             throw new DBCException(value.toString());
         }
+    }
+
+    private void disposeNotNeededEditors() {
+        if (jdbcType != null) {
+            switch (jdbcType) {
+                case DATE:
+                    inputMode = InputMode.DATE;
+                    disposeEditor(timeEditor, timeLabel);
+                    break;
+                case TIME:
+                    inputMode = InputMode.TIME;
+                    disposeEditor(dateEditor, dateLabel);
+                    break;
+                default:
+                    inputMode = InputMode.DATETIME;
+                    break;
+            }
+        }
+    }
+
+    @NotNull
+    private Composite initEditor(@NotNull Composite parent, int style) {
+
+        if (!isInline) {
+            GridLayout layout = new GridLayout(1, false);
+            mainComposite = new Composite(parent, style);
+            mainComposite.setLayout(layout);
+            mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+        basePart = new Composite(isInline ? parent : mainComposite, style);
+        basePart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout basePartLayout = new GridLayout(2, false);
+        if (isInline) {
+            basePartLayout.marginHeight = 0;
+            basePartLayout.marginWidth = 0;
+        }
+        basePart.setLayout(basePartLayout);
+        setToDateComposite();
+        //fixes calendar issues on inline mode
+        basePart.pack();
+        return isInline ? basePart : mainComposite;
+    }
+
+    private void disposeEditor(Control editor, Label editorLabel) {
+        if (editor != null) {
+            editor.dispose();
+            if (editorLabel != null) {
+                editorLabel.dispose();
+            }
+        }
+    }
+
+    private void applyTraverseListeners() {
+        if (traverseBackwardsListener != null && traverseForwardListener != null) {
+            if (isDateEditorActive()) {
+                dateEditor.addTraverseListener(traverseBackwardsListener);
+                if (isTimeEditorActive()) {
+                    dateEditor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT && !timeEditor.isDisposed()) {
+                            timeEditor.setFocus();
+                            e.doit = false;
+                        }
+                    });
+                    timeEditor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_PREVIOUS && !timeEditor.isDisposed()) {
+                            dateEditor.setFocus();
+                            e.doit = false;
+                        }
+                    });
+                    timeEditor.addTraverseListener(traverseForwardListener);
+                } else {
+                    dateEditor.addTraverseListener(traverseForwardListener);
+                }
+            } else if (isTimeEditorActive()) {
+                timeEditor.addTraverseListener(traverseBackwardsListener);
+                timeEditor.addTraverseListener(traverseForwardListener);
+            }
+        }
+    }
+
+    private boolean isDateEditorActive() {
+        return dateEditor != null && !dateEditor.isDisposed();
+    }
+
+    private void updateWarningLabel(@Nullable Object value) {
+        if (isInline) {
+            return;
+        }
+        if (value == null && (textEditor == null || textEditor.isDisposed())) {
+            if (warningLabel != null && !warningLabel.isDisposed()) {
+                return;
+            }
+            warningLabel = new CLabel(mainComposite, style);
+            warningLabel.setText("Original value was null, using current time");
+            warningLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+            mainComposite.layout();
+        } else {
+            if (warningLabel != null) {
+                warningLabel.dispose();
+                mainComposite.layout();
+            }
+        }
+    }
+
+    private void setDateFromCalendar() {
+        if (dateEditor != null && !dateEditor.isDisposed()) {
+            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH));
+        }
+        if (isTimeEditorActive()) {
+            timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+            try {
+                millis = calendar.get(Calendar.MILLISECOND);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                //Calendar doesn't have any way to
+                millis = -1;
+            }
+        }
+        if (isDateEditorActive()) {
+            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+        }
+    }
+
+    private enum InputMode {
+        NONE,
+        DATE,
+        TIME,
+        DATETIME
     }
 }
