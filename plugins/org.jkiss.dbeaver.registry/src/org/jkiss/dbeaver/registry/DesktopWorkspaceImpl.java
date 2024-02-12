@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -299,6 +300,10 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     @Override
     public void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException {
         IProject eclipseProject = project.getEclipseProject();
+        if (project.isUseSecretStorage()) {
+            var secretController = DBSSecretController.getProjectSecretController(project);
+            secretController.deleteProjectSecrets(project.getId());
+        }
         if (eclipseProject == null) {
             throw new DBException("Project '" + project.getName() + "' is not an Eclipse project");
         }
