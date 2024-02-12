@@ -247,6 +247,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return tableCache.getTypedObjects(monitor, this, SQLServerExternalTable.class);
     }
 
+    @Nullable
     public SQLServerTableType getTableType(DBRProgressMonitor monitor, long tableId) throws DBException {
         for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
             if (table.getObjectId() == tableId && table instanceof SQLServerTableType) {

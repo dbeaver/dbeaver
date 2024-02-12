@@ -39,9 +39,9 @@
     <plugin id="org.objectweb.asm.tree" version="0.0.0" />
     <plugin id="org.objectweb.asm.util" version="0.0.0" />
     <plugin id="org.apache.aries.spifly.dynamic.bundle" version="0.0.0" />
-
-    <!-- our plugins -->
-
+    
+    <!-- Our plugins -->
+    
     <plugin id="org.jkiss.utils" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.jdbc" version="0.0.0" />

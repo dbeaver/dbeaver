@@ -389,6 +389,9 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
             out.write(" " + identifierCase.transform(KEYWORD_ON_CONFLICT) + " " + onConflictExpression);
         } else if (insertKeyword == InsertKeyword.ON_DUPLICATE) {
             out.write(" " + identifierCase.transform(KEYWORD_DUPLICATE_KEY) + " " + onConflictExpression);
+        } else if (insertKeyword == InsertKeyword.INSERT) {
+            // Option for people who want to write this expression entirely on their own
+            out.write(" " + onConflictExpression);
         }
     }
 

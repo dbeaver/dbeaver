@@ -30,6 +30,8 @@ import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jkiss.code.NotNull;
@@ -40,6 +42,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.SQLDocumentSyntaxContextListener;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
@@ -57,6 +60,8 @@ import java.util.stream.Collectors;
 
 
 public class SQLEditorOutlinePage extends ContentOutlinePage implements IContentOutlinePage {
+    
+    private static final String LABEL_PROPERTY_KEY = "LABEL";
 
     private static final int SQL_QUERY_ORIGINAL_TEXT_PREVIEW_LENGTH = 100;
     private final SQLEditorBase editor;
@@ -112,12 +117,23 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         public void inputDocumentAboutToBeChanged(IDocument oldInput, IDocument newInput) {
         }
     };
-
+    
+    private final IPropertyListener editorPropertyListener = (Object source, int propId) -> {
+        if (propId == WorkbenchPart.PROP_TITLE) {
+            treeViewer.update(this.scriptNode, new String[] { LABEL_PROPERTY_KEY });
+        }
+    };
+    
     public SQLEditorOutlinePage(@NotNull SQLEditorBase editor) {
         this.editor = editor;
         this.rootNodes = List.of(this.scriptNode = new OutlineScriptNode());
     }
 
+    public void refresh() {
+        this.scriptNode.updateChildren();
+        this.scheduleRefresh();
+    }
+    
     @NotNull
     private SQLOutlineNodeBuilder getNodeBuilder() {
         return this.currentNodeBuilder;
@@ -177,6 +193,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             textViewer.getTextWidget().addCaretListener(this.caretListener);
             textViewer.addTextInputListener(this.textInputListener);
         }
+        
+        this.editor.addPropertyListener(editorPropertyListener);
 
         SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
         scheduleRefresh();
@@ -231,6 +249,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
     @Override
     public void dispose() {
+        this.editor.removePropertyListener(editorPropertyListener);
+        
         TextViewer textViewer = this.editor.getTextViewer();
         if (textViewer != null) {
             textViewer.getTextWidget().removeCaretListener(this.caretListener);
@@ -260,7 +280,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Override
         public boolean isLabelProperty(@Nullable Object element, @Nullable String property) {
-            return false;
+            return property.equals(LABEL_PROPERTY_KEY);
         }
 
         @Override
@@ -389,7 +409,16 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private class OutlineScriptNode extends OutlineNode {
         final SQLDocumentSyntaxContext documentContext;
 
-        OutlineNode noElementsNode = new OutlineInfoNode(this, "No elements detected", DBIcon.SMALL_INFO);
+        OutlineNode noElementsNode = new OutlineInfoNode(
+            this,
+            SQLEditorMessages.sql_editor_outline_no_elements_label,
+            DBIcon.SMALL_INFO
+        );
+        OutlineNode analysisDisabledNode = new OutlineInfoNode(
+            this,
+            SQLEditorMessages.sql_editor_outline_query_analysis_disabled_label,
+            DBIcon.SMALL_INFO
+        );
 
         Map<SQLDocumentScriptItemSyntaxContext, OutlineNode> elements = new HashMap<>();
         List<OutlineNode> children = Collections.emptyList();
@@ -446,10 +475,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
 
         private void updateChildren() {
-            if (this.elements.isEmpty()) {
-                this.children = List.of(noElementsNode);
+            if (editor.isAdvancedHighlightingEnabled()) {
+                if (this.elements.isEmpty()) {
+                    this.children = List.of(this.noElementsNode);
+                } else {
+                    this.children = List.copyOf(this.elements.values());
+                }
             } else {
-                this.children = List.copyOf(this.elements.values());
+                this.children = List.of(this.analysisDisabledNode);
             }
         }
 
@@ -607,6 +640,19 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
     }
 
+    @NotNull
+    private OutlineScriptElementNode getScriptElementNode(@NotNull OutlineQueryNode node) {
+        OutlineNode n = node;
+        while (n != null) {
+            if (n instanceof OutlineScriptElementNode e) {
+                return e;
+            } else {
+                n = n.getParent();
+            }
+        }
+        throw new IllegalStateException();
+    }
+    
     private class SQLOutlineNodeFullBuilder implements SQLOutlineNodeBuilder {
 
         @Nullable
@@ -739,7 +785,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitRowsTableValue(SQLQueryRowsTableValueModel tableValue, OutlineQueryNode node) {
-            this.makeNode(node, tableValue, "Table value", DBIcon.TYPE_UNKNOWN); // TODO
+            this.makeNode(node, tableValue, "Default table", DBIcon.TYPE_UNKNOWN); // TODO
             return null;
         }
 
@@ -894,7 +940,17 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             SQLQuerySymbolEntry alias = columnSpec.getAlias();
             SQLQuerySymbol mayBeColumnName = columnSpec.getValueExpression().getColumnNameIfTrivialExpression();
             
-            String text = alias != null ? alias.getRawName() : (mayBeColumnName == null ? "?" : mayBeColumnName.getName());
+            String text;
+            if (alias != null) {
+                text = alias.getRawName();
+            } else {
+                if (mayBeColumnName != null) {
+                    text = mayBeColumnName.getName();
+                } else {
+                    text = getScriptElementNode(arg).scriptElement.getOriginalText()
+                        .substring(columnSpec.getInterval().a, columnSpec.getInterval().b + 1);
+                }
+            }
             String extraText = this.obtainExprTypeNameString(columnSpec.getValueExpression());
             
             this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
@@ -908,14 +964,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @NotNull DBPImage icon,
             @NotNull SQLQueryNodeModel... childModels
         ) {
-            parent.children.add(new OutlineQueryNode(parent, model, text, null, icon, childModels));
+            makeNode(parent, model, text, null, icon, childModels);
         }
         
         private void makeNode(
             @NotNull OutlineQueryNode parent,
             @NotNull SQLQueryNodeModel model,
             @NotNull String text,
-            @NotNull String extraText,
+            @Nullable String extraText,
             @NotNull DBPImage icon,
             @NotNull SQLQueryNodeModel... childModels
         ) {

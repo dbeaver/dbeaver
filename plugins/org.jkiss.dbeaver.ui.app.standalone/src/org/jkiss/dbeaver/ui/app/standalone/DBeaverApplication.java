@@ -744,6 +744,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     @Override
+    public boolean isCommunity() {
+        return true;
+    }
+
+    @Override
     public boolean isPrimaryInstance() {
         return primaryInstance;
     }
