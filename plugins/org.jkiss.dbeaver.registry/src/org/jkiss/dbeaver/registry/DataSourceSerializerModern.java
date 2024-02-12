@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,8 +42,10 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerModern;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,6 +54,8 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import javax.crypto.SecretKey;
 
 class DataSourceSerializerModern implements DataSourceSerializer
 {
@@ -312,7 +317,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         jsonWriter.endObject();
     }
 
-    private String loadConfigFile(InputStream stream, boolean decrypt) throws IOException {
+    private String loadConfigFile(InputStream stream, boolean decrypt) throws DBException, IOException {
         ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
         try {
             IOUtils.copyStream(stream, credBuffer);
@@ -322,7 +327,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!decrypt) {
             return credBuffer.toString(StandardCharsets.UTF_8);
         } else {
-            DBSValueEncryptor encryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
+            SecretKey localSecretKey = registry.getProject().getLocalSecretKey();
+            if (localSecretKey == null) {
+                throw new DBInterruptedException("Error of getting user credentials (operation was canceled)");
+            }
+            DBSValueEncryptor encryptor = new DefaultValueEncryptor(localSecretKey);
             try {
                 return new String(encryptor.decryptValue(credBuffer.toByteArray()), StandardCharsets.UTF_8);
             } catch (Exception e) {
@@ -371,41 +380,20 @@ class DataSourceSerializerModern implements DataSourceSerializer
         boolean refresh
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
-        if (!configurationManager.isSecure()) {
-            // Read secured creds file
-            InputStream secureCredsData = configurationManager.readConfiguration(
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId()
-                    + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT,
-                dataSourceIds);
-            if (secureCredsData != null) {
-                try {
-                    String credJson = loadConfigFile(secureCredsData, true);
-                    Map<String, Map<String, Map<String, String>>> res = CONFIG_GSON.fromJson(
-                        credJson,
-                        new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
-                        }.getType());
-                    if (res != null) {
-                        secureProperties.putAll(res);
-                    }
-                } catch (Exception e) {
-                    log.error("Error decrypting secure credentials", e);
-                }
-            }
+
+        // Read in this particular order to handle configuration reading errors first, but process in reverse order later
+        Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
+        Map<String, Object> configurationMap = null;
+        configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+
+        if (secureCredentialsMap != null) {
+            secureProperties.putAll(secureCredentialsMap);
         }
 
-        InputStream configData;
-        if (configurationStorage instanceof DataSourceMemoryStorage) {
-            configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
-        } else {
-            configData = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds);
-        }
-        if (configData != null) {
-            String configJson = loadConfigFile(configData, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
-
-            Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configJson));
-
+        if (configurationMap != null) {
             // Folders
-            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, "folders")) {
+            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(configurationMap, "folders")) {
                 String name = folderMap.getKey();
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
                 String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
@@ -421,7 +409,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Connection types
-            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "connection-types")) {
+            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(configurationMap, "connection-types")) {
                 String id = ctMap.getKey();
                 Map<String, Object> ctConfig = ctMap.getValue();
                 String name = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_NAME);
@@ -464,7 +452,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             Map<String, DBPExternalConfiguration> externalConfigurations = new LinkedHashMap<>();
             if (!DBWorkbench.isDistributed()) {
                 // External configurations not used in distributed mode
-                for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
+                for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(configurationMap, "external-configurations")) {
                     String id = ctMap.getKey();
                     Map<String, Object> configMap = ctMap.getValue();
                     externalConfigurations.put(id, new DBPExternalConfiguration(id, () -> configMap));
@@ -473,14 +461,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             // Virtual models
             Map<String, DBVModel> modelMap = new LinkedHashMap<>();
-            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "virtual-models")) {
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "virtual-models")) {
                 String id = vmMap.getKey();
                 DBVModel model = new DBVModel(id, vmMap.getValue());
                 modelMap.put(id, model);
             }
 
             // Network profiles
-            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "network-profiles")) {
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "network-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
                 DBWNetworkProfile profile = new DBWNetworkProfile(registry.getProject());
@@ -499,7 +487,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Auth profiles
-            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "auth-profiles")) {
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "auth-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
                 DBAAuthProfile profile = new DBAAuthProfile(registry.getProject());
@@ -519,7 +507,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Connections
-            for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(jsonMap, "connections")) {
+            for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(configurationMap, "connections")) {
                 String id = conMap.getKey();
                 Map<String, Object> conObject = conMap.getValue();
 
@@ -587,7 +575,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
                 dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-                dataSource.setSharedCredentials(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHARED_CREDENTIALS));
+                dataSource.forceSetSharedCredentials(JSONUtils.getBoolean(conObject,
+                    RegistryConstants.ATTR_SHARED_CREDENTIALS));
                 dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
                 dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
@@ -793,13 +782,96 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Saved filters
-            for (Map<String, Object> ctMap : JSONUtils.getObjectList(jsonMap, "saved-filters")) {
+            for (Map<String, Object> ctMap : JSONUtils.getObjectList(configurationMap, "saved-filters")) {
                 DBSObjectFilter filter = readObjectFiler(ctMap);
                 registry.addSavedFilter(filter);
             }
         }
         return connectionConfigurationChanged;
 
+    }
+
+    @Nullable
+    private Map<String, Map<String, Map<String, String>>> readSecureCredentials(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @Nullable Collection<String> dataSourceIds
+    ) throws DBException {
+        if (configurationManager.isSecure()) {
+            return null;
+        }
+        final String name = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX
+                + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
+        try (InputStream is = configurationManager.readConfiguration(name, dataSourceIds)) {
+            if (is == null) {
+                return null;
+            }
+            final String data = loadConfigFile(is, true);
+            return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
+            }.getType());
+        } catch (DBInterruptedException e) {
+            // when user cancelled enter project password (not a community level)
+            throw e;
+        } catch (IOException e) {
+            // here we catch IO exceptions that happens in community for secure credential
+            // reading
+            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+                    && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+                if (DBWorkbench.getPlatformUI().confirmAction(
+                        RegistryMessages.project_open_cannot_read_credentials_title,
+                        NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
+                                registry.getProject().getName()),
+                        RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
+                    return null;
+                } else {
+                    // in case of cancelling erase credentials intercept original exception
+                    throw new DBInterruptedException("Project opening canceled by user");
+                }
+            }
+            log.error("Error reading secure credentials", e);
+            throw new DBException("Project configuration can not be open", e);
+        } catch (Exception e) {
+            log.error("Unexpected error during read secure credentials", e);
+            throw new DBException(e.getMessage(), e);
+        }
+    }
+
+    @Nullable
+    private Map<String, Object> readConfiguration(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @Nullable Collection<String> dataSourceIds
+    ) throws DBException, IOException {
+        final InputStream is;
+        if (configurationStorage instanceof DataSourceMemoryStorage) {
+            is = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
+        } else {
+            is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds);
+        }
+        if (is == null) {
+            return null;
+        }
+        try (is) {
+            final String data = loadConfigFile(is, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
+            return JSONUtils.parseMap(CONFIG_GSON, new StringReader(data));
+        } catch (DBInterruptedException e) {
+            // happens only if user cancelled entering password
+            // not a community level
+            throw e;
+        } catch (Exception e) {
+            // intercept exceptions for crypted configuration
+            // for community provide a dialog
+            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+                    && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+                DBWorkbench.getPlatformUI().showWarningMessageBox(
+                        RegistryMessages.project_open_cannot_read_configuration_title,
+                        NLS.bind(RegistryMessages.project_open_cannot_read_configuration_message,
+                                registry.getProject().getName()));
+                throw new DBException("Can not open project with encrypted configuration");
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Nullable
