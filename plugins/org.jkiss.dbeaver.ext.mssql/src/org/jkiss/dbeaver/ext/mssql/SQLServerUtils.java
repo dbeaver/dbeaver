@@ -318,6 +318,19 @@ public class SQLServerUtils {
         return ddl;
     }
 
+    /**
+     * To change original database sql with the "create" word to the "create and replace" for altering
+     *
+     * @param sql string query (can be nullable, will be checked)
+     * @return changed SQL or original SQL if the "create and replace" already exists
+     */
+    public static String changeCreateToCreateOrReplace(@Nullable String sql) {
+        if (CommonUtils.isNotEmpty(sql) && sql.contains("create") && !sql.contains("create or replace")) {
+            sql = sql.replaceFirst("create", "create or replace");
+        }
+        return sql;
+    }
+
     public static boolean isTableType(SQLServerTableBase table) {
         return table instanceof SQLServerTableType;
     }

@@ -146,12 +146,19 @@ public class PostgreUtils {
 
     @Nullable
     public static <OWNER extends DBSObject, OBJECT extends PostgreObject> OBJECT getObjectById(
-            @NotNull DBRProgressMonitor monitor,
+            @Nullable DBRProgressMonitor monitor,
             @NotNull AbstractObjectCache<OWNER, OBJECT> cache,
             @NotNull OWNER owner,
             long objectId)
             throws DBException {
-        for (OBJECT object : cache.getAllObjects(monitor, owner)) {
+        Collection<OBJECT> objects;
+        if (monitor == null) {
+            // The monitor is null. Let's find our object in the cached objects list.
+            objects = cache.getCachedObjects();
+        } else {
+            objects = cache.getAllObjects(monitor, owner);
+        }
+        for (OBJECT object : objects) {
             if (object.getObjectId() == objectId) {
                 return object;
             }

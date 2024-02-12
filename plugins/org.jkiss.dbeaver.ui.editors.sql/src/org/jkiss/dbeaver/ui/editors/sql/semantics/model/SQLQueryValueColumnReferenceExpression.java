@@ -99,16 +99,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 if (dialect.isQuotedString(rawString)) {
                     forcedClass = SQLQuerySymbolClass.STRING;
                 } else {
-                    boolean isQuotedIdentifier = dialect.isQuotedIdentifier(this.columnName.getRawName());
-                    char quoteChar = this.columnName.getRawName().charAt(0);
-                    if ((!isQuotedIdentifier && (quoteChar == '"' || quoteChar == '`' || quoteChar == '\''))
-                        || (isQuotedIdentifier && resultColumn == null)) {
-                        forcedClass = switch (quoteChar) {
-                            case '\'' -> SQLQuerySymbolClass.STRING;
-                            case '"', '`' -> SQLQuerySymbolClass.QUOTED;
-                            default -> null;
-                        };
-                    }
+                    forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, resultColumn != null);
                 }
             }
 
