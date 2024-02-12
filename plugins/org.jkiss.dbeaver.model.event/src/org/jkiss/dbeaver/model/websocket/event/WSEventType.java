@@ -49,6 +49,7 @@ public enum WSEventType {
     DATASOURCE_UPDATED("cb_datasource_updated", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_DELETED("cb_datasource_deleted", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
 
+
     DATASOURCE_FOLDER_CREATED(
         "cb_datasource_folder_created",
         WSEventTopic.DATASOURCE_FOLDER,
