@@ -24,6 +24,7 @@ public class QMConstants {
     public static final String QM_SESSION_ID_ATTR = "qm_session_id";
     public static final String QM_ANONYMOUS_DOMAIN = "anonymous";
     public static final String QM_ANONYMOUS_USER = "@anonymous@";
+    public static final String QM_ANONYMOUS_IP = "[anonymous_ip]";
 
     public static final String PROP_PREFIX = "qm.";
 
