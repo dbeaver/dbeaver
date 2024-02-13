@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
@@ -204,7 +205,6 @@ public class SQLEditor extends SQLEditorBase implements
         SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB, CommonUtils.toString(false));
 
     static final String STATS_CATEGORY_TRANSACTION_TIMEOUT = "TransactionTimeout";
-
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
@@ -5492,7 +5492,8 @@ public class SQLEditor extends SQLEditorBase implements
             return null;
         }
 
-        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
+        final long lastUserActivityTime =
+                ((DBPApplicationDesktop) DBWorkbench.getPlatform().getApplication()).getLastUserActivityTime();
         if (lastUserActivityTime < 0) {
             return null;
         }
