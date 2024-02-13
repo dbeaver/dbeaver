@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -37,10 +40,11 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
@@ -54,6 +58,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultM
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.TupleSpec;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -71,6 +76,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     private SelectionSyncOperation currentSelectionSyncOp = SelectionSyncOperation.NONE;
     private SQLOutlineNodeBuilder currentNodeBuilder = new SQLOutlineNodeFullBuilder();
 
+    private OutlineRefreshJob refreshJob = new OutlineRefreshJob(); 
+    
     private final CaretListener caretListener = event -> {
         if (currentSelectionSyncOp == SelectionSyncOperation.NONE) {
             LinkedList<OutlineNode> path = new LinkedList<>();
@@ -197,7 +204,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         this.editor.addPropertyListener(editorPropertyListener);
 
         SQLEditorHandlerToggleOutlineView.refreshCommandState(editor.getSite());
-        scheduleRefresh();
+        this.refreshJob.schedule(true);
     }
 
     @Override
@@ -214,14 +221,6 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
 
         super.selectionChanged(event);
-    }
-
-    private void scheduleRefresh() {
-        UIUtils.asyncExec(() -> {
-            if (!treeViewer.getTree().isDisposed()) {
-                treeViewer.refresh();
-            }
-        });
     }
 
     @NotNull
@@ -425,37 +424,23 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         final SQLDocumentSyntaxContextListener syntaxContextListener = new SQLDocumentSyntaxContextListener() {
             @Override
             public void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item) {
-                UIUtils.syncExec(() -> {
-                    updateElements();
-                    updateChildren();
-                    scheduleRefresh();
-                });
+                refreshJob.schedule(true);
             }
 
             @Override
             public void onScriptItemIntroduced(@Nullable SQLDocumentScriptItemSyntaxContext item) {
-                UIUtils.syncExec(() -> {
-                    updateElements();
-                    updateChildren();
-                    scheduleRefresh();
-                });
+                refreshJob.schedule(true);
             }
 
             @Override
             public void onAllScriptItemsInvalidated() {
-                UIUtils.syncExec(() -> {
-                    updateElements();
-                    updateChildren();
-                    scheduleRefresh();
-                });
+                refreshJob.schedule(true);
             }
         };
 
         public OutlineScriptNode() {
             super(null);
             this.documentContext = editor.getSyntaxContext();
-            this.updateElements();
-            this.updateChildren();
             this.documentContext.addListener(syntaxContextListener);
         }
 
@@ -976,6 +961,34 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @NotNull SQLQueryNodeModel... childModels
         ) {
             parent.children.add(new OutlineQueryNode(parent, model, text, extraText, icon, childModels));
+        }
+    }
+    
+    private class OutlineRefreshJob {
+        
+        private AtomicBoolean updateElements = new AtomicBoolean(false);
+        
+        private final AbstractUIJob job = new AbstractUIJob("SQL editor outline refresh") {
+            @Override
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+                boolean doUpdateElements = updateElements.getAndSet(false);
+                if (!treeViewer.getTree().isDisposed()) {
+                    if (doUpdateElements) {
+                        scriptNode.updateElements();
+                    }
+                    scriptNode.updateChildren();
+                    treeViewer.refresh();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        
+        public void schedule(boolean updateElements) {
+            this.updateElements.set(updateElements);
+            switch (this.job.getState()) {
+                case Job.WAITING, Job.SLEEPING -> this.job.cancel();
+            }
+            this.job.schedule(500);
         }
     }
 }

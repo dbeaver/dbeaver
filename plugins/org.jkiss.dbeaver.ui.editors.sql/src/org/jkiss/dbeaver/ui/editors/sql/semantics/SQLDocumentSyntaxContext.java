@@ -276,11 +276,11 @@ public class SQLDocumentSyntaxContext {
 
         NodesIterator<SQLDocumentScriptItemSyntaxContext> it1 = this.scriptItems.nodesIteratorAt(0);
         int off1 = it1.getCurrOffset();
-        if (it1.getCurrValue() != null && off1 < rangeStart) {
+        if (it1.getCurrValue() != null && off1 + it1.getCurrValue().length() < rangeStart) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
             this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }
-        while (it1.next() && (off1 = it1.getCurrOffset()) < rangeStart) {
+        while (it1.next() && (off1 = it1.getCurrOffset()) + it1.getCurrValue().length() < rangeStart) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
             this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }
