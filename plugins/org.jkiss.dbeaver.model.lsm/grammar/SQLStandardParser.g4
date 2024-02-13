@@ -149,7 +149,7 @@ parameterSpecification: parameterName (indicatorParameter)?;
 parameterName: Colon identifier;
 indicatorParameter: (INDICATOR)? parameterName;
 dynamicParameterSpecification: QuestionMark;
-columnReference: (qualifier Period)? columnName;
+columnReference: ((qualifier Period)? (columnName))|(qualifier Period Asterisk);
 //columnReference: identifier (Period identifier (Period identifier (Period identifier)?)?)?;
 valueReference: (columnReference|valueRefNestedExpr) valueRefIndexingStep* (valueRefMemberStep valueRefIndexingStep*)*;
 valueRefNestedExpr: LeftParen valueReference RightParen;
@@ -178,7 +178,7 @@ simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
 setQuantifier: (DISTINCT|ALL);
 selectList: selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
-selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk)? anyUnexpected??; // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
+selectSublist: (Asterisk|derivedColumn)? anyUnexpected??; // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
 tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
@@ -188,7 +188,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
-nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
+nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification?);
 tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|anyUnexpected??; // '.*' to handle incomplete queries
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
