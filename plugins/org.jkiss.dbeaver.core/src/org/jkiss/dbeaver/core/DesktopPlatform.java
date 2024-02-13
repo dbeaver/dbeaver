@@ -323,9 +323,12 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
                 } else {
                     tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 }
-                tempFolder = Files.createTempDirectory(
-                    Paths.get(tempFolderPath),
-                    TEMP_PROJECT_NAME);
+                Path tmpFolder = Paths.get(tempFolderPath);
+                if (!Files.exists(tmpFolder)) {
+                    log.debug("Create global temp folder '" + tmpFolder + "'");
+                    Files.createDirectories(tmpFolder);
+                }
+                tempFolder = Files.createTempDirectory(tmpFolder, TEMP_PROJECT_NAME);
             } catch (IOException e) {
                 final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 if (!CommonUtils.isEmpty(sysTempFolder)) {
