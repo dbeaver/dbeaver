@@ -69,6 +69,7 @@ public class PostgreUtils {
     private static final Log log = Log.getLog(PostgreUtils.class);
 
     private static final int UNKNOWN_LENGTH = -1;
+    private static final String GROUP_PREFIX = "group ";
 
     public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
             throws DBException {
@@ -664,10 +665,7 @@ public class PostgreUtils {
                 log.warn("Bad ACL item: " + aclValue);
                 continue;
             }
-            String grantee = aclValue.substring(0, divPos);
-            if (grantee.isEmpty()) {
-                grantee = "public";
-            }
+            String grantee = extractGranteeName(aclValue, divPos);
             grantees.add(grantee);
         }
         return grantees.toArray(new String[0]);
@@ -688,10 +686,7 @@ public class PostgreUtils {
                 log.warn("Bad ACL item: " + aclValue);
                 continue;
             }
-            String grantee = aclValue.substring(0, divPos);
-            if (grantee.isEmpty()) {
-                grantee = "public";
-            }
+            String grantee = extractGranteeName(aclValue, divPos);
             String permString = aclValue.substring(divPos + 1);
             int divPos2 = permString.indexOf('/');
             if (divPos2 == -1) {
@@ -726,6 +721,18 @@ public class PostgreUtils {
             }
         }
         return permissions;
+    }
+
+    @NotNull
+    private static String extractGranteeName(String aclValue, int divPos) {
+        String grantee = aclValue.substring(0, divPos);
+        if (grantee.isEmpty()) {
+            grantee = "public";
+        } else if (grantee.startsWith(GROUP_PREFIX)) {
+            // Remove group flag
+            grantee = grantee.substring(GROUP_PREFIX.length());
+        }
+        return grantee;
     }
 
     public static List<PostgrePrivilege> extractPermissionsFromACL(
