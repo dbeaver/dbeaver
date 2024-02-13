@@ -401,6 +401,9 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_editor_status_bar_rollback_label;
     public static String sql_editor_status_bar_disconnect_label;
+    
+    public static String sql_editor_outline_no_elements_label;
+    public static String sql_editor_outline_query_analysis_disabled_label;
 
     static {
         // initialize resource bundle

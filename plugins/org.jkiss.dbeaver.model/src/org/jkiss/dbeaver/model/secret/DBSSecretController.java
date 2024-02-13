@@ -36,7 +36,14 @@ public interface DBSSecretController {
     @Nullable
     String getPrivateSecretValue(@NotNull String secretId) throws DBException;
 
+
+    @Deprecated
     void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
+
+    default void setPrivateSecretValue(@NotNull DBSSecretObject secretObject, @NotNull DBSSecretValue secretValue)
+        throws DBException {
+        setPrivateSecretValue(secretValue.getId(), secretValue.getValue());
+    }
 
     @NotNull
     List<DBSSecretValue> discoverCurrentUserSecrets(
@@ -58,6 +65,9 @@ public interface DBSSecretController {
     }
 
     default void deleteSubjectSecrets(@NotNull String subjectId) throws DBException {
+    }
+
+    default void deleteProjectSecrets(@NotNull String projectId) throws DBException {
     }
 
     default void deleteObjectSecrets(
@@ -82,14 +92,19 @@ public interface DBSSecretController {
 
     @NotNull
     static DBSSecretController getSessionSecretController(SMSession spaceSession) throws DBException {
-        SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
-        if (secretKeeper != null) {
-            DBSSecretController secretController = secretKeeper.getSecretController();
-            if (secretController != null) {
-                return secretController;
-            }
+        var secretController = getSessionSecretControllerOrNull(spaceSession);
+        if (secretController != null) {
+            return secretController;
         }
         throw new IllegalStateException("Session secret controller not found");
     }
 
+    @Nullable
+    static DBSSecretController getSessionSecretControllerOrNull(SMSession spaceSession) throws DBException {
+        SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
+        if (secretKeeper != null) {
+            return secretKeeper.getSecretController();
+        }
+        return null;
+    }
 }
