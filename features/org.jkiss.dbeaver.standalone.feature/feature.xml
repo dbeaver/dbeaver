@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.standalone.feature"
         label="%featureName"
-        version="23.3.4.qualifier"
+        version="23.3.5.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
@@ -36,8 +36,6 @@
 
     <plugin id="org.eclipse.equinox.p2.updatesite" version="0.0.0" />
     <plugin id="org.eclipse.equinox.p2.ui.importexport" version="0.0.0" />
-    <!-- Launcher -->
-    <plugin id="org.jkiss.dbeaver.launcher" version="0.0.0"/>
 
     <includes id="org.eclipse.equinox.p2.discovery.feature" version="0.0.0"/>
     <includes id="org.eclipse.equinox.p2.extras.feature" version="0.0.0"/>

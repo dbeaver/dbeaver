@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Tip of the day
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.tipoftheday;singleton:=true
-Bundle-Version: 1.0.130.qualifier
-Bundle-Release-Date: 20240205
+Bundle-Version: 1.0.131.qualifier
+Bundle-Release-Date: 20240219
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

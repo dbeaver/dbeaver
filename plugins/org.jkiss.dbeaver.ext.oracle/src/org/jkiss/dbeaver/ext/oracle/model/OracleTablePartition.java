@@ -121,7 +121,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         // Creation constructor
         public PartitionInfoBase() {
             this.partitionType = PartitionType.RANGE;
-            this.subpartitionType = PartitionType.NONE;
+            this.subpartitionType = PartitionType.RANGE;
         }
 
         public void setPartitionTablespace(Object partitionTablespace) {

@@ -55,7 +55,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     public enum KeyType implements JDBCColumnKeyType {
         PRI,
         UNI,
-        MUL;
+        MUL,
+        DUP, AGG; // StarRocks
 
         @Override
         public boolean isInUniqueKey()
