@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,10 +66,15 @@ public class MetadataProcessor {
                 object,
                 DBPEvaluationContext.DDL
             ) : DBUtils.getQuotedIdentifier(object);
-            description.append('\n').append(name).append("(");
-            boolean firstAttr = addPromptAttributes(monitor, (DBSEntity) object, description, true);
+            description.append('\n');
+            formatter.addObjectDescriptionIfNeeded(description, object, monitor);
+            if (object instanceof DBSTable table) {
+                description.append(table.isView() ? "Create View: " : "Create Table: ");
+            }
+            description.append(name).append("(\n\t");
+            DBSEntityAttribute firstAttr = addPromptAttributes(monitor, (DBSEntity) object, description, formatter);
             formatter.addExtraDescription(monitor, (DBSEntity) object, description, firstAttr);
-            description.append(");");
+            description.append("\n);");
         } else if (object instanceof DBSObjectContainer) {
             monitor.subTask("Load cache of " + object.getName());
             ((DBSObjectContainer) object).cacheStructure(
@@ -158,7 +164,8 @@ public class MetadataProcessor {
                 ));
             }
         } else {
-            sb.append(generateObjectDescription(
+            sb.append(
+                generateObjectDescription(
                 monitor,
                 mainObject,
                 executionContext,
@@ -174,12 +181,13 @@ public class MetadataProcessor {
         );
     }
 
-    protected boolean addPromptAttributes(
+    protected DBSEntityAttribute addPromptAttributes(
         DBRProgressMonitor monitor,
         DBSEntity entity,
         StringBuilder prompt,
-        boolean firstAttr
+        IAIFormatter formatter
     ) throws DBException {
+        DBSEntityAttribute prevAttribute = null;
         if (SUPPORTS_ATTRS) {
             List<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
             if (attributes != null) {
@@ -187,13 +195,18 @@ public class MetadataProcessor {
                     if (DBUtils.isHiddenObject(attribute)) {
                         continue;
                     }
-                    if (!firstAttr) prompt.append(",");
-                    firstAttr = false;
+                    if (prevAttribute != null) {
+                        prompt.append(",");
+                        formatter.addObjectDescriptionIfNeeded(prompt, prevAttribute, monitor);
+                        prompt.append("\n\t");
+                    }
                     prompt.append(attribute.getName());
+                    formatter.addColumnTypeIfNeeded(prompt, attribute, monitor);
+                    prevAttribute = attribute;
                 }
             }
         }
-        return firstAttr;
+        return prevAttribute;
     }
 
     private boolean isRequiresFullyQualifiedName(@NotNull DBSObject object, @Nullable DBCExecutionContext context) {
