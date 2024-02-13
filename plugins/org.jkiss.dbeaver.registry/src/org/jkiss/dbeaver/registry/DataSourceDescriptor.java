@@ -909,8 +909,12 @@ public class DataSourceDescriptor
             } else {
                 throw new DBException("Can not determine secret subject. Shared secrets not supported.");
             }
-            secretController.setSubjectSecretValue(subjectId, this,
-                new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
+            try {
+                secretController.setSubjectSecretValue(subjectId, this,
+                    new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
+            } catch (DBException e) {
+                throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
+            }
         }
         secretsResolved = true;
     }
@@ -934,6 +938,11 @@ public class DataSourceDescriptor
     public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
         var secretController = DBSSecretController.getProjectSecretController(getProject());
         return secretController.listAllSharedSecrets(this);
+    }
+
+    @Nullable
+    public DBSSecretValue getSelectedSharedCredentials() {
+        return selectedSharedCredentials;
     }
 
     public synchronized void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
