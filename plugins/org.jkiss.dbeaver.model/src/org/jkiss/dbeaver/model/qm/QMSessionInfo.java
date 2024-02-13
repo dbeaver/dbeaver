@@ -39,9 +39,4 @@ public class QMSessionInfo {
     public String getUserIp() {
         return userIp;
     }
-
-    public String getCleanedUserIp() {
-        String userIp = getUserIp();
-        return userIp != null ? userIp.replaceAll("[\\[\\]]", "") : null;
-    }
 }
