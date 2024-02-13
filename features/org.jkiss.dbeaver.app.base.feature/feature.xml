@@ -40,5 +40,8 @@
 
     <plugin id="org.eclipse.ui.ide.application" version="0.0.0" />
     <plugin id="org.apache.commons.cli" version="0.0.0" />
+    <!-- Launcher -->
+    <plugin id="org.jkiss.dbeaver.launcher" version="0.0.0"/>
+    
 
 </feature>
