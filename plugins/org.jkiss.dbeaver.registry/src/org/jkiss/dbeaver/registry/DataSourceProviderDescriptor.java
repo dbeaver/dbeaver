@@ -477,8 +477,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         String changeFolderType = config.getAttribute("changeFolderType");
         if (changeFolderType != null) {
             DBXTreeNode folderNode = baseItem.getParent();
-            if (folderNode instanceof DBXTreeFolder) {
-                ((DBXTreeFolder) folderNode).setType(changeFolderType);
+            if (folderNode instanceof DBXTreeFolder folder) {
+                folder.setType(changeFolderType);
+                String changeFolderLabel = config.getAttribute("changeFolderLabel");
+                if (CommonUtils.isNotEmpty(changeFolderLabel)) {
+                   folder.setLabel(changeFolderLabel);
+                   folder.setDescription(changeFolderLabel);
+                }
             } else {
                 log.error("Can't update folder type to " + changeFolderType);
             }

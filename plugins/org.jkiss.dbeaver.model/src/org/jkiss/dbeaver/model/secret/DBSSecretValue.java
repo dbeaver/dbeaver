@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 public class DBSSecretValue {
+    @Nullable
+    private String subjectId;
     @NotNull
     private String id;
     @NotNull
@@ -34,8 +36,20 @@ public class DBSSecretValue {
         this.value = value;
     }
 
+    public DBSSecretValue(@NotNull String subjectId, @NotNull String id, @NotNull String displayName, @Nullable String value) {
+        this.subjectId = subjectId;
+        this.id = id;
+        this.displayName = displayName;
+        this.value = value;
+    }
+
     // for serialization
     public DBSSecretValue() {
+    }
+
+    @Nullable
+    public String getSubjectId() {
+        return subjectId;
     }
 
     @NotNull
@@ -51,6 +65,10 @@ public class DBSSecretValue {
     @Nullable
     public String getValue() {
         return value;
+    }
+
+    public void setSubjectId(@NotNull String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public void setId(@NotNull String id) {

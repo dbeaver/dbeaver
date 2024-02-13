@@ -83,13 +83,15 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
         PostgrePrivilegeOwner object = getObject();
         String objectName = "", roleName;
-        if (object instanceof PostgreRole) {
+        String roleType = null;
+        if (object instanceof PostgreRole role) {
             roleName = DBUtils.getQuotedIdentifier(object);
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
             } else if (privilege instanceof PostgreRolePrivilege) {
                 objectName = ((PostgreRolePrivilege) privilege).getFullObjectName();
             }
+            roleType = role.getSpecificRoleType();
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.privilege;
             if (permission.getGrantee() != null) {
@@ -142,7 +144,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
         String grantScript = scriptBeginning + (grant ? "GRANT " : "REVOKE ") + privName + grantedCols +
             " ON " + grantedTypedObject +
-            (grant ? " TO " : " FROM ") + roleName;
+            (grant ? " TO " : " FROM ") + (roleType != null ? roleType + " " : "") + roleName;
         if (grant && withGrantOption) {
             grantScript += " WITH GRANT OPTION";
         }

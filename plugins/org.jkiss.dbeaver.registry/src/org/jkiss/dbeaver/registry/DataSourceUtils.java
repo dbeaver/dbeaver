@@ -16,14 +16,12 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPInformationProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -31,6 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -417,5 +416,23 @@ public class DataSourceUtils {
     @NotNull
     public static String getJumpServerSettingsPrefix(int index) {
         return PROP_JUMP_SERVER + index + ".";
+    }
+
+    public static String getSubjectFromSecret(DBSSecretValue secret) {
+        String subjectId = secret.getSubjectId();
+        return subjectId == null ? secret.getDisplayName() : subjectId;
+    }
+
+    public static String getUserNameFromSecret(DBSSecretValue secret) {
+        Map<String, Object> secretMap = DBInfoUtils.SECRET_GSON.fromJson(
+            secret.getValue(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+        if (secretMap != null) {
+            Object userName = secretMap.get(DBConstants.PROP_USER);
+            if (userName != null) {
+                return userName.toString();
+            }
+        }
+        return "......";
     }
 }
