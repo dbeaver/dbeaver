@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.model.ai.format;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 public interface IAIFormatter {
@@ -42,6 +44,19 @@ public interface IAIFormatter {
         DBRProgressMonitor monitor,
         DBSEntity object,
         StringBuilder description,
-        boolean firstAttr
+        DBPObjectWithDescription lastAttr
     ) throws DBException;
+
+    void addObjectDescriptionIfNeeded(
+        @NotNull StringBuilder description,
+        @NotNull DBPObjectWithDescription object,
+        @NotNull DBRProgressMonitor monitor
+    );
+
+    void addColumnTypeIfNeeded(
+        @NotNull StringBuilder description,
+        @NotNull DBSEntityAttribute attribute,
+        @NotNull DBRProgressMonitor monitor
+    );
 }
+
