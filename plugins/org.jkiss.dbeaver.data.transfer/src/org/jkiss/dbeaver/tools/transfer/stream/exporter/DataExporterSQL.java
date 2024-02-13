@@ -402,7 +402,9 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
         	if (insertKeyword == InsertKeyword.INSERT_ALL) {
                 out.write(rowDelimiter + identifierCase.transform(KEYWORD_SELECT_FROM_DUAL) + ";");
             } else if (!oneLineEntry) {
-                addOnConflictExpression(out);
+                if (CommonUtils.isNotEmpty(onConflictExpression)) {
+                    addOnConflictExpression(out);
+                }
                 out.write(";");
                 out.write(rowDelimiter);
             } else {
