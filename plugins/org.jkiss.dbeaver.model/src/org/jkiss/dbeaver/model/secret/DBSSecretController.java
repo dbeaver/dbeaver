@@ -64,6 +64,18 @@ public interface DBSSecretController {
     ) throws DBException {
     }
 
+    @Nullable
+    default DBSSecretValue getSubjectSecretValue(
+        @NotNull String subjectId,
+        @NotNull DBSSecretObject secretObject
+    ) throws DBException {
+        return listAllSharedSecrets(secretObject).stream()
+            .filter(secretValue -> subjectId.equals(secretValue.getSubjectId()))
+            .findFirst()
+            .orElse(null);
+    }
+
+
     default void deleteSubjectSecrets(@NotNull String subjectId) throws DBException {
     }
 

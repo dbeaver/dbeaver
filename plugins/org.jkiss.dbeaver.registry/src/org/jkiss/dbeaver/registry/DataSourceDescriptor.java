@@ -436,6 +436,10 @@ public class DataSourceDescriptor
         }
         resolveSecretsIfNeeded();
 
+        if (isSharedCredentials() && !isSharedCredentialsSelected()) {
+            return false;
+        }
+
         if (secretsResolved && secretsContainsDatabaseCreds) {
             return true;
         }
@@ -971,6 +975,9 @@ public class DataSourceDescriptor
                 }
             } else {
                 this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
+                if (this.availableSharedCredentials.size() == 1) {
+                    setSelectedSharedCredentials(availableSharedCredentials.get(0));
+                }
             }
         } finally {
             // we always consider the secret to be resolved,
