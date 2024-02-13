@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -236,6 +237,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     }
                     this.afterChildRead();
                 }
+            } else {
+                throw new DBInterruptedException("Connection was canceled");
             }
         }
         return childNodes;

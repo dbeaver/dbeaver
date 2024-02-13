@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -197,6 +199,9 @@ public class DataSourceMonitorJob extends AbstractJob {
             if (DisconnectJob.isInProcess(dsDescriptor)) {
                 return false;
             }
+            if (isExecutionInProgress(dataSource)) {
+                return false;
+            }
 
             // Kill idle connection
             DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
@@ -211,7 +216,7 @@ public class DataSourceMonitorJob extends AbstractJob {
             return true;
         }
 
-        if (idleInterval < rollbackTimeoutSeconds) {
+        if (rollbackTimeoutSeconds <= 0 || idleInterval < rollbackTimeoutSeconds) {
             return false;
         }
         if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
@@ -247,12 +252,31 @@ public class DataSourceMonitorJob extends AbstractJob {
         return false;
     }
 
+    private static boolean isExecutionInProgress(DBPDataSource dataSource) {
+        for (DBSInstance instance : dataSource.getAvailableInstances()) {
+            for (DBCExecutionContext context : instance.getAllContexts()) {
+                QMMConnectionInfo qmConnection = QMUtils.getCurrentConnection(context);
+                if (qmConnection != null) {
+                    QMMStatementExecuteInfo lastExec = qmConnection.getExecutionStack();
+                    if (lastExec != null && !lastExec.isClosed()) {
+                        // It is in progress
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public void scheduleMonitor() {
         schedule(MONITOR_INTERVAL);
     }
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
         DBPConnectionConfiguration config = container.getConnectionConfiguration();
+        if (!config.isCloseIdleConnection()) {
+            return 0;
+        }
         final int timeout = config.getCloseIdleInterval();
         if (timeout > 0) {
             return timeout;
