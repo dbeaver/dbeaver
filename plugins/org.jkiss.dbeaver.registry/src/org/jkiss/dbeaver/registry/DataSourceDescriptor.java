@@ -1964,6 +1964,9 @@ public class DataSourceDescriptor
                 case DBPConnectionConfiguration.VARIABLE_URL -> configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE -> configuration.getConnectionType().getId();
                 case DBPConnectionConfiguration.VARIABLE_DATE -> RuntimeUtils.getCurrentDate();
+                case DBPConnectionConfiguration.VARIABLE_DATASOURCE -> this.getName();
+                case DBPConnectionConfiguration.VAR_PROJECT_PATH -> this.getProject().getAbsolutePath().toAbsolutePath().toString();
+                case DBPConnectionConfiguration.VAR_PROJECT_NAME -> this.getProject().getName();
                 default -> SystemVariablesResolver.INSTANCE.get(name);
             };
         };
