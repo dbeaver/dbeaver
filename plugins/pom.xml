@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>org.jkiss.dbeaver.launcher</module>
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
         <module>org.jkiss.dbeaver.model.event</module>
@@ -94,6 +95,7 @@
             <activation><property><name>!headless-platform</name></property></activation>
             <!-- Desktop (swt/jface) components -->
             <modules>
+                <module>org.jkiss.dbeaver.launcher</module>
                 <module>org.jkiss.dbeaver.core</module>
                 <module>org.jkiss.dbeaver.ui.app.standalone</module>
                 <module>org.jkiss.dbeaver.ui.app.eclipse</module>

@@ -310,10 +310,18 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within one-line SQL comments.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
-        // Add a "damager-repairer" for changes within string literals.
-        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
-        // Add a "damager-repairer" for changes within quoted literals.
-        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+        SQLEditorBase sqlEditor = this.getSQLEditor();
+        if (sqlEditor.isAdvancedHighlightingEnabled() && SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor.getEditorInput())) {
+            // Add a "damager-repairer" for changes within string literals.
+            addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
+            // Add a "damager-repairer" for changes within quoted literals.
+            addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+        } else {
+            // Add a "damager-repairer" for changes within string literals.
+            addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING, SQLConstants.CONFIG_COLOR_STRING);
+            // Add a "damager-repairer" for changes within quoted literals.
+            addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED, SQLConstants.CONFIG_COLOR_DATATYPE);
+        }
         // Add a "damager-repairer" for changes within control commands.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
 
