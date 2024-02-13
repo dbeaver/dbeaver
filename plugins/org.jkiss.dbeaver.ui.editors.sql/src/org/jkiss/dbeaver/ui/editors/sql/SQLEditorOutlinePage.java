@@ -138,7 +138,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
     public void refresh() {
         this.scriptNode.updateChildren();
-        this.scheduleRefresh();
+        this.refreshJob.schedule(false);
     }
     
     @NotNull
