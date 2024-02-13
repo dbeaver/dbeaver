@@ -122,7 +122,7 @@ public interface DBPPlatformUI {
         boolean passwordOnly,
         boolean showSavePassword
     ) {
-        return promptUserCredentials(null, prompt, userName, userPassword, passwordOnly, showSavePassword);
+        return promptUserCredentials(prompt, prompt, userName, userPassword, passwordOnly, showSavePassword);
     }
 
     @Nullable
@@ -144,7 +144,7 @@ public interface DBPPlatformUI {
         boolean passwordOnly,
         boolean showSavePassword
     ) {
-        return promptUserCredentials(null, prompt, userNameLabel, userName, passwordLabel, userPassword, passwordOnly, showSavePassword);
+        return promptUserCredentials(prompt, prompt, userNameLabel, userName, passwordLabel, userPassword, passwordOnly, showSavePassword);
     }
 
     @Nullable

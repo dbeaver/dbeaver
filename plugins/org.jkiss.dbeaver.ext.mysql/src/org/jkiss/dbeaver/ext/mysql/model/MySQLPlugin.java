@@ -104,6 +104,7 @@ public class MySQLPlugin extends MySQLInformation implements DBPStatefulObject {
         DISABLED,
         DELETING,
         DELETED,
-        UNKNOWN
+        UNKNOWN,
+        INSTALLED // StarRocks
     }
 }
