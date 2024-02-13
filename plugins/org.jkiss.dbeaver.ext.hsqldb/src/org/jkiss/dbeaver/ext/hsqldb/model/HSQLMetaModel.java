@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -47,6 +48,7 @@ import java.util.Map;
 public class HSQLMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(HSQLMetaModel.class);
+    private static final String PROHIBITED_FUNCTION = "jdbc:hsqldb:file";
 
     public HSQLMetaModel() {
         super();
@@ -54,6 +56,12 @@ public class HSQLMetaModel extends GenericMetaModel
 
     @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            String url = container.getConnectionConfiguration().getUrl();
+            if (!container.getDriver().isEmbedded() && url != null && url.contains(PROHIBITED_FUNCTION)) {
+                throw new DBException("File is forbidden for this driver, use embedded driver");
+            }
+        }
         return new HSQLDataSource(monitor, container, this);
     }
 

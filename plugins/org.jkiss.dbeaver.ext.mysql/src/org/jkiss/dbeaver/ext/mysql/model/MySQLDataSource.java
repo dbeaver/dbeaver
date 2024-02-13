@@ -935,6 +935,22 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     /**
+     * Returns true if the charsets information is supported. Ex. for table creation.
+     */
+    @Association
+    public boolean supportsCharsets() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-charsets"), true);
+    }
+
+    /**
+     * Returns true if the collation information is supported. Ex. for table creation.
+     */
+    @Association
+    public boolean supportsCollations() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-collations"), true);
+    }
+
+    /**
      * Returns true if local clients using is supported.
      */
     @Association

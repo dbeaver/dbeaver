@@ -22,15 +22,18 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,6 +41,8 @@ import org.jkiss.utils.CommonUtils;
  * Database native auth model config
  */
 public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfigurator<DBAAuthModel<?>, DBPDataSourceContainer> {
+
+    private static final Log log = Log.getLog(DatabaseNativeAuthModelConfigurator.class);
 
     protected Label usernameLabel;
     protected Text usernameText;
@@ -91,6 +96,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         this.dataSource = dataSource;
 
+        if (dataSource instanceof DataSourceDescriptor dsd && dataSource.isSharedCredentials()) {
+            DataSourceHandlerUtils.resolveSharedCredentials(dsd, null);
+        }
+
         if (this.usernameText != null) {
             this.usernameText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserName()));
         }
@@ -98,6 +107,18 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
             this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
             this.passwordText.setEnabled(dataSource.isSavePassword());
+        }
+        if (dataSource.isTemporary()) {
+            if (this.passwordText != null) {
+                this.passwordText.setEnabled(true);
+            }
+            if (this.savePasswordCheck != null) {
+                this.savePasswordCheck.setSelection(true);
+                this.savePasswordCheck.setEnabled(false);
+            }
+            if (this.userManagementToolbar != null) {
+                this.userManagementToolbar.setEnabled(false);
+            }
         }
     }
 

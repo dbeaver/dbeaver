@@ -300,9 +300,12 @@ public class QMMConnectionInfo extends QMMObject {
         return contextName;
     }
 
-    public QMMStatementInfo getStatementStack()
-    {
+    public QMMStatementInfo getStatementStack() {
         return statementStack;
+    }
+
+    public QMMStatementExecuteInfo getExecutionStack() {
+        return executionStack;
     }
 
     public QMMTransactionInfo getTransaction()

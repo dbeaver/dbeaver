@@ -279,6 +279,35 @@
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
                 </driver>
+                <driver
+                        id="starRocks"
+                        label="StarRocks"
+                        icon="icons/starRocks_icon.png"
+                        iconBig="icons/starRocks_icon_big.png"
+                        logoImage="icons/starRocks_logo.png"
+                        class="com.mysql.cj.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        useURL="false"
+                        defaultPort="9030"
+                        defaultUser="root"
+                        webURL="https://docs.starrocks.io/docs/quick_start/shared-nothing/"
+                        description="Driver for MySQL 8 and StarRocks"
+                        categories="sql">
+
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <parameter name="supports-partitions" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-triggers" value="false"/>
+                    <parameter name="supports-events" value="false"/>
+                    <parameter name="supports-users" value="false"/>
+                    <parameter name="supports-charsets" value="false"/>
+                    <parameter name="supports-collations" value="false"/>
+                    <parameter name="supportsClients" value="false"/>
+                </driver>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
                         <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
