@@ -26,6 +26,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
@@ -52,7 +54,7 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
         } else {
             final ISelection selection = HandlerUtil.getCurrentSelection(event);
             if (selection instanceof IStructuredSelection) {
-                Object element = ((IStructuredSelection)selection).getFirstElement();
+                Object element = ((IStructuredSelection) selection).getFirstElement();
                 if (element instanceof DBTTask) {
                     task = (DBTTask) element;
                 }
@@ -67,7 +69,7 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
     }
 
     public static void runTask(DBTTask task) {
-        if (task.getType().supportsVariables() && !confirmTaskVariables(task)) {
+        if (!confirmTaskVariables(task)) {
             return;
         }
 
@@ -95,18 +97,28 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
     }
 
     private static boolean confirmTaskVariables(@NotNull DBTTask task) {
-        final Map<String, Object> properties = task.getProperties();
+        final Map<DBTTask, Map<String, Object>> variables = new LinkedHashMap<>();
 
-        if (CommonUtils.toBoolean(properties.get(DBTaskUtils.TASK_PROMPT_VARIABLES))) {
-            final Map<String, Object> variables = DBTaskUtils.getVariables(task);
+        try {
+            DBTaskUtils.collectTaskVariables(
+                task,
+                task1 -> CommonUtils.toBoolean(task1.getProperties().get(DBTaskUtils.TASK_PROMPT_VARIABLES)),
+                variables
+            );
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Task variables", "Error collecting task variables", e);
+            return true;
+        }
+
+        if (variables.values().stream().anyMatch(vars -> !vars.isEmpty())) {
             final EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(UIUtils.getActiveWorkbenchShell(), variables);
 
             if (dialog.open() != IDialogConstants.OK_ID) {
                 return false;
             }
 
-            if (!variables.equals(dialog.getVariables())) {
-                DBTaskUtils.setVariables(properties, dialog.getVariables());
+            for (DBTTask other : variables.keySet()) {
+                DBTaskUtils.setVariables(other, dialog.getVariables(other));
             }
         }
 
