@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.erd.ui.ERDIcon;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Action to toggle the layout between manual and automatic
@@ -41,8 +42,10 @@ public class DiagramLayoutAction extends Action {
 
     @Override
     public void run() {
-        editor.getDiagramPart().rearrangeDiagram();
-        editor.setDirty(true);
+        UIUtils.runUIJob(ERDUIMessages.erd_job_rearrange_diagram_title, monitor -> {
+            editor.getDiagramPart().rearrangeDiagram(monitor);
+            editor.setDirty(true);
+        });
     }
 
 }

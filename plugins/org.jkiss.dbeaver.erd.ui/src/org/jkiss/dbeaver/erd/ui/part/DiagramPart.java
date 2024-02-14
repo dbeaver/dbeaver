@@ -195,16 +195,17 @@ public class DiagramPart extends PropertyAwarePart {
      * The method designed for re-arrangement of diagram, reset alignment elements
      * to original
      */
-    public void rearrangeDiagram() {
-        UIUtils.runUIJob(ERDUIMessages.erd_job_rearrange_diagram_title, monitor -> {
-            getChildren().forEach(c -> {
-                if (c instanceof NodePart) {
-                    resetConnectionConstraints(monitor, ((NodePart) c).getSourceConnections());
-                }
-            });
-            delegatingLayoutManager.rearrange(monitor, getFigure());
-            getFigure().repaint();
+    public void rearrangeDiagram(@NotNull DBRProgressMonitor monitor) {
+        if (monitor.isCanceled()) {
+            return;
+        }
+        getChildren().forEach(c -> {
+            if (c instanceof NodePart np) {
+                resetConnectionConstraints(monitor, np.getSourceConnections());
+            }
         });
+        delegatingLayoutManager.rearrange(monitor, getFigure());
+        getFigure().repaint();
     }
 
     private void resetConnectionConstraints(DBRProgressMonitor monitor, List<?> sourceConnections) {
@@ -215,10 +216,9 @@ public class DiagramPart extends PropertyAwarePart {
             for (Object sc : sourceConnections) {
                 if (sc instanceof AbstractConnectionEditPart) {
                     ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
-                    if (sc instanceof AssociationPart) {
-                        ((AssociationPart) sc).getAssociation().setInitBends(null);
-                        ((AssociationPart) sc)
-                            .setConnectionRouting((PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                    if (sc instanceof AssociationPart associationPart) {
+                        associationPart.getAssociation().setInitBends(null);
+                        associationPart.setConnectionRouting(monitor, (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
                     }
                 }
             }
