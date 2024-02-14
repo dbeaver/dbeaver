@@ -141,6 +141,8 @@ public class SQLQueryQualifiedName { // qualifier
     }
 
     public boolean isNotClassified() {
-        return this.entityName.isNotClassified();
+        return this.entityName.isNotClassified()
+            && (this.schemaName == null || this.schemaName.isNotClassified())
+            && (this.catalogName == null || this.catalogName.isNotClassified());
     }
 }
