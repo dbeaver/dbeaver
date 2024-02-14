@@ -903,6 +903,7 @@ public class DataSourceDescriptor
             if (!isNewDataSource || secret != null) {
                 secretController.setPrivateSecretValue(this, new DBSSecretValue(getSecretValueId(), "", secret));
             }
+            secretsResolved = true;
         } else {
             String subjectId = null;
             if (selectedSharedCredentials != null) {
@@ -916,12 +917,13 @@ public class DataSourceDescriptor
                 try {
                     secretController.setSubjectSecretValue(subjectId, this,
                         new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
+                    //the list of available secrets has changed, force update
+                    forgetSecrets();
                 } catch (DBException e) {
                     throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
                 }
             }
         }
-        secretsResolved = true;
     }
 
     @NotNull
