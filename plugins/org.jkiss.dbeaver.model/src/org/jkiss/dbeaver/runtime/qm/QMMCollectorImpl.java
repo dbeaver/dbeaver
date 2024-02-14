@@ -163,7 +163,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return events;
     }
 
-    public QMMConnectionInfo getConnectionInfo(DBCExecutionContext context) {
+    public synchronized QMMConnectionInfo getConnectionInfo(DBCExecutionContext context) {
         QMMConnectionInfo connectionInfo = connectionMap.get(context.getContextId());
         if (connectionInfo == null) {
             log.debug("Can't find connectionInfo meta information: " + context.getContextId() + " (" + context.getContextName() + ")");

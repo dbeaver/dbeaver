@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * SQL Server procedure manager
+ * SQL Server Generic procedure manager
  */
 public class SQLServerGenericProcedureManager extends GenericProcedureManager {
 

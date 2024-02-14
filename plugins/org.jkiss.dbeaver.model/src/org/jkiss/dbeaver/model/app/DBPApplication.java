@@ -126,4 +126,14 @@ public interface DBPApplication {
      * for example, in a script template
      */
     boolean isEnvironmentVariablesAccessible();
+
+    /**
+     * The boolean flag in order identify community application
+     *
+     * @return - true if community application
+     */
+    default boolean isCommunity() {
+        return false;
+    }
+
 }

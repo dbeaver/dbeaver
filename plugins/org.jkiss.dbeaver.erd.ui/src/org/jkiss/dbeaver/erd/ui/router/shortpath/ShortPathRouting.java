@@ -225,13 +225,11 @@ public class ShortPathRouting extends ERDConnectionRouter {
             ignoreInvalidate = true;
             processStaleConnections();
             isDirty = false;
-            List<?> updated = algorithm.solve();
+            List<Path> paths = computePaths();
             Connection current;
-            for (Object element : updated) {
-                Path path = (Path) element;
+            for (Path path : paths) {
                 current = (Connection) path.data;
                 current.revalidate();
-
                 PointList points = path.getPoints().getCopy();
                 Point ref1 = new PrecisionPoint(points.getPoint(1));
                 Point ref2 = new PrecisionPoint(points.getPoint(points.size() - 2));
@@ -332,8 +330,48 @@ public class ShortPathRouting extends ERDConnectionRouter {
                     points.addPoint(lastPoint);
                     current.setPoints(points);
                 }
+                
             }
             ignoreInvalidate = false;
+        }
+    }
+
+    private List<Path> computePaths() {
+        // this is a way to get List<Path> from algorithm
+        List<Path> paths = algorithm.solve();
+        for (Path path : paths) {
+            removeOverlappingBendPoints(path);
+        }
+        // require to solve for new route calculation
+        paths = algorithm.solve();
+        return paths;
+    }
+
+    /**
+     * This method checks and remove bend point if it overlap entity
+     *
+     * @param path - path
+     */
+    private void removeOverlappingBendPoints(Path path) {
+        PointList bendPoints = path.getBendPoints();
+        if (bendPoints != null) {
+            PointList actualBendPoints = new PointList(bendPoints.size());
+            for (int index = 0; index < bendPoints.size(); index++) {
+                Point bp = bendPoints.getPoint(index);
+                boolean requireToSkipp = false;
+                for (Entry<IFigure, Rectangle> entry : figuresToBounds.entrySet()) {
+                    Rectangle rectangle = entry.getValue();
+                    if (rectangle.contains(bp)) {
+                        requireToSkipp = true;
+                        break;
+                    }
+                }
+                if (requireToSkipp) {
+                    continue;
+                }
+                actualBendPoints.addPoint(bp);
+            }
+            path.setBendPoints(actualBendPoints);
         }
     }
 
