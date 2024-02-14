@@ -4,9 +4,6 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-
-        <!-- Elasticsearch -->
-
         <datasource
                 class="org.jkiss.dbeaver.ext.elasticsearch.ElasticsearchDataSourceProvider"
                 description="Elasticsearch datasource"
