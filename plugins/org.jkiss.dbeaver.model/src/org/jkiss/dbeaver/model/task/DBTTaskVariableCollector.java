@@ -14,32 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDocument;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
- * DBSDocumentLocator
+ * Task variable collector.
+ * <p>
+ * May be implemented by {@link DBTTaskHandler}
  */
-public interface DBSDocumentLocator extends DBSDocumentContainer
-{
-    /**
-     * Find document by key attributes
-     * @param session session
-     *
-     * @throws DBException on any DB error
-     */
-    @Nullable
-    DBDDocument findDocument(@NotNull DBCSession session, Map<String, Object> key, Map<String, Object> metaData) throws DBException;
-
-
-    boolean isDocumentValid(@NotNull DBDDocument documentId) throws DBException;
-
+public interface DBTTaskVariableCollector extends DBTTaskHandler {
+    void collectTaskVariables(
+        @NotNull DBTTask task,
+        @NotNull Predicate<DBTTask> predicate,
+        @NotNull Map<DBTTask, Map<String, Object>> variables
+    ) throws DBException;
 }

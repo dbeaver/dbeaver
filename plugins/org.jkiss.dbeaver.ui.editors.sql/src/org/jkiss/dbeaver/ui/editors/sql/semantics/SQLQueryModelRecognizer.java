@@ -339,18 +339,19 @@ public class SQLQueryModelRecognizer {
                                 case SQLStandardParser.RULE_derivedColumn -> {
                                     // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
                                     SQLQueryValueExpression expr = r.collectValueExpression(sublistNode.getStmChild(0));
-                                    if (sublistNode.getChildCount() > 1) {
-                                        STMTreeNode asClause = sublistNode.getStmChild(1);
-                                        SQLQuerySymbolEntry asColumnName = r.collectIdentifier(
-                                            asClause.getStmChild(asClause.getChildCount() - 1)
-                                        );
-                                        resultModel.addColumnSpec(range, expr, asColumnName);
+                                    if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
+                                        resultModel.addTupleSpec(range, tupleRef);
                                     } else {
-                                        resultModel.addColumnSpec(range, expr);
+                                        if (sublistNode.getChildCount() > 1) {
+                                            STMTreeNode asClause = sublistNode.getStmChild(1);
+                                            SQLQuerySymbolEntry asColumnName = r.collectIdentifier(
+                                                asClause.getStmChild(asClause.getChildCount() - 1)
+                                            );
+                                            resultModel.addColumnSpec(range, expr, asColumnName);
+                                        } else {
+                                            resultModel.addColumnSpec(range, expr);
+                                        }
                                     }
-                                }
-                                case SQLStandardParser.RULE_qualifier -> {
-                                    resultModel.addTupleSpec(range, r.collectTableName(sublistNode));
                                 }
                                 case SQLStandardParser.RULE_anyUnexpected -> {
                                     // error in query text, ignoring it
@@ -442,7 +443,10 @@ public class SQLQueryModelRecognizer {
                     } else {
                         tableName = null;
                     }
-                    columnAction.accept(tableName, this.collectIdentifier(ref.getStmChild(ref.getChildCount() - 1), forceUnquotted));
+                    STMTreeNode columnName = ref.findChildOfName(STMKnownRuleNames.columnName);
+                    if (columnName != null) {
+                        columnAction.accept(tableName, this.collectIdentifier(columnName, forceUnquotted));
+                    }
                 }
                 case SQLStandardParser.RULE_tableName -> {
                     SQLQueryQualifiedName tableName = this.collectTableName(ref, forceUnquotted);
@@ -934,9 +938,15 @@ public class SQLQueryModelRecognizer {
         SQLQueryValueExpression expr = switch (head.getNodeKindId()) {
             case SQLStandardParser.RULE_columnReference -> {
                 Interval range = head.getRealInterval();
-                SQLQuerySymbolEntry columnName = collectIdentifier(head.getStmChild(head.getChildCount() - 1));
-                yield head.getChildCount() == 1 ? new SQLQueryValueColumnReferenceExpression(range, columnName)
-                  : new SQLQueryValueColumnReferenceExpression(range, collectTableName(head.getStmChild(0)), columnName);
+                SQLQueryQualifiedName tableName = collectTableName(head.getStmChild(0));
+                STMTreeNode nameNode = head.findChildOfName(STMKnownRuleNames.columnName);
+                if (nameNode != null) {
+                    SQLQuerySymbolEntry columnName = collectIdentifier(nameNode);
+                    yield head.getChildCount() == 1 ? new SQLQueryValueColumnReferenceExpression(range, columnName)
+                      : new SQLQueryValueColumnReferenceExpression(range, tableName, columnName);
+                } else {
+                    yield new SQLQueryValueTupleReferenceExpression(range, tableName);
+                }
             }
             case SQLStandardParser.RULE_valueRefNestedExpr -> this.collectValueReferenceExpression(head.getStmChild(1));
             default -> throw new UnsupportedOperationException(

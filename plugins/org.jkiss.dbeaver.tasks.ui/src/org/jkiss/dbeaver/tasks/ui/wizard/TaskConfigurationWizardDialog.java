@@ -236,6 +236,12 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     public void updateButtons() {
         super.updateButtons();
         getWizard().updateSaveTaskButtons();
+        if (getTaskWizard().canFinish()) {
+            Button finishButton = getButton(IDialogConstants.OK_ID);
+            if (finishButton != null && !finishButton.isDisposed()) {
+                getShell().setDefaultButton(finishButton);
+            }
+        }
     }
 
     @Override

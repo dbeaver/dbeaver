@@ -36,6 +36,9 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitValueColumnRefExpr(SQLQueryValueColumnReferenceExpression columnRefExpr, T arg);
     
     @Nullable
+    R visitValueTupleRefExpr(@NotNull SQLQueryValueTupleReferenceExpression tupleRefExpr, T arg);
+    
+    @Nullable
     R visitValueMemberReferenceExpr(@NotNull SQLQueryValueMemberExpression memberRefExpr, T arg);
     
     @Nullable
