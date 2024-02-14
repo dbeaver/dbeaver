@@ -54,7 +54,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.beans.PropertyChangeEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -214,11 +213,11 @@ public class DiagramPart extends PropertyAwarePart {
         }
         if (!CommonUtils.isEmpty(sourceConnections)) {
             for (Object sc : sourceConnections) {
-                if (sc instanceof AbstractConnectionEditPart) {
-                    ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
+                if (sc instanceof AbstractConnectionEditPart abstractPart) {
+                    abstractPart.getConnectionFigure().setRoutingConstraint(null);
                     if (sc instanceof AssociationPart associationPart) {
                         associationPart.getAssociation().setInitBends(null);
-                        associationPart.setConnectionRouting(monitor, (PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                        associationPart.setConnectionRouting(monitor, (PolylineConnection) abstractPart.getConnectionFigure());
                     }
                 }
             }

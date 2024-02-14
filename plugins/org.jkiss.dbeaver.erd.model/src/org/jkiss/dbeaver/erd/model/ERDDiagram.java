@@ -52,6 +52,11 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
     private static final Log log = Log.getLog(ERDDiagram.class);
     private  DBRProgressMonitor monitor;
 
+    /**
+     * The method return monitor for diagram context
+     *
+     * @return - DBRProgressMonitor
+     */
     public DBRProgressMonitor getActiveMonitor() {
         if (monitor != null && !monitor.isCanceled()) {
             return monitor;
