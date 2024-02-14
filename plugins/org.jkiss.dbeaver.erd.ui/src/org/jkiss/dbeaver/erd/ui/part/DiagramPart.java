@@ -31,7 +31,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -64,7 +63,6 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-    private static final Log log = Log.getLog(DiagramPart.class);
     private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
@@ -83,9 +81,13 @@ public class DiagramPart extends PropertyAwarePart {
         }
     };
     private DelegatingLayoutManager delegatingLayoutManager;
-    private Font normalFont, boldFont, italicFont, boldItalicFont;
+    private Font normalFont;
+    private Font boldFont;
+    private Font italicFont;
+    private Font boldItalicFont;
 
     public DiagramPart() {
+        //default constructor
     }
 
     /**
@@ -152,6 +154,7 @@ public class DiagramPart extends PropertyAwarePart {
         return figure;
     }
 
+    @Override
     @NotNull
     public EntityDiagram getDiagram()
     {
