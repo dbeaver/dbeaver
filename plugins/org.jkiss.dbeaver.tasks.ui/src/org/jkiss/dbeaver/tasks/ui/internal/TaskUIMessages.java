@@ -30,6 +30,7 @@ public class TaskUIMessages extends NLS {
     public static String edit_task_config_dialog_task_folders_label_name;
 
     public static String edit_task_variabl_dialog_title_task_variables;
+    public static String edit_task_variabl_dialog_column_task;
     public static String edit_task_variabl_dialog_column_variable;
     public static String edit_task_variabl_dialog_column_value;
 

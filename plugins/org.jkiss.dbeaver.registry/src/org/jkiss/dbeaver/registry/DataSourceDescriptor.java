@@ -901,12 +901,19 @@ public class DataSourceDescriptor
             }
         } else {
             var secret = saveToSecret();
-            if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
-                secretController.setSubjectSecretValue(teamProvider.getDefaultTeamId(), this, new DBSSecretValue(
-                    getSecretValueId(), "", secret
-                ));
+            String subjectId = null;
+            if (selectedSharedCredentials != null) {
+                subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
+            } else if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
+                subjectId = teamProvider.getDefaultTeamId();
             } else {
-                throw new DBException("Application does not support shared secrets");
+                throw new DBException("Can not determine secret subject. Shared secrets not supported.");
+            }
+            try {
+                secretController.setSubjectSecretValue(subjectId, this,
+                    new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
+            } catch (DBException e) {
+                throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
             }
         }
         secretsResolved = true;
@@ -925,6 +932,17 @@ public class DataSourceDescriptor
             this.availableSharedCredentials = List.of();
         }
         return availableSharedCredentials;
+    }
+
+    @NotNull
+    public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
+        var secretController = DBSSecretController.getProjectSecretController(getProject());
+        return secretController.listAllSharedSecrets(this);
+    }
+
+    @Nullable
+    public DBSSecretValue getSelectedSharedCredentials() {
+        return selectedSharedCredentials;
     }
 
     public synchronized void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {

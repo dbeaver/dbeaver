@@ -126,6 +126,10 @@ public class DBXTreeFolder extends DBXTreeNode {
         this.type = type;
     }
 
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
     public String getIdOrType() {
         String id = getId();
         return !CommonUtils.isEmpty(id) ? id : type;

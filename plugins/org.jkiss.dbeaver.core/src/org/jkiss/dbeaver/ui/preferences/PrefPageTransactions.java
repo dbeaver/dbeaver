@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -168,18 +169,32 @@ public class PrefPageTransactions extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
+            // First check data source settings, second - connection type, third - global settings.
+            DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+            DBPConnectionType connectionType = null;
+            if (dataSourceContainer != null) {
+                connectionType = dataSourceContainer.getConnectionConfiguration().getConnectionType();
+            }
             if (smartCommitCheck != null) {
-                smartCommitCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT));
+                smartCommitCheck.setSelection(store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT) || connectionType == null ?
+                    store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT) : connectionType.isSmartCommit());
             }
             if (smartCommitRecoverCheck != null) {
-                smartCommitRecoverCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER));
+                smartCommitRecoverCheck.setSelection(
+                    store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) || connectionType == null ?
+                        store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) : connectionType.isSmartCommitRecover());
                 if (smartCommitCheck != null) {
                     updateButtons();
                 }
             }
             if (autoCloseTransactionsCheck != null) {
-                autoCloseTransactionsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED));
-                autoCloseTransactionsTtlText.setText(store.getString(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL));
+                autoCloseTransactionsCheck.setSelection(
+                    store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED) || connectionType == null ?
+                        store.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED) : connectionType.isAutoCloseTransactions());
+                autoCloseTransactionsTtlText.setText(
+                    store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL) || connectionType == null ?
+                        store.getString(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL) :
+                        String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
             }
             //autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
 

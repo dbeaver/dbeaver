@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourcePageDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -294,6 +295,11 @@ public class EditConnectionWizard extends ConnectionWizard {
 
         // Save
         saveSettings(originalDataSource);
+        // Set selected shared creds (creds may be resolved during auth model interactions)
+        DBSSecretValue selectedSharedCredentials = dataSource.getSelectedSharedCredentials();
+        if (selectedSharedCredentials != null) {
+            originalDataSource.setSelectedSharedCredentials(selectedSharedCredentials);
+        }
         return originalDataSource.persistConfiguration();
     }
 

@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +61,10 @@ public class DBTaskUtils {
             variables = new LinkedHashMap<>();
         }
         return variables;
+    }
+
+    public static void setVariables(@NotNull DBTTask task, @Nullable Map<String, Object> variables) {
+        setVariables(task.getProperties(), variables);
     }
 
     public static void setVariables(@NotNull Map<String, Object> taskState, @Nullable Map<String, Object> variables) {
@@ -149,6 +154,24 @@ public class DBTaskUtils {
             return false;
         }
         return task.getProject().getTaskManager().getTaskById(task.getId()) != null;
+    }
+
+    public static void collectTaskVariables(
+        @NotNull DBTTask task,
+        @NotNull Predicate<DBTTask> predicate,
+        @NotNull Map<DBTTask, Map<String, Object>> variables
+    ) throws DBException {
+        if (predicate.test(task)) {
+            final Map<String, Object> vars = getVariables(task);
+            if (!vars.isEmpty()) {
+                variables.put(task, vars);
+            }
+        }
+
+        final DBTTaskHandler handler = task.getType().createHandler();
+        if (handler instanceof DBTTaskVariableCollector collector) {
+            collector.collectTaskVariables(task, predicate, variables);
+        }
     }
 
     public static void confirmTaskOrThrow(DBTTask task, Log taskLog, PrintStream logWriter) throws InterruptedException {
