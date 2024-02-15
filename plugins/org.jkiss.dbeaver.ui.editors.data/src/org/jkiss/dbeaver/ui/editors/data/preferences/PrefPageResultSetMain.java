@@ -149,7 +149,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment_tip, true, 2);
             rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql, ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
-            automaticRowCountCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count_tip, true, 2);
+            automaticRowCountCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count_tip, false, 2);
             orderingModeCombo = UIUtils.createLabelCombo(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_order_mode, ResultSetMessages.pref_page_database_resultsets_label_order_mode_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (ResultSetUtils.OrderingMode mode : ResultSetUtils.OrderingMode.values()) {
                 orderingModeCombo.add(mode.getText());
