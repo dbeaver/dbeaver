@@ -39,6 +39,7 @@ public final class ResultSetPreferences {
     public static final String RS_GROUPING_SHOW_DUPLICATES_ONLY = "resultset.grouping.showDuplicatesOnly"; //$NON-NLS-1$
 
     public static final String RESULT_SET_AUTO_FETCH_NEXT_SEGMENT = "resultset.autofetch.next.segment"; //$NON-NLS-1$
+    public static final String RESULT_SET_AUTOMATIC_ROW_COUNT = "resultset.automatic.row.count"; //$NON-NLS-1$
     public static final String RESULT_SET_CANCEL_TIMEOUT = "resultset.cancel.timeout"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_EDITOR_TYPE = "resultset.binary.editor"; //$NON-NLS-1$
     public static final String RESULT_SET_ORDERING_MODE = "resultset.order.mode"; //$NON-NLS-1$

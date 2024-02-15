@@ -55,6 +55,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
 
     private Button autoFetchNextSegmentCheck;
+    private Button automaticRowCountCheck;
     private Button rereadOnScrollingCheck;
     private Text resultSetSize;
     private Button resultSetUseSQLCheck;
@@ -95,6 +96,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
+            store.contains(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT) ||
             store.contains(ModelPreferences.RESULT_SET_READ_METADATA) ||
             store.contains(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
@@ -147,6 +149,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment_tip, true, 2);
             rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql, ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
+            automaticRowCountCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count_tip, true, 2);
             orderingModeCombo = UIUtils.createLabelCombo(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_order_mode, ResultSetMessages.pref_page_database_resultsets_label_order_mode_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (ResultSetUtils.OrderingMode mode : ResultSetUtils.OrderingMode.values()) {
                 orderingModeCombo.add(mode.getText());
@@ -271,6 +274,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             resultSetSize.setText(String.valueOf(rsSegmentSize));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
+            automaticRowCountCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT));
             orderingModeCombo.select(CommonUtils.valueOf(ResultSetUtils.OrderingMode.class, store.getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE), ResultSetUtils.OrderingMode.SMART).ordinal());
             readQueryMetadata.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_METADATA));
             readQueryReferences.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
@@ -308,6 +312,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, rereadOnScrollingCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT, automaticRowCountCheck.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_ORDERING_MODE, ResultSetUtils.OrderingMode.values()[orderingModeCombo.getSelectionIndex()].toString());
             store.setValue(ModelPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
@@ -344,6 +349,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT);
         store.setToDefault(ResultSetPreferences.RESULT_SET_ORDERING_MODE);
         store.setToDefault(ModelPreferences.RESULT_SET_READ_METADATA);
         store.setToDefault(ModelPreferences.RESULT_SET_READ_REFERENCES);
@@ -374,6 +380,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         rereadOnScrollingCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING));
         resultSetSize.setText(String.valueOf(store.getDefaultInt(ModelPreferences.RESULT_SET_MAX_ROWS)));
         resultSetUseSQLCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
+        automaticRowCountCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT));
         orderingModeCombo.select(ResultSetUtils.OrderingMode.SMART.ordinal());
         readQueryMetadata.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_READ_METADATA));
         readQueryReferences.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
