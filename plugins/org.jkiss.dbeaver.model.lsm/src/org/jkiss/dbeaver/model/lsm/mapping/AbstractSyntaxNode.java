@@ -224,7 +224,7 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         return result;
     }
 
-    private static <T, K> int binarySearchByKey(
+    public static <T, K> int binarySearchByKey(
         @NotNull List<T> list,
         @NotNull Function<T, K> keyGetter,
         @NotNull K key,

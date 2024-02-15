@@ -35,8 +35,9 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
+import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -426,7 +427,7 @@ public class SQLBackgroundParsingJob {
                         }
                     }
                 } catch (Throwable ex) {
-                    log.debug(ex);
+                    log.debug("Error while analyzing query text: " + element.getOriginalText(), ex);
                 }
                 monitor.worked(1);
                 monitor.setTaskName("Background query analysis: subtask #" + (i++));
