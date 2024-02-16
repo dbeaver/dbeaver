@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsCteModel.SQLQuery
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionResultModel.CompleteTupleSpec;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionResultModel.TupleSpec;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;

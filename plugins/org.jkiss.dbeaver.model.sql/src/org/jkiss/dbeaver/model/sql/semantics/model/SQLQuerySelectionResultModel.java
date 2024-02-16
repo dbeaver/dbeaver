@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 
 import java.util.ArrayList;
 import java.util.List;
