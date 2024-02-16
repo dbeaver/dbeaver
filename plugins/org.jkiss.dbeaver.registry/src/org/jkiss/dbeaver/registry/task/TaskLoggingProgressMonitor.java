@@ -26,10 +26,12 @@ public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
     private static final Log log = Log.getLog(TaskLoggingProgressMonitor.class);
 
     DBTTask task;
+
     public TaskLoggingProgressMonitor(DBRProgressMonitor monitor, DBTTask task) {
         super(monitor);
         this.task = task;
     }
+
     @Override
     public void beginTask(String name, int totalWork) {
         super.beginTask(name, totalWork);
