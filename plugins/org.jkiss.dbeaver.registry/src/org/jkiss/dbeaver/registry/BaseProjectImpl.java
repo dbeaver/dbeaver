@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import javax.crypto.SecretKey;
@@ -187,11 +188,17 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
-        ensureOpen();
-        synchronized (metadataSync) {
-            if (dataSourceRegistry == null) {
-                dataSourceRegistry = createDataSourceRegistry();
-            }
+        if (dataSourceRegistry == null) {
+            RuntimeUtils.runTask(monitor -> {
+                if (dataSourceRegistry == null) {
+                    synchronized (metadataSync) {
+                        ensureOpen();
+                        if (dataSourceRegistry == null) {
+                            dataSourceRegistry = createDataSourceRegistry();
+                        }
+                    }
+                }
+            }, "Load registry", 0);
         }
         return dataSourceRegistry;
     }
