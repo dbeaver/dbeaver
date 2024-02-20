@@ -1824,7 +1824,7 @@ public class Main {
             !appId.isEmpty() &&
             appVersion != null &&
             !appVersion.isEmpty()) {
-            basePath = Paths.get(base, appVersion);
+            basePath = Paths.get(base, appId, appVersion);
         } else {
             basePath = Paths.get(base);
         }
