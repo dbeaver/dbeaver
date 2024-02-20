@@ -115,6 +115,9 @@ public class UIMessages extends NLS {
 
     public static String notification_popup_context_message;
 
+    public static String link_external_label;
+    public static String link_external_tip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
