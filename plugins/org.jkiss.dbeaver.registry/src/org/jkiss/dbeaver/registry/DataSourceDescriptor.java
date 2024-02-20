@@ -1332,6 +1332,13 @@ public class DataSourceDescriptor
         resolveSecrets(secretController);
     }
 
+    public void refreshSecretFromConfiguration() {
+        if (selectedSharedCredentials != null) {
+            selectedSharedCredentials.setValue(saveToSecret());
+        }
+    }
+
+
     private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
         String jumpServerSettingsPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
         if (tunnelConfiguration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED)) {
@@ -2211,7 +2218,11 @@ public class DataSourceDescriptor
         connectionInfo.setUserName(dbUserName);
         connectionInfo.setUserPassword(dbPassword);
         // Additional auth props
-        connectionInfo.setAuthProperties(dbAuthProperties);
+        if (!CommonUtils.isEmpty(dbAuthProperties)) {
+            for (Map.Entry<String, String> ap : dbAuthProperties.entrySet()) {
+                connectionInfo.setAuthProperty(ap.getKey(), ap.getValue());
+            }
+        }
 
         boolean emptyDatabaseCredsSaved = CommonUtils.toBoolean(props.getOrDefault(RegistryConstants.ATTR_EMPTY_DATABASE_CREDENTIALS, false));
         this.secretsContainsDatabaseCreds = props.containsKey(RegistryConstants.ATTR_USER)
