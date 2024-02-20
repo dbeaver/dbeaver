@@ -1817,9 +1817,13 @@ public class Main {
         } else {
             base = resolveLocation(productConfigurationLocation, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
         }
-        String appVersion = getProductVersion();
         Path basePath = null;
-        if (appVersion != null && !appVersion.isEmpty()) {
+        String appId = getProductId();
+        String appVersion = getProductVersion();
+        if (appId != null &&
+            !appId.isEmpty() &&
+            appVersion != null &&
+            !appVersion.isEmpty()) {
             basePath = Paths.get(base, appVersion);
         } else {
             basePath = Paths.get(base);
@@ -1849,7 +1853,7 @@ public class Main {
         }
 
         File installDir = new File(installURL.getFile());
-        File eclipseProduct = new File(installDir, ".eclipseproduct"); //$NON-NLS-1$
+        File eclipseProduct = new File(installDir, PRODUCT_SITE_MARKER);
         if (eclipseProduct.exists()) {
             Properties props = new Properties();
             try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
@@ -1863,6 +1867,30 @@ public class Main {
             }
         }
         return appVersion;
+    }
+
+    private String getProductId() {
+        String appId = "";
+        URL installURL = getInstallLocation();
+        if (installURL == null) {
+            return null;
+        }
+
+        File installDir = new File(installURL.getFile());
+        File eclipseProduct = new File(installDir, PRODUCT_SITE_MARKER);
+        if (eclipseProduct.exists()) {
+            Properties props = new Properties();
+            try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
+                props.load(inStream);
+                appId = props.getProperty(PRODUCT_SITE_ID);
+                if (appId == null || appId.trim().length() == 0)
+                    appId = ""; //$NON-NLS-1$
+
+            } catch (IOException e) {
+                // nothing
+            }
+        }
+        return appId;
     }
 
     private void processConfiguration() {
