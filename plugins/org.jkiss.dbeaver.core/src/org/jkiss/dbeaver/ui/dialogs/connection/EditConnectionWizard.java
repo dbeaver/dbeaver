@@ -298,6 +298,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         // Set selected shared creds (creds may be resolved during auth model interactions)
         DBSSecretValue selectedSharedCredentials = dataSource.getSelectedSharedCredentials();
         if (selectedSharedCredentials != null) {
+            selectedSharedCredentials.setValue(originalDataSource.saveToSecret());
             originalDataSource.setSelectedSharedCredentials(selectedSharedCredentials);
         }
         return originalDataSource.persistConfiguration();
