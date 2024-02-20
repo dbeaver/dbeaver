@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
@@ -55,7 +56,7 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
         return this.value;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
         return null;

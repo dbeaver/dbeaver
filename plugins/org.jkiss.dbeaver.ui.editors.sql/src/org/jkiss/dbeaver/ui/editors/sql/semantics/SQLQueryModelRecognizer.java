@@ -928,7 +928,11 @@ public class SQLQueryModelRecognizer {
         return switch (node.getNodeKindId()) {
             case SQLStandardParser.RULE_subquery -> new SQLQueryValueSubqueryExpression(range, this.collectQueryExpression(node));
             case SQLStandardParser.RULE_valueReference -> this.collectValueReferenceExpression(node);
-            case SQLStandardParser.RULE_valueExpressionCast -> new SQLQueryValueTypeCastExpression(range, this.collectValueExpression(node.getStmChild(0)), node.getStmChild(2).getTextContent());
+            case SQLStandardParser.RULE_valueExpressionCast -> new SQLQueryValueTypeCastExpression(
+                range,
+                this.collectValueExpression(node.getStmChild(0)),
+                node.getStmChild(2).getTextContent()
+            );
             default -> throw new UnsupportedOperationException(
                 "Subquery of columnReference expected while facing with " + node.getNodeName()
             );
