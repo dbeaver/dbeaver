@@ -1810,6 +1810,7 @@ public class Main {
     private URL buildProductURL() {
         String productConfigurationLocation = DBEAVER_CONFIGURATION_LOCTION;
         String base = "";
+        URL url = null;
         if (Constants.OS_WIN32.equals(getOS())) {
             base = resolveEnv(productConfigurationLocation, DB_DATA_HOME, ENV_DATA_HOME_WIN);
         } else if (Constants.OS_MACOSX.equals(getOS())) {
@@ -1817,9 +1818,16 @@ public class Main {
         } else {
             base = resolveLocation(productConfigurationLocation, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
         }
-        Path basePath = Paths.get(base, getProductProperty(PRODUCT_SITE_ID), getProductProperty(PRODUCT_SITE_VERSION));
-        productConfigurationLocation = basePath.toFile().getAbsolutePath();
-        return buildURL(productConfigurationLocation, true);
+        try {
+            String productPath = getProductProperties();
+            Path basePath = Paths.get(base, productPath);
+            productConfigurationLocation = basePath.toFile().getAbsolutePath();
+            url = buildURL(productConfigurationLocation, true);
+        } catch (IOException e) {
+            if (debug)
+                System.out.println("Can not read product properties. " + e.getMessage()); //$NON-NLS-1$
+        }
+        return url;
     }
 
     private String resolveEnv(String source, String var, String prop) {
@@ -1835,8 +1843,8 @@ public class Main {
         return result.replaceFirst("^~", System.getProperty(PROP_USER_HOME));
     }
 
-    private String getProductProperty(String property) {
-        String appProperty = "";
+    private String getProductProperties() throws IOException {
+        String productPath = "";
         URL installURL = getInstallLocation();
         if (installURL == null) {
             return null;
@@ -1848,15 +1856,18 @@ public class Main {
             Properties props = new Properties();
             try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
                 props.load(inStream);
-                appProperty = props.getProperty(property);
-                if (appProperty == null || appProperty.trim().length() == 0)
-                    appProperty = ""; //$NON-NLS-1$
-
-            } catch (IOException e) {
-                // nothing
+                String appId = props.getProperty(PRODUCT_SITE_ID);
+                if (appId == null || appId.trim().length() == 0) {
+                    appId = ECLIPSE;
+                }
+                String appVersion = props.getProperty(PRODUCT_SITE_VERSION);
+                if (appVersion == null || appVersion.trim().length() == 0) {
+                    appVersion = ""; //$NON-NLS-1$
+                }
+                productPath = appId + File.separator + appVersion;
             }
         }
-        return appProperty;
+        return productPath;
     }
 
     private void processConfiguration() {
