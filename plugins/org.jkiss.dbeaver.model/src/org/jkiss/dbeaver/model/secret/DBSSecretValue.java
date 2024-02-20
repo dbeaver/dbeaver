@@ -79,7 +79,7 @@ public class DBSSecretValue {
         this.displayName = displayName;
     }
 
-    public void setValue(@NotNull String value) {
+    public void setValue(@Nullable String value) {
         this.value = value;
     }
 }
