@@ -1817,17 +1817,7 @@ public class Main {
         } else {
             base = resolveLocation(productConfigurationLocation, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
         }
-        Path basePath = null;
-        String appId = getProductId();
-        String appVersion = getProductVersion();
-        if (appId != null &&
-            !appId.isEmpty() &&
-            appVersion != null &&
-            !appVersion.isEmpty()) {
-            basePath = Paths.get(base, appId, appVersion);
-        } else {
-            basePath = Paths.get(base);
-        }
+        Path basePath = Paths.get(base, getProductProperty(PRODUCT_SITE_ID), getProductProperty(PRODUCT_SITE_VERSION));
         productConfigurationLocation = basePath.toFile().getAbsolutePath();
         return buildURL(productConfigurationLocation, true);
     }
@@ -1845,8 +1835,8 @@ public class Main {
         return result.replaceFirst("^~", System.getProperty(PROP_USER_HOME));
     }
 
-    private String getProductVersion() {
-        String appVersion = "";
+    private String getProductProperty(String property) {
+        String appProperty = "";
         URL installURL = getInstallLocation();
         if (installURL == null) {
             return null;
@@ -1858,39 +1848,15 @@ public class Main {
             Properties props = new Properties();
             try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
                 props.load(inStream);
-                appVersion = props.getProperty(PRODUCT_SITE_VERSION);
-                if (appVersion == null || appVersion.trim().length() == 0)
-                    appVersion = ""; //$NON-NLS-1$
+                appProperty = props.getProperty(property);
+                if (appProperty == null || appProperty.trim().length() == 0)
+                    appProperty = ""; //$NON-NLS-1$
 
             } catch (IOException e) {
                 // nothing
             }
         }
-        return appVersion;
-    }
-
-    private String getProductId() {
-        String appId = "";
-        URL installURL = getInstallLocation();
-        if (installURL == null) {
-            return null;
-        }
-
-        File installDir = new File(installURL.getFile());
-        File eclipseProduct = new File(installDir, PRODUCT_SITE_MARKER);
-        if (eclipseProduct.exists()) {
-            Properties props = new Properties();
-            try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
-                props.load(inStream);
-                appId = props.getProperty(PRODUCT_SITE_ID);
-                if (appId == null || appId.trim().length() == 0)
-                    appId = ""; //$NON-NLS-1$
-
-            } catch (IOException e) {
-                // nothing
-            }
-        }
-        return appId;
+        return appProperty;
     }
 
     private void processConfiguration() {
