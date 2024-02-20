@@ -854,6 +854,7 @@ public class SQLQueryModelRecognizer {
     
     private static final Set<String> knownValueExpressionRootNames = Set.of(
         STMKnownRuleNames.valueExpression,
+        STMKnownRuleNames.valueExpressionAtom,
         STMKnownRuleNames.searchCondition,
         STMKnownRuleNames.havingClause,
         STMKnownRuleNames.whereClause,
@@ -864,7 +865,8 @@ public class SQLQueryModelRecognizer {
     private static final Set<String> knownRecognizableValueExpressionNames = Set.of(
         STMKnownRuleNames.subquery,
         STMKnownRuleNames.columnReference,
-        STMKnownRuleNames.valueReference
+        STMKnownRuleNames.valueReference,
+        STMKnownRuleNames.valueExpressionCast
     );
 
     @NotNull
@@ -926,6 +928,7 @@ public class SQLQueryModelRecognizer {
         return switch (node.getNodeKindId()) {
             case SQLStandardParser.RULE_subquery -> new SQLQueryValueSubqueryExpression(range, this.collectQueryExpression(node));
             case SQLStandardParser.RULE_valueReference -> this.collectValueReferenceExpression(node);
+            case SQLStandardParser.RULE_valueExpressionCast -> new SQLQueryValueTypeCastExpression(range, this.collectValueExpression(node.getStmChild(0)), node.getStmChild(2).getTextContent());
             default -> throw new UnsupportedOperationException(
                 "Subquery of columnReference expected while facing with " + node.getNodeName()
             );
