@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -81,9 +80,11 @@ public class PrefPageEclipseGeneral extends AbstractPrefPage implements IWorkben
     }
 
     private void addLinkToSettings(Composite composite, String pageID) {
-        new PreferenceLinkArea(composite, SWT.NONE,
-                pageID,
-                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
-                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+        UIUtils.createPreferenceLink(
+            composite,
+            "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
+            pageID,
+            (IWorkbenchPreferenceContainer) getContainer(), null
+        );
     }
 }
