@@ -134,12 +134,12 @@ public class MetadataProcessor {
             sb.append(
                 """
                 Perform SQL completion. Start response with SELECT keyword.
-                You MUST avoid using Markdown.
+                AVOID using Markdown.
                 Any comments MUST be placed in SQL multiline comment block at start of the query.
                 AVOID single line comments.
                 """);
         } else {
-            sb.append("Perform SQL completion. You MUST avoid using Markdown");
+            sb.append("Perform SQL completion. AVOID using Markdown");
         }
 
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
