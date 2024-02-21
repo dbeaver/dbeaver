@@ -82,20 +82,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     public SQLCompletionAnalyzer(SQLCompletionRequest request) {
         this.request = request;
-
-        final DBPPreferenceStore prefStore;
-        final DBPDataSource dataSource = request.getContext().getDataSource();
-        if (dataSource != null) {
-            prefStore = request.getContext().getDataSource().getContainer().getPreferenceStore();
-        } else {
-            prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-        }
-
-        if (prefStore.getBoolean(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE)) {
-            tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
-        } else {
-            tableRefsAnalyzer = new TableReferencesAnalyzerOld(request);
-        }
+        tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
     }
 
     @Override
