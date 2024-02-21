@@ -91,7 +91,7 @@ public class DataSourceHandlerUtils {
         public CredentialsSelectorDialog(DataSourceDescriptor dataSource, List<DBSSecretValue> credentials) {
             super(UIUtils.getActiveShell(),
                 "'" + dataSource.getName() + "' credentials",
-                null);
+                dataSource.getDriver().getIcon());
             this.dataSource = dataSource;
             this.credentials = credentials;
         }
