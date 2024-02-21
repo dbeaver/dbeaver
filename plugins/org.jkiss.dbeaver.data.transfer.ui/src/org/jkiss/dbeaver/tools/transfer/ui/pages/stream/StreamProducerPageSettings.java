@@ -149,10 +149,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
                 UIUtils.createInfoLink(
                     inputFilesGroup,
-                    "Files stored on this PC won't be accessible for scheduled tasks because they're executed on a remote server." +
-                        "\nUse <a href=\"#\">Cloud Storage</a> to import/export data.",
+                    "You cannot use files stored on this PC in scheduled tasks." +
+                        "\nIf you want to use the files for export/import, please transfer them to <a href=\"#\">Cloud Storage</a>.",
                     () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Cloud-Storage"))
-                );
+                ).setToolTipText("Scheduled tasks don't have access to files stored on this PC because they're executed on a remote server.");
             }
 
             UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
