@@ -284,7 +284,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             }
             pathBuilder.insert(0, nodeId);
             if (currentNode instanceof DBNLocalFolder folder) {
-                // When traversing to root, nested folders are skipped. This ensures that we don't skip them.
+                // FIXME: When traversing to root, nested folders are skipped. This is a workaround so that we don't skip them.
                 currentNode = folder.getLogicalParent();
             } else {
                 currentNode = currentNode.getParentNode();
