@@ -370,26 +370,28 @@ public class DBExecUtils {
         }
     }
 
-    public static void checkSmartAutoCommit(DBCSession session, String queryText) {
+    public static boolean checkSmartAutoCommit(DBCSession session, String queryText) {
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null) {
             try {
                 if (!txnManager.isAutoCommit()) {
-                    return;
+                    return false;
                 }
 
                 SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(session.getDataSource());
                 if (!sqlDialect.isTransactionModifyingQuery(queryText)) {
-                    return;
+                    return false;
                 }
 
                 if (txnManager.isAutoCommit()) {
                     txnManager.setAutoCommit(session.getProgressMonitor(), false);
+                    return true;
                 }
             } catch (DBCException e) {
                 log.warn(e);
             }
         }
+        return false;
     }
 
     public static void setExecutionContextDefaults(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, @Nullable String newInstanceName, @Nullable String curInstanceName, @Nullable String newObjectName) throws DBException {
@@ -556,8 +558,7 @@ public class DBExecUtils {
             // Find PK or unique key
             DBSEntityConstraint uniqueId = null;
             for (DBSEntityConstraint constraint : identifiers) {
-                if (constraint instanceof DBSEntityReferrer) {
-                    DBSEntityReferrer referrer = (DBSEntityReferrer) constraint;
+                if (constraint instanceof DBSEntityReferrer referrer) {
                     if (isGoodReferrer(monitor, bindings, referrer)) {
                         if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                             return referrer;
@@ -767,8 +768,7 @@ public class DBExecUtils {
                 if (attrEntity == null) {
                     attrEntity = entity;
                 }
-                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta) {
-                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
+                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta bindingMeta) {
 
                     // Table column can be found from results metadata or from SQL query parser
                     // If datasource supports table names in result metadata then table name must present in results metadata.
@@ -862,10 +862,9 @@ public class DBExecUtils {
                 // Init row identifiers
                 monitor.subTask("Detect unique identifiers");
                 for (DBDAttributeBinding binding : bindings) {
-                    if (!(binding instanceof DBDAttributeBindingMeta)) {
+                    if (!(binding instanceof DBDAttributeBindingMeta bindingMeta)) {
                         continue;
                     }
-                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
@@ -932,10 +931,9 @@ public class DBExecUtils {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator dataContainer)) {
             return true;
         }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
         return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 

@@ -102,7 +102,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBDDataFilter dataFilter;
     private boolean connectionInvalidated = false;
 
-    private SQLScriptCommitType commitType;
+    private final SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
     private boolean fetchResultSets;
     private long rsOffset;
@@ -489,6 +489,7 @@ public class SQLQueryJob extends DataSourceJob
 
             SQLQuery execStatement = sqlQuery;
             DBRRunnableParametrized<DBCSession> executor = param -> {
+                boolean changedToManualCommit = false;
                 try {
                     // We can't reset statistics here (we can be in script mode)
                     //statistics.setStatementsCount(0);
@@ -498,11 +499,23 @@ public class SQLQueryJob extends DataSourceJob
 
                     // Toggle smart commit mode
                     if (resultsConsumer instanceof ISmartTransactionManager && ((ISmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
-                        DBExecUtils.checkSmartAutoCommit(session, execStatement.getText());
+                        changedToManualCommit = DBExecUtils.checkSmartAutoCommit(session, execStatement.getText());
                     }
                     long execStartTime = System.currentTimeMillis();
                     executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {
+                    // We just switched to manual mode, there is no other statements in transaction
+                    // let's return back to auto commit
+                    if (changedToManualCommit) {
+                        try {
+                            DBCTransactionManager transactionManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                            if (transactionManager != null) {
+                                transactionManager.setAutoCommit(monitor, true);
+                            }
+                        } catch (DBCException ex) {
+                            log.warn("Error returning to auto commit");
+                        }
+                    }
                     throw new InvocationTargetException(e);
                 }
             };
@@ -550,16 +563,12 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean shouldRecoverQuery(SQLQuery query) {
         Statement statement = query.getStatement();
-        if (statement instanceof Insert ||
-            statement instanceof Delete ||
-            statement instanceof Update ||
-            (statement instanceof Select &&
-                ((Select) statement).getSelectBody() instanceof PlainSelect &&
-                !CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables())))
-        {
-            return false;
-        }
-        return true;
+        return !(statement instanceof Insert) &&
+            !(statement instanceof Delete) &&
+            !(statement instanceof Update) &&
+            (!(statement instanceof Select) ||
+                !(((Select) statement).getSelectBody() instanceof PlainSelect) ||
+                CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables()));
     }
 
     public void notifyQueryExecutionEnd(SQLQueryResult curResult) {
@@ -706,7 +715,7 @@ public class SQLQueryJob extends DataSourceJob
                 } else {
                     break;
                 }
-            };
+            }
         }
         finally {
             try {
