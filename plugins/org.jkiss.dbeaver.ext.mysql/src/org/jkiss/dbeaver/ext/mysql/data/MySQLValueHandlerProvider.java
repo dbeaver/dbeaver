@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -48,7 +47,7 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
         String typeName = typedObject.getTypeName().toLowerCase(Locale.ENGLISH);
         switch (typeName) {
             case MySQLConstants.TYPE_JSON:
-                return JDBCContentValueHandler.INSTANCE;
+                return MySQLJSONValueHandler.INSTANCE;
             case MySQLConstants.TYPE_GEOMETRY:
             case MySQLConstants.TYPE_POINT:
             case MySQLConstants.TYPE_LINESTRING:
