@@ -100,7 +100,7 @@ public class DataSourceHandlerUtils {
         protected Composite createDialogArea(Composite parent) {
             final Composite composite = super.createDialogArea(parent);
 
-            UIUtils.createInfoLabel(composite, "There are multiple credentials available for you.\nPlease choose credentials you want to use:");
+            UIUtils.createInfoLabel(composite, "There are multiple credentials available for authentication.\nPlease choose credentials you want to use:");
             final Table credsTable = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             GridData gd = new GridData(GridData.FILL_BOTH);
             //gd.widthHint = 50 * UIUtils.getFontHeight(credsTable);
