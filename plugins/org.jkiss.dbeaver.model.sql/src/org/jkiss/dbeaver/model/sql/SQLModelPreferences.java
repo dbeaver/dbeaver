@@ -24,9 +24,7 @@ public final class SQLModelPreferences {
 
     public static final String SQL_FORMAT_FORMATTER             = "sql.format.formatter";
     public static final String SQL_PROPOSAL_INSERT_TABLE_ALIAS  = "sql.proposals.insert.table.alias";
-    
 
-    public static final String ADVANCED_HIGHLIGHTING_ENABLE = "SQLEditor.Highlighting.advanced.enable";
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS = "SQLEditor.Semantics.metadata.read.enable";
 
 }

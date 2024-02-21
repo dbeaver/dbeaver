@@ -229,7 +229,7 @@ public class SQLBackgroundParsingJob {
     
     private void schedule(@Nullable DocumentEvent event) {
         synchronized (this.syncRoot) {
-            if (this.editor.getRuleManager() == null || !this.editor.isAdvancedHighlightingEnabled() ||
+            if (this.editor.getRuleManager() == null ||
                 !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor.getEditorInput())
             ) {
                 return;

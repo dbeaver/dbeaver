@@ -460,14 +460,10 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
 
         private void updateChildren() {
-            if (editor.isAdvancedHighlightingEnabled()) {
-                if (this.elements.isEmpty()) {
-                    this.children = List.of(this.noElementsNode);
-                } else {
-                    this.children = List.copyOf(this.elements.values());
-                }
+            if (this.elements.isEmpty()) {
+                this.children = List.of(this.noElementsNode);
             } else {
-                this.children = List.of(this.analysisDisabledNode);
+                this.children = List.copyOf(this.elements.values());
             }
         }
 

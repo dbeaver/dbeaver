@@ -224,10 +224,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
     }
 
-    public boolean isAdvancedHighlightingEnabled() {
-        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
-    }
-
     public boolean isReadMetadataForQueryAnalysisEnabled() {
         return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
     }
@@ -769,7 +765,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public void reloadSyntaxRules() {
-        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) && isAdvancedHighlightingEnabled()) {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput())) {
             if (backgroundParsingJob == null) {
                 backgroundParsingJob = new SQLBackgroundParsingJob(this);
             }
@@ -1199,13 +1195,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH:
             case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS:
                 this.reloadSyntaxRules();
-                return;
-            case SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE:
-                this.reloadSourceViewerConfiguration();
-                this.reloadSyntaxRules();
-                if (this.outlinePage != null) {
-                    this.outlinePage.refresh();
-                }
                 return;
         }
     }
