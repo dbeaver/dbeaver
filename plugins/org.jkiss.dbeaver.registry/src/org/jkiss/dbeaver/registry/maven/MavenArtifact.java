@@ -341,7 +341,13 @@ public class MavenArtifact implements IMavenIdentifier
         return null;
     }
 
-    private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive, boolean resolveOptionalDependencies, boolean snapshotVersion) throws IllegalArgumentException, IOException {
+    private MavenArtifactVersion makeLocalVersion(
+        DBRProgressMonitor monitor,
+        String versionStr,
+        boolean setActive,
+        boolean resolveOptionalDependencies,
+        boolean snapshotVersion
+    ) throws IllegalArgumentException, IOException {
         MavenArtifactVersion version = getVersion(versionStr);
         if (version == null) {
             version = new MavenArtifactVersion(monitor, this, versionStr, resolveOptionalDependencies, snapshotVersion);
