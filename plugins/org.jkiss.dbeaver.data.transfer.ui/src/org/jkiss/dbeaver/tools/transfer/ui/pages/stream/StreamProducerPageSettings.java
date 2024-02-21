@@ -53,11 +53,13 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -142,6 +144,15 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                         manager.add(new SelectInputFileAction(true));
                     }
                 });
+            }
+
+            if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
+                UIUtils.createInfoLink(
+                    inputFilesGroup,
+                    "Files stored on this PC won't be accessible for scheduled tasks because they're executed on a remote server." +
+                        "\nUse <a href=\"#\">Cloud Storage</a> to import data from remote locations.",
+                    () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Cloud-Storage"))
+                );
             }
 
             UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
