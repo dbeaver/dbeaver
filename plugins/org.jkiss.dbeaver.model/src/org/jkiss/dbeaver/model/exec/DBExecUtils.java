@@ -558,7 +558,8 @@ public class DBExecUtils {
             // Find PK or unique key
             DBSEntityConstraint uniqueId = null;
             for (DBSEntityConstraint constraint : identifiers) {
-                if (constraint instanceof DBSEntityReferrer referrer) {
+                if (constraint instanceof DBSEntityReferrer) {
+                    DBSEntityReferrer referrer = (DBSEntityReferrer) constraint;
                     if (isGoodReferrer(monitor, bindings, referrer)) {
                         if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                             return referrer;
@@ -768,7 +769,8 @@ public class DBExecUtils {
                 if (attrEntity == null) {
                     attrEntity = entity;
                 }
-                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta bindingMeta) {
+                if (attrEntity != null && binding instanceof DBDAttributeBindingMeta) {
+                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
 
                     // Table column can be found from results metadata or from SQL query parser
                     // If datasource supports table names in result metadata then table name must present in results metadata.
@@ -862,9 +864,10 @@ public class DBExecUtils {
                 // Init row identifiers
                 monitor.subTask("Detect unique identifiers");
                 for (DBDAttributeBinding binding : bindings) {
-                    if (!(binding instanceof DBDAttributeBindingMeta bindingMeta)) {
+                    if (!(binding instanceof DBDAttributeBindingMeta)) {
                         continue;
                     }
+                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
@@ -931,9 +934,10 @@ public class DBExecUtils {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator dataContainer)) {
+        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
             return true;
         }
+        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
         return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 

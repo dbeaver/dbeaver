@@ -102,7 +102,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBDDataFilter dataFilter;
     private boolean connectionInvalidated = false;
 
-    private final SQLScriptCommitType commitType;
+    private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
     private boolean fetchResultSets;
     private long rsOffset;
@@ -563,12 +563,16 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean shouldRecoverQuery(SQLQuery query) {
         Statement statement = query.getStatement();
-        return !(statement instanceof Insert) &&
-            !(statement instanceof Delete) &&
-            !(statement instanceof Update) &&
-            (!(statement instanceof Select) ||
-                !(((Select) statement).getSelectBody() instanceof PlainSelect) ||
-                CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables()));
+        if (statement instanceof Insert ||
+            statement instanceof Delete ||
+            statement instanceof Update ||
+            (statement instanceof Select &&
+                ((Select) statement).getSelectBody() instanceof PlainSelect &&
+                !CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables())))
+        {
+            return false;
+        }
+        return true;
     }
 
     public void notifyQueryExecutionEnd(SQLQueryResult curResult) {
@@ -715,7 +719,7 @@ public class SQLQueryJob extends DataSourceJob
                 } else {
                     break;
                 }
-            }
+            };
         }
         finally {
             try {
