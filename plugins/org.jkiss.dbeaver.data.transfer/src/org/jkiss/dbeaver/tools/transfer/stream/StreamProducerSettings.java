@@ -158,7 +158,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 ) {
                     dataTransferSettings.getState().addError(new DBException(
                         "Local file '" + entityMapping.getInputFile() + "' doesn't exist or not accessible. " +
-                            "Use Cloud Storage to import data from remote locations." +
+                            "Use Cloud Storage to import/export data." +
                             "\nLearn more at " + HelpUtils.getHelpExternalReference("Cloud-Storage"), e));
                 } else {
                     dataTransferSettings.getState().addError(e);

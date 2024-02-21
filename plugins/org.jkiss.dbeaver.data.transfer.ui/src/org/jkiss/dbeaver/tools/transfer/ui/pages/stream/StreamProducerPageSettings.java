@@ -150,7 +150,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 UIUtils.createInfoLink(
                     inputFilesGroup,
                     "Files stored on this PC won't be accessible for scheduled tasks because they're executed on a remote server." +
-                        "\nUse <a href=\"#\">Cloud Storage</a> to import data from remote locations.",
+                        "\nUse <a href=\"#\">Cloud Storage</a> to import/export data.",
                     () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Cloud-Storage"))
                 );
             }
