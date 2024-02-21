@@ -58,6 +58,14 @@ public class DBSSecretValue {
     }
 
     @NotNull
+    public String getUniqueId() {
+        if (getSubjectId() == null) {
+            return getId();
+        }
+        return getId() + "_" + getSubjectId();
+    }
+
+    @NotNull
     public String getDisplayName() {
         return displayName;
     }
