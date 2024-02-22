@@ -90,6 +90,9 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return false;
     }
 
+    /**
+     * Unique identifier of a node within its parent.
+     */
     @NotNull
     public String getNodeId() {
         return getName();
@@ -269,7 +272,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     @NotNull
     public final String getNodeUri() {
         var pathBuilder = new StringBuilder();
-        for (DBNNode currentNode = this; (currentNode != null && !(currentNode instanceof DBNRoot)); currentNode = currentNode.getParentNode()) {
+        var currentNode = this;
+        while (currentNode != null && !(currentNode instanceof DBNRoot)) {
             if (!pathBuilder.isEmpty()) {
                 pathBuilder.insert(0, '/');
             }
@@ -279,6 +283,12 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
                 nodeId = DBNResource.FAKE_RESOURCE_ROOT_NODE + "/" + nodeId;
             }
             pathBuilder.insert(0, nodeId);
+            if (currentNode instanceof DBNLocalFolder folder) {
+                // FIXME: When traversing to root, nested folders are skipped. This is a workaround so that we don't skip them.
+                currentNode = folder.getLogicalParent();
+            } else {
+                currentNode = currentNode.getParentNode();
+            }
         }
 
         return NodePathType.node.getPrefix() + pathBuilder;
