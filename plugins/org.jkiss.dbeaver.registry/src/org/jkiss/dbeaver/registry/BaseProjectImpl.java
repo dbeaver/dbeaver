@@ -187,14 +187,14 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     @NotNull
     @Override
-    public DBPDataSourceRegistry getDataSourceRegistry() {
+    public DBPDataSourceRegistry getDataSourceRegistry(boolean requireAuthorize) {
         if (dataSourceRegistry == null) {
             RuntimeUtils.runTask(monitor -> {
                 if (dataSourceRegistry == null) {
                     synchronized (metadataSync) {
                         ensureOpen();
                         if (dataSourceRegistry == null) {
-                            dataSourceRegistry = createDataSourceRegistry();
+                            dataSourceRegistry = createDataSourceRegistry(requireAuthorize);
                         }
                     }
                 }
@@ -204,8 +204,20 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @NotNull
+    @Override
+    public DBPDataSourceRegistry getDataSourceRegistry() {
+        // true by default 
+        return getDataSourceRegistry(true);
+    }
+
+    @NotNull
     protected DBPDataSourceRegistry createDataSourceRegistry() {
-        return new DataSourceRegistry(this);
+        return new DataSourceRegistry(this, true);
+    }
+
+    @NotNull
+    protected DBPDataSourceRegistry createDataSourceRegistry(boolean requirePassword) {
+        return new DataSourceRegistry(this, requirePassword);
     }
 
     @NotNull

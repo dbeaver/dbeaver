@@ -169,4 +169,13 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     void dispose();
 
+    /**
+     * The method designed to enable-disable ask project password
+     *
+     * @param isRequireAskPassword
+     */
+    default void setRequireAskProjectPassword(boolean isRequireAskPassword) {
+        // not require to implementation by each child
+    }
+
 }

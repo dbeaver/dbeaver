@@ -377,15 +377,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
         @Nullable Collection<String> dataSourceIds,
-        boolean refresh
+        boolean refresh,
+        boolean requireAuthorize
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
 
         // Read in this particular order to handle configuration reading errors first, but process in reverse order later
         Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
         Map<String, Object> configurationMap = null;
-        configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
-        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        if (requireAuthorize) {
+            configurationMap = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        }
 
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
@@ -824,12 +827,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                     return null;
                 } else {
-                    // in case of cancelling erase credentials intercept original exception
+                    // in case of canceling, erase credentials intercept original exception
                     throw new DBInterruptedException("Project opening canceled by user");
                 }
             }
             log.error("Error reading secure credentials", e);
-            throw new DBException("Project configuration can not be open", e);
+            return null;
         } catch (Exception e) {
             log.error("Unexpected error during read secure credentials", e);
             throw new DBException(e.getMessage(), e);
@@ -1399,6 +1402,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         return creds;
+    }
+
+    @Override
+    public boolean parseDataSources(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceRegistry.ParseResults parseResults,
+        @Nullable Collection<String> dataSourceIds,
+        boolean refresh
+        ) throws DBException, IOException {
+        return parseDataSources(configurationStorage, configurationManager, parseResults, dataSourceIds, refresh, true);
     }
 
     @NotNull

@@ -112,6 +112,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     DBPDataSourceRegistry getDataSourceRegistry();
 
     @NotNull
+    DBPDataSourceRegistry getDataSourceRegistry(boolean requireAskPassword);
+
+    @NotNull
     DBTTaskManager getTaskManager();
 
     /**

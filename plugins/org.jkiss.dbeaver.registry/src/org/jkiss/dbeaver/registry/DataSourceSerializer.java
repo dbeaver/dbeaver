@@ -46,4 +46,13 @@ interface DataSourceSerializer
         @Nullable Collection<String> dataSourceIds,
         boolean refresh
     ) throws DBException, IOException;
+
+    boolean parseDataSources(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceRegistry.ParseResults parseResults,
+        @Nullable Collection<String> dataSourceIds,
+        boolean refresh,
+        boolean requirePassword
+    ) throws DBException, IOException;
 }
