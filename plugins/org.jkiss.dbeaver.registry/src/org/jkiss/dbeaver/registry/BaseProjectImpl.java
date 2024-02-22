@@ -189,7 +189,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         if (dataSourceRegistry == null) {
-            RuntimeUtils.runTask(monitor -> {
+            Runnable registryOpener = () -> {
                 if (dataSourceRegistry == null) {
                     synchronized (metadataSync) {
                         ensureOpen();
@@ -198,7 +198,14 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                         }
                     }
                 }
-            }, "Load registry", 0);
+            };
+            if (DBWorkbench.isDistributed()) {
+                // Run it directly in distributed UI (because it may trigger other conflicting
+                // UI interactions which may freeze app)
+                registryOpener.run();
+            } else {
+                RuntimeUtils.runTask(monitor -> registryOpener.run(), "Load registry", 0);
+            }
         }
         return dataSourceRegistry;
     }
