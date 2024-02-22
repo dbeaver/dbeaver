@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.usageStatistics"; //$NON-NLS-1$
     public static final String LINK_PRIVACY_INFO = "https://dbeaver.com/privacy/";
+    public static final String LINK_STATISTIC_DETAILS = "https://dbeaver.com/privacy/";
     public static final String LINK_GIHUB_REPO = "https://github.com/dbeaver/dbeaver";
 
     private Button checkSendUsageStatistics;
@@ -66,6 +67,8 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
             "  - List of actions you perform in UI to better understand users workflow\n" +
             "  - Type of databases you use to improve support of popular ones"
             );
+        UIUtils.createLink(group, "You can get more about statistics collection in <a>documentation</a>.",
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_STATISTIC_DETAILS)));
         UIUtils.createEmptyLabel(group, 1, 1);
         UIUtils.createLink(group,
             "DBeaver is open source and you can always validate what exactly we send\n" +
