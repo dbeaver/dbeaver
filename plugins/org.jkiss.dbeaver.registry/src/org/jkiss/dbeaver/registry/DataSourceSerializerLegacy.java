@@ -95,7 +95,11 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds)) {
             if (is != null) {
                 SAXReader parser = new SAXReader(is);
-                final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults, requireAuthorize);
+                final DataSourcesParser dsp = new DataSourcesParser(registry,
+                    configurationStorage,
+                    refresh,
+                    parseResults,
+                    requireAuthorize);
                 parser.parse(dsp);
             }
         } catch (Exception ex) {

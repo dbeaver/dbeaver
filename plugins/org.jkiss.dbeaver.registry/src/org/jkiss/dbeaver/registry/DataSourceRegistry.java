@@ -100,7 +100,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         this(project, configurationManager, true);
     }
 
-    public DataSourceRegistry(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager, boolean requireAskPassword) {
+    public DataSourceRegistry(
+        @NotNull DBPProject project,
+        DataSourceConfigurationManager configurationManager,
+        boolean requireAskPassword
+    ) {
         this.project = project;
         this.configurationManager = configurationManager;
         this.requireAskPassword = requireAskPassword;

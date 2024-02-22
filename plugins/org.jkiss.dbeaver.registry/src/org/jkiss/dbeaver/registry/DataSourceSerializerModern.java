@@ -51,11 +51,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
-import javax.crypto.SecretKey;
 
 class DataSourceSerializerModern implements DataSourceSerializer
 {
@@ -369,6 +368,23 @@ class DataSourceSerializerModern implements DataSourceSerializer
         } catch (Exception e) {
             log.error("Error saving secure credentials", e);
         }
+    }
+
+    @Override
+    public boolean parseDataSources(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceRegistry.ParseResults parseResults,
+        @Nullable Collection<String> dataSourceIds,
+        boolean refresh
+    ) throws DBException, IOException {
+        return parseDataSources(
+            configurationStorage,
+            configurationManager,
+            parseResults,
+            dataSourceIds,
+            refresh,
+            true);
     }
 
     @Override
@@ -1404,16 +1420,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
         return creds;
     }
 
-    @Override
-    public boolean parseDataSources(
-        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
-        @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
-        @Nullable Collection<String> dataSourceIds,
-        boolean refresh
-        ) throws DBException, IOException {
-        return parseDataSources(configurationStorage, configurationManager, parseResults, dataSourceIds, refresh, true);
-    }
 
     @NotNull
     private static DriverDescriptor getReplacementDriver(@NotNull DriverDescriptor driver) {
