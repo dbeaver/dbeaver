@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -31,6 +33,8 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
  * StatisticsCollectionConfirmDialog
  */
 public class StatisticsCollectionConfirmDialog extends BaseDialog {
+
+    private Button shareData;
 
     public StatisticsCollectionConfirmDialog(Shell parentShell) {
         super(parentShell, "Statistics collection", DBIcon.STATUS_INFO);
@@ -50,7 +54,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
         UIUtils.createEmptyLabel(composite, 1, 1);
         UIUtils.createLink(composite,
-            "You can always change this behavior in <a>preferences</a>",
+            "You can always change this behavior in <a>Preferences</a>.",
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                 Shell parentShell = getParentShell();
                 close();
@@ -59,20 +63,23 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
                         null,
                         PrefPageUsageStatistics.PAGE_ID);
                 }));
-
+        UIUtils.createEmptyLabel(composite, 1,1);
+        shareData = UIUtils.createCheckbox(composite, "Ask not to share", false);
         return composite;
     }
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.YES_ID, "Send anonymous statistics", true);
-        createButton(parent, IDialogConstants.NO_ID, "Do not send", false);
+        createButton(parent, IDialogConstants.YES_ID, "Confirm", true);
     }
 
     @Override
     protected void buttonPressed(int buttonId) {
-        UIStatisticsActivator.setSkipDataShareConfirmation(true);
-        UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
+        // if user untick the checkbox, not needed to share   
+        if (!shareData.getSelection()) { 
+            UIStatisticsActivator.setSkipDataShareConfirmation(true);
+            UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
+        }
         close();
 
         super.buttonPressed(buttonId);

@@ -53,7 +53,7 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite group = UIUtils.createControlGroup(composite, "Data sharing", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Composite group = UIUtils.createControlGroup(composite, "Data share", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
         checkSendUsageStatistics = UIUtils.createCheckbox(group, "Send usage statistics", false);
         createDataShareComposite(group);
@@ -81,12 +81,11 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
 
     public static void createDataShareComposite(Composite group) {
         UIUtils.createLink(group,
-            "Help DBeaver to improve by sending anonymous data about features used,\n" +
-                "hardware and software configuration.\n" +
-                "\n" +
-                "Please note that this will not include personal data or any sensitive information,\n" +
-                "such as database connection configurations, executed queries, database information, etc.\n" +
-                "The data sent complies with <a>DBeaver Corporation Privacy Policy</a>.",
+            "To improve user experience and product performance, DBeaver can collect some anonymous \n"
+                + "statistical data about feature usage and product configuration.\n" +
+                "This data doesn't include any personal or sensitive information, such as database connection \n"
+                + "configuration, executed queries, database information, etc.\n" +
+                "The data sent compiles <a>DBeaver Corporation Privacy Policy</a>.",
             SelectionListener.widgetSelectedAdapter(selectionEvent ->
                 ShellUtils.launchProgram(LINK_PRIVACY_INFO)));
     }
