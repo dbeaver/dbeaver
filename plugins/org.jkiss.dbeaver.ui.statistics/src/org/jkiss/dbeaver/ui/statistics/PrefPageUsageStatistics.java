@@ -81,13 +81,11 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
 
     public static void createDataShareComposite(Composite group) {
         UIUtils.createLink(group,
-            "To improve user experience and product performance, DBeaver can collect some anonymous \n"
-                + "statistical data about feature usage and product configuration.\n" +
-                "This data doesn't include any personal or sensitive information, such as database connection \n"
-                + "configuration, executed queries, database information, etc.\n" +
-                "The data sent compiles <a>DBeaver Corporation Privacy Policy</a>.",
-            SelectionListener.widgetSelectedAdapter(selectionEvent ->
-                ShellUtils.launchProgram(LINK_PRIVACY_INFO)));
+            "To improve user experience and product performance, DBeaver can collect some anonymous statistical\n"
+                + "data about feature usage and product configuration.\n\n" +
+                "This data doesn't include any personal or sensitive information, such as database connection configuration,\n"
+                + "executed queries, database information, etc. The data sent compiles <a>DBeaver Corporation Privacy Policy</a>.",
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_PRIVACY_INFO)));
     }
 
     @Override

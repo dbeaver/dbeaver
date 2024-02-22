@@ -75,8 +75,8 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
     @Override
     protected void buttonPressed(int buttonId) {
-        // if user untick the checkbox, not needed to share   
-        if (!shareData.getSelection()) { 
+        // if user untick the checkbox, not needed to share
+        if (!shareData.getSelection()) {
             UIStatisticsActivator.setSkipDataShareConfirmation(true);
             UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
         }
