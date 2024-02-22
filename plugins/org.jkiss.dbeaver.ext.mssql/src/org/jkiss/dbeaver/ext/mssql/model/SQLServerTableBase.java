@@ -43,10 +43,7 @@ import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * MySQLTable base
@@ -58,6 +55,9 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     private long objectId;
     private String type;
+    private String typeDescription;
+    private Date createDate;
+    private Date lastUpdate;
     private String description;
     protected Long rowCount;
 
@@ -83,6 +83,9 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
+        this.typeDescription = JDBCUtils.safeGetString(dbResult, "type_desc");
+        this.createDate = JDBCUtils.safeGetTimestamp(dbResult, "create_date");
+        this.lastUpdate = JDBCUtils.safeGetTimestamp(dbResult, "modify_date");
     }
 
     @Override
@@ -107,9 +110,23 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         return objectId;
     }
 
-    @Property(order = 6)
     public String getType() {
         return type;
+    }
+
+    @Property(viewable = true, order = 6)
+    public String getTypeDescription() {
+        return typeDescription;
+    }
+
+    @Property(viewable = true, order = 7)
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    @Property(viewable = true, order = 8)
+    public Date getLastUpdate() {
+        return lastUpdate;
     }
 
     @Override

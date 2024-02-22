@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +98,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     @Override
     protected boolean isModalWizard() {
-        return false;
+        return RuntimeUtils.isLinux();
     }
 
     @Override
