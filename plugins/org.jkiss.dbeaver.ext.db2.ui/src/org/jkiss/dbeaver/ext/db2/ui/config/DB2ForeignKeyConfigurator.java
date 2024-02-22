@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
@@ -40,14 +40,14 @@ import java.util.Map;
  * DB2 foreign key configurator
  */
 public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2TableForeignKey> {
-	private static final DBSForeignKeyModifyRule[] FK_RULES;
-	
-	static {
+    private static final DBSForeignKeyModifyRule[] FK_RULES;
+
+    static {
         List<DBSForeignKeyModifyRule> rules = new ArrayList<>(DB2DeleteUpdateRule.values().length);
         for (DB2DeleteUpdateRule db2DeleteUpdateRule : DB2DeleteUpdateRule.values()) {
             rules.add(db2DeleteUpdateRule.getRule());
         }
-        FK_RULES = rules.toArray(new DBSForeignKeyModifyRule[] {});
+        FK_RULES = rules.toArray(new DBSForeignKeyModifyRule[]{});
     }
 
     @Override
@@ -55,32 +55,32 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
         return new UITask<DB2TableForeignKey>() {
             @Override
             protected DB2TableForeignKey runTask() {
-            	EditForeignKeyPage editDialog = new EditForeignKeyPage(
-                        DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES, options);
-                    if (!editDialog.edit()) {
-                        return null;
-                    }
+                EditForeignKeyPage editDialog = new EditForeignKeyPage(
+                    DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES, options);
+                if (!editDialog.edit()) {
+                    return null;
+                }
 
-                    DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
-                    DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
-                    DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
+                DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
+                DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
+                DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
 
-                    foreignKey.setReferencedConstraint(ukConstraint);
-                    foreignKey.setDb2DeleteRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule));
-                    foreignKey.setDb2UpdateRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule));
+                foreignKey.setReferencedConstraint(ukConstraint);
+                foreignKey.setDb2DeleteRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule));
+                foreignKey.setDb2UpdateRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule));
 
-                    List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
-                    DB2TableKeyColumn column;
-                    int colIndex = 1;
-                    for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
-                        column = new DB2TableKeyColumn(foreignKey, (DB2TableColumn) tableColumn.getOwnColumn(), colIndex++);
-                        columns.add(column);
-                    }
+                List<DB2TableForeignKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
+                DB2TableForeignKeyColumn column;
+                int colIndex = 1;
+                for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                    column = new DB2TableForeignKeyColumn(foreignKey, (DB2TableColumn) tableColumn.getOwnColumn(), colIndex++);
+                    columns.add(column);
+                }
 
-                    foreignKey.setAttributeReferences(columns);
-                    SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+                foreignKey.setAttributeReferences(columns);
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
 
-                    return foreignKey;
+                return foreignKey;
             }
         }.execute();
     }
