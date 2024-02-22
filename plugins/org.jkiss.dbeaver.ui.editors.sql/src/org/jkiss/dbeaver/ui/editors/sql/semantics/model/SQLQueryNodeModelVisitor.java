@@ -43,6 +43,9 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     
     @Nullable
     R visitValueIndexingExpr(@NotNull SQLQueryValueIndexingExpression indexingExpr, T arg);
+    
+    @Nullable
+    R visitValueTypeCastExpr(@NotNull SQLQueryValueTypeCastExpression typeCastExpr, T arg);
 
     @Nullable
     R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);
