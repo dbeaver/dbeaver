@@ -51,10 +51,11 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import javax.crypto.SecretKey;
 
 class DataSourceSerializerModern implements DataSourceSerializer
 {
@@ -378,33 +379,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable Collection<String> dataSourceIds,
         boolean refresh
     ) throws DBException, IOException {
-        return parseDataSources(
-            configurationStorage,
-            configurationManager,
-            parseResults,
-            dataSourceIds,
-            refresh,
-            true);
-    }
-
-    @Override
-    public boolean parseDataSources(
-        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
-        @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
-        @Nullable Collection<String> dataSourceIds,
-        boolean refresh,
-        boolean requireAuthorize
-    ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
 
         // Read in this particular order to handle configuration reading errors first, but process in reverse order later
         Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
         Map<String, Object> configurationMap = null;
-        if (requireAuthorize) {
-            configurationMap = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
-            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
-        }
+        configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
 
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
@@ -843,7 +824,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                     return null;
                 } else {
-                    // in case of canceling, erase credentials intercept original exception
+                    // in case of cancelling erase credentials intercept original exception
                     throw new DBInterruptedException("Project opening canceled by user");
                 }
             }
@@ -1419,7 +1400,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
         return creds;
     }
-
 
     @NotNull
     private static DriverDescriptor getReplacementDriver(@NotNull DriverDescriptor driver) {

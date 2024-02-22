@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.registry.DataSourceRegistry.ParseResults;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
@@ -77,29 +76,12 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
-        Collection<String> dataSourceIds,
-        boolean refresh
-    ) throws DBException, IOException {
-        return parseDataSources(configurationStorage, configurationManager, parseResults, dataSourceIds, refresh, true);
-    }
-
-    @Override
-    public boolean parseDataSources(
-        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
-        @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
-        Collection<String> dataSourceIds,
-        boolean refresh,
-        boolean requireAuthorize
+        Collection<String> dataSourceIds, boolean refresh
     ) throws DBException, IOException {
         try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds)) {
             if (is != null) {
                 SAXReader parser = new SAXReader(is);
-                final DataSourcesParser dsp = new DataSourcesParser(registry,
-                    configurationStorage,
-                    refresh,
-                    parseResults,
-                    requireAuthorize);
+                final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
                 parser.parse(dsp);
             }
         } catch (Exception ex) {
@@ -134,20 +116,11 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         private DataSourceRegistry.ParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(
-            DataSourceRegistry registry,
-            DBPDataSourceConfigurationStorage storage,
-            boolean refresh,
-            DataSourceRegistry.ParseResults parseResults,
-            boolean requireAuthorize
-        ) {
+        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage storage, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
             this.registry = registry;
             this.storage = storage;
             this.refresh = refresh;
             this.parseResults = parseResults;
-         // hist:
-         // here vice versa logic: require password (auth), means read password NOT cancel
-            this.passwordReadCanceled = !requireAuthorize;
         }
 
         @Override

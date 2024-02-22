@@ -86,28 +86,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     private volatile ConfigSaver configSaver;
     private DBACredentialsProvider authCredentialsProvider;
     protected Throwable lastError;
-    private boolean requireAskPassword = true;
 
     public DataSourceRegistry(DBPProject project) {
-        this(project, new DataSourceConfigurationManagerNIO(project), true);
-    }
-
-    public DataSourceRegistry(DBPProject project, boolean requireAskPassword) {
-        this(project, new DataSourceConfigurationManagerNIO(project), requireAskPassword);
+        this(project, new DataSourceConfigurationManagerNIO(project));
     }
 
     public DataSourceRegistry(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager) {
-        this(project, configurationManager, true);
-    }
-
-    public DataSourceRegistry(
-        @NotNull DBPProject project,
-        DataSourceConfigurationManager configurationManager,
-        boolean requireAskPassword
-    ) {
         this.project = project;
         this.configurationManager = configurationManager;
-        this.requireAskPassword = requireAskPassword;
 
         boolean isLoaded = loadDataSources(true);
         if (!isMultiUser() && isLoaded) {
@@ -780,6 +766,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
             if (loadDataSources(cfgStorage, manager, dataSourceIds, false, parseResults)) {
                 configChanged = true;
+            } else {
+                if (lastError != null) {
+                    return false;
+                }
             }
         }
 
@@ -848,7 +838,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds, refresh, requireAskPassword);
+            configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds, refresh);
 
             lastError = null;
         } catch (Exception ex) {
@@ -1093,9 +1083,5 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             return Status.OK_STATUS;
         }
     }
-    
-    @Override
-    public void setRequireAskProjectPassword(boolean isRequire) {
-        this.requireAskPassword = isRequire;
-    }
+
 }
