@@ -155,23 +155,20 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         @NotNull DataTransferSettings settings
     ) {
         final List<DataTransferPipe> dataPipes = settings.getDataPipes();
-        int totalJobs = dataPipes.size();
-        if (totalJobs > settings.getMaxJobCount()) {
-            totalJobs = settings.getMaxJobCount();
-        }
+        final int totalJobs = Math.min(dataPipes.size(), settings.getMaxJobCount());
         if (totalJobs == 0) {
             return null;
         }
-        Throwable[] error = {null};
-        final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
-        for (int i = 0; i < totalJobs; i++) {
-            DataTransferJob job = new DataTransferJob(settings, task, log, i);
-            job.schedule();
-            jobs[i] = job;
-        }
+        final Throwable[] error = new Throwable[1];
         try {
             runnableContext.run(true, true, monitor -> {
-                monitor.beginTask("Waiting for jobs to finish", jobs.length);
+                final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
+                for (int i = 0; i < totalJobs; i++) {
+                    DataTransferJob job = new DataTransferJob(settings, task, log, monitor, i);
+                    job.schedule();
+                    jobs[i] = job;
+                }
+                monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
                 for (DataTransferJob job : jobs) {
                     try {
                         job.join();
@@ -187,7 +184,6 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                         }
                     }
                     totalStatistics.accumulate(job.getTotalStatistics());
-                    monitor.worked(1);
                 }
                 monitor.done();
                 monitor.beginTask("Finalizing data transfer", 1);

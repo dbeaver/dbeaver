@@ -547,6 +547,10 @@ public class DatabaseTransferUtils {
     }
 
     public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBCException {
+        if (actions.length == 0) {
+            return;
+        }
+        ensureHasEditMetadataPermission(session.getDataSource().getContainer());
         // Process actions
         DBExecUtils.executePersistActions(session, actions);
         // Commit DDL changes
@@ -557,6 +561,7 @@ public class DatabaseTransferUtils {
     }
 
     static void createTargetDynamicTable(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull DBSObjectContainer schema, @NotNull DatabaseMappingContainer containerMapping, boolean recreate) throws DBException {
+        ensureHasEditMetadataPermission(executionContext.getDataSource().getContainer());
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         Class<? extends DBSObject> tableClass = getTableClass(monitor, schema);
@@ -601,6 +606,12 @@ public class DatabaseTransferUtils {
             return DATA_TYPE_BOOLEAN;
         }
         return DATA_TYPE_STRING;
+    }
+
+    private static void ensureHasEditMetadataPermission(@NotNull DBPDataSourceContainer container) throws DBCException {
+        if (!container.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+            throw new DBCException("New table creation in database [" + container.getName() + "] restricted by connection configuration");
+        }
     }
 
     static class TargetCommandContext extends AbstractCommandContext {
