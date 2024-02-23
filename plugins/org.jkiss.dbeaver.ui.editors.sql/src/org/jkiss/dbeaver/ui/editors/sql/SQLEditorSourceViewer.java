@@ -114,12 +114,13 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
             while (it1.hasNext()) {
                 annotations.add(it1.next());
             }
-            Iterator<Annotation> it2 = projectionAnnotationModel.getAnnotationIterator(modelRange.getOffset() + modelRange.getLength(), 0, true, true);
+            Iterator<Annotation> it2 = projectionAnnotationModel.getAnnotationIterator(
+                modelRange.getOffset() + modelRange.getLength(), 0, true, true);
             while (it2.hasNext()) {
                 annotations.add(it2.next());
             }
             
-            for (Annotation annotation: annotations) {
+            for (Annotation annotation : annotations) {
                 projectionAnnotationModel.expand(annotation);
             }
             
