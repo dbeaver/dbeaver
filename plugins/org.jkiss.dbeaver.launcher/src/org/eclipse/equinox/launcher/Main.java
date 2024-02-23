@@ -277,7 +277,8 @@ public class Main {
     private static final String KEY_CONFIGINI_TIMESTAMP = "configIniTimestamp"; //$NON-NLS-1$
     private static final String PROP_IGNORE_USER_CONFIGURATION = "eclipse.ignoreUserConfiguration"; //$NON-NLS-1$
 
-    private static final String DBEAVER_CONFIGURATION_LOCTION = "@data.home/DBeaverData/install-data";
+    public static final String DBEAVER_DATA_FOLDER = "DBeaverData";
+    private static final String DBEAVER_INSTALL_FOLDER = "install-data";
     private static final String ENV_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
     private static final String LOCATION_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
     private static final String LOCATION_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
@@ -1808,11 +1809,11 @@ public class Main {
      * @return url of location
      */
     private URL buildProductURL() {
-        String productConfigurationLocation = DBEAVER_CONFIGURATION_LOCTION;
-        String base = getWorkingDirectory(productConfigurationLocation);
+        String productConfigurationLocation;
+        String base = getWorkingDirectory(DBEAVER_DATA_FOLDER);
         try {
             String productPath = getProductProperties();
-            Path basePath = Paths.get(base, productPath);
+            Path basePath = Paths.get(base, DBEAVER_INSTALL_FOLDER, productPath);
             productConfigurationLocation = basePath.toFile().getAbsolutePath();
             return buildURL(productConfigurationLocation, true);
         } catch (IOException e) {
