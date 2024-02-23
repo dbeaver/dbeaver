@@ -406,22 +406,25 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private class OutlineScriptNode extends OutlineNode {
-        final SQLDocumentSyntaxContext documentContext;
+        private final SQLDocumentSyntaxContext documentContext;
+        
+        private Image editorImage = null;
+        private Image outlineImage = null;
 
-        OutlineNode noElementsNode = new OutlineInfoNode(
+        private OutlineNode noElementsNode = new OutlineInfoNode(
             this,
             SQLEditorMessages.sql_editor_outline_no_elements_label,
             DBIcon.SMALL_INFO
         );
-        OutlineNode analysisDisabledNode = new OutlineInfoNode(
+        private OutlineNode analysisDisabledNode = new OutlineInfoNode(
             this,
             SQLEditorMessages.sql_editor_outline_query_analysis_disabled_label,
             DBIcon.SMALL_INFO
         );
 
-        Map<SQLDocumentScriptItemSyntaxContext, OutlineNode> elements = new HashMap<>();
-        List<OutlineNode> children = Collections.emptyList();
-        final SQLDocumentSyntaxContextListener syntaxContextListener = new SQLDocumentSyntaxContextListener() {
+        private Map<SQLDocumentScriptItemSyntaxContext, OutlineNode> elements = new HashMap<>();
+        private List<OutlineNode> children = Collections.emptyList();
+        private final SQLDocumentSyntaxContextListener syntaxContextListener = new SQLDocumentSyntaxContextListener() {
             @Override
             public void onScriptItemInvalidated(@Nullable SQLDocumentScriptItemSyntaxContext item) {
                 refreshJob.schedule(true);
@@ -491,8 +494,17 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @NotNull
         @Override
         public Image getImage() {
+            // separate image lifetime, because we don't have a guarantee that outline will be disposed earlier than editor
+            // the outline state changes to the response of the editor event asyncroniously, so their lifetimes are a little bit different
             Image image = editor.getTitleImage();
-            return new Image(image.getDevice(), image, SWT.IMAGE_COPY);
+            if (this.editorImage != image) {
+                if (this.outlineImage != null) {
+                    this.outlineImage.dispose();
+                }
+                this.outlineImage = new Image(image.getDevice(), image, SWT.IMAGE_COPY);
+                this.editorImage = image;
+            }
+            return this.outlineImage;
         }
 
         @NotNull
@@ -503,6 +515,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         public void dispose() {
             this.documentContext.removeListener(syntaxContextListener);
+            if (this.outlineImage != null && !this.outlineImage.isDisposed()) {
+                this.outlineImage.dispose();
+            }
         }
     }
 
@@ -744,7 +759,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             this.makeNode(node, indexingExpr, text, extraText, icon);
             return null;
         }
-        
+
         @Override
         public Object visitValueTypeCastExpr(SQLQueryValueTypeCastExpression typeCastExpr, OutlineQueryNode node) {
             typeCastExpr.getValueExpr().apply(this, node);
