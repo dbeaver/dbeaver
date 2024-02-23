@@ -828,7 +828,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
             }
             log.error("Error reading secure credentials", e);
-            throw new DBException("Project configuration can not be open", e);
+            return null;
         } catch (Exception e) {
             log.error("Unexpected error during read secure credentials", e);
             throw new DBException(e.getMessage(), e);
