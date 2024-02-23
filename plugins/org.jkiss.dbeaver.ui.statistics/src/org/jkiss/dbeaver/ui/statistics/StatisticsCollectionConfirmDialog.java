@@ -63,7 +63,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
                         PrefPageUsageStatistics.PAGE_ID);
                 }));
         UIUtils.createEmptyLabel(composite, 1, 1);
-        shareData = UIUtils.createCheckbox(composite, "I don't want to share the data.", false);
+        shareData = UIUtils.createCheckbox(composite, "Do not share data.", false);
         return composite;
     }
 
