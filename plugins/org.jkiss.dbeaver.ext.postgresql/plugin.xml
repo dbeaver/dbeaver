@@ -424,7 +424,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
                     defaultPort="5432"
-                    webURL="https://yellowbrick.io/"
+                    webURL="https://yellowbrick.com/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="Yellowbrick JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"

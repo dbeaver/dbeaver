@@ -117,7 +117,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
         synchronized (dataSourceListeners) {
             if (!this.dataSourceListeners.isEmpty()) {
-                log.warn("Some data source listeners are still registered: " + dataSourceListeners);
+                log.warn("Some data source listeners are still registered: " +
+                    dataSourceListeners.stream()
+                        .map(l -> l.getClass().getName() + ":" + l).collect(Collectors.joining(",")));
             }
             this.dataSourceListeners.clear();
         }

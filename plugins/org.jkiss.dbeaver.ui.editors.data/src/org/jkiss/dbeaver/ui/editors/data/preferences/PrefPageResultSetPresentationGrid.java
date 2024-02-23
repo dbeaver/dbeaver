@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.data.preferences;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -137,13 +137,12 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
             maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
-            PreferenceLinkArea linkArea = new PreferenceLinkArea(appearanceGroup, SWT.NONE,
-                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+            UIUtils.createPreferenceLink(
+                appearanceGroup,
                 DataEditorsMessages.pref_page_database_resultsets_link_colors_and_fonts,
-                (IWorkbenchPreferenceContainer) getContainer(), null);//$NON-NLS-1$
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            linkArea.getControl().setLayoutData(gd);
+                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+                (IWorkbenchPreferenceContainer) getContainer(), null
+            ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
 
             final Group behaviorGroup = UIUtils.createControlGroup(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_group_behavior, 2,
@@ -161,13 +160,12 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_enter_for_inline_behavior,
                 DataEditorsMessages.pref_page_database_resultsets_label_enter_for_inline_behavior_tip, false, 2);
 
-            PreferenceLinkArea editorsLink = new PreferenceLinkArea(behaviorGroup, SWT.NONE,
+            UIUtils.createPreferenceLink(
+                behaviorGroup,
+                "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
                 "org.jkiss.dbeaver.preferences.editors",
-                "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link
-                    + "  - ''{0}''</a>", (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            editorsLink.getControl().setLayoutData(gd);
+                (IWorkbenchPreferenceContainer) getContainer(), null
+            ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
 
             gridDoubleClickBehavior = UIUtils.createLabelCombo(behaviorGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
