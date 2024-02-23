@@ -684,10 +684,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private boolean createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException {
-        DBPDataSourceContainer dataSourceContainer = session.getDataSource().getContainer();
-        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
-            throw new DBCException("New table creation in database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
-        }
         DBSObjectContainer schema = settings.getContainer();
         if (schema == null) {
             throw new DBException("No target container selected");

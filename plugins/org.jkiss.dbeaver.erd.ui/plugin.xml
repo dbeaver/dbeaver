@@ -617,12 +617,6 @@
     <extension
           point="org.jkiss.dbeaver.erd.ui.routing">
        <erdConnectionRouter
-             id="org.jkiss.dbeaver.erd.router.mikammi"
-             name="Mikami-Tabuchi (Experimental)"
-             router="org.jkiss.dbeaver.erd.ui.router.mikkami.MikamiTabuchiConnectionRouter"
-             supportAttributesAssociation="true">
-       </erdConnectionRouter>
-       <erdConnectionRouter
              id="org.jkiss.dbeaver.erd.router.shortest.path"
              name="Shortest paths"
              description="Router based on shortest pathes"

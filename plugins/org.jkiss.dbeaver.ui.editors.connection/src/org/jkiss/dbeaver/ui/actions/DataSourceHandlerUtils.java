@@ -90,8 +90,8 @@ public class DataSourceHandlerUtils {
         private DBSSecretValue selected;
         public CredentialsSelectorDialog(DataSourceDescriptor dataSource, List<DBSSecretValue> credentials) {
             super(UIUtils.getActiveShell(),
-                "Select credentials",
-                null);
+                "'" + dataSource.getName() + "' credentials",
+                dataSource.getDriver().getIcon());
             this.dataSource = dataSource;
             this.credentials = credentials;
         }
@@ -100,9 +100,11 @@ public class DataSourceHandlerUtils {
         protected Composite createDialogArea(Composite parent) {
             final Composite composite = super.createDialogArea(parent);
 
-            //UIUtils.createInfoLabel(composite, "Please select credentials you want to use to connect to '" + dataSource.getName() + "'");
+            UIUtils.createInfoLabel(composite, "There are multiple credentials available for authentication.\nPlease choose credentials you want to use:");
             final Table credsTable = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-            credsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            //gd.widthHint = 50 * UIUtils.getFontHeight(credsTable);
+            credsTable.setLayoutData(gd);
 
             for (DBSSecretValue sv : credentials) {
                 TableItem item = new TableItem(credsTable, SWT.NONE);

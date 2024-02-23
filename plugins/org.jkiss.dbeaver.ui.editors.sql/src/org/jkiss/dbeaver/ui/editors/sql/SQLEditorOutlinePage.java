@@ -744,6 +744,12 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             this.makeNode(node, indexingExpr, text, extraText, icon);
             return null;
         }
+        
+        @Override
+        public Object visitValueTypeCastExpr(SQLQueryValueTypeCastExpression typeCastExpr, OutlineQueryNode node) {
+            typeCastExpr.getValueExpr().apply(this, node);
+            return null;
+        }
 
         @Nullable
         private String obtainExprTypeNameString(@NotNull SQLQueryValueExpression expr) {

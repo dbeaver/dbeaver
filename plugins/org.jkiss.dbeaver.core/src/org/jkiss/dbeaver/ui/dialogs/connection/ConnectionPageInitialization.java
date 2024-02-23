@@ -286,8 +286,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 txnGroup,
                 CoreMessages.action_menu_transaction_pref_page_link_extended,
                 PrefPageConnectionTypes.PAGE_ID,
-                null,
-                null
+                null, null
             ).setLayoutData(gd);
 
             {
