@@ -822,7 +822,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
                                 registry.getProject().getName()),
                         RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
-                    return null;
+                    throw new DBException("Project configuration can not be open", e);
                 } else {
                     // in case of cancelling erase credentials intercept original exception
                     throw new DBInterruptedException("Project opening canceled by user");
