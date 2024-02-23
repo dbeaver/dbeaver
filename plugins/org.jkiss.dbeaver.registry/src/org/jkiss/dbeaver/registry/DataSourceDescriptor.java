@@ -876,7 +876,6 @@ public class DataSourceDescriptor
         // Save only if secrets were already resolved or it is a new connection
         if (secretsResolved || (force && getProject().isUseSecretStorage())) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-
             persistSecrets(secretController, isNewDataSource);
         }
         return true;
@@ -896,6 +895,15 @@ public class DataSourceDescriptor
     }
 
     void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
+        if (!CommonUtils.isBitSet(
+            secretController.getSupportedFeatures(),
+            isSharedCredentials() ? DBSSecretController.FEATURE_SHARED_SECRETS_EDIT : DBSSecretController.FEATURE_PRIVATE_SECRETS_EDIT)
+        ) {
+            // Secret edit disabled
+            log.debug("Secret save is disabled in secret controller. Auth settings won't be saved.");
+            return;
+        }
+
         var secret = saveToSecret();
         if (!isSharedCredentials()) {
             // Do not persist empty secrets for new datasources

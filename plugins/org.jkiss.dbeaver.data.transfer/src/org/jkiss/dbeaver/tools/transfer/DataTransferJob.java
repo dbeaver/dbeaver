@@ -36,16 +36,24 @@ public class DataTransferJob extends AbstractJob {
     private final DBCStatistics totalStatistics = new DBCStatistics();
     private final DataTransferSettings settings;
     private final DBTTask task;
+    private final DBRProgressMonitor parentMonitor;
     private long elapsedTime;
     private boolean hasErrors;
 
     private final Log log;
 
-    public DataTransferJob(@NotNull DataTransferSettings settings, @NotNull DBTTask task, @NotNull Log log, int index) {
+    public DataTransferJob(
+        @NotNull DataTransferSettings settings,
+        @NotNull DBTTask task,
+        @NotNull Log log,
+        @NotNull DBRProgressMonitor parentMonitor,
+        int index
+    ) {
         super("Data transfer job [" + index + "]: " + settings.getConsumer().getName());
         this.settings = settings;
         this.task = task;
         this.log = log;
+        this.parentMonitor = parentMonitor;
     }
 
     public DataTransferSettings getSettings() {
@@ -65,8 +73,10 @@ public class DataTransferJob extends AbstractJob {
     }
 
     @Override
-    protected IStatus run(DBRProgressMonitor monitor) {
-        monitor.beginTask("Perform data transfer", 1);
+    protected IStatus run(DBRProgressMonitor jobMonitor) {
+        final int pipeCount = settings.getDataPipes().size();
+        final DBRProgressMonitor monitor = pipeCount == 1 ? parentMonitor : jobMonitor;
+        monitor.beginTask("Perform data transfer", pipeCount);
         hasErrors = false;
         long startTime = System.currentTimeMillis();
         for (; ;) {
@@ -78,16 +88,15 @@ public class DataTransferJob extends AbstractJob {
                 break;
             }
             try {
-                if (!transferData(monitor, transferPipe)) {
-                    hasErrors = true;
-                }
+                hasErrors |= !transferData(monitor, transferPipe);
+                parentMonitor.worked(1);
+                jobMonitor.worked(1);
             } catch (Exception e) {
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
                 return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
             }
         }
         monitor.done();
-//        listener.subTaskFinished(task, null);
         elapsedTime = System.currentTimeMillis() - startTime;
         return Status.OK_STATUS;
     }

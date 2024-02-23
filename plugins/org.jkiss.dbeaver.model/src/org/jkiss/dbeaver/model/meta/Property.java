@@ -145,6 +145,8 @@ public @interface Property
      */
     boolean nonSecuredProperty() default false;
 
+    boolean required() default false;
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default ""; //NON-NLS-1
