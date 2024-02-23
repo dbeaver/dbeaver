@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -64,7 +63,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
                         PrefPageUsageStatistics.PAGE_ID);
                 }));
         UIUtils.createEmptyLabel(composite, 1,1);
-        shareData = UIUtils.createCheckbox(composite, "Ask not to share", false);
+        shareData = UIUtils.createCheckbox(composite, "I don't want to share the data", false);
         return composite;
     }
 
