@@ -63,7 +63,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
                         PrefPageUsageStatistics.PAGE_ID);
                 }));
         UIUtils.createEmptyLabel(composite, 1, 1);
-        shareData = UIUtils.createCheckbox(composite, "I don't want to share the data.", false);
+        shareData = UIUtils.createCheckbox(composite, "Do not share data.", false);
         return composite;
     }
 
@@ -75,7 +75,12 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
     @Override
     protected void buttonPressed(int buttonId) {
         // if user untick the checkbox, not needed to share
-        if (!shareData.getSelection()) {
+        if (shareData.getSelection()) {
+            // DO NOT SEND
+            UIStatisticsActivator.setSkipDataShareConfirmation(false);
+            UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.NO_ID);
+        } else {
+            // SEND
             UIStatisticsActivator.setSkipDataShareConfirmation(true);
             UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
         }

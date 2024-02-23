@@ -54,7 +54,7 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite group = UIUtils.createControlGroup(composite, "Data share", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Composite group = UIUtils.createControlGroup(composite, "Data sharing", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
         checkSendUsageStatistics = UIUtils.createCheckbox(group, "Send usage statistics", false);
         createDataShareComposite(group);
