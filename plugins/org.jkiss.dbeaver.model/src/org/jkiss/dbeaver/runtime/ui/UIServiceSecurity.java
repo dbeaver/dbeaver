@@ -29,7 +29,17 @@ public interface UIServiceSecurity {
 
     String askForPassword(@NotNull String title, String message, @Nullable String defPassword, boolean emptyPasswordAllowed);
 
-    String askForPassword(@NotNull IProject project, @NotNull String title, String message, @Nullable String defPassword, boolean emptyPasswordAllowed);
+    /**
+     * Ask the password for specific project
+     *
+     * @return - password
+     */
+    String askForPassword(
+        @NotNull IProject project,
+        @NotNull String title,
+        String message,
+        @Nullable String defPassword,
+        boolean emptyPasswordAllowed);
 
     String askForNewPassword(@NotNull String title, @Nullable String defPassword);
 
