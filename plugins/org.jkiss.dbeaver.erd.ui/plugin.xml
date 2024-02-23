@@ -466,7 +466,6 @@
                 <with variable="activePart">
                     <and>
                         <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
                     </and>
                 </with>
             </enabledWhen>
