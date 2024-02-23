@@ -1,23 +1,20 @@
-/*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corporation and others.
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
- * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * SPDX-License-Identifier: EPL-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Anton Leherbauer (Wind River Systems) - bug 301226
- *     Red Hat Inc. - bug 373640, 379102
- *     Ericsson AB (Pascal Rapicault) - bug 304132
- *     Rapicorp, Inc - Default the configuration to Application Support (bug 461725)
- *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 221969
- *     Sergei Kovalchuk <skov@dbeaver.com> - Bug (dbeaver/pro#21574) - Support common system path
- *******************************************************************************/
-package org.eclipse.equinox.launcher;
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.launcher;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -32,20 +29,13 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-
 /**
- * The launcher for Eclipse.
+ * The launcher for DBeaver.
  *
- * <b>Note:</b> This class should not be referenced programmatically by
- * other Java code. This class exists only for the purpose of launching Eclipse
- * from the command line. To launch Eclipse programmatically, use
- * org.eclipse.core.runtime.adaptor.EclipseStarter. The fields and methods
- * on this class are not API.
- *
- * @noextend This class is not intended to be subclassed by clients.
- * @noinstantiate This class is not intended to be instantiated by clients.
+ * Copied from org.eclipse.equinox.launcher.Main.
+ * Primary idea is to use different default locations for product extraction.
  */
-public class Main {
+public class DBeaverLauncher {
 
     /**
      * Indicates whether this instance is running in debug mode.
@@ -611,10 +601,10 @@ public class Main {
         if (eclipseSecurity != null) {
             // setup a policy that grants the launcher and path for the framework AllPermissions.
             // Do not set the security manager, this will be done by the framework itself.
-            ProtectionDomain domain = Main.class.getProtectionDomain();
+            ProtectionDomain domain = DBeaverLauncher.class.getProtectionDomain();
             CodeSource source = null;
             if (domain != null)
-                source = Main.class.getProtectionDomain().getCodeSource();
+                source = DBeaverLauncher.class.getProtectionDomain().getCodeSource();
             if (domain == null || source == null) {
                 log("Can not automatically set the security manager. Please use a policy file."); //$NON-NLS-1$
                 return;
@@ -1456,7 +1446,7 @@ public class Main {
     public static void main(String[] args) {
         int result = 0;
         try {
-            result = new Main().run(args);
+            result = new DBeaverLauncher().run(args);
         } catch (Throwable t) {
             // This is *really* unlikely to happen - run() takes care of exceptional situations.
             // In case something weird happens, just dump stack - logging is not available at this point
@@ -2076,7 +2066,7 @@ public class Main {
             return installLocation;
         }
 
-        ProtectionDomain domain = Main.class.getProtectionDomain();
+        ProtectionDomain domain = DBeaverLauncher.class.getProtectionDomain();
         CodeSource source = null;
         URL result = null;
         if (domain != null)
