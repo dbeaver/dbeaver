@@ -386,7 +386,21 @@ class DataSourceSerializerModern implements DataSourceSerializer
         Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
         Map<String, Object> configurationMap = null;
         configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
-        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))) { 
+        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))) {
+            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
+                && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+                if (DBWorkbench.getPlatformUI().confirmAction(
+                    RegistryMessages.project_open_cannot_read_credentials_title,
+                    NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
+                        registry.getProject().getName()),
+                    RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
+                    //
+                    log.info("User aggred lost credentials.");
+                } else {
+                    // in case of canceling erase credentials intercept original exception
+                    throw new DBInterruptedException("Project secure credentials read canceled by user.");
+                }
+            }
             secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
         }
         if (secureCredentialsMap != null) {
@@ -800,7 +814,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable Collection<String> dataSourceIds
     ) throws DBException {
         if (configurationManager.isSecure()) {
-            return null;
+            return null; 
         }
         final String name = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX
                 + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
@@ -811,29 +825,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
             final String data = loadConfigFile(is, true);
             return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
             }.getType());
-        } catch (DBInterruptedException e) {
-            // when user cancelled enter project password (not a community level)
-            throw e;
-        } catch (IOException e) {
-            // here we catch IO exceptions that happens in community for secure credential
-            // reading
-            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
-                && DBWorkbench.getPlatform().getApplication().isCommunity()) {
-                if (DBWorkbench.getPlatformUI().confirmAction(
-                    RegistryMessages.project_open_cannot_read_credentials_title,
-                    NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
-                        registry.getProject().getName()),
-                    RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
-                    return null;
-                } else {
-                    // in case of canceling erase credentials intercept original exception
-                    throw new DBInterruptedException("Project secure credentials read canceled by user");
-                }
-            }
-            throw new DBException("Project secure credentials can not be read", e);
         } catch (Exception e) {
+            // here we catch any exceptions that happens for secure credential
+            // reading
             log.error("Unexpected error during read secure credentials", e);
-            throw new DBException(e.getMessage(), e);
+            throw new DBException("Project secure credentials can not be read", e);
         }
     }
 
