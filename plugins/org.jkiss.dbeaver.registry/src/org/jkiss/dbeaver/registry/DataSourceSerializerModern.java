@@ -78,6 +78,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
+    private static final String USE_PROJECT_PASSWORD = "useProjectPassword";
+    private static final String CONFIGURATION_FOLDERS = "folders";
 
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
@@ -119,7 +121,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 // Save folders
                 if (configurationStorage.isDefault()) {
-                    jsonWriter.name("folders");
+                    jsonWriter.name(CONFIGURATION_FOLDERS);
                     jsonWriter.beginObject();
                     // Folders (only for default storage)
                     Set<DBPDataSourceFolder> globalFolders = registry.getTemporaryFolders();
@@ -384,15 +386,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
         Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
         Map<String, Object> configurationMap = null;
         configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
-        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
-
+        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))) { 
+            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        }
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
         }
 
         if (configurationMap != null) {
             // Folders
-            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(configurationMap, "folders")) {
+            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(configurationMap, CONFIGURATION_FOLDERS)) {
                 String name = folderMap.getKey();
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
                 String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
@@ -815,20 +818,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // here we catch IO exceptions that happens in community for secure credential
             // reading
             if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
-                    && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+                && DBWorkbench.getPlatform().getApplication().isCommunity()) {
                 if (DBWorkbench.getPlatformUI().confirmAction(
-                        RegistryMessages.project_open_cannot_read_credentials_title,
-                        NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
-                                registry.getProject().getName()),
-                        RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
+                    RegistryMessages.project_open_cannot_read_credentials_title,
+                    NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
+                        registry.getProject().getName()),
+                    RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
                     return null;
                 } else {
-                    // in case of cancelling erase credentials intercept original exception
-                    throw new DBInterruptedException("Project opening canceled by user");
+                    // in case of canceling erase credentials intercept original exception
+                    throw new DBInterruptedException("Project secure credentials read canceled by user");
                 }
             }
-            log.error("Error reading secure credentials", e);
-            return null;
+            throw new DBException("Project secure credentials can not be read", e);
         } catch (Exception e) {
             log.error("Unexpected error during read secure credentials", e);
             throw new DBException(e.getMessage(), e);
