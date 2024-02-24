@@ -814,7 +814,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable Collection<String> dataSourceIds
     ) throws DBException {
         if (configurationManager.isSecure()) {
-            return null; 
+            return null;
         }
         final String name = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX
                 + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
