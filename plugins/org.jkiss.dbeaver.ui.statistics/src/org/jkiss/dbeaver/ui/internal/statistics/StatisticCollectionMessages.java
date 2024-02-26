@@ -20,17 +20,20 @@ package org.jkiss.dbeaver.ui.internal.statistics;
 import org.eclipse.osgi.util.NLS;
 
 public class StatisticCollectionMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.statistics"; //$NON-NLS-1$
 
     public static String statistic_collection_dialog_title;
     public static String statistic_collection_pref_link;
     public static String statistic_collection_dont_share_lbl;
-
     public static String statistic_collection_confirm_lbl;
+    public static String statistic_collection_pref_group_label;
+    public static String statistic_collection_pref_send_btn_label;
+    public static String statistic_collection_pref_content_main_msg;
+    public static String statistic_collection_pref_content_documentation_link;
+    public static String statistic_collection_pref_content_opensource_link;
+    public static String statistic_collection_pref_content_datashare_msg;
 
     static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, StatisticCollectionMessages.class);
+        NLS.initializeMessages(StatisticCollectionMessages.class.getName(), StatisticCollectionMessages.class);
     }
 
     private StatisticCollectionMessages() {
