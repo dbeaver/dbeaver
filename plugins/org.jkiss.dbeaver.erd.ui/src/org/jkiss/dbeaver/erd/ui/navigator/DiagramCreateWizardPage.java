@@ -73,6 +73,10 @@ class DiagramCreateWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete()
     {
+        if (project == null || !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+            setErrorMessage("The user needs more permissions to create a new diagram.");
+            return false;
+        }
         boolean hasName = !CommonUtils.isEmpty(diagram.getName());
         if (!hasName) {
             setErrorMessage("Set diagram name");
