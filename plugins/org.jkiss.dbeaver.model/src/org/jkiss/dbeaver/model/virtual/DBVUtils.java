@@ -402,7 +402,8 @@ public abstract class DBVUtils {
         if (source instanceof DBVObject) {
             return (DBVObject) source;
         }
-        return source.getDataSource().getContainer().getVirtualModel().findObject(source, create);
+        DBPDataSource dataSource = source.getDataSource();
+        return dataSource == null ? null : dataSource.getContainer().getVirtualModel().findObject(source, create);
     }
 
     public static Object executeExpression(DBVEntityAttribute attribute, DBDAttributeBinding[] allAttributes, Object[] row) {
