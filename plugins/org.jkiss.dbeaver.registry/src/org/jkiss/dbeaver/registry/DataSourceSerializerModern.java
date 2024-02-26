@@ -401,7 +401,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
         }
-        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        try {
+            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        } catch (DBException e) {
+            if (e instanceof DBInterruptedException) {
+                throw e;
+            }
+            log.error(e);
+        }
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
         }
@@ -829,7 +836,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
         } catch (Exception e) {
             // here we catch any exceptions that happens for secure credential
             // reading
-            log.error("Unexpected error during read secure credentials", e);
             throw new DBException("Project secure credentials can not be read", e);
         }
     }

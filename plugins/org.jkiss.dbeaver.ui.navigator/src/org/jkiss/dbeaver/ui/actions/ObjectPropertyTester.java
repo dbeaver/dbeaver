@@ -182,6 +182,9 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_CAN_RENAME: {
+                if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
+                    return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+                }
                 if (node instanceof DBNNodeWithResource && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                     return false;
                 }
@@ -189,7 +192,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     return true;
                 }
                 if (node instanceof DBNDatabaseNode) {
-                    if (DBNUtils.isReadOnly(node)) {
+                    if (DBNUtils.isReadOnly(node) || !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
                         return false;
                     }
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
