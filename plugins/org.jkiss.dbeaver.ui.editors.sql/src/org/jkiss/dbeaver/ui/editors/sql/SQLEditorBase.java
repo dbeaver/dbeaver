@@ -378,36 +378,38 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     final ISelectionProvider selectionProvider = sourceViewer.getSelectionProvider();
                     final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
 
-                    int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
-
-                    if (offset < 0) {
+                    int widgetOffset = widget.getOffsetAtPoint(new Point(e.x, e.y));
+                    
+                    if (widgetOffset < 0) {
                         int lineIndex = widget.getLineIndex(e.y);
                         if (lineIndex + 1 >= widget.getLineCount()) {
-                            offset = widget.getCharCount();
+                            widgetOffset = widget.getCharCount();
                         } else {
-                            offset = widget.getOffsetAtLine(lineIndex + 1) - widget.getLineDelimiter().length();
+                            widgetOffset = widget.getOffsetAtLine(lineIndex + 1) - widget.getLineDelimiter().length();
                         }
                     }
-
-                    if (offset < 0) {
+                    
+                    if (widgetOffset < 0) {
                         return;
                     }
+                    
+                    int modelOffset = sourceViewer instanceof ITextViewerExtension5 vext ? vext.widgetOffset2ModelOffset(widgetOffset) : widgetOffset;
 
                     boolean withinExistingSelection = false;
 
                     if (selection instanceof IBlockTextSelection) {
                         for (IRegion region : ((IBlockTextSelection) selection).getRegions()) {
-                            if (within(region, offset)) {
+                            if (within(region, modelOffset)) {
                                 withinExistingSelection = true;
                                 break;
                             }
                         }
                     } else {
-                        withinExistingSelection = within(new Region(selection.getOffset(), selection.getLength()), offset);
+                        withinExistingSelection = within(new Region(selection.getOffset(), selection.getLength()), modelOffset);
                     }
 
                     if (!withinExistingSelection) {
-                        selectionProvider.setSelection(new TextSelection(offset, 0));
+                        selectionProvider.setSelection(new TextSelection(modelOffset, 0));
                     }
                 }
 

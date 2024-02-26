@@ -250,14 +250,13 @@ public class DiagramLoader extends ERDPersistedState {
                         continue;
                     }
                     final DBSObject child = container.getChild(monitor, tableName);
-                    if (!(child instanceof DBSEntity)) {
+                    if (!(child instanceof DBSEntity table)) {
                         log.debug("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
                         continue;
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
                     String locY = entityElem.getAttribute(ATTR_Y);
 
-                    DBSEntity table = (DBSEntity) child;
                     EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
 
                     visualInfo.initBounds = new Rectangle();
@@ -377,8 +376,8 @@ public class DiagramLoader extends ERDPersistedState {
         // Add logical relations
         for (RelationLoadInfo info : relInfos) {
             if (info.type.equals(ERDConstants.CONSTRAINT_LOGICAL_FK.getId())) {
-                final ERDElement sourceEntity = info.pkTable.entity != null ? diagram.getEntity(info.pkTable.entity) : info.pkTable.note;
-                final ERDElement targetEntity = info.fkTable.entity != null ? diagram.getEntity(info.fkTable.entity) : info.fkTable.note;
+                final ERDElement<?> sourceEntity = info.pkTable.entity != null ? diagram.getEntity(info.pkTable.entity) : info.pkTable.note;
+                final ERDElement<?> targetEntity = info.fkTable.entity != null ? diagram.getEntity(info.fkTable.entity) : info.fkTable.note;
                 if (sourceEntity != null && targetEntity != null) {
                     new ERDAssociation(targetEntity, sourceEntity, false);
                 }
@@ -422,25 +421,27 @@ public class DiagramLoader extends ERDPersistedState {
         xml.setButify(!compact);
         if (verbose) {
             xml.addContent(
-                "\n<!DOCTYPE diagram [\n" +
-                "<!ATTLIST diagram version CDATA #REQUIRED\n" +
-                " name CDATA #IMPLIED\n" +
-                " time CDATA #REQUIRED>\n" +
-                "<!ELEMENT diagram (entities, relations, notes)>\n" +
-                "<!ELEMENT entities (data-source*)>\n" +
-                "<!ELEMENT data-source (entity*)>\n" +
-                "<!ATTLIST data-source id CDATA #REQUIRED>\n" +
-                "<!ELEMENT entity (path*)>\n" +
-                "<!ATTLIST entity id ID #REQUIRED\n" +
-                " name CDATA #REQUIRED\n" +
-                " fq-name CDATA #REQUIRED>\n" +
-                "<!ELEMENT relations (relation*)>\n" +
-                "<!ELEMENT relation (bend*)>\n" +
-                "<!ATTLIST relation name CDATA #REQUIRED\n" +
-                " fq-name CDATA #REQUIRED\n" +
-                " pk-ref IDREF #REQUIRED\n" +
-                " fk-ref IDREF #REQUIRED>\n" +
-                "]>\n"
+                """
+                    <!DOCTYPE diagram [
+                    <!ATTLIST diagram version CDATA #REQUIRED
+                     name CDATA #IMPLIED
+                     time CDATA #REQUIRED>
+                    <!ELEMENT diagram (entities, relations, notes)>
+                    <!ELEMENT entities (data-source*)>
+                    <!ELEMENT data-source (entity*)>
+                    <!ATTLIST data-source id CDATA #REQUIRED>
+                    <!ELEMENT entity (path*)>
+                    <!ATTLIST entity id ID #REQUIRED
+                     name CDATA #REQUIRED
+                     fq-name CDATA #REQUIRED>
+                    <!ELEMENT relations (relation*)>
+                    <!ELEMENT relation (bend*)>
+                    <!ATTLIST relation name CDATA #REQUIRED
+                     fq-name CDATA #REQUIRED
+                     pk-ref IDREF #REQUIRED
+                     fk-ref IDREF #REQUIRED>
+                    ]>
+                    """
             );
         }
         xml.startElement(TAG_DIAGRAM);
@@ -535,7 +536,7 @@ public class DiagramLoader extends ERDPersistedState {
             // Relations
             xml.startElement(TAG_RELATIONS);
 
-            List<ERDElement> allElements = new ArrayList<>();
+            List<ERDElement<?>> allElements = new ArrayList<>();
             allElements.addAll(diagram.getEntities());
             allElements.addAll(diagram.getNotes());
             for (ERDElement<?> element : allElements) {
