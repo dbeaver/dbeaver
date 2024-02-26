@@ -825,6 +825,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
             final String data = loadConfigFile(is, true);
             return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
             }.getType());
+        } catch (DBInterruptedException e) {
+            throw e;
         } catch (Exception e) {
             // here we catch any exceptions that happens for secure credential
             // reading
