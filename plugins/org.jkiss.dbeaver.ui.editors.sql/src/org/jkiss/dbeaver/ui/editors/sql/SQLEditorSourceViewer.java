@@ -120,11 +120,13 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
                 annotations.add(it2.next());
             }
             
-            for (Annotation annotation : annotations) {
+            boolean expanded = false;
+            for (Annotation annotation: annotations) {
+                expanded |= true;
                 projectionAnnotationModel.expand(annotation);
             }
             
-            return true;
+            return expanded;
         }
 
         if (!overlapsWithVisibleRegion(modelRange.getOffset(), modelRange.getLength())) {
