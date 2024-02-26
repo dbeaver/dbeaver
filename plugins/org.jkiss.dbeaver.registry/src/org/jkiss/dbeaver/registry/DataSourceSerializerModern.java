@@ -401,8 +401,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     throw new DBInterruptedException("Project secure credentials read canceled by user.");
                 }
             }
-            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
         }
+        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
         }
