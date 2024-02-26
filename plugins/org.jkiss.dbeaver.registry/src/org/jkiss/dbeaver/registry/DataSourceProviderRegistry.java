@@ -622,11 +622,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 continue;
             }
             if (amd.appliesTo(driver)) {
-                int priorityValue = amd.getPriorityValue();
-                if (priorityValue == 1) {
+                DataSourceAuthModelDescriptor.DSPriority priority = amd.getPriorityValue();
+                if (priority == DataSourceAuthModelDescriptor.DSPriority.EXTRA_HIGH) {
                     priorityModels.add(amd);
                     extraPriorityModels.add(amd);
-                } else if (priorityValue == 2) {
+                } else if (priority == DataSourceAuthModelDescriptor.DSPriority.HIGH) {
                     priorityModels.add(amd);
                 }
                 models.add(amd);
