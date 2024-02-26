@@ -394,8 +394,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
                         registry.getProject().getName()),
                     RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
-                    //
-                    log.info("User aggred lost credentials.");
+                    // in case of user agreed lost project credentials proceed
+                    log.info("The user agreed lost project credentials.");
                 } else {
                     // in case of canceling erase credentials intercept original exception
                     throw new DBInterruptedException("Project secure credentials read canceled by user.");
