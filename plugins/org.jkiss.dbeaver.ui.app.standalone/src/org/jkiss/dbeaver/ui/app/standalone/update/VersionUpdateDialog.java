@@ -153,7 +153,7 @@ public class VersionUpdateDialog extends Dialog {
             notesText.setText(releaseNotes);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
-            //gd.heightHint = notesText.getLineHeight() * 20;
+            gd.heightHint = CommonUtils.clamp(notesText.getLineCount(), 5, 20) * notesText.getLineHeight();
             notesText.setLayoutData(gd);
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
