@@ -90,7 +90,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
-    private final CatalogCache catalogCache = new CatalogCache();
+    private final CatalogCache catalogCache = new CatalogCache() {
+        @Override
+        protected void detectCaseSensitivity(DBSObject object) {
+            setCaseSensitive(!getDataSource().getSQLDialect().useCaseInsensitiveNameLookup());
+        }
+    };
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private List<MySQLCharset> charsets;
