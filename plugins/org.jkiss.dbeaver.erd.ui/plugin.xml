@@ -461,15 +461,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler">
-            <enabledWhen>
-                <with variable="activePart">
-                    <and>
-                        <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
-                    </and>
-                </with>
-            </enabledWhen>
-        </handler>
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler"/>
         <handler commandId="org.jkiss.dbeaver.erd.focus.diagram" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus">
             <activeWhen>
                 <with variable="activeEditor">
@@ -517,7 +509,6 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
-                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
                                 </and>
                             </adapt>
                         </iterate>
