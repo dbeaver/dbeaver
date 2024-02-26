@@ -71,7 +71,7 @@ public class ConstraintNameGenerator {
 
         this.constraintType = constraintType;
         if (CommonUtils.isEmpty(constraintName)) {
-            generateConstraintName();
+            generateConstraintName(false);
         }
     }
 
@@ -113,14 +113,14 @@ public class ConstraintNameGenerator {
         this.constraintType = newType;
 
         if (!nameUpdated) {
-            this.generateConstraintName();
+            this.generateConstraintName(true);
         } else {
             this.makeNameUnique();
         }
     }
 
-    private void generateConstraintName() {
-        if (CommonUtils.isEmpty(this.constraintName)) {
+    private void generateConstraintName(boolean forceRefresh) {
+        if (CommonUtils.isEmpty(this.constraintName) || forceRefresh) {
             String namePrefix = TYPE_PREFIX.get(constraintType);
             if (namePrefix == null) {
                 namePrefix = "_KEY";
