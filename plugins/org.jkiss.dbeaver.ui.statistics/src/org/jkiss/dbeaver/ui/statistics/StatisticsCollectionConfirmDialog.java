@@ -74,7 +74,6 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
     @Override
     protected void buttonPressed(int buttonId) {
-        // if user untick the checkbox, not needed to share
         if (shareData.getSelection()) {
             // DO NOT SEND
             UIStatisticsActivator.setSkipDataShareConfirmation(false);
