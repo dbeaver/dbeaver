@@ -281,29 +281,30 @@ public class DB2Table extends DB2TableBase
             return new ArrayList<>(referenceCache);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Find table references")) {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT R.* FROM SYSCAT.REFERENCES R\n" +
                     "WHERE R.REFTABSCHEMA = ? AND R.REFTABNAME = ?\n" +
                     "ORDER BY R.REFKEYNAME\n" +
-                    "WITH UR");
-            dbStat.setString(1, this.getSchema().getName());
-            dbStat.setString(2, this.getName());
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                List<DB2TableForeignKey> result = new ArrayList<>();
-                while (dbResult.nextRow()) {
-                    String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
-                    String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
-                    String fkName = JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTNAME");
-                    DB2Table ownerTable = DB2Utils.findTableBySchemaNameAndName(
-                        session.getProgressMonitor(), this.getDataSource(), ownerSchemaName, ownerTableName);
-                    if (ownerTable == null) {
-                        log.error("Cannot find reference owner table " + ownerSchemaName + "." + ownerTableName);
-                        continue;
+                    "WITH UR")) {
+                dbStat.setString(1, this.getSchema().getName());
+                dbStat.setString(2, this.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    List<DB2TableForeignKey> result = new ArrayList<>();
+                    while (dbResult.nextRow()) {
+                        String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+                        String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
+                        String fkName = JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTNAME");
+                        DB2Table ownerTable = DB2Utils.findTableBySchemaNameAndName(
+                            session.getProgressMonitor(), this.getDataSource(), ownerSchemaName, ownerTableName);
+                        if (ownerTable == null) {
+                            log.error("Cannot find reference owner table " + ownerSchemaName + "." + ownerTableName);
+                            continue;
+                        }
+                        DB2TableForeignKey fk = ownerTable.getAssociation(monitor, fkName);
+                        result.add(fk);
                     }
-                    DB2TableForeignKey fk = ownerTable.getAssociation(monitor, fkName);
-                    result.add(fk);
+                    referenceCache = result;
                 }
-                referenceCache = result;
             }
         } catch (SQLException e) {
             throw new DBCException("Error reading table references", e);

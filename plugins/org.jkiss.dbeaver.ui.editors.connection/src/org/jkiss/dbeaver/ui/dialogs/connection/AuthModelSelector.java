@@ -61,6 +61,7 @@ public class AuthModelSelector extends Composite {
     private final Runnable panelExtender;
     private final Runnable changeListener;
     private Combo authModelCombo;
+    private boolean authSettingsEnabled = true;
 
     public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener) {
         super(parent, SWT.NONE);
@@ -85,6 +86,10 @@ public class AuthModelSelector extends Composite {
         return selectedAuthModel;
     }
 
+    public DBPDataSourceContainer getActiveDataSource() {
+        return activeDataSource;
+    }
+
     Composite getAuthPanelComposite() {
         return modelConfigPlaceholder;
     }
@@ -104,6 +109,7 @@ public class AuthModelSelector extends Composite {
     public void loadSettings(DBPDataSourceContainer dataSourceContainer, DBPAuthModelDescriptor activeAuthModel, String defaultAuthModelId) {
         this.activeDataSource = dataSourceContainer;
         this.selectedAuthModel = activeAuthModel;
+        this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
         this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
             DataSourceProviderRegistry.getInstance().getAllAuthModels() :
             DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
@@ -176,7 +182,7 @@ public class AuthModelSelector extends Composite {
         });
         UIUtils.createEmptyLabel(authModelComp, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (sharedConfigurator != null) {
-            sharedConfigurator.createControl(authModelComp, activeDataSource, this::refreshCredentials);
+            sharedConfigurator.createControl(authModelComp, this, this::refreshCredentials);
         } else {
             UIUtils.createEmptyLabel(authModelComp, 1, 1);
         }
@@ -194,7 +200,7 @@ public class AuthModelSelector extends Composite {
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
         DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
-        {
+        if (authSettingsEnabled) {
             authModelConfigurator = null;
             UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(authModel);
             if (uiConfiguratorDescriptor != null) {
@@ -258,4 +264,17 @@ public class AuthModelSelector extends Composite {
         }
     }
 
+    public boolean isAuthSettingsEnabled() {
+        return authSettingsEnabled;
+    }
+
+    public void enableAuthSettings(boolean enable, boolean redraw) {
+        if (authSettingsEnabled != enable) {
+            authSettingsEnabled = enable;
+            if (redraw) {
+                authModelConfigurator = null;
+                changeAuthModel();
+            }
+        }
+    }
 }

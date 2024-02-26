@@ -251,7 +251,9 @@ numericOperation:                           (((Asterisk|Solidus) factor)+ (sign 
 intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 
-valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
+valueExpressionPrimary: valueExpressionCast|valueExpressionAtom;
+valueExpressionCast: valueExpressionAtom TypeCast dataType;
+valueExpressionAtom: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
     |aggregateExpression|nullSpecification|truthValue|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
 
