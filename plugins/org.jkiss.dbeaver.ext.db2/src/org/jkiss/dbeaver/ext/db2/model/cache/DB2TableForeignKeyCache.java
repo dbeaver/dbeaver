@@ -38,7 +38,7 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableForeignKey, DB2TableKeyColumn> {
+public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableForeignKey, DB2TableForeignKeyColumn> {
 
     private static final String SQL_FK_TAB;
     private static final String SQL_FK_ALL;
@@ -112,10 +112,12 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
 
     @Nullable
     @Override
-    protected DB2TableKeyColumn[] fetchObjectRow(JDBCSession session, DB2Table db2Table, DB2TableForeignKey object,
-                                                 JDBCResultSet dbResult) throws SQLException, DBException
-    {
-
+    protected DB2TableForeignKeyColumn[] fetchObjectRow(
+        @NotNull JDBCSession session,
+        @NotNull DB2Table db2Table,
+        @NotNull DB2TableForeignKey object,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
         DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
@@ -123,15 +125,14 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
                 + "' ??");
             return null;
         } else {
-            return new DB2TableKeyColumn[] {
-                new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"))
+            return new DB2TableForeignKeyColumn[] {
+                new DB2TableForeignKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"))
             };
         }
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, DB2TableForeignKey constraint, List<DB2TableKeyColumn> rows)
-    {
+    protected void cacheChildren(DBRProgressMonitor monitor, DB2TableForeignKey constraint, List<DB2TableForeignKeyColumn> rows) {
         constraint.setAttributeReferences(rows);
     }
 }
