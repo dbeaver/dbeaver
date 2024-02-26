@@ -386,20 +386,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
         Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
         Map<String, Object> configurationMap = null;
         configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
-        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))) {
-            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
-                && DBWorkbench.getPlatform().getApplication().isCommunity()) {
-                if (DBWorkbench.getPlatformUI().confirmAction(
-                    RegistryMessages.project_open_cannot_read_credentials_title,
-                    NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
-                        registry.getProject().getName()),
-                    RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
-                    // in case of user agreed lost project credentials - proceed opening
-                    log.info("The user agreed lost project credentials.");
-                } else {
-                    // in case of canceling erase credentials intercept original exception
-                    throw new DBInterruptedException("Project secure credentials read canceled by user.");
-                }
+        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
+            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
+            && (DBWorkbench.getPlatform().getApplication().isCommunity())) {
+            if (DBWorkbench.getPlatformUI().confirmAction(
+                RegistryMessages.project_open_cannot_read_credentials_title,
+                NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
+                    registry.getProject().getName()),
+                RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
+                // in case of user agreed lost project credentials - proceed opening
+                log.info("The user agreed lost project credentials.");
+            } else {
+                // in case of canceling erase credentials intercept original exception
+                throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
         }
         secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);

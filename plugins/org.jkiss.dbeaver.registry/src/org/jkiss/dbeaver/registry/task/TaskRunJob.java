@@ -94,7 +94,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             Log.setLogWriter(logStream);
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
             try {
-                DBTTaskRunStatus runResultStatus = executeTask(new LoggingProgressMonitor(monitor), logStream);
+                DBTTaskRunStatus runResultStatus = executeTask(new TaskLoggingProgressMonitor(monitor, task), logStream);
                 taskRun.setExtraMessage(runResultStatus.getResultMessage());
             } catch (Throwable e) {
                 taskError = e;
@@ -134,24 +134,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     @Override
     public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         runnable.run(activeMonitor);
-    }
-
-    private class LoggingProgressMonitor extends ProxyProgressMonitor {
-        public LoggingProgressMonitor(DBRProgressMonitor monitor) {
-            super(monitor);
-        }
-
-        @Override
-        public void beginTask(String name, int totalWork) {
-            super.beginTask(name, totalWork);
-            taskLog.debug("" + name);
-        }
-
-        @Override
-        public void subTask(String name) {
-            super.subTask(name);
-            taskLog.debug("\t" + name);
-        }
     }
 
     private class LoggingExecutionListener implements DBTTaskExecutionListener {
