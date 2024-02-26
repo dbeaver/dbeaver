@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
 
 /**
  * StatisticsCollectionConfirmDialog
@@ -36,7 +37,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
     private Button shareData;
 
     public StatisticsCollectionConfirmDialog(Shell parentShell) {
-        super(parentShell, "Statistics collection", DBIcon.STATUS_INFO);
+        super(parentShell, StatisticCollectionMessages.statistic_collection_dialog_title, DBIcon.STATUS_INFO);
     }
 
     @Override
@@ -53,7 +54,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
         UIUtils.createEmptyLabel(composite, 1, 1);
         UIUtils.createLink(composite,
-            "You can always change this behavior in <a>Preferences</a>.",
+            StatisticCollectionMessages.statistic_collection_pref_link,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                 Shell parentShell = getParentShell();
                 close();
@@ -63,13 +64,13 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
                         PrefPageUsageStatistics.PAGE_ID);
                 }));
         UIUtils.createEmptyLabel(composite, 1, 1);
-        shareData = UIUtils.createCheckbox(composite, "Do not share data.", false);
+        shareData = UIUtils.createCheckbox(composite, StatisticCollectionMessages.statistic_collection_dont_share_lbl, false);
         return composite;
     }
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.YES_ID, "Confirm", true);
+        createButton(parent, IDialogConstants.YES_ID, StatisticCollectionMessages.statistic_collection_confirm_lbl, true);
     }
 
     @Override
