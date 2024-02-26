@@ -128,6 +128,7 @@ public class STMKnownRuleNames {
     public static final String columnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnReference];
     public static final String valueReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueReference];
     public static final String valueExpressionCast = SQLStandardParser.ruleNames[SQLStandardParser.RULE_valueExpressionCast];
+    public static final String variableExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableExpression];
 
     public static final String qualifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifier];
     public static final String correlationName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_correlationName];

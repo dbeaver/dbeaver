@@ -401,7 +401,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
         }
-        secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        try {
+            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        } catch (DBInterruptedException e) {
+            throw e;
+        } catch (DBException e) {
+            log.error(e);
+        }
         if (secureCredentialsMap != null) {
             secureProperties.putAll(secureCredentialsMap);
         }
@@ -824,12 +830,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
             final String data = loadConfigFile(is, true);
             return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
             }.getType());
-        } catch (DBInterruptedException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException e) {
             // here we catch any exceptions that happens for secure credential
             // reading
-            log.error("Unexpected error during read secure credentials", e);
             throw new DBException("Project secure credentials can not be read", e);
         }
     }
