@@ -328,6 +328,7 @@ ZONE: Z O N E ;
 
 
 // symbols
+TypeCast: '::';
 EqualsOperator: '=';
 NotEqualsOperator: '<>' | '!=';
 RightParen: ')';

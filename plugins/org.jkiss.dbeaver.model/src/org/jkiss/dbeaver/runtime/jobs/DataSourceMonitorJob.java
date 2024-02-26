@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -271,6 +270,9 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
+        if (container.getDriver().isEmbedded() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return 0;
+        }
         DBPConnectionConfiguration config = container.getConnectionConfiguration();
         if (!config.isCloseIdleConnection()) {
             return 0;
