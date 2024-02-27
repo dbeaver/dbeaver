@@ -99,16 +99,16 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         return textWidget;
     }
     
-    private boolean expandAnnotationsContaining(ProjectionAnnotationModel projectionAnnotationModel, int offset) {
+    private boolean expandAnnotationsContaining(@NotNull ProjectionAnnotationModel projectionAnnotationModel, int offset) {
         Iterator<Annotation> it = projectionAnnotationModel.getAnnotationIterator(offset, 0, true, true);
         
         boolean expanded = false;
         while (it.hasNext()) {
             Annotation annotation = it.next();
             if (annotation instanceof ProjectionAnnotation p && p.isCollapsed()) {
-                Position position= projectionAnnotationModel.getPosition(annotation);
+                Position position = projectionAnnotationModel.getPosition(annotation);
                 if (position != null && position.includes(offset)) {
-                    expanded |= true;
+                    expanded = true;
                     projectionAnnotationModel.expand(annotation);
                 }
             }
@@ -117,7 +117,7 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     }
     
     @Override
-    public boolean exposeModelRange(IRegion modelRange) {
+    public boolean exposeModelRange(@NotNull IRegion modelRange) {
         if (isProjectionMode()) {
             // Underlying default implementation was
             //     return projectionAnnotationModel.expandAll(modelRange.getOffset(), modelRange.getLength());
