@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -53,7 +54,7 @@ public class SMTeam extends SMSubject {
     @NotNull
     @Property(viewable = true, order = 2)
     public String getTeamName() {
-        return Objects.requireNonNullElse(teamName, subjectId);
+        return CommonUtils.isEmpty(teamName) ? subjectId : teamName;
     }
 
     public void setTeamName(String teamName) {
