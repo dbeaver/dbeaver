@@ -693,6 +693,19 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
+        public Object visitValueVariableExpr(@NotNull SQLQueryValueVariableExpression varExpr, @NotNull OutlineQueryNode node) {
+            DBPImage icon = switch (varExpr.getKind()) {
+                case BATCH_VARIABLE -> UIIcon.SQL_VARIABLE2;
+                case CLIENT_PARAMETER -> UIIcon.SQL_PARAMETER;
+                case CLIENT_VARIABLE -> UIIcon.SQL_PARAMETER;
+                default -> throw new IllegalStateException("Unexpected variable expression kind " + varExpr);
+            };
+            this.makeNode(node, varExpr, prepareQueryPreview(varExpr.getRawName()), icon);
+            return null;
+        }
+        
+        @Nullable
+        @Override
         public Object visitValueColumnRefExpr(
             @NotNull SQLQueryValueColumnReferenceExpression columnRefExpr,
             @NotNull OutlineQueryNode node

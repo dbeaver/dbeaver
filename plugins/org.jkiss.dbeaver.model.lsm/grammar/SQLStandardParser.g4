@@ -255,7 +255,9 @@ valueExpressionPrimary: valueExpressionCast|valueExpressionAtom;
 valueExpressionCast: valueExpressionAtom TypeCast dataType;
 valueExpressionAtom: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |aggregateExpression|nullSpecification|truthValue|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
+    |aggregateExpression|nullSpecification|truthValue|variableExpression|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
+
+variableExpression: BatchVariableName|ClientVariableName|ClientParameterName;
 
 numericPrimary: (valueExpressionPrimary|extractExpression);
 factor: sign? numericPrimary;
