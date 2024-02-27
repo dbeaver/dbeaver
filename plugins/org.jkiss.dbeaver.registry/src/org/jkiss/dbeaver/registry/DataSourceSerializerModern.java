@@ -757,7 +757,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 );
 
                 // Preferences
-                dataSource.getPreferenceStore().getProperties().putAll(
+                Map<String, String> properties = dataSource.getPreferenceStore().getProperties();
+                properties.clear();
+                properties.putAll(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
                 );
 
