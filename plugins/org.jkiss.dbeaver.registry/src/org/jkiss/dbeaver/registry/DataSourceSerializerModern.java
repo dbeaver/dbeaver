@@ -73,13 +73,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
-    private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration"; //$NON-NLS-1$
+    private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration";
     public static final String ATTR_DPI_ENABLED = "dpi-enabled";
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
-    private static final String NODE_CONNECTION = "#connection";
-    private static final String USE_PROJECT_PASSWORD = "useProjectPassword";
-    private static final String CONFIGURATION_FOLDERS = "folders";
+    private static final String NODE_CONNECTION = "#connection"; //$NON-NLS-1$
+    private static final String USE_PROJECT_PASSWORD = "useProjectPassword"; //$NON-NLS-1$
+    private static final String CONFIGURATION_FOLDERS = "folders"; //$NON-NLS-1$
+    private static final String ENCRYPTED_CONFIGURATION = "secureProject"; //$NON-NLS-1$
 
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
@@ -383,9 +384,27 @@ class DataSourceSerializerModern implements DataSourceSerializer
         var connectionConfigurationChanged = false;
 
         // Read in this particular order to handle configuration reading errors first, but process in reverse order later
-        Map<String, Map<String, Map<String, String>>>  secureCredentialsMap = null ;
+        Map<String, Map<String, Map<String, String>>> secureCredentialsMap = null;
         Map<String, Object> configurationMap = null;
-        configurationMap  = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+
+        // process projectConfiguration
+        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(ENCRYPTED_CONFIGURATION))
+            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
+            && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(
+                RegistryMessages.project_open_cannot_read_configuration_title,
+                NLS.bind(RegistryMessages.project_open_cannot_read_configuration_message,
+                    registry.getProject().getName()));
+            throw new DBInterruptedException("Project secure credentials read canceled by user.");
+        }
+        try {
+            configurationMap = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+        } catch (DBInterruptedException e) {
+            throw e;
+        } catch (DBException e) {
+            log.error(e);
+        }
+        // process project credential
         if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
             && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
             && (DBWorkbench.getPlatform().getApplication().isCommunity())) {
@@ -859,19 +878,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // happens only if user cancelled entering password
             // not a community level
             throw e;
-        } catch (Exception e) {
+        } catch (IOException e) {
             // intercept exceptions for crypted configuration
             // for community provide a dialog
-            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
-                    && DBWorkbench.getPlatform().getApplication().isCommunity()) {
-                DBWorkbench.getPlatformUI().showWarningMessageBox(
-                        RegistryMessages.project_open_cannot_read_configuration_title,
-                        NLS.bind(RegistryMessages.project_open_cannot_read_configuration_message,
-                                registry.getProject().getName()));
-                throw new DBException("Can not open project with encrypted configuration");
-            } else {
-                throw e;
-            }
+          throw new DBException(e.getMessage(),e);  
         }
     }
 
