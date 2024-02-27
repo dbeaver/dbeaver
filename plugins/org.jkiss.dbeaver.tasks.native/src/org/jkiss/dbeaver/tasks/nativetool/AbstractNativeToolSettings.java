@@ -62,12 +62,24 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     private DBPDataSourceContainer dataSourceContainer;
     private final List<BASE_OBJECT> databaseObjects = new ArrayList<>();
 
+    private DBPProject project;
+
+    protected AbstractNativeToolSettings() {
+    }
+
+    protected AbstractNativeToolSettings(@NotNull DBPProject project) {
+        this.project = project;
+    }
+
     public List<BASE_OBJECT> getDatabaseObjects() {
         return databaseObjects;
     }
 
     public DBPProject getProject() {
-        return dataSourceContainer == null ? null : dataSourceContainer.getProject();
+        if (project == null) {
+            project = dataSourceContainer == null ? null : dataSourceContainer.getProject();
+        }
+        return project;
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
@@ -152,18 +164,19 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
         if (dataSourceContainer == null) {
             String dsID = preferenceStore.getString("dataSource");
             if (!CommonUtils.isEmpty(dsID)) {
-                String projectName = preferenceStore.getString("project");
-                DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                if (project == null) {
-                    if (!CommonUtils.isEmpty(projectName)) {
-                        log.error("Can't find project '" + projectName + "' for tool configuration");
+                if (getProject() == null) {
+                    String projectName = preferenceStore.getString("project");
+                    DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform()
+                        .getWorkspace()
+                        .getProject(projectName);
+                    if (project == null) {
+                        if (!CommonUtils.isEmpty(projectName)) {
+                            log.error("Can't find project '" + projectName + "' for tool configuration");
+                        }
+                        project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                     }
-                    project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                 }
-                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsID);
-                if (dataSourceContainer == null) {
-                    log.error("Can't find datasource '" + dsID+ "' in project '" + project.getName() + "' for tool configuration");
-                }
+                dataSourceContainer = getProject().getDataSourceRegistry().getDataSource(dsID);
             }
         }
 
