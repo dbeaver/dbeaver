@@ -881,7 +881,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         } catch (IOException e) {
             // intercept exceptions for crypted configuration
             // for community provide a dialog
-          throw new DBException(e.getMessage(),e);  
+            throw new DBException(e.getMessage(), e);
         }
     }
 
