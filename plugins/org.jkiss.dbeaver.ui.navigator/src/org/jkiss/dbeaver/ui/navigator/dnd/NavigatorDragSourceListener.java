@@ -59,17 +59,23 @@ public class NavigatorDragSourceListener implements DragSourceListener {
     private static final Log log = Log.getLog(NavigatorDragSourceListener.class);
 
     private final Viewer viewer;
-    private Path tempFolder;
     private IStructuredSelection selection;
+    private Path tempFolder;
 
     public NavigatorDragSourceListener(Viewer viewer) {
         this.viewer = viewer;
-        try {
-            tempFolder = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files");
-        } catch (IOException e) {
-            log.error(e);
-            tempFolder = Path.of(System.getProperty(StandardConstants.ENV_TMP_DIR));
+    }
+
+    private synchronized Path getTempFolder() {
+        if (tempFolder == null) {
+            try {
+                tempFolder = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files");
+            } catch (IOException e) {
+                log.error(e);
+                tempFolder = Path.of(System.getProperty(StandardConstants.ENV_TMP_DIR));
+            }
         }
+        return tempFolder;
     }
 
     @Override
@@ -158,7 +164,7 @@ public class NavigatorDragSourceListener implements DragSourceListener {
 
     @Nullable
     private Path copyStreamToTempFile(DBNStreamData streamData, String fileName) throws InvocationTargetException, InterruptedException {
-        Path tmpFile = tempFolder.resolve(CommonUtils.escapeFileName(fileName));
+        Path tmpFile = getTempFolder().resolve(CommonUtils.escapeFileName(fileName));
         if (!Files.exists(tmpFile)) {
             try {
                 Files.createFile(tmpFile);

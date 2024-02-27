@@ -61,4 +61,5 @@ public class UIDashboardActivator extends AbstractUIPlugin {
     public DBPPreferenceStore getPreferences() {
         return preferences;
     }
+    
 }

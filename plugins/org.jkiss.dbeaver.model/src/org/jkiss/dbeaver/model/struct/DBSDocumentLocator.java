@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDocument;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
@@ -31,10 +32,14 @@ public interface DBSDocumentLocator extends DBSDocumentContainer
 {
     /**
      * Find document by key attributes
-     * @param monitor progress monitor
+     * @param session session
+     *
      * @throws DBException on any DB error
      */
     @Nullable
-    DBDDocument findDocument(@NotNull DBRProgressMonitor monitor, Map<String, Object> key) throws DBException;
+    DBDDocument findDocument(@NotNull DBCSession session, Map<String, Object> key, Map<String, Object> metaData) throws DBException;
+
+
+    boolean isDocumentValid(@NotNull DBDDocument documentId) throws DBException;
 
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.statistics;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -26,14 +27,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
 
 /**
  * StatisticsCollectionConfirmDialog
  */
 public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
+    private Button shareData;
+
     public StatisticsCollectionConfirmDialog(Shell parentShell) {
-        super(parentShell, "Statistics collection", DBIcon.STATUS_INFO);
+        super(parentShell, StatisticCollectionMessages.statistic_collection_dialog_title, DBIcon.STATUS_INFO);
     }
 
     @Override
@@ -50,7 +54,7 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
         UIUtils.createEmptyLabel(composite, 1, 1);
         UIUtils.createLink(composite,
-            "You can always change this behavior in <a>preferences</a>",
+            StatisticCollectionMessages.statistic_collection_pref_link,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                 Shell parentShell = getParentShell();
                 close();
@@ -59,20 +63,27 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
                         null,
                         PrefPageUsageStatistics.PAGE_ID);
                 }));
-
+        UIUtils.createEmptyLabel(composite, 1, 1);
+        shareData = UIUtils.createCheckbox(composite, StatisticCollectionMessages.statistic_collection_dont_share_lbl, false);
         return composite;
     }
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.YES_ID, "Send anonymous statistics", true);
-        createButton(parent, IDialogConstants.NO_ID, "Do not send", false);
+        createButton(parent, IDialogConstants.YES_ID, StatisticCollectionMessages.statistic_collection_confirm_lbl, true);
     }
 
     @Override
     protected void buttonPressed(int buttonId) {
-        UIStatisticsActivator.setSkipDataShareConfirmation(true);
-        UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
+        if (shareData.getSelection()) {
+            // DO NOT SEND
+            UIStatisticsActivator.setSkipDataShareConfirmation(false);
+            UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.NO_ID);
+        } else {
+            // SEND
+            UIStatisticsActivator.setSkipDataShareConfirmation(true);
+            UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
+        }
         close();
 
         super.buttonPressed(buttonId);

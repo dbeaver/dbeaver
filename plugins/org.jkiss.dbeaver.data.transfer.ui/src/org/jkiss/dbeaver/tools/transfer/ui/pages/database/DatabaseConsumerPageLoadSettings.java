@@ -501,6 +501,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         } else {
             onDuplicateKeyInsertMethods.setText(DBSDataManipulator.INSERT_NONE_METHOD);
             onDuplicateKeyInsertMethods.setEnabled(false);
+            settings.setOnDuplicateKeyInsertMethodId(null);
         }
 
         availableInsertMethodsDescriptors = insertMethodsDescriptors;

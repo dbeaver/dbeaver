@@ -59,11 +59,20 @@ public class DashboardUpdater {
     public DashboardUpdater() {
     }
 
-    public void updateDashboards(DBRProgressMonitor monitor) {
-        List<DashboardContainer> dashboards = getDashboardsToUpdate();
+    /**
+     * 
+     * @param monitor
+     * @return true if need pause to update dashboard, false if not
+     */
+    public boolean updateDashboards(DBRProgressMonitor monitor) {
+        List<DashboardContainer> dashboards = new ArrayList<>();
+        if (getDashboardsToUpdate(dashboards)) {
+            return true;
+        }
 
         updateDashboards(monitor, dashboards);
-
+        
+        return false;
     }
 
     private void updateDashboards(DBRProgressMonitor monitor, List<DashboardContainer> dashboards) {
@@ -377,29 +386,32 @@ public class DashboardUpdater {
         return newDataset;
     }
 
-    public List<DashboardContainer> getDashboardsToUpdate() {
-        List<DashboardContainer> dashboards = new ArrayList<>();
+    public boolean getDashboardsToUpdate(List<DashboardContainer> dashboards) {
+        boolean pauseDashboardUpdate = true;
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IViewReference view : page.getViewReferences()) {
                     if (view.getId().equalsIgnoreCase(DashboardView.VIEW_ID)) {
                         IWorkbenchPart part = view.getPart(false);
-                        if (part instanceof DashboardView) {
+                        if (part instanceof DashboardView && checkViewDashboards((DashboardView) part)) {
                             getViewDashboards((DashboardView) part, dashboards);
+                            pauseDashboardUpdate = false;
                         }
                     }
                 }
             }
         }
-        return dashboards;
+        return pauseDashboardUpdate;
+    }
+    
+    private boolean checkViewDashboards(DashboardView view) {
+        DashboardListViewer viewManager = view.getDashboardListViewer();
+        return viewManager != null && viewManager.getDataSourceContainer().isConnected();
     }
 
     private void getViewDashboards(DashboardView view, List<DashboardContainer> dashboards) {
         long currentTime = System.currentTimeMillis();
         DashboardListViewer viewManager = view.getDashboardListViewer();
-        if (viewManager == null || !viewManager.getDataSourceContainer().isConnected()) {
-            return;
-        }
         for (DashboardGroupContainer group : viewManager.getGroups()) {
             for (DashboardContainer dashboard : group.getItems()) {
                 Date lastUpdateTime = dashboard.getLastUpdateTime();

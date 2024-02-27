@@ -122,14 +122,16 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 // and no blocking process will occur
                 DBNNode[] children = DBNUtils.getNodeChildrenFiltered(
                     new VoidProgressMonitor(), parentNode, true);
-                Throwable lastLoadError = parentNode.getLastLoadError();
-                if (lastLoadError != null) {
-                    UIUtils.asyncExec(() -> {
-                        DBWorkbench.getPlatformUI().showError(
-                            "Error during node load",
-                            CommonUtils.notEmpty(lastLoadError.getMessage()),
-                            lastLoadError);
-                    });
+                if (children == null) {
+                    Throwable lastLoadError = parentNode.getLastLoadError();
+                    if (lastLoadError != null) {
+                        UIUtils.asyncExec(() -> {
+                            DBWorkbench.getPlatformUI().showError(
+                                "Error during node load",
+                                CommonUtils.notEmpty(lastLoadError.getMessage()),
+                                lastLoadError);
+                        });
+                    }
                 }
                 return getFinalNodes(parentNode, children);
             }

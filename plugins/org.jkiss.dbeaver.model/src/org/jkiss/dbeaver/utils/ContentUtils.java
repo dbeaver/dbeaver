@@ -347,7 +347,7 @@ public class ContentUtils {
             }
         }
         try {
-            Files.delete(file);
+            Files.deleteIfExists(file);
         } catch (IOException e) {
             log.warn("Error deleting file " + file, e);
             return false;

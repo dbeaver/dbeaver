@@ -507,7 +507,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         }
     }
 
-    private String computeTitle() {
+    protected String computeTitle() {
         // Use hardcoded pref constants to avoid E4.7 compile dependency
         IPreferenceStore ps = IDEWorkbenchPlugin.getDefault().getPreferenceStore();
         StringJoiner sj = new StringJoiner(" - "); //$NON-NLS-1$
