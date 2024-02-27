@@ -94,6 +94,10 @@ public interface DBTTaskManager {
     @NotNull
     Path getStatisticsFolder(@NotNull DBTTask task);
 
-    Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
+    @NotNull
+    DBTTaskRunStatus runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException;
+
+    @NotNull
+    Job scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException;
 
 }

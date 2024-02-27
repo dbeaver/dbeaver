@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -75,7 +74,7 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
 
         try {
             TaskProcessorUI listener = new TaskProcessorUI(UIUtils.getDialogRunnableContext(), task);
-            task.getProject().getTaskManager().runTask(task, listener, Collections.emptyMap());
+            task.getProject().getTaskManager().scheduleTask(task, listener);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Task run", "Error running task '" + task.getName() + "'", e);
         }

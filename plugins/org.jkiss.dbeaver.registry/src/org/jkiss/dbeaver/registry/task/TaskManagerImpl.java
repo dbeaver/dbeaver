@@ -302,8 +302,29 @@ public class TaskManagerImpl implements DBTTaskManager {
         return statisticsFolder.resolve(task.getId());
     }
 
+    @NotNull
     @Override
-    public Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
+    public DBTTaskRunStatus runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
+        final TaskRunJob job = scheduleTask(task, listener);
+        try {
+            job.join();
+        } catch (InterruptedException e) {
+            log.debug("Task canceled");
+        }
+        final Throwable error = job.getTaskError();
+        if (error != null) {
+            if (error instanceof DBException e) {
+                throw e;
+            } else {
+                throw new DBException("Error executing task", error);
+            }
+        }
+        return job.getTaskRunStatus();
+    }
+
+    @NotNull
+    @Override
+    public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
         TaskRunJob runJob = new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener);
         runJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
