@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -120,6 +121,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
             queryParams.setSchemaColumnName(MySQLConstants.COL_TABLE_SCHEMA);
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        queryParams.setCaseSensitive(params.isCaseSensitive());
         String sql = generateQuery(queryParams);
 
         // Load tables
@@ -132,6 +134,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     objects.add(new AbstractObjectReference<DBSObject>(tableName, dataSource.getCatalog(catalogName), null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                            if (CommonUtils.isEmpty(tableName)) {
+                                throw new DBException("Table name not found in the metadata.");
+                            }
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Table catalog '" + catalogName + "' not found");
@@ -164,6 +169,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
             queryParams.setSchemaColumnName(MySQLConstants.COL_ROUTINE_SCHEMA);
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        queryParams.setCaseSensitive(params.isCaseSensitive());
         if (params.isSearchInDefinitions()) {
             queryParams.setDefinitionColumnName(MySQLConstants.COL_ROUTINE_DEFINITION);
         }
@@ -208,6 +214,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
             queryParams.setSchemaColumnName(MySQLConstants.COL_TABLE_SCHEMA);
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        queryParams.setCaseSensitive(params.isCaseSensitive());
         String sql = generateQuery(queryParams);
 
         // Load constraints
@@ -269,6 +276,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
             queryParams.setSchemaColumnName(MySQLConstants.COL_TABLE_SCHEMA);
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        queryParams.setCaseSensitive(params.isCaseSensitive());
         if (params.isSearchInDefinitions()) {
             queryParams.setDefinitionColumnName(MySQLConstants.COL_COLUMN_GENERATION_EXPRESSION);
         }
@@ -286,6 +294,10 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                         @NotNull
                         @Override
                         public String getFullyQualifiedName(DBPEvaluationContext context) {
+                            if (CommonUtils.isEmpty(catalogName) || CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(columnName)) {
+                                log.debug("Can't find correct column metadata.");
+                                return "";
+                            }
                             return DBUtils.getQuotedIdentifier(dataSource, catalogName) +
                                 '.' +
                                 DBUtils.getQuotedIdentifier(dataSource, tableName) +
@@ -299,6 +311,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Column catalog '" + catalogName + "' not found");
+                            }
+                            if (CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(columnName)) {
+                                throw new DBException("Incorrect metadata for search.");
                             }
                             MySQLTableBase table = tableCatalog.getTableCache().getObject(monitor, tableCatalog, tableName);
                             if (table == null) {
@@ -318,30 +333,47 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
     private static String generateQuery(@NotNull QueryParams params) {
         StringBuilder sql = new StringBuilder("SELECT ").append(params.getSelect()).append(" FROM ").append(params.getFrom()).append(" WHERE ");
-        boolean addParentheses = params.getCommentColumnName() != null || params.getDefinitionColumnName() != null;
+        String commentColumnName = params.getCommentColumnName();
+        String definitionColumnName = params.getDefinitionColumnName();
+        boolean addParentheses = commentColumnName != null || definitionColumnName != null;
         if (addParentheses) {
             sql.append("(");
         }
-        sql.append(params.getObjectNameColumn()).append(" LIKE ? ");
-        if (params.getCommentColumnName() != null) {
-            sql.append("OR ").append(params.getCommentColumnName()).append(" LIKE ?");
+        boolean caseSensitive = params.isCaseSensitive();
+        addNameWithLikeCondition(sql, params.getObjectNameColumn(), caseSensitive, false);
+        if (!CommonUtils.isEmpty(commentColumnName)) {
+            addNameWithLikeCondition(sql, commentColumnName, caseSensitive, true);
         }
-        if (params.getDefinitionColumnName() != null) {
-            sql.append(" OR ").append(params.getDefinitionColumnName()).append(" LIKE ?");
+        if (!CommonUtils.isEmpty(definitionColumnName)) {
+            addNameWithLikeCondition(sql, definitionColumnName, caseSensitive, true);
         }
         if (addParentheses) {
             sql.append(") ");
         }
-        if (params.getSchemaColumnName() != null) {
+        if (!CommonUtils.isEmpty(params.getSchemaColumnName())) {
             sql.append("AND ").append(params.getSchemaColumnName()).append(" = ? ");
         }
         sql.append("ORDER BY ").append(params.getObjectNameColumn()).append(" LIMIT ").append(params.getMaxResults());
         return sql.toString();
     }
 
+    private static void addNameWithLikeCondition(@NotNull StringBuilder sql, @NotNull String name, boolean caseSensitive, boolean addOR) {
+        if (addOR) {
+            sql.append(" OR ");
+        }
+        if (!caseSensitive) {
+            sql.append("UPPER(");
+        }
+        sql.append(name);
+        if (!caseSensitive) {
+            sql.append(")");
+        }
+        sql.append(" LIKE ?");
+    }
+
     private static void fillParameters(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
                                        @Nullable MySQLCatalog catalog, boolean hasCommentColumn, boolean hasDefinitionColumn) throws SQLException {
-        String mask = params.getMask().toLowerCase(Locale.ENGLISH);
+        String mask = params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase(Locale.ENGLISH);
         statement.setString(1, mask);
         int idx = 2;
         if (params.isSearchInComments() && hasCommentColumn) {
@@ -377,6 +409,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
         @Nullable
         private String definitionColumnName;
+        private boolean isCaseSensitive;
 
         private QueryParams(@NotNull String objectNameColumn, @NotNull String select, @NotNull String from) {
             this.objectNameColumn = objectNameColumn;
@@ -432,6 +465,14 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
         private void setMaxResults(int maxResults) {
             this.maxResults = maxResults;
+        }
+
+        public boolean isCaseSensitive() {
+            return isCaseSensitive;
+        }
+
+        public void setCaseSensitive(boolean caseSensitive) {
+            isCaseSensitive = caseSensitive;
         }
     }
 
