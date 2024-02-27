@@ -31,6 +31,7 @@ import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
@@ -38,8 +39,8 @@ import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
@@ -225,14 +226,12 @@ public class VersionUpdateDialog extends Dialog {
                 UPGRADE_ID,
                 CoreMessages.dialog_version_update_button_upgrade,
                 true);
-        } else {
-            if (!CommonUtils.isEmpty(earlyAccessURL)) {
-                createButton(
-                    parent,
-                    CHECK_EA_ID,
-                    CoreMessages.dialog_version_update_button_early_access,
-                    false);
-            }
+        } else if (CommonUtils.isNotEmpty(earlyAccessURL)) {
+            createButton(
+                parent,
+                CHECK_EA_ID,
+                CoreMessages.dialog_version_update_button_early_access,
+                false);
         }
         createButton(
             parent,
@@ -253,104 +252,109 @@ public class VersionUpdateDialog extends Dialog {
         if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection()) {
             CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
         }
-        if (buttonId == INFO_ID) {
-            ShellUtils.launchProgram(newVersion.getBaseURL());
-        } else if (buttonId == UPGRADE_ID) {
-            final PlatformInstaller installer = getPlatformInstaller();
-            if (installer != null) {
-                final AbstractJob job = new AbstractJob("Downloading installation file") {
-                    @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
-                        final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
-                        final Path folder;
-                        final Path file;
-
-                        try {
-                            final String executable = installer.getExecutableName(app);
-
-                            folder = Files.createTempDirectory(executable);
-                            file = Files.createFile(folder.resolve(executable));
-
-                            log.debug("Downloading installation file to " + file);
-                            WebUtils.downloadRemoteFile(monitor, "Obtaining installer", getDownloadURL(app, installer, newVersion), file, null);
-                        } catch (IOException e) {
-                            return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
-                        } catch (InterruptedException e) {
-                            log.debug("Canceled by user", e);
-                            return Status.OK_STATUS;
-                        }
-
-                        if (UIUtils.confirmAction(CoreMessages.dialog_version_update_downloader_title, NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName()))) {
-                            final IWorkbench workbench = PlatformUI.getWorkbench();
-                            final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-
-                            // Arm shutdown listener now because later will be too late
-                            final IWorkbenchListener listener = new IWorkbenchListener() {
-                                {
-                                    workbench.addWorkbenchListener(this);
-                                }
-
-                                @Override
-                                public boolean preShutdown(IWorkbench workbench, boolean forced) {
-                                    return true;
-                                }
-
-                                @Override
-                                public void postShutdown(IWorkbench workbench) {
-                                    try {
-                                        installer.run(file, log);
-                                    } catch (Exception e) {
-                                        log.error("Failed to run the installer script", e);
-                                    }
-                                }
-                            };
-
-                            UIUtils.asyncExec(() -> {
-                                ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_EXIT, workbenchWindow);
-
-                                if (!workbench.isClosing()) {
-                                    workbench.removeWorkbenchListener(listener);
-                                    ShellUtils.launchProgram(folder.toString());
-                                }
-                            });
-                        } else {
-                            ShellUtils.showInSystemExplorer(file.toAbsolutePath().toString());
-                        }
-
-                        return Status.OK_STATUS;
-                    }
-                };
-                job.setUser(true);
-                job.schedule();
-            } else {
-                ShellUtils.launchProgram(getDownloadPageURL(newVersion));
-            }
-        } else if (buttonId == CHECK_EA_ID) {
-            if (!CommonUtils.isEmpty(earlyAccessURL)) {
-                ShellUtils.launchProgram(earlyAccessURL);
-            }
-        } else if (buttonId == IDialogConstants.PROCEED_ID) {
-            final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-            CheckForUpdateAction.activateStandardHandler(window);
-            try {
-                ActionUtils.runCommand(CheckForUpdateAction.P2_UPDATE_COMMAND, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-            } finally {
-                CheckForUpdateAction.deactivateStandardHandler(window);
-            }
+        switch (buttonId) {
+            case INFO_ID -> showInfo();
+            case CHECK_EA_ID -> showEarlyAccess();
+            case UPGRADE_ID -> runUpgrade();
         }
         close();
     }
 
+    private void showInfo() {
+        ShellUtils.launchProgram(newVersion.getBaseURL());
+    }
+
+    private void showEarlyAccess() {
+        if (CommonUtils.isNotEmpty(earlyAccessURL)) {
+            ShellUtils.launchProgram(earlyAccessURL);
+        }
+    }
+
+    private void runUpgrade() {
+        final PlatformInstaller installer = getPlatformInstaller();
+        if (installer == null) {
+            ShellUtils.launchProgram(getDownloadPageURL(newVersion));
+            return;
+        }
+        final AbstractJob job = new AbstractJob("Downloading installation file") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
+                final Path folder;
+                final Path file;
+
+                try {
+                    final String executable = installer.getExecutableName(app);
+
+                    folder = Files.createTempDirectory(executable);
+                    file = Files.createFile(folder.resolve(executable));
+
+                    log.debug("Downloading installation file to " + file);
+                    WebUtils.downloadRemoteFile(monitor, "Obtaining installer", getDownloadURL(app, installer, newVersion), file, null);
+                } catch (IOException e) {
+                    return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
+                } catch (InterruptedException e) {
+                    log.debug("Canceled by user", e);
+                    return Status.OK_STATUS;
+                }
+
+                final boolean confirmed = UIUtils.confirmAction(
+                    CoreMessages.dialog_version_update_downloader_title,
+                    NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName())
+                );
+                if (!confirmed) {
+                    ShellUtils.showInSystemExplorer(file.toAbsolutePath().toString());
+                    return Status.OK_STATUS;
+                }
+
+                final IWorkbench workbench = PlatformUI.getWorkbench();
+
+                // Arm shutdown listener now because later will be too late
+                final IWorkbenchListener listener = new IWorkbenchListener() {
+                    {
+                        workbench.addWorkbenchListener(this);
+                    }
+
+                    @Override
+                    public boolean preShutdown(IWorkbench workbench, boolean forced) {
+                        return true;
+                    }
+
+                    @Override
+                    public void postShutdown(IWorkbench workbench) {
+                        try {
+                            installer.run(file, log);
+                        } catch (Exception e) {
+                            log.error("Failed to run the installer script", e);
+                        }
+                    }
+                };
+
+                UIUtils.asyncExec(() -> {
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.CONFIRM_EXIT_TEMPORARY, true);
+                    workbench.close();
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.CONFIRM_EXIT_TEMPORARY, false);
+                    
+                    if (!workbench.isClosing()) {
+                        workbench.removeWorkbenchListener(listener);
+                        ShellUtils.launchProgram(folder.toString());
+                    }
+                });
+
+                return Status.OK_STATUS;
+            }
+        };
+        job.setUser(true);
+        job.schedule();
+    }
+
     @Nullable
     private PlatformInstaller getPlatformInstaller() {
-        switch (Platform.getOS()) {
-            case Platform.OS_WIN32:
-                return new WindowsInstaller();
-            case Platform.OS_MACOSX:
-                return new MacintoshInstaller();
-            default:
-                return null;
-        }
+        return switch (Platform.getOS()) {
+            case Platform.OS_WIN32 -> new WindowsInstaller();
+            case Platform.OS_MACOSX -> new MacintoshInstaller();
+            default -> null;
+        };
     }
 
     @NotNull
