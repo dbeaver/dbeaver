@@ -47,7 +47,7 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="versionInfoCoord" value="116,238"/>
+            <property name="versionInfoCoord" value="116,230"/>
             <property name="versionInfoSize" value="8"/>
             <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="60,275,240,21"/>
@@ -72,7 +72,7 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
             <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="116,238"/>
+            <property name="versionInfoCoord" value="116,230"/>
             <property name="versionInfoSize" value="8"/>
             <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="60,275,240,21"/>
