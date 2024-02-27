@@ -204,9 +204,15 @@ public class SQLQueryTranslator implements SQLTranslator {
                 }
             }
         } else if (statement instanceof Alter alter) {
-            for (AlterExpression expr : alter.getAlterExpressions()) {
-                for (ColumnDefinition columnDataType : expr.getColDataTypeList()) {
-                    defChanged |= translateColumnDataType(columnDataType, extendedDialect, targetDialect);
+            if (alter.getAlterExpressions() != null) {
+                for (AlterExpression expr : alter.getAlterExpressions()) {
+                    var columnDataTypeList = expr.getColDataTypeList();
+                    if (columnDataTypeList == null) {
+                        continue;
+                    }
+                    for (ColumnDefinition columnDataType : columnDataTypeList) {
+                        defChanged |= translateColumnDataType(columnDataType, extendedDialect, targetDialect);
+                    }
                 }
             }
         }
