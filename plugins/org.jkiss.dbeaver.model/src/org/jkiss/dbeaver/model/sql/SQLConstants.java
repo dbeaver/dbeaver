@@ -56,6 +56,8 @@ public class SQLConstants {
     public static final String KEYWORD_NOT = "NOT";
     public static final String KEYWORD_NULL = "NULL";
     public static final String KEYWORD_IN = "IN";
+    public static final String KEYWORD_VALUES = "VALUES";
+    public static final String KEYWORD_ORDER_BY = "ORDER BY";
 
     public static final String KEYWORD_LIKE = "LIKE";
     public static final String KEYWORD_ILIKE = "ILIKE";
@@ -339,7 +341,7 @@ public class SQLConstants {
         "USER",
         "USING",
         //"VALUE", // too common for column names
-        "VALUES",
+        KEYWORD_VALUES,
 //        "VAR_POP",
 //        "VAR_SAMP",
         //"VARCHAR",

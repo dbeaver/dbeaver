@@ -41,6 +41,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -804,9 +805,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
-        public Object visitSelectionModel(@NotNull SQLQuerySelectionModel selection, @NotNull OutlineQueryNode node) {
-            if (selection.getResultSource() != null) {
-                selection.getResultSource().apply(this, node);
+        public Object visitSelectionModel(@NotNull SQLQueryModel selection, @NotNull OutlineQueryNode node) {
+            if (selection.getQueryModel() != null) {
+                selection.getQueryModel().apply(this, node);
             }
             return null;
         }
@@ -826,7 +827,13 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitRowsTableValue(SQLQueryRowsTableValueModel tableValue, OutlineQueryNode node) {
-            this.makeNode(node, tableValue, "Default table", DBIcon.TYPE_UNKNOWN); // TODO
+            this.makeNode(
+                node,
+                tableValue,
+                SQLConstants.KEYWORD_VALUES,
+                UIIcon.ROW_COPY,
+                tableValue.getValues().toArray(SQLQueryNodeModel[]::new)
+            );
             return null;
         }
 
@@ -1001,6 +1008,101 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             String extraText = this.obtainExprTypeNameString(columnSpec.getValueExpression());
             
             this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
+            return null;
+        }
+        
+
+        @Nullable
+        @Override
+        public Object visitTableStatementDelete(@NotNull SQLQueryTableDeleteModel deleteStatement, @NotNull OutlineQueryNode node) {
+            String tableName = deleteStatement.getTableModel() == null ? "?" : deleteStatement.getTableModel().getName().toIdentifierString();
+            String nodeName = SQLConstants.KEYWORD_DELETE + " " + SQLConstants.KEYWORD_FROM + " " + tableName;
+            this.makeNode(node, deleteStatement, nodeName, UIIcon.ROW_DELETE, deleteStatement.getTableModel());
+            if (deleteStatement.getCondition() != null) {
+                this.makeNode(node, deleteStatement.getCondition(), SQLConstants.KEYWORD_WHERE, UIIcon.FILTER, deleteStatement.getCondition());
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitTableStatementInsert(@NotNull SQLQueryTableInsertModel insertStatement, @NotNull OutlineQueryNode node) {
+            String tableName = insertStatement.getTableModel() == null
+                ? "?"
+                : insertStatement.getTableModel().getName().toIdentifierString();
+            String columns = insertStatement.getColumnNames().stream().map(c -> c.getName()).collect(Collectors.joining(", ", "(", ")"));
+            String nodeName = SQLConstants.KEYWORD_INSERT + " " + SQLConstants.KEYWORD_INTO + " " + tableName + columns;
+            this.makeNode(node, insertStatement, nodeName, UIIcon.ROW_ADD, insertStatement.getTableModel());
+            
+            if (insertStatement.getValuesRows() != null) {
+                insertStatement.getValuesRows().apply(this, node);
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitTableStatementUpdate(@NotNull SQLQueryTableUpdateModel updateStatement, @NotNull OutlineQueryNode node) {
+            List<String> targetNames = new LinkedList<>();
+            if (updateStatement.getSetClauseList() != null) {
+                List<SQLQueryNodeModel> nodes = new ArrayList<>(updateStatement.getSetClauseList().size() + 1);
+                nodes.add(updateStatement.getTargetRows());
+                nodes.addAll(updateStatement.getSetClauseList());
+
+                for (SQLQueryTableUpdateModel.SetClauseModel setClause : updateStatement.getSetClauseList()) {
+                    setClause.targets.stream()
+                        .map(SQLQueryValueExpression::getColumnNameIfTrivialExpression)
+                        .map(s -> s == null ? "..." : s.getName())
+                        .forEach(targetNames::add);
+                }
+                String columns = targetNames.stream().collect(Collectors.joining(", ", "(", ")"));
+                String targetTableName = updateStatement.getTargetRows() instanceof SQLQueryRowsTableDataModel table
+                    ? table.getName().toIdentifierString()
+                    : "...";
+                String nodeName = SQLConstants.KEYWORD_UPDATE + " " + targetTableName + " " + SQLConstants.KEYWORD_SET + " " + columns;
+                this.makeNode(node, updateStatement, nodeName, UIIcon.ROW_EDIT, nodes.toArray(SQLQueryNodeModel[]::new));
+            }
+            if (updateStatement.getSourceRows() != null) {
+                this.makeNode(
+                    node,
+                    updateStatement.getSourceRows(),
+                    SQLConstants.KEYWORD_FROM,
+                    DBIcon.TREE_FOLDER_TABLE,
+                    updateStatement.getSourceRows()
+                );
+            }
+            if (updateStatement.getWhereClause() != null) {
+                this.makeNode(
+                    node,
+                    updateStatement.getWhereClause(),
+                    SQLConstants.KEYWORD_WHERE,
+                    UIIcon.FILTER,
+                    updateStatement.getWhereClause()
+                );
+            }
+            if (updateStatement.getOrderByClause() != null) {
+                this.makeNode(
+                    node,
+                    updateStatement.getOrderByClause(),
+                    SQLConstants.KEYWORD_ORDER_BY,
+                    UIIcon.SORT,
+                    updateStatement.getOrderByClause()
+                );
+            }
+
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitTableStatementUpdateSetClause(
+            @NotNull SQLQueryTableUpdateModel.SetClauseModel setClause,
+            @NotNull OutlineQueryNode node
+        ) {
+            List<SQLQueryNodeModel> nodes = new ArrayList<>(setClause.targets.size() + setClause.sources.size());
+            nodes.addAll(setClause.targets);
+            nodes.addAll(setClause.sources);
+            this.makeNode(node, setClause, "=", DBIcon.TYPE_ARRAY, nodes.toArray(SQLQueryNodeModel[]::new));
             return null;
         }
 

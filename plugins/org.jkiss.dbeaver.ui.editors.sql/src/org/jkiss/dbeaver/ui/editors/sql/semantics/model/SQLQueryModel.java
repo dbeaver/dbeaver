@@ -26,20 +26,19 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class SQLQuerySelectionModel extends SQLQueryNodeModel {
-
-    // TODO bring cte here apparently
-
+public class SQLQueryModel extends SQLQueryNodeModel {
+    @NotNull
     private final HashSet<SQLQuerySymbolEntry> symbolEntries;
-    private final SQLQueryRowsSourceModel resultSource;
+    @Nullable
+    private final SQLQueryModelContent queryContent;
 
-    public SQLQuerySelectionModel(
+    public SQLQueryModel(
         @NotNull Interval range,
-        @Nullable SQLQueryRowsSourceModel resultSource,
+        @Nullable SQLQueryModelContent queryContent,
         @NotNull HashSet<SQLQuerySymbolEntry> symbolEntries
     ) {
         super(range);
-        this.resultSource = resultSource;
+        this.queryContent = queryContent;
         this.symbolEntries = symbolEntries;
     }
 
@@ -49,13 +48,13 @@ public class SQLQuerySelectionModel extends SQLQueryNodeModel {
     }
 
     @Nullable
-    public SQLQueryRowsSourceModel getResultSource() {
-        return this.resultSource;
+    public SQLQueryModelContent getQueryModel() {
+        return this.queryContent;
     }
 
-    public void propagateContex(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
-        if (this.resultSource != null) {
-            this.resultSource.propagateContext(dataContext, recognitionContext);
+    public void propagateContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
+        if (this.queryContent != null) {
+            this.queryContent.applyContext(dataContext, recognitionContext);
         }
     }
 
