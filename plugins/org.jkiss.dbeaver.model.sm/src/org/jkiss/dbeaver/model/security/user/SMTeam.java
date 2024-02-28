@@ -43,7 +43,7 @@ public class SMTeam extends SMSubject {
     @NotNull
     @Override
     public String getName() {
-        return Objects.requireNonNullElse(teamName, subjectId);
+        return CommonUtils.isEmpty(teamName) ? subjectId : teamName;
     }
 
     @Property(viewable = true, order = 1)
