@@ -338,7 +338,7 @@ dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 // data statements
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
-deleteStatement: DELETE FROM tableName? whereClause?;
+deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
 insertStatement: INSERT INTO tableName? insertColumnsAndSource?;
 insertColumnsAndSource: (LeftParen (insertColumnList? | Asterisk) RightParen?)? (queryExpression | DEFAULT VALUES);
 insertColumnList: columnNameList;

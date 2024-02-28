@@ -129,18 +129,22 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
 
     public static class SetClauseModel extends SQLQueryNodeModel {
         @NotNull
-        public List<SQLQueryValueExpression> targets;
+        public final List<SQLQueryValueExpression> targets;
         @NotNull
-        public List<SQLQueryValueExpression> sources;
+        public final List<SQLQueryValueExpression> sources;
+        @NotNull
+        public final String contents;
 
         public SetClauseModel(
             @NotNull Interval region,
             @NotNull List<SQLQueryValueExpression> targets,
-            @NotNull List<SQLQueryValueExpression> sources
+            @NotNull List<SQLQueryValueExpression> sources,
+            @NotNull String contents
         ) {
             super(region);
             this.targets = targets;
             this.sources = sources;
+            this.contents = contents;
         }
 
         @Override

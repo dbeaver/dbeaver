@@ -20,20 +20,34 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+
+import java.util.Collections;
+
 
 public class SQLQueryTableDeleteModel extends SQLQueryTableStatementModel {
 
     @Nullable
     private final SQLQueryValueExpression whereClause;
+    @Nullable 
+    private final SQLQueryRowsCorrelatedSourceModel aliasedTableModel;
     
     public SQLQueryTableDeleteModel(
         @NotNull Interval region,
-        @NotNull SQLQueryRowsTableDataModel tableModel,
+        @Nullable SQLQueryRowsTableDataModel tableModel,
+        @Nullable SQLQuerySymbolEntry alias, 
         @Nullable SQLQueryValueExpression whereClause
     ) {
         super(region, tableModel);
         this.whereClause = whereClause;
+        
+        if (alias != null && tableModel != null) {
+            Interval correlatedRegion = Interval.of(tableModel.getInterval().a, alias.getInterval().b);
+            this.aliasedTableModel = new SQLQueryRowsCorrelatedSourceModel(correlatedRegion, tableModel, alias, Collections.emptyList());
+        } else {
+            this.aliasedTableModel  = null;
+        }
     }
 
     @Nullable
@@ -41,8 +55,16 @@ public class SQLQueryTableDeleteModel extends SQLQueryTableStatementModel {
         return this.whereClause;
     }
     
+    @Nullable
+    public SQLQueryRowsCorrelatedSourceModel getAliasedTableModel() {
+        return this.aliasedTableModel;
+    }
+    
     @Override
     public void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.aliasedTableModel != null) {
+            context = this.aliasedTableModel.propagateContext(context, statistics);
+        }
         if (this.whereClause != null) {
             this.whereClause.propagateContext(context, statistics);
         }

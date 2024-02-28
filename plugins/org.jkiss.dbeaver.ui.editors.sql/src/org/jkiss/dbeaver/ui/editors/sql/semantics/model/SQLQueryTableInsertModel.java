@@ -35,7 +35,7 @@ public class SQLQueryTableInsertModel extends SQLQueryTableStatementModel {
     
     public SQLQueryTableInsertModel(
         @NotNull Interval region,
-        @NotNull SQLQueryRowsTableDataModel tableModel,
+        @Nullable SQLQueryRowsTableDataModel tableModel,
         @Nullable List<SQLQuerySymbolEntry> columnNames,
         @Nullable SQLQueryRowsSourceModel valuesRows
     ) {

@@ -1017,9 +1017,21 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         public Object visitTableStatementDelete(@NotNull SQLQueryTableDeleteModel deleteStatement, @NotNull OutlineQueryNode node) {
             String tableName = deleteStatement.getTableModel() == null ? "?" : deleteStatement.getTableModel().getName().toIdentifierString();
             String nodeName = SQLConstants.KEYWORD_DELETE + " " + SQLConstants.KEYWORD_FROM + " " + tableName;
-            this.makeNode(node, deleteStatement, nodeName, UIIcon.ROW_DELETE, deleteStatement.getTableModel());
+            this.makeNode(
+                node,
+                deleteStatement,
+                nodeName,
+                UIIcon.ROW_DELETE, 
+                deleteStatement.getAliasedTableModel() != null ? deleteStatement.getAliasedTableModel() :  deleteStatement.getTableModel()
+            );
             if (deleteStatement.getCondition() != null) {
-                this.makeNode(node, deleteStatement.getCondition(), SQLConstants.KEYWORD_WHERE, UIIcon.FILTER, deleteStatement.getCondition());
+                this.makeNode(
+                    node,
+                    deleteStatement.getCondition(),
+                    SQLConstants.KEYWORD_WHERE,
+                    UIIcon.FILTER,
+                    deleteStatement.getCondition()
+                );
             }
             return null;
         }
@@ -1102,7 +1114,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             List<SQLQueryNodeModel> nodes = new ArrayList<>(setClause.targets.size() + setClause.sources.size());
             nodes.addAll(setClause.targets);
             nodes.addAll(setClause.sources);
-            this.makeNode(node, setClause, "=", DBIcon.TYPE_ARRAY, nodes.toArray(SQLQueryNodeModel[]::new));
+            this.makeNode(node, setClause, setClause.contents, DBIcon.TYPE_ARRAY, nodes.toArray(SQLQueryNodeModel[]::new));
             return null;
         }
 

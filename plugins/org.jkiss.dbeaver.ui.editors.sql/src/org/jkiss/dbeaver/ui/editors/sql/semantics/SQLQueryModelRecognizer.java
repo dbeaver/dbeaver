@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryTableUpdateModel;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Field;
@@ -702,27 +701,39 @@ public class SQLQueryModelRecognizer {
         if (setClauseListNode != null) {
             for (int i = 0; i < setClauseListNode.getChildCount(); i += 2) {
                 STMTreeNode setClauseNode = setClauseListNode.getStmChild(i);
-                STMTreeNode setTargetNode = setClauseNode.getStmChild(0);
-                List<SQLQueryValueExpression> targets = switch (setTargetNode.getNodeKindId()) {
-                    case SQLStandardParser.RULE_setTarget -> List.of(this.collectKnownValueExpression(setTargetNode.getStmChild(0)));
-                    case SQLStandardParser.RULE_setTargetList ->
-                        STMUtils.expandSubtree(
-                            setTargetNode,
-                            Set.of(STMKnownRuleNames.setTargetList),
-                            Set.of(STMKnownRuleNames.valueReference)
-                        ).stream().map(this::collectValueExpression).collect(Collectors.toList());
-                    default -> throw new UnsupportedOperationException(
-                        "Set target list expected while facing with " + setTargetNode.getNodeName()
+                if (setClauseNode.getChildCount() > 0) {
+                    STMTreeNode setTargetNode = setClauseNode.getStmChild(0);
+                    List<SQLQueryValueExpression> targets = switch (setTargetNode.getNodeKindId()) {
+                        case SQLStandardParser.RULE_setTarget -> List.of(this.collectKnownValueExpression(setTargetNode.getStmChild(0)));
+                        case SQLStandardParser.RULE_setTargetList -> 
+                            STMUtils.expandSubtree(
+                                setTargetNode,
+                                Set.of(STMKnownRuleNames.setTargetList),
+                                Set.of(STMKnownRuleNames.valueReference)
+                            ).stream().map(this::collectValueExpression).collect(Collectors.toList());
+                        case SQLStandardParser.RULE_anyUnexpected -> 
+                            // error in query text, ignoring it
+                            Collections.emptyList();
+                        default -> throw new UnsupportedOperationException(
+                            "Set target list expected while facing with " + setTargetNode.getNodeName()
+                        );
+                    };
+                    List<SQLQueryValueExpression> sources = setClauseNode.getChildCount() < 3
+                        ? Collections.emptyList()
+                        : STMUtils.expandSubtree(
+                            setClauseNode.getStmChild(2),
+                            Set.of(STMKnownRuleNames.updateSource),
+                            Set.of(STMKnownRuleNames.updateValue)
+                        ).stream().map(v -> this.collectValueExpression(v.getStmChild(0))).collect(Collectors.toList());
+                    setClauseList.add(
+                        new SQLQueryTableUpdateModel.SetClauseModel(
+                            setClauseNode.getRealInterval(),
+                            targets,
+                            sources,
+                            setClauseNode.getTextContent()
+                        )
                     );
-                };
-                List<SQLQueryValueExpression> sources = setClauseNode.getChildCount() < 3
-                    ? Collections.emptyList()
-                    : STMUtils.expandSubtree(
-                        setClauseNode.getStmChild(2),
-                        Set.of(STMKnownRuleNames.updateSource),
-                        Set.of(STMKnownRuleNames.updateValue)
-                    ).stream().map(v -> this.collectValueExpression(v.getStmChild(0))).collect(Collectors.toList());
-                setClauseList.add(new SQLQueryTableUpdateModel.SetClauseModel(setClauseNode.getRealInterval(), targets, sources));
+                }
             }
         }
         
@@ -740,7 +751,9 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     private SQLQueryModelContent collectInsertStatement(@NotNull STMTreeNode node) {
-        SQLQueryRowsTableDataModel tableModel = this.collectTableReference(node);
+        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : this.collectTableReference(tableNameNode);
+
         List<SQLQuerySymbolEntry> columnNames;
         SQLQueryRowsSourceModel valuesRows;
         
@@ -761,12 +774,16 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     private SQLQueryModelContent collectDeleteStatement(@NotNull STMTreeNode node) {
-        SQLQueryRowsTableDataModel tableModel = this.collectTableReference(node);
+        STMTreeNode tableNameNode = node.findChildOfName(STMKnownRuleNames.tableName);
+        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : this.collectTableReference(tableNameNode);
+        
+        STMTreeNode aliasNode = node.findChildOfName(STMKnownRuleNames.correlationName);
+        SQLQuerySymbolEntry alias = aliasNode == null ? null : this.collectIdentifier(aliasNode);
         
         STMTreeNode whereClauseNode = node.findChildOfName(STMKnownRuleNames.whereClause);
         SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : this.collectValueExpression(whereClauseNode);
         
-        return new SQLQueryTableDeleteModel(node.getRealInterval(), tableModel, whereClauseExpr);
+        return new SQLQueryTableDeleteModel(node.getRealInterval(), tableModel, alias, whereClauseExpr);
     }
 
     @Nullable
@@ -887,7 +904,8 @@ public class SQLQueryModelRecognizer {
         STMKnownRuleNames.dropViewStatement,
         STMKnownRuleNames.deleteStatement,
         STMKnownRuleNames.insertStatement,
-        STMKnownRuleNames.updateStatement
+        STMKnownRuleNames.updateStatement,
+        STMKnownRuleNames.correlationSpecification
     ); 
     
     private static final Set<String> actualTableNameContainers = Set.of(
