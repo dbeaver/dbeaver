@@ -19,10 +19,12 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.custom.ST;
@@ -35,7 +37,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -98,8 +99,25 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         return textWidget;
     }
     
+    private boolean expandAnnotationsContaining(@NotNull ProjectionAnnotationModel projectionAnnotationModel, int offset) {
+        Iterator<Annotation> it = projectionAnnotationModel.getAnnotationIterator(offset, 0, true, true);
+        
+        boolean expanded = false;
+        while (it.hasNext()) {
+            Annotation annotation = it.next();
+            if (annotation instanceof ProjectionAnnotation p && p.isCollapsed()) {
+                Position position = projectionAnnotationModel.getPosition(annotation);
+                if (position != null && position.includes(offset)) {
+                    expanded = true;
+                    projectionAnnotationModel.expand(annotation);
+                }
+            }
+        }
+        return expanded;
+    }
+    
     @Override
-    public boolean exposeModelRange(IRegion modelRange) {
+    public boolean exposeModelRange(@NotNull IRegion modelRange) {
         if (isProjectionMode()) {
             // Underlying default implementation was
             //     return projectionAnnotationModel.expandAll(modelRange.getOffset(), modelRange.getLength());
@@ -108,22 +126,12 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
             // so get the annotations intersecting range start end range end positions, and then expand them.
             
             ProjectionAnnotationModel projectionAnnotationModel = this.getProjectionAnnotationModel();
-            LinkedHashSet<Annotation> annotations = new LinkedHashSet<>();
             
-            Iterator<Annotation> it1 = projectionAnnotationModel.getAnnotationIterator(modelRange.getOffset(), 0, true, true);
-            while (it1.hasNext()) {
-                annotations.add(it1.next());
-            }
-            Iterator<Annotation> it2 = projectionAnnotationModel.getAnnotationIterator(
-                modelRange.getOffset() + modelRange.getLength(), 0, true, true);
-            while (it2.hasNext()) {
-                annotations.add(it2.next());
-            }
-            
-            boolean expanded = false;
-            for (Annotation annotation: annotations) {
-                expanded |= true;
-                projectionAnnotationModel.expand(annotation);
+            boolean a = this.expandAnnotationsContaining(projectionAnnotationModel, modelRange.getOffset());
+            boolean b = this.expandAnnotationsContaining(projectionAnnotationModel, modelRange.getOffset() + modelRange.getLength());
+            boolean expanded = a | b;
+            if (expanded) {
+                projectionAnnotationModel.modifyAnnotations(null, null, null);
             }
             
             return expanded;
