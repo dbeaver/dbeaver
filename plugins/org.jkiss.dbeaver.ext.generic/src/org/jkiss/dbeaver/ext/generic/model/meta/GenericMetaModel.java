@@ -670,11 +670,19 @@ public class GenericMetaModel {
             dbResult);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return "-- View definition not available";
     }
 
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return DBStructUtils.generateTableDDL(monitor, sourceObject, options, false);
     }
 
