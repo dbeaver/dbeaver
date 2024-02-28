@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class CubridPlanNode extends AbstractExecutionPlanNode 
 {
 
-    private static String fullText;
+    private String fullText;
     private static Map<String, String> classNode = new HashMap<>();
 
     private String nodeName;
@@ -44,15 +44,16 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
     public CubridPlanNode(String queryPlan) 
     {
-        fullText = queryPlan;
+        this.fullText = queryPlan;
         parseObject(this.getSegments());
         parseNode();
     }
 
-    private CubridPlanNode(CubridPlanNode parent, String name, List<String> segments) 
+    private CubridPlanNode(CubridPlanNode parent, String name, List<String> segments, String fullText) 
     {
         this.parent = parent;
         this.name = name;
+        this.fullText = fullText;
         parseObject(segments);
         parseNode();
     }
@@ -85,7 +86,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         if (nested == null) {
             nested = new ArrayList<>();
         }
-        nested.add(new CubridPlanNode(this, name, value));
+        nested.add(new CubridPlanNode(this, name, value, fullText));
     }
 
     @Property(order = 0, viewable = true)
