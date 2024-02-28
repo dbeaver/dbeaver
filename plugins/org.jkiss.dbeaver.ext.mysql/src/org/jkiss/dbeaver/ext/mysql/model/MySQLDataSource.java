@@ -827,6 +827,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             getContainer().getDriver().getDriverClassName());
     }
 
+    public boolean isDoris() {
+        return MySQLConstants.DRIVER_ID_DORIS.equals(
+            getContainer().getDriver().getId());
+    }
+
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (isMariaDB()) {
