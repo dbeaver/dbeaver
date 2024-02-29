@@ -136,30 +136,19 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     public String getMethodTitle(String method) 
     {
 
-        switch (method) {
-            case "iscan":
-                return "Index Scan";
-            case "sscan":
-                return "Full Scan";
-            case "temp(group by)":
-                return "Group by Temp";
-            case "temp(order by)":
-                return "Order by Temp";
-            case "nl-join (inner join)":
-                return "Nested Loop - Inner Join";
-            case "nl-join (cross join)":
-                return "Nested Loop - Cross Join";
-            case "idx-join (inner join)":
-                return "Index Join - Inner Join";
-            case "m-join (inner join)":
-                return "Merged - Inner Join";
-            case "temp":
-                return "Temp";
-            case "follow":
-                return "Follow";
-            default:
-                return method;
-        }
+        return switch (method) {
+            case "iscan" -> "Index Scan";
+            case "sscan" -> "Full Scan";
+            case "temp(group by)" -> "Group by Temp";
+            case "temp(order by)" -> "Order by Temp";
+            case "nl-join (inner join)" -> "Nested Loop - Inner Join";
+            case "nl-join (cross join)" -> "Nested Loop - Cross Join";
+            case "idx-join (inner join)" -> "Index Join - Inner Join";
+            case "m-join (inner join)" -> "Merged - Inner Join";
+            case "temp" -> "Temp";
+            case "follow" -> "Follow";
+            default -> method;
+        };
     }
 
     private void parseNode() {
