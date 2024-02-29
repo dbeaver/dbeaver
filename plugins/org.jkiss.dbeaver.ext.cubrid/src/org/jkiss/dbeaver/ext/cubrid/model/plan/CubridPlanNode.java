@@ -101,7 +101,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         return nested;
     }
 
-    public String getMethodTitle(String method) 
+    private String getMethodTitle(String method) 
     {
 
         return switch (method) {
