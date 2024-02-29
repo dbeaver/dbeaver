@@ -38,7 +38,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private Number cost;
     private Number row;
     private Map<String, String> nodeProps = new HashMap<>();
-
     private CubridPlanNode parent;
     private List<CubridPlanNode> nested;
 
@@ -56,37 +55,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         this.fullText = fullText;
         parseObject(segments);
         parseNode();
-    }
-
-    private void parseObject(List<String> segments) 
-    {
-        if (!segments.isEmpty()) {
-            String[] removes = segments.remove(0).split(":");
-            nodeProps.put(removes[0], removes[1].trim());
-            if (removes[0].equals("cost") || segments.isEmpty()) {
-                return;
-            }
-            String key = segments.get(0).split(":")[0];
-            if (nodeProps.containsKey(key) || removes[0].equals("subplan")) {
-                addNested(removes[1].trim(), segments);
-                parseObject(segments);
-            } else if (key.equals("class")) {
-                if (!removes[0].equals("Query plan")) {
-                    addNested(removes[1].trim(), segments);
-                }
-                parseObject(segments);
-            } else {
-                parseObject(segments);
-            }
-        }
-    }
-
-    private void addNested(String name, List<String> value) 
-    {
-        if (nested == null) {
-            nested = new ArrayList<>();
-        }
-        nested.add(new CubridPlanNode(this, name, value, fullText));
     }
 
     @Property(order = 0, viewable = true)
@@ -150,6 +118,14 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             default -> method;
         };
     }
+    
+    private void addNested(String name, List<String> value) 
+    {
+        if (nested == null) {
+            nested = new ArrayList<>();
+        }
+        nested.add(new CubridPlanNode(this, name, value, fullText));
+    }
 
     private void parseNode() {
         for (String key : nodeProps.keySet()) {
@@ -162,8 +138,31 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             }
         }
     }
-
-    public List<String> getSegments() 
+    
+    private void parseObject(List<String> segments) 
+    {
+        if (!segments.isEmpty()) {
+            String[] removes = segments.remove(0).split(":");
+            nodeProps.put(removes[0], removes[1].trim());
+            if (removes[0].equals("cost") || segments.isEmpty()) {
+                return;
+            }
+            String key = segments.get(0).split(":")[0];
+            if (nodeProps.containsKey(key) || removes[0].equals("subplan")) {
+                addNested(removes[1].trim(), segments);
+                parseObject(segments);
+            } else if (key.equals("class")) {
+                if (!removes[0].equals("Query plan")) {
+                    addNested(removes[1].trim(), segments);
+                }
+                parseObject(segments);
+            } else {
+                parseObject(segments);
+            }
+        }
+    }
+    
+    private List<String> getSegments() 
     {
         Pattern pattern =
                 Pattern.compile(
@@ -182,4 +181,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         this.name = segments.get(0).split(":")[1].trim();
         return segments;
     }
+    
+    
 }
