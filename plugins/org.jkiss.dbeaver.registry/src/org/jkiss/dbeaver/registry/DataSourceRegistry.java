@@ -53,6 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -507,6 +508,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     public void updateAuthProfile(DBAAuthProfile profile) {
         synchronized (authProfiles) {
             authProfiles.put(profile.getProfileId(), profile);
+        }
+    }
+
+    @Override
+    public void addAuthProfiles(Collection<DBAAuthProfile> profiles) {
+        synchronized (authProfiles) {
+            authProfiles.clear();
+            authProfiles.putAll(profiles.stream()
+                .collect(Collectors.toMap(DBAAuthProfile::getProfileId, Function.identity())));
         }
     }
 
