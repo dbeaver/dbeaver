@@ -43,9 +43,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
     public CubridPlanNode(String queryPlan) 
     {
-        this.fullText = queryPlan;
-        parseObject(this.getSegments());
-        parseNode();
+    	this(null, null, null, queryPlan);
     }
 
     private CubridPlanNode(CubridPlanNode parent, String name, List<String> segments, String fullText) 
@@ -53,7 +51,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         this.parent = parent;
         this.name = name;
         this.fullText = fullText;
-        parseObject(segments);
+        parseObject(parent == null ? this.getSegments() : segments);
         parseNode();
     }
 
