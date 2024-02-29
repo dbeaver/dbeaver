@@ -511,8 +511,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
     }
 
+    /**
+     * Set new collection of profiles.
+     *
+     * @param profiles - profile collection
+     */
     @Override
-    public void addAuthProfiles(Collection<DBAAuthProfile> profiles) {
+    public void setAuthProfiles(Collection<DBAAuthProfile> profiles) {
         synchronized (authProfiles) {
             authProfiles.clear();
             authProfiles.putAll(profiles.stream()

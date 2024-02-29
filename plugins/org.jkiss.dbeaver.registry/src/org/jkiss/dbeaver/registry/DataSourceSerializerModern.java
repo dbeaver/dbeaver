@@ -545,7 +545,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 profile.setProperties(authCreds.getProperties());
                 profiles.add(profile);
             }
-            registry.addAuthProfiles(profiles);
+            registry.setAuthProfiles(profiles);
 
             // Connections
             for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(configurationMap, "connections")) {
