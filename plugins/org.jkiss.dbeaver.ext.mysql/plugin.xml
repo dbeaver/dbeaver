@@ -326,7 +326,7 @@
                 <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
 
                 <property name="connectTimeout" value="20000"/>
-                <parameter name="" value="false"/>
+                <parameter name="supports-partitions" value="false"/>
                 <parameter name="supports-references" value="false"/>
                 <parameter name="supports-triggers" value="false"/>
                 <parameter name="supports-events" value="false"/>
