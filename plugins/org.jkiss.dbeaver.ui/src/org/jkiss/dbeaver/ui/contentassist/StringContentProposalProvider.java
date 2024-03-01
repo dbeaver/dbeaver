@@ -59,7 +59,9 @@ public class StringContentProposalProvider implements IContentProposalProvider {
         if (contents.length() > 0) {
             lastChar = contents.charAt(contents.length() - 1);
         }
-        if (lastChar != null && !Character.isLetterOrDigit(lastChar) && lastChar != '_' && lastChar != ' ' && constrainProposalList) {
+        if (lastChar != null && !Character.isLetterOrDigit(lastChar) && lastChar != '_' && lastChar != '.' && lastChar != ' '
+            && constrainProposalList
+        ) {
             stopPropose = true; //stop proposing after parentheses or other characters
             return new IContentProposal[0];
         }

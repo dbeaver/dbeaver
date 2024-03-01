@@ -110,7 +110,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         instanceLabel = UIUtils.createControlLabel(addrGroup, HANAMessages.label_instance);
         instanceText = new Text(addrGroup, SWT.BORDER);
         instanceText.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        ((GridData)instanceText.getLayoutData()).widthHint = UIUtils.getFontHeight(instanceText) * 2;
+        ((GridData) instanceText.getLayoutData()).widthHint = UIUtils.getFontHeight(instanceText) * 5;
         instanceText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         instanceText.setToolTipText(HANAMessages.tooltip_instance);
         databaseLabel = UIUtils.createControlLabel(addrGroup, HANAMessages.label_database);
@@ -182,10 +182,10 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         super.loadSettings();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         edition = HANAEdition.fromName(connectionInfo.getProviderProperty(PROV_PROP_EDITION));
-        portValue = CommonUtils.notEmpty(connectionInfo.getHostPort());
+        portValue = CommonUtils.toString(connectionInfo.getHostPort(), site.getDriver().getDefaultPort());
         instanceValue = CommonUtils.notEmpty(connectionInfo.getProviderProperty(PROV_PROP_INSTANCE_NUMBER));
         databaseValue = CommonUtils.notEmpty(getProperty(connectionInfo, PROP_DATABASE_NAME));
-        if(created) {
+        if (created) {
             editionCombo.select(edition.ordinal());
             hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
             portText.setText(portValue);
@@ -306,17 +306,20 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
     }
 
     private void instanceUpdated() {
+        if (CommonUtils.isEmpty(instanceText.getText())) {
+            return;
+        }
         int instance = CommonUtils.toInt(instanceText.getText().trim(), 0);
         switch (edition) {
-        case PLATFORM_SINGLE_DB:
-            portText.setText(String.format("3%02d15", instance));
-            break;
-        case PLATFORM_SYSTEM_DB:
-        case PLATFORM_TENANT_DB:
-            portText.setText(String.format("3%02d13", instance));
-            break;
-        default:
-            break;
+            case PLATFORM_SINGLE_DB:
+                portText.setText(String.format("3%02d15", instance));
+                break;
+            case PLATFORM_SYSTEM_DB:
+            case PLATFORM_TENANT_DB:
+                portText.setText(String.format("3%02d13", instance));
+                break;
+            default:
+                break;
         }
     }
 }

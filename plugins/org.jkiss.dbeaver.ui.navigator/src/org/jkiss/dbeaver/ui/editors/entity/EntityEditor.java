@@ -246,7 +246,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (
             DBUtils.isReadOnly(getDatabaseObject())
                 || ownerProject == null
-                || !ownerProject.hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
+                || !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
         ) {
             DBWorkbench.getPlatformUI().showNotification(
                 "Read-only",
