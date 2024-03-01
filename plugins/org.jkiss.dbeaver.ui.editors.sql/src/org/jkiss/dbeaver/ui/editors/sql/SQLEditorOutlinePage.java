@@ -560,7 +560,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
      */
     private enum OutlineQueryNodeKind {
         DEFAULT,
-        NATURAL_JOIN_SUBROOT
+        NATURAL_JOIN_SUBROOT,
+        PROJECTION_SUBROOT,
+        DELETE_SUBROOT,
+        INSERT_SUBROOT,
+        UPDATE_SUBROOT
     }
 
     private class OutlineQueryNode extends OutlineNode {
@@ -922,29 +926,34 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode node) {
-            String suffix = projection.getDataContext().getColumnsList().stream()
-                .map(c -> c.symbol.getName())
-                .collect(Collectors.joining(", ", "(", ")"));
-            this.makeNode(node, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());
-            this.makeNode(node, projection.getFromSource(), "FROM", DBIcon.TREE_FOLDER_TABLE, projection.getFromSource());
+            if (node.kind == OutlineQueryNodeKind.PROJECTION_SUBROOT || node instanceof OutlineScriptElementNode) {
+                String suffix = projection.getDataContext().getColumnsList().stream()
+                    .map(c -> c.symbol.getName())
+                    .collect(Collectors.joining(", ", "(", ")"));
+                this.makeNode(node, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());
+                this.makeNode(node, projection.getFromSource(), "FROM", DBIcon.TREE_FOLDER_TABLE, projection.getFromSource());
 
-            if (projection.getWhereClause() != null) {
-                this.makeNode(node, projection.getWhereClause(), "WHERE", UIIcon.FILTER, projection.getWhereClause());
-            }
-            if (projection.getGroupByClause() != null) {
-                this.makeNode(
-                    node,
-                    projection.getGroupByClause(),
-                    "GROUP BY",
-                    UIIcon.GROUP_BY_ATTR,
-                    projection.getGroupByClause()
-                );
-            }
-            if (projection.getHavingClause() != null) {
-                this.makeNode(node, projection.getHavingClause(), "HAVING", UIIcon.FILTER, projection.getHavingClause());
-            }
-            if (projection.getOrderByClause() != null) {
-                this.makeNode(node, projection.getOrderByClause(), "ORDER BY", UIIcon.SORT, projection.getOrderByClause());
+                if (projection.getWhereClause() != null) {
+                    this.makeNode(node, projection.getWhereClause(), "WHERE", UIIcon.FILTER, projection.getWhereClause());
+                }
+                if (projection.getGroupByClause() != null) {
+                    this.makeNode(
+                        node,
+                        projection.getGroupByClause(),
+                        "GROUP BY",
+                        UIIcon.GROUP_BY_ATTR,
+                        projection.getGroupByClause()
+                    );
+                }
+                if (projection.getHavingClause() != null) {
+                    this.makeNode(node, projection.getHavingClause(), "HAVING", UIIcon.FILTER, projection.getHavingClause());
+                }
+                if (projection.getOrderByClause() != null) {
+                    this.makeNode(node, projection.getOrderByClause(), "ORDER BY", UIIcon.SORT, projection.getOrderByClause());
+                }
+            } else {
+                String text = prepareQueryPreview(getScriptElementNode(node).scriptElement.getOriginalText());
+                this.makeNode(node, projection, OutlineQueryNodeKind.PROJECTION_SUBROOT, text, DBIcon.TREE_TABLE_LINK, projection);
             }
             return null;
         }
@@ -970,14 +979,14 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitDummyTableRowsSource(@NotNull DummyTableRowsSource dummyTable, @NotNull OutlineQueryNode arg) {
-            this.makeNode(arg, dummyTable, "?", DBIcon.TYPE_UNKNOWN);
+            this.makeNode(arg, dummyTable, SQLConstants.QUESTION, DBIcon.TYPE_UNKNOWN);
             return null;
         }
 
         @Nullable
         @Override
         public Object visitSelectCompleteTupleSpec(@NotNull CompleteTupleSpec completeTupleSpec, @NotNull OutlineQueryNode arg) {
-            this.makeNode(arg, completeTupleSpec, "*", UIIcon.ASTERISK);
+            this.makeNode(arg, completeTupleSpec, SQLConstants.ASTERISK, UIIcon.ASTERISK);
             return null;
         }
 
@@ -1010,27 +1019,32 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             this.makeNode(arg, columnSpec, text, extraText, DBIcon.TREE_COLUMN, columnSpec.getValueExpression());
             return null;
         }
-        
 
         @Nullable
         @Override
         public Object visitTableStatementDelete(@NotNull SQLQueryTableDeleteModel deleteStatement, @NotNull OutlineQueryNode node) {
-            String tableName = deleteStatement.getTableModel() == null ? "?" : deleteStatement.getTableModel().getName().toIdentifierString();
-            String nodeName = SQLConstants.KEYWORD_DELETE + " " + SQLConstants.KEYWORD_FROM + " " + tableName;
-            this.makeNode(
-                node,
-                deleteStatement,
-                nodeName,
-                UIIcon.ROW_DELETE, 
-                deleteStatement.getAliasedTableModel() != null ? deleteStatement.getAliasedTableModel() :  deleteStatement.getTableModel()
-            );
-            if (deleteStatement.getCondition() != null) {
+            if (node.kind == OutlineQueryNodeKind.DELETE_SUBROOT) {
+                if (deleteStatement.getCondition() != null) {
+                    this.makeNode(
+                        node,
+                        deleteStatement.getCondition(),
+                        SQLConstants.KEYWORD_WHERE,
+                        UIIcon.FILTER,
+                        deleteStatement.getCondition()
+                    );
+                }
+            } else {
+                String tableName = deleteStatement.getTableModel() == null ? SQLConstants.QUESTION : deleteStatement.getTableModel().getName().toIdentifierString();
+                String nodeName = SQLConstants.KEYWORD_DELETE + " " + SQLConstants.KEYWORD_FROM + " " + tableName;
+                // TODO add separate FROM node when Multi-Table Deletes would be supported
                 this.makeNode(
                     node,
-                    deleteStatement.getCondition(),
-                    SQLConstants.KEYWORD_WHERE,
-                    UIIcon.FILTER,
-                    deleteStatement.getCondition()
+                    deleteStatement,
+                    OutlineQueryNodeKind.DELETE_SUBROOT,
+                    nodeName,
+                    UIIcon.ROW_DELETE,
+                    deleteStatement.getAliasedTableModel() != null ? deleteStatement.getAliasedTableModel() : deleteStatement.getTableModel(),
+                    deleteStatement
                 );
             }
             return null;
@@ -1039,15 +1053,20 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitTableStatementInsert(@NotNull SQLQueryTableInsertModel insertStatement, @NotNull OutlineQueryNode node) {
-            String tableName = insertStatement.getTableModel() == null
-                ? "?"
-                : insertStatement.getTableModel().getName().toIdentifierString();
-            String columns = insertStatement.getColumnNames().stream().map(c -> c.getName()).collect(Collectors.joining(", ", "(", ")"));
-            String nodeName = SQLConstants.KEYWORD_INSERT + " " + SQLConstants.KEYWORD_INTO + " " + tableName + columns;
-            this.makeNode(node, insertStatement, nodeName, UIIcon.ROW_ADD, insertStatement.getTableModel());
-            
-            if (insertStatement.getValuesRows() != null) {
-                insertStatement.getValuesRows().apply(this, node);
+            if (node.kind == OutlineQueryNodeKind.INSERT_SUBROOT) {
+                if (insertStatement.getValuesRows() != null) {
+                    insertStatement.getValuesRows().apply(this, node);
+                }
+            } else {
+                String tableName = insertStatement.getTableModel() == null
+                    ? SQLConstants.QUESTION
+                    : insertStatement.getTableModel().getName().toIdentifierString();
+                List<SQLQuerySymbolEntry> columnNames = insertStatement.getColumnNames();
+                String columns = columnNames == null
+                    ? ""
+                    : columnNames.stream().map(SQLQuerySymbolEntry::getName).collect(Collectors.joining(", ", "(", ")"));
+                String nodeName = SQLConstants.KEYWORD_INSERT + " " + SQLConstants.KEYWORD_INTO + " " + tableName + columns;
+                this.makeNode(node, insertStatement, OutlineQueryNodeKind.INSERT_SUBROOT, nodeName, UIIcon.ROW_ADD, insertStatement.getTableModel(), insertStatement);
             }
             return null;
         }
@@ -1055,53 +1074,60 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitTableStatementUpdate(@NotNull SQLQueryTableUpdateModel updateStatement, @NotNull OutlineQueryNode node) {
-            List<String> targetNames = new LinkedList<>();
-            if (updateStatement.getSetClauseList() != null) {
-                List<SQLQueryNodeModel> nodes = new ArrayList<>(updateStatement.getSetClauseList().size() + 1);
-                nodes.add(updateStatement.getTargetRows());
-                nodes.addAll(updateStatement.getSetClauseList());
+            switch (node.kind) {
+                case UPDATE_SUBROOT: {
+                    if (updateStatement.getSetClauseList() != null) {
+                        this.makeNode(node, updateStatement, "SET", DBIcon.TREE_FOLDER_LINK, updateStatement.getSetClauseList().toArray(SQLQueryNodeModel[]::new));
+                    }
 
-                for (SQLQueryTableUpdateModel.SetClauseModel setClause : updateStatement.getSetClauseList()) {
-                    setClause.targets.stream()
-                        .map(SQLQueryValueExpression::getColumnNameIfTrivialExpression)
-                        .map(s -> s == null ? "..." : s.getName())
-                        .forEach(targetNames::add);
+                    if (updateStatement.getSourceRows() != null) {
+                        this.makeNode(
+                            node,
+                            updateStatement.getSourceRows(),
+                            SQLConstants.KEYWORD_FROM,
+                            DBIcon.TREE_FOLDER_TABLE,
+                            updateStatement.getSourceRows()
+                        );
+                    }
+                    if (updateStatement.getWhereClause() != null) {
+                        this.makeNode(
+                            node,
+                            updateStatement.getWhereClause(),
+                            SQLConstants.KEYWORD_WHERE,
+                            UIIcon.FILTER,
+                            updateStatement.getWhereClause()
+                        );
+                    }
+                    if (updateStatement.getOrderByClause() != null) {
+                        this.makeNode(
+                            node,
+                            updateStatement.getOrderByClause(),
+                            SQLConstants.KEYWORD_ORDER_BY,
+                            UIIcon.SORT,
+                            updateStatement.getOrderByClause()
+                        );
+                    }
                 }
-                String columns = targetNames.stream().collect(Collectors.joining(", ", "(", ")"));
-                String targetTableName = updateStatement.getTargetRows() instanceof SQLQueryRowsTableDataModel table
-                    ? table.getName().toIdentifierString()
-                    : "...";
-                String nodeName = SQLConstants.KEYWORD_UPDATE + " " + targetTableName + " " + SQLConstants.KEYWORD_SET + " " + columns;
-                this.makeNode(node, updateStatement, nodeName, UIIcon.ROW_EDIT, nodes.toArray(SQLQueryNodeModel[]::new));
+                break;
+                default: {
+                    List<String> targetNames = new LinkedList<>();
+                    if (updateStatement.getSetClauseList() != null) {
+                        for (SQLQueryTableUpdateModel.SetClauseModel setClause : updateStatement.getSetClauseList()) {
+                            setClause.targets.stream()
+                                .map(SQLQueryValueExpression::getColumnNameIfTrivialExpression)
+                                .map(s -> s == null ? "..." : s.getName())
+                                .forEach(targetNames::add);
+                        }
+                    }
+                    String columns = targetNames.stream().collect(Collectors.joining(", ", "(", ")"));
+                    String targetTableName = updateStatement.getTargetRows() instanceof SQLQueryRowsTableDataModel table
+                        ? table.getName().toIdentifierString()
+                        : "...";
+                    String nodeName = SQLConstants.KEYWORD_UPDATE + " " + targetTableName + " " + SQLConstants.KEYWORD_SET + " " + columns;
+                    this.makeNode(node, updateStatement, OutlineQueryNodeKind.UPDATE_SUBROOT, nodeName, UIIcon.ROW_EDIT, updateStatement.getTargetRows(), updateStatement);
+                }
+                break;
             }
-            if (updateStatement.getSourceRows() != null) {
-                this.makeNode(
-                    node,
-                    updateStatement.getSourceRows(),
-                    SQLConstants.KEYWORD_FROM,
-                    DBIcon.TREE_FOLDER_TABLE,
-                    updateStatement.getSourceRows()
-                );
-            }
-            if (updateStatement.getWhereClause() != null) {
-                this.makeNode(
-                    node,
-                    updateStatement.getWhereClause(),
-                    SQLConstants.KEYWORD_WHERE,
-                    UIIcon.FILTER,
-                    updateStatement.getWhereClause()
-                );
-            }
-            if (updateStatement.getOrderByClause() != null) {
-                this.makeNode(
-                    node,
-                    updateStatement.getOrderByClause(),
-                    SQLConstants.KEYWORD_ORDER_BY,
-                    UIIcon.SORT,
-                    updateStatement.getOrderByClause()
-                );
-            }
-
             return null;
         }
 

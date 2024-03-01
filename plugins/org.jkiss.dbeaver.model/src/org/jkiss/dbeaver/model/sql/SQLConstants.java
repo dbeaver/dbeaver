@@ -35,6 +35,8 @@ public class SQLConstants {
     public static final String ML_COMMENT_START = "/*";
     public static final String ML_COMMENT_END = "*/";
     public static final String SL_COMMENT = "--";
+    public static final String ASTERISK = "*";
+    public static final String QUESTION = "?";
 
     public static final String KEYWORD_SELECT = "SELECT";
     public static final String KEYWORD_INSERT = "INSERT";
