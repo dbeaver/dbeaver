@@ -29,18 +29,16 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
-public class CubridQueryPlanner implements DBCQueryPlanner 
-{
+public class CubridQueryPlanner implements DBCQueryPlanner {
 
     private CubridDataSource dataSource;
 
-    public CubridQueryPlanner(CubridDataSource dataSource) 
-    {
+    public CubridQueryPlanner(@NotNull CubridDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public CubridPlanAnalyser explain(JDBCSession session, String query) throws DBCException 
-    {
+    public CubridPlanAnalyser explain(@NotNull JDBCSession session, @NotNull String query)
+            throws DBCException {
         final SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
@@ -50,9 +48,9 @@ public class CubridQueryPlanner implements DBCQueryPlanner
         return new CubridPlanAnalyser(session, query);
     }
 
+    @NotNull
     @Override
-    public DBPDataSource getDataSource() 
-    {
+    public DBPDataSource getDataSource() {
         return dataSource;
     }
 
@@ -62,15 +60,13 @@ public class CubridQueryPlanner implements DBCQueryPlanner
             @NotNull DBCSession session,
             @NotNull String query,
             @NotNull DBCQueryPlannerConfiguration configuration)
-            throws DBCException 
-    {
+            throws DBCException {
         return explain((JDBCSession) session, query);
     }
 
     @NotNull
     @Override
-    public DBCPlanStyle getPlanStyle() 
-    {
+    public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;
     }
 }

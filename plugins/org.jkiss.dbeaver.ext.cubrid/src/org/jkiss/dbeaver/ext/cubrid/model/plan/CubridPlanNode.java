@@ -16,23 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CubridPlanNode extends AbstractExecutionPlanNode 
+public class CubridPlanNode extends AbstractExecutionPlanNode
 {
 
-    private String fullText;
     private static Map<String, String> classNode = new HashMap<>();
-
+    private String fullText;
     private String nodeName;
     private String name;
     private Number cost;
@@ -41,13 +39,11 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private CubridPlanNode parent;
     private List<CubridPlanNode> nested;
 
-    public CubridPlanNode(String queryPlan) 
-    {
-    	this(null, null, null, queryPlan);
+    public CubridPlanNode(@NotNull String queryPlan) {
+        this(null, null, null, queryPlan);
     }
 
-    private CubridPlanNode(CubridPlanNode parent, String name, List<String> segments, String fullText) 
-    {
+    private CubridPlanNode(@Nullable CubridPlanNode parent, @Nullable String name, @Nullable List<String> segments, @NotNull String fullText) {
         this.parent = parent;
         this.name = name;
         this.fullText = fullText;
@@ -55,52 +51,51 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         parseNode();
     }
 
+    @NotNull
     @Property(order = 0, viewable = true)
     @Override
-    public String getNodeType() 
-    {
+    public String getNodeType() {
         return getMethodTitle(name);
     }
 
+    @NotNull
     @Property(order = 1, viewable = true)
     @Override
-    public String getNodeName() 
-    {
+    public String getNodeName() {
         return classNode.get(nodeName);
     }
-
+    
+    @NotNull
     @Property(order = 2, viewable = true)
-    public Number getCost() 
-    {
+    public Number getCost() {
         return cost;
     }
-
+    
+    @NotNull
     @Property(order = 3, viewable = true)
-    public Number getCardinality() 
-    {
+    public Number getCardinality() {
         return row;
     }
-
+    
+    @NotNull
     @Property(order = 4, length = PropertyLength.MULTILINE)
-    public String getFullText() 
-    {
+    public String getFullText() {
         return fullText;
     }
-
+    
+    @Nullable
     @Override
-    public CubridPlanNode getParent() 
-    {
+    public CubridPlanNode getParent() {
         return parent;
     }
-
+    
+    @Nullable
     @Override
-    public Collection<CubridPlanNode> getNested() 
-    {
+    public Collection<CubridPlanNode> getNested() {
         return nested;
     }
 
-    private String getMethodTitle(String method) 
-    {
+    private String getMethodTitle(@NotNull String method) {
 
         return switch (method) {
             case "iscan" -> "Index Scan";
@@ -116,9 +111,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             default -> method;
         };
     }
-    
-    private void addNested(String name, List<String> value) 
-    {
+
+    private void addNested(@NotNull String name, @NotNull List<String> value) {
         if (nested == null) {
             nested = new ArrayList<>();
         }
@@ -136,9 +130,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             }
         }
     }
-    
-    private void parseObject(List<String> segments) 
-    {
+
+    private void parseObject(@NotNull List<String> segments) {
         if (!segments.isEmpty()) {
             String[] removes = segments.remove(0).split(":");
             nodeProps.put(removes[0], removes[1].trim());
@@ -160,8 +153,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         }
     }
     
-    private List<String> getSegments() 
-    {
+    @NotNull
+    private List<String> getSegments() {
         Pattern pattern =
                 Pattern.compile(
                         "[\\n\\r]node\\[....\\s*([^\\n\\r]*)|[\\n\\r].*Query plan:\\s*([^\\n\\r]*)|[\\n\\r].*subplan:\\s*([^\\n\\r]*)|[\\n\\r].*cost:\\s*([^\\n\\r]*)|inner:\\s*([^\\n\\r]*)|outer:\\s*([^\\n\\r]*)|class:\\s*([^\\n\\r]*)");
@@ -179,6 +172,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         this.name = segments.get(0).split(":")[1].trim();
         return segments;
     }
-    
-    
+
+
 }

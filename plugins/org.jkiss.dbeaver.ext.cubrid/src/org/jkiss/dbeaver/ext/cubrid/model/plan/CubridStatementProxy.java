@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,24 +21,23 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class CubridStatementProxy 
-{
+import org.jkiss.code.NotNull;
+
+public class CubridStatementProxy {
 
     protected Statement statement;
 
-    public CubridStatementProxy(Statement statement) 
-    {
+    public CubridStatementProxy(@NotNull Statement statement) {
         this.statement = statement;
     }
 
-    public String getQueryplan(String sql) throws SQLException 
-    {
-        return (String) invoke(statement, "getQueryplan", String.class, sql);
-    }
-
-    private static Object invoke(Object objSrc, String methodName, Class<?> clazz, Object obj)
-            throws SQLException 
-    {
+    @NotNull
+    private static Object invoke(
+            @NotNull Object objSrc,
+            @NotNull String methodName,
+            @NotNull Class<?> clazz,
+            @NotNull Object obj)
+            throws SQLException {
         try {
             Method m = objSrc.getClass().getMethod(methodName, new Class<?>[] {clazz});
             return m.invoke(objSrc, new Object[] {obj});
@@ -60,5 +59,9 @@ public class CubridStatementProxy
                         -90002);
             }
         }
+    }
+
+    public String getQueryplan(String sql) throws SQLException {
+        return (String) invoke(statement, "getQueryplan", String.class, sql);
     }
 }

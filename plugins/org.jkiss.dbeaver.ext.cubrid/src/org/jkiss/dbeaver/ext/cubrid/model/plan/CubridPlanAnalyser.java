@@ -16,25 +16,27 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
-public class CubridPlanAnalyser extends AbstractExecutionPlan 
-{
-	
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class CubridPlanAnalyser extends AbstractExecutionPlan {
+
     private List<CubridPlanNode> rootNodes = new ArrayList<>();
     private String query;
 
-    public CubridPlanAnalyser(JDBCSession session, String query) throws DBCException 
-    {
-    	this.query = query;
+    public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
+            throws DBCException {
+        this.query = query;
         try {
 
             CubridStatementProxy proxy =
@@ -47,20 +49,17 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan
     }
 
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) 
-    {
+    public List<? extends DBCPlanNode> getPlanNodes(@Nullable Map<String, Object> options) {
         return rootNodes;
     }
 
     @Override
-    public String getQueryString() 
-    {
+    public String getQueryString() {
         return query;
     }
 
     @Override
-    public String getPlanQueryString() throws DBException 
-    {
+    public String getPlanQueryString() throws DBException {
         return query;
     }
 }
