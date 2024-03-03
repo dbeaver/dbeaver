@@ -21,14 +21,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CubridPlanNode extends AbstractExecutionPlanNode
 {
-
+    private static final String OPTIONS_SEPARATOR = ":";
+    private static final String COST = "cost";
+    private static final String CLASS = "class";
     private static Map<String, String> classNode = new HashMap<>();
     private String fullText;
     private String nodeName;
@@ -121,9 +126,9 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
     private void parseNode() {
         for (String key : nodeProps.keySet()) {
-            if (key.contains("class")) {
-                this.nodeName = nodeProps.get("class").split(" ")[1];
-            } else if (key.equals("cost")) {
+            if (key.contains(CLASS)) {
+                this.nodeName = nodeProps.get(CLASS).split(" ")[1];
+            } else if (key.equals(COST)) {
                 String[] values = nodeProps.get(key).split(" card ");
                 this.cost = Integer.parseInt(values[0]);
                 this.row = Integer.parseInt(values[1]);
@@ -133,17 +138,17 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
     private void parseObject(@NotNull List<String> segments) {
         if (!segments.isEmpty()) {
-            String[] removes = segments.remove(0).split(":");
+            String[] removes = segments.remove(0).split(OPTIONS_SEPARATOR);
             nodeProps.put(removes[0], removes[1].trim());
-            if (removes[0].equals("cost") || segments.isEmpty()) {
+            if (removes[0].equals(COST) || segments.isEmpty()) {
                 return;
             }
-            String key = segments.get(0).split(":")[0];
+            String key = segments.get(0).split(OPTIONS_SEPARATOR)[0];
             if (nodeProps.containsKey(key) || removes[0].equals("subplan")) {
                 addNested(removes[1].trim(), segments);
                 parseObject(segments);
-            } else if (key.equals("class")) {
-                if (!removes[0].equals("Query plan")) {
+            } else if (key.equals(CLASS)) {
+                if (!removes[0].equals(OPTIONS_SEPARATOR)) {
                     addNested(removes[1].trim(), segments);
                 }
                 parseObject(segments);
@@ -162,14 +167,14 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         List<String> segments = new ArrayList<String>();
         while (matcher.find()) {
             String segment = matcher.group().trim();
-            if (segment.split(":")[0].startsWith("node")) {
-                String[] values = segment.split(":");
+            if (segment.split(OPTIONS_SEPARATOR)[0].startsWith("node")) {
+                String[] values = segment.split(OPTIONS_SEPARATOR);
                 classNode.put(values[0], values[1].split("\\(")[0].trim());
             } else {
                 segments.add(segment);
             }
         }
-        this.name = segments.get(0).split(":")[1].trim();
+        this.name = segments.get(0).split(OPTIONS_SEPARATOR)[1].trim();
         return segments;
     }
 
