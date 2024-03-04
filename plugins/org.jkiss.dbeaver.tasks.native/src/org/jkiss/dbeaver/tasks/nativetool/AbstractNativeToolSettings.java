@@ -78,9 +78,13 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     @Nullable
     public DBPProject getProject() {
         if (project == null) {
-            project = dataSourceContainer == null ? null : dataSourceContainer.getProject();
+            setProject(dataSourceContainer == null ? null : dataSourceContainer.getProject());
         }
         return project;
+    }
+
+    private void setProject(@Nullable DBPProject project) {
+        this.project = project;
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
@@ -176,6 +180,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
                         }
                         project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                     }
+                    setProject(project);
                 }
                 dataSourceContainer = getProject().getDataSourceRegistry().getDataSource(dsID);
             }
