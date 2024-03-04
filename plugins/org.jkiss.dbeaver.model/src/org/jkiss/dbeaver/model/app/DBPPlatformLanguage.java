@@ -17,13 +17,16 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBPPlatformLanguage
  */
-public interface DBPPlatformLanguage
-{
+public interface DBPPlatformLanguage {
+    @NotNull
     String getCode();
 
+    @NotNull
     String getLabel();
 
 }
