@@ -333,11 +333,9 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                     for (Edge e : trg.incoming) {
                         Node incomingSourceNode = e.source;
                         Integer childIndex = getNodeIndex(nodeByEdges, incomingSourceNode);
-                        if (childIndex != null && childIndex != 0) {
-                            if ((idx - childIndex) > DISTANCE_BTW_ELEMENT_PER_COLUMNS) {
-                                skip = true;
-                                break;
-                            }
+                        if (childIndex != null && childIndex != 0 && (idx - childIndex) > DISTANCE_BTW_ELEMENT_PER_COLUMNS) {
+                            skip = true;
+                            break;
                         }
                     }
                     if (skip) {

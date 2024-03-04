@@ -128,8 +128,8 @@ public class ERDHighlightingManager {
 
     @Nullable
     public ERDHighlightingHandle highlightAttributeAssociations(@NotNull AttributePart attributePart, @NotNull Color color) {
-        if (!(attributePart.getParent() instanceof EntityPart)) {
-            return null; 
+        if (!(attributePart.getParent() instanceof EntityPart entityPart)) {
+            return null;
         }
         ListNode<ERDHighlightingHandle> highlightings = null;
         for (Object connection : attributePart.getSourceConnections()) {
@@ -143,15 +143,11 @@ public class ERDHighlightingManager {
         for (Object connection : attributePart.getTargetConnections()) {
             if (connection instanceof AssociationPart associationPart) {
                 highlightings = this.highlightAttributeAssociation(attributePart, associationPart, color, highlightings);
-                if ( associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
+                if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
                     erdConnection.setSelected(!erdConnection.isSelected());
                 }
             }
         }
-
-
-        EntityPart entityPart = (EntityPart)attributePart.getParent();
-        
         for (Object connection : entityPart.getSourceConnections()) {
             if (connection instanceof AssociationPart associationPart) {
                 highlightings = this.highlightAttributeAssociation(attributePart, associationPart, color, highlightings);
