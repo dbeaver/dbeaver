@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +61,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     private DBPDataSourceContainer dataSourceContainer;
     private final List<BASE_OBJECT> databaseObjects = new ArrayList<>();
 
+    @Nullable
     private DBPProject project;
 
     protected AbstractNativeToolSettings() {
@@ -75,6 +75,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
         return databaseObjects;
     }
 
+    @Nullable
     public DBPProject getProject() {
         if (project == null) {
             project = dataSourceContainer == null ? null : dataSourceContainer.getProject();
