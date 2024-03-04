@@ -31,15 +31,38 @@ import java.util.Map.Entry;
  */
 public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
 
-    private static final int DISTANCE_BTW_LEVELS = 2;
     private AbstractGraphicalEditPart diagram;
     private TreeMap<Integer, List<Node>> nodeByLevels;
     private List<Node> isolatedNodes = new LinkedList<>();
-    private static final int DEFAULT_OFFSET_FROM_TOP_LINE = 40;
-    private static final int DEFAULT_ISO_OFFSET_HORZ = 140;
-    private static final int DEFAULT_OFFSET_BY_X = 250;
-    private static final int DEFAULT_OFFSET_BY_Y = 80;
+    /**
+     * Initial offset from top line
+     */
+    private static final int OFFSET_FROM_TOP = 40;
+    /**
+     * Initial offset from left line
+     */
+    private static final int OFFSET_FROM_LEFT = 50;
+    /**
+     * Initial distance by X
+     */
+    private static final int DISTANCE_ENTITIES_X = 120;
+    /**
+     * Initial distance by Y
+     */
+    private static final int DISTANCE_ENTITIES_Y = 100;
+
+    /**
+     * How far elements can be placed to his child
+     */
+    private static final int DISTANCE_BTW_ELEMENT_PER_COLUMNS = 2;
+    /**
+     * Repeatable columns value
+     */
     private static final int VIRTUAL_COLUMNS = 5;
+    /**
+     * Distance require to draw connection
+     */
+    private static final int DISTANCE_PER_EDGE = 9;
 
     public OrthoDirectedGraphLayout(AbstractGraphicalEditPart diagram) {
         this.diagram = diagram;
@@ -61,6 +84,17 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         drawMissedNodes(isolatedNodes, nodeMissed, nodeByLevels);
     }
 
+    private int computeDistance(List<Node> nodes) {
+        int maxCountOfEdges = 0;
+        for (Node node : nodes) {
+            int countOfEdges = node.incoming.size() + node.outgoing.size();
+            maxCountOfEdges += countOfEdges;
+        }
+        if (maxCountOfEdges == 0) {
+            return DISTANCE_ENTITIES_X;
+        }
+        return maxCountOfEdges * DISTANCE_PER_EDGE;
+    }
 
     private TreeMap<Integer, List<Node>> removeIslandNodesFromRoots(List<Node> islands, TreeMap<Integer, List<Node>> nodeByLevels) {
         List<Node> listOfNodes = nodeByLevels.get(0);
@@ -74,7 +108,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private void drawIsolatedNodes(List<Node> islands, TreeMap<Integer, List<Node>> nodeByLevels) {
         // considered to have a islands one - to -one
         Entry<Integer, List<Node>> lastEntry = nodeByLevels.lastEntry();
-        int offsetX = DEFAULT_ISO_OFFSET_HORZ;
+        int offsetX = OFFSET_FROM_LEFT;
         for (Node n : lastEntry.getValue()) {
             if (offsetX < n.width) {
                 offsetX = n.width;
@@ -82,24 +116,24 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         }
         int currentX = 0;
         if (lastEntry.getValue().isEmpty()) {
-            currentX = DEFAULT_ISO_OFFSET_HORZ;
+            currentX = OFFSET_FROM_LEFT;
         } else {
             Node lastNode = nodeByLevels.lastEntry().getValue().get(0);
-            currentX = lastNode.x + offsetX + DEFAULT_ISO_OFFSET_HORZ;
+            currentX = lastNode.x + offsetX + OFFSET_FROM_LEFT;
         }
 
-        int currentY = DEFAULT_OFFSET_FROM_TOP_LINE;
+        int currentY = OFFSET_FROM_TOP;
         for (Node nodeSource : islands) {
             nodeSource.x = currentX;
             nodeSource.y = currentY;
             for (Edge edge : nodeSource.outgoing) {
                 Node nodeTarget = edge.target;
-                nodeTarget.x = currentX + nodeSource.width + DEFAULT_OFFSET_BY_X / 2;
+                nodeTarget.x = currentX + nodeSource.width + DISTANCE_ENTITIES_X / 2;
                 nodeTarget.y = currentY;
                 if (nodeSource.height > nodeTarget.height) {
-                    currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
+                    currentY += nodeSource.height + DISTANCE_ENTITIES_Y;
                 } else {
-                    currentY += nodeTarget.height + DEFAULT_OFFSET_BY_Y;
+                    currentY += nodeTarget.height + DISTANCE_ENTITIES_Y;
                 }
             }
         }
@@ -107,7 +141,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
 
     private void drawMissedNodes(List<Node> islands, List<Node> missedNodes, TreeMap<Integer, List<Node>> nodeByLevels) {
         Entry<Integer, List<Node>> lastEntry = nodeByLevels.lastEntry();
-        int offsetX = DEFAULT_ISO_OFFSET_HORZ;
+        int offsetX = OFFSET_FROM_LEFT;
         for (Node n : lastEntry.getValue()) {
             if (offsetX < n.width) {
                 offsetX = n.width;
@@ -115,20 +149,20 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         }
         int currentX = 0;
         if (lastEntry.getValue().isEmpty()) {
-            currentX = DEFAULT_ISO_OFFSET_HORZ;
+            currentX = OFFSET_FROM_LEFT;
         } else {
             Node lastNode = nodeByLevels.lastEntry().getValue().get(0);
-            currentX = lastNode.x + offsetX + DEFAULT_ISO_OFFSET_HORZ;
+            currentX = lastNode.x + offsetX + OFFSET_FROM_LEFT;
         }
-        int currentY = DEFAULT_OFFSET_FROM_TOP_LINE;
+        int currentY = OFFSET_FROM_TOP;
         for (Node nodeSource : islands) {
-            currentY += nodeSource.height + DEFAULT_OFFSET_BY_Y;
+            currentY += nodeSource.height + DISTANCE_ENTITIES_Y;
         }
         int virtColumns = 0;
         offsetX = currentX;
         int offsetY = currentY;
-        int width = DEFAULT_OFFSET_BY_X;
-        int height = DEFAULT_OFFSET_BY_Y;
+        int width = DISTANCE_ENTITIES_X;
+        int height = DISTANCE_ENTITIES_Y;
         for (Node node : missedNodes) {
             if (width < node.width) {
                 width = node.width;
@@ -141,19 +175,19 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             virtColumns++;
             if (virtColumns % VIRTUAL_COLUMNS == 0) {
                 // next row
-                offsetY += height + DEFAULT_OFFSET_BY_Y;
+                offsetY += height + DISTANCE_ENTITIES_Y;
                 offsetX = currentX;
-                width = DEFAULT_OFFSET_BY_X;
-                height = DEFAULT_OFFSET_BY_Y;
+                width = DISTANCE_ENTITIES_X;
+                height = DISTANCE_ENTITIES_Y;
             } else {
-                offsetX += width + DEFAULT_ISO_OFFSET_HORZ / 7;
+                offsetX += width + OFFSET_FROM_LEFT / 7;
             }
         }
     }
 
     private void drawGraphNodes(TreeMap<Integer, List<Node>> nodeByEdges) {
-        int currentX = DEFAULT_OFFSET_FROM_TOP_LINE;
-        int currentY = DEFAULT_OFFSET_FROM_TOP_LINE;
+        int currentX = OFFSET_FROM_LEFT;
+        int currentY = OFFSET_FROM_TOP;
         // here we place all elements from middle line
         Map<Integer, Integer> height2Level = computeHeight(nodeByLevels);
         int middle = Collections.max(height2Level.values()) / 2;
@@ -161,23 +195,23 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         for (Entry<Integer, List<Node>> entry : nodeByEdges.entrySet()) {
             Integer height = height2Level.get(index);
             if (height / 2 > middle) {
-                currentY = DEFAULT_OFFSET_FROM_TOP_LINE;
+                currentY = OFFSET_FROM_TOP;
             } else {
-                currentY = DEFAULT_OFFSET_FROM_TOP_LINE + middle - height / 2;
+                currentY = OFFSET_FROM_TOP + middle - height / 2;
             }
             List<Node> nodes = entry.getValue();
-            int offsetX = DEFAULT_ISO_OFFSET_HORZ;
+            int distanceX = computeDistance(nodes);
             for (Node n : nodes) {
                 n.x = currentX;
                 n.y = currentY;
-                currentY += n.height + DEFAULT_OFFSET_BY_Y / 3 + (DEFAULT_OFFSET_BY_Y / 3 * (index % nodeByEdges.size()));
-                if (offsetX < n.width) {
-                    offsetX = n.width;
+                currentY += n.height +  computeDistance(nodes);
+                if (distanceX < n.width) {
+                    distanceX = n.width;
                 }
             }
             if (!nodes.isEmpty()) {
                 // next increase X
-                currentX += DEFAULT_ISO_OFFSET_HORZ + offsetX;
+                currentX += DISTANCE_ENTITIES_X + distanceX;
             }
             index++;
         }
@@ -209,7 +243,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     }
 
     private TreeMap<Integer, List<Node>> computeRootNodes(DirectedGraph graph) {
-        TreeMap<Integer, List<Node>> nodeByLevels = new TreeMap<>();
+        TreeMap<Integer, List<Node>> nodes = new TreeMap<>();
         List<Node> firstLineOutput = new LinkedList<>();
         for (int i = 0; i < graph.nodes.size(); i++) {
             Node node = graph.nodes.get(i);
@@ -218,19 +252,19 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             }
         }
         if (!firstLineOutput.isEmpty()) {
-            nodeByLevels.put(0, firstLineOutput);
+            nodes.put(0, firstLineOutput);
         }
-        return nodeByLevels;
+        return nodes;
     }
 
     private TreeMap<Integer, List<Node>> recomputeGraph(TreeMap<Integer, List<Node>> graph) {
         int idx = 0;
         while (idx < graph.keySet().size()) {
             createGraphLayers(graph, idx);
-            // catch empty nodes   
+            // catch empty nodes
             List<Node> nextLevelNodes = graph.get(idx + 1);
-            if (graph.get(idx).isEmpty() && !nextLevelNodes.isEmpty()) {
-                //shiftAllElements
+            if (nextLevelNodes != null && graph.get(idx).isEmpty() && !nextLevelNodes.isEmpty()) {
+                // shiftAllElements
                 graph.put(idx, nextLevelNodes);
                 graph.remove(idx + 1);
             }
@@ -300,7 +334,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                         Node incomingSourceNode = e.source;
                         Integer childIndex = getNodeIndex(nodeByEdges, incomingSourceNode);
                         if (childIndex != null && childIndex != 0) {
-                            if ((idx - childIndex) > DISTANCE_BTW_LEVELS) {
+                            if ((idx - childIndex) > DISTANCE_BTW_ELEMENT_PER_COLUMNS) {
                                 skip = true;
                                 break;
                             }
@@ -336,7 +370,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         for (Entry<Integer, List<Node>> entry : nodeByEdges.entrySet()) {
             int height = 0;
             for (Node node : entry.getValue()) {
-                height += node.height + DEFAULT_OFFSET_BY_Y;
+                height += node.height + DISTANCE_ENTITIES_Y;
             }
             mapOfHeight.put(entry.getKey(), height);
         }

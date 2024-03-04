@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.erd.ui.connector.ERDConnection;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
@@ -67,14 +68,14 @@ public class ERDHighlightingManager {
         private void refresh() {
             try {
                 if (this.highlightings.isEmpty()) {
-                    if (part instanceof Connection) {
+                    if (part instanceof ERDConnection) {
                         part.setForegroundColor(originalColor);
                     } else {
                         part.setBackgroundColor(originalColor);
                     }
                     part.setOpaque(originalOpaque);
                 } else {
-                    if (part instanceof Connection) {
+                    if (part instanceof ERDConnection) {
                         part.setForegroundColor(highlightings.getLast().color);
                     } else {
                         part.setBackgroundColor(highlightings.getLast().color);
@@ -132,13 +133,19 @@ public class ERDHighlightingManager {
         }
         ListNode<ERDHighlightingHandle> highlightings = null;
         for (Object connection : attributePart.getSourceConnections()) {
-            if (connection instanceof AssociationPart) {
-                highlightings = this.highlightAttributeAssociation(attributePart, (AssociationPart) connection, color, highlightings);
+            if (connection instanceof AssociationPart associationPart) {
+                highlightings = this.highlightAttributeAssociation(attributePart, associationPart, color, highlightings);
+                if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
+                    erdConnection.setSelected(!erdConnection.isSelected());
+                }
             }
         }
         for (Object connection : attributePart.getTargetConnections()) {
-            if (connection instanceof AssociationPart) {
-                highlightings = this.highlightAttributeAssociation(attributePart, (AssociationPart) connection, color, highlightings);
+            if (connection instanceof AssociationPart associationPart) {
+                highlightings = this.highlightAttributeAssociation(attributePart, associationPart, color, highlightings);
+                if ( associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
+                    erdConnection.setSelected(!erdConnection.isSelected());
+                }
             }
         }
 
@@ -146,16 +153,21 @@ public class ERDHighlightingManager {
         EntityPart entityPart = (EntityPart)attributePart.getParent();
         
         for (Object connection : entityPart.getSourceConnections()) {
-            if (connection instanceof AssociationPart) {
-                highlightings = this.highlightAttributeAssociation(attributePart, (AssociationPart) connection, color, highlightings);
+            if (connection instanceof AssociationPart associationPart) {
+                highlightings = this.highlightAttributeAssociation(attributePart, associationPart, color, highlightings);
+                if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
+                    erdConnection.setSelected(!erdConnection.isSelected());
+                }
             }
         }
         for (Object connection : entityPart.getTargetConnections()) {
-            if (connection instanceof AssociationPart) {
-                highlightings = this.highlightAttributeAssociation(attributePart, (AssociationPart) connection, color, highlightings);                
+            if (connection instanceof AssociationPart associationPart) {
+                highlightings = this.highlightAttributeAssociation(attributePart, associationPart, color, highlightings);
+                if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
+                    erdConnection.setSelected(!erdConnection.isSelected());
+                }
             }
         }
-        
         return this.makeHighlightingGroupHandle(highlightings);
     }
 
