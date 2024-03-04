@@ -244,7 +244,7 @@
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.fk.highlighting.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.fk.highlighting"
-                value="91,149,218">
+                value="165,225,135">
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.fk.highlighting.description</description>
         </colorDefinition>
         <colorDefinition
