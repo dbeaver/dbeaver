@@ -913,15 +913,8 @@ public class DataSourceDescriptor
             }
             secretsResolved = true;
         } else {
-            String subjectId = null;
             if (selectedSharedCredentials != null) {
-                subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
-            } else if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
-                subjectId = teamProvider.getDefaultTeamId();
-            } else {
-                throw new DBException("Can not determine secret subject. Shared secrets not supported.");
-            }
-            if (isSharedCredentialsSelected() || secret != null) {
+                String subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
                 try {
                     secretController.setSubjectSecretValue(subjectId, this,
                         new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
@@ -2267,13 +2260,16 @@ public class DataSourceDescriptor
                 );
             }
         }
-        connectionInfo.getHandlers().forEach(
-            handler -> {
-                if (!handlersFromSecret.contains(handler.getId())) {
-                    handler.setSavePassword(false);
+        //private secret contains handlers config, shared - not
+        if (!isSharedCredentials()) {
+            connectionInfo.getHandlers().forEach(
+                handler -> {
+                    if (!handlersFromSecret.contains(handler.getId())) {
+                        handler.setSavePassword(false);
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 
     private void loadFromLegacySecret(DBSSecretController secretController) {
