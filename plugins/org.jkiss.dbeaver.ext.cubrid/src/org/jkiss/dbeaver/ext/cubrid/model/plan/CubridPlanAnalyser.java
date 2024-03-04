@@ -38,26 +38,28 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
             throws DBCException {
         this.query = query;
         try {
-
-            CubridStatementProxy proxy =
-                    new CubridStatementProxy(session.getOriginal().createStatement());
-            String plan = proxy.getQueryplan(query);
+            String plan =
+                    CubridStatementProxy.getQueryplan(
+                            session.getOriginal().createStatement(), query);
             rootNodes.add(new CubridPlanNode(plan));
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }
     }
 
+    @NotNull
     @Override
     public List<? extends DBCPlanNode> getPlanNodes(@Nullable Map<String, Object> options) {
         return rootNodes;
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() throws DBException {
         return query;

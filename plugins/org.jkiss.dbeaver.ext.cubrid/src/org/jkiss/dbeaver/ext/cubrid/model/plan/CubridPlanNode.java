@@ -100,6 +100,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         return nested;
     }
 
+    @Nullable
     private String getMethodTitle(@NotNull String method) {
 
         return switch (method) {

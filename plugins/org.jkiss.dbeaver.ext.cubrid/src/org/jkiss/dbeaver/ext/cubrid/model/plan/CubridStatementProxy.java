@@ -16,52 +16,32 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.BeanUtils;
 
 public class CubridStatementProxy {
 
-    protected Statement statement;
-
-    public CubridStatementProxy(@NotNull Statement statement) {
-        this.statement = statement;
-    }
+    private static final Log log = Log.getLog(CubridStatementProxy.class);
 
     @NotNull
-    private static Object invoke(
-            @NotNull Object objSrc,
-            @NotNull String methodName,
-            @NotNull Class<?> clazz,
-            @NotNull Object obj)
+    public static String getQueryplan(@NotNull Statement statement, @NotNull String query)
             throws SQLException {
+        String queryplan = "";
         try {
-            Method m = objSrc.getClass().getMethod(methodName, new Class<?>[] {clazz});
-            return m.invoke(objSrc, new Object[] {obj});
-        } catch (SecurityException e) {
-            throw e;
-        } catch (NoSuchMethodException e) {
-            throw new SQLException(e.getMessage(), null, -90000);
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (IllegalAccessException e) {
-            throw new SQLException(e.getMessage(), null, -90001);
-        } catch (InvocationTargetException e) {
-            if (e.getTargetException() instanceof SQLException) {
-                throw new SQLException(e.getMessage(), e.getTargetException());
-            } else {
-                throw new SQLException(
-                        e.getMessage() + "\r\n" + e.getTargetException().getMessage(),
-                        null,
-                        -90002);
-            }
+            queryplan =
+                    (String)
+                            BeanUtils.invokeObjectMethod(
+                                    statement,
+                                    "getQueryplan",
+                                    new Class<?>[] {String.class},
+                                    new String[] {query});
+        } catch (Throwable e) {
+            log.debug("error getQueryplan", e);
         }
-    }
-
-    public String getQueryplan(String sql) throws SQLException {
-        return (String) invoke(statement, "getQueryplan", String.class, sql);
+        return queryplan;
     }
 }
