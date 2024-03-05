@@ -63,6 +63,7 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase<PostgreT
         return this;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true)
     public PostgreTableBase getAssociatedEntity() {

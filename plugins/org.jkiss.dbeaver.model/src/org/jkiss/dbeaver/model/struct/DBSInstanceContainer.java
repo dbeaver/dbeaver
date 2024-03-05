@@ -35,6 +35,6 @@ public interface DBSInstanceContainer extends DBSObject {
     @NotNull
     Collection<? extends DBSInstance> getAvailableInstances();
 
-    void shutdown(DBRProgressMonitor monitor);
+    void shutdown(@NotNull DBRProgressMonitor monitor);
 
 }
