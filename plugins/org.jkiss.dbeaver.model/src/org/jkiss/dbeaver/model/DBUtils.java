@@ -1502,10 +1502,10 @@ public final class DBUtils {
         }
     }
 
-    public static void fireObjectSelect(DBSObject object, boolean select) {
+    public static void fireObjectSelect(DBSObject object, boolean select, DBCExecutionContext context) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
-            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select));
+            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select, context));
         }
     }
 
@@ -1514,7 +1514,7 @@ public final class DBUtils {
      */
     public static void fireObjectRefresh(DBSObject object) {
         // Select with true parameter is the same as refresh
-        fireObjectSelect(object, true);
+        fireObjectSelect(object, true, null);
     }
 
     @NotNull
@@ -1893,26 +1893,30 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
-    public static void refreshContextDefaultsAndReflect(DBRProgressMonitor monitor, DBCExecutionContextDefaults contextDefaults) {
+    public static void refreshContextDefaultsAndReflect(DBRProgressMonitor monitor, DBCExecutionContextDefaults contextDefaults, DBCExecutionContext context) {
         try {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
             if (contextDefaults.refreshDefaults(monitor, false)) {
-                fireObjectSelectionChange(defaultCatalog, contextDefaults.getDefaultCatalog());
-                fireObjectSelectionChange(defaultSchema, contextDefaults.getDefaultSchema());
+                fireObjectSelectionChange(defaultCatalog, contextDefaults.getDefaultCatalog(), context);
+                fireObjectSelectionChange(defaultSchema, contextDefaults.getDefaultSchema(), context);
             }
         } catch (Exception e) {
             log.debug(e);
         }
     }
 
-    public static void fireObjectSelectionChange(DBSObject oldDefaultObject, DBSObject newDefaultObject) {
+    public static void fireObjectSelectionChange(
+        @Nullable DBSObject oldDefaultObject,
+        @Nullable DBSObject newDefaultObject,
+        @Nullable DBCExecutionContext context
+    ) {
         if (oldDefaultObject != newDefaultObject) {
             if (oldDefaultObject != null) {
-                DBUtils.fireObjectSelect(oldDefaultObject, false);
+                DBUtils.fireObjectSelect(oldDefaultObject, false, context);
             }
             if (newDefaultObject != null) {
-                DBUtils.fireObjectSelect(newDefaultObject, true);
+                DBUtils.fireObjectSelect(newDefaultObject, true, context);
             }
         }
     }
