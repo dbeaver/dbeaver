@@ -149,7 +149,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 addNested(removes[1].trim(), segments);
                 parseObject(segments);
             } else if (key.equals(CLASS)) {
-                if (!removes[0].equals(OPTIONS_SEPARATOR)) {
+                if (!removes[0].equals("Query plan")) {
                     addNested(removes[1].trim(), segments);
                 }
                 parseObject(segments);
@@ -163,7 +163,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private List<String> getSegments() {
         Pattern pattern =
                 Pattern.compile(
-                        "[\\n\\r]node\\[....\\s*([^\\n\\r]*)|[\\n\\r].*Query plan:\\s*([^\\n\\r]*)|[\\n\\r].*subplan:\\s*([^\\n\\r]*)|[\\n\\r].*cost:\\s*([^\\n\\r]*)|inner:\\s*([^\\n\\r]*)|outer:\\s*([^\\n\\r]*)|class:\\s*([^\\n\\r]*)");
+                        "(inner|outer|class|cost|Query plan|node\\[..):\\s*([^\\n\\r]*)");
         Matcher matcher = pattern.matcher(fullText);
         List<String> segments = new ArrayList<String>();
         while (matcher.find()) {
