@@ -37,7 +37,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     /**
      * Initial offset from top line
      */
-    private static final int OFFSET_FROM_TOP = 40;
+    private static final int OFFSET_FROM_TOP = 30;
     /**
      * Initial offset from left line
      */
@@ -45,11 +45,11 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     /**
      * Initial distance by X
      */
-    private static final int DISTANCE_ENTITIES_X = 120;
+    private static final int DISTANCE_ENTITIES_X = 70;
     /**
      * Initial distance by Y
      */
-    private static final int DISTANCE_ENTITIES_Y = 100;
+    private static final int DISTANCE_ENTITIES_Y = 40;
 
     /**
      * How far elements can be placed to his child
@@ -58,12 +58,17 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     /**
      * Repeatable columns value
      */
-    private static final int VIRTUAL_COLUMNS = 5;
+    private static final int VIRTUAL_COLUMNS = 6;
     /**
-     * Distance require to draw connection
+     * Distance by X require to draw connection
      */
-    private static final int DISTANCE_PER_EDGE = 9;
+    private static final int DISTANCE_PER_EDGE_X = 5;
 
+    /**
+     * Distance by Y require to draw connection
+     */
+    private static final int DISTANCE_PER_EDGE_Y = 15;
+    
     public OrthoDirectedGraphLayout(AbstractGraphicalEditPart diagram) {
         this.diagram = diagram;
     }
@@ -84,16 +89,28 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         drawMissedNodes(isolatedNodes, nodeMissed, nodeByLevels);
     }
 
-    private int computeDistance(List<Node> nodes) {
+    private int computeDistanceX(List<Node> nodes) {
+        int maxCountOfEdges = 0;
+        int distance = DISTANCE_ENTITIES_X;
+        for (Node node : nodes) {
+            maxCountOfEdges += node.incoming.size() + node.outgoing.size();
+        }
+        if (maxCountOfEdges > 0) {
+            distance += maxCountOfEdges * DISTANCE_PER_EDGE_X;
+        }
+        return distance;
+    }
+
+    private int computeDistanceY(List<Node> nodes) {
         int maxCountOfEdges = 0;
         for (Node node : nodes) {
-            int countOfEdges = node.incoming.size() + node.outgoing.size();
-            maxCountOfEdges += countOfEdges;
+            maxCountOfEdges += node.incoming.size() + node.outgoing.size();
         }
-        if (maxCountOfEdges == 0) {
-            return DISTANCE_ENTITIES_X;
+        int distance = maxCountOfEdges * DISTANCE_PER_EDGE_Y;
+        if (distance < DISTANCE_ENTITIES_Y) {
+            distance = DISTANCE_ENTITIES_Y;
         }
-        return maxCountOfEdges * DISTANCE_PER_EDGE;
+        return distance;
     }
 
     private TreeMap<Integer, List<Node>> removeIslandNodesFromRoots(List<Node> islands, TreeMap<Integer, List<Node>> nodeByLevels) {
@@ -200,18 +217,22 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 currentY = OFFSET_FROM_TOP + middle - height / 2;
             }
             List<Node> nodes = entry.getValue();
-            int distanceX = computeDistance(nodes);
+            int nodeWidthMax = 0;
             for (Node n : nodes) {
                 n.x = currentX;
                 n.y = currentY;
-                currentY += n.height +  computeDistance(nodes);
-                if (distanceX < n.width) {
-                    distanceX = n.width;
+                if (index == 0) {
+                    currentY += n.height + DISTANCE_ENTITIES_Y;
+                } else {
+                    currentY += n.height + computeDistanceY(nodeByEdges.get(index));
+                }
+                if (nodeWidthMax < n.width) {
+                    nodeWidthMax = n.width;
                 }
             }
             if (!nodes.isEmpty()) {
                 // next increase X
-                currentX += DISTANCE_ENTITIES_X + distanceX;
+                currentX += nodeWidthMax + computeDistanceX(nodes);
             }
             index++;
         }
