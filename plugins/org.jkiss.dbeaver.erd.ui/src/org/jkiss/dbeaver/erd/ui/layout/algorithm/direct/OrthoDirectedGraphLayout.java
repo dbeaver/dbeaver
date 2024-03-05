@@ -45,7 +45,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     /**
      * Initial distance by X
      */
-    private static final int DISTANCE_ENTITIES_X = 70;
+    private static final int DISTANCE_ENTITIES_X = 75;
     /**
      * Initial distance by Y
      */
@@ -62,12 +62,12 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     /**
      * Distance by X require to draw connection
      */
-    private static final int DISTANCE_PER_EDGE_X = 5;
+    private static final int DISTANCE_PER_EDGE_X = 7;
 
     /**
      * Distance by Y require to draw connection
      */
-    private static final int DISTANCE_PER_EDGE_Y = 15;
+    private static final int DISTANCE_PER_EDGE_Y = 10;
     
     public OrthoDirectedGraphLayout(AbstractGraphicalEditPart diagram) {
         this.diagram = diagram;
@@ -98,15 +98,14 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         if (maxCountOfEdges > 0) {
             distance += maxCountOfEdges * DISTANCE_PER_EDGE_X;
         }
+        if (distance < DISTANCE_PER_EDGE_X) {
+            distance = DISTANCE_ENTITIES_X;
+        }
         return distance;
     }
 
-    private int computeDistanceY(List<Node> nodes) {
-        int maxCountOfEdges = 0;
-        for (Node node : nodes) {
-            maxCountOfEdges += node.incoming.size() + node.outgoing.size();
-        }
-        int distance = maxCountOfEdges * DISTANCE_PER_EDGE_Y;
+    private int computeDistanceY(Node n) {
+        int distance = (n.outgoing.size() + n.incoming.size()) * DISTANCE_PER_EDGE_Y;
         if (distance < DISTANCE_ENTITIES_Y) {
             distance = DISTANCE_ENTITIES_Y;
         }
@@ -145,7 +144,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
             nodeSource.y = currentY;
             for (Edge edge : nodeSource.outgoing) {
                 Node nodeTarget = edge.target;
-                nodeTarget.x = currentX + nodeSource.width + DISTANCE_ENTITIES_X / 2;
+                nodeTarget.x = currentX + nodeSource.width + computeDistanceX(islands);
                 nodeTarget.y = currentY;
                 if (nodeSource.height > nodeTarget.height) {
                     currentY += nodeSource.height + DISTANCE_ENTITIES_Y;
@@ -224,7 +223,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 if (index == 0) {
                     currentY += n.height + DISTANCE_ENTITIES_Y;
                 } else {
-                    currentY += n.height + computeDistanceY(nodeByEdges.get(index));
+                    currentY += n.height + DISTANCE_ENTITIES_Y / nodes.size() + computeDistanceY(n);
                 }
                 if (nodeWidthMax < n.width) {
                     nodeWidthMax = n.width;
