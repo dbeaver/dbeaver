@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 import java.util.List;
 
 /**
@@ -23,6 +25,7 @@ import java.util.List;
  */
 public interface DBSEntityConstrainable {
 
+    @NotNull
     List<DBSEntityConstraintInfo> getSupportedConstraints();
 
 }

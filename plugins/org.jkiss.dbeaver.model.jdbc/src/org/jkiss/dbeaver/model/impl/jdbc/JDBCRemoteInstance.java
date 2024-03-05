@@ -182,7 +182,7 @@ public class JDBCRemoteInstance implements DBSInstance {
 
     @NotNull
     @Override
-    public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+    public JDBCExecutionContext getDefaultContext(@NotNull DBRProgressMonitor monitor, boolean meta) {
         if (sharedInstance != null) {
             return sharedInstance.getDefaultContext(monitor, meta);
         }

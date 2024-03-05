@@ -29,17 +29,23 @@ import java.util.List;
  * DBSStructureAssistant
  */
 public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
+    @NotNull
     DBSObjectType[] getSupportedObjectTypes();
 
+    @NotNull
     DBSObjectType[] getSearchObjectTypes();
 
+    @NotNull
     DBSObjectType[] getHyperlinkObjectTypes();
 
+    @NotNull
     DBSObjectType[] getAutoCompleteObjectTypes();
 
     @NotNull
-    List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
-                                               @NotNull ObjectsSearchParams params) throws DBException;
+    List<DBSObjectReference> findObjectsByMask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull CONTEXT executionContext,
+        @NotNull ObjectsSearchParams params) throws DBException;
 
     default boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
         return false;

@@ -65,7 +65,7 @@ public class JDBCContentXML extends JDBCContentLOB {
     }
 
     @Override
-    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+    public DBDContentStorage getContents(@NotNull DBRProgressMonitor monitor)
         throws DBCException
     {
         if (storage == null && xml != null) {
@@ -177,7 +177,7 @@ public class JDBCContentXML extends JDBCContentLOB {
     }
 
     @Override
-    public String getDisplayString(DBDDisplayFormat format)
+    public String getDisplayString(@NotNull DBDDisplayFormat format)
     {
         return xml == null && storage == null ? null : "[XML]";
     }

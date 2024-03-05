@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.dpi.app;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.registry.EclipseWorkspaceImpl;
 
@@ -36,6 +37,7 @@ public class DPIWorkspace extends EclipseWorkspaceImpl {
         return true;
     }
 
+    @Nullable
     @Override
     public DBPProject getActiveProject() {
         return fakeProject;

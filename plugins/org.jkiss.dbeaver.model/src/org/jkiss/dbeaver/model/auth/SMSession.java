@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ public interface SMSession extends DBPObject {
     @NotNull
     SMSessionContext getSessionContext();
 
+    @Nullable
     SMSessionPrincipal getSessionPrincipal();
 
     /**

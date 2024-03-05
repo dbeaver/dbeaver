@@ -33,13 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSTypeDescriptor;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx2;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -234,6 +228,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.valueType = dataType.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType == null ? super.getDataKind() : dataType.getDataKind();
@@ -256,6 +251,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         log.debug("Attribute does not support updating its max length");
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
@@ -266,7 +262,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public void setPrecision(Integer precision) {
+    public void setPrecision(@Nullable Integer precision) {
         log.debug("Attribute does not support updating its precision");
     }
 
@@ -280,7 +276,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public void setScale(Integer scale) {
+    public void setScale(@Nullable Integer scale) {
         log.debug("Attribute does not support updating its scale");
     }
 
@@ -396,6 +392,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return !isLocal;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         if (dataType != null) {
@@ -405,13 +402,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public void setTypeName(String typeName) throws DBException {
+    public void setTypeName(@NotNull String typeName) throws DBException {
         final PostgreDataType dataType = resolveOrCreateDataType(typeName);
         this.typeName = typeName;
         this.typeId = dataType.getTypeID();
         this.dataType = dataType;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
@@ -427,7 +425,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) throws DBException {
+    public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         final Pair<String, String[]> type = DBUtils.getTypeModifiers(fullTypeName);
         final String typeName = type.getFirst();
         final String[] typeMods = type.getSecond();

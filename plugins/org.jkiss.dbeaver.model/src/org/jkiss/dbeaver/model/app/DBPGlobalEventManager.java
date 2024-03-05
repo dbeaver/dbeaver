@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 import java.util.Map;
 
 /**
@@ -24,10 +26,10 @@ import java.util.Map;
  */
 public interface DBPGlobalEventManager {
 
-    void fireGlobalEvent(String eventId, Map<String, Object> properties);
+    void fireGlobalEvent(@NotNull String eventId, @NotNull Map<String, Object> properties);
 
-    void addEventListener(DBPGlobalEventListener listener);
+    void addEventListener(@NotNull DBPGlobalEventListener listener);
 
-    void removeEventListener(DBPGlobalEventListener listener);
+    void removeEventListener(@NotNull DBPGlobalEventListener listener);
 
 }

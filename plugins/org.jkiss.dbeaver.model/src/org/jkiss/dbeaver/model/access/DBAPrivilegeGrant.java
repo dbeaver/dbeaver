@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -28,12 +29,12 @@ public interface DBAPrivilegeGrant {
     /**
      * Role which owns this privilege
      */
-    Object getSubject(DBRProgressMonitor monitor) throws DBException;
+    Object getSubject(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Object to which privilege was granted. Can be null in case of global privileges (e.g. CONNECT).
      */
-    Object getObject(DBRProgressMonitor monitor) throws DBException;
+    Object getObject(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Privilege

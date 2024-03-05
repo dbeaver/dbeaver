@@ -17,11 +17,14 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Object type
  */
 public interface DBSObjectWithType {
 
+    @NotNull
     DBSObjectType getObjectType();
 
 }

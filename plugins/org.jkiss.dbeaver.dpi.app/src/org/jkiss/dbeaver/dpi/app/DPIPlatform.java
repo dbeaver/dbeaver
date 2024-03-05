@@ -154,7 +154,7 @@ public class DPIPlatform extends BasePlatformImpl {
     }
 
     @NotNull
-    public Path getTempFolder(DBRProgressMonitor monitor, String name) {
+    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         return tempFolder.resolve(name);
     }
 

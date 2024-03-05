@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.dameng.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -29,6 +30,7 @@ public class DamengDataType extends GenericDataType {
         super(owner, valueType, name, remarks, unsigned, searchable, precision, minScale, maxScale);
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return DamengDataSource.getDataKind(getName(), getTypeID());
