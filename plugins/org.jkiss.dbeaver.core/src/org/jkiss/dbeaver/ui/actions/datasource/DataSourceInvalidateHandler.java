@@ -84,27 +84,19 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                 public void done(IJobChangeEvent event) {
                     StringBuilder message = new StringBuilder();
                     Throwable error = null;
-                    int totalNum = 0, connectedNum = 0, aliveNum = 0;
+                    int totalNum = 0;
+                    int connectedNum = 0;
                     for (InvalidateJob.ContextInvalidateResult result : invalidateJob.getInvalidateResults()) {
                         totalNum++;
-                        if (result.error != null) {
-                            error = result.error;
-                        }
-                        switch (result.result) {
-                            case CONNECTED:
-                            case RECONNECTED:
-                                connectedNum++;
-                                break;
-                            case ALIVE:
-                                aliveNum++;
-                                break;
-                            default:
-                                break;
+                        if (result instanceof InvalidateJob.ContextInvalidateResult.Error e) {
+                            error = e.exception();
+                        } else {
+                            connectedNum++;
                         }
                     }
                     if (connectedNum > 0) {
                         message.insert(0, "Connections reopened: " + connectedNum + " (of " + totalNum + ")");
-                    } else if (message.length() == 0) {
+                    } else if (message.isEmpty()) {
                         message.insert(0, "All connections (" + totalNum + ") are alive!");
                     }
                     if (error != null) {
