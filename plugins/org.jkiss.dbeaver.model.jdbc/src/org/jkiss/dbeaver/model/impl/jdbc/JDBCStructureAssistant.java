@@ -40,23 +40,27 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
 
     protected abstract JDBCDataSource getDataSource();
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return getSupportedObjectTypes();
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {

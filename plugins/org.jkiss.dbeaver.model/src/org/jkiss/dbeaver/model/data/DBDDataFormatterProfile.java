@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -29,26 +30,33 @@ import java.util.Map;
  */
 public interface DBDDataFormatterProfile {
 
+    @NotNull
     DBPPreferenceStore getPreferenceStore();
 
+    @NotNull
     String getProfileName();
     
-    void setProfileName(String name);
+    void setProfileName(@NotNull String name);
 
     Locale getLocale();
 
-    void setLocale(Locale locale);
+    void setLocale(@NotNull Locale locale);
 
-    Map<String, Object> getFormatterProperties(DBPPreferenceStore store, String typeId);
+    @NotNull
+    Map<String, Object> getFormatterProperties(@NotNull DBPPreferenceStore store, @NotNull String typeId);
 
-    void setFormatterProperties(DBPPreferenceStore store, String typeId, Map<String, Object> properties);
+    void setFormatterProperties(
+        @NotNull DBPPreferenceStore store,
+        @NotNull String typeId,
+        @NotNull Map<String, Object> properties);
 
     boolean isOverridesParent();
 
-    void reset(DBPPreferenceStore store);
+    void reset(@NotNull DBPPreferenceStore store);
 
-    void saveProfile(DBPPreferenceStore store) throws IOException;
+    void saveProfile(@NotNull DBPPreferenceStore store) throws IOException;
 
-    DBDDataFormatter createFormatter(String typeId, DBSTypedObject type) throws ReflectiveOperationException;
+    @NotNull
+    DBDDataFormatter createFormatter(@NotNull String typeId, DBSTypedObject type) throws ReflectiveOperationException;
 
 }

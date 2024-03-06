@@ -45,6 +45,7 @@ public class SQLiteDataType extends JDBCDataType<SQLiteDataSource> {
         return affinity;
     }
 
+    @NotNull
     @Property(order = 20)
     @Override
     public DBPDataKind getDataKind() {

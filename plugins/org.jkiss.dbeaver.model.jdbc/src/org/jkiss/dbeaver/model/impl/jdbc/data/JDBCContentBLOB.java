@@ -84,7 +84,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     }
 
     @Override
-    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+    public DBDContentStorage getContents(@NotNull DBRProgressMonitor monitor)
         throws DBCException
     {
         if (storage == null && blob != null) {
@@ -261,7 +261,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     }
 
     @Override
-    public String getDisplayString(DBDDisplayFormat format)
+    public String getDisplayString(@NotNull DBDDisplayFormat format)
     {
         if (blob == null && storage == null) {
             return null;

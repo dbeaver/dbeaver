@@ -66,7 +66,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @NotNull DBSAttributeBase[] attributes,
         @Nullable DBDDataReceiver keysReceiver,
         @NotNull DBCExecutionSource source,
-        Map<String, Object> options)
+        @NotNull Map<String, Object> options)
         throws DBCException;
 
     @NotNull
