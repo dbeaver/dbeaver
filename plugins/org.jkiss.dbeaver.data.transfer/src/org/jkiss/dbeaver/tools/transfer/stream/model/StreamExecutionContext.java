@@ -54,10 +54,9 @@ public class StreamExecutionContext extends AbstractExecutionContext<StreamDataS
 
     }
 
-    @NotNull
     @Override
-    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException {
-        return InvalidateResult.ALIVE;
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull InvalidatePhase phase) throws DBException {
+        // nothing to do
     }
 
     @Override

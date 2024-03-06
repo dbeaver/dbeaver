@@ -120,11 +120,9 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
         return this;
     }
 
-    @NotNull
     @Override
-    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException
-    {
-        throw new DBException("Connection invalidate not supported");
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull InvalidatePhase phase) throws DBException {
+        // nothing to do
     }
 
     @Nullable

@@ -38,11 +38,20 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPContextWithAttributes
 {
     enum InvalidateResult {
+        // Successful statuses
         DISCONNECTED,
         CONNECTED,
         RECONNECTED,
         ALIVE,
+
+        // Error statuses
         ERROR
+    }
+
+    enum InvalidatePhase {
+        BEFORE_INVALIDATE,
+        INVALIDATE,
+        AFTER_INVALIDATE
     }
 
     /**
@@ -103,9 +112,33 @@ public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPC
      * @param monitor progress monitor
      * @param closeOnFailure
      * @return true if reconnect was applied false if connection is alive and nothing was done.
+     * @deprecated use
      */
     @NotNull
-    InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException;
+    @Deprecated
+    default InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException {
+        return InvalidateResult.RECONNECTED;
+    }
+
+    /**
+     * Invalidates the context in a span of several phases.
+     * <p>
+     * Each phase represents a different stage of the invalidation process:
+     * <ul>
+     *     <li>{@code BEFORE_INVALIDATE} is called before network handlers are invalidated.
+     *     In most cases, it will <b>terminate</b> the underlying connection</li>
+     *     <li>{@code INVALIDATE} is called after network handlers are invalidated.
+     *     In most cases, it will <b>establish</b> the underlying connection</li>
+     *     <li>{@code AFTER_INVALIDATE} is called after the context is invalidated.</li>
+     * </ul>
+     * <p>
+     * The implementation may choose to ignore some of the phases if they are not applicable.
+     *
+     * @param monitor progress monitor
+     * @param phase   invalidation phase
+     * @throws DBException on any error to signal the invalidation was not successful
+     */
+    void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull InvalidatePhase phase) throws DBException;
 
     /**
      * Defaults reader/writer.
