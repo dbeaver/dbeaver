@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.runtime.ui;
 
-import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -35,7 +34,7 @@ public interface UIServiceSecurity {
      * @return - password
      */
     String askForPassword(
-        @NotNull IProject project,
+        @NotNull DBPProject project,
         @NotNull String title,
         String message,
         @Nullable String defPassword,
