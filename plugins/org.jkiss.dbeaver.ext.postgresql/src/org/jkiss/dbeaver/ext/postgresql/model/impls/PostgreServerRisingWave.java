@@ -67,17 +67,17 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsDependencies() {
+        return false;
+    }
+
+    @Override
     public boolean supportsFunctionCreate() {
         return false;
     }
 
     @Override
     public boolean supportsRules() {
-        return false;
-    }
-
-    @Override
-    public boolean supportsRowLevelSecurity() {
         return false;
     }
 
