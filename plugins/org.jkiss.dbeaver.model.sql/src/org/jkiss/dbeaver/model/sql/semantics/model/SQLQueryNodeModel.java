@@ -19,10 +19,11 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryCompletionScope;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,15 +32,19 @@ import java.util.stream.Stream;
 public abstract class SQLQueryNodeModel {
 
     private final Interval region;
+    private final STMTreeNode treeNode;
     private List<SQLQueryNodeModel> subnodes; 
+    private SQLQueryCompletionScope completionScope;
 
-    protected SQLQueryNodeModel(@NotNull Interval region) {
+    protected SQLQueryNodeModel(@NotNull Interval region, STMTreeNode treeNode) {
         this.region = region;
+        this.treeNode = treeNode;
         this.subnodes = null;
     }
 
-    protected SQLQueryNodeModel(@NotNull Interval region, SQLQueryNodeModel ... subnodes) {
+    protected SQLQueryNodeModel(@NotNull Interval region, STMTreeNode treeNode, SQLQueryNodeModel ... subnodes) {
         this.region = region;
+        this.treeNode = treeNode;
         
         if (subnodes == null || subnodes.length == 0) {
             this.subnodes = null;
@@ -49,6 +54,14 @@ public abstract class SQLQueryNodeModel {
         }
     }
     
+    public SQLQueryCompletionScope getCompletionScope() {
+        return this.completionScope != null ? this.completionScope : (this.completionScope = this.prepareCompletionScope());
+    }
+    
+    protected SQLQueryCompletionScope prepareCompletionScope() {
+        return SQLQueryCompletionScope.forKeywordsAt(this);
+    }
+
     protected void registerSubnode(SQLQueryNodeModel subnode) {
         if (this.subnodes == null) {
             this.subnodes = new ArrayList<>();
@@ -63,6 +76,10 @@ public abstract class SQLQueryNodeModel {
     @NotNull
     public final Interval getInterval() {
         return this.region;
+    }
+    
+    public final STMTreeNode getTreeNode() {
+        return this.treeNode;
     }
 
     public final <T, R> R apply(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
