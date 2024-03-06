@@ -498,6 +498,7 @@ public abstract class PostgreTable extends PostgreTableReal
         return super.refreshObject(monitor);
     }
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(

@@ -57,6 +57,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         return dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
@@ -68,6 +69,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
             };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
@@ -77,6 +79,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {

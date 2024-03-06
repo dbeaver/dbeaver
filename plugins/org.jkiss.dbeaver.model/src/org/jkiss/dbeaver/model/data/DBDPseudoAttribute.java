@@ -176,12 +176,14 @@ public class DBDPseudoAttribute implements DBPNamedObject {
             return attribute.isRequired();
         }
 
+        @NotNull
         @Override
         public String getTypeName()
         {
             return attribute.getTypeName();
         }
 
+        @NotNull
         @Override
         public String getFullTypeName() {
             return attribute.getFullTypeName();
@@ -193,12 +195,14 @@ public class DBDPseudoAttribute implements DBPNamedObject {
             return attribute.getTypeID();
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind()
         {
             return attribute.getDataKind();
         }
 
+        @Nullable
         @Override
         public Integer getScale()
         {

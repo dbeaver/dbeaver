@@ -29,6 +29,7 @@ import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
@@ -75,6 +76,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         return "resource"; //$NON-NLS-1$
     }
 
+    @Nullable
     @Override
     public String getResourceDescription(@NotNull IResource resource) {
         return "";

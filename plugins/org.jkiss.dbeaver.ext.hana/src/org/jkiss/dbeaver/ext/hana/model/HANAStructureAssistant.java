@@ -52,6 +52,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         return dataSource;
     }
 
+    @NotNull
     public DBSObjectType[] getSupportedObjectTypes() {
         return new DBSObjectType[] {
             HANAObjectType.TABLE,
@@ -63,6 +64,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
        };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes() {
         return new DBSObjectType[]{
@@ -73,6 +75,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes() {
         return new DBSObjectType[]{

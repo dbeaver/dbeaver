@@ -98,6 +98,7 @@ public class AltibaseRole extends AltibaseGrantee implements DBARole {
         }
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId) {
         return null;

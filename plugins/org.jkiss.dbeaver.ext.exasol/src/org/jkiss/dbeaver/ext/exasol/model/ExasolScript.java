@@ -157,8 +157,9 @@ public class ExasolScript extends AbstractProcedure<ExasolDataSource, ExasolSche
             return DBSProcedureType.FUNCTION;
     }
 
+    @Nullable
     @Override
-    public Collection<? extends DBSProcedureParameter> getParameters(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

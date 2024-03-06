@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -278,6 +279,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.MATERIALIZED_VIEW);
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId)
     {

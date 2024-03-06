@@ -113,11 +113,13 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
         return false;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return dataType.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return dataType.getFullTypeName();
@@ -128,6 +130,7 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
         return dataType.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType.getDataKind();
@@ -138,6 +141,7 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
         return dataType.getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return dataType.getPrecision();

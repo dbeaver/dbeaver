@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -60,8 +61,9 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         getObject().clearGrantsCache();
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
         String privName = privilege.getFixedPrivilegeName();
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
@@ -77,8 +79,9 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         };
     }
 
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege) prevCommand;

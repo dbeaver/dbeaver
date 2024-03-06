@@ -65,7 +65,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
     }
 
     @Override
-    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+    public DBDContentStorage getContents(@NotNull DBRProgressMonitor monitor)
         throws DBCException
     {
         if (storage == null && opaque != null) {
@@ -117,7 +117,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
     }
 
     @Override
-    public String getDisplayString(DBDDisplayFormat format)
+    public String getDisplayString(@NotNull DBDDisplayFormat format)
     {
         return opaque == null && storage == null ? null : "[" + getOpaqueType() + "]";
     }
