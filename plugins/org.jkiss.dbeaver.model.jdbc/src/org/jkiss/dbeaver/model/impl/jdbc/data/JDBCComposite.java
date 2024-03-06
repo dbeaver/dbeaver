@@ -212,6 +212,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             return Types.STRUCT;
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind() {
             return DBPDataKind.STRUCT;
@@ -285,6 +286,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             dataKind = JDBCUtils.resolveDataKind(type.getDataSource(), getTypeName(), getTypeID());
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind()
         {

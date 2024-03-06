@@ -73,7 +73,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     }
 
     @Override
-    public boolean isSecureDownload(DBRProgressMonitor monitor) {
+    public boolean isSecureDownload(@NotNull DBRProgressMonitor monitor) {
         return true;
     }
 
@@ -195,6 +195,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         return path;
     }
 
+    @NotNull
     @Override
     public String getId() {
         return path;

@@ -473,6 +473,7 @@
                         label="SAP ASE jConnect"
                         icon="icons/sap_ase_icon.png"
                         iconBig="icons/sap_ase_icon_big.png"
+                        logoImage="icons/sap_ase_logo.png"
                         class="com.sybase.jdbc4.jdbc.SybDriver"
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
                         useURL="false"

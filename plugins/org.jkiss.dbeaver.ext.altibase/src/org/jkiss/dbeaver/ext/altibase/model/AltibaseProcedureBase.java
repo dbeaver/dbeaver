@@ -16,15 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -60,8 +57,9 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
         this.columns.add(new AltibaseProcedureParameter(column));
     }
 
+    @Nullable
     @Override
-    public Collection<GenericProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
             throws DBException {
         if (columns == null) {
             loadProcedureColumns(monitor);

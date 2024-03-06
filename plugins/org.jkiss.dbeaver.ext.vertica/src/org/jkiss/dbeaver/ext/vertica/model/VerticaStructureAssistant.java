@@ -53,6 +53,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
         return dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes() {
         return new DBSObjectType[]{
@@ -67,6 +68,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes() {
         return new DBSObjectType[]{

@@ -146,6 +146,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return DBSForeignKeyModifyRule.NO_ACTION;
     }
 
+    @Nullable
     @Override
     public OracleTableBase getAssociatedEntity()
     {

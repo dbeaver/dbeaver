@@ -141,7 +141,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @NotNull
     @Override
-    public Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException {
+    public Collection<String> getAvailableVersions(@NotNull DBRProgressMonitor monitor) throws IOException {
         MavenArtifactVersion artifactVersion = getArtifactVersion(monitor);
         if (artifactVersion != null) {
             Collection<String> availableVersions = artifactVersion.getArtifact().getAvailableVersions(monitor, reference.getVersion());
@@ -158,7 +158,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Override
-    public void setPreferredVersion(String version) {
+    public void setPreferredVersion(@NotNull String version) {
         this.preferredVersion = version;
         this.localVersion = null;
     }
@@ -171,7 +171,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Override
-    public boolean isSecureDownload(DBRProgressMonitor monitor) {
+    public boolean isSecureDownload(@NotNull DBRProgressMonitor monitor) {
         try {
             MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
             if (localVersion == null) {
@@ -280,6 +280,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return reference.toString();
     }
 
+    @NotNull
     @Override
     public String getId() {
         return reference.getId();

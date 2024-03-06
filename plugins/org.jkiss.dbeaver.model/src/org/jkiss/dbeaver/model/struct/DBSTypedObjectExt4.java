@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
@@ -25,6 +26,6 @@ public interface DBSTypedObjectExt4<DATA_TYPE extends DBSDataType> extends DBPOb
     /**
      * Data type. Can be obtained from DBPDataTypeProvider.
      */
-    void setDataType(DATA_TYPE dataType);
+    void setDataType(@NotNull DATA_TYPE dataType);
 
 }

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -31,6 +32,7 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
 
     String getTitle();
 
+    @NotNull
     OBJECT_TYPE getObject();
 
     boolean isUndoable();
@@ -52,14 +54,19 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
      * @param monitor
      * @param options
      */
-    void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException;
+    void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException;
 
     void updateModel();
 
+    @NotNull
     DBECommand<?> merge(
-        DBECommand<?> prevCommand,
-        Map<Object, Object> userParams);
+        @NotNull DBECommand<?> prevCommand,
+        @NotNull Map<Object, Object> userParams);
 
-    DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) throws DBException;
+    @NotNull
+    DBEPersistAction[] getPersistActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Map<String, Object> options) throws DBException;
 
 }

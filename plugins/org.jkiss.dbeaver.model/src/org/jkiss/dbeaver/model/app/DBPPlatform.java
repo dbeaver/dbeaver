@@ -86,7 +86,7 @@ public interface DBPPlatform {
     DBACertificateStorage getCertificateStorage();
 
     @NotNull
-    Path getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
+    Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws IOException;
 
     /**
      * Returns platform configuration controller,

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
@@ -37,7 +38,7 @@ public class VerticaChangeUserPasswordManager implements DBAUserPasswordManager 
     }
 
     @Override
-    public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException {
+    public void changeUserPassword(@NotNull DBRProgressMonitor monitor, @NotNull String userName, @NotNull String newPassword, @NotNull String oldPassword) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
             JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName)

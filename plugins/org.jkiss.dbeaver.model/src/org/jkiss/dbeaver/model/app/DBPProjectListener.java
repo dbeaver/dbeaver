@@ -17,14 +17,16 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBPProjectListener
  */
 public interface DBPProjectListener
 {
-    default void handleProjectAdd(DBPProject project) {}
+    default void handleProjectAdd(@NotNull DBPProject project) {}
 
-    default void handleProjectRemove(DBPProject project) {}
+    default void handleProjectRemove(@NotNull DBPProject project) {}
 
-    default void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {}
+    default void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {}
 }

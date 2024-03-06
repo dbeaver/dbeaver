@@ -255,6 +255,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         throw new DBException("Table DDL is read-only");
     }
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_TABLE;
