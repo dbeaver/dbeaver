@@ -1502,7 +1502,10 @@ public final class DBUtils {
         }
     }
 
-    public static void fireObjectSelect(DBSObject object, boolean select, DBCExecutionContext context) {
+    /**
+     * Fire event that the object was selected or unselected
+     */
+    public static void fireObjectSelect(@Nullable DBSObject object, boolean select, @Nullable DBCExecutionContext context) {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select, context));
@@ -1906,6 +1909,9 @@ public final class DBUtils {
         }
     }
 
+    /**
+     * Fire event to unselecting the oldDefaultObject and selecting the newDefaultObject
+     */
     public static void fireObjectSelectionChange(
         @Nullable DBSObject oldDefaultObject,
         @Nullable DBSObject newDefaultObject,

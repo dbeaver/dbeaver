@@ -3150,7 +3150,7 @@ public class SQLEditor extends SQLEditorBase implements
                     boolean contextChanged = false;
                     if (event.getAction().equals(DBPEvent.Action.OBJECT_SELECT)
                         && event.getData() == this.getExecutionContext()
-                        && Boolean.TRUE.equals(event.getEnabled())
+                        && event.getEnabled()
                     ) {
                         DBCExecutionContext execContext = this.getExecutionContext();
                         DBCExecutionContextDefaults<DBSCatalog, DBSSchema> ctxDefault = execContext == null
