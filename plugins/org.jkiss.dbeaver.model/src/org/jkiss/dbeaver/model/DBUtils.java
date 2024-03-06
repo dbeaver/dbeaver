@@ -1896,7 +1896,14 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
-    public static void refreshContextDefaultsAndReflect(DBRProgressMonitor monitor, DBCExecutionContextDefaults contextDefaults, DBCExecutionContext context) {
+    /**
+     * Update execution context default schema and catalog
+     */
+    public static void refreshContextDefaultsAndReflect(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContextDefaults contextDefaults,
+        @Nullable DBCExecutionContext context
+    ) {
         try {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
