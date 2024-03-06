@@ -675,6 +675,7 @@ public class DataSourceDescriptor
         return clientHome;
     }
 
+    @NotNull
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         if (proxyHandler == null && tunnelHandler == null) {

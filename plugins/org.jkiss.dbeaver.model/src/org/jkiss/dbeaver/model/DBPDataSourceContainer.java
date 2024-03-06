@@ -157,6 +157,7 @@ public interface DBPDataSourceContainer extends
 
     DBPNativeClientLocation getClientHome();
 
+    @NotNull
     DBWNetworkHandler[] getActiveNetworkHandlers();
 
     /**

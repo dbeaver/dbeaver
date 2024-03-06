@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.DBWUtils;
@@ -43,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * SSH tunnel
@@ -149,24 +152,31 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) {
-        if (session != null) {
-            final int timeout = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
-            RuntimeUtils.runTask(monitor1 -> {
-                monitor1.beginTask("Invalidate SSH tunnel", 1);
-                try {
-                    session.invalidate(monitor1);
-                } catch (DBException e) {
-                    log.debug("Error invalidating SSH tunnel. Closing.", e);
-                    try {
-                        closeTunnel(monitor);
-                    } catch (Exception e1) {
-                        log.error("Error closing broken tunnel", e1);
-                    }
-                } finally {
-                    monitor.done();
-                }
-            }, "Invalidate SSH tunnel " + dataSource.getContainer().getName(), timeout);
+    public void invalidateHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBCInvalidatePhase phase
+    ) throws DBException {
+        if (session == null) {
+            return;
+        }
+        try {
+            monitor.subTask("Invalidate SSH tunnel");
+            session.invalidate(
+                monitor,
+                dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT),
+                TimeUnit.MILLISECONDS
+            );
+        } catch (DBException e) {
+            log.debug("Error invalidating SSH tunnel. Closing.", e);
+            try {
+                closeTunnel(monitor);
+            } catch (Exception e1) {
+                log.error("Error closing broken tunnel", e1);
+            }
+            throw new DBException("Error invalidating SSH tunnel", e);
+        } finally {
+            monitor.done();
         }
     }
 
@@ -179,6 +189,12 @@ public class SSHTunnelImpl implements DBWTunnel {
             listener.run();
         }
         this.listeners.clear();
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceContainer[] getDependentDataSources() {
+        return new DBPDataSourceContainer[0];
     }
 
     @NotNull

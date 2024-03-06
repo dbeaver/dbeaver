@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 public interface SSHSession {
     /**
@@ -57,7 +58,7 @@ public interface SSHSession {
     @NotNull
     String getServerVersion();
 
-    void invalidate(@NotNull DBRProgressMonitor monitor) throws DBException;
+    void invalidate(@NotNull DBRProgressMonitor monitor, long timeout, @NotNull TimeUnit unit) throws DBException;
 
     void release(@NotNull DBRProgressMonitor monitor) throws DBException;
 }

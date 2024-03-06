@@ -232,12 +232,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull InvalidatePhase phase) throws DBException {
-        if (phase == InvalidatePhase.BEFORE_INVALIDATE) {
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException {
+        if (phase == DBCInvalidatePhase.BEFORE_INVALIDATE) {
             closeContext(false);
         }
 
-        if (phase == InvalidatePhase.INVALIDATE) {
+        if (phase == DBCInvalidatePhase.INVALIDATE) {
             // Try to connect again.
             // If connect will fail then context will remain in the list but with null connection.
             // On next invalidate it will try to reopen

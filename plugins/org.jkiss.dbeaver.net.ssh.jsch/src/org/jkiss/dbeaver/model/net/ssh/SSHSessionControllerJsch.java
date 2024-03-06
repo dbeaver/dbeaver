@@ -546,7 +546,7 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         }
 
         @Override
-        public void invalidate(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public void invalidate(@NotNull DBRProgressMonitor monitor, long timeout, @NotNull TimeUnit unit) throws DBException {
             throw new DBException("Not implemented");
         }
 
@@ -643,9 +643,9 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         }
 
         @Override
-        public void invalidate(@NotNull DBRProgressMonitor monitor) throws DBException {
-            origin.invalidate(monitor);
-            super.invalidate(monitor);
+        public void invalidate(@NotNull DBRProgressMonitor monitor, long timeout, @NotNull TimeUnit unit) throws DBException {
+            origin.invalidate(monitor, timeout, unit);
+            super.invalidate(monitor, timeout, unit);
         }
 
         @Override

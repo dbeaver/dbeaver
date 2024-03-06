@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -29,8 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Invalidate datasource job.
@@ -88,114 +88,148 @@ public class InvalidateJob extends DataSourceJob
         return Status.OK_STATUS;
     }
 
-    public static List<ContextInvalidateResult> invalidateDataSource(DBRProgressMonitor monitor, DBPDataSource dataSource, boolean disconnectOnFailure, boolean showErrors, Runnable feedback) {
-        List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
-
+    @NotNull
+    public static List<ContextInvalidateResult> invalidateDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        boolean disconnectOnFailure,
+        boolean showErrors,
+        @Nullable  Runnable feedback
+    ) {
+        DBWNetworkHandler[] activeHandlers = dataSource.getContainer().getActiveNetworkHandlers();
         DBPDataSourceContainer container = dataSource.getContainer();
 
-        boolean networkOK;
+        final Set<DBPDataSourceContainer> dependentDataSources = new HashSet<>();
+        for (DBWNetworkHandler handler : activeHandlers) {
+            Collections.addAll(dependentDataSources, handler.getDependentDataSources());
+        }
+        if (dependentDataSources.isEmpty()) {
+            dependentDataSources.add(dataSource.getContainer());
+        }
+
+        final Map<DBPDataSourceContainer, Object> locks = new HashMap<>();
+        for (var it = dependentDataSources.iterator(); it.hasNext(); ) {
+            final DBPDataSourceContainer dataSourceContainer = it.next();
+            monitor.subTask("Obtain exclusive datasource lock for '" + dataSourceContainer.getName() + "'");
+
+            final Object lock = container.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
+            if (lock == DBPExclusiveResource.TASK_PROCESED) {
+                log.debug("Datasource '" + dataSource.getContainer().getName() + "' was already invalidated");
+                it.remove();
+            } else {
+                locks.put(dataSourceContainer, lock);
+            }
+        }
+
+        if (locks.isEmpty()) {
+            // Nothing to invalidate
+            monitor.done();
+            return List.of();
+        }
 
         monitor.beginTask("Invalidate datasource '" + dataSource.getContainer().getName() + "'", 1);
-
-        monitor.subTask("Obtain exclusive datasource lock");
-        Object dsLock = container.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
-        if (dsLock == DBPExclusiveResource.TASK_PROCESED) {
-            // Already invalidated
-            monitor.done();
-            log.debug("Datasource '" + dataSource.getContainer().getName() + "' was already invalidated");
-            return invalidateResults;
-        }
         log.debug("Invalidate datasource '" + container.getName() + "' (" + container.getId() + ")");
-        try {
-            long timeSpent = 0;
 
-            monitor.subTask("Invalidate network connection");
-            DBWNetworkHandler[] activeHandlers = container.getActiveNetworkHandlers();
-            networkOK = true;
-            if (activeHandlers != null) {
+        try {
+            final List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
+            for (DBCInvalidatePhase phase : DBCInvalidatePhase.values()) {
+                invalidateResults.clear();
+                boolean networkOK = true;
+
+                monitor.subTask("Invalidate network connection");
                 for (DBWNetworkHandler nh : activeHandlers) {
                     log.debug("\tInvalidate network handler '" + nh.getClass().getSimpleName() + "' for " + container.getId());
                     monitor.subTask("Invalidate handler [" + nh.getClass().getSimpleName() + "]");
                     try {
-                        nh.invalidateHandler(monitor, dataSource);
+                        nh.invalidateHandler(monitor, dataSource, phase);
                     } catch (Exception e) {
                         invalidateResults.add(new ContextInvalidateResult.Error(e));
                         networkOK = false;
                         break;
                     }
                 }
-            }
 
-            // Invalidate datasource
-            int totalContexts = 0;
-            int goodContextsNumber = 0;
-            monitor.subTask("Invalidate connections of [" + container.getName() + "]");
-            for (DBSInstance instance : dataSource.getAvailableInstances()) {
-                for (DBCExecutionContext context : instance.getAllContexts()) {
-                    log.debug("\tInvalidate context '" + context.getContextName() + "' for " + container.getId());
-                    totalContexts++;
-                    if (networkOK) {
-                        long startTime = System.currentTimeMillis();
-                        Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
+                for (DBPDataSourceContainer currentContainer : dependentDataSources) {
+                    final DBPDataSource currentDataSource = currentContainer.getDataSource();
+
+                    // Invalidate datasource
+                    int totalContexts = 0;
+                    int goodContextsNumber = 0;
+                    monitor.subTask("Invalidate connections of [" + currentContainer.getName() + "]");
+                    for (DBSInstance instance : currentDataSource.getAvailableInstances()) {
+                        for (DBCExecutionContext context : instance.getAllContexts()) {
+                            log.debug("\tInvalidate context '" + context.getContextName()
+                                + "' for " + currentContainer.getId() + " (" + phase + ")");
+                            totalContexts++;
+                            if (networkOK) {
+                                Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
+                                try {
+                                    context.invalidateContext(monitor, phase);
+                                    invalidateResults.add(new ContextInvalidateResult.Success());
+                                    goodContextsNumber++;
+                                } catch (Exception e) {
+                                    log.debug("\tFailed: " + e.getMessage());
+                                    invalidateResults.add(new ContextInvalidateResult.Error(e));
+                                } finally {
+                                    instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
+                                }
+                            }
+                        }
+                    }
+
+                    if (goodContextsNumber == 0 && disconnectOnFailure) {
+                        // Close whole datasource. Target host seems to be unavailable
                         try {
-                            context.invalidateContext(monitor);
-                            invalidateResults.add(new ContextInvalidateResult.Success());
-                            goodContextsNumber++;
+                            currentContainer.disconnect(monitor);
                         } catch (Exception e) {
-                            log.debug("\tFailed: " + e.getMessage());
-                            invalidateResults.add(new ContextInvalidateResult.Error(e));
-                        } finally {
-                            timeSpent += (System.currentTimeMillis() - startTime);
-                            instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
+                            log.error("Error closing inaccessible datasource", e);
+                        }
+                        StringBuilder msg = new StringBuilder();
+                        for (ContextInvalidateResult result : invalidateResults) {
+                            if (result instanceof ContextInvalidateResult.Error error) {
+                                if (!msg.isEmpty()) {
+                                    msg.append("\n");
+                                }
+                                msg.append(error.exception.getMessage());
+                            }
+                        }
+                        DBWorkbench.getPlatformUI().showError(
+                            "Forced disconnect",
+                            "Datasource '" + currentContainer.getName() + "' was disconnected: destination database unreachable.\n" + msg
+                        );
+                    }
+
+                    if (totalContexts > 0) {
+                        if (goodContextsNumber == 0) {
+                            if (showErrors) {
+                                DBeaverNotifications.showNotification(
+                                    currentDataSource,
+                                    DBeaverNotifications.NT_RECONNECT_FAILURE,
+                                    "Datasource invalidate failed",
+                                    DBPMessageType.ERROR,
+                                    feedback);
+                            }
+                        } else if (phase == DBCInvalidatePhase.AFTER_INVALIDATE) {
+                            DBeaverNotifications.showNotification(
+                                currentDataSource,
+                                DBeaverNotifications.NT_RECONNECT_SUCCESS,
+                                "Datasource was invalidated\n\n" +
+                                    "Live connection count: " + goodContextsNumber + "/" + totalContexts,
+                                DBPMessageType.INFORMATION);
                         }
                     }
                 }
             }
 
-            if (goodContextsNumber == 0 && disconnectOnFailure) {
-                // Close whole datasource. Target host seems to be unavailable
-                try {
-                    container.disconnect(monitor);
-                } catch (Exception e) {
-                    log.error("Error closing inaccessible datasource", e);
-                }
-                StringBuilder msg = new StringBuilder();
-                for (ContextInvalidateResult result : invalidateResults) {
-                    if (result instanceof ContextInvalidateResult.Error error) {
-                        if (!msg.isEmpty()) {
-                            msg.append("\n");
-                        }
-                        msg.append(error.exception.getMessage());
-                    }
-                }
-                DBWorkbench.getPlatformUI().showError("Forced disconnect", "Datasource '" + container.getName() + "' was disconnected: destination database unreachable.\n" + msg);
-            }
-
-            if (totalContexts > 0) {
-                if (goodContextsNumber == 0) {
-                    if (showErrors) {
-                        DBeaverNotifications.showNotification(
-                            dataSource,
-                            DBeaverNotifications.NT_RECONNECT_FAILURE,
-                            "Datasource invalidate failed",
-                            DBPMessageType.ERROR,
-                            feedback);
-                    }
-                } else {
-                    DBeaverNotifications.showNotification(
-                        dataSource,
-                        DBeaverNotifications.NT_RECONNECT_SUCCESS,
-                        "Datasource was invalidated\n\n" +
-                            "Live connection count: " + goodContextsNumber + "/" + totalContexts,
-                        DBPMessageType.INFORMATION);
-                }
-            }
+            return invalidateResults;
         } finally {
-            container.getExclusiveLock().releaseTaskLock(TASK_INVALIDATE, dsLock);
+            monitor.subTask("Release exclusive datasource locks");
+            for (Map.Entry<DBPDataSourceContainer, Object> entry : locks.entrySet()) {
+                entry.getKey().getExclusiveLock().releaseTaskLock(TASK_INVALIDATE, entry.getValue());
+            }
+
             monitor.done();
         }
-
-        return invalidateResults;
     }
 
     public static void invalidateTransaction(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext) {

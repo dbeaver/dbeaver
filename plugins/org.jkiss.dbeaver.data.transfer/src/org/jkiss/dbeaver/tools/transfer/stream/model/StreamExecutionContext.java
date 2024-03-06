@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -55,7 +56,7 @@ public class StreamExecutionContext extends AbstractExecutionContext<StreamDataS
     }
 
     @Override
-    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull InvalidatePhase phase) throws DBException {
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException {
         // nothing to do
     }
 

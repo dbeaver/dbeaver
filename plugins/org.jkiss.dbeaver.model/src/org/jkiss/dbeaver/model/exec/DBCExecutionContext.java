@@ -38,17 +38,6 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPContextWithAttributes {
 
     /**
-     * Represents a phase of the invalidation process.
-     *
-     * @see #invalidateContext(DBRProgressMonitor, InvalidatePhase)
-     */
-    enum InvalidatePhase {
-        BEFORE_INVALIDATE,
-        INVALIDATE,
-        AFTER_INVALIDATE
-    }
-
-    /**
      * Unique context ID. Generated in the moment of context creation and never changes during context lifetime.
      */
     @DPIElement
@@ -117,17 +106,18 @@ public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPC
      * @param phase   invalidation phase
      * @throws DBException on any error to signal the invalidation was not successful
      */
-    void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull InvalidatePhase phase) throws DBException;
+    void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException;
 
     /**
-     * Invalidates the context by processing all phases.
-     * <p>
-     * For invalidation in a single phase, use {@link #invalidateContext(DBRProgressMonitor, InvalidatePhase)}.
+     * Invalidates the context by processing all phases. This method will invalidate just the context. For a "complete"
+     * invalidation involving network handlers invalidation, see {@link org.jkiss.dbeaver.runtime.jobs.InvalidateJob}.
+     *
+     * @see #invalidateContext(DBRProgressMonitor, DBCInvalidatePhase)
      */
     default void invalidateContext(@NotNull DBRProgressMonitor monitor) throws DBException {
-        invalidateContext(monitor, InvalidatePhase.BEFORE_INVALIDATE);
-        invalidateContext(monitor, InvalidatePhase.INVALIDATE);
-        invalidateContext(monitor, InvalidatePhase.AFTER_INVALIDATE);
+        invalidateContext(monitor, DBCInvalidatePhase.BEFORE_INVALIDATE);
+        invalidateContext(monitor, DBCInvalidatePhase.INVALIDATE);
+        invalidateContext(monitor, DBCInvalidatePhase.AFTER_INVALIDATE);
     }
 
     /**
