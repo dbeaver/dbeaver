@@ -133,6 +133,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     void updateAuthProfile(@NotNull DBAAuthProfile profile);
     void removeAuthProfile(@NotNull DBAAuthProfile profile);
+
     /**
      * Set collection of profiles.
      *
