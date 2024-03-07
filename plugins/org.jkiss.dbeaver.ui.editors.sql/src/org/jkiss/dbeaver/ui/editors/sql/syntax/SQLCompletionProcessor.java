@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -53,6 +54,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * The SQL content assist processor. This content assist processor proposes text
@@ -156,17 +159,45 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
 
             SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
+            SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(request);
             DBPDataSource dataSource = editor.getDataSource();
             if (request.getWordPart() != null) {
                 if (dataSource != null) {
                     ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
                     searchJob.schedule();
+                    
+                    AbstractJob newJob = new AbstractJob("Analyzing query for proposals...") {{
+                            setSystem(true);
+                            setUser(false);
+                        }
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            try {
+                                monitor.beginTask("Seeking for SQL completion proposals", 1);
+                                try {
+                                    monitor.subTask("Find proposals");
+                                    DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
+                                } finally {
+                                    monitor.done();
+                                }
+                                return Status.OK_STATUS;
+                            } catch (Throwable e) {
+                                log.error(e);
+                                return Status.CANCEL_STATUS;
+                            }
+                        }
+                    };
+                    newJob.schedule();
+
                     // Wait until job finished
                     UIUtils.waitJobCompletion(searchJob);
+                    UIUtils.waitJobCompletion(newJob);
                 }
             }
 
-            proposals = analyzer.getProposals();
+            List<SQLCompletionProposalBase> a = newAnalyzer.getProposals();
+            List<SQLCompletionProposalBase> b = analyzer.getProposals();
+            proposals = Stream.concat(a.stream(), b.stream()).toList();
             break;
         default:
             proposals = Collections.emptyList();

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryCompletionScope;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionScope;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -54,12 +54,12 @@ public abstract class SQLQueryNodeModel {
         }
     }
     
-    public SQLQueryCompletionScope getCompletionScope() {
-        return this.completionScope != null ? this.completionScope : (this.completionScope = this.prepareCompletionScope());
+    public SQLQueryCompletionScope obtainCompletionScope(int delta) {
+        return this.completionScope != null ? this.completionScope : (this.completionScope = this.prepareCompletionScope(delta));
     }
     
-    protected SQLQueryCompletionScope prepareCompletionScope() {
-        return SQLQueryCompletionScope.forKeywordsAt(this);
+    protected SQLQueryCompletionScope prepareCompletionScope(int delta) {
+        return SQLQueryCompletionScope.forKeywordsAt(this, delta);
     }
 
     protected void registerSubnode(SQLQueryNodeModel subnode) {

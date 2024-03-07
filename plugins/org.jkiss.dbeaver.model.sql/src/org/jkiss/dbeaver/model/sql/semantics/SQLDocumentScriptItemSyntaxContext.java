@@ -36,6 +36,7 @@ public class SQLDocumentScriptItemSyntaxContext {
     private final String originalText;
     private final SQLQuerySelectionModel queryModel;
     private int length;
+    private boolean hasDelta = false;
 
     public SQLDocumentScriptItemSyntaxContext(
         @NotNull String originalText,
@@ -59,6 +60,10 @@ public class SQLDocumentScriptItemSyntaxContext {
 
     public int length() {
         return this.length;
+    }
+    
+    public boolean hasDelta() {
+        return this.hasDelta;
     }
 
     @Nullable
@@ -89,9 +94,11 @@ public class SQLDocumentScriptItemSyntaxContext {
             this.entries.applyOffset(offset, newLength);
         }
         this.length += newLength - oldLength;
+        this.hasDelta = true;
     }
 
     public void clear() {
         this.entries.clear();
+        this.hasDelta = false;
     }
 }

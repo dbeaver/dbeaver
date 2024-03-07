@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentScriptItemSyntaxContext.TokenEntryAtOffset;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionScope;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
@@ -82,6 +83,25 @@ public class SQLDocumentSyntaxContext {
     private void forEachListener(@NotNull Consumer<SQLDocumentSyntaxContextListener> action) {
         for (SQLDocumentSyntaxContextListener listener : this.listeners) {
             action.accept(listener);
+        }
+    }
+    
+    public SQLQueryCompletionScope obtainCompletionScope(int offset) {
+        ScriptItemAtOffset scriptItem = this.findScriptItem(offset);
+        if (scriptItem != null) {
+            if (scriptItem.item.hasDelta()) {
+                throw new IllegalStateException("Fresh parse cycle required");
+            }
+            
+            SQLQuerySelectionModel model = scriptItem.item.getQueryModel();
+            if (model != null) {
+                int delta = offset - scriptItem.offset;
+                return model.obtainCompletionScope(delta);    
+            } else {
+                return SQLQueryCompletionScope.EMPTY;
+            }
+        } else {
+            return SQLQueryCompletionScope.OFFQUERY;
         }
     }
 
