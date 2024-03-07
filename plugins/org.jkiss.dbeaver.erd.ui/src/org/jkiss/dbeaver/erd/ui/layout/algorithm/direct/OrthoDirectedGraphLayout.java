@@ -16,6 +16,15 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout.algorithm.direct;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.erd.ui.part.EntityPart;
+import org.eclipse.draw2d.graph.DirectedGraph;
+import org.eclipse.draw2d.graph.DirectedGraphLayout;
+import org.eclipse.draw2d.graph.Edge;
+import org.eclipse.draw2d.graph.Node;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,15 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-
-import org.eclipse.draw2d.graph.DirectedGraph;
-import org.eclipse.draw2d.graph.DirectedGraphLayout;
-import org.eclipse.draw2d.graph.Edge;
-import org.eclipse.draw2d.graph.Node;
-import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 
 /**
  * The class represents node layout logic based on tree structure with max depth
@@ -78,7 +78,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
      * Distance by Y require to draw connection
      */
     private static final int DISTANCE_PER_EDGE_Y = 10;
-    
+
     public OrthoDirectedGraphLayout(AbstractGraphicalEditPart diagram) {
         this.diagram = diagram;
     }
@@ -130,8 +130,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
 
     private TreeMap<Integer, List<Node>> removeIslandNodesFromRoots(
         @NotNull List<Node> islands,
-        @NotNull TreeMap<Integer, List<Node>> nodeByLevels
-    ) {
+        @NotNull TreeMap<Integer, List<Node>> nodeByLevels) {
         List<Node> listOfNodes = nodeByLevels.get(0);
         if (listOfNodes != null) {
             listOfNodes.removeAll(islands);
@@ -142,8 +141,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
 
     private void drawIsolatedNodes(
         @NotNull List<Node> islands,
-        @NotNull TreeMap<Integer, List<Node>> nodeByLevels
-    ) {
+        @NotNull TreeMap<Integer, List<Node>> nodeByLevels) {
         // considered to have a islands one - to -one
         Entry<Integer, List<Node>> lastEntry = nodeByLevels.lastEntry();
         int offsetX = OFFSET_FROM_LEFT;
@@ -181,8 +179,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     private void drawMissedNodes(
         @NotNull List<Node> islands,
         @NotNull List<Node> missedNodes,
-        @NotNull TreeMap<Integer, List<Node>> nodeByLevels
-    ) {
+        @NotNull TreeMap<Integer, List<Node>> nodeByLevels) {
         Entry<Integer, List<Node>> lastEntry = nodeByLevels.lastEntry();
         int offsetX = OFFSET_FROM_LEFT;
         for (Node n : lastEntry.getValue()) {
@@ -204,12 +201,8 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
         int virtColumns = 0;
         offsetX = currentX;
         int offsetY = currentY;
-        int width = DISTANCE_ENTITIES_X;
         int height = DISTANCE_ENTITIES_Y;
         for (Node node : missedNodes) {
-            if (width < node.width) {
-                width = node.width;
-            }
             if (height < node.height) {
                 height = node.height;
             }
@@ -220,10 +213,8 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                 // next row
                 offsetY += height + DISTANCE_ENTITIES_Y;
                 offsetX = currentX;
-                width = DISTANCE_ENTITIES_X;
-                height = DISTANCE_ENTITIES_Y;
             } else {
-                offsetX += width + OFFSET_FROM_LEFT / 7;
+                offsetX += node.width + DISTANCE_ENTITIES_X / 2;
             }
         }
     }
@@ -325,8 +316,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     @NotNull
     private List<Node> findMissedGraphNodes(
         @NotNull DirectedGraph graph,
-        @NotNull TreeMap<Integer, List<Node>> nodeByEdges
-    ) {
+        @NotNull TreeMap<Integer, List<Node>> nodeByEdges) {
         List<Node> missedNodes = new ArrayList<>();
         for (Node node : graph.nodes) {
             boolean isContains = false;
@@ -357,8 +347,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     @NotNull
     private TreeMap<Integer, List<Node>> verifyNodesOnGraph(
         @NotNull DirectedGraph graph,
-        @NotNull TreeMap<Integer, List<Node>> nodeByLevels
-    ) {
+        @NotNull TreeMap<Integer, List<Node>> nodeByLevels) {
         if (nodeByLevels.isEmpty() && !graph.nodes.isEmpty()) {
             // still no roots but elements exists in graph add all elements as possible
             // roots.
@@ -404,7 +393,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
                         }
                         duplicationNode2index.put(trg, nodeIndex);
                     }
-                    nodeByEdges.computeIfAbsent(idx + 1, n -> new ArrayList<Node>()).add(trg);
+                    nodeByEdges.computeIfAbsent(idx + 1, n -> new ArrayList<>()).add(trg);
                 }
             }
         }
@@ -412,7 +401,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
     }
 
     @Nullable
-    private Integer getNodeIndex(@NotNull TreeMap<Integer, List<Node>> nodeByEdges,@NotNull Node src) {
+    private Integer getNodeIndex(@NotNull TreeMap<Integer, List<Node>> nodeByEdges, @NotNull Node src) {
         for (Entry<Integer, List<Node>> nodeOnLevel : nodeByEdges.entrySet()) {
             if (nodeOnLevel.getValue().contains(src)) {
                 return nodeOnLevel.getKey();
