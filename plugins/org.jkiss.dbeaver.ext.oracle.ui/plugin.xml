@@ -312,7 +312,7 @@
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable.label"
                     singleton="false">
-                <task id="OracleToolTriggerDisable"/>
+                <task id="oracleToolTriggerDisable"/>
             </tool>
             <tool
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable.description"

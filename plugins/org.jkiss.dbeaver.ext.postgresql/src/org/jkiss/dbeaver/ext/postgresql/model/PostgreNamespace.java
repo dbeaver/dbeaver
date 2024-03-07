@@ -66,7 +66,7 @@ public class PostgreNamespace implements DBSNamespace  {
 
     private final PostgreSchema schema;
 
-    public PostgreNamespace(PostgreSchema schema) {
+    public PostgreNamespace(@NotNull PostgreSchema schema) {
         this.schema = schema;
     }
 
@@ -83,7 +83,8 @@ public class PostgreNamespace implements DBSNamespace  {
             // To find object we select from both pg_class and pg_type because
             // enums are (surprise!) are not classes
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT oid,relkind,reltype FROM pg_catalog.pg_class WHERE relnamespace=? AND relname=?\n" +
+                "SELECT oid,relkind," + (schema.getDataSource().isSupportsReltypeColumn() ? "" : "0 as ") + "reltype " +
+                    "FROM pg_catalog.pg_class WHERE relnamespace=? AND relname=?\n" +
                     "UNION ALL\n" +
                     "SELECT oid,'c',oid FROM pg_catalog.pg_type WHERE typnamespace=? AND typname=?")) {
                 dbStat.setLong(1, schema.getObjectId());
@@ -99,25 +100,19 @@ public class PostgreNamespace implements DBSNamespace  {
                             log.debug("NULL relkind for class " + name);
                             return null;
                         }
-                        switch (relKind) {
-                            case "r":
-                            case "v":
-                            case "m":
-                            case "p":
-                            case "f":
-                                return schema.getTable(monitor, oid);
-                            case "i":
-                            case "I":
-                                return schema.getIndex(monitor, oid);
-                            case "S":
-                                return schema.getSequence(monitor, name);
-                            case "c":
+                        return switch (relKind) {
+                            case "r", "v", "m", "p", "f" -> schema.getTable(monitor, oid);
+                            case "i", "I" -> schema.getIndex(monitor, oid);
+                            case "S" -> schema.getSequence(monitor, name);
+                            case "c" -> {
                                 schema.getDataTypeCache().getAllObjects(monitor, schema);
-                                return schema.getDataTypeCache().getDataType(reltype);
-                            default:
+                                yield schema.getDataTypeCache().getDataType(reltype);
+                            }
+                            default -> {
                                 log.debug("Unknown relkind: " + relKind);
-                                return null;
-                        }
+                                yield null;
+                            }
+                        };
                     } else {
                         return null;
                     }

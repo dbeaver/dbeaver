@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -66,6 +68,7 @@ public class OracleDataTypeAttribute
         return attrTypeMod;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, order = 6)
     public Integer getPrecision() {
@@ -83,6 +86,7 @@ public class OracleDataTypeAttribute
         return 0;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, order = 7)
     public Integer getScale() {
@@ -98,6 +102,7 @@ public class OracleDataTypeAttribute
         return attrType.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         if (attrTypeMod == OracleDataTypeModifier.REF) {
@@ -107,11 +112,13 @@ public class OracleDataTypeAttribute
         return attrType.getDataKind();
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return attrType.getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);

@@ -142,12 +142,14 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
     }
 
     // DF: Strange typeName and typeId are attributes of DBPDataKind...
+    @NotNull
     @Override
     public String getTypeName()
     {
         return typeName;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName()
     {
@@ -160,6 +162,7 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
         return dataType.getEquivalentSqlType();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {

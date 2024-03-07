@@ -30,6 +30,7 @@ public interface DBPResourceCreator extends DBPResourceHandler {
 
     int FEATURE_CREATE_FILE     = 32;
 
+    @NotNull
     IResource createResource(@NotNull IFolder folder) throws CoreException, DBException;
 
 }

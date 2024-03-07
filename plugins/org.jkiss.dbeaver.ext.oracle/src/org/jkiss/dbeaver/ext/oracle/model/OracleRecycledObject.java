@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
@@ -115,6 +116,7 @@ public class OracleRecycledObject extends OracleSchemaObject implements DBSObjec
         return canPurge;
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId)
     {

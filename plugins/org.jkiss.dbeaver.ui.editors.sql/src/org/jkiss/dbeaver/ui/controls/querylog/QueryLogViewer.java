@@ -1134,8 +1134,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         @Override
         protected SQLDialect getSQLDialect() {
-            if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                var executeInfo = (QMMStatementExecuteInfo) object.getObject();
+            if (object.getObject() instanceof QMMStatementExecuteInfo executeInfo) {
                 var container = getDataSourceContainer(executeInfo);
                 var sqlDialect = getSqlDialectFromContainer(container);
                 if (getSqlDialectFromContainer(container) != null) {

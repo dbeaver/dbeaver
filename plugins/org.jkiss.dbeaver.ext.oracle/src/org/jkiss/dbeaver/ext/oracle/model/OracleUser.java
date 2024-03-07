@@ -138,6 +138,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return OracleTablespace.resolveTablespaceReference(monitor, this, "tempTablespace");
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId)
     {

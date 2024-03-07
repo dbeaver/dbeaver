@@ -118,11 +118,13 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
         return collection.getItem(index);
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return collection.getComponentType().getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(collection.getComponentType());
@@ -133,16 +135,19 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
         return collection.getComponentType().getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return collection.getComponentType().getDataKind();
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return collection.getComponentType().getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return collection.getComponentType().getPrecision();

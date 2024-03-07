@@ -219,11 +219,13 @@ public class EpochTimeAttributeTransformerTest {
             return null;
         }
 
+        @NotNull
         @Override
         public String getTypeName() {
             return null;
         }
 
+        @NotNull
         @Override
         public String getFullTypeName() {
             return null;
@@ -234,16 +236,19 @@ public class EpochTimeAttributeTransformerTest {
             return 0;
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind() {
             return null;
         }
 
+        @Nullable
         @Override
         public Integer getScale() {
             return null;
         }
 
+        @Nullable
         @Override
         public Integer getPrecision() {
             return null;

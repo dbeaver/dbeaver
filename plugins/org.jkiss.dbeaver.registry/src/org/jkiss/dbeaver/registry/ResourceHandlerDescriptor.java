@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
@@ -53,11 +55,13 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         return typeId;
     }
 
+    @NotNull
     @Override
     public DBPResourceTypeDescriptor getResourceType() {
         return ResourceTypeRegistry.getInstance().getResourceType(typeId);
     }
 
+    @Nullable
     public synchronized DBPResourceHandler getHandler() {
         if (handler == null) {
             Class<? extends DBPResourceHandler> clazz = handlerType.getObjectClass(DBPResourceHandler.class);

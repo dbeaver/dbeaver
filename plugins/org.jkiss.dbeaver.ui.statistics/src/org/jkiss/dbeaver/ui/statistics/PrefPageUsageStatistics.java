@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -29,6 +30,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 /**
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.usageStatistics"; //$NON-NLS-1$
     public static final String LINK_PRIVACY_INFO = "https://dbeaver.com/privacy/";
+    public static final String LINK_STATISTIC_DETAILS = "https://dbeaver.com/privacy/";
     public static final String LINK_GIHUB_REPO = "https://github.com/dbeaver/dbeaver";
 
     private Button checkSendUsageStatistics;
@@ -52,58 +55,45 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
-
-        Composite group = UIUtils.createControlGroup(composite, "Data sharing", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-
-        checkSendUsageStatistics = UIUtils.createCheckbox(group, "Send usage statistics", false);
+        Composite group = UIUtils.createControlGroup(
+            composite,
+            StatisticCollectionMessages.statistic_collection_pref_group_label,
+            1,
+            GridData.FILL_HORIZONTAL,
+            SWT.DEFAULT);
+        checkSendUsageStatistics = UIUtils.createCheckbox(
+            group,
+            StatisticCollectionMessages.statistic_collection_pref_send_btn_label,
+            false);
         createDataShareComposite(group);
 
         UIUtils.createEmptyLabel(group, 1, 1);
-        //checkShowStatisticsDetails = UIUtils.createCheckbox(group, "Show statistics details before sending", false);
-        UIUtils.createLabel(group, "We send statistics before application shutdown or during startup.\n" +
-                "Information we send is:\n" +
-            "  - Brief information about your OS and locale\n" +
-            "  - List of actions you perform in UI to better understand users workflow\n" +
-            "  - Type of databases you use to improve support of popular ones"
-            );
+        UIUtils.createLabel(group, StatisticCollectionMessages.statistic_collection_pref_content_main_msg);
+        UIUtils.createLink(group, StatisticCollectionMessages.statistic_collection_pref_content_documentation_link,
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_STATISTIC_DETAILS)));
         UIUtils.createEmptyLabel(group, 1, 1);
         UIUtils.createLink(group,
-            "DBeaver is open source and you can always validate what exactly we send\n" +
-                "in our source code <a>" + LINK_GIHUB_REPO + "</a>\n",
-            SelectionListener.widgetSelectedAdapter(selectionEvent ->
-                ShellUtils.launchProgram(LINK_GIHUB_REPO)));
-
+            NLS.bind(StatisticCollectionMessages.statistic_collection_pref_content_opensource_link, LINK_GIHUB_REPO),
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_GIHUB_REPO)));
 
         performDefaults();
-
         return composite;
     }
 
     public static void createDataShareComposite(Composite group) {
-        UIUtils.createLink(group,
-            "Help DBeaver to improve by sending anonymous data about features used,\n" +
-                "hardware and software configuration.\n" +
-                "\n" +
-                "Please note that this will not include personal data or any sensitive information,\n" +
-                "such as database connection configurations, executed queries, database information, etc.\n" +
-                "The data sent complies with <a>DBeaver Corporation Privacy Policy</a>.",
-            SelectionListener.widgetSelectedAdapter(selectionEvent ->
-                ShellUtils.launchProgram(LINK_PRIVACY_INFO)));
+        UIUtils.createLink(group, StatisticCollectionMessages.statistic_collection_pref_content_datashare_msg,
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> ShellUtils.launchProgram(LINK_PRIVACY_INFO)));
     }
 
     @Override
     protected void performDefaults() {
         checkSendUsageStatistics.setSelection(UIStatisticsActivator.isTrackingEnabled());
-        //checkShowStatisticsDetails.setSelection(UIStatisticsActivator.isDetailsPreviewEnabled());
-
         super.performDefaults();
     }
 
     @Override
     public boolean performOk() {
         UIStatisticsActivator.setTrackingEnabled(checkSendUsageStatistics.getSelection());
-        //UIStatisticsActivator.setDetailsPreviewEnabled(checkShowStatisticsDetails.getSelection());
-
         return super.performOk();
     }
 

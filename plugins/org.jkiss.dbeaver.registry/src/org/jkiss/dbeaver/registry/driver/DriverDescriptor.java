@@ -550,6 +550,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return false;
     }
     
+    @NotNull
     @Override
     public List<Pair<String,String>> getDriverReplacementsInfo() {
         List<Pair<String, String>> result = new ArrayList<>();
@@ -1181,6 +1182,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return false;
     }
 
+    @Nullable
     @Override
     public String getLicense() {
         for (DBPDriverLibrary file : libraries) {
@@ -1209,6 +1211,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return isSampleURLApplicable() && !CommonUtils.equalObjects(sampleURL, origSampleURL);
     }
 
+    @Nullable
     @Override
     public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
@@ -1222,6 +1225,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    @NotNull
     @Override
     public DBPDriver createOriginalCopy() {
         DriverDescriptor driverCopy = getProviderDescriptor().createDriver(this);
@@ -1746,6 +1750,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return origFiles;
     }
 
+    @NotNull
     public Set<DBPDriverConfigurationType> getSupportedConfigurationTypes() {
         return configurationTypes;
     }
