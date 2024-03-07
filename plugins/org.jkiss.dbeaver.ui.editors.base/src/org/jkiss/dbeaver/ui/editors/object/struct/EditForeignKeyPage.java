@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
@@ -53,6 +54,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -131,6 +133,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         final DBSEntityAttribute refColumn;
         DBSEntityAttribute ownColumn;
         private String customName;
+        public boolean customNotNull;
 
         FKColumnInfo(DBSEntityAttribute refColumn) {
             this.refColumn = refColumn;
@@ -169,6 +172,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
                             DBSObject newColumn = objectManager.createNewObject(monitor, commandContext, entity, null, options);
                             if (newColumn instanceof DBSEntityAttribute attr) {
+                                if (newColumn instanceof DBSTypedObjectExt2 toe) {
+                                    toe.setRequired(customNotNull);
+                                }
                                 if (newColumn instanceof DBPNamedObject2 no) {
                                     no.setName(customName);
                                     ownColumn = attr;
@@ -340,6 +346,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_fk_label_ref_table);
             tableList = new Table(panel, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
             tableList.setLinesVisible(true);
+            UIUtils.createTableColumn(tableList, SWT.LEFT, "Table name");
+            UIUtils.createTableColumn(tableList, SWT.LEFT, "Description");
             final GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 500;
             gd.heightHint = 150;
@@ -353,6 +361,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             if (rootNode instanceof DBNDatabaseNode) {
                 loadTableList((DBNDatabaseNode) rootNode);
             }
+            UIUtils.asyncExec(() -> {
+                UIUtils.packColumns(tableList, true);
+            });
         }
 
         final Composite pkGroup = UIUtils.createComposite(panel, enableCustomKeys ? 3 : 2);
@@ -460,7 +471,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             columnOptionsButton = UIUtils.createDialogButton(columnGroup, "Column options ...", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    super.widgetSelected(e);
+                    FKColumnInfo fki = getSelectedColumnInfo();
+                    if (fki != null) {
+                        editColumnOptions(fki);
+                    }
                 }
             });
             columnOptionsButton.setEnabled(false);
@@ -471,6 +485,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
 
         return panel;
+    }
+
+    private void editColumnOptions(FKColumnInfo fkColumnInfo) {
+        FKColumnOptionsDialog dialog = new FKColumnOptionsDialog(getShell(), fkColumnInfo);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            fkColumnInfo.customName = dialog.columnName;
+            fkColumnInfo.customNotNull = dialog.columnRequired;
+        }
     }
 
     private FKColumnInfo getSelectedColumnInfo() {
@@ -680,9 +702,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
 
         for (DBNDatabaseNode entityNode : entities) {
+            DBSObject table = entityNode.getObject();
             TableItem tableItem = new TableItem(tableList, SWT.LEFT);
-            tableItem.setText(entityNode.getNodeDisplayName());
+            tableItem.setText(0, entityNode.getNodeDisplayName());
+            tableItem.setText(1, CommonUtils.notEmpty(entityNode.getNodeDescription()));
             tableItem.setImage(DBeaverIcons.getImage(entityNode.getNodeIconDefault()));
+            if (table instanceof DBSEntity) {
+
+            }
             tableItem.setData(entityNode);
         }
 
@@ -812,6 +839,12 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         } catch (InterruptedException e) {
             // do nothing
         }
+
+        if (fkNameText != null) {
+            String fkAutoName = SQLForeignKeyManager.generateConstraintName((DBSEntity) ownerTableNode.getObject(), curConstraint);
+            fkNameText.setMessage(fkAutoName);
+        }
+
         handleUniqueKeySelect();
         updatePageState();
     }
@@ -820,7 +853,6 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (curConstraint instanceof DBVEntityConstraint) {
             customUKButton.setEnabled(true);
             customUKButton.setText("Edit");
-        } else {
             boolean hasLogicalConstraint = false;
             for (DBSEntityConstraint constraint : curConstraints) {
                 if (constraint instanceof DBVEntityConstraint) {
@@ -1164,4 +1196,32 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return virtualFK;
     }
 
+    private class FKColumnOptionsDialog extends BaseDialog {
+
+        private final FKColumnInfo fkColumnInfo;
+        private String columnName;
+        private boolean columnRequired;
+
+        public FKColumnOptionsDialog(Shell parentShell, FKColumnInfo fkColumnInfo) {
+            super(parentShell, "New column options", null);
+            this.fkColumnInfo = fkColumnInfo;
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            Composite composite = super.createDialogArea(parent);
+            Group group = UIUtils.createControlGroup(composite, "New column options", 2, GridData.FILL_HORIZONTAL, 300);
+            Text columnNameText = UIUtils.createLabelText(group, "Column name", fkColumnInfo.getCustomName(), SWT.BORDER);
+            columnNameText.addModifyListener(e -> columnName = columnNameText.getText());
+            Button notNullCheck = UIUtils.createCheckbox(group, "Not Null", "Make new column required", false, 2);
+            notNullCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    columnRequired = notNullCheck.getSelection();
+                }
+            });
+
+            return composite;
+        }
+    }
 }
