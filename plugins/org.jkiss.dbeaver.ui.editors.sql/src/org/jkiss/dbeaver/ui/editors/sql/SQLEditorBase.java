@@ -126,7 +126,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Nullable
     private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
-    private SQLBackgroundParsingJob backgroundParsingJob;
+    private SQLBackgroundParsingJob backgroundParsingJob;    
+    private SQLEditorOutlinePage outlinePage;
 
     //private Map<Annotation, Position> curAnnotations;
 
@@ -377,36 +378,38 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     final ISelectionProvider selectionProvider = sourceViewer.getSelectionProvider();
                     final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
 
-                    int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
-
-                    if (offset < 0) {
+                    int widgetOffset = widget.getOffsetAtPoint(new Point(e.x, e.y));
+                    
+                    if (widgetOffset < 0) {
                         int lineIndex = widget.getLineIndex(e.y);
                         if (lineIndex + 1 >= widget.getLineCount()) {
-                            offset = widget.getCharCount();
+                            widgetOffset = widget.getCharCount();
                         } else {
-                            offset = widget.getOffsetAtLine(lineIndex + 1) - widget.getLineDelimiter().length();
+                            widgetOffset = widget.getOffsetAtLine(lineIndex + 1) - widget.getLineDelimiter().length();
                         }
                     }
-
-                    if (offset < 0) {
+                    
+                    if (widgetOffset < 0) {
                         return;
                     }
+                    
+                    int modelOffset = sourceViewer instanceof ITextViewerExtension5 vext ? vext.widgetOffset2ModelOffset(widgetOffset) : widgetOffset;
 
                     boolean withinExistingSelection = false;
 
                     if (selection instanceof IBlockTextSelection) {
                         for (IRegion region : ((IBlockTextSelection) selection).getRegions()) {
-                            if (within(region, offset)) {
+                            if (within(region, modelOffset)) {
                                 withinExistingSelection = true;
                                 break;
                             }
                         }
                     } else {
-                        withinExistingSelection = within(new Region(selection.getOffset(), selection.getLength()), offset);
+                        withinExistingSelection = within(new Region(selection.getOffset(), selection.getLength()), modelOffset);
                     }
 
                     if (!withinExistingSelection) {
-                        selectionProvider.setSelection(new TextSelection(offset, 0));
+                        selectionProvider.setSelection(new TextSelection(modelOffset, 0));
                     }
                 }
 
@@ -635,11 +638,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     
         return super.getAdapter(required);
     }
-    
-    private SQLEditorOutlinePage outlinePage;
 
     @NotNull
-    private IContentOutlinePage getOverviewOutlinePage() {
+    public IContentOutlinePage getOverviewOutlinePage() {
         if (this.getSyntaxContext() == null) {
             this.reloadSyntaxRules();
         }
@@ -1176,26 +1177,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
             case SQLPreferenceConstants.FOLDING_ENABLED: {
-                final ProjectionAnnotationModel annotationModel = getProjectionAnnotationModel();
+                final ProjectionAnnotationModel annotationModel = this.getProjectionAnnotationModel();
                 if (annotationModel != null) {
-                    SourceViewerConfiguration configuration = getSourceViewerConfiguration();
-                    SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) getSourceViewer();
                     annotationModel.removeAllAnnotations();
-                    sourceViewer.unconfigure();
-                    sourceViewer.configure(configuration);
+                    this.reloadSourceViewerConfiguration();
                 }
                 return;
             }
             case SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED:
-                clearProblems(null);
+                this.clearProblems(null);
                 return;
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
-                occurrencesHighlighter.updateInput(getEditorInput());
+                occurrencesHighlighter.updateInput(this.getEditorInput());
             case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
             case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
             case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
-            case SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE:
             case SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS:
             case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
             case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:
@@ -1203,8 +1200,23 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES:
             case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH:
             case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS:
-                reloadSyntaxRules();
+                this.reloadSyntaxRules();
+                return;
+            case SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE:
+                this.reloadSourceViewerConfiguration();
+                this.reloadSyntaxRules();
+                if (this.outlinePage != null) {
+                    this.outlinePage.refresh();
+                }
+                return;
         }
+    }
+    
+    private void reloadSourceViewerConfiguration() {
+        SourceViewerConfiguration configuration = this.getSourceViewerConfiguration();
+        SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) this.getSourceViewer();
+        sourceViewer.unconfigure();
+        sourceViewer.configure(configuration);
     }
     
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {

@@ -667,6 +667,7 @@ public class SQLConstants {
     public static final String CONFIG_COLOR_COLUMN_DERIVED = "org.jkiss.dbeaver.sql.editor.color.column.derived.foreground";
     public static final String CONFIG_COLOR_SCHEMA = "org.jkiss.dbeaver.sql.editor.color.schema.foreground";
     public static final String CONFIG_COLOR_COMPOSITE_FIELD = "org.jkiss.dbeaver.sql.editor.color.composite.field.foreground";
+    public static final String CONFIG_COLOR_SQL_VARIABLE = "org.jkiss.dbeaver.sql.editor.color.sqlVariable.foreground";
     public static final String CONFIG_COLOR_SEMANTIC_ERROR = "org.jkiss.dbeaver.sql.editor.color.semanticError.foreground";
     public static final String CONFIG_COLOR_NUMBER = "org.jkiss.dbeaver.sql.editor.color.number.foreground";
     public static final String CONFIG_COLOR_COMMENT = "org.jkiss.dbeaver.sql.editor.color.comment.foreground";

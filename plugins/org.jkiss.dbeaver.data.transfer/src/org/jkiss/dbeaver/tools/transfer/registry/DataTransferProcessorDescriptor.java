@@ -78,6 +78,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.properties = PropertyDescriptor.extractPropertyGroups(config);
     }
 
+    @NotNull
     public String getId() {
         return id;
     }

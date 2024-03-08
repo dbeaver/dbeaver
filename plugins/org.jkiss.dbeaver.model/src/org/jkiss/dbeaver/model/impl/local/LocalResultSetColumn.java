@@ -117,6 +117,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return label;
     }
 
+    @NotNull
     @Property(viewable = true, order = 5)
     @Override
     public String getTypeName()
@@ -126,6 +127,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
             typedObject.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return typedObject == null ? DBUtils.getFullTypeName(this) : typedObject.getFullTypeName();
@@ -137,18 +139,21 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return typedObject == null ? 0 : typedObject.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {
         return dataKind;
     }
 
+    @Nullable
     @Override
     public Integer getScale()
     {
         return typedObject == null ? null : typedObject.getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision()
     {

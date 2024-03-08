@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
@@ -417,13 +418,14 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 promptVariables = promptTaskVariablesCheckbox.getSelection();
             }
         });
+        promptTaskVariablesCheckbox.notifyListeners(SWT.Selection, new Event());
     }
 
     private void configureVariables() {
         Map<String, Object> variables = getTaskVariables();
-        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), variables);
+        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), Map.of(currentTask, variables));
         if (dialog.open() == IDialogConstants.OK_ID) {
-            this.variables = dialog.getVariables();
+            this.variables = dialog.getVariables(currentTask);
         }
     }
 

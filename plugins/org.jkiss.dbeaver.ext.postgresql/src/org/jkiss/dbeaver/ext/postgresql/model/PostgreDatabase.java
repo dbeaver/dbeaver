@@ -378,6 +378,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.ownerId = owner.getObjectId();
     }
 
+    public PostgreDatabaseJDBCObjectCache<? extends PostgreRole> getRoleCache() {
+        return roleCache;
+    }
+
     @Nullable
     public PostgreRole getRoleById(DBRProgressMonitor monitor, long roleId) throws DBException {
         if (!getDataSource().getServerType().supportsRoles()) {

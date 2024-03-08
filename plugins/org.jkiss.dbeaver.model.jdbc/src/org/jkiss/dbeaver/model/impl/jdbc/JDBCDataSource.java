@@ -439,7 +439,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor)
+    public void shutdown(@NotNull DBRProgressMonitor monitor)
     {
         for (JDBCRemoteInstance instance : getAvailableInstances()) {
             Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();

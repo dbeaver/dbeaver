@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import javax.crypto.SecretKey;
@@ -83,17 +84,17 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private final DBPWorkspace workspace;
     @NotNull
     private final SMSessionContext sessionContext;
-    @NotNull
-    private final DBFFileSystemManager fileSystemManager;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
+    private volatile DBFFileSystemManager fileSystemManager;
     protected volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
 
     protected final Object metadataSync = new Object();
+    protected final Object resourcesSync = new Object();
     private ProjectSyncJob metadataSyncJob;
 
     private boolean inMemory;
@@ -101,7 +102,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
         this.workspace = workspace;
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
-        this.fileSystemManager = new DBFFileSystemManager(this);
     }
 
     public void setInMemory(boolean inMemory) {
@@ -112,6 +112,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return inMemory;
     }
 
+    @NotNull
     @Override
     public String getId() {
         return getName();
@@ -188,10 +189,23 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
-        ensureOpen();
-        synchronized (metadataSync) {
-            if (dataSourceRegistry == null) {
-                dataSourceRegistry = createDataSourceRegistry();
+        if (dataSourceRegistry == null) {
+            Runnable registryOpener = () -> {
+                if (dataSourceRegistry == null) {
+                    synchronized (metadataSync) {
+                        ensureOpen();
+                        if (dataSourceRegistry == null) {
+                            dataSourceRegistry = createDataSourceRegistry();
+                        }
+                    }
+                }
+            };
+            if (DBWorkbench.isDistributed()) {
+                // Run it directly in distributed UI (because it may trigger other conflicting
+                // UI interactions which may freeze app)
+                registryOpener.run();
+            } else {
+                RuntimeUtils.runTask(monitor -> registryOpener.run(), "Load registry", 0);
             }
         }
         return dataSourceRegistry;
@@ -222,6 +236,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     ////////////////////////////////////////////////////////
     // Secure storage
 
+    @NotNull
     @Override
     public SecretKey getLocalSecretKey() {
         return new SecretKeySpec(LOCAL_KEY_CACHE, DefaultValueEncryptor.KEY_ALGORITHM);
@@ -236,12 +251,21 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @NotNull
     @Override
     public DBFFileSystemManager getFileSystemManager() {
+        if (fileSystemManager == null) {
+            synchronized (this) {
+                if (fileSystemManager == null) {
+                    fileSystemManager = new DBFFileSystemManager(this);
+                }
+            }
+        }
+
         return fileSystemManager;
     }
 
     ////////////////////////////////////////////////////////
     // Properties
 
+    @Nullable
     @Override
     public Object getProjectProperty(String propName) {
         synchronized (this) {
@@ -251,7 +275,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @Override
-    public void setProjectProperty(String propName, Object propValue) {
+    public void setProjectProperty(@NotNull String propName, @Nullable Object propValue) {
         synchronized (metadataSync) {
             loadProperties();
             if (propValue == null) {
@@ -316,7 +340,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public String[] findResources(@NotNull Map<String, ?> properties) throws DBException {
         loadMetadata();
 
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             final List<String> resources = new ArrayList<>();
 
             for (var resource : resourceProperties.entrySet()) {
@@ -345,7 +369,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName) {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps != null) {
                 return resProps.get(propName);
@@ -359,7 +383,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             return resourceProperties.get(resourcePath);
         }
     }
@@ -368,7 +392,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps == null) {
                 if (propValue == null) {
@@ -403,7 +427,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         loadMetadata();
         oldResourcePath = CommonUtils.normalizeResourcePath(oldResourcePath);
         newResourcePath = CommonUtils.normalizeResourcePath(newResourcePath);
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
             if (resProps != null) {
                 resourceProperties.put(newResourcePath, resProps);
@@ -421,7 +445,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         loadMetadata();
         resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         boolean hadProperties;
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             hadProperties = resourceProperties.remove(resourcePath) != null;
         }
         if (hadProperties) {
@@ -437,12 +461,14 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     protected void setResourceProperties(Map<String, Map<String, Object>> resourceProperties) {
-        this.resourceProperties = resourceProperties;
+        synchronized (resourcesSync) {
+            this.resourceProperties = resourceProperties;
+        }
     }
 
     void removeResourceFromCache(IPath path) {
         boolean cacheChanged = false;
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             if (resourceProperties != null) {
                 String resPath = CommonUtils.normalizeResourcePath(path.toString());
                 cacheChanged = (resourceProperties.remove(resPath) != null);
@@ -455,7 +481,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     void moveResourceCache(IPath oldPath, IPath newPath) {
         boolean cacheChanged = false;
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             if (resourceProperties != null) {
                 String oldResPath = CommonUtils.normalizeResourcePath(oldPath.toString());
                 Map<String, Object> props = resourceProperties.remove(oldResPath);
@@ -475,12 +501,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     // Realm
 
     @Override
-    public boolean hasRealmPermission(String permission) {
+    public boolean hasRealmPermission(@NotNull String permission) {
         return true;
     }
 
     @Override
-    public boolean supportsRealmFeature(String feature) {
+    public boolean supportsRealmFeature(@NotNull String feature) {
         return true;
     }
 
@@ -490,8 +516,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public void dispose() {
         if (dataSourceRegistry != null) {
             dataSourceRegistry.dispose();
+            dataSourceRegistry = null;
         }
-        getFileSystemManager().close();
+        if (fileSystemManager != null) {
+            fileSystemManager.close();
+            fileSystemManager = null;
+        }
     }
 
     public ProjectFormat getFormat() {
@@ -507,7 +537,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             return;
         }
         ensureOpen();
-        synchronized (metadataSync) {
+        synchronized (resourcesSync) {
             if (resourceProperties != null) {
                 return;
             }
@@ -530,21 +560,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                                     jsonReader.beginObject();
                                     while (jsonReader.hasNext()) {
                                         String propName = jsonReader.nextName();
-                                        Object propValue;
-                                        switch (jsonReader.peek()) {
-                                            case NUMBER:
-                                                propValue = jsonReader.nextDouble();
-                                                break;
-                                            case BOOLEAN:
-                                                propValue = jsonReader.nextBoolean();
-                                                break;
-                                            case NULL:
-                                                propValue = null;
-                                                break;
-                                            default:
-                                                propValue = jsonReader.nextString();
-                                                break;
-                                        }
+                                        Object propValue = switch (jsonReader.peek()) {
+                                            case NUMBER -> jsonReader.nextDouble();
+                                            case BOOLEAN -> jsonReader.nextBoolean();
+                                            case NULL -> null;
+                                            default -> jsonReader.nextString();
+                                        };
                                         resProperties.put(propName, propValue);
                                     }
                                     jsonReader.endObject();

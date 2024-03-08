@@ -140,8 +140,16 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, schemaId) : null;
     }
 
+    @Nullable
     public SQLServerSchema getSysSchema(DBRProgressMonitor monitor) throws DBException {
-        return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, 4) : null;
+        if (owner instanceof SQLServerDatabase db) {
+            return db.getSysSchema(monitor);
+        } else {
+            if (owner instanceof SQLServerDataSource ds) {
+                return ds.getDefaultDatabase(monitor) != null ? ds.getDefaultDatabase(monitor).getSysSchema(monitor) : null;
+            }
+        }
+        return null;
     }
 
     public SQLServerDataType getSystemDataType() {
@@ -184,11 +192,14 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             }
         } else if (tableTypeId != 0) {
             try {
-                SQLServerTableType tableType = getSysSchema(monitor).getTableType(monitor, tableTypeId);
-                if (tableType != null) {
-                    options.put(DBPScriptObject.OPTION_USE_SPECIAL_NAME, name);
-                    String objectDefinitionText = tableType.getObjectDefinitionText(monitor, options);
-                    sql.append(objectDefinitionText);
+                SQLServerSchema sysSchema = getSysSchema(monitor);
+                if (sysSchema != null) {
+                    SQLServerTableType tableType = sysSchema.getTableType(monitor, tableTypeId);
+                    if (tableType != null) {
+                        options.put(DBPScriptObject.OPTION_USE_SPECIAL_NAME, name);
+                        String objectDefinitionText = tableType.getObjectDefinitionText(monitor, options);
+                        sql.append(objectDefinitionText);
+                    }
                 }
             } catch (DBException e) {
                 log.debug("Schema not found. ", e);
@@ -197,11 +208,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return sql.toString();
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
+    @NotNull
     @Property(viewable = false, order = 70)
     @Override
     public String getFullTypeName() {
@@ -213,17 +226,20 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return valueType;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, order = 20)
     public Integer getScale() {
         return scale == 0 ? null : scale;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, order = 21)
     public Integer getPrecision() {
@@ -467,33 +483,59 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType() {
         return DBSEntityType.TYPE;
     }
 
+    @Nullable
     @Override
-    public List<SQLServerTableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
-        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttributes(monitor);
+    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        SQLServerTableType type = getTableTypeByIDFromSysSchema(monitor);
+        if (type != null) {
+            return type.getAttributes(monitor);
+        }
+        return null;
     }
 
+    @Nullable
     @Override
-    public SQLServerTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
-        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttribute(monitor, attributeName);
+    public SQLServerTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        SQLServerTableType type = getTableTypeByIDFromSysSchema(monitor);
+        if (type != null) {
+            return type.getAttribute(monitor, attributeName);
+        }
+        return null;
     }
 
+    @Nullable
     @Override
-    public Collection<SQLServerTableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getConstraints(monitor);
+    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        SQLServerTableType type = getTableTypeByIDFromSysSchema(monitor);
+        if (type != null) {
+            return type.getConstraints(monitor);
+        }
+        return null;
     }
 
-    @Override
-    public Collection<SQLServerTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    private SQLServerTableType getTableTypeByIDFromSysSchema(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (tableTypeId > 0) {
+            SQLServerSchema sysSchema = getSysSchema(monitor);
+            if (sysSchema != null) {
+                return sysSchema.getTableType(monitor, tableTypeId);
+            }
+        }
         return null;
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

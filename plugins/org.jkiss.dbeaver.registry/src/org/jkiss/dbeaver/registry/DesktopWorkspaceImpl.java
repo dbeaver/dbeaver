@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -146,13 +147,14 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         return defaultHandler;
     }
 
+    @NotNull
     @Override
     public DBPResourceHandlerDescriptor[] getAllResourceHandlers() {
         return handlerDescriptors.toArray(new DBPResourceHandlerDescriptor[0]);
     }
 
     @Override
-    public IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate) {
+    public IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull Class<? extends DBPResourceHandler> handlerType, boolean forceCreate) {
         if (project == null) {
             return null;
         }
@@ -193,7 +195,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
+    public IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
         if (project == null || project.getRootResource() == null) {
             return null;
         }
@@ -220,7 +222,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public void refreshWorkspaceContents(DBRProgressMonitor monitor) {
+    public void refreshWorkspaceContents(@NotNull DBRProgressMonitor monitor) {
         try {
             IWorkspaceRoot root = getEclipseWorkspace().getRoot();
 
@@ -299,6 +301,10 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     @Override
     public void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException {
         IProject eclipseProject = project.getEclipseProject();
+        if (project.isUseSecretStorage()) {
+            var secretController = DBSSecretController.getProjectSecretController(project);
+            secretController.deleteProjectSecrets(project.getId());
+        }
         if (eclipseProject == null) {
             throw new DBException("Project '" + project.getName() + "' is not an Eclipse project");
         }

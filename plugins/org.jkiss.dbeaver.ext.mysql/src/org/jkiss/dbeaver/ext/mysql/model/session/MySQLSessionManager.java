@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.session;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -50,14 +51,16 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<MySQLSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
+    public Collection<MySQLSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException
     {
         boolean hideSleeping = CommonUtils.getOption(options, OPTION_HIDE_SLEEPING);
         try {
@@ -80,7 +83,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
     }
 
     @Override
-    public void alterSession(DBCSession session, MySQLSession sessionType, Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull MySQLSession sessionType, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
@@ -100,8 +103,9 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         if (dataSource.supportsSysSchema() && CommonUtils.toBoolean(options.get(OPTION_SHOW_PERFORMANCE))) {
             return "SELECT\n" +
                 "\tip.*,\n" +

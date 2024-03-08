@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -74,8 +75,9 @@ public class OracleRefCursor implements DBDCursor {
         }
     }
 
+    @NotNull
     @Override
-    public DBCResultSet openResultSet(DBCSession session) throws DBCException {
+    public DBCResultSet openResultSet(@NotNull DBCSession session) throws DBCException {
         if (cursorValue instanceof ResultSet) {
             try {
                 return JDBCResultSetImpl.makeResultSet((JDBCSession) session, sourceStatement, (ResultSet) cursorValue, null, false);

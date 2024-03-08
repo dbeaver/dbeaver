@@ -1295,6 +1295,13 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.composite.field.foreground.description</description>
         </colorDefinition>
         <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.sqlVariable.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.sqlVariable.foreground"
+            value="COLOR_DARK_BLUE">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.sqlVariable.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.semanticError.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.semanticError.foreground"

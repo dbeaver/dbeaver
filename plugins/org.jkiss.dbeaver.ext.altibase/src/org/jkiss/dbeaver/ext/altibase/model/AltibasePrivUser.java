@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -58,6 +59,7 @@ public class AltibasePrivUser extends AltibasePriv implements DBSObjectLazy<Alti
         return grantor;
     }
     
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId) {
         return this.user;

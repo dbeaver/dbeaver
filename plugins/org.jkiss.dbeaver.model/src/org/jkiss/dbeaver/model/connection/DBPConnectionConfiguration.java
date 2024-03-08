@@ -52,6 +52,9 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
     public static final String VAR_HOST_OR_DATABASE = "host_or_database";
+    public static final String VARIABLE_PREFIX_PROPERTIES = "properties.";
+    public static final String VARIABLE_PREFIX_AUTH = "auth.";
+    public static final String VARIABLE_PREFIX_ORIGIN = "origin.";
 
     public static final String VARIABLE_DATE = "date";
 
@@ -112,6 +115,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private DBPDriverConfigurationType configurationType;
     private String connectionColor;
     private int keepAliveInterval;
+    private boolean closeIdleConnection;
     private int closeIdleInterval;
 
     private String authModelId;
@@ -127,6 +131,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
+        this.closeIdleConnection = true;
         this.closeIdleInterval = 0;
     }
 
@@ -159,6 +164,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.connectionColor = info.connectionColor;
         this.keepAliveInterval = info.keepAliveInterval;
+        this.closeIdleConnection = info.closeIdleConnection;
         this.closeIdleInterval = info.closeIdleInterval;
     }
 
@@ -405,6 +411,14 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = keepAliveInterval;
     }
 
+    public boolean isCloseIdleConnection() {
+        return closeIdleConnection;
+    }
+
+    public void setCloseIdleConnection(boolean closeIdleConnection) {
+        this.closeIdleConnection = closeIdleConnection;
+    }
+
     public int getCloseIdleInterval() {
         return closeIdleInterval;
     }
@@ -493,13 +507,17 @@ public class DBPConnectionConfiguration implements DBPObject {
         return authProperties;
     }
 
-    public void setAuthProperties(Map<String, String> authProperties) {
-        this.authProperties = authProperties;
+    public void setAuthProperties(@Nullable Map<String, String> authProperties) {
+        if (authProperties == null) {
+            this.authProperties = null;
+        } else {
+            this.authProperties = new LinkedHashMap<>(authProperties);
+        }
     }
 
-    public void setAuthProperty(String name, String value) {
+    public void setAuthProperty(@NotNull String name, @Nullable String value) {
         if (authProperties == null) {
-            authProperties = new HashMap<>();
+            authProperties = new LinkedHashMap<>();
         }
         if (value == null) {
             this.authProperties.remove(name);
@@ -543,6 +561,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalObjects(this.handlers, source.handlers) &&
                 CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
                 this.keepAliveInterval == source.keepAliveInterval &&
+                this.closeIdleConnection == source.closeIdleConnection &&
                 this.closeIdleInterval == source.closeIdleInterval;
     }
 

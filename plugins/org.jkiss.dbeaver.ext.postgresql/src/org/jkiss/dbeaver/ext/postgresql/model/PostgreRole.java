@@ -711,6 +711,21 @@ public class PostgreRole implements
         }
     }
 
+    /**
+     * Specific tole type name for SQL statement correct generation.
+     */
+    @Nullable
+    public String getSpecificRoleType() {
+        return null;
+    }
+
+    /**
+     * Returns true if role/user/group can't see and change routines (procedures and functions) privileges.
+     */
+    public boolean supportsRoutinesPermissions() {
+        return true;
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
         membersCache.clearCache();

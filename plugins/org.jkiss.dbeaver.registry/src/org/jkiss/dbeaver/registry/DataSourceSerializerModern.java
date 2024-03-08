@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,13 +42,16 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerModern;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -69,11 +73,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
-    private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration"; //$NON-NLS-1$
+    private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration";
     public static final String ATTR_DPI_ENABLED = "dpi-enabled";
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
-    private static final String NODE_CONNECTION = "#connection";
+    private static final String NODE_CONNECTION = "#connection"; //$NON-NLS-1$
+    private static final String USE_PROJECT_PASSWORD = "useProjectPassword"; //$NON-NLS-1$
+    private static final String CONFIGURATION_FOLDERS = "folders"; //$NON-NLS-1$
+    private static final String ENCRYPTED_CONFIGURATION = "secureProject"; //$NON-NLS-1$
 
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
@@ -115,7 +122,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 // Save folders
                 if (configurationStorage.isDefault()) {
-                    jsonWriter.name("folders");
+                    jsonWriter.name(CONFIGURATION_FOLDERS);
                     jsonWriter.beginObject();
                     // Folders (only for default storage)
                     Set<DBPDataSourceFolder> globalFolders = registry.getTemporaryFolders();
@@ -312,7 +319,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         jsonWriter.endObject();
     }
 
-    private String loadConfigFile(InputStream stream, boolean decrypt) throws IOException {
+    private String loadConfigFile(InputStream stream, boolean decrypt) throws DBException, IOException {
         ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
         try {
             IOUtils.copyStream(stream, credBuffer);
@@ -322,7 +329,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!decrypt) {
             return credBuffer.toString(StandardCharsets.UTF_8);
         } else {
-            DBSValueEncryptor encryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
+            SecretKey localSecretKey = registry.getProject().getLocalSecretKey();
+            if (localSecretKey == null) {
+                throw new DBInterruptedException("Error of getting user credentials (operation was canceled)");
+            }
+            DBSValueEncryptor encryptor = new DefaultValueEncryptor(localSecretKey);
             try {
                 return new String(encryptor.decryptValue(credBuffer.toByteArray()), StandardCharsets.UTF_8);
             } catch (Exception e) {
@@ -371,41 +382,58 @@ class DataSourceSerializerModern implements DataSourceSerializer
         boolean refresh
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
-        if (!configurationManager.isSecure()) {
-            // Read secured creds file
-            InputStream secureCredsData = configurationManager.readConfiguration(
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId()
-                    + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT,
-                dataSourceIds);
-            if (secureCredsData != null) {
-                try {
-                    String credJson = loadConfigFile(secureCredsData, true);
-                    Map<String, Map<String, Map<String, String>>> res = CONFIG_GSON.fromJson(
-                        credJson,
-                        new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
-                        }.getType());
-                    if (res != null) {
-                        secureProperties.putAll(res);
-                    }
-                } catch (Exception e) {
-                    log.error("Error decrypting secure credentials", e);
-                }
+
+        // Read in this particular order to handle configuration reading errors first, but process in reverse order later
+        Map<String, Map<String, Map<String, String>>> secureCredentialsMap = null;
+        Map<String, Object> configurationMap = null;
+
+        // process projectConfiguration
+        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(ENCRYPTED_CONFIGURATION))
+            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
+            && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(
+                RegistryMessages.project_open_cannot_read_configuration_title,
+                NLS.bind(RegistryMessages.project_open_cannot_read_configuration_message,
+                    registry.getProject().getName()));
+            throw new DBInterruptedException("Project secure credentials read canceled by user.");
+        }
+        try {
+            configurationMap = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+        } catch (DBInterruptedException e) {
+            throw e;
+        } catch (DBException e) {
+            log.error(e);
+        }
+        // process project credential
+        if (CommonUtils.toBoolean(registry.getProject().getProjectProperty(USE_PROJECT_PASSWORD))
+            && (!DBWorkbench.getPlatform().getApplication().isHeadlessMode())
+            && (DBWorkbench.getPlatform().getApplication().isCommunity())) {
+            if (DBWorkbench.getPlatformUI().confirmAction(
+                RegistryMessages.project_open_cannot_read_credentials_title,
+                NLS.bind(RegistryMessages.project_open_cannot_read_credentials_message,
+                    registry.getProject().getName()),
+                RegistryMessages.project_open_cannot_read_credentials_button_text, true)) {
+                // in case of user agreed lost project credentials - proceed opening
+                log.info("The user agreed lost project credentials.");
+            } else {
+                // in case of canceling erase credentials intercept original exception
+                throw new DBInterruptedException("Project secure credentials read canceled by user.");
             }
         }
-
-        InputStream configData;
-        if (configurationStorage instanceof DataSourceMemoryStorage) {
-            configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
-        } else {
-            configData = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds);
+        try {
+            secureCredentialsMap = readSecureCredentials(configurationStorage, configurationManager, dataSourceIds);
+        } catch (DBInterruptedException e) {
+            throw e;
+        } catch (DBException e) {
+            log.error(e);
         }
-        if (configData != null) {
-            String configJson = loadConfigFile(configData, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
+        if (secureCredentialsMap != null) {
+            secureProperties.putAll(secureCredentialsMap);
+        }
 
-            Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configJson));
-
+        if (configurationMap != null) {
             // Folders
-            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, "folders")) {
+            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(configurationMap, CONFIGURATION_FOLDERS)) {
                 String name = folderMap.getKey();
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
                 String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
@@ -421,7 +449,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Connection types
-            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "connection-types")) {
+            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(configurationMap, "connection-types")) {
                 String id = ctMap.getKey();
                 Map<String, Object> ctConfig = ctMap.getValue();
                 String name = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_NAME);
@@ -464,7 +492,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             Map<String, DBPExternalConfiguration> externalConfigurations = new LinkedHashMap<>();
             if (!DBWorkbench.isDistributed()) {
                 // External configurations not used in distributed mode
-                for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
+                for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(configurationMap, "external-configurations")) {
                     String id = ctMap.getKey();
                     Map<String, Object> configMap = ctMap.getValue();
                     externalConfigurations.put(id, new DBPExternalConfiguration(id, () -> configMap));
@@ -473,14 +501,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             // Virtual models
             Map<String, DBVModel> modelMap = new LinkedHashMap<>();
-            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "virtual-models")) {
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "virtual-models")) {
                 String id = vmMap.getKey();
                 DBVModel model = new DBVModel(id, vmMap.getValue());
                 modelMap.put(id, model);
             }
 
             // Network profiles
-            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "network-profiles")) {
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "network-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
                 DBWNetworkProfile profile = new DBWNetworkProfile(registry.getProject());
@@ -499,7 +527,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Auth profiles
-            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "auth-profiles")) {
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "auth-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
                 DBAAuthProfile profile = new DBAAuthProfile(registry.getProject());
@@ -519,7 +547,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Connections
-            for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(jsonMap, "connections")) {
+            for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(configurationMap, "connections")) {
                 String id = conMap.getKey();
                 Map<String, Object> conObject = conMap.getValue();
 
@@ -587,7 +615,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
                 dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-                dataSource.setSharedCredentials(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHARED_CREDENTIALS));
+                dataSource.forceSetSharedCredentials(JSONUtils.getBoolean(conObject,
+                    RegistryConstants.ATTR_SHARED_CREDENTIALS));
                 dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
                 dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
@@ -664,6 +693,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (keepAlive > 0) {
                         config.setKeepAliveInterval(keepAlive);
                     }
+                    boolean closeIdleEnabled = JSONUtils.getBoolean(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED);
+                    config.setCloseIdleConnection(closeIdleEnabled);
                     int closeIdle = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE);
                     if (closeIdle > 0) {
                         config.setCloseIdleInterval(closeIdle);
@@ -767,7 +798,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 );
 
                 // Preferences
-                dataSource.getPreferenceStore().getProperties().putAll(
+                Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
+                preferenceProperties.clear();
+                preferenceProperties.putAll(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
                 );
 
@@ -791,13 +824,67 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Saved filters
-            for (Map<String, Object> ctMap : JSONUtils.getObjectList(jsonMap, "saved-filters")) {
+            for (Map<String, Object> ctMap : JSONUtils.getObjectList(configurationMap, "saved-filters")) {
                 DBSObjectFilter filter = readObjectFiler(ctMap);
                 registry.addSavedFilter(filter);
             }
         }
         return connectionConfigurationChanged;
 
+    }
+
+    @Nullable
+    private Map<String, Map<String, Map<String, String>>> readSecureCredentials(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @Nullable Collection<String> dataSourceIds
+    ) throws DBException {
+        if (configurationManager.isSecure()) {
+            return null;
+        }
+        final String name = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX
+                + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
+        try (InputStream is = configurationManager.readConfiguration(name, dataSourceIds)) {
+            if (is == null) {
+                return null;
+            }
+            final String data = loadConfigFile(is, true);
+            return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
+            }.getType());
+        } catch (IOException e) {
+            // here we catch any exceptions that happens for secure credential
+            // reading
+            throw new DBException("Project secure credentials can not be read", e);
+        }
+    }
+
+    @Nullable
+    private Map<String, Object> readConfiguration(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @Nullable Collection<String> dataSourceIds
+    ) throws DBException, IOException {
+        final InputStream is;
+        if (configurationStorage instanceof DataSourceMemoryStorage) {
+            is = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
+        } else {
+            is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds);
+        }
+        if (is == null) {
+            return null;
+        }
+        try (is) {
+            final String data = loadConfigFile(is, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
+            return JSONUtils.parseMap(CONFIG_GSON, new StringReader(data));
+        } catch (DBInterruptedException e) {
+            // happens only if user cancelled entering password
+            // not a community level
+            throw e;
+        } catch (IOException e) {
+            // intercept exceptions for crypted configuration
+            // for community provide a dialog
+            throw new DBException(e.getMessage(), e);
+        }
     }
 
     @Nullable
@@ -1040,13 +1127,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
             if (connectionInfo.getKeepAliveInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
+            JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED, connectionInfo.isCloseIdleConnection());
             if (connectionInfo.getCloseIdleInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
             JSONUtils.fieldNE(json, "config-profile-source", connectionInfo.getConfigProfileSource());
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties(), true);
-            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
+            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties(), true);
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_AUTH_MODEL, connectionInfo.getAuthModelId());
 
             // Save events
@@ -1136,7 +1224,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         // Properties
-        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, dataSource.getProperties());
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, dataSource.getProperties(), true);
 
         // Preferences
         {
@@ -1151,7 +1239,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
             }
             if (!props.isEmpty()) {
-                JSONUtils.serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props);
+                JSONUtils.serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props, true);
             }
         }
 
@@ -1254,7 +1342,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private void savePlainCredentials(JsonWriter jsonWriter, @NotNull SecureCredentials credentials) throws IOException {
         Map<String, String> propMap = new LinkedHashMap<>();
         saveCredentialsToMap(propMap, credentials);
-        JSONUtils.serializeProperties(jsonWriter, "credentials", propMap);
+        JSONUtils.serializeProperties(jsonWriter, "credentials", propMap, true);
     }
 
     private void saveCredentialsToMap(Map<String, String> propMap, @NotNull SecureCredentials credentials) {

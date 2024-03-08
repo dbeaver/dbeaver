@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>org.jkiss.dbeaver.launcher</module>
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
         <module>org.jkiss.dbeaver.model.event</module>
@@ -41,9 +42,8 @@
         <module>org.jkiss.dbeaver.ext.derby</module>
         <module>org.jkiss.dbeaver.ext.dameng</module>
         <module>org.jkiss.dbeaver.ext.duckdb</module>
-        <module>org.jkiss.dbeaver.ext.elasticsearch</module>
+        <module>org.jkiss.dbeaver.ext.es</module>
         <module>org.jkiss.dbeaver.ext.exasol</module>
-        <module>org.jkiss.dbeaver.ext.opendistro</module>
         <module>org.jkiss.dbeaver.ext.firebird</module>
         <module>org.jkiss.dbeaver.ext.greenplum</module>
         <module>org.jkiss.dbeaver.ext.h2</module>
@@ -94,6 +94,7 @@
             <activation><property><name>!headless-platform</name></property></activation>
             <!-- Desktop (swt/jface) components -->
             <modules>
+                <module>org.jkiss.dbeaver.launcher</module>
                 <module>org.jkiss.dbeaver.core</module>
                 <module>org.jkiss.dbeaver.ui.app.standalone</module>
                 <module>org.jkiss.dbeaver.ui.app.eclipse</module>
