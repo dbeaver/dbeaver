@@ -109,11 +109,13 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return dataContainer;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return getAttribute().getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         if (entityAttribute != null) {
@@ -129,11 +131,13 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return getAttribute().getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return getAttribute().getDataKind();
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return getAttribute().getScale();

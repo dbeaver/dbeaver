@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -35,7 +36,7 @@ public class SQLScriptDataReceiver implements DBDDataReceiver {
     private List<DBCAttributeMetaData> attributes;
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
+    public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         if (resultSet == null) {
             return;
         }
@@ -57,7 +58,7 @@ public class SQLScriptDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         if (resultSet == null) {
             return;
         }
@@ -81,7 +82,7 @@ public class SQLScriptDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         if (dumpWriter != null) {
             try {
                 dumpWriter.flush();

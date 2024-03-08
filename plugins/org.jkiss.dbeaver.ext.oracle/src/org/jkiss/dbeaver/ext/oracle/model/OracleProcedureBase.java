@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -78,8 +79,9 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
 
     public abstract Integer getOverloadNumber();
 
+    @Nullable
     @Override
-    public Collection<OracleProcedureArgument> getParameters(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleProcedureArgument> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return argumentsCache.getAllObjects(monitor, this);
     }

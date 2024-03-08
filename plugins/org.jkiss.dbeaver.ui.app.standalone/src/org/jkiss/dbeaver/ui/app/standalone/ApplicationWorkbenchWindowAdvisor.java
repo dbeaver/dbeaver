@@ -41,6 +41,7 @@ import org.eclipse.ui.internal.registry.EditorRegistry;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopUI;
 import org.jkiss.dbeaver.model.app.*;
@@ -381,17 +382,17 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     @Override
-    public void handleProjectAdd(DBPProject project) {
+    public void handleProjectAdd(@NotNull DBPProject project) {
 
     }
 
     @Override
-    public void handleProjectRemove(DBPProject project) {
+    public void handleProjectRemove(@NotNull DBPProject project) {
 
     }
 
     @Override
-    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
+    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         UIUtils.asyncExec(this::recomputeTitle);
     }
 

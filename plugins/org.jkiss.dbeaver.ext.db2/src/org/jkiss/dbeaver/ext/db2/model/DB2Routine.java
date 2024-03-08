@@ -209,8 +209,9 @@ public class DB2Routine extends DB2Object<DBSObject>
     // -----------------
     // Children
     // -----------------
+    @Nullable
     @Override
-    public Collection<DB2RoutineParm> getParameters(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2RoutineParm> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return parmsCache.getAllObjects(monitor, this);
     }

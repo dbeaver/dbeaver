@@ -277,6 +277,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         return queryManager;
     }
 
+    @NotNull
     @Override
     public DBPGlobalEventManager getGlobalEventManager() {
         return GlobalEventManagerImpl.getInstance();
@@ -307,7 +308,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     }
 
     @NotNull
-    public Path getTempFolder(DBRProgressMonitor monitor, String name) {
+    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         if (tempFolder == null) {
             // Make temp folder
             monitor.subTask("Create temp folder");
