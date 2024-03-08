@@ -18,12 +18,14 @@ package org.jkiss.dbeaver.model.net.ssh;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
 
 public interface SSHSession {
     /**
@@ -58,7 +60,15 @@ public interface SSHSession {
     @NotNull
     String getServerVersion();
 
-    void invalidate(@NotNull DBRProgressMonitor monitor, long timeout, @NotNull TimeUnit unit) throws DBException;
+    void invalidate(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCInvalidatePhase phase,
+        @NotNull DBWHandlerConfiguration configuration,
+        long timeout
+    ) throws DBException;
 
-    void release(@NotNull DBRProgressMonitor monitor) throws DBException;
+    void release(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration
+    ) throws DBException;
 }

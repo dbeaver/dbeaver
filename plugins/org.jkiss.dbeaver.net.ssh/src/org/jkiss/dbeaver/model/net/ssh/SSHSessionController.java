@@ -19,12 +19,11 @@ package org.jkiss.dbeaver.model.net.ssh;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.io.IOException;
 
 /**
  * SSH session controller
@@ -70,11 +69,14 @@ public interface SSHSessionController {
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHSession origin,
         @Nullable SSHPortForwardConfiguration portForward
-    ) throws DBException, IOException;
+    ) throws DBException;
 
     /**
      * Returns a list of shared sessions. A shared session is a session that can be used for multiple connections.
      */
     @NotNull
     SSHSession[] getSessions();
+
+    @NotNull
+    DBPDataSourceContainer[] getDependentDataSources(@NotNull SSHSession session);
 }

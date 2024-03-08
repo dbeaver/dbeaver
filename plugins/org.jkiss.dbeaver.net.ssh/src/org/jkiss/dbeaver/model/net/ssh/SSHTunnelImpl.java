@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,7 +44,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * SSH tunnel
@@ -60,8 +58,9 @@ public class SSHTunnelImpl implements DBWTunnel {
     private SSHSession session;
     private final List<Runnable> listeners = new ArrayList<>();
 
-    public SSHImplementation getImplementation() {
-        throw new UnsupportedOperationException("FIXME: Return session");
+    @Override
+    public SSHSession getImplementation() {
+        return session;
     }
 
     @Override
@@ -164,8 +163,9 @@ public class SSHTunnelImpl implements DBWTunnel {
             monitor.subTask("Invalidate SSH tunnel");
             session.invalidate(
                 monitor,
-                dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT),
-                TimeUnit.MILLISECONDS
+                phase,
+                configuration,
+                dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT)
             );
         } catch (DBException e) {
             log.debug("Error invalidating SSH tunnel. Closing.", e);
@@ -183,7 +183,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     @Override
     public void closeTunnel(DBRProgressMonitor monitor) throws DBException {
         if (session != null) {
-            session.release(monitor);
+            session.release(monitor, configuration);
         }
         for (Runnable listener : this.listeners) {
             listener.run();
@@ -194,7 +194,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     @NotNull
     @Override
     public DBPDataSourceContainer[] getDependentDataSources() {
-        return new DBPDataSourceContainer[0];
+        return sessionController.getDependentDataSources(session);
     }
 
     @NotNull

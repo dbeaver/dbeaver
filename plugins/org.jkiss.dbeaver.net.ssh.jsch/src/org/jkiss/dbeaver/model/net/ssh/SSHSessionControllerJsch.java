@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
@@ -33,14 +34,15 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Rc;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -49,7 +51,7 @@ import java.util.stream.Collectors;
 public class SSHSessionControllerJsch implements SSHSessionController {
     private static final Log log = Log.getLog(SSHSessionControllerJsch.class);
 
-    private final Map<SSHHostConfiguration, JschSession> sessions = new ConcurrentHashMap<>();
+    private final Map<SSHHostConfiguration, BaseSession> sessions = new ConcurrentHashMap<>();
     private final JSch jsch;
     private AgentIdentityRepository agentIdentityRepository;
 
@@ -66,13 +68,13 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHSession origin,
         @Nullable SSHPortForwardConfiguration portForward
-    ) throws DBException, IOException {
-        if (origin != null && !(origin instanceof JschSession)) {
+    ) throws DBException {
+        if (origin != null && !(origin instanceof BaseSession)) {
             throw new DBException("Invalid origin session type: " + origin.getClass().getName());
         }
 
         if (origin != null) {
-            return acquireNestedSession(monitor, configuration, destination, (JschSession) origin, portForward);
+            return acquireNestedSession(monitor, configuration, destination, (BaseSession) origin, portForward);
         } else {
             return acquireSession(monitor, configuration, destination, portForward);
         }
@@ -85,13 +87,22 @@ public class SSHSessionControllerJsch implements SSHSessionController {
     }
 
     @NotNull
-    private JschJumpSession acquireNestedSession(
+    @Override
+    public DBPDataSourceContainer[] getDependentDataSources(@NotNull SSHSession session) {
+        if (session instanceof BaseSession s) {
+            return s.wrapper.containers.toArray(DBPDataSourceContainer[]::new);
+        }
+        return new DBPDataSourceContainer[0];
+    }
+
+    @NotNull
+    private JumpSession acquireNestedSession(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination,
-        @NotNull JschSession origin,
+        @NotNull BaseSession origin,
         @Nullable SSHPortForwardConfiguration portForward
-    ) throws DBException, IOException {
+    ) throws DBException {
         final SSHPortForwardConfiguration jumpPortForward = origin.setupPortForward(
             destination.getHostname(),
             destination.getPort()
@@ -104,24 +115,24 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             destination.getAuthConfiguration()
         );
 
-        final JschSession jumpSession = acquireSession(
+        final BaseSession jumpSession = acquireSession(
             monitor,
             configuration,
             jumpHost,
             portForward
         );
 
-        return new JschJumpSession(jumpSession, origin, jumpPortForward);
+        return new JumpSession(jumpSession, origin, jumpPortForward);
     }
 
     @NotNull
-    private JschSession acquireSession(
+    private BaseSession acquireSession(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHPortForwardConfiguration portForward
-    ) throws DBException, IOException {
-        JschSession session = sessions.get(destination);
+    ) throws DBException {
+        BaseSession session = sessions.get(destination);
 
         if (session == null) {
             final Consumer<Session> onDisconnect = target -> {
@@ -131,13 +142,19 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             };
 
             log.debug("SSHSessionController: Creating new session to " + destination);
-            session = new JschSession(createNewSession(monitor, configuration, destination), portForward, onDisconnect);
+            session = new BaseSession(
+                monitor,
+                configuration,
+                destination,
+                portForward,
+                onDisconnect
+            );
             sessions.put(destination, session);
             return session;
         }
 
         log.debug("SSHSessionController: Reusing existing session to " + destination);
-        return new JschSharedSession(session, portForward);
+        return new SharedSession(session, portForward);
     }
 
     @NotNull
@@ -145,7 +162,7 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination
-    ) throws DBException, IOException {
+    ) throws DBException {
         final SSHAuthConfiguration auth = destination.getAuthConfiguration();
 
         switch (auth.getType()) {
@@ -157,7 +174,11 @@ public class SSHSessionControllerJsch implements SSHSessionController {
 
                 try {
                     if (auth.getKeyFile() != null) {
-                        addIdentityKeyFile(monitor, configuration.getDataSource(), auth.getKeyFile(), auth.getPassword());
+                        try {
+                            addIdentityKeyFile(monitor, configuration.getDataSource(), auth.getKeyFile(), auth.getPassword());
+                        } catch (IOException e) {
+                            throw new DBException("Error adding identity key", e);
+                        }
                     } else {
                         addIdentityKeyValue(auth.getKeyValue(), auth.getPassword());
                     }
@@ -452,16 +473,26 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         }
     }
 
-    public static class JschSession implements SSHSession {
-        private final Rc<Session> session;
+    public class BaseSession implements SSHSession {
+        private final JschSession wrapper;
+        private final DBWHandlerConfiguration configuration;
+        private final SSHHostConfiguration host;
         private final SSHPortForwardConfiguration portForward;
 
-        public JschSession(
-            @NotNull Session session,
+        public BaseSession(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBWHandlerConfiguration configuration,
+            @NotNull SSHHostConfiguration host,
             @Nullable SSHPortForwardConfiguration portForward,
             @NotNull Consumer<Session> onDisconnect
         ) throws DBException {
-            this.session = new Rc<>(session, onDisconnect);
+            final Session session = createNewSession(monitor, configuration, host);
+
+            this.wrapper = new JschSession(session, onDisconnect);
+            this.wrapper.retain(configuration.getDataSource());
+
+            this.configuration = configuration;
+            this.host = host;
             this.portForward = portForward;
 
             if (portForward != null) {
@@ -471,11 +502,19 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             log.debug("JschSession.new");
         }
 
-        public JschSession(
-            @NotNull Rc<Session> session,
-            @Nullable SSHPortForwardConfiguration portForward
+        public BaseSession(
+            @NotNull BaseSession parent,
+            @Nullable SSHPortForwardConfiguration portForward,
+            boolean retain
         ) throws DBException {
-            this.session = session;
+            this.wrapper = parent.wrapper;
+
+            if (retain) {
+                this.wrapper.retain(parent.configuration.getDataSource());
+            }
+
+            this.configuration = parent.configuration;
+            this.host = parent.host;
             this.portForward = portForward;
 
             if (portForward != null) {
@@ -524,7 +563,7 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             final ChannelSftp channel;
 
             try {
-                channel = (ChannelSftp) session.get().openChannel("sftp");
+                channel = (ChannelSftp) wrapper.session.openChannel("sftp");
                 channel.connect();
             } catch (JSchException e) {
                 throw new IOException("Error opening SFTP channel", e);
@@ -536,34 +575,55 @@ public class SSHSessionControllerJsch implements SSHSessionController {
         @NotNull
         @Override
         public String getClientVersion() {
-            return session.get().getClientVersion();
+            return wrapper.session.getClientVersion();
         }
 
         @NotNull
         @Override
         public String getServerVersion() {
-            return session.get().getServerVersion();
+            return wrapper.session.getServerVersion();
         }
 
         @Override
-        public void invalidate(@NotNull DBRProgressMonitor monitor, long timeout, @NotNull TimeUnit unit) throws DBException {
-            throw new DBException("Not implemented");
+        public void invalidate(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCInvalidatePhase phase,
+            @NotNull DBWHandlerConfiguration configuration,
+            long timeout
+        ) throws DBException {
+            if (phase == DBCInvalidatePhase.BEFORE_INVALIDATE) {
+                release(monitor, configuration);
+            }
+
+            if (phase == DBCInvalidatePhase.INVALIDATE) {
+                if (wrapper.session != null) {
+                    throw new DBException("Internal error: session is still open");
+                }
+                log.debug("SSHSessionController: Reopening session after invalidation to " + host);
+                wrapper.session = createNewSession(monitor, configuration, host);
+                wrapper.retain(configuration.getDataSource());
+                if (portForward != null) {
+                    setupPortForward(portForward);
+                }
+            }
         }
 
         @Override
-        public void release(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public void release(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBWHandlerConfiguration configuration
+        ) throws DBException {
             if (portForward != null) {
                 removePortForward(portForward);
             }
 
-            final Session inner = session.get();
-            log.debug("SSHSessionController: Releasing session to %s:%d".formatted(inner.getHost(), inner.getPort()));
-            session.release();
+            log.debug("SSHSessionController: Releasing session to %s:%d".formatted(wrapper.session.getHost(), wrapper.session.getPort()));
+            wrapper.release(configuration.getDataSource());
         }
 
         @Property(name = "Destination", viewable = true, order = 1)
         public String getDestinationInfo() {
-            return session.get().getUserName() + "@" + session.get().getHost() + ":" + session.get().getPort();
+            return wrapper.session.getUserName() + "@" + wrapper.session.getHost() + ":" + wrapper.session.getPort();
         }
 
         @Property(name = "Port Forwarding", viewable = true, order = 2)
@@ -573,7 +633,7 @@ public class SSHSessionControllerJsch implements SSHSessionController {
 
         @Property(name = "Connections", viewable = true, order = 3)
         public int getConnections() {
-            return session.getCount();
+            return wrapper.containers.size();
         }
 
         @NotNull
@@ -591,7 +651,7 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             log.debug("SSHSessionController: Set up port forwarding " + portForward);
 
             try {
-                final int port = session.get().setPortForwardingL(
+                final int port = wrapper.session.setPortForwardingL(
                     portForward.getLocalHost(),
                     portForward.getLocalPort(),
                     portForward.getRemoteHost(),
@@ -613,46 +673,87 @@ public class SSHSessionControllerJsch implements SSHSessionController {
             log.debug("SSHSessionController: Remove port forwarding " + portForward);
 
             try {
-                session.get().delPortForwardingL(portForward.getLocalHost(), portForward.getLocalPort());
+                wrapper.session.delPortForwardingL(portForward.getLocalHost(), portForward.getLocalPort());
             } catch (JSchException e) {
                 throw new DBException("Failed to remove port forwarding", e);
             }
         }
     }
 
-    public static class JschSharedSession extends JschSession {
-        public JschSharedSession(@NotNull JschSession parent, @Nullable SSHPortForwardConfiguration portForward) throws DBException {
-            super(parent.session.retain(), portForward);
+    public class SharedSession extends BaseSession {
+        public SharedSession(
+            @NotNull BaseSession parent,
+            @Nullable SSHPortForwardConfiguration portForward
+        ) throws DBException {
+            super(parent, portForward, true);
             log.debug("JschSharedSession.new");
         }
     }
 
-    public static class JschJumpSession extends JschSession {
-        private final JschSession origin;
+    public class JumpSession extends BaseSession {
+        private final BaseSession origin;
         private final SSHPortForwardConfiguration portForward;
 
-        public JschJumpSession(
-            @NotNull JschSession destination,
-            @NotNull JschSession origin,
+        public JumpSession(
+            @NotNull BaseSession destination,
+            @NotNull BaseSession origin,
             @NotNull SSHPortForwardConfiguration portForward
         ) throws DBException {
-            super(destination.session, null);
+            super(destination, null, false);
             this.origin = origin;
             this.portForward = portForward;
             log.debug("JschJumpSession.new");
         }
 
         @Override
-        public void invalidate(@NotNull DBRProgressMonitor monitor, long timeout, @NotNull TimeUnit unit) throws DBException {
-            origin.invalidate(monitor, timeout, unit);
-            super.invalidate(monitor, timeout, unit);
+        public void invalidate(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCInvalidatePhase phase,
+            @NotNull DBWHandlerConfiguration configuration,
+            long timeout
+        ) throws DBException {
+            origin.invalidate(monitor, phase, configuration, timeout);
+            super.invalidate(monitor, phase, configuration, timeout);
         }
 
         @Override
-        public void release(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public void release(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBWHandlerConfiguration configuration
+        ) throws DBException {
             origin.removePortForward(portForward);
-            origin.release(monitor);
-            super.release(monitor);
+            origin.release(monitor, configuration);
+            super.release(monitor, configuration);
+        }
+    }
+
+    public static class JschSession {
+        private final Set<DBPDataSourceContainer> containers = new HashSet<>();
+        private final Consumer<Session> cleaner;
+        private Session session;
+
+        public JschSession(@NotNull Session session, @NotNull Consumer<Session> cleaner) {
+            this.cleaner = cleaner;
+            this.session = session;
+        }
+
+        @NotNull
+        public JschSession retain(@NotNull DBPDataSourceContainer container) {
+            if (!containers.add(container)) {
+                throw new IllegalStateException("Session is already acquired for " + container.getName());
+            }
+            return this;
+        }
+
+        public void release(@NotNull DBPDataSourceContainer container) {
+            if (!containers.remove(container)) {
+                throw new IllegalStateException("Session is not acquired for " + container.getName());
+            }
+            if (containers.isEmpty()) {
+                cleaner.accept(session);
+                session.disconnect();
+                session = null;
+            }
         }
     }
 }
