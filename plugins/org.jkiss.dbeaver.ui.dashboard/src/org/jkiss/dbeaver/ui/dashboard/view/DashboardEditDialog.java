@@ -213,7 +213,7 @@ public class DashboardEditDialog extends BaseDialog {
                 for (DashboardViewType viewType : viewTypes) {
                     viewTypeCombo.add(viewType.getTitle());
                 }
-                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDefaultViewType());
+                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
                 viewTypeCombo.setText(viewType.getTitle());
                 if (viewTypeCombo.getSelectionIndex() < 0) {
                     viewTypeCombo.select(0);
@@ -263,7 +263,7 @@ public class DashboardEditDialog extends BaseDialog {
         dashboardDescriptor.setFetchType(DashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
         dashboardDescriptor.setQueries(queryText.getText().split("\\n\\s*\\n"));
 
-        dashboardDescriptor.setDefaultViewType(viewTypes.get(viewTypeCombo.getSelectionIndex()).getId());
+        dashboardDescriptor.setRenderer(viewTypes.get(viewTypeCombo.getSelectionIndex()).getId());
         dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
         dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
         //dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));

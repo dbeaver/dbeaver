@@ -328,7 +328,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
-    public DashboardMapQuery getMapQuery() {
+    public DBDashboardMapQuery getMapQuery() {
         return dashboardConfig.getDashboardDescriptor().getMapQuery();
     }
 
@@ -348,7 +348,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
-    public List<? extends DashboardQuery> getQueryList() {
+    public List<? extends DBDashboardQuery> getQueryList() {
         return dashboardConfig.getDashboardDescriptor().getQueries();
     }
 

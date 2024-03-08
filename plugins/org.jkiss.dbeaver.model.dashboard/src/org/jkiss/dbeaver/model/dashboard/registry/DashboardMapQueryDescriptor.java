@@ -18,15 +18,15 @@ package org.jkiss.dbeaver.model.dashboard.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
-import org.jkiss.dbeaver.model.dashboard.DashboardMapQuery;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * DashboardMapQueryDescriptor
  */
-public class DashboardMapQueryDescriptor extends AbstractContextDescriptor implements DashboardMapQuery
+public class DashboardMapQueryDescriptor extends AbstractContextDescriptor implements DBDashboardMapQuery
 {
     private final String id;
     private final String queryText;

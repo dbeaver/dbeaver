@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.dashboard;
 /**
  * Dashboard container
  */
-public interface DashboardMapQuery extends DashboardQuery {
+public interface DBDashboardMapQuery extends DBDashboardQuery {
 
     String getId();
 

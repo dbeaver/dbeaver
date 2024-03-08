@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
-import org.jkiss.dbeaver.model.dashboard.DashboardMapQuery;
-import org.jkiss.dbeaver.model.dashboard.DashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDatasetRow;
 import org.jkiss.dbeaver.model.exec.*;
@@ -50,11 +50,11 @@ public class DashboardUpdater {
     private static class MapQueryInfo {
         private final DashboardContainer dashboard;
         private final DashboardViewContainer viewContainer;
-        private final DashboardMapQuery mapQuery;
+        private final DBDashboardMapQuery mapQuery;
         public Date timestamp;
         private Map<String, Object> mapValue = new HashMap<>();
 
-        public MapQueryInfo(DashboardContainer dashboard, DashboardViewContainer viewContainer, DashboardMapQuery mapQuery) {
+        public MapQueryInfo(DashboardContainer dashboard, DashboardViewContainer viewContainer, DBDashboardMapQuery mapQuery) {
             this.dashboard = dashboard;
             this.viewContainer = viewContainer;
             this.mapQuery = mapQuery;
@@ -85,7 +85,7 @@ public class DashboardUpdater {
 
         // Get all map queries used by dashboards
         for (DashboardContainer dashboard : dashboards) {
-            DashboardMapQuery mapQuery = dashboard.getMapQuery();
+            DBDashboardMapQuery mapQuery = dashboard.getMapQuery();
             if (mapQuery != null) {
                 List<MapQueryInfo> queryList = mapQueries.computeIfAbsent(
                     dashboard.getDataSourceContainer(), k -> new ArrayList<>());
@@ -194,7 +194,7 @@ public class DashboardUpdater {
             fetchDashboardMapData(monitor, dashboard);
             return;
         }
-        List<? extends DashboardQuery> queries = dashboard.getQueryList();
+        List<? extends DBDashboardQuery> queries = dashboard.getQueryList();
         if (queries.isEmpty()) {
             return;
         }
@@ -218,7 +218,7 @@ public class DashboardUpdater {
                 }
             }
             try {
-                for (DashboardQuery query : queries) {
+                for (DBDashboardQuery query : queries) {
                     try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.getQueryText(), false, false, false)) {
                         if (dbStat.executeStatement()) {
                             try (DBCResultSet dbResults = dbStat.openResultSet()) {

@@ -24,8 +24,8 @@ import java.util.List;
  */
 public class DashboardDataset {
 
-    private String[] columnNames;
-    private List<DashboardDatasetRow> rows = new ArrayList<>();
+    private final String[] columnNames;
+    private final List<DashboardDatasetRow> rows = new ArrayList<>();
 
     public DashboardDataset(String[] columnNames) {
         this.columnNames = columnNames;

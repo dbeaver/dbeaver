@@ -16,11 +16,19 @@
  */
 package org.jkiss.dbeaver.model.dashboard;
 
-/**
- * Dashboard container
- */
-public interface DashboardQuery {
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
-    String getQueryText();
+/**
+ * Dashboard context
+ */
+public interface DBDashboardContext {
+
+    @Nullable
+    DBPProject getProject();
+
+    @Nullable
+    DBPDataSourceContainer getDataSource();
 
 }

@@ -14,24 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dashboard.data;
+package org.jkiss.dbeaver.model.dashboard;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * Chart data.
+ * Dashboard
  */
-public class DashboardDataChart extends DashboardDataAbstract {
+public interface DBDashboard extends DBPNamedObject {
 
-    private List<DashboardDataKeyValue> keyValues = new ArrayList<>();
+    @NotNull
+    String getId();
 
-    public List<DashboardDataKeyValue> getKeyValues() {
-        return keyValues;
-    }
+    @NotNull
+    String getName();
 
-    public void addKeyValue(DashboardDataKeyValue keyValue) {
-        keyValues.add(keyValue);
-    }
+    @Nullable
+    String getDescription();
+
+    boolean isCustom();
+
+    String getDashboardRenderer();
 
 }

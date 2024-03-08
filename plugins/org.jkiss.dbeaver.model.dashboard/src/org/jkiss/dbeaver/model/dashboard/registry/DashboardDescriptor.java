@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * DashboardDescriptor
  */
-public class DashboardDescriptor extends AbstractContextDescriptor implements DBPNamedObject
+public class DashboardDescriptor extends AbstractContextDescriptor implements DBDashboard
 {
     private static final Log log = Log.getLog(DashboardDescriptor.class);
 
@@ -54,7 +54,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private String group;
     private String measure;
     private boolean showByDefault;
-    private String defaultViewType;
+    private String renderer;
 
     private DashboardMapQueryDescriptor mapQuery;
     private String[] mapKeys;
@@ -78,62 +78,8 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private DashboardValueType valueType;
     private DashboardInterval interval;
 
-    private static class DataSourceMapping {
-        private final String dataSourceProvider;
-        private final String driverId;
-        private final String driverClass;
-
-        DataSourceMapping(IConfigurationElement config) {
-            this.dataSourceProvider = CommonUtils.nullIfEmpty(config.getAttribute("id"));
-            this.driverId = CommonUtils.nullIfEmpty(config.getAttribute("driver"));
-            this.driverClass = CommonUtils.nullIfEmpty(config.getAttribute("driverClass"));
-        }
-
-        DataSourceMapping(Element config) {
-            this.dataSourceProvider = CommonUtils.nullIfEmpty(config.getAttribute("id"));
-            this.driverId = CommonUtils.nullIfEmpty(config.getAttribute("driver"));
-            this.driverClass = CommonUtils.nullIfEmpty(config.getAttribute("driverClass"));
-        }
-
-        public DataSourceMapping(String dataSourceProvider, String driverId, String driverClass) {
-            this.dataSourceProvider = dataSourceProvider;
-            this.driverId = driverId;
-            this.driverClass = driverClass;
-        }
-
-        boolean matches(String providerId, String checkDriverId, String checkDriverClass) {
-            if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(providerId)) {
-                // Try finding a matching child provider
-                DBPDataSourceProviderDescriptor provider = DBWorkbench.getPlatform()
-                    .getDataSourceProviderRegistry()
-                    .getDataSourceProvider(this.dataSourceProvider);
-                boolean childHasMatch = false;
-                if (provider != null) {
-                    List<DBPDataSourceProviderDescriptor> childrenProviders = provider.getChildrenProviders();
-                    childHasMatch = childrenProviders.stream().map(DBPDataSourceProviderDescriptor::getId).anyMatch(providerId::equals);
-                }
-                if (!childHasMatch) {
-                    return false;
-                }
-            }
-            if (checkDriverId != null && this.driverId != null && !this.driverId.equals(checkDriverId)) {
-                return false;
-            }
-            if (checkDriverClass != null && this.driverClass != null && !this.driverClass.equals(checkDriverClass)) {
-                return false;
-            }
-            return true;
-        }
-
-        void serialize(XMLBuilder xml) throws IOException {
-            if (!CommonUtils.isEmpty(dataSourceProvider)) xml.addAttribute("id", dataSourceProvider);
-            if (!CommonUtils.isEmpty(driverId)) xml.addAttribute("driver", driverId);
-            if (!CommonUtils.isEmpty(driverClass)) xml.addAttribute("driverClass", driverClass);
-        }
-    }
-
-    public static class QueryMapping implements DashboardQuery {
-        private String queryText;
+    public static class QueryMapping implements DBDashboardQuery {
+        private final String queryText;
 
         QueryMapping(IConfigurationElement config) {
             this.queryText = config.getValue();
@@ -172,9 +118,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
-        this.defaultViewType = config.getAttribute("defaultView");
-        if (CommonUtils.isEmpty(this.defaultViewType)) {
-            this.defaultViewType = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
+        this.renderer = config.getAttribute("defaultView");
+        if (CommonUtils.isEmpty(this.renderer)) {
+            this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
@@ -228,9 +174,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
-        this.defaultViewType = config.getAttribute("defaultView");
-        if (CommonUtils.isEmpty(this.defaultViewType)) {
-            this.defaultViewType = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
+        this.renderer = config.getAttribute("defaultView");
+        if (CommonUtils.isEmpty(this.renderer)) {
+            this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
@@ -264,7 +210,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.showByDefault = source.showByDefault;
 
         this.dataType = source.dataType;
-        this.defaultViewType = source.defaultViewType;
+        this.renderer = source.renderer;
         this.widthRatio = source.widthRatio;
         this.calcType = source.calcType;
         this.valueType = source.valueType;
@@ -289,7 +235,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.group = group;
 
         this.dataType = DashboardDataType.timeseries;
-        this.defaultViewType = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
+        this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         this.widthRatio = DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO;
         this.calcType = DashboardConstants.DEF_DASHBOARD_CALC_TYPE;
         this.valueType = DashboardConstants.DEF_DASHBOARD_VALUE_TYPE;
@@ -303,6 +249,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     }
 
     @NotNull
+    @Override
     public String getId() {
         return id;
     }
@@ -322,6 +269,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.name = name;
     }
 
+    @Override
     public String getDescription()
     {
         return description;
@@ -359,12 +307,13 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.dataType = dataType;
     }
 
-    public String getDefaultViewType() {
-        return defaultViewType;
+    @Override
+    public String getDashboardRenderer() {
+        return renderer;
     }
 
-    public void setDefaultViewType(String defaultViewType) {
-        this.defaultViewType = defaultViewType;
+    public void setRenderer(String renderer) {
+        this.renderer = renderer;
     }
 
     public String[] getTags() {
@@ -466,6 +415,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return mapFormulaExpr;
     }
 
+    @Override
     public boolean isCustom() {
         return isCustom;
     }
@@ -539,7 +489,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
         xml.addAttribute("showByDefault", showByDefault);
 
-        xml.addAttribute("viewType", defaultViewType);
+        xml.addAttribute("viewType", renderer);
         xml.addAttribute("ratio", widthRatio);
         xml.addAttribute("calc", calcType.name());
         xml.addAttribute("value", valueType.name());
@@ -578,4 +528,59 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     public String toString() {
         return id;
     }
+
+    private static class DataSourceMapping {
+        private final String dataSourceProvider;
+        private final String driverId;
+        private final String driverClass;
+
+        DataSourceMapping(IConfigurationElement config) {
+            this.dataSourceProvider = CommonUtils.nullIfEmpty(config.getAttribute("id"));
+            this.driverId = CommonUtils.nullIfEmpty(config.getAttribute("driver"));
+            this.driverClass = CommonUtils.nullIfEmpty(config.getAttribute("driverClass"));
+        }
+
+        DataSourceMapping(Element config) {
+            this.dataSourceProvider = CommonUtils.nullIfEmpty(config.getAttribute("id"));
+            this.driverId = CommonUtils.nullIfEmpty(config.getAttribute("driver"));
+            this.driverClass = CommonUtils.nullIfEmpty(config.getAttribute("driverClass"));
+        }
+
+        public DataSourceMapping(String dataSourceProvider, String driverId, String driverClass) {
+            this.dataSourceProvider = dataSourceProvider;
+            this.driverId = driverId;
+            this.driverClass = driverClass;
+        }
+
+        boolean matches(String providerId, String checkDriverId, String checkDriverClass) {
+            if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(providerId)) {
+                // Try finding a matching child provider
+                DBPDataSourceProviderDescriptor provider = DBWorkbench.getPlatform()
+                    .getDataSourceProviderRegistry()
+                    .getDataSourceProvider(this.dataSourceProvider);
+                boolean childHasMatch = false;
+                if (provider != null) {
+                    List<DBPDataSourceProviderDescriptor> childrenProviders = provider.getChildrenProviders();
+                    childHasMatch = childrenProviders.stream().map(DBPDataSourceProviderDescriptor::getId).anyMatch(providerId::equals);
+                }
+                if (!childHasMatch) {
+                    return false;
+                }
+            }
+            if (checkDriverId != null && this.driverId != null && !this.driverId.equals(checkDriverId)) {
+                return false;
+            }
+            if (checkDriverClass != null && this.driverClass != null && !this.driverClass.equals(checkDriverClass)) {
+                return false;
+            }
+            return true;
+        }
+
+        void serialize(XMLBuilder xml) throws IOException {
+            if (!CommonUtils.isEmpty(dataSourceProvider)) xml.addAttribute("id", dataSourceProvider);
+            if (!CommonUtils.isEmpty(driverId)) xml.addAttribute("driver", driverId);
+            if (!CommonUtils.isEmpty(driverClass)) xml.addAttribute("driverClass", driverClass);
+        }
+    }
+
 }

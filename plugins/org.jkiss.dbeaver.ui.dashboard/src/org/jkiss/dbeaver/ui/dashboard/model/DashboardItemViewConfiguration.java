@@ -134,7 +134,7 @@ public class DashboardItemViewConfiguration {
 
     DashboardItemViewConfiguration(DashboardDescriptor dashboardDescriptor, int index) throws DBException {
         this.dashboardDescriptor = dashboardDescriptor;
-        String defaultViewType = dashboardDescriptor.getDefaultViewType();
+        String defaultViewType = dashboardDescriptor.getDashboardRenderer();
         this.viewType = DashboardUIRegistry.getInstance().getViewType(defaultViewType);
         if (this.viewType == null) {
             throw new DBException("Dashboard '" + dashboardDescriptor.getId() +
@@ -202,7 +202,7 @@ public class DashboardItemViewConfiguration {
             this.viewType = DashboardUIRegistry.getInstance().getViewType(viewTypeId);
         }
         if (this.viewType == null) {
-            this.viewType = DashboardUIRegistry.getInstance().getViewType(dashboard.getDefaultViewType());
+            this.viewType = DashboardUIRegistry.getInstance().getViewType(dashboard.getDashboardRenderer());
         }
         this.index = CommonUtils.toInt(element.getAttribute("index"));
         this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"), dashboardDescriptor.getWidthRatio());

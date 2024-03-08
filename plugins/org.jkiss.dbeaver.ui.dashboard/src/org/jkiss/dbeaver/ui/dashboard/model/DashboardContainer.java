@@ -67,7 +67,7 @@ public interface DashboardContainer {
 
     DashboardGroupContainer getGroup();
 
-    DashboardMapQuery getMapQuery();
+    DBDashboardMapQuery getMapQuery();
 
     String[] getMapKeys();
 
@@ -75,7 +75,7 @@ public interface DashboardContainer {
 
     JexlExpression getMapFormula();
 
-    List<? extends DashboardQuery> getQueryList();
+    List<? extends DBDashboardQuery> getQueryList();
 
     Date getLastUpdateTime();
 

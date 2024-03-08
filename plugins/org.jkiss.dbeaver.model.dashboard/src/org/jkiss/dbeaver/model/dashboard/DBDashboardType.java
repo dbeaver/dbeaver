@@ -14,26 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dashboard.data;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Key/Value data.
+ * Dashboard container
  */
-public class DashboardDataKeyValue {
+public interface DBDashboardType {
 
-    private String key;
-    private Number value;
+    String getQueryText();
 
-    public DashboardDataKeyValue(String key, Number value) {
-        this.key = key;
-        this.value = value;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public Number getValue() {
-        return value;
-    }
 }

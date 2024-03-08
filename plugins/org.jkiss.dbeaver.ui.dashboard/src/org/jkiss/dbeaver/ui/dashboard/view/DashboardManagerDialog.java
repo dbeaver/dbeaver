@@ -126,7 +126,7 @@ public class DashboardManagerDialog extends BaseDialog {
                             if (dashboardDescriptor.isCustom()) {
                                 icon = DBIcon.TYPE_OBJECT;
                             } else {
-                                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDefaultViewType());
+                                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
                                 if (viewType != null) {
                                     icon = viewType.getIcon();
                                 }

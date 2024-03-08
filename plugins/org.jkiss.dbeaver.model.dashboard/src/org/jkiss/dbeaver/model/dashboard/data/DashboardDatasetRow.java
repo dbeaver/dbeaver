@@ -23,8 +23,8 @@ import java.util.Date;
  */
 public class DashboardDatasetRow {
 
-    private Date timestamp;
-    private Object[] values;
+    private final Date timestamp;
+    private final Object[] values;
 
     public DashboardDatasetRow(Date timestamp, Object[] values) {
         this.timestamp = timestamp;

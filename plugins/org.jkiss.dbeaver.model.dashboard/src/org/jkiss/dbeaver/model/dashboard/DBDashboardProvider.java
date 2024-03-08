@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dashboard.data;
+package org.jkiss.dbeaver.model.dashboard;
 
-import java.util.ArrayList;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.util.List;
 
 /**
- * Histogram data.
+ * Dashboard provider
  */
-public class DashboardDataHistogram extends DashboardDataAbstract {
+public interface DBDashboardProvider {
 
-    private List<DashboardDataSeries> seriesList = new ArrayList<>();
+    String getId();
 
-    public List<DashboardDataSeries> getSeries() {
-        return seriesList;
-    }
+    boolean supportsCustomDashboards();
 
-    public void addSeries(DashboardDataSeries series) {
-        seriesList.add(series);
-    }
+    List<DBDashboard> loadDashboards(@NotNull DBRProgressMonitor monitor, @NotNull DBDashboardContext context)
+        throws DBException;
 
 }
