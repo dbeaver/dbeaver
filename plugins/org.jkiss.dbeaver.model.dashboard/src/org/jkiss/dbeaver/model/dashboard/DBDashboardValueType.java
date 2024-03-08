@@ -17,17 +17,13 @@
 package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Dashboard tick interval
+ * Dashboard value type
  */
-public enum DashboardInterval {
+public enum DBDashboardValueType {
 
-    millisecond,
-    second,
-    minute,
-    hour,
-    day,
-    week,
-    month,
-    year
+    decimal,
+    integer,
+    percent,
+    bytes
 
 }

@@ -20,8 +20,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.dashboard.DashboardDataType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -41,23 +41,23 @@ public class DashboardUIRegistry {
         return instance;
     }
 
-    private final List<DashboardViewTypeDescriptor> viewTypeList = new ArrayList<>();
+    private final List<DashboardRendererDescriptor> viewTypeList = new ArrayList<>();
 
     private DashboardUIRegistry(IExtensionRegistry registry) {
         // Load data dashboardList from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardViewTypeDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardRendererDescriptor.EXTENSION_ID);
         // Load view types
         for (IConfigurationElement ext : extElements) {
             if ("dashboardView".equals(ext.getName())) {
                 viewTypeList.add(
-                    new DashboardViewTypeDescriptor(ext));
+                    new DashboardRendererDescriptor(ext));
             }
         }
     }
 
 
-    public DashboardViewTypeDescriptor getViewType(String id) {
-        for (DashboardViewTypeDescriptor descriptor : viewTypeList) {
+    public DashboardRendererDescriptor getViewType(String id) {
+        for (DashboardRendererDescriptor descriptor : viewTypeList) {
             if (descriptor.getId().equals(id)) {
                 return descriptor;
             }
@@ -66,13 +66,13 @@ public class DashboardUIRegistry {
     }
 
 
-    public List<DashboardViewType> getAllViewTypes() {
+    public List<DBDashboardRendererType> getAllViewTypes() {
         return new ArrayList<>(viewTypeList);
     }
 
-    public List<DashboardViewType> getSupportedViewTypes(DashboardDataType dataType) {
-        List<DashboardViewType> result = new ArrayList<>();
-        for (DashboardViewType vt : viewTypeList) {
+    public List<DBDashboardRendererType> getSupportedViewTypes(DBDashboardDataType dataType) {
+        List<DBDashboardRendererType> result = new ArrayList<>();
+        for (DBDashboardRendererType vt : viewTypeList) {
             if (ArrayUtils.contains(vt.getSupportedTypes(), dataType)) {
                 result.add(vt);
             }

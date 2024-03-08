@@ -20,26 +20,26 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.dashboard.DashboardDataType;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
+import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * DashboardDescriptor
  */
-public class DashboardViewTypeDescriptor extends AbstractContextDescriptor implements DashboardViewType
+public class DashboardRendererDescriptor extends AbstractContextDescriptor implements DBDashboardRendererType
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard.ui";
     private final String id;
-    private String label;
-    private String description;
-    private DBPImage icon;
-    private ObjectType implType;
-    private DashboardDataType[] supportedDataTypes;
+    private final String label;
+    private final String description;
+    private final DBPImage icon;
+    private final ObjectType implType;
+    private final DBDashboardDataType[] supportedDataTypes;
 
-    DashboardViewTypeDescriptor(
+    DashboardRendererDescriptor(
         IConfigurationElement config)
     {
         super(config);
@@ -49,9 +49,9 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
         this.description = config.getAttribute("description");
         this.icon = iconToImage(config.getAttribute("icon"));
         String[] dataTypeNames = CommonUtils.notEmpty(config.getAttribute("dataTypes")).split(",");
-        this.supportedDataTypes = new DashboardDataType[dataTypeNames.length];
+        this.supportedDataTypes = new DBDashboardDataType[dataTypeNames.length];
         for (int i = 0; i < dataTypeNames.length; i++) {
-            this.supportedDataTypes[i] = CommonUtils.valueOf(DashboardDataType.class, dataTypeNames[i], DashboardDataType.timeseries);
+            this.supportedDataTypes[i] = CommonUtils.valueOf(DBDashboardDataType.class, dataTypeNames[i], DBDashboardDataType.timeseries);
         }
 
         this.implType = new ObjectType(config.getAttribute("renderer"));
@@ -82,13 +82,13 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
     }
 
     @Override
-    public DashboardDataType[] getSupportedTypes() {
+    public DBDashboardDataType[] getSupportedTypes() {
         return supportedDataTypes;
     }
 
     @Override
-    public DashboardRenderer createRenderer() throws DBException {
-        return implType.createInstance(DashboardRenderer.class);
+    public DBDashboardRenderer createRenderer() throws DBException {
+        return implType.createInstance(DBDashboardRenderer.class);
     }
 
     @Override

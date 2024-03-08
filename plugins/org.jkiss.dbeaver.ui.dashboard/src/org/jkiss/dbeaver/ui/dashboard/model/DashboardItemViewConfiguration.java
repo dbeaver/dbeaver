@@ -28,7 +28,7 @@ import java.io.IOException;
 public class DashboardItemViewConfiguration {
     private DashboardDescriptor dashboardDescriptor;
 
-    private DashboardViewType viewType;
+    private DBDashboardRendererType viewType;
     private int index;
     private float widthRatio;
     private long updatePeriod;
@@ -44,11 +44,11 @@ public class DashboardItemViewConfiguration {
         return dashboardDescriptor;
     }
 
-    public DashboardViewType getViewType() {
+    public DBDashboardRendererType getViewType() {
         return viewType;
     }
 
-    public void setViewType(DashboardViewType viewType) {
+    public void setViewType(DBDashboardRendererType viewType) {
         this.viewType = viewType;
     }
 

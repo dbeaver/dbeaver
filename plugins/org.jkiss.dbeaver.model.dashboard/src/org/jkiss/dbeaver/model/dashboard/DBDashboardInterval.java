@@ -17,12 +17,17 @@
 package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Dashboard data fetch type
+ * Dashboard tick interval
  */
-public enum DashboardFetchType {
+public enum DBDashboardInterval {
 
-    columns,
-    rows,
-    stats,
+    millisecond,
+    second,
+    minute,
+    hour,
+    day,
+    week,
+    month,
+    year
 
 }

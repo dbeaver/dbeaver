@@ -41,8 +41,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardViewTypeDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -126,7 +126,7 @@ public class DashboardManagerDialog extends BaseDialog {
                             if (dashboardDescriptor.isCustom()) {
                                 icon = DBIcon.TYPE_OBJECT;
                             } else {
-                                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
+                                DashboardRendererDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
                                 if (viewType != null) {
                                     icon = viewType.getIcon();
                                 }

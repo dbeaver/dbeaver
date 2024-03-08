@@ -66,17 +66,17 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private final List<DataSourceMapping> dataSourceMappings = new ArrayList<>();
     private final List<QueryMapping> queries = new ArrayList<>();
 
-    private DashboardDataType dataType;
+    private DBDashboardDataType dataType;
     private float widthRatio;
-    private DashboardCalcType calcType;
-    private DashboardFetchType fetchType;
+    private DBDashboardCalcType calcType;
+    private DBDashboardFetchType fetchType;
     private long updatePeriod;
     private int maxItems;
     private long maxAge;
 
     private boolean isCustom;
-    private DashboardValueType valueType;
-    private DashboardInterval interval;
+    private DBDashboardValueType valueType;
+    private DBDashboardInterval interval;
 
     public static class QueryMapping implements DBDashboardQuery {
         private final String queryText;
@@ -117,16 +117,16 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.tags = CommonUtils.split(config.getAttribute("tags"), ",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
-        this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
+        this.dataType = CommonUtils.valueOf(DBDashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
         this.renderer = config.getAttribute("defaultView");
         if (CommonUtils.isEmpty(this.renderer)) {
             this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO); // Default ratio is 2 to 3
-        this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
-        this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
-        this.interval = CommonUtils.valueOf(DashboardInterval.class, config.getAttribute("interval"), DashboardConstants.DEF_DASHBOARD_INTERVAL);
-        this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
+        this.calcType = CommonUtils.valueOf(DBDashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
+        this.valueType = CommonUtils.valueOf(DBDashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
+        this.interval = CommonUtils.valueOf(DBDashboardInterval.class, config.getAttribute("interval"), DashboardConstants.DEF_DASHBOARD_INTERVAL);
+        this.fetchType = CommonUtils.valueOf(DBDashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD); // Default ratio is 2 to 3
         this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT);
         this.maxAge = CommonUtils.toLong(config.getAttribute("maxAge"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_AGE);
@@ -173,16 +173,16 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.tags = CommonUtils.split(config.getAttribute("tags"), ",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
-        this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
+        this.dataType = CommonUtils.valueOf(DBDashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
         this.renderer = config.getAttribute("defaultView");
         if (CommonUtils.isEmpty(this.renderer)) {
             this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
-        this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
-        this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
-        this.interval = CommonUtils.valueOf(DashboardInterval.class, config.getAttribute("interval"), DashboardConstants.DEF_DASHBOARD_INTERVAL);
-        this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
+        this.calcType = CommonUtils.valueOf(DBDashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
+        this.valueType = CommonUtils.valueOf(DBDashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
+        this.interval = CommonUtils.valueOf(DBDashboardInterval.class, config.getAttribute("interval"), DashboardConstants.DEF_DASHBOARD_INTERVAL);
+        this.fetchType = CommonUtils.valueOf(DBDashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD); // Default ratio is 2 to 3
         this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT);
         this.maxAge = CommonUtils.toLong(config.getAttribute("maxAge"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_AGE);
@@ -234,7 +234,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.description = description;
         this.group = group;
 
-        this.dataType = DashboardDataType.timeseries;
+        this.dataType = DBDashboardDataType.timeseries;
         this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         this.widthRatio = DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO;
         this.calcType = DashboardConstants.DEF_DASHBOARD_CALC_TYPE;
@@ -299,11 +299,11 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return showByDefault;
     }
 
-    public DashboardDataType getDataType() {
+    public DBDashboardDataType getDataType() {
         return dataType;
     }
 
-    public void setDataType(DashboardDataType dataType) {
+    public void setDataType(DBDashboardDataType dataType) {
         this.dataType = dataType;
     }
 
@@ -332,35 +332,35 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.widthRatio = widthRatio;
     }
 
-    public DashboardCalcType getCalcType() {
+    public DBDashboardCalcType getCalcType() {
         return calcType;
     }
 
-    public void setCalcType(DashboardCalcType calcType) {
+    public void setCalcType(DBDashboardCalcType calcType) {
         this.calcType = calcType;
     }
 
-    public DashboardValueType getValueType() {
+    public DBDashboardValueType getValueType() {
         return valueType;
     }
 
-    public void setValueType(DashboardValueType valueType) {
+    public void setValueType(DBDashboardValueType valueType) {
         this.valueType = valueType;
     }
 
-    public DashboardInterval getInterval() {
+    public DBDashboardInterval getInterval() {
         return interval;
     }
 
-    public void setInterval(DashboardInterval interval) {
+    public void setInterval(DBDashboardInterval interval) {
         this.interval = interval;
     }
 
-    public DashboardFetchType getFetchType() {
+    public DBDashboardFetchType getFetchType() {
         return fetchType;
     }
 
-    public void setFetchType(DashboardFetchType fetchType) {
+    public void setFetchType(DBDashboardFetchType fetchType) {
         this.fetchType = fetchType;
     }
 

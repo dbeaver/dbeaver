@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.dashboard;
 /**
  * Dashboard value calculation
  */
-public enum DashboardCalcType {
+public enum DBDashboardCalcType {
 
     value,      // Absolute value
     delta,      // Delta between last two value / number of seconds between values obtain time.

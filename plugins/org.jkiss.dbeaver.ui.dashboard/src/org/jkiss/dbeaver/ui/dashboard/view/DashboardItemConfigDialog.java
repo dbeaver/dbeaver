@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
@@ -49,9 +49,9 @@ public class DashboardItemConfigDialog extends BaseDialog {
 
     private final DashboardItemViewConfiguration dashboardConfig;
     private final DashboardViewConfiguration viewConfiguration;
-    private final DashboardContainer dashboardContainer;
+    private final DBDashboardContainer dashboardContainer;
 
-    public DashboardItemConfigDialog(Shell shell, DashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration) {
+    public DashboardItemConfigDialog(Shell shell, DBDashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getDashboardTitle()), null);
 
         this.viewConfiguration = viewConfiguration;
@@ -149,8 +149,8 @@ public class DashboardItemConfigDialog extends BaseDialog {
             Combo typeCombo = UIUtils.createLabelCombo(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view_tooltip, SWT.BORDER | SWT.READ_ONLY);
             typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
-                List<DashboardViewType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
-                for (DashboardViewType viewType : viewTypes) {
+                List<DBDashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
+                for (DBDashboardRendererType viewType : viewTypes) {
                     typeCombo.add(viewType.getTitle());
                 }
                 typeCombo.setText(dashboardConfig.getViewType().getTitle());

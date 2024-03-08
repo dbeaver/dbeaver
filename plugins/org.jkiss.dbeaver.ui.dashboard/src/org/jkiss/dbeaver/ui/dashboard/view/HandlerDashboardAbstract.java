@@ -22,7 +22,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
 
 public abstract class HandlerDashboardAbstract extends AbstractHandler {
 
@@ -34,12 +34,12 @@ public abstract class HandlerDashboardAbstract extends AbstractHandler {
         return null;
     }
 
-    protected DashboardContainer getSelectedDashboard(DashboardView view) {
+    protected DBDashboardContainer getSelectedDashboard(DashboardView view) {
         ISelection selection = view.getSite().getSelectionProvider().getSelection();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             Object firstElement = ((IStructuredSelection) selection).getFirstElement();
-            if (firstElement instanceof DashboardContainer) {
-                return (DashboardContainer) firstElement;
+            if (firstElement instanceof DBDashboardContainer) {
+                return (DBDashboardContainer) firstElement;
             }
         }
         return null;

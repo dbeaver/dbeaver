@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
@@ -48,9 +48,9 @@ import java.util.List;
 public class DashboardChartComposite extends BaseChartComposite {
 
     private final DashboardViewContainer viewContainer;
-    private final DashboardContainer dashboardContainer;
+    private final DBDashboardContainer dashboardContainer;
 
-    public DashboardChartComposite(DashboardContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(DBDashboardContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
@@ -74,8 +74,8 @@ public class DashboardChartComposite extends BaseChartComposite {
         }
         if (!UIUtils.isInDialog(this)) {
             MenuManager viewMenu = new MenuManager(UIDashboardMessages.dashboard_chart_composite_menu_manager_text);
-            List<DashboardViewType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
-            for (DashboardViewType viewType : viewTypes) {
+            List<DBDashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
+            for (DBDashboardRendererType viewType : viewTypes) {
                 Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
                     @Override
                     public boolean isChecked() {
@@ -84,7 +84,7 @@ public class DashboardChartComposite extends BaseChartComposite {
 
                     @Override
                     public void runWithEvent(Event event) {
-                        ((DashboardItem) dashboardContainer).getDashboardConfig().setViewType(viewType);
+                        ((DBDashboardItem) dashboardContainer).getDashboardConfig().setViewType(viewType);
                         dashboardContainer.getGroup().getView().getViewConfiguration().saveSettings();
                         dashboardContainer.updateDashboardView();
                     }
@@ -132,7 +132,7 @@ public class DashboardChartComposite extends BaseChartComposite {
         if (viewContainer.isSingleChartMode()) {
             restoreAutoBounds();
         } else {
-            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DashboardItem) dashboardContainer);
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DBDashboardItem) dashboardContainer);
             viewDialog.open();
         }
     }

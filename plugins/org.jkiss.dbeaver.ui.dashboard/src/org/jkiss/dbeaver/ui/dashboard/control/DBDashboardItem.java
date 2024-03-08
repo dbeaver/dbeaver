@@ -36,29 +36,29 @@ import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 
 import java.util.Date;
 import java.util.List;
 
-public class DashboardItem extends Composite implements DashboardContainer {
+public class DBDashboardItem extends Composite implements DBDashboardContainer {
 
     public static final int DEFAULT_HEIGHT = 200;
     private final DashboardList groupContainer;
     private final DashboardItemViewConfiguration dashboardConfig;
 
     private Date lastUpdateTime;
-    private DashboardViewType curViewType;
-    private DashboardRenderer renderer;
+    private DBDashboardRendererType curViewType;
+    private DBDashboardRenderer renderer;
     private DashboardChartComposite dashboardControl;
     private final Label titleLabel;
     private final Composite chartComposite;
     private boolean autoUpdateEnabled;
 
-    public DashboardItem(DashboardList parent, String dashboardId) {
+    public DBDashboardItem(DashboardList parent, String dashboardId) {
         super(parent, SWT.DOUBLE_BUFFERED);
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.groupContainer = parent;
@@ -132,7 +132,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             chartCanvas.addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
-                    groupContainer.setSelection(DashboardItem.this);
+                    groupContainer.setSelection(DBDashboardItem.this);
                     redraw();
                 }
 
@@ -149,7 +149,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
                 }
             });
 
-            dashboardControl.addDisposeListener(e -> renderer.disposeDashboard(DashboardItem.this));
+            dashboardControl.addDisposeListener(e -> renderer.disposeDashboard(DBDashboardItem.this));
         }
     }
 
@@ -278,32 +278,32 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
-    public DashboardViewType getDashboardViewType() {
+    public DBDashboardRendererType getDashboardViewType() {
         return dashboardConfig.getViewType();
     }
 
     @Override
-    public DashboardDataType getDashboardDataType() {
+    public DBDashboardDataType getDashboardDataType() {
         return dashboardConfig.getDashboardDescriptor().getDataType();
     }
 
     @Override
-    public DashboardCalcType getDashboardCalcType() {
+    public DBDashboardCalcType getDashboardCalcType() {
         return dashboardConfig.getDashboardDescriptor().getCalcType();
     }
 
     @Override
-    public DashboardValueType getDashboardValueType() {
+    public DBDashboardValueType getDashboardValueType() {
         return dashboardConfig.getDashboardDescriptor().getValueType();
     }
 
     @Override
-    public DashboardInterval getDashboardInterval() {
+    public DBDashboardInterval getDashboardInterval() {
         return dashboardConfig.getDashboardDescriptor().getInterval();
     }
 
     @Override
-    public DashboardFetchType getDashboardFetchType() {
+    public DBDashboardFetchType getDashboardFetchType() {
         return dashboardConfig.getDashboardDescriptor().getFetchType();
     }
 
@@ -417,7 +417,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
 
-    public void moveViewFrom(DashboardItem item, boolean clearOriginal) {
+    public void moveViewFrom(DBDashboardItem item, boolean clearOriginal) {
         renderer.moveDashboardView(this, item, clearOriginal);
     }
 }

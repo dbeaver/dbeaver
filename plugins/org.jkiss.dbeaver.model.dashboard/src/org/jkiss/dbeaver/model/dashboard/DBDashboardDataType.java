@@ -17,13 +17,12 @@
 package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Dashboard value type
+ * Dashboard data type
  */
-public enum DashboardValueType {
+public enum DBDashboardDataType {
 
-    decimal,
-    integer,
-    percent,
-    bytes
+    timeseries,
+    statistics,
+    provided
 
 }

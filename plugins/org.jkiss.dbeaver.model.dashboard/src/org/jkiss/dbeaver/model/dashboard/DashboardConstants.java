@@ -28,15 +28,15 @@ public class DashboardConstants {
     public static final int DEF_DASHBOARD_MAXIMUM_ITEM_COUNT = 300;
     public static final long DEF_DASHBOARD_MAXIMUM_AGE = 30 * 60 * 1000; // Half of hour
 
-    public static final DashboardDataType DEF_DASHBOARD_DATA_TYPE = DashboardDataType.timeseries;
+    public static final DBDashboardDataType DEF_DASHBOARD_DATA_TYPE = DBDashboardDataType.timeseries;
     public static final int DEF_DASHBOARD_UPDATE_PERIOD = 1000;
     public static final float DEF_DASHBOARD_WIDTH_RATIO = 1.5f;
-    public static final DashboardCalcType DEF_DASHBOARD_CALC_TYPE = DashboardCalcType.value;
-    public static final DashboardValueType DEF_DASHBOARD_VALUE_TYPE = DashboardValueType.decimal;
-    public static final DashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DashboardFetchType.columns;
+    public static final DBDashboardCalcType DEF_DASHBOARD_CALC_TYPE = DBDashboardCalcType.value;
+    public static final DBDashboardValueType DEF_DASHBOARD_VALUE_TYPE = DBDashboardValueType.decimal;
+    public static final DBDashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DBDashboardFetchType.columns;
 
     public static final String DEF_DASHBOARD_VIEW_TYPE = "timeseries";
-    public static final DashboardInterval DEF_DASHBOARD_INTERVAL = DashboardInterval.millisecond;
+    public static final DBDashboardInterval DEF_DASHBOARD_INTERVAL = DBDashboardInterval.millisecond;
 
     public static final String DASHBOARDS_PLUGIN_ID = "org.jkiss.dbeaver.model.dashboard";
     public static final String DASHBOARDS_LEGACY_PLUGIN_ID = "org.jkiss.dbeaver.model.ui.dashboard";

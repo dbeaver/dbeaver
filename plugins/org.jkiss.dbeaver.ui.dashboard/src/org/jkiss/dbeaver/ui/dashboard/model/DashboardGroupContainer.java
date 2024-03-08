@@ -25,11 +25,11 @@ public interface DashboardGroupContainer {
 
     DashboardViewContainer getView();
 
-    List<? extends DashboardContainer> getItems();
+    List<? extends DBDashboardContainer> getItems();
 
-    void removeItem(DashboardContainer item);
+    void removeItem(DBDashboardContainer item);
 
     void addItem(String dashboardId);
 
-    void selectItem(DashboardContainer item);
+    void selectItem(DBDashboardContainer item);
 }

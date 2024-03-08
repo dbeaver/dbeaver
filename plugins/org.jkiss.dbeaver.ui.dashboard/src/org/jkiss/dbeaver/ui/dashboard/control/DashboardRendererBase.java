@@ -27,7 +27,7 @@ import org.jfree.data.time.TimeSeriesDataItem;
 import org.jfree.ui.RectangleEdge;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 
@@ -36,12 +36,12 @@ import java.awt.*;
 /**
  * Base dashboard renderer
  */
-public abstract class DashboardRendererBase implements DashboardRenderer {
+public abstract class DashboardRendererBase implements DBDashboardRenderer {
 
     protected static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
     protected static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
 
-    protected void generateSampleSeries(DashboardContainer container, TimeSeriesCollection dataset) {
+    protected void generateSampleSeries(DBDashboardContainer container, TimeSeriesCollection dataset) {
         TimeSeries seriesSin = new TimeSeries("Sin");
         long startTime = System.currentTimeMillis() - 1000 * 60 * 60 * 2;
         for (int i = 0; i < 100; i++) {
@@ -58,7 +58,7 @@ public abstract class DashboardRendererBase implements DashboardRenderer {
     }
 
     @Override
-    public void moveDashboardView(DashboardItem toItem, DashboardItem fromItem, boolean clearOriginal) {
+    public void moveDashboardView(DBDashboardItem toItem, DBDashboardItem fromItem, boolean clearOriginal) {
         DashboardChartComposite toComp = getChartComposite(toItem);
         DashboardChartComposite fromComp = getChartComposite(fromItem);
         toComp.setChart(fromComp.getChart());
@@ -90,18 +90,18 @@ public abstract class DashboardRendererBase implements DashboardRenderer {
     }
 
     @Override
-    public void disposeDashboard(DashboardContainer container) {
+    public void disposeDashboard(DBDashboardContainer container) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         if (chartComposite != null) {
             chartComposite.setChart(null);
         }
     }
 
-    protected DashboardChartComposite getChartComposite(DashboardContainer container) {
+    protected DashboardChartComposite getChartComposite(DBDashboardContainer container) {
         return (DashboardChartComposite) container.getDashboardControl();
     }
 
-    protected DashboardChartComposite createChartComposite(Composite composite, DashboardContainer container, DashboardViewContainer viewContainer, org.eclipse.swt.graphics.Point preferredSize) {
+    protected DashboardChartComposite createChartComposite(Composite composite, DBDashboardContainer container, DashboardViewContainer viewContainer, org.eclipse.swt.graphics.Point preferredSize) {
         return new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize);
     }
 

@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Dashboard container
  */
-public interface DashboardContainer {
+public interface DBDashboardContainer {
 
     String getDashboardId();
 
@@ -36,17 +36,17 @@ public interface DashboardContainer {
 
     String getDashboardDescription();
 
-    DashboardViewType getDashboardViewType();
+    DBDashboardRendererType getDashboardViewType();
 
-    DashboardDataType getDashboardDataType();
+    DBDashboardDataType getDashboardDataType();
 
-    DashboardCalcType getDashboardCalcType();
+    DBDashboardCalcType getDashboardCalcType();
 
-    DashboardValueType getDashboardValueType();
+    DBDashboardValueType getDashboardValueType();
 
-    DashboardInterval getDashboardInterval();
+    DBDashboardInterval getDashboardInterval();
 
-    DashboardFetchType getDashboardFetchType();
+    DBDashboardFetchType getDashboardFetchType();
 
     /**
      * Maximum item counts

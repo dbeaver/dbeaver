@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardViewTypeDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -57,7 +57,7 @@ public class DashboardEditDialog extends BaseDialog {
     private Text updatePeriodText;
     private Text maxItemsText;
     //private Text maxAgeText;
-    private List<DashboardViewType> viewTypes;
+    private List<DBDashboardRendererType> viewTypes;
     private Combo dataTypeCombo;
     private Combo calcTypeCombo;
     private Combo valueTypeCombo;
@@ -133,35 +133,35 @@ public class DashboardEditDialog extends BaseDialog {
 //            UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardDescriptor.getGroup()), SWT.BORDER | baseStyle)
 //                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             dataTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DashboardDataType ddt : DashboardDataType.values()) {
+            for (DBDashboardDataType ddt : DBDashboardDataType.values()) {
                 dataTypeCombo.add(ddt.name());
             }
             dataTypeCombo.setText(dashboardDescriptor.getDataType().name());
             dataTypeCombo.setEnabled(!readOnly);
 
             calcTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DashboardCalcType dct : DashboardCalcType.values()) {
+            for (DBDashboardCalcType dct : DBDashboardCalcType.values()) {
                 calcTypeCombo.add(dct.name());
             }
             calcTypeCombo.setText(dashboardDescriptor.getCalcType().name());
             calcTypeCombo.setEnabled(!readOnly);
 
             valueTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DashboardValueType dvt : DashboardValueType.values()) {
+            for (DBDashboardValueType dvt : DBDashboardValueType.values()) {
                 valueTypeCombo.add(dvt.name());
             }
             valueTypeCombo.setText(dashboardDescriptor.getValueType().name());
             valueTypeCombo.setEnabled(!readOnly);
 
             intervalCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DashboardInterval dvt : DashboardInterval.values()) {
+            for (DBDashboardInterval dvt : DBDashboardInterval.values()) {
                 intervalCombo.add(dvt.name());
             }
             intervalCombo.setText(dashboardDescriptor.getInterval().name());
             intervalCombo.setEnabled(!readOnly);
 
             fetchTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DashboardFetchType dft : DashboardFetchType.values()) {
+            for (DBDashboardFetchType dft : DBDashboardFetchType.values()) {
                 fetchTypeCombo.add(dft.name());
             }
             fetchTypeCombo.setText(dashboardDescriptor.getFetchType().name());
@@ -210,10 +210,10 @@ public class DashboardEditDialog extends BaseDialog {
             viewTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
                 viewTypes = DashboardUIRegistry.getInstance().getAllViewTypes();
-                for (DashboardViewType viewType : viewTypes) {
+                for (DBDashboardRendererType viewType : viewTypes) {
                     viewTypeCombo.add(viewType.getTitle());
                 }
-                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
+                DashboardRendererDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
                 viewTypeCombo.setText(viewType.getTitle());
                 if (viewTypeCombo.getSelectionIndex() < 0) {
                     viewTypeCombo.select(0);
@@ -256,11 +256,11 @@ public class DashboardEditDialog extends BaseDialog {
         dashboardDescriptor.setName(nameText.getText());
         dashboardDescriptor.setDataSourceMappings(Collections.singletonList(targetDatabase));
         dashboardDescriptor.setDescription(descriptionText.getText());
-        dashboardDescriptor.setDataType(DashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
-        dashboardDescriptor.setCalcType(DashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);
-        dashboardDescriptor.setValueType(DashboardValueType.values()[valueTypeCombo.getSelectionIndex()]);
-        dashboardDescriptor.setInterval(DashboardInterval.values()[intervalCombo.getSelectionIndex()]);
-        dashboardDescriptor.setFetchType(DashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setDataType(DBDashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setCalcType(DBDashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setValueType(DBDashboardValueType.values()[valueTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setInterval(DBDashboardInterval.values()[intervalCombo.getSelectionIndex()]);
+        dashboardDescriptor.setFetchType(DBDashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
         dashboardDescriptor.setQueries(queryText.getText().split("\\n\\s*\\n"));
 
         dashboardDescriptor.setRenderer(viewTypes.get(viewTypeCombo.getSelectionIndex()).getId());
