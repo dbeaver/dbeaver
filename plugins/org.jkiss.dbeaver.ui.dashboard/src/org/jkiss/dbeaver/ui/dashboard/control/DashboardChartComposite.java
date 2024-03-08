@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Dashboard chart composite
  */
-public class DashboardChartComposite extends BaseChartComposite {
+public class DashboardChartComposite extends BaseChartComposite implements DBDashboardCompositeControl {
 
     private final DashboardViewContainer viewContainer;
     private final DBDashboardContainer dashboardContainer;

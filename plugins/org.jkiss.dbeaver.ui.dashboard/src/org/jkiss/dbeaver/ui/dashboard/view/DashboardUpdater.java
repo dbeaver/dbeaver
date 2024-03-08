@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
@@ -257,8 +258,8 @@ public class DashboardUpdater {
                 for (int i = 0; i < mapKeys.length; i++) {
                     Object value = mapValue.get(mapKeys[i]);
                     Number numValue;
-                    if (value instanceof Number) {
-                        numValue = (Number) value;
+                    if (value instanceof Number number) {
+                        numValue = number;
                     } else {
                         numValue = CommonUtils.toDouble(value);
                     }
@@ -398,8 +399,8 @@ public class DashboardUpdater {
                 for (IViewReference view : page.getViewReferences()) {
                     if (view.getId().equalsIgnoreCase(DashboardView.VIEW_ID)) {
                         IWorkbenchPart part = view.getPart(false);
-                        if (part instanceof DashboardView && checkViewDashboards((DashboardView) part)) {
-                            getViewDashboards((DashboardView) part, dashboards);
+                        if (part instanceof DashboardView dv && checkViewDashboards(dv)) {
+                            getViewDashboards(dv, dashboards);
                             pauseDashboardUpdate = false;
                         }
                     }
@@ -419,6 +420,10 @@ public class DashboardUpdater {
         DashboardListViewer viewManager = view.getDashboardListViewer();
         for (DashboardGroupContainer group : viewManager.getGroups()) {
             for (DBDashboardContainer dashboard : group.getItems()) {
+                if (dashboard.getDashboardDataType() == DBDashboardDataType.provided) {
+                    // Skip all provided
+                    continue;
+                }
                 Date lastUpdateTime = dashboard.getLastUpdateTime();
                 if (lastUpdateTime == null || (currentTime - lastUpdateTime.getTime()) >= dashboard.getUpdatePeriod()) {
                     dashboards.add(dashboard);

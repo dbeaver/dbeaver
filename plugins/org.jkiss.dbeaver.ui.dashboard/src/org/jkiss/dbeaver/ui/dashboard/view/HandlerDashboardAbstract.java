@@ -28,18 +28,18 @@ public abstract class HandlerDashboardAbstract extends AbstractHandler {
 
     protected DashboardView getActiveDashboardView(ExecutionEvent event) {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof DashboardView) {
-            return (DashboardView) activePart;
+        if (activePart instanceof DashboardView dv) {
+            return dv;
         }
         return null;
     }
 
     protected DBDashboardContainer getSelectedDashboard(DashboardView view) {
         ISelection selection = view.getSite().getSelectionProvider().getSelection();
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            Object firstElement = ((IStructuredSelection) selection).getFirstElement();
-            if (firstElement instanceof DBDashboardContainer) {
-                return (DBDashboardContainer) firstElement;
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection ss) {
+            Object firstElement = ss.getFirstElement();
+            if (firstElement instanceof DBDashboardContainer dc) {
+                return dc;
             }
         }
         return null;

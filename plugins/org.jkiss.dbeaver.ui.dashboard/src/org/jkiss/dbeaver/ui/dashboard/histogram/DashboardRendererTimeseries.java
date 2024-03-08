@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.charts.BaseChartDrawingSupplier;
 import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererBase;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererChart;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 
 import java.awt.*;
@@ -49,7 +49,7 @@ import java.util.List;
 /**
  * Histogram dashboard renderer
  */
-public class DashboardRendererTimeseries extends DashboardRendererBase {
+public class DashboardRendererTimeseries extends DashboardRendererChart {
 
     private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
     public static final int MAX_TIMESERIES_RANGE_LABELS = 25;

@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import java.awt.*;
 
 /**
- * Base dashboard renderer
+ * Base chart dashboard renderer
  */
-public abstract class DashboardRendererBase implements DBDashboardRenderer {
+public abstract class DashboardRendererChart implements DBDashboardRenderer {
 
     protected static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
     protected static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);

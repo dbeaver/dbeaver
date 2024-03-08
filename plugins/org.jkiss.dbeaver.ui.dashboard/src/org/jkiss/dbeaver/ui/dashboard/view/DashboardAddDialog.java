@@ -97,11 +97,10 @@ public class DashboardAddDialog extends BaseDialog {
         });
         dashboardTable.addSelectionChangedListener(event -> {
             ISelection selection = dashboardTable.getSelection();
-            getButton(IDialogConstants.OK_ID).setEnabled(!selection.isEmpty());
-            if (selection instanceof IStructuredSelection) {
-                selectedDashboard = (DashboardDescriptor) ((IStructuredSelection) selection).getFirstElement();
+            if (selection instanceof IStructuredSelection ss) {
+                selectedDashboard = (DashboardDescriptor) ss.getFirstElement();
             }
-            getButton(IDialogConstants.OK_ID).setEnabled(selectedDashboard != null);
+            enableButton(IDialogConstants.OK_ID, selectedDashboard != null);
         });
         table.addPaintListener(e -> {
             if (table.getItemCount() == 0) {

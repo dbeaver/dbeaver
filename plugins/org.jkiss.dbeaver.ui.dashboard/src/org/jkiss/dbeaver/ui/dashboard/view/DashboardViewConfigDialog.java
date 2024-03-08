@@ -22,7 +22,10 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -32,7 +35,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 public class DashboardViewConfigDialog extends BaseDialog {
 
-    private DashboardViewConfiguration viewConfiguration;
+    private final DashboardViewConfiguration viewConfiguration;
 
     public DashboardViewConfigDialog(Shell shell, DashboardViewConfiguration viewConfiguration) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_view_config_title, viewConfiguration.getDataSourceContainer().getName()), null);
@@ -77,13 +80,6 @@ public class DashboardViewConfigDialog extends BaseDialog {
         }
 
         return parent;
-    }
-
-    @Override
-    protected Control createContents(Composite parent) {
-        Control contents = super.createContents(parent);
-
-        return contents;
     }
 
     @Override

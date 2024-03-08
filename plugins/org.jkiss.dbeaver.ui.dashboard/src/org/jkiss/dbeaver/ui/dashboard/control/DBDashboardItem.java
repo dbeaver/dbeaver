@@ -53,7 +53,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
     private Date lastUpdateTime;
     private DBDashboardRendererType curViewType;
     private DBDashboardRenderer renderer;
-    private DashboardChartComposite dashboardControl;
+    private Composite dashboardControl;
     private final Label titleLabel;
     private final Composite chartComposite;
     private boolean autoUpdateEnabled;
@@ -94,7 +94,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         chartComposite.setLayout(new FillLayout());
 
-        createChartRenderer();
+        createDashboardRenderer();
 
         groupContainer.addItem(this);
         addDisposeListener(e -> groupContainer.removeItem(this));
@@ -104,7 +104,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
         this.autoUpdateEnabled = true;
     }
 
-    private void createChartRenderer() {
+    private void createDashboardRenderer() {
 
         try {
             curViewType = dashboardConfig.getViewType();
@@ -117,40 +117,44 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 
-        if (dashboardControl != null) {
-            Canvas chartCanvas = dashboardControl.getChartCanvas();
-            MouseAdapter mouseAdapter = new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e) {
-                    chartCanvas.setFocus();
-                }
-            };
-            this.addMouseListener(mouseAdapter);
-            chartCanvas.addMouseListener(mouseAdapter);
-            titleLabel.addMouseListener(mouseAdapter);
-
-            chartCanvas.addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    groupContainer.setSelection(DBDashboardItem.this);
-                    redraw();
-                }
-
-                @Override
-                public void focusLost(FocusEvent e) {
-
-                }
-            });
-
-            chartCanvas.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    groupContainer.handleKeyEvent(e);
-                }
-            });
-
-            dashboardControl.addDisposeListener(e -> renderer.disposeDashboard(DBDashboardItem.this));
+        if (dashboardControl instanceof DashboardChartComposite chart) {
+            initChartRenderer(chart);
         }
+    }
+
+    private void initChartRenderer(DashboardChartComposite chart) {
+        Canvas chartCanvas = chart.getChartCanvas();
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                chartCanvas.setFocus();
+            }
+        };
+        this.addMouseListener(mouseAdapter);
+        chartCanvas.addMouseListener(mouseAdapter);
+        titleLabel.addMouseListener(mouseAdapter);
+
+        chartCanvas.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                groupContainer.setSelection(DBDashboardItem.this);
+                redraw();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+
+            }
+        });
+
+        chartCanvas.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                groupContainer.handleKeyEvent(e);
+            }
+        });
+
+        dashboardControl.addDisposeListener(e -> renderer.disposeDashboard(DBDashboardItem.this));
     }
 
     public Label getTitleLabel() {
@@ -386,7 +390,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
                     dashboardControl.dispose();
                     forceLayout = true;
                 }
-                createChartRenderer();
+                createDashboardRenderer();
             } else if (renderer != null) {
                 renderer.updateDashboardView(this);
             }
@@ -412,7 +416,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
     }
 
     @Override
-    public DashboardChartComposite getDashboardControl() {
+    public Composite getDashboardControl() {
         return dashboardControl;
     }
 

@@ -30,7 +30,11 @@ import java.util.Date;
  */
 public interface DBDashboardRenderer {
 
-    DashboardChartComposite createDashboard(
+    /**
+     * Returns composite with embedded dashboard.
+     * It may be DashboardChartComposite or DashboardBrowserComposite or some other implementation of DBDashboardControl
+     */
+    Composite createDashboard(
         @NotNull Composite composite,
         @NotNull DBDashboardContainer container,
         @NotNull DashboardViewContainer viewContainer,
