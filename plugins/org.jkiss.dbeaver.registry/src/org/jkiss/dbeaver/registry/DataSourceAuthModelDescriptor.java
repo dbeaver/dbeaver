@@ -42,27 +42,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceAuth"; //$NON-NLS-1$
 
-    public enum DSPriority {
-        EXTRA_HIGH(1), // For necessary models
-        HIGH(2); // For priority models
-
-        private final int highLevel;
-
-        DSPriority(int highLevel) {
-            this.highLevel = highLevel;
-        }
-
-        @Nullable
-        private static DSPriority getPriorityByLevel(int level) {
-            for (DSPriority value : values()) {
-                if (value.highLevel == level) {
-                    return value;
-                }
-            }
-            return null;
-        }
-    }
-
     private final String id;
     private final ObjectType implType;
     private final String name;
@@ -72,7 +51,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final boolean defaultModel;
     private final boolean isDesktop;
     private final boolean isCloud;
-    private final DSPriority priorityValue;
     private final boolean requiresLocalConfiguration;
     private final Map<String, String[]> replaces = new HashMap<>();
     private boolean hasCondReplaces = false;
@@ -95,7 +73,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         this.isCloud = CommonUtils.toBoolean(config.getAttribute("cloud"));
         this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("requiresLocalConfiguration"));
         this.requiredAuthProvider = CommonUtils.toString(config.getAttribute("requiredAuthProvider"));
-        this.priorityValue = DSPriority.getPriorityByLevel(CommonUtils.toInt(config.getAttribute("priorityValue"), -1));
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
             String forAttr = dsConfig.getAttribute("for");
@@ -146,15 +123,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Override
     public boolean isCloudModel() {
         return isCloud;
-    }
-
-    /**
-     * This value means that only this and other applicable models with the same mark will be used.
-     * For now, 1 - for profile (use everywhere), 2 - for special auth cases.
-     */
-    @Nullable
-    public DSPriority getPriorityValue() {
-        return priorityValue;
     }
 
     @Override

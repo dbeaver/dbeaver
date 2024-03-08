@@ -614,29 +614,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver) {
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
         List<String> replaced = new ArrayList<>();
-        List<DataSourceAuthModelDescriptor> extraPriorityModels = new ArrayList<>();
-        List<DataSourceAuthModelDescriptor> priorityModels = new ArrayList<>();
         boolean desktopMode = !DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         for (DataSourceAuthModelDescriptor amd : authModels.values()) {
             if (desktopMode && amd.isCloudModel()) {
                 continue;
             }
             if (amd.appliesTo(driver)) {
-                DataSourceAuthModelDescriptor.DSPriority priority = amd.getPriorityValue();
-                if (priority == DataSourceAuthModelDescriptor.DSPriority.EXTRA_HIGH) {
-                    priorityModels.add(amd);
-                    extraPriorityModels.add(amd);
-                } else if (priority == DataSourceAuthModelDescriptor.DSPriority.HIGH) {
-                    priorityModels.add(amd);
-                }
                 models.add(amd);
                 replaced.addAll(amd.getReplaces(driver));
             }
-        }
-        if (!priorityModels.isEmpty() && priorityModels.size() > extraPriorityModels.size()) {
-            // Let's keep only priority models.
-            // Extra priority list with the size 1 usually contains only the profile auth.
-            return priorityModels;
         }
         if (!replaced.isEmpty()) {
             models.removeIf(
