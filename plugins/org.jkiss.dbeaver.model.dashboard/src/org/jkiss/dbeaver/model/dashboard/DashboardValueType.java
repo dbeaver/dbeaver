@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model.data;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Key/Value data.
+ * Dashboard value type
  */
-public class DashboardDataKeyValue {
+public enum DashboardValueType {
 
-    private String key;
-    private Number value;
+    decimal,
+    integer,
+    percent,
+    bytes
 
-    public DashboardDataKeyValue(String key, Number value) {
-        this.key = key;
-        this.value = value;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public Number getValue() {
-        return value;
-    }
 }

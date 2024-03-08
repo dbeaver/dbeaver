@@ -14,11 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model.data;
+package org.jkiss.dbeaver.model.dashboard.data;
+
+import java.util.Date;
 
 /**
- * Abstract dashboard data
+ * Dashboard dataset row
  */
-public class DashboardDataAbstract {
+public class DashboardDatasetRow {
 
+    private Date timestamp;
+    private Object[] values;
+
+    public DashboardDatasetRow(Date timestamp, Object[] values) {
+        this.timestamp = timestamp;
+        this.values = values;
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public Object[] getValues() {
+        return values;
+    }
 }

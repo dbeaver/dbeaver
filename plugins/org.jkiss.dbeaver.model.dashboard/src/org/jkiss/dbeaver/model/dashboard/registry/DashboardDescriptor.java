@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.registry;
+package org.jkiss.dbeaver.model.dashboard.registry;
 
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -25,11 +25,10 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.dashboard.*;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
-import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -55,7 +54,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private String group;
     private String measure;
     private boolean showByDefault;
-    private DashboardViewTypeDescriptor defaultViewType;
+    private String defaultViewType;
 
     private DashboardMapQueryDescriptor mapQuery;
     private String[] mapKeys;
@@ -173,9 +172,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
-        this.defaultViewType = registry.getViewType(config.getAttribute("defaultView"));
-        if (this.defaultViewType == null) {
-            this.defaultViewType = registry.getViewType(DashboardConstants.DEF_DASHBOARD_VIEW_TYPE);
+        this.defaultViewType = config.getAttribute("defaultView");
+        if (CommonUtils.isEmpty(this.defaultViewType)) {
+            this.defaultViewType = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
@@ -217,7 +216,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     }
 
     DashboardDescriptor(DashboardRegistry registry, Element config) {
-        super(UIDashboardActivator.PLUGIN_ID);
+        super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
 
         this.id = config.getAttribute("id");
         this.name = config.getAttribute("label");
@@ -229,9 +228,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
-        this.defaultViewType = registry.getViewType(config.getAttribute("defaultView"));
-        if (this.defaultViewType == null) {
-            this.defaultViewType = registry.getViewType(DashboardConstants.DEF_DASHBOARD_VIEW_TYPE);
+        this.defaultViewType = config.getAttribute("defaultView");
+        if (CommonUtils.isEmpty(this.defaultViewType)) {
+            this.defaultViewType = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
@@ -283,14 +282,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     }
 
     public DashboardDescriptor(String id, String name, String description, String group) {
-        super(UIDashboardActivator.PLUGIN_ID);
+        super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
         this.id = id;
         this.name = name;
         this.description = description;
         this.group = group;
 
         this.dataType = DashboardDataType.timeseries;
-        this.defaultViewType = DashboardRegistry.getInstance().getViewType(DashboardConstants.DEF_DASHBOARD_VIEW_TYPE);
+        this.defaultViewType = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         this.widthRatio = DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO;
         this.calcType = DashboardConstants.DEF_DASHBOARD_CALC_TYPE;
         this.valueType = DashboardConstants.DEF_DASHBOARD_VALUE_TYPE;
@@ -360,11 +359,11 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.dataType = dataType;
     }
 
-    public DashboardViewTypeDescriptor getDefaultViewType() {
+    public String getDefaultViewType() {
         return defaultViewType;
     }
 
-    public void setDefaultViewType(DashboardViewTypeDescriptor defaultViewType) {
+    public void setDefaultViewType(String defaultViewType) {
         this.defaultViewType = defaultViewType;
     }
 
@@ -540,7 +539,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
         xml.addAttribute("showByDefault", showByDefault);
 
-        xml.addAttribute("viewType", defaultViewType.getId());
+        xml.addAttribute("viewType", defaultViewType);
         xml.addAttribute("ratio", widthRatio);
         xml.addAttribute("calc", calcType.name());
         xml.addAttribute("value", valueType.name());

@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Dashboard value calculation
+ * Dashboard container
  */
-public enum DashboardCalcType {
+public interface DashboardMapQuery extends DashboardQuery {
 
-    value,      // Absolute value
-    delta,      // Delta between last two value / number of seconds between values obtain time.
+    String getId();
+
+    long getUpdatePeriod();
 
 }

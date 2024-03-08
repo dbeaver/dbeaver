@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -42,10 +43,10 @@ public class DashboardViewConfiguration {
 
     private static final Log log = Log.getLog(DashboardViewConfiguration.class);
 
-    private String viewId;
+    private final String viewId;
 
     private final DBPDataSourceContainer dataSourceContainer;
-    private List<DashboardItemViewConfiguration> items = new ArrayList<>();
+    private final List<DashboardItemViewConfiguration> items = new ArrayList<>();
 
     private boolean openConnectionOnActivate;
     private boolean useSeparateConnection;
@@ -94,9 +95,14 @@ public class DashboardViewConfiguration {
         if (dashboardConfig != null) {
             return dashboardConfig;
         }
-        DashboardItemViewConfiguration itemViewConfiguration = new DashboardItemViewConfiguration(dashboard, items.size());
-        items.add(itemViewConfiguration);
-        return itemViewConfiguration;
+        try {
+            DashboardItemViewConfiguration itemViewConfiguration = new DashboardItemViewConfiguration(dashboard, items.size());
+            items.add(itemViewConfiguration);
+            return itemViewConfiguration;
+        } catch (DBException e) {
+            log.error(e);
+            return null;
+        }
     }
 
     public void removeDashboard(String dashboardId) {

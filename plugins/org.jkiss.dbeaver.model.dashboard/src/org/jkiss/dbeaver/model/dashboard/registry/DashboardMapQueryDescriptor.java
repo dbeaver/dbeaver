@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.registry;
+package org.jkiss.dbeaver.model.dashboard.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
+import org.jkiss.dbeaver.model.dashboard.DashboardMapQuery;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardMapQuery;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -28,9 +28,9 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DashboardMapQueryDescriptor extends AbstractContextDescriptor implements DashboardMapQuery
 {
-    private String id;
-    private String queryText;
-    private long updatePeriod;
+    private final String id;
+    private final String queryText;
+    private final long updatePeriod;
 
     DashboardMapQueryDescriptor(
         IConfigurationElement config)

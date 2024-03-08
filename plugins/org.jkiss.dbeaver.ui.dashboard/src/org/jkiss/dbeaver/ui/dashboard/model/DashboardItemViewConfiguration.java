@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.w3c.dom.Element;
@@ -131,9 +132,14 @@ public class DashboardItemViewConfiguration {
         this.description = description;
     }
 
-    DashboardItemViewConfiguration(DashboardDescriptor dashboardDescriptor, int index) {
+    DashboardItemViewConfiguration(DashboardDescriptor dashboardDescriptor, int index) throws DBException {
         this.dashboardDescriptor = dashboardDescriptor;
-        this.viewType = dashboardDescriptor.getDefaultViewType();
+        String defaultViewType = dashboardDescriptor.getDefaultViewType();
+        this.viewType = DashboardUIRegistry.getInstance().getViewType(defaultViewType);
+        if (this.viewType == null) {
+            throw new DBException("Dashboard '" + dashboardDescriptor.getId() +
+                "' view type '" + defaultViewType + "' not supported");
+        }
         this.index = index;
         this.widthRatio = dashboardDescriptor.getWidthRatio();
         this.updatePeriod = dashboardDescriptor.getUpdatePeriod();
@@ -192,11 +198,11 @@ public class DashboardItemViewConfiguration {
         this.dashboardDescriptor = dashboard;
 
         String viewTypeId = element.getAttribute("viewType");
-        if (viewTypeId != null) {
-            this.viewType = DashboardRegistry.getInstance().getViewType(viewTypeId);
+        if (!CommonUtils.isEmpty(viewTypeId)) {
+            this.viewType = DashboardUIRegistry.getInstance().getViewType(viewTypeId);
         }
         if (this.viewType == null) {
-            this.viewType = dashboard.getDefaultViewType();
+            this.viewType = DashboardUIRegistry.getInstance().getViewType(dashboard.getDefaultViewType());
         }
         this.index = CommonUtils.toInt(element.getAttribute("index"));
         this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"), dashboardDescriptor.getWidthRatio());

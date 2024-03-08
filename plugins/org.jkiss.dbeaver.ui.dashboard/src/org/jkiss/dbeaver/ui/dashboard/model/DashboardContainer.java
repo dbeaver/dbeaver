@@ -19,7 +19,8 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import org.jkiss.dbeaver.model.dashboard.*;
+import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 
 import java.util.Date;
 import java.util.List;

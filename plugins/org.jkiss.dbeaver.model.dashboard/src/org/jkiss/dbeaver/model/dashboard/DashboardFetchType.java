@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Dashboard value type
+ * Dashboard data fetch type
  */
-public enum DashboardValueType {
+public enum DashboardFetchType {
 
-    decimal,
-    integer,
-    percent,
-    bytes
+    columns,
+    rows,
+    stats,
 
 }

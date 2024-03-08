@@ -14,33 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model.data;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Dashboard raw dataset
+ * Dashboard value calculation
  */
-public class DashboardDataset {
+public enum DashboardCalcType {
 
-    private String[] columnNames;
-    private List<DashboardDatasetRow> rows = new ArrayList<>();
-
-    public DashboardDataset(String[] columnNames) {
-        this.columnNames = columnNames;
-    }
-
-    public String[] getColumnNames() {
-        return columnNames;
-    }
-
-    public List<DashboardDatasetRow> getRows() {
-        return rows;
-    }
-
-    public void addRow(DashboardDatasetRow row) {
-        rows.add(row);
-    }
+    value,      // Absolute value
+    delta,      // Delta between last two value / number of seconds between values obtain time.
 
 }

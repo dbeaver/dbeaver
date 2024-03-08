@@ -20,9 +20,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.dashboard.DashboardDataType;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,7 +31,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DashboardViewTypeDescriptor extends AbstractContextDescriptor implements DashboardViewType
 {
-    private String id;
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard.ui";
+    private final String id;
     private String label;
     private String description;
     private DBPImage icon;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.registry;
+package org.jkiss.dbeaver.model.dashboard.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -25,13 +25,10 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
@@ -58,20 +55,12 @@ public class DashboardRegistry {
         return instance;
     }
 
-    private final List<DashboardViewTypeDescriptor> viewTypeList = new ArrayList<>();
     private final Map<String, DashboardMapQueryDescriptor> mapQueries = new LinkedHashMap<>();
     private final Map<String, DashboardDescriptor> dashboardList = new LinkedHashMap<>();
 
     private DashboardRegistry(IExtensionRegistry registry) {
         // Load data dashboardList from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
-        // Load view types
-        for (IConfigurationElement ext : extElements) {
-            if ("dashboardView".equals(ext.getName())) {
-                viewTypeList.add(
-                    new DashboardViewTypeDescriptor(ext));
-            }
-        }
         // Load map queries
         for (IConfigurationElement ext : extElements) {
             if ("mapQuery".equals(ext.getName())) {
@@ -91,16 +80,19 @@ public class DashboardRegistry {
 
         // Load dashboards from config
         loadConfigFromFile();
-        WorkspaceConfigEventManager.addConfigChangedListener(CONFIG_FILE_NAME, o -> {
-            loadConfigFromFile();
-        });
+        WorkspaceConfigEventManager.addConfigChangedListener(CONFIG_FILE_NAME, o -> loadConfigFromFile());
     }
 
     private void loadConfigFromFile() {
         try {
             String configContent = DBWorkbench.getPlatform()
-                .getPluginConfigurationController(UIDashboardActivator.PLUGIN_ID)
+                .getPluginConfigurationController(DashboardConstants.DASHBOARDS_PLUGIN_ID)
                 .loadConfigurationFile(CONFIG_FILE_NAME);
+            if (CommonUtils.isEmpty(configContent)) {
+                configContent = DBWorkbench.getPlatform()
+                    .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID)
+                    .loadConfigurationFile(CONFIG_FILE_NAME);
+            }
             
             synchronized (syncRoot) {
                 // Clear all custom dashboards
@@ -142,20 +134,11 @@ public class DashboardRegistry {
             out.flush();
             
             DBWorkbench.getPlatform()
-                .getPluginConfigurationController(UIDashboardActivator.PLUGIN_ID)
+                .getPluginConfigurationController(DashboardConstants.DASHBOARDS_PLUGIN_ID)
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
         } catch (Exception e) {
             log.error("Error saving dashboard configuration", e);
         }
-    }
-    
-    public DashboardViewTypeDescriptor getViewType(String id) {
-        for (DashboardViewTypeDescriptor descriptor : viewTypeList) {
-            if (descriptor.getId().equals(id)) {
-                return descriptor;
-            }
-        }
-        return null;
     }
 
     public List<DashboardDescriptor> getAllDashboards() {
@@ -234,20 +217,6 @@ public class DashboardRegistry {
     
             saveConfigFile();
         }
-    }
-
-    public List<DashboardViewType> getAllViewTypes() {
-        return new ArrayList<>(viewTypeList);
-    }
-
-    public List<DashboardViewType> getSupportedViewTypes(DashboardDataType dataType) {
-        List<DashboardViewType> result = new ArrayList<>();
-        for (DashboardViewType vt : viewTypeList) {
-            if (ArrayUtils.contains(vt.getSupportedTypes(), dataType)) {
-                result.add(vt);
-            }
-        }
-        return result;
     }
 
     public List<DBPNamedObject> getAllSupportedSources() {

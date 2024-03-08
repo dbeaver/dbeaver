@@ -20,6 +20,7 @@ import org.jfree.chart.axis.NumberTickUnitSource;
 import org.jfree.chart.axis.StandardTickUnitSource;
 import org.jfree.chart.axis.TickUnitSource;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.dashboard.DashboardValueType;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.time.Duration;
@@ -49,16 +50,11 @@ public class DashboardUtils {
     }
 
     public static TickUnitSource getTickUnitsSource(DashboardValueType valueType) {
-        switch (valueType) {
-            case decimal:
-                return new NumberTickUnitSource(false);
-            case integer:
-            case percent:
-                return new NumberTickUnitSource(true);
-            case bytes:
-                return new NumberTickUnitSource(true, new ByteNumberFormat());
-            default:
-                return new StandardTickUnitSource();
-        }
+        return switch (valueType) {
+            case decimal -> new NumberTickUnitSource(false);
+            case integer, percent -> new NumberTickUnitSource(true);
+            case bytes -> new NumberTickUnitSource(true, new ByteNumberFormat());
+            default -> new StandardTickUnitSource();
+        };
     }
 }

@@ -14,20 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.model.dashboard.data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Dashboard tick interval
+ * Dashboard raw dataset
  */
-public enum DashboardInterval {
+public class DashboardDataset {
 
-    millisecond,
-    second,
-    minute,
-    hour,
-    day,
-    week,
-    month,
-    year
+    private String[] columnNames;
+    private List<DashboardDatasetRow> rows = new ArrayList<>();
+
+    public DashboardDataset(String[] columnNames) {
+        this.columnNames = columnNames;
+    }
+
+    public String[] getColumnNames() {
+        return columnNames;
+    }
+
+    public List<DashboardDatasetRow> getRows() {
+        return rows;
+    }
+
+    public void addRow(DashboardDatasetRow row) {
+        rows.add(row);
+    }
 
 }

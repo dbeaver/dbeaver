@@ -14,28 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
-
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.dashboard.DashboardDataType;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
+package org.jkiss.dbeaver.model.dashboard.data;
 
 /**
- * Dashboard view type.
+ * Key/Value data.
  */
-public interface DashboardViewType {
+public class DashboardDataKeyValue {
 
-    String getId();
+    private String key;
+    private Number value;
 
-    String getTitle();
+    public DashboardDataKeyValue(String key, Number value) {
+        this.key = key;
+        this.value = value;
+    }
 
-    String getDescription();
+    public String getKey() {
+        return key;
+    }
 
-    DBPImage getIcon();
-
-    DashboardDataType[] getSupportedTypes();
-
-    DashboardRenderer createRenderer() throws DBException;
-
+    public Number getValue() {
+        return value;
+    }
 }

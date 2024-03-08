@@ -25,11 +25,13 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.dashboard.*;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.*;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardViewTypeDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -207,11 +209,12 @@ public class DashboardEditDialog extends BaseDialog {
             viewTypeCombo = UIUtils.createLabelCombo(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_combos_defaultview, UIDashboardMessages.dialog_edit_dashboard_rendering_combos_defaultview_tooltip, SWT.BORDER | SWT.READ_ONLY);
             viewTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
-                viewTypes = DashboardRegistry.getInstance().getAllViewTypes();
+                viewTypes = DashboardUIRegistry.getInstance().getAllViewTypes();
                 for (DashboardViewType viewType : viewTypes) {
                     viewTypeCombo.add(viewType.getTitle());
                 }
-                viewTypeCombo.setText(dashboardDescriptor.getDefaultViewType().getTitle());
+                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDefaultViewType());
+                viewTypeCombo.setText(viewType.getTitle());
                 if (viewTypeCombo.getSelectionIndex() < 0) {
                     viewTypeCombo.select(0);
                 }
@@ -260,7 +263,7 @@ public class DashboardEditDialog extends BaseDialog {
         dashboardDescriptor.setFetchType(DashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
         dashboardDescriptor.setQueries(queryText.getText().split("\\n\\s*\\n"));
 
-        dashboardDescriptor.setDefaultViewType((DashboardViewTypeDescriptor) viewTypes.get(viewTypeCombo.getSelectionIndex()));
+        dashboardDescriptor.setDefaultViewType(viewTypes.get(viewTypeCombo.getSelectionIndex()).getId());
         dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
         dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
         //dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));

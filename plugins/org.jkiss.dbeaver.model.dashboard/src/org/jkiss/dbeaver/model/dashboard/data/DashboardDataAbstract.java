@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.model.dashboard.data;
 
 /**
- * Dashboard container
+ * Abstract dashboard data
  */
-public interface DashboardMapQuery extends DashboardQuery {
-
-    String getId();
-
-    long getUpdatePeriod();
+public class DashboardDataAbstract {
 
 }

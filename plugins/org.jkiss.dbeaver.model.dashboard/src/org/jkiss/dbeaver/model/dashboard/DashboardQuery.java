@@ -14,24 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model.data;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Chart data.
+ * Dashboard container
  */
-public class DashboardDataChart extends DashboardDataAbstract {
+public interface DashboardQuery {
 
-    private List<DashboardDataKeyValue> keyValues = new ArrayList<>();
-
-    public List<DashboardDataKeyValue> getKeyValues() {
-        return keyValues;
-    }
-
-    public void addKeyValue(DashboardDataKeyValue keyValue) {
-        keyValues.add(keyValue);
-    }
+    String getQueryText();
 
 }

@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -35,8 +36,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,8 +48,8 @@ public class DashboardItemConfigDialog extends BaseDialog {
     private static final boolean SHOW_QUERIES_BUTTON = false;
 
     private final DashboardItemViewConfiguration dashboardConfig;
-    private DashboardViewConfiguration viewConfiguration;
-    private DashboardContainer dashboardContainer;
+    private final DashboardViewConfiguration viewConfiguration;
+    private final DashboardContainer dashboardContainer;
 
     public DashboardItemConfigDialog(Shell shell, DashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getDashboardTitle()), null);
@@ -80,9 +80,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
             UIUtils.createControlLabel(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_description).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Text descriptionText = new Text(infoGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             descriptionText.setText(CommonUtils.notEmpty(dashboardConfig.getDescription()));
-            descriptionText.addModifyListener(e -> {
-                dashboardConfig.setDescription(descriptionText.getText());
-            });
+            descriptionText.addModifyListener(e -> dashboardConfig.setDescription(descriptionText.getText()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 200;
             gd.heightHint = 50;
@@ -120,14 +118,23 @@ public class DashboardItemConfigDialog extends BaseDialog {
         {
             Group updateGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate, 2, GridData.FILL_HORIZONTAL, 0);
 
-            Text updatePeriodText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate_labels_updateperiod, String.valueOf(dashboardConfig.getUpdatePeriod()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
-            updatePeriodText.addModifyListener(e -> {
-                dashboardConfig.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardConfig.getUpdatePeriod()));
-            });
-            Text maxItemsText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate_labels_maxitems, String.valueOf(dashboardConfig.getMaxItems()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
-            maxItemsText.addModifyListener(e -> {
-                dashboardConfig.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardConfig.getMaxItems()));
-            });
+            Text updatePeriodText = UIUtils.createLabelText(
+                updateGroup,
+                UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate_labels_updateperiod,
+                String.valueOf(dashboardConfig.getUpdatePeriod()),
+                SWT.BORDER,
+                new GridData(GridData.FILL_HORIZONTAL));
+            updatePeriodText.addModifyListener(e ->
+                dashboardConfig.setUpdatePeriod(
+                    CommonUtils.toLong(updatePeriodText.getText(), dashboardConfig.getUpdatePeriod())));
+            Text maxItemsText = UIUtils.createLabelText(
+                updateGroup,
+                UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate_labels_maxitems,
+                String.valueOf(dashboardConfig.getMaxItems()),
+                SWT.BORDER,
+                new GridData(GridData.FILL_HORIZONTAL));
+            maxItemsText.addModifyListener(e ->
+                dashboardConfig.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardConfig.getMaxItems())));
 /*
             Text maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardConfig.getMaxAge()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             maxAgeText.addModifyListener(e -> {
@@ -142,7 +149,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
             Combo typeCombo = UIUtils.createLabelCombo(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view_tooltip, SWT.BORDER | SWT.READ_ONLY);
             typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
-                List<DashboardViewType> viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
+                List<DashboardViewType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
                 for (DashboardViewType viewType : viewTypes) {
                     typeCombo.add(viewType.getTitle());
                 }

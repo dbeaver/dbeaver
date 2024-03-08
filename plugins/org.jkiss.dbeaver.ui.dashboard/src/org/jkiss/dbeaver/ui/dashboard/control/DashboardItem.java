@@ -31,11 +31,15 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.dashboard.*;
+import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.*;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 
 import java.util.Date;
 import java.util.List;
@@ -43,7 +47,7 @@ import java.util.List;
 public class DashboardItem extends Composite implements DashboardContainer {
 
     public static final int DEFAULT_HEIGHT = 200;
-    private DashboardList groupContainer;
+    private final DashboardList groupContainer;
     private final DashboardItemViewConfiguration dashboardConfig;
 
     private Date lastUpdateTime;
@@ -83,7 +87,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             titleComposite.setLayout(fillLayout);
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
-            titleLabel.setText("  " + dashboardConfig.getDashboardDescriptor().getName());
+            titleLabel.setText(dashboardConfig == null ? dashboardId : "  " + dashboardConfig.getDashboardDescriptor().getName());
         }
 
         chartComposite = new Composite(this, SWT.NONE);

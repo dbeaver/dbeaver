@@ -34,13 +34,15 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardViewTypeDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -90,8 +92,8 @@ public class DashboardManagerDialog extends BaseDialog {
                 @Override
                 public Object[] getChildren(Object parentElement) {
                     List<? extends DBPNamedObject> result = null;
-                    if (parentElement instanceof List) {
-                        result = (List) parentElement;
+                    if (parentElement instanceof List list) {
+                        result = list;
                     } else if (parentElement instanceof DBPDataSourceProviderDescriptor) {
                         result = DashboardRegistry.getInstance().getDashboards((DBPDataSourceProviderDescriptor)parentElement, false);
                     } else if (parentElement instanceof DBPDriver) {
@@ -106,10 +108,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
                 @Override
                 public boolean hasChildren(Object element) {
-                    if (element instanceof DashboardDescriptor) {
-                        return false;
-                    }
-                    return true;
+                    return !(element instanceof DashboardDescriptor);
                 }
             });
             treeViewer.setLabelProvider(new CellLabelProvider() {
@@ -118,17 +117,19 @@ public class DashboardManagerDialog extends BaseDialog {
                     DBPNamedObject element = (DBPNamedObject) cell.getElement();
                     if (cell.getColumnIndex() == 0) {
                         cell.setText(element.getName());
-                        if (element instanceof DBPDriver) {
-                            cell.setImage(DBeaverIcons.getImage(((DBPDriver) element).getIcon()));
-                        } else if (element instanceof DBPDataSourceProviderDescriptor) {
-                            cell.setImage(DBeaverIcons.getImage(((DBPDataSourceProviderDescriptor) element).getIcon()));
-                        } else if (element instanceof DashboardDescriptor) {
-                            DashboardDescriptor dashboardDescriptor = (DashboardDescriptor) element;
-                            DBPImage icon;
+                        if (element instanceof DBPDriver driver) {
+                            cell.setImage(DBeaverIcons.getImage(driver.getIcon()));
+                        } else if (element instanceof DBPDataSourceProviderDescriptor dspd) {
+                            cell.setImage(DBeaverIcons.getImage(dspd.getIcon()));
+                        } else if (element instanceof DashboardDescriptor dashboardDescriptor) {
+                            DBPImage icon = null;
                             if (dashboardDescriptor.isCustom()) {
                                 icon = DBIcon.TYPE_OBJECT;
                             } else {
-                                icon = dashboardDescriptor.getDefaultViewType().getIcon();
+                                DashboardViewTypeDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDefaultViewType());
+                                if (viewType != null) {
+                                    icon = viewType.getIcon();
+                                }
                             }
                             if (icon != null) {
                                 cell.setImage(DBeaverIcons.getImage(icon));

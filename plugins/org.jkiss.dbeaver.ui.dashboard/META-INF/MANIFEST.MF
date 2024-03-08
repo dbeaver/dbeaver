@@ -19,16 +19,16 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.eclipse.ui.ide,
  org.eclipse.ui.views,
  org.apache.commons.jexl,
- org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.tasks.ui,
- org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.charts,
+ org.jkiss.dbeaver.ui;visibility:=reexport,
+ org.jkiss.dbeaver.ui.charts;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.navigator
+ org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.model.dashboard;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ui.dashboard.control,
  org.jkiss.dbeaver.ui.dashboard.internal,
  org.jkiss.dbeaver.ui.dashboard.model,
- org.jkiss.dbeaver.ui.dashboard.model.data,
  org.jkiss.dbeaver.ui.dashboard.view
 Automatic-Module-Name: org.jkiss.dbeaver.ui.dashboard
 Bundle-Localization: OSGI-INF/l10n/bundle

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
  * Dashboard value calculation
@@ -35,12 +35,10 @@ public class DashboardConstants {
     public static final DashboardValueType DEF_DASHBOARD_VALUE_TYPE = DashboardValueType.decimal;
     public static final DashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DashboardFetchType.columns;
 
-    public static final String CMD_ADD_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.add";
-    public static final String CMD_REMOVE_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.remove";
-    public static final String CMD_RESET_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.reset";
-    public static final String CMD_VIEW_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.view";
-
     public static final String DEF_DASHBOARD_VIEW_TYPE = "timeseries";
     public static final DashboardInterval DEF_DASHBOARD_INTERVAL = DashboardInterval.millisecond;
+
+    public static final String DASHBOARDS_PLUGIN_ID = "org.jkiss.dbeaver.model.dashboard";
+    public static final String DASHBOARDS_LEGACY_PLUGIN_ID = "org.jkiss.dbeaver.model.ui.dashboard";
 
 }

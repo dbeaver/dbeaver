@@ -28,12 +28,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
 import java.util.ArrayList;
@@ -43,9 +43,9 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     private static final int ITEM_SPACING = 5;
 
-    private IWorkbenchSite site;
-    private DashboardViewContainer viewContainer;
-    private List<DashboardItem> items = new ArrayList<>();
+    private final IWorkbenchSite site;
+    private final DashboardViewContainer viewContainer;
+    private final List<DashboardItem> items = new ArrayList<>();
     private final Font boldFont;
     private DashboardItem selectedItem;
     private int listRowCount = 1;
@@ -63,9 +63,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         fontData[0].setStyle(SWT.BOLD);
         boldFont = new Font(normalFont.getDevice(), fontData[0]);
 
-        addDisposeListener(e -> {
-            boldFont.dispose();
-        });
+        addDisposeListener(e -> boldFont.dispose());
 
         this.setForeground(UIStyles.getDefaultTextForeground());
         this.setBackground(UIStyles.getDefaultTextBackground());
@@ -137,13 +135,13 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     void handleKeyEvent(KeyEvent e) {
         switch (e.keyCode) {
             case SWT.CR:
-                ActionUtils.runCommand(DashboardConstants.CMD_VIEW_DASHBOARD, DashboardList.this.site);
+                ActionUtils.runCommand(DashboardUIConstants.CMD_VIEW_DASHBOARD, DashboardList.this.site);
                 break;
             case SWT.DEL:
-                ActionUtils.runCommand(DashboardConstants.CMD_REMOVE_DASHBOARD, DashboardList.this.site);
+                ActionUtils.runCommand(DashboardUIConstants.CMD_REMOVE_DASHBOARD, DashboardList.this.site);
                 break;
             case SWT.INSERT:
-                ActionUtils.runCommand(DashboardConstants.CMD_ADD_DASHBOARD, DashboardList.this.site);
+                ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, DashboardList.this.site);
                 break;
             case SWT.ARROW_LEFT:
             case SWT.ARROW_UP:
@@ -179,8 +177,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     private void registerContextMenu() {
         MenuManager menuMgr = new MenuManager();
-        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardConstants.CMD_ADD_DASHBOARD));
-        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardConstants.CMD_RESET_DASHBOARD));
+        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_ADD_DASHBOARD));
+        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardUIConstants.CMD_RESET_DASHBOARD));
         setMenu(menuMgr.createContextMenu(this));
 
         addDisposeListener(e -> menuMgr.dispose());

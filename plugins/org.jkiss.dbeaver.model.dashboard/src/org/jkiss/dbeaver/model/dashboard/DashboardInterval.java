@@ -14,14 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.model.dashboard;
 
 /**
- * Dashboard data type
+ * Dashboard tick interval
  */
-public enum DashboardDataType {
+public enum DashboardInterval {
 
-    timeseries,
-    statistics
+    millisecond,
+    second,
+    minute,
+    hour,
+    day,
+    week,
+    month,
+    year
 
 }

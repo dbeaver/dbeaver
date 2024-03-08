@@ -14,28 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model.data;
+package org.jkiss.dbeaver.model.dashboard.data;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Dashboard dataset row
+ * Histogram data.
  */
-public class DashboardDatasetRow {
+public class DashboardDataHistogram extends DashboardDataAbstract {
 
-    private Date timestamp;
-    private Object[] values;
+    private List<DashboardDataSeries> seriesList = new ArrayList<>();
 
-    public DashboardDatasetRow(Date timestamp, Object[] values) {
-        this.timestamp = timestamp;
-        this.values = values;
+    public List<DashboardDataSeries> getSeries() {
+        return seriesList;
     }
 
-    public Date getTimestamp() {
-        return timestamp;
+    public void addSeries(DashboardDataSeries series) {
+        seriesList.add(series);
     }
 
-    public Object[] getValues() {
-        return values;
-    }
 }
