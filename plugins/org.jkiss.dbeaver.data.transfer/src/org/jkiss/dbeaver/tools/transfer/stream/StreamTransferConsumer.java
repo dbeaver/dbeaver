@@ -220,7 +220,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     if (!ContentUtils.isTextContent((DBDContent) value)) {
                         switch (settings.getLobExtractType()) {
                             case SKIP:
-                                // Set it it null
+                                // Set if it null
                                 value = null;
                                 break;
                             case INLINE:

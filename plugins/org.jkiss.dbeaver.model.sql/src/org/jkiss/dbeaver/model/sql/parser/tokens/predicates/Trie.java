@@ -57,7 +57,7 @@ public class Trie<T, V> {
          */
         public final List<T> childKeys;
         /**
-         * list of children nodes corresponding the the order of their keys in {@link #childKeys}
+         * list of children nodes corresponding the order of their keys in {@link #childKeys}
          */
         public final List<TreeNode> childNodes;
         /**

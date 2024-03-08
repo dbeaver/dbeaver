@@ -383,7 +383,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                         return null;
                     }
                     if (level.secondPosition.offset == offset && length == 0) {
-                        // don't enter the character if if its the closing peer
+                        // don't enter the character if its the closing peer
                         return new ExitFlags(ILinkedModeListener.UPDATE_CARET, false);
                     }
                 }
