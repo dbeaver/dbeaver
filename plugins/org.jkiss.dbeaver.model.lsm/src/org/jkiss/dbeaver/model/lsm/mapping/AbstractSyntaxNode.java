@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.XTreeNodeBase;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
 
 import java.util.*;
 import java.util.function.Function;
@@ -247,6 +248,33 @@ public abstract class AbstractSyntaxNode implements LSMElement {
             }
         }
         return -(low + 1);  // key not found
+    }
+    
+    public static <T, K> List<T> orderedInsert(
+            @Nullable List<T> list,
+            @NotNull Function<T, K> keyGetter,
+            @NotNull T value,
+            @NotNull Comparator<K> comparator
+    ) {
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        if (list.isEmpty()) {
+            list.add(value);
+        } else { 
+            K key = keyGetter.apply(value);
+            K lastKey = keyGetter.apply(list.get(list.size() - 1));
+            if (comparator.compare(key, lastKey) > 0) {
+                list.add(value);    
+            } else {
+                int index = AbstractSyntaxNode.binarySearchByKey(list, keyGetter, key, comparator);
+                if (index < 0) {
+                    index = ~index;
+                }
+                list.add(index, value);
+            }
+        }
+        return list;
     }
 }
 

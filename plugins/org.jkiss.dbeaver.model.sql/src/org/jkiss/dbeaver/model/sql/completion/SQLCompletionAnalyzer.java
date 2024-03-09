@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzer;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerImpl;
-import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerNew;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerOld;
 import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
@@ -93,8 +92,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         if (prefStore.getBoolean(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE)) {
-            // tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
-            tableRefsAnalyzer = new TableReferencesAnalyzerNew(request, this.monitor);
+            tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
         } else {
             tableRefsAnalyzer = new TableReferencesAnalyzerOld(request);
         }

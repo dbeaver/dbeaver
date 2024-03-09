@@ -42,21 +42,20 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext.SQLDocumentSyntaxContextListener;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.model.*;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionResultModel.CompleteTupleSpec;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQuerySelectionResultModel.TupleSpec;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext.SQLDocumentSyntaxContextListener;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.ColumnSpec;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.CompleteTupleSpec;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionResultModel.TupleSpec;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -684,7 +683,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     this.makeNode(
                         node,
                         flattenedExpr,
-                        prepareQueryPreview(flattenedExpr.getContent()),
+                        prepareQueryPreview(flattenedExpr.getExprContent()),
                         DBIcon.TREE_FUNCTION,
                         flattenedExpr.getOperands().toArray(SQLQueryNodeModel[]::new)
                     );
@@ -944,7 +943,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitSelectTupleSpec(@NotNull TupleSpec tupleSpec, @NotNull OutlineQueryNode arg) {
-            this.makeNode(arg, tupleSpec, tupleSpec.getTableName().toIdentifierString(), UIIcon.ASTERISK);
+            this.makeNode(arg, tupleSpec, tupleSpec.getTableName().toIdentifierString() + ".*", UIIcon.ASTERISK);
             return null;
         }
 

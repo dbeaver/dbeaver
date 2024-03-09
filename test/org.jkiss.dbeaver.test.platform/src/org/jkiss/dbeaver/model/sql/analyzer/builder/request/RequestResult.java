@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.utils.Pair;
 
 import java.util.List;
@@ -132,12 +131,12 @@ public class RequestResult {
         public SQLRuleManager getRuleManager() {
             return ruleManager;
         }
-
-        @Override
-        public SQLDocumentSyntaxContext getSyntaxContext() {
-            return null;
-        }
-        
+//
+//        @Override
+//        public SQLDocumentSyntaxContext getSyntaxContext() {
+//            return null;
+//        }
+//        
         @Override
         public boolean isUseFQNames() {
             return false;

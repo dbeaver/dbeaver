@@ -45,15 +45,15 @@ Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.editors.sql.indent,
  org.jkiss.dbeaver.ui.editors.sql.internal,
  org.jkiss.dbeaver.ui.editors.sql.log,
+ org.jkiss.dbeaver.ui.editors.sql.plan,
+ org.jkiss.dbeaver.ui.editors.sql.plan.simple,
  org.jkiss.dbeaver.ui.editors.sql.preferences,
  org.jkiss.dbeaver.ui.editors.sql.preferences.format,
  org.jkiss.dbeaver.ui.editors.sql.registry,
  org.jkiss.dbeaver.ui.editors.sql.scripts,
  org.jkiss.dbeaver.ui.editors.sql.syntax,
  org.jkiss.dbeaver.ui.editors.sql.templates,
- org.jkiss.dbeaver.ui.editors.sql.util,
- org.jkiss.dbeaver.ui.editors.sql.plan,
- org.jkiss.dbeaver.ui.editors.sql.plan.simple
+ org.jkiss.dbeaver.ui.editors.sql.util
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.sql
 
