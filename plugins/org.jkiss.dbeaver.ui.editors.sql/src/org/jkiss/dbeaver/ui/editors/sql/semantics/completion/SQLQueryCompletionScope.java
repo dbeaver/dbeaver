@@ -87,15 +87,15 @@ public abstract class SQLQueryCompletionScope {
     }
 
     public static SQLQueryCompletionScope forKeywords(SQLQueryLexicalScope lexicalScope) {
-
+        throw new UnsupportedOperationException("TODO"); //TODO
     }
 
     public static SQLQueryCompletionScope forTableReferences(SQLQueryLexicalScope lexicalScope) {
-
+        throw new UnsupportedOperationException("TODO"); //TODO
     }
 
     public static SQLQueryCompletionScope forValueExpressions(SQLQueryLexicalScope lexicalScope) {
-        
+        throw new UnsupportedOperationException("TODO"); //TODO
     }
     
     

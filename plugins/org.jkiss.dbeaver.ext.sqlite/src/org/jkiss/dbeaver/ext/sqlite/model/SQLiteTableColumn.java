@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -52,6 +53,7 @@ public class SQLiteTableColumn extends GenericTableColumn implements DBPNamedObj
     }
 
     // Not a property
+    @Nullable
     @Override
     public Integer getPrecision() {
         return super.getPrecision();

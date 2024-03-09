@@ -466,7 +466,6 @@
                 <with variable="activePart">
                     <and>
                         <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
                     </and>
                 </with>
             </enabledWhen>
@@ -518,7 +517,7 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
-                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                                 </and>
                             </adapt>
                         </iterate>
@@ -548,7 +547,7 @@
                         <iterate operator="and">
                             <and>
                                 <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-                                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                             </and>
                         </iterate>
                     </with>
@@ -617,12 +616,6 @@
     </extension>
     <extension
           point="org.jkiss.dbeaver.erd.ui.routing">
-       <erdConnectionRouter
-             id="org.jkiss.dbeaver.erd.router.mikammi"
-             name="Mikami-Tabuchi (Experimental)"
-             router="org.jkiss.dbeaver.erd.ui.router.mikkami.MikamiTabuchiConnectionRouter"
-             supportAttributesAssociation="true">
-       </erdConnectionRouter>
        <erdConnectionRouter
              id="org.jkiss.dbeaver.erd.router.shortest.path"
              name="Shortest paths"

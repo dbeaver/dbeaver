@@ -95,6 +95,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String serverVersion;
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
+    private boolean supportsReltypeColumn = true;
 
     private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
     private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
@@ -456,6 +457,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } catch (Exception e) {
             log.debug("Error reading pg_enum " + e.getMessage());
             supportsEnumTable = false;
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pg_class.reltype column availability")) {
+            supportsReltypeColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "reltype");
+        } catch (Exception e) {
+            log.debug("Error reading pg_class.reltype " + e.getMessage());
+            supportsReltypeColumn = false;
         }
 
         // Read databases
@@ -926,5 +934,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean isSupportsEnumTable() {
         return supportsEnumTable;
+    }
+
+    /**
+     * Returns true if a database support pg_ctalog.reltype column. True by default.
+     */
+    public boolean isSupportsReltypeColumn() {
+        return supportsReltypeColumn;
     }
 }

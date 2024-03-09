@@ -58,6 +58,14 @@ public class DBSSecretValue {
     }
 
     @NotNull
+    public String getUniqueId() {
+        if (getSubjectId() == null) {
+            return getId();
+        }
+        return getId() + "_" + getSubjectId();
+    }
+
+    @NotNull
     public String getDisplayName() {
         return displayName;
     }
@@ -79,7 +87,7 @@ public class DBSSecretValue {
         this.displayName = displayName;
     }
 
-    public void setValue(@NotNull String value) {
+    public void setValue(@Nullable String value) {
         this.value = value;
     }
 }

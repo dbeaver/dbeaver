@@ -95,8 +95,8 @@ public class SQLDocumentSyntaxContext {
             
             SQLQuerySelectionModel model = scriptItem.item.getQueryModel();
             if (model != null) {
-                int delta = offset - scriptItem.offset;
-                return model.obtainCompletionScope(delta);    
+                int position = offset - scriptItem.offset;
+                return model.findLexicalScope(position).prepareCompletionScope();
             } else {
                 return SQLQueryCompletionScope.EMPTY;
             }

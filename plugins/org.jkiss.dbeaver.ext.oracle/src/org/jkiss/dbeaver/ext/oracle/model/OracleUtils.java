@@ -485,13 +485,16 @@ public class OracleUtils {
         if (body) {
             sourceType += " BODY";
         }
-        Pattern srcPattern = Pattern.compile("^(" + sourceType + ")\\s+(\"{0,1}\\w+\"{0,1})", Pattern.CASE_INSENSITIVE);
+        Pattern srcPattern = Pattern.compile("^(" + sourceType + ")\\s+(\"?\\w+\"?)(?:\\.(\"?\\w+\"?))?", Pattern.CASE_INSENSITIVE);
         Matcher matcher = srcPattern.matcher(source);
         if (matcher.find()) {
-            return
-                "CREATE OR REPLACE " + matcher.group(1) + " " +
-                DBUtils.getQuotedIdentifier(object.getSchema()) + "." + matcher.group(2) +
-                source.substring(matcher.end());
+            if (matcher.group(3) == null) {
+                return "CREATE OR REPLACE " + matcher.group(1) + " " +
+                    DBUtils.getQuotedIdentifier(object.getSchema()) + "." + matcher.group(2) +
+                    source.substring(matcher.end());
+            } else {
+                return "CREATE OR REPLACE " + source;
+            }
         }
         return source;
     }

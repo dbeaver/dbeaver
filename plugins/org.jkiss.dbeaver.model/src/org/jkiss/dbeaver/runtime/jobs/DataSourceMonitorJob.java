@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -47,7 +46,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.function.LongSupplier;
 
 /**
  * DataSourceMonitorJob.
@@ -99,7 +98,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         checkDataSourceAliveInWorkspace(workspace, () -> getLastUserActivityTime(lastPingTime));
     }
 
-    protected void checkDataSourceAliveInWorkspace(DBPWorkspace workspace, Supplier<Long> supplier) {
+    protected void checkDataSourceAliveInWorkspace(DBPWorkspace workspace, LongSupplier supplier) {
         for (DBPProject project : workspace.getProjects()) {
             if (project.isOpen() && project.isRegistryLoaded()) {
                 DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
@@ -110,7 +109,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
     }
 
-    private void checkDataSourceAlive(final DBPDataSourceContainer dataSourceDescriptor, Supplier<Long> supplier, SMSession smSession) {
+    private void checkDataSourceAlive(final DBPDataSourceContainer dataSourceDescriptor, LongSupplier supplier, SMSession smSession) {
         if (!dataSourceDescriptor.isConnected()) {
             return;
         }
@@ -182,12 +181,12 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
     }
 
-    private boolean endIdleTransactionOrConnection(DBPDataSourceContainer dsDescriptor, Supplier<Long> supplier, SMSession smSession) {
+    private boolean endIdleTransactionOrConnection(DBPDataSourceContainer dsDescriptor, LongSupplier supplier, SMSession smSession) {
         if (!dsDescriptor.isConnected()) {
             return false;
         }
 
-        final long lastUserActivityTime = supplier.get();
+        final long lastUserActivityTime = supplier.getAsLong();
         if (lastUserActivityTime < 0) {
             return false;
         }
@@ -271,6 +270,9 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
+        if (container.getDriver().isEmbedded() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return 0;
+        }
         DBPConnectionConfiguration config = container.getConnectionConfiguration();
         if (!config.isCloseIdleConnection()) {
             return 0;
@@ -307,8 +309,11 @@ public class DataSourceMonitorJob extends AbstractJob {
         return Math.max(0, ttlSeconds);
     }
 
-    public long getLastUserActivityTime(long lastUserActivityTime) {
+    public static long getLastUserActivityTime() {
+        return getLastUserActivityTime(-1);
+    }
 
+    public static long getLastUserActivityTime(long lastUserActivityTime) {
         if (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop app) {
             lastUserActivityTime = app.getLastUserActivityTime();
         }

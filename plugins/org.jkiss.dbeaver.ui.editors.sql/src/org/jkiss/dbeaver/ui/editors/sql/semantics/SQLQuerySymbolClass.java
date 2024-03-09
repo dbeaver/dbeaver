@@ -31,6 +31,9 @@ public enum SQLQuerySymbolClass {
     COLUMN(SQLTokenType.T_COLUMN),
     COLUMN_DERIVED(SQLTokenType.T_COLUMN_DERIVED),
     COMPOSITE_FIELD(SQLTokenType.T_COMPOSITE_FIELD),
+    SQL_BATCH_VARIABLE(SQLTokenType.T_SQL_VARIABLE),
+    DBEAVER_VARIABLE(SQLTokenType.T_VARIABLE),
+    DBEAVER_PARAMETER(SQLTokenType.T_PARAMETER),
     ERROR(SQLTokenType.T_SEMANTIC_ERROR);
     
     private final SQLTokenType tokenType;

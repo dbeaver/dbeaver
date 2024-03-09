@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.feature"
       label="%featureName"
-      version="1.0.116.qualifier"
+      version="1.0.117.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -28,7 +28,7 @@
    <plugin id="org.jkiss.dbeaver.ext.derby" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.dameng" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.duckdb" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.elasticsearch" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.es" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.exasol" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.firebird" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.greenplum" version="0.0.0" />
@@ -42,7 +42,6 @@
    <plugin id="org.jkiss.dbeaver.ext.netezza" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.oceanbase" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.tidb" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.opendistro" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.phoenix" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.snowflake.core" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.spanner" version="0.0.0" />

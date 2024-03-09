@@ -277,7 +277,8 @@ public class Main {
     private static final String KEY_CONFIGINI_TIMESTAMP = "configIniTimestamp"; //$NON-NLS-1$
     private static final String PROP_IGNORE_USER_CONFIGURATION = "eclipse.ignoreUserConfiguration"; //$NON-NLS-1$
 
-    private static final String DBEAVER_CONFIGURATION_LOCTION = "@data.home/DBeaverData/install-data";
+    public static final String DBEAVER_DATA_FOLDER = "DBeaverData";
+    private static final String DBEAVER_INSTALL_FOLDER = "install-data";
     private static final String ENV_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
     private static final String LOCATION_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
     private static final String LOCATION_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
@@ -1808,24 +1809,47 @@ public class Main {
      * @return url of location
      */
     private URL buildProductURL() {
-        String productConfigurationLocation = DBEAVER_CONFIGURATION_LOCTION;
-        String base = "";
-        if (Constants.OS_WIN32.equals(getOS())) {
-            base = resolveEnv(productConfigurationLocation, DB_DATA_HOME, ENV_DATA_HOME_WIN);
-        } else if (Constants.OS_MACOSX.equals(getOS())) {
-            base = resolveLocation(productConfigurationLocation, DB_DATA_HOME, LOCATION_DATA_HOME_MAC);
-        } else {
-            base = resolveLocation(productConfigurationLocation, DB_DATA_HOME, LOCATION_DATA_HOME_UNIX);
+        String productConfigurationLocation;
+        String base = getWorkingDirectory(DBEAVER_DATA_FOLDER);
+        try {
+            String productPath = getProductProperties();
+            Path basePath = Paths.get(base, DBEAVER_INSTALL_FOLDER, productPath);
+            productConfigurationLocation = basePath.toFile().getAbsolutePath();
+            return buildURL(productConfigurationLocation, true);
+        } catch (IOException e) {
+            if (debug)
+                System.out.println("Can not read product properties. " + e.getMessage()); //$NON-NLS-1$
         }
-        String appVersion = getProductVersion();
-        Path basePath = null;
-        if (appVersion != null && !appVersion.isEmpty()) {
-            basePath = Paths.get(base, appVersion);
+        return null;
+    }
+
+    public static String getWorkingDirectory(String defaultWorkspaceLocation) {
+        String osName = (System.getProperty("os.name")).toUpperCase();
+        String workingDirectory;
+        if (osName.contains("WIN")) {
+            String appData = System.getenv("AppData");
+            if (appData == null) {
+                appData = System.getProperty("user.home");
+            }
+            workingDirectory = appData + "\\" + defaultWorkspaceLocation;
+        } else if (osName.contains("MAC")) {
+            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
         } else {
-            basePath = Paths.get(base);
+            // Linux
+            String dataHome = System.getProperty("XDG_DATA_HOME");
+            if (dataHome == null) {
+                dataHome = System.getProperty("user.home") + "/.local/share";
+            }
+            String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
+            String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;
+            if (!new File(goodWorkingDir).exists() && new File(badWorkingDir).exists()) {
+                // Let's use bad working dir if it exists (#6316)
+                workingDirectory = badWorkingDir;
+            } else {
+                workingDirectory = goodWorkingDir;
+            }
         }
-        productConfigurationLocation = basePath.toFile().getAbsolutePath();
-        return buildURL(productConfigurationLocation, true);
+        return workingDirectory;
     }
 
     private String resolveEnv(String source, String var, String prop) {
@@ -1841,28 +1865,31 @@ public class Main {
         return result.replaceFirst("^~", System.getProperty(PROP_USER_HOME));
     }
 
-    private String getProductVersion() {
-        String appVersion = "";
+    private String getProductProperties() throws IOException {
+        String productPath = "";
         URL installURL = getInstallLocation();
         if (installURL == null) {
             return null;
         }
 
         File installDir = new File(installURL.getFile());
-        File eclipseProduct = new File(installDir, ".eclipseproduct"); //$NON-NLS-1$
+        File eclipseProduct = new File(installDir, PRODUCT_SITE_MARKER);
         if (eclipseProduct.exists()) {
             Properties props = new Properties();
             try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
                 props.load(inStream);
-                appVersion = props.getProperty(PRODUCT_SITE_VERSION);
-                if (appVersion == null || appVersion.trim().length() == 0)
+                String appId = props.getProperty(PRODUCT_SITE_ID);
+                if (appId == null || appId.trim().length() == 0) {
+                    appId = ECLIPSE;
+                }
+                String appVersion = props.getProperty(PRODUCT_SITE_VERSION);
+                if (appVersion == null || appVersion.trim().length() == 0) {
                     appVersion = ""; //$NON-NLS-1$
-
-            } catch (IOException e) {
-                // nothing
+                }
+                productPath = appId + File.separator + appVersion;
             }
         }
-        return appVersion;
+        return productPath;
     }
 
     private void processConfiguration() {

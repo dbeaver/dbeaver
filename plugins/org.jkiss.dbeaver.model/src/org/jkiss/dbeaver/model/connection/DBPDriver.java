@@ -149,6 +149,7 @@ public interface DBPDriver extends DBPNamedObject
     /**
      * @return a pair of providerId and driverId for each of driver replacement
      */
+    @NotNull
     List<Pair<String,String>> getDriverReplacementsInfo();
 
     int getPromotedScore();
@@ -173,6 +174,7 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isSupportedByLocalSystem();
 
+    @Nullable
     String getLicense();
 
     /**
@@ -190,6 +192,7 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     List<? extends DBPDriverLibrary> getDriverLibraries();
 
+    @NotNull
     List<? extends DBPDriverFileSource> getDriverFileSources();
 
     boolean needsExternalDependencies();
@@ -199,27 +202,31 @@ public interface DBPDriver extends DBPNamedObject
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
 
+    @Nullable
     String getConnectionURL(DBPConnectionConfiguration configuration);
 
     /**
      * Create copy of
-     * @return
      */
+    @NotNull
     DBPDriver createOriginalCopy();
 
     /**
      * Show supported configuration types
      */
+    @NotNull
     Set<DBPDriverConfigurationType> getSupportedConfigurationTypes();
 
     @NotNull
     Set<String> getSupportedPageFields();
 
+    @NotNull
     default String getFullId() {
         return getProviderId() + ":" + getId();
     }
 
     // Anonymized driver ID for statistics
+    @NotNull
     default String getPreconfiguredId() {
         return isCustom() ? getProviderId() + ":custom-driver" : getFullId();
     }

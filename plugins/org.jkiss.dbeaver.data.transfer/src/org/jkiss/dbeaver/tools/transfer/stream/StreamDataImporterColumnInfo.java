@@ -78,6 +78,7 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         }
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;
@@ -106,7 +107,7 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
     }
 
     @Override
-    public void setTypeName(String typeName) {
+    public void setTypeName(@NotNull String typeName) {
         this.typeName = typeName;
     }
 

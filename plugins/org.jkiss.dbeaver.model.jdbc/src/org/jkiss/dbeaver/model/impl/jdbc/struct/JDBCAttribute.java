@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -63,6 +64,7 @@ public abstract class JDBCAttribute extends AbstractAttribute implements DBSObje
         return null;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {

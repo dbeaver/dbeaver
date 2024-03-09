@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.XTreeNodeBase;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
 
 import java.util.*;
 import java.util.function.Function;

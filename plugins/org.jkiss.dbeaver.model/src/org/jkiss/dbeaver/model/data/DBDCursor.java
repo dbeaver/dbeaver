@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -28,7 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
  */
 public interface DBDCursor extends DBDValue {
 
-    DBCResultSet openResultSet(DBCSession session) throws DBCException;
+    @NotNull
+    DBCResultSet openResultSet(@NotNull DBCSession session) throws DBCException;
 
     String getCursorName();
 

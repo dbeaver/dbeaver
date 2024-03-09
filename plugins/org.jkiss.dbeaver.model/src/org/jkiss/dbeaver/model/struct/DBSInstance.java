@@ -43,7 +43,7 @@ public interface DBSInstance extends DBSObject
      */
     @DPIElement
     @NotNull
-    DBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta);
+    DBCExecutionContext getDefaultContext(@NotNull DBRProgressMonitor monitor, boolean meta);
 
     /**
      * All opened execution contexts

@@ -114,8 +114,9 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
         return super.getDescription();
     }
 
+    @Nullable
     @Override
-    public Collection<SQLServerProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<SQLServerProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return getContainer().getProcedureCache().getChildren(monitor, getContainer(), this);
     }

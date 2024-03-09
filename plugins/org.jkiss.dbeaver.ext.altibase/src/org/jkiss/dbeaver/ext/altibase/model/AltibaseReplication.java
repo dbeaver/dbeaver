@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -150,6 +151,7 @@ public class AltibaseReplication extends AltibaseGlobalObject implements DBSObje
         return this.getDataSource().getReplicationCache().refreshObject(monitor, getDataSource(), this);
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId) {
         return null;

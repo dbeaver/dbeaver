@@ -54,8 +54,12 @@ public abstract class SQLQueryNodeModel {
         }
     }
     
-    protected SQLQueryCompletionScope prepareCompletionScope(int delta) {
-        return SQLQueryCompletionScope.forKeywordsAt(this, delta);
+    public SQLQueryLexicalScope findLexicalScope(int position) {
+        int index = AbstractSyntaxNode.binarySearchByKey(this.scopes, s -> s.getInterval().a, position, Comparator.comparingInt(x -> x));
+        if (index < 0) {
+            index = ~index;
+        }
+        return this.scopes.get(index);
     }
 
     protected SQLQueryLexicalScope registerScope(STMTreeNode start, STMTreeNode end, boolean includesStart, boolean includesEnd, SQLQueryLexicalScopeKind kind) {

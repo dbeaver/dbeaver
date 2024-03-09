@@ -90,6 +90,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, Exas
         return getTable().getDataSource();
     }
 
+    @Nullable
     @Override
     public ExasolTable getAssociatedEntity() {
         return refTable;

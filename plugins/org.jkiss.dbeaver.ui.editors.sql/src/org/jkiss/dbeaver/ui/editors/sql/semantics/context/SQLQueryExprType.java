@@ -101,6 +101,11 @@ public abstract class SQLQueryExprType {
         SQLQueryExprType type = columns.isEmpty() ? SQLQueryExprType.UNKNOWN : columns.get(0).type; 
         return type;
     }
+    
+    @NotNull
+    public static SQLQueryExprType forExplicitTypeRef(@NotNull String typeRefString) {
+        return new SQLQueryExprPredefinedType(typeRefString, DBPDataKind.UNKNOWN);
+    }
 
     @NotNull
     public static SQLQueryExprType forTypedObject(

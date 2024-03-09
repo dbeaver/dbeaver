@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryValueVariableExpression;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Field;
@@ -752,22 +753,29 @@ public class SQLQueryModelRecognizer {
         STMTreeNode actualBody = actual.findChildOfName(STMKnownRuleNames.actualIdentifier).getStmChild(0);
         String rawIdentifierString = actualBody.getTextContent();
         if (actualBody.getPayload() instanceof Token t && t.getType() == SQLStandardLexer.Quotted) {
-            SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody, rawIdentifierString, rawIdentifierString);
-            this.symbolEntries.add(entry);
+            SQLQuerySymbolEntry entry = this.registerSymbolEntry(actualBody, rawIdentifierString, rawIdentifierString);
             entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.QUOTED);
             return entry;
         } else if (this.reservedWords.contains(rawIdentifierString.toUpperCase())) { // keywords are uppercased in dialect
-            SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody, rawIdentifierString, rawIdentifierString);
-            this.symbolEntries.add(entry);
+            SQLQuerySymbolEntry entry = this.registerSymbolEntry(actualBody, rawIdentifierString, rawIdentifierString);
             entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.RESERVED);
             return entry;
         } else {
             SQLDialect dialect = this.obtainSqlDialect();
             String actualIdentifierString = SQLUtils.identifierToCanonicalForm(dialect, rawIdentifierString, forceUnquotted, false);
-            SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(actualBody, actualIdentifierString, rawIdentifierString);
-            this.symbolEntries.add(entry);
-            return entry;
+            return this.registerSymbolEntry(actualBody, actualIdentifierString, rawIdentifierString);
         }
+    }
+
+    @NotNull
+    private SQLQuerySymbolEntry registerSymbolEntry(
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull String name,
+        @NotNull String rawName
+    ) {
+        SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(syntaxNode, name, rawName);
+        this.symbolEntries.add(entry);
+        return entry;
     }
     
     private static final Set<String> tableNameContainers = Set.of(
@@ -850,6 +858,7 @@ public class SQLQueryModelRecognizer {
     
     private static final Set<String> knownValueExpressionRootNames = Set.of(
         STMKnownRuleNames.valueExpression,
+        STMKnownRuleNames.valueExpressionAtom,
         STMKnownRuleNames.searchCondition,
         STMKnownRuleNames.havingClause,
         STMKnownRuleNames.whereClause,
@@ -860,7 +869,9 @@ public class SQLQueryModelRecognizer {
     private static final Set<String> knownRecognizableValueExpressionNames = Set.of(
         STMKnownRuleNames.subquery,
         STMKnownRuleNames.columnReference,
-        STMKnownRuleNames.valueReference
+        STMKnownRuleNames.valueReference,
+        STMKnownRuleNames.valueExpressionCast,
+        STMKnownRuleNames.variableExpression
     );
 
     @NotNull
@@ -921,9 +932,36 @@ public class SQLQueryModelRecognizer {
         return switch (node.getNodeKindId()) {
             case SQLStandardParser.RULE_subquery -> new SQLQueryValueSubqueryExpression(node, this.collectQueryExpression(node));
             case SQLStandardParser.RULE_valueReference -> this.collectValueReferenceExpression(node);
-            default -> throw new UnsupportedOperationException(
-                "Subquery of columnReference expected while facing with " + node.getNodeName()
+            case SQLStandardParser.RULE_valueExpressionCast -> new SQLQueryValueTypeCastExpression(
+                node,
+                this.collectValueExpression(node.getStmChild(0)),
+                node.getStmChild(2).getTextContent()
             );
+            case SQLStandardParser.RULE_variableExpression -> {
+                String rawName = node.getStmChild(0).getTextContent();
+                yield switch (rawName.charAt(0)) {
+                    case '@' -> new SQLQueryValueVariableExpression(
+                        node,
+                        this.registerSymbolEntry(node, rawName.substring(1), rawName),
+                        SQLQueryValueVariableExpression.VariableExpressionKind.BATCH_VARIABLE,
+                        rawName
+                    );
+                    case '$' -> new SQLQueryValueVariableExpression(
+                        node,
+                        this.registerSymbolEntry(node, rawName.substring(2, rawName.length() - 1), rawName),
+                        SQLQueryValueVariableExpression.VariableExpressionKind.CLIENT_VARIABLE,
+                        rawName
+                    );
+                    case ':' -> new SQLQueryValueVariableExpression(
+                        node,
+                        this.registerSymbolEntry(node, rawName.substring(1), rawName),
+                        SQLQueryValueVariableExpression.VariableExpressionKind.CLIENT_PARAMETER,
+                        rawName
+                    );
+                    default -> throw new UnsupportedOperationException("Unsupported variable expression: " + node.getTextContent());
+                };
+            }
+            default -> throw new UnsupportedOperationException("Unknown expression kind " + node.getNodeName());
         };
     }
 
@@ -977,7 +1015,7 @@ public class SQLQueryModelRecognizer {
     }
     
     @Nullable
-    public static SQLQuerySymbolClass tryFallbackSymbolForStringLiteral (
+    public static SQLQuerySymbolClass tryFallbackSymbolForStringLiteral(
         @NotNull SQLDialect dialect,
         @NotNull SQLQuerySymbolEntry symbolEntry,
         boolean isColumnResolved

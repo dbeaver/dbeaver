@@ -26,6 +26,7 @@ public interface DBSEntityAssociation extends DBSEntityConstraint {
     @Nullable
     DBSEntityConstraint getReferencedConstraint();
 
+    @Nullable
     DBSEntity getAssociatedEntity();
 
     // target entity

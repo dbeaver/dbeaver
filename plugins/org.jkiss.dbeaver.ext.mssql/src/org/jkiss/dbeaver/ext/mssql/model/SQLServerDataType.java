@@ -35,7 +35,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * SQL Server data type
@@ -205,11 +208,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return sql.toString();
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
+    @NotNull
     @Property(viewable = false, order = 70)
     @Override
     public String getFullTypeName() {
@@ -221,17 +226,20 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return valueType;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, order = 20)
     public Integer getScale() {
         return scale == 0 ? null : scale;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, order = 21)
     public Integer getPrecision() {
@@ -522,12 +530,12 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
