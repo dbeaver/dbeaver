@@ -69,6 +69,8 @@ public class SQLConstants {
     public static final String KEYWORD_EXPLAIN = "EXPLAIN";
 
     public static final String KEYWORD_CASE = "CASE";
+    
+    public static final String KEYWORD_QUALIFY = "QUALIFY";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
     public static final String DATA_TYPE_BIGINT = "BIGINT";
@@ -575,7 +577,8 @@ public class SQLConstants {
 //        "USER_DEFINED_TYPE_SCHEMA",
         "WORK",
         "WRITE",
-        "ZONE"
+        "ZONE",
+        KEYWORD_QUALIFY
     };
 
     public static final String[] SQL2003_FUNCTIONS = {
