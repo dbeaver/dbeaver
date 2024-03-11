@@ -23,12 +23,41 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 /**
  * Dashboard context
  */
-public interface DBDashboardContext {
+public class DBDashboardContext {
 
     @Nullable
-    DBPProject getProject();
+    private DBPProject project;
 
     @Nullable
-    DBPDataSourceContainer getDataSource();
+    private DBPDataSourceContainer dataSource;
 
+    public DBDashboardContext() {
+    }
+
+    public DBDashboardContext(@Nullable DBPProject project) {
+        this.project = project;
+    }
+
+    public DBDashboardContext(@Nullable DBPDataSourceContainer dataSource) {
+        this.project = dataSource == null ? null : dataSource.getProject();
+        this.dataSource = dataSource;
+    }
+
+    @Nullable
+    public DBPProject getProject() {
+        return project;
+    }
+
+    public void setProject(@Nullable DBPProject project) {
+        this.project = project;
+    }
+
+    @Nullable
+    public DBPDataSourceContainer getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(@Nullable DBPDataSourceContainer dataSource) {
+        this.dataSource = dataSource;
+    }
 }

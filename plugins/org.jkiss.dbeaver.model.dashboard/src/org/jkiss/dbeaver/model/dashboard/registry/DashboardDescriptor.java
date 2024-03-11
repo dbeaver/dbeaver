@@ -116,7 +116,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
         this.provider = registry.getDashboardProvider(providerId);
         if (provider == null) {
-            log.error("Dashboard provider '" + providerId + "' not found");
+            log.error("Dashboard provider '" + providerId + "' not found for predefined dashboard '" + id + "'");
         }
 
         this.id = config.getAttribute("id");
@@ -175,6 +175,15 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
 
         this.id = config.getAttribute("id");
+        String providerId = config.getAttribute("provider");
+        if (CommonUtils.isEmpty(providerId)) {
+            providerId = DashboardConstants.DEF_DASHBOARD_PROVIDER;
+        }
+        this.provider = registry.getDashboardProvider(providerId);
+        if (provider == null) {
+            log.error("Dashboard provider '" + providerId + "' not found for saved dashboard '" + this.id + "'");
+        }
+
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.group = config.getAttribute("group");
@@ -212,6 +221,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         super(source.getPluginId());
 
         this.id = source.id;
+        this.provider = source.provider;
         this.name = source.name;
         this.description = source.description;
         this.group = source.group;
@@ -488,6 +498,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     void serialize(XMLBuilder xml) throws IOException {
         xml.addAttribute("id", id);
+        if (provider != null) {
+            xml.addAttribute("provider", provider.getId());
+        }
         xml.addAttribute("label", name);
         if (!CommonUtils.isEmpty(description)) {
             xml.addAttribute("description", description);
@@ -525,15 +538,15 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
 
         for (DataSourceMapping mapping : dataSourceMappings) {
-            xml.startElement("datasource");
-            mapping.serialize(xml);
-            xml.endElement();
+            try (var ignored = xml.startElement("datasource")) {
+                mapping.serialize(xml);
+            }
         }
 
         for (QueryMapping qm : queries) {
-            xml.startElement("query");
-            qm.serialize(xml);
-            xml.endElement();
+            try (var ignored = xml.startElement("query")) {
+                qm.serialize(xml);
+            }
         }
 
         this.isCustom = true;

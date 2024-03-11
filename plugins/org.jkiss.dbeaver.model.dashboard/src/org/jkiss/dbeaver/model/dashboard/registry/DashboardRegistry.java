@@ -70,6 +70,17 @@ public class DashboardRegistry {
                 dashboardProviders.put(provider.getId(), provider);
             }
         }
+
+/*
+        // Load all static dashboards
+        DBDashboardContext staticContext = new DBDashboardContext();
+        for (DBDashboardProvider dp : dashboardProviders.values()) {
+            for (DBDashboard dashboard : dp.loadDashboards(new VoidProgressMonitor(), staticContext)) {
+                dashboards.put(dashboard.getId(), dashboard);
+            }
+        }
+*/
+
         // Load map queries
         for (IConfigurationElement ext : extElements) {
             if ("mapQuery".equals(ext.getName())) {
