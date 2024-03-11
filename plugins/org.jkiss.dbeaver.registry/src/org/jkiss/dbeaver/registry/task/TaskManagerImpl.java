@@ -308,7 +308,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
-        final IStatus result = job.run(monitor);
+        final IStatus result = job.runDirectly(monitor);
         final Throwable error = result.getException();
         if (error != null) {
             if (error instanceof DBException e) {
