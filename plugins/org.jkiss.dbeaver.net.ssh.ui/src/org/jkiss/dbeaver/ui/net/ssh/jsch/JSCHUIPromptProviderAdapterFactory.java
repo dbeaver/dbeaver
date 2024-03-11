@@ -20,17 +20,17 @@ package org.jkiss.dbeaver.ui.net.ssh.jsch;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider;
-import org.jkiss.dbeaver.model.net.ssh.SSHSessionControllerJsch;
+import org.jkiss.dbeaver.model.net.ssh.JschSessionController;
 
 public class JSCHUIPromptProviderAdapterFactory implements IAdapterFactory {
 
     private static final Log log = Log.getLog(JSCHUIPromptProviderAdapterFactory.class);
 
-    private static final Class<?>[] CLASSES = new Class[] { SSHSessionControllerJsch.class };
+    private static final Class<?>[] CLASSES = new Class[] { JschSessionController.class };
     
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-        if (adaptableObject instanceof SSHSessionControllerJsch) {
+        if (adaptableObject instanceof JschSessionController) {
             if (adapterType == JSCHUserInfoPromptProvider.class) {
                 try {
                     return adapterType.cast(new JSCHUIPromptProvider());

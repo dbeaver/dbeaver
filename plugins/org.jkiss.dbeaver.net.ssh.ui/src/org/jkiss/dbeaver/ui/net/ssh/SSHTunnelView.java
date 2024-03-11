@@ -103,7 +103,7 @@ public class SSHTunnelView extends ViewPart {
         final List<SSHSession> sessions = project.getDataSourceRegistry().getDataSources().stream()
             .map(DBPDataSourceContainer::getActiveNetworkHandlers).flatMap(Stream::of)
             .filter(handler -> handler instanceof SSHTunnelImpl)
-            .map(handler -> ((SSHTunnelImpl) handler).getSessionController())
+            .map(handler -> ((SSHTunnelImpl) handler).getController())
             .distinct()
             .map(SSHSessionController::getSessions).flatMap(Stream::of)
             .toList();

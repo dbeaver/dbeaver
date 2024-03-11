@@ -54,7 +54,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     private static final String DEF_IMPLEMENTATION = "sshj";
 
     private DBWHandlerConfiguration configuration;
-    private SSHSessionController sessionController;
+    private SSHSessionController controller;
     private SSHSession session;
     private final List<Runnable> listeners = new ArrayList<>();
 
@@ -91,12 +91,12 @@ public class SSHTunnelImpl implements DBWTunnel {
         }
 
         try {
-            sessionController = descriptor.getInstance();
+            controller = descriptor.getInstance();
         } catch (DBException e) {
             throw new DBException("Can't create SSH tunnel implementation '" + implId + "'", e);
         }
 
-        return initTunnel(monitor, configuration, connectionInfo, sessionController);
+        return initTunnel(monitor, configuration, connectionInfo, controller);
     }
 
     @Override
@@ -161,8 +161,9 @@ public class SSHTunnelImpl implements DBWTunnel {
         }
         try {
             monitor.subTask("Invalidate SSH tunnel");
-            session.invalidate(
+            controller.invalidate(
                 monitor,
+                session,
                 phase,
                 configuration,
                 dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT)
@@ -183,7 +184,12 @@ public class SSHTunnelImpl implements DBWTunnel {
     @Override
     public void closeTunnel(DBRProgressMonitor monitor) throws DBException {
         if (session != null) {
-            session.release(monitor, configuration);
+            controller.release(
+                monitor,
+                session,
+                configuration,
+                configuration.getDataSource().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT)
+            );
         }
         for (Runnable listener : this.listeners) {
             listener.run();
@@ -194,7 +200,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     @NotNull
     @Override
     public DBPDataSourceContainer[] getDependentDataSources() {
-        return sessionController.getDependentDataSources(session);
+        return controller.getDependentDataSources(session);
     }
 
     @NotNull
@@ -227,8 +233,8 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @NotNull
-    public SSHSessionController getSessionController() {
-        return sessionController;
+    public SSHSessionController getController() {
+        return controller;
     }
 
     @NotNull

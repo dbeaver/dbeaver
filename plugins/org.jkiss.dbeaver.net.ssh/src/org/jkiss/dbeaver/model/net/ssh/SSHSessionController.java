@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
@@ -69,6 +70,21 @@ public interface SSHSessionController {
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHSession origin,
         @Nullable SSHPortForwardConfiguration portForward
+    ) throws DBException;
+
+    void invalidate(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SSHSession session,
+        @NotNull DBCInvalidatePhase phase,
+        @NotNull DBWHandlerConfiguration configuration,
+        long timeout
+    ) throws DBException;
+
+    void release(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SSHSession session,
+        @NotNull DBWHandlerConfiguration configuration,
+        long timeout
     ) throws DBException;
 
     /**
