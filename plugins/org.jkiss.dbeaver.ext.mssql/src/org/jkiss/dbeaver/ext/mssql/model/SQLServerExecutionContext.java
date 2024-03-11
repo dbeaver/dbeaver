@@ -127,7 +127,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         activeDatabaseName = catalog.getName();
 
         // Send notifications
-        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog, this);
+        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
 
         if (schema != null) {
             setDefaultSchema(monitor, schema);
@@ -147,7 +147,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         activeSchemaName = schema.getName();
 
         // Send notifications
-        DBUtils.fireObjectSelectionChange(oldActiveSchema, schema, this);
+        DBUtils.fireObjectSelectionChange(oldActiveSchema, schema);
     }
 
     @Override

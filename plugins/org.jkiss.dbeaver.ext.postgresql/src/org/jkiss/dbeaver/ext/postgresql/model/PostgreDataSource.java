@@ -686,7 +686,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObjects();
     }
 
-    void setActiveDatabase(PostgreDatabase newDatabase, DBCExecutionContext context) {
+    void setActiveDatabase(PostgreDatabase newDatabase) {
         final PostgreDatabase oldDatabase = getDefaultInstance();
         if (oldDatabase == newDatabase) {
             return;
@@ -695,8 +695,44 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         activeDatabaseName = newDatabase.getName();
 
         // Notify UI
-        DBUtils.fireObjectSelect(oldDatabase, false, context);
-        DBUtils.fireObjectSelect(newDatabase, true, context);
+        DBUtils.fireObjectSelect(oldDatabase, false);
+        DBUtils.fireObjectSelect(newDatabase, true);
+    }
+
+    /**
+     * Deprecated. Database change is not supported (as it is ambiguous)
+     */
+    @Deprecated
+    public void setDefaultInstance(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase newDatabase, PostgreSchema schema)
+        throws DBException
+    {
+        final PostgreDatabase oldDatabase = getDefaultInstance();
+        if (oldDatabase != newDatabase) {
+            newDatabase.initializeMetaContext(monitor);
+            newDatabase.cacheDataTypes(monitor, false);
+        }
+
+        PostgreSchema oldDefaultSchema = null;
+        if (schema != null) {
+            oldDefaultSchema = newDatabase.getMetaContext().getDefaultSchema();
+            newDatabase.getMetaContext().changeDefaultSchema(monitor, schema, false, false);
+        }
+
+        activeDatabaseName = newDatabase.getName();
+
+        // Notify UI
+        DBUtils.fireObjectSelect(oldDatabase, false);
+        DBUtils.fireObjectSelect(newDatabase, true);
+
+        if (schema != null && schema != oldDefaultSchema) {
+            if (oldDefaultSchema != null) {
+                DBUtils.fireObjectSelect(oldDefaultSchema, false);
+            }
+            DBUtils.fireObjectSelect(schema, true);
+        }
+
+        // Close all database connections but meta (we need it to browse metadata like navigator tree)
+        oldDatabase.shutdown(monitor, true);
     }
 
     public List<String> getTemplateDatabases(DBRProgressMonitor monitor) throws DBException {

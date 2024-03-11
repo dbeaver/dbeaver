@@ -103,7 +103,7 @@ public class ExasolExecutionContext extends JDBCExecutionContext implements DBCE
         activeSchemaName = schema.getName();
 
         // Send notifications
-        DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema, this);
+        DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema);
     }
 
     @Override

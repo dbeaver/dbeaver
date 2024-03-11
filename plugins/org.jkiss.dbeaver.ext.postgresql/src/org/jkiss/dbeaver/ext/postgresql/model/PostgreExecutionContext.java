@@ -113,7 +113,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                     setOwnerInstance(catalog);
                     connect(monitor, null, null, null, false);
                 } else {
-                    getDataSource().setActiveDatabase(catalog, this);
+                    getDataSource().setActiveDatabase(catalog);
                 }
                 catalogChanged = true;
             }
@@ -128,7 +128,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
             if (catalogChanged || schemaChanged) {
-                DBUtils.fireObjectSelectionChange(oldInstance, catalog, this);
+                DBUtils.fireObjectSelectionChange(oldInstance, catalog);
             }
         } catch (DBException e) {
             throw new DBCException("Error changing default database", e);
@@ -156,7 +156,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         this.activeSchemaId = schema.getObjectId();
 
         if (reflect) {
-            DBUtils.fireObjectSelectionChange(oldActiveSchema, schema, this);
+            DBUtils.fireObjectSelectionChange(oldActiveSchema, schema);
         }
 
         return true;

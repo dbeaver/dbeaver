@@ -111,7 +111,7 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
         activeDatabaseName = catalog.getName();
 
         // Send notifications
-        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog, this);
+        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
     }
 
     private void setConnectionReadOnly(DBRProgressMonitor monitor, boolean readOnly) {
