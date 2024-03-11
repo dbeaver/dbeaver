@@ -526,6 +526,7 @@ public class DB2Table extends DB2TableBase
         }
     }
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(

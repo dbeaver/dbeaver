@@ -36,14 +36,14 @@ public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
     @Nullable
     DBPResourceHandler getResourceHandler(IResource resource);
     @Nullable
-    IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor handler, boolean forceCreate);
+    IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull DBPResourceHandlerDescriptor handler, boolean forceCreate);
     @Nullable
-    IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
+    IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
 
     /**
      * Reloads workspace contents. Creates missing projects, removes unexistent projects
      */
-    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
+    void refreshWorkspaceContents(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     @NotNull
     DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException;

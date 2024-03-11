@@ -567,7 +567,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (originalConnectionEditor instanceof IDialogPageProvider) {
             subPages = ((IDialogPageProvider) originalConnectionEditor).getDialogPages(extrasOnly, true);
 
-            if (!getDriver().isEmbedded() && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))) {
+            if ((!getDriver().isEmbedded() || CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS)))
+                && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))
+            ) {
                 // Add network tabs (for non-embedded drivers)
                 for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
                     if (driverSubstitution != null && !driverSubstitution.getInstance().isNetworkHandlerSupported(descriptor)) {

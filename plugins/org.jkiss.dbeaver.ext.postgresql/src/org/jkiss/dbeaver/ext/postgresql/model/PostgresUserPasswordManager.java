@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
@@ -37,7 +38,7 @@ public class PostgresUserPasswordManager implements DBAUserPasswordManager {
     }
 
     @Override
-    public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException {
+    public void changeUserPassword(@NotNull DBRProgressMonitor monitor, @NotNull String userName, @NotNull String newPassword, @NotNull String oldPassword) throws DBException {
         if (CommonUtils.isEmpty(newPassword)) {
             // User can set new empty password, but then we will get an error when connecting with an empty password
             throw new DBException("Password change error for user: " + userName + ". New password can not be empty.");

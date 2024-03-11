@@ -52,6 +52,7 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
         return DBSEntityType.TYPE;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return name;
@@ -62,6 +63,7 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
         return Types.STRUCT;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return DBPDataKind.STRUCT;

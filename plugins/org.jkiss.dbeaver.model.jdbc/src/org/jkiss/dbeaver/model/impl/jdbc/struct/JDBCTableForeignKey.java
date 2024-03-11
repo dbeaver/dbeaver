@@ -142,6 +142,7 @@ public abstract class JDBCTableForeignKey<
         this.updateRule = updateRule;
     }
 
+    @Nullable
     @Override
     public TABLE getAssociatedEntity()
     {

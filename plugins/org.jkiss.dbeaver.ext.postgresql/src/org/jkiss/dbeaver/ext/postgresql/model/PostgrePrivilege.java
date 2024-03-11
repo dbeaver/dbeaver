@@ -51,12 +51,12 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
         }
 
         @Override
-        public DBARole getSubject(DBRProgressMonitor monitor) throws DBException {
+        public DBARole getSubject(@NotNull DBRProgressMonitor monitor) throws DBException {
             return owner instanceof DBARole ? (DBARole) owner : (DBARole) getTargetObject(monitor);
         }
 
         @Override
-        public DBSObject getObject(DBRProgressMonitor monitor) throws DBException {
+        public DBSObject getObject(@NotNull DBRProgressMonitor monitor) throws DBException {
             return owner instanceof DBARole ? getTargetObject(monitor) : owner;
         }
 

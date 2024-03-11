@@ -53,21 +53,21 @@ public class GlobalEventManagerImpl implements DBPGlobalEventManager {
     }
 
     @Override
-    public void fireGlobalEvent(String eventId, Map<String, Object> properties) {
+    public void fireGlobalEvent(@NotNull String eventId, @NotNull Map<String, Object> properties) {
         for (DBPGlobalEventListener listener : getListenersCopy()) {
             listener.handleGlobalEvent(eventId, properties);
         }
     }
 
     @Override
-    public void addEventListener(DBPGlobalEventListener listener) {
+    public void addEventListener(@NotNull DBPGlobalEventListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
     @Override
-    public void removeEventListener(DBPGlobalEventListener listener) {
+    public void removeEventListener(@NotNull DBPGlobalEventListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
         }

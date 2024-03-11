@@ -39,7 +39,7 @@ public class OracleCLOBValueHandler extends JDBCContentValueHandler {
     public static final int MAX_PART_SIZE = 2000;
 
     @Override
-    public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
+    public void writeStreamValue(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
         DBDContentStorage contents = object.getContents(monitor);
         if (DBUtils.isNullValue(contents)) {
             writer.write("NULL");

@@ -85,6 +85,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table, DB2TableKey
         return getTable().getDataSource();
     }
 
+    @Nullable
     @Override
     public DB2Table getAssociatedEntity() {
         return refTable;

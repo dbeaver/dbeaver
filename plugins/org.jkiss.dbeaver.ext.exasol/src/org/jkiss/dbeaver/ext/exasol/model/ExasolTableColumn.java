@@ -113,11 +113,13 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType.getDataKind();
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return this.dataType.getName();
@@ -145,7 +147,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     }
 
     @Override
-    public void setDataType(ExasolDataType dataType) {
+    public void setDataType(@NotNull ExasolDataType dataType) {
         onChangeDataType(this.dataType, dataType);
         if (!this.dataType.getTypeName().equals(dataType.getTypeName()))
             this.changed = true;
@@ -164,13 +166,14 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         super.setMaxLength(maxLength);
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 39)
     public Integer getScale() {
         return super.getScale();
     }
 
-    public void setScale(Integer scale) {
+    public void setScale(@Nullable Integer scale) {
         if (!CommonUtils.equalObjects(this.scale, scale))
             this.changed = true;
         super.setScale(scale);
@@ -191,13 +194,14 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         return "";
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
     public Integer getPrecision() {
         return super.getPrecision();
     }
 
-    public void setPrecision(Integer precision) {
+    public void setPrecision(@Nullable Integer precision) {
         if (this.precision != CommonUtils.toInt(precision))
             this.changed = true;
         super.setPrecision(precision);
