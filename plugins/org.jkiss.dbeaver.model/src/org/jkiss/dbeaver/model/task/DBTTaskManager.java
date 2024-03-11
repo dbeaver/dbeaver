@@ -118,6 +118,7 @@ public interface DBTTaskManager {
      * @param task     task to run
      * @param listener task execution listener
      * @throws DBException on any error
+     * @return job that will run the task
      * @see #runTask(DBRProgressMonitor, DBTTask, DBTTaskExecutionListener)
      */
     @NotNull
