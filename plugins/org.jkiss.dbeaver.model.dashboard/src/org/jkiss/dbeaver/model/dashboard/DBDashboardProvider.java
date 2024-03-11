@@ -29,8 +29,6 @@ public interface DBDashboardProvider {
 
     String getId();
 
-    boolean supportsCustomDashboards();
-
     List<DBDashboard> loadDashboards(@NotNull DBRProgressMonitor monitor, @NotNull DBDashboardContext context)
         throws DBException;
 

@@ -36,6 +36,10 @@ public interface DBDashboard extends DBPNamedObject {
 
     boolean isCustom();
 
+    @NotNull
+    DBDashboardProvider getDashboardProvider();
+
+    @NotNull
     String getDashboardRenderer();
 
 }

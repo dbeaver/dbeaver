@@ -42,11 +42,13 @@ import java.util.List;
 /**
  * DashboardDescriptor
  */
-public class DashboardDescriptor extends AbstractContextDescriptor implements DBDashboard
-{
+public class DashboardDescriptor extends AbstractContextDescriptor implements DBDashboard {
+
     private static final Log log = Log.getLog(DashboardDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard"; //$NON-NLS-1$
+
+    private DBDashboardProvider provider;
 
     private String id;
     private String name;
@@ -105,9 +107,17 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     DashboardDescriptor(
         DashboardRegistry registry,
-        IConfigurationElement config)
-    {
+        IConfigurationElement config) {
         super(config);
+
+        String providerId = config.getAttribute("provider");
+        if (CommonUtils.isEmpty(providerId)) {
+            providerId = DashboardConstants.DEF_DASHBOARD_PROVIDER;
+        }
+        this.provider = registry.getDashboardProvider(providerId);
+        if (provider == null) {
+            log.error("Dashboard provider '" + providerId + "' not found");
+        }
 
         this.id = config.getAttribute("id");
         this.name = config.getAttribute("label");
@@ -260,8 +270,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     @Override
     @NotNull
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
@@ -270,8 +279,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     }
 
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
@@ -307,6 +315,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.dataType = dataType;
     }
 
+    @NotNull
     @Override
     public String getDashboardRenderer() {
         return renderer;
@@ -420,6 +429,12 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return isCustom;
     }
 
+    @NotNull
+    @Override
+    public DBDashboardProvider getDashboardProvider() {
+        return provider;
+    }
+
     public void setCustom(boolean custom) {
         this.isCustom = custom;
     }
@@ -435,7 +450,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
                 dataSourceMappings.add(
                     new DataSourceMapping(((DBPDataSourceProviderDescriptor) target).getId(), null, null));
             } else if (target instanceof DBPDriver) {
-                DBPDriver driver = (DBPDriver)target;
+                DBPDriver driver = (DBPDriver) target;
                 dataSourceMappings.add(new DataSourceMapping(driver.getProviderId(), driver.getId(), null));
             }
         }

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -55,12 +56,20 @@ public class DashboardRegistry {
         return instance;
     }
 
+    private final Map<String, DashboardProviderDescriptor> dashboardProviders = new LinkedHashMap<>();
     private final Map<String, DashboardMapQueryDescriptor> mapQueries = new LinkedHashMap<>();
-    private final Map<String, DashboardDescriptor> dashboardList = new LinkedHashMap<>();
+    private final Map<String, DashboardDescriptor> dashboards = new LinkedHashMap<>();
 
     private DashboardRegistry(IExtensionRegistry registry) {
         // Load data dashboardList from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
+        // Load dashboards providers
+        for (IConfigurationElement ext : extElements) {
+            if ("provider".equals(ext.getName())) {
+                DashboardProviderDescriptor provider = new DashboardProviderDescriptor(ext);
+                dashboardProviders.put(provider.getId(), provider);
+            }
+        }
         // Load map queries
         for (IConfigurationElement ext : extElements) {
             if ("mapQuery".equals(ext.getName())) {
@@ -74,7 +83,7 @@ public class DashboardRegistry {
         for (IConfigurationElement ext : extElements) {
             if ("dashboard".equals(ext.getName())) {
                 DashboardDescriptor dashboard = new DashboardDescriptor(this, ext);
-                dashboardList.put(dashboard.getId(), dashboard);
+                dashboards.put(dashboard.getId(), dashboard);
             }
         }
 
@@ -96,12 +105,12 @@ public class DashboardRegistry {
             
             synchronized (syncRoot) {
                 // Clear all custom dashboards
-                dashboardList.values().removeIf(DashboardDescriptor::isCustom);
+                dashboards.values().removeIf(DashboardDescriptor::isCustom);
                 if (CommonUtils.isNotEmpty(configContent)) {
                     Document dbDocument = XMLUtils.parseDocument(new StringReader(configContent));
                     for (Element dbElement : XMLUtils.getChildElementList(dbDocument.getDocumentElement(), "dashboard")) {
                         DashboardDescriptor dashboard = new DashboardDescriptor(this, dbElement);
-                        dashboardList.put(dashboard.getId(), dashboard);
+                        dashboards.put(dashboard.getId(), dashboard);
                     }
                 }            
             }
@@ -119,17 +128,17 @@ public class DashboardRegistry {
             StringWriter out = new StringWriter();
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
-            xml.startElement("dashboards");
-            synchronized (syncRoot) {
-                for (DashboardDescriptor dashboard : dashboardList.values()) {
-                    if (dashboard.isCustom()) {
-                        xml.startElement("dashboard");
-                        dashboard.serialize(xml);
-                        xml.endElement();
+            try (var e = xml.startElement("dashboards")) {
+                synchronized (syncRoot) {
+                    for (DashboardDescriptor dashboard : dashboards.values()) {
+                        if (dashboard.isCustom()) {
+                            try (var e1 = xml.startElement("dashboard")) {
+                                dashboard.serialize(xml);
+                            }
+                        }
                     }
                 }
             }
-            xml.endElement();
             xml.flush();
             out.flush();
             
@@ -143,14 +152,22 @@ public class DashboardRegistry {
 
     public List<DashboardDescriptor> getAllDashboards() {
         synchronized (syncRoot) {
-            return new ArrayList<>(dashboardList.values());
+            return new ArrayList<>(dashboards.values());
         }
     }
 
     public DashboardDescriptor getDashboard(String id) {
         synchronized (syncRoot) {
-            return dashboardList.get(id);
+            return dashboards.get(id);
         }
+    }
+
+    public List<DBDashboardProvider> getDashboardProviders() {
+        return new ArrayList<>(dashboardProviders.values());
+    }
+
+    public DBDashboardProvider getDashboardProvider(String id) {
+        return dashboardProviders.get(id);
     }
 
     /**
@@ -174,7 +191,7 @@ public class DashboardRegistry {
 
         List<DashboardDescriptor> result = new ArrayList<>();
         synchronized (syncRoot) {
-            for (DashboardDescriptor dd : dashboardList.values()) {
+            for (DashboardDescriptor dd : dashboards.values()) {
                 if (dd.matches(providerId, driverId, driverClass)) {
                     if (!defaultOnly || dd.isShowByDefault()) {
                         result.add(dd);
@@ -190,13 +207,13 @@ public class DashboardRegistry {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 throw new IllegalArgumentException("The user has no permission to create dashboard configuration");
             }
-            if (dashboardList.containsKey(dashboard.getId())) {
+            if (dashboards.containsKey(dashboard.getId())) {
                 throw new IllegalArgumentException("Dashboard " + dashboard.getId() + "' already exists");
             }
             if (!dashboard.isCustom()) {
                 throw new IllegalArgumentException("Only custom dashboards can be added");
             }
-            dashboardList.put(dashboard.getId(), dashboard);
+            dashboards.put(dashboard.getId(), dashboard);
     
             saveConfigFile();
         }
@@ -207,13 +224,13 @@ public class DashboardRegistry {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 throw new IllegalArgumentException("The user has no permission to remove dashboard configuration");
             }
-            if (!dashboardList.containsKey(dashboard.getId())) {
+            if (!dashboards.containsKey(dashboard.getId())) {
                 throw new IllegalArgumentException("Dashboard " + dashboard.getId() + "' doesn't exist");
             }
             if (!dashboard.isCustom()) {
                 throw new IllegalArgumentException("Only custom dashboards can be removed");
             }
-            dashboardList.remove(dashboard.getId());
+            dashboards.remove(dashboard.getId());
     
             saveConfigFile();
         }
@@ -222,7 +239,7 @@ public class DashboardRegistry {
     public List<DBPNamedObject> getAllSupportedSources() {
         Set<DBPNamedObject> result = new LinkedHashSet<>();
         synchronized (syncRoot) {
-            for (DashboardDescriptor dd : dashboardList.values()) {
+            for (DashboardDescriptor dd : dashboards.values()) {
                 result.addAll(dd.getSupportedSources());
             }
         }

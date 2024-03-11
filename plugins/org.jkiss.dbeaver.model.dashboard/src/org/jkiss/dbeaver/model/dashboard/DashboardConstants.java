@@ -35,6 +35,7 @@ public class DashboardConstants {
     public static final DBDashboardValueType DEF_DASHBOARD_VALUE_TYPE = DBDashboardValueType.decimal;
     public static final DBDashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DBDashboardFetchType.columns;
 
+    public static final String DEF_DASHBOARD_PROVIDER = "database";
     public static final String DEF_DASHBOARD_VIEW_TYPE = "timeseries";
     public static final DBDashboardInterval DEF_DASHBOARD_INTERVAL = DBDashboardInterval.millisecond;
 
