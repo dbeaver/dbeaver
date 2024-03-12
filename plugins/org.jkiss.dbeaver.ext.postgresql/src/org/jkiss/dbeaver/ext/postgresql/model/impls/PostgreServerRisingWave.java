@@ -67,17 +67,17 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsDependencies() {
+        return false;
+    }
+
+    @Override
     public boolean supportsFunctionCreate() {
         return false;
     }
 
     @Override
     public boolean supportsRules() {
-        return false;
-    }
-
-    @Override
-    public boolean supportsRowLevelSecurity() {
         return false;
     }
 
@@ -224,5 +224,10 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
             log.warn("Can't get native DDL. Use generated one.", e);
             return null;
         }
+    }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return false;
     }
 }
