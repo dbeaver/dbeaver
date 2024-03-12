@@ -225,4 +225,9 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
             return null;
         }
     }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return false;
+    }
 }

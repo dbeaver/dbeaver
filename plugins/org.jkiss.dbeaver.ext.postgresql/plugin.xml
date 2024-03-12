@@ -33,7 +33,7 @@
         <serverType id="gcloudpg" name="Google Cloud SQL - PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud" logo="icons/google_cloud_sql_logo.png" customURL="true" cloudServer="true" needsPort="false" supportsClient="false"/>
         <serverType id="cratedb" name="CrateDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCrateDB" logo="icons/cratedb_logo.png" customURL="true"/>
         <serverType id="materialize" name="Materialize" class="org.jkiss.dbeaver.ext.postgresql.model.impls.materialize.PostgreServerMaterialize" logo="icons/materialize_logo.png" customURL="true"/>
-        <serverType id="risingwave" name="RisingWave" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerRisingWave" logo="icons/risingwave_logo.png" customURL="true"/>
+        <serverType id="risingwave" name="RisingWave" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerRisingWave" logo="icons/risingwave_logo.png" customURL="true" supportsClient="false"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.postgresql.fdw.config">
@@ -824,7 +824,7 @@
         </task>
         <task id="pgScriptExecute" name="%task.pgScriptExecute.name" description="%task.pgScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
 
         <!-- SQL tools -->
