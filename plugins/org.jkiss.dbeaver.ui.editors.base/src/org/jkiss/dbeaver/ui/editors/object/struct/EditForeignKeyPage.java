@@ -1196,7 +1196,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return virtualFK;
     }
 
-    private class FKColumnOptionsDialog extends BaseDialog {
+    private static class FKColumnOptionsDialog extends BaseDialog {
 
         private final FKColumnInfo fkColumnInfo;
         private String columnName;
@@ -1205,6 +1205,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         public FKColumnOptionsDialog(Shell parentShell, FKColumnInfo fkColumnInfo) {
             super(parentShell, "New column options", null);
             this.fkColumnInfo = fkColumnInfo;
+            this.columnName = fkColumnInfo.getCustomName();
         }
 
         @Override
