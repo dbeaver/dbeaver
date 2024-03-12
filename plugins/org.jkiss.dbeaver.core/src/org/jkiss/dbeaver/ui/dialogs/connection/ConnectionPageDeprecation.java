@@ -26,7 +26,6 @@ import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -51,14 +50,12 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
 
-        final FormText text = new FormText(composite, SWT.NO_FOCUS);
+        final FormText text = toolkit.createFormText(composite, false);
         text.setFont("header", JFaceResources.getFont("org.eclipse.jface.headerfont"));
         text.setText(driver.getNonAvailabilityReason(), true, false);
         text.setHyperlinkSettings(toolkit.getHyperlinkGroup());
         text.addHyperlinkListener(IHyperlinkListener.linkActivatedAdapter(e -> ShellUtils.launchProgram(e.getHref().toString())));
         text.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(200, 200).create());
-
-        toolkit.adapt(text, false, true);
 
         setControl(composite);
     }

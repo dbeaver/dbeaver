@@ -63,8 +63,9 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
+        context = this.source.propagateContext(context, statistics);
         if (this.alias.isNotClassified()) {
-            context = this.source.propagateContext(context, statistics).extendWithTableAlias(this.alias.getSymbol(), this);
+            context = context.extendWithTableAlias(this.alias.getSymbol(), this);
             this.alias.getSymbol().setDefinition(this.alias);
             if (this.alias.isNotClassified()) {
                 this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
