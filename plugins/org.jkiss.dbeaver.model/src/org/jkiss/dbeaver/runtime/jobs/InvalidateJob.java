@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -109,15 +108,15 @@ public class InvalidateJob extends DataSourceJob
 
         final Map<DBPDataSourceContainer, Object> locks = new HashMap<>();
         for (var it = dependentDataSources.iterator(); it.hasNext(); ) {
-            final DBPDataSourceContainer dataSourceContainer = it.next();
-            monitor.subTask("Obtain exclusive datasource lock for '" + dataSourceContainer.getName() + "'");
+            final DBPDataSourceContainer currentContainer = it.next();
+            monitor.subTask("Obtain exclusive datasource lock for '" + currentContainer.getName() + "'");
 
-            final Object lock = container.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
+            final Object lock = currentContainer.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
             if (lock == DBPExclusiveResource.TASK_PROCESED) {
                 log.debug("Datasource '" + dataSource.getContainer().getName() + "' was already invalidated");
                 it.remove();
             } else {
-                locks.put(dataSourceContainer, lock);
+                locks.put(currentContainer, lock);
             }
         }
 
@@ -127,8 +126,7 @@ public class InvalidateJob extends DataSourceJob
             return List.of();
         }
 
-        monitor.beginTask("Invalidate datasource '" + dataSource.getContainer().getName() + "'", 1);
-        log.debug("Invalidate datasource '" + container.getName() + "' (" + container.getId() + ")");
+        monitor.beginTask("Invalidate datasources", dependentDataSources.size());
 
         try {
             final List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
@@ -136,21 +134,24 @@ public class InvalidateJob extends DataSourceJob
                 invalidateResults.clear();
                 boolean networkOK = true;
 
-                monitor.subTask("Invalidate network connection");
-                for (DBWNetworkHandler nh : activeHandlers) {
-                    log.debug("\tInvalidate network handler '" + nh.getClass().getSimpleName() + "' for " + container.getId());
-                    monitor.subTask("Invalidate handler [" + nh.getClass().getSimpleName() + "]");
-                    try {
-                        nh.invalidateHandler(monitor, dataSource, phase);
-                    } catch (Exception e) {
-                        invalidateResults.add(new ContextInvalidateResult.Error(e));
-                        networkOK = false;
-                        break;
-                    }
-                }
-
                 for (DBPDataSourceContainer currentContainer : dependentDataSources) {
                     final DBPDataSource currentDataSource = currentContainer.getDataSource();
+
+                    monitor.beginTask("Invalidate datasource '" + currentContainer.getName() + "'", 1);
+                    log.debug("Invalidate datasource '" + currentContainer.getName() + "' (" + currentContainer.getId() + ")");
+
+                    monitor.subTask("Invalidate network connection");
+                    for (DBWNetworkHandler nh : activeHandlers) {
+                        log.debug("\tInvalidate network handler '" + nh.getClass().getSimpleName() + "' for " + currentContainer.getId());
+                        monitor.subTask("Invalidate handler [" + nh.getClass().getSimpleName() + "]");
+                        try {
+                            nh.invalidateHandler(monitor, currentDataSource, phase);
+                        } catch (Exception e) {
+                            invalidateResults.add(new ContextInvalidateResult.Error(e));
+                            networkOK = false;
+                            break;
+                        }
+                    }
 
                     // Invalidate datasource
                     int totalContexts = 0;
@@ -217,6 +218,12 @@ public class InvalidateJob extends DataSourceJob
                                     "Live connection count: " + goodContextsNumber + "/" + totalContexts,
                                 DBPMessageType.INFORMATION);
                         }
+                    }
+
+                    monitor.worked(1);
+
+                    if (phase == DBCInvalidatePhase.BEFORE_INVALIDATE) {
+                        monitor.worked(1);
                     }
                 }
             }
