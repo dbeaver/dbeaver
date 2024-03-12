@@ -55,6 +55,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         return dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes() {
         if (dataSource.getInfo().supportsStoredCode()) {
@@ -67,11 +68,13 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         }
     }
 
+    @NotNull
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return getSupportedObjectTypes();
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {

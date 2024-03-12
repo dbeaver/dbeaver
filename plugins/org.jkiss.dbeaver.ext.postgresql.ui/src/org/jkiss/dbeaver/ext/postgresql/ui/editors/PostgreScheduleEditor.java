@@ -375,8 +375,9 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             super(object, "Update schedule");
         }
 
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             final PostgreJobSchedule schedule = getObject();
             final StringJoiner changes = new StringJoiner(",\n\t");
 
@@ -416,8 +417,9 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             };
         }
 
+        @NotNull
         @Override
-        public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             final String name = "schedule#" + getObject().getObjectId();
 
             if (userParams.putIfAbsent(name, this) == null) {

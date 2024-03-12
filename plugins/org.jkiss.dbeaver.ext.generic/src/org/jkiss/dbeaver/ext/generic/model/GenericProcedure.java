@@ -114,8 +114,9 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return functionResultType;
     }
 
+    @Nullable
     @Override
-    public Collection<GenericProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {

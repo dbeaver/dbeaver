@@ -361,8 +361,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return body;
     }
 
+    @Nullable
     @Override
-    public List<PostgreProcedureParameter> getParameters(@Nullable DBRProgressMonitor monitor) {
+    public List<PostgreProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) {
         return params;
     }
 

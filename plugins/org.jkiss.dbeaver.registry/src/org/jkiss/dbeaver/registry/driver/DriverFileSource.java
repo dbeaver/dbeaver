@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverFileInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverFileSource;
@@ -44,11 +46,13 @@ public class DriverFileSource implements DBPDriverFileSource
             this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
         }
 
+        @NotNull
         @Override
         public String getName() {
             return name;
         }
 
+        @Nullable
         @Override
         public String getDescription() {
             return description;

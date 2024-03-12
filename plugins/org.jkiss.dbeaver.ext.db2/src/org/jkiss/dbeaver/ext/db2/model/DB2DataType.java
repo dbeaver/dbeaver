@@ -220,12 +220,14 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return parentNode;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
         return name;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -243,6 +245,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return typeDesc.sqlType;
     }
 
+    @Nullable
     @Override
     public Integer getPrecision()
     {
@@ -307,6 +310,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return db2Module;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 4)
     public DBPDataKind getDataKind()

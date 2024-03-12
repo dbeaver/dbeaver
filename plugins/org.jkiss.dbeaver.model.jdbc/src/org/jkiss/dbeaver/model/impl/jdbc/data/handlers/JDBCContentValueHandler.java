@@ -261,7 +261,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
+    public void writeStreamValue(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
         DBDContentStorage cs = object.getContents(monitor);
         if (!object.isNull() && cs != null) {
             if (ContentUtils.isTextContent(object)) {

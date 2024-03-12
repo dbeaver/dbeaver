@@ -237,12 +237,14 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return 0;
         }
 
+        @NotNull
         @Override
         public String getTypeName()
         {
             return attribute.getTypeName();
         }
 
+        @NotNull
         @Override
         public String getFullTypeName() {
             return attribute.getTypeName();
@@ -254,6 +256,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return attribute.getType();
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind()
         {

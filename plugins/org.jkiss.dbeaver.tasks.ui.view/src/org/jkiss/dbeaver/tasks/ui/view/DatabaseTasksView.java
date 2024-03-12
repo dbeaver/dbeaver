@@ -126,7 +126,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         projectListener = new DBPProjectListener() {
             @Override
-            public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
+            public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
                 refresh();
             }
         };

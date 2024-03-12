@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import com.sun.security.auth.module.NTSystem;
 import com.sun.security.auth.module.UnixSystem;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.*;
@@ -85,6 +86,7 @@ public class LocalWorkspaceSession extends AbstractSessionPersistent implements 
         return workspace.getAuthContext();
     }
 
+    @Nullable
     @Override
     public SMSessionPrincipal getSessionPrincipal() {
         return this;
