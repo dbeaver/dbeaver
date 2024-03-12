@@ -17,30 +17,17 @@
 
 package org.jkiss.dbeaver.ui.dashboard.control;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.jfree.chart.JFreeChart;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
-import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
-
-import java.util.List;
 
 /**
  * Dashboard chart composite
@@ -68,41 +55,7 @@ public class DashboardChartComposite extends BaseChartComposite implements DBDas
 
     @Override
     protected void fillContextMenu(IMenuManager manager) {
-        if (!isSingleChartMode()) {
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_VIEW_DASHBOARD));
-            manager.add(new Separator());
-        }
-        if (!UIUtils.isInDialog(this)) {
-            MenuManager viewMenu = new MenuManager(UIDashboardMessages.dashboard_chart_composite_menu_manager_text);
-            List<DBDashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
-            for (DBDashboardRendererType viewType : viewTypes) {
-                Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
-                    @Override
-                    public boolean isChecked() {
-                        return dashboardContainer.getDashboardViewType() == viewType;
-                    }
-
-                    @Override
-                    public void runWithEvent(Event event) {
-                        ((DBDashboardItem) dashboardContainer).getDashboardConfig().setViewType(viewType);
-                        dashboardContainer.getGroup().getView().getViewConfiguration().saveSettings();
-                        dashboardContainer.updateDashboardView();
-                    }
-                };
-                if (viewType.getIcon() != null) {
-                    changeViewAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(viewType.getIcon()));
-                }
-                viewMenu.add(changeViewAction);
-            }
-            manager.add(viewMenu);
-        }
-        if (!isSingleChartMode()) {
-            manager.add(new Separator());
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_ADD_DASHBOARD));
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_REMOVE_DASHBOARD));
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_RESET_DASHBOARD));
-        }
-        manager.add(new Separator());
+        dashboardContainer.fillDashboardContextMenu(manager, isSingleChartMode());
         super.fillContextMenu(manager);
     }
 

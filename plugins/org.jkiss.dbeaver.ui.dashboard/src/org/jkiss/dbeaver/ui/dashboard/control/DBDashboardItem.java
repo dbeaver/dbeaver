@@ -17,6 +17,10 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.apache.commons.jexl3.JexlExpression;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -25,21 +29,21 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.dashboard.*;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 
 import java.util.Date;
 import java.util.List;
@@ -88,6 +92,8 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
             titleLabel.setText(dashboardConfig == null ? dashboardId : "  " + dashboardConfig.getDashboardDescriptor().getName());
+
+            this.createContextMenu(titleLabel);
         }
 
         chartComposite = new Composite(this, SWT.NONE);
@@ -102,6 +108,16 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
         this.addPaintListener(this::paintItem);
 
         this.autoUpdateEnabled = true;
+    }
+
+    private void createContextMenu(Control control) {
+        MenuManager menuMgr = new MenuManager(null, getDashboard().getId() + "_context_menu");
+        menuMgr.addMenuListener(manager -> {
+            fillDashboardContextMenu(menuMgr, false);
+        });
+        Menu menu = menuMgr.createContextMenu(this);
+        menuMgr.setRemoveAllWhenShown(true);
+        control.setMenu(menu);
     }
 
     private void createDashboardRenderer() {
@@ -267,48 +283,13 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
     }
 
     @Override
-    public String getDashboardId() {
-        return dashboardConfig.getDashboardDescriptor().getId();
+    public DashboardDescriptor getDashboard() {
+        return dashboardConfig.getDashboardDescriptor();
     }
 
     @Override
-    public String getDashboardTitle() {
-        return dashboardConfig.getDashboardDescriptor().getName();
-    }
-
-    @Override
-    public String getDashboardDescription() {
-        return dashboardConfig.getDescription();
-    }
-
-    @Override
-    public DBDashboardRendererType getDashboardViewType() {
-        return dashboardConfig.getViewType();
-    }
-
-    @Override
-    public DBDashboardDataType getDashboardDataType() {
-        return dashboardConfig.getDashboardDescriptor().getDataType();
-    }
-
-    @Override
-    public DBDashboardCalcType getDashboardCalcType() {
-        return dashboardConfig.getDashboardDescriptor().getCalcType();
-    }
-
-    @Override
-    public DBDashboardValueType getDashboardValueType() {
-        return dashboardConfig.getDashboardDescriptor().getValueType();
-    }
-
-    @Override
-    public DBDashboardInterval getDashboardInterval() {
-        return dashboardConfig.getDashboardDescriptor().getInterval();
-    }
-
-    @Override
-    public DBDashboardFetchType getDashboardFetchType() {
-        return dashboardConfig.getDashboardDescriptor().getFetchType();
+    public DashboardItemViewConfiguration getViewConfig() {
+        return dashboardConfig;
     }
 
     @Override
@@ -424,4 +405,47 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
     public void moveViewFrom(DBDashboardItem item, boolean clearOriginal) {
         renderer.moveDashboardView(this, item, clearOriginal);
     }
+
+    @Override
+    public void fillDashboardContextMenu(
+        @NotNull IMenuManager manager,
+        boolean singleChartMode
+    ) {
+        if (!singleChartMode) {
+            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_VIEW_DASHBOARD));
+            manager.add(new Separator());
+        }
+        if (!UIUtils.isInDialog(dashboardControl)) {
+            MenuManager viewMenu = new MenuManager(UIDashboardMessages.dashboard_chart_composite_menu_manager_text);
+            List<DBDashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(getDashboard().getDataType());
+            for (DBDashboardRendererType viewType : viewTypes) {
+                Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
+                    @Override
+                    public boolean isChecked() {
+                        return getViewConfig().getViewType() == viewType;
+                    }
+
+                    @Override
+                    public void runWithEvent(Event event) {
+                        getDashboardConfig().setViewType(viewType);
+                        getGroup().getView().getViewConfiguration().saveSettings();
+                        updateDashboardView();
+                    }
+                };
+                if (viewType.getIcon() != null) {
+                    changeViewAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(viewType.getIcon()));
+                }
+                viewMenu.add(changeViewAction);
+            }
+            manager.add(viewMenu);
+        }
+        if (!singleChartMode) {
+            manager.add(new Separator());
+            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_ADD_DASHBOARD));
+            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_REMOVE_DASHBOARD));
+            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_RESET_DASHBOARD));
+        }
+        manager.add(new Separator());
+    }
+
 }

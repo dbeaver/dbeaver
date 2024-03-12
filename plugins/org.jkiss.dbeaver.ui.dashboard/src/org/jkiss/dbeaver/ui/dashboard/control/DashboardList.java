@@ -202,7 +202,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         DBDashboardItem item = (DBDashboardItem) container;
         item.dispose();
         layout(true, true);
-        viewContainer.getViewConfiguration().removeDashboard(item.getDashboardId());
+        viewContainer.getViewConfiguration().removeDashboard(item.getDashboard().getId());
         viewContainer.getViewConfiguration().saveSettings();
     }
 
@@ -432,8 +432,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
                     for (int i = 0; i < newList.size(); i++) {
                         DBDashboardItem oldItem = newList.get(i);
-                        DBDashboardItem newItem = new DBDashboardItem(DashboardList.this, oldItem.getDashboardId());
-                        DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboardId());
+                        DBDashboardItem newItem = new DBDashboardItem(DashboardList.this, oldItem.getDashboard().getId());
+                        DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboard().getId());
                         dashboardConfig.setIndex(i);
                         newItem.moveViewFrom(oldItem, true);
                     }

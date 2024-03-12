@@ -52,11 +52,11 @@ public class DashboardItemConfigDialog extends BaseDialog {
     private final DBDashboardContainer dashboardContainer;
 
     public DashboardItemConfigDialog(Shell shell, DBDashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration) {
-        super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getDashboardTitle()), null);
+        super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getDashboard().getName()), null);
 
         this.viewConfiguration = viewConfiguration;
         this.dashboardContainer = dashboardContainer;
-        this.dashboardConfig = new DashboardItemViewConfiguration(viewConfiguration.getDashboardConfig(dashboardContainer.getDashboardId()));
+        this.dashboardConfig = new DashboardItemViewConfiguration(dashboardContainer.getViewConfig());
     }
 
     @Override

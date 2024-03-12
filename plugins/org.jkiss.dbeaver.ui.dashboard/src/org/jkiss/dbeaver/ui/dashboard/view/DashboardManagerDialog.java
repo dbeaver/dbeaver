@@ -266,7 +266,7 @@ public class DashboardManagerDialog extends BaseDialog {
             providerDescriptor = DashboardRegistry.getInstance().getDashboardProvider(DashboardConstants.DEF_DASHBOARD_PROVIDER);
         }
         DashboardDescriptor newDashboard = new DashboardDescriptor(
-            providerDescriptor, "", "", "", "");
+            providerDescriptor, "", "", "", "", true);
         DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboard(newDashboard);

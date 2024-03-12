@@ -17,10 +17,14 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.apache.commons.jexl3.JexlExpression;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.dashboard.*;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
 
 import java.util.Date;
 import java.util.List;
@@ -30,23 +34,9 @@ import java.util.List;
  */
 public interface DBDashboardContainer {
 
-    String getDashboardId();
+    DashboardDescriptor getDashboard();
 
-    String getDashboardTitle();
-
-    String getDashboardDescription();
-
-    DBDashboardRendererType getDashboardViewType();
-
-    DBDashboardDataType getDashboardDataType();
-
-    DBDashboardCalcType getDashboardCalcType();
-
-    DBDashboardValueType getDashboardValueType();
-
-    DBDashboardInterval getDashboardInterval();
-
-    DBDashboardFetchType getDashboardFetchType();
+    DashboardItemViewConfiguration getViewConfig();
 
     /**
      * Maximum item counts
@@ -91,4 +81,7 @@ public interface DBDashboardContainer {
 
     Control getDashboardControl();
 
+    void fillDashboardContextMenu(
+        @NotNull IMenuManager manager,
+        boolean singleChartMode);
 }

@@ -154,7 +154,7 @@ public class DashboardUpdater {
                     }
                 });
             } catch (DBException e) {
-                log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
+                log.debug("Error reading dashboard '" + dashboard.getDashboard().getId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
             }
             monitor.worked(1);
         }
@@ -205,7 +205,7 @@ public class DashboardUpdater {
             return;
         }
         try (DBCSession session = executionContext.openSession(
-            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboardTitle() + "' data")) {
+            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboard().getName() + "' data")) {
             session.enableLogging(false);
 
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
@@ -229,7 +229,7 @@ public class DashboardUpdater {
                             }
                         }
                     } catch (Exception e) {
-                        throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e, session.getExecutionContext());
+                        throw new DBCException("Error updating dashboard " + dashboard.getDashboard().getId(), e, session.getExecutionContext());
                     }
                 }
             } finally {
@@ -301,7 +301,7 @@ public class DashboardUpdater {
 
                 Object result = dashboard.getMapFormula().evaluate(context);
                 if (result instanceof Number) {
-                    String columnName = dashboard.getDashboardTitle();
+                    String columnName = dashboard.getDashboard().getName();
                     if (!ArrayUtils.isEmpty(mapLabels)) {
                         columnName = mapLabels[0];
                     }
@@ -315,7 +315,7 @@ public class DashboardUpdater {
         }
     }
 
-    private void fetchDashboardData(DBDashboardContainer dashboard, DBCResultSet dbResults) throws DBCException {
+    private void fetchDashboardData(DBDashboardContainer dashboardContainer, DBCResultSet dbResults) throws DBCException {
         DBCResultSetMetaData meta = dbResults.getMeta();
         List<DBCAttributeMetaData> rsAttrs = meta.getAttributes();
         List<String> colNames = new ArrayList<>();
@@ -345,17 +345,17 @@ public class DashboardUpdater {
                 values[i] = dbResults.getAttributeValue(colNames.get(i));
             }
             dataset.addRow(new DashboardDatasetRow(timestamp, values));
-            if (dataset.getRows().size() >= dashboard.getDashboardMaxItems()) {
+            if (dataset.getRows().size() >= dashboardContainer.getDashboardMaxItems()) {
                 break;
             }
         }
 
-        switch (dashboard.getDashboardFetchType()) {
+        switch (dashboardContainer.getDashboard().getFetchType()) {
             case rows:
                 dataset = transposeDataset(dataset);
                 break;
         }
-        dashboard.updateDashboardData(dataset);
+        dashboardContainer.updateDashboardData(dataset);
     }
 
     private DashboardDataset transposeDataset(DashboardDataset dataset) {
@@ -419,14 +419,14 @@ public class DashboardUpdater {
         long currentTime = System.currentTimeMillis();
         DashboardListViewer viewManager = view.getDashboardListViewer();
         for (DashboardGroupContainer group : viewManager.getGroups()) {
-            for (DBDashboardContainer dashboard : group.getItems()) {
-                if (dashboard.getDashboardDataType() == DBDashboardDataType.provided) {
+            for (DBDashboardContainer dashboardContainer : group.getItems()) {
+                if (dashboardContainer.getDashboard().getDataType() == DBDashboardDataType.provided) {
                     // Skip all provided
                     continue;
                 }
-                Date lastUpdateTime = dashboard.getLastUpdateTime();
-                if (lastUpdateTime == null || (currentTime - lastUpdateTime.getTime()) >= dashboard.getUpdatePeriod()) {
-                    dashboards.add(dashboard);
+                Date lastUpdateTime = dashboardContainer.getLastUpdateTime();
+                if (lastUpdateTime == null || (currentTime - lastUpdateTime.getTime()) >= dashboardContainer.getUpdatePeriod()) {
+                    dashboards.add(dashboardContainer);
                 }
             }
         }

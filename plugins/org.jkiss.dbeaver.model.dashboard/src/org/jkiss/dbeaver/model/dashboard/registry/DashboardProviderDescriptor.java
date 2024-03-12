@@ -90,4 +90,8 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
         return getLabel();
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

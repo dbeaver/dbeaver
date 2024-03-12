@@ -36,4 +36,5 @@ public interface DashboardViewContainer extends DBPDataSourceContainerProvider {
     boolean isSingleChartMode();
 
     IWorkbenchSite getWorkbenchSite();
+
 }

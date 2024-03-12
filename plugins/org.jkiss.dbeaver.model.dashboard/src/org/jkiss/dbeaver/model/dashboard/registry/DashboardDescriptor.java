@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.dashboard.registry;
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -79,6 +80,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private boolean isCustom;
     private DBDashboardValueType valueType;
     private DBDashboardInterval interval;
+    private String dashboardURL;
 
     public static class QueryMapping implements DBDashboardQuery {
         private final String queryText;
@@ -245,7 +247,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.isCustom = source.isCustom;
     }
 
-    public DashboardDescriptor(DashboardProviderDescriptor provider, String id, String name, String description, String group) {
+    public DashboardDescriptor(
+        @NotNull DashboardProviderDescriptor provider,
+        @NotNull String id,
+        @NotNull String name,
+        @Nullable String description,
+        @Nullable String group,
+        boolean custom
+    ) {
         super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
         this.provider = provider;
         this.id = id;
@@ -264,7 +273,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.maxItems = DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT;
         this.maxAge = DashboardConstants.DEF_DASHBOARD_MAXIMUM_AGE;
 
-        this.isCustom = true;
+        this.isCustom = custom;
     }
 
     @NotNull
@@ -322,6 +331,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public void setDataType(DBDashboardDataType dataType) {
         this.dataType = dataType;
+    }
+
+    public String getDashboardURL() {
+        return dashboardURL;
+    }
+
+    public void setDashboardURL(String dashboardURL) {
+        this.dashboardURL = dashboardURL;
     }
 
     @NotNull
