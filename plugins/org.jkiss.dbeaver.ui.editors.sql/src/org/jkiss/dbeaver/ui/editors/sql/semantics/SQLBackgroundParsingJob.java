@@ -210,7 +210,7 @@ public class SQLBackgroundParsingJob {
     
     private void ensureVisibleRangeIsParsed() {
         TextViewer viewer = this.editor.getTextViewer();
-        if (viewer == null) {
+        if (viewer == null || viewer.getDocument() == null) {
             return;
         }
         int startOffset = viewer.getTopIndexStartOffset();
