@@ -35,7 +35,7 @@ public interface IDataTransferEventProcessor<T extends IDataTransferConsumer<?, 
 
     default void processError(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull Exception exception,
+        @NotNull Throwable error,
         @NotNull T consumer,
         @Nullable DBTTask task,
         @NotNull Map<String, Object> settings
