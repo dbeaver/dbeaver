@@ -194,11 +194,13 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         return DBValueFormatting.getObjectImage(attribute);
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return attribute.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(attribute);
@@ -209,6 +211,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         return attribute.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return attribute.getDataKind();
@@ -219,6 +222,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         return attribute.getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return attribute.getPrecision();

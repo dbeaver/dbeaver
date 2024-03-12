@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -63,6 +64,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
         return true;
     }
 
+    @Nullable
     @Override
     public DBSObject getObject() {
         // FIXME: we can't throw error here because too many

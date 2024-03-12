@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -27,6 +29,7 @@ import java.util.Collection;
  */
 public interface DBSParametrizedObject extends DBSObject
 {
-    Collection<? extends DBSParameter> getParameters(DBRProgressMonitor monitor) throws DBException;
+    @Nullable
+    Collection<? extends DBSParameter> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

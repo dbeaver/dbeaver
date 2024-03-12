@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -229,8 +230,9 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return charset;
     }
 
+    @Nullable
     @Override
-    public Collection<MySQLProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<MySQLProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().getProceduresCache().getChildren(monitor, getContainer(), this);
