@@ -61,6 +61,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         return super.getTable();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType == null ? super.getDataKind() : dataType.getDataKind();
@@ -83,6 +84,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         return null;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
@@ -160,7 +162,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     @Override
-    public void setDataType(FireBirdDataType dataType) {
+    public void setDataType(@NotNull FireBirdDataType dataType) {
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
     }

@@ -101,6 +101,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTableBase> implem
         return charLength;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 41)
     public Integer getScale()

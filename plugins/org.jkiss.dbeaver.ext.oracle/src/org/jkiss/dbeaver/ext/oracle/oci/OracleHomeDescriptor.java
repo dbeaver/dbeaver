@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.oci;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
@@ -42,6 +43,7 @@ public class OracleHomeDescriptor extends LocalNativeClientLocation
         this.displayName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
     }
 
+    @NotNull
     @Override
     public String getDisplayName()
     {

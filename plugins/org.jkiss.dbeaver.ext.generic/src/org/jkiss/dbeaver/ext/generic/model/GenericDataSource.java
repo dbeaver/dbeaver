@@ -246,7 +246,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor) {
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
         String queryShutdown = CommonUtils.toString(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_SHUTDOWN));
         if (!CommonUtils.isEmpty(queryShutdown)) {
             for (JDBCRemoteInstance instance : getAvailableInstances()) {

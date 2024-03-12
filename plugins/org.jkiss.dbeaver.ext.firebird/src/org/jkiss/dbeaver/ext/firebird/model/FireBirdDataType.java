@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -58,6 +59,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         this.subType = 0;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         if (fieldType == FireBirdFieldType.CHAR &&

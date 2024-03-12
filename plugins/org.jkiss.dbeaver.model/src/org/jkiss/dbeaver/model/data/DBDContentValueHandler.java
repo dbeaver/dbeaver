@@ -36,7 +36,12 @@ public interface DBDContentValueHandler extends DBDValueHandler
      * Writes content value.
      * Must use native content representation.
      */
-    void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer)
+    void writeStreamValue(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSTypedObject type,
+        @NotNull DBDContent object,
+        @NotNull Writer writer)
         throws DBCException, IOException;
 
 }

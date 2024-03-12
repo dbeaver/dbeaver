@@ -173,7 +173,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
+    public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         try {
             initExporter(session.getProgressMonitor());
         } catch (DBException e) {
@@ -321,7 +321,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         final Object document;
 
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
@@ -504,7 +504,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         try {
             if (rowsExported > 0) {
                 insertBatch(true);
@@ -998,6 +998,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return this.binding.getDataSource();
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind() {
             return this.binding.getDataKind();

@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Application feature.
  */
@@ -27,25 +30,34 @@ public class DBPApplicationFeature {
     private final String label;
     private final String description;
 
-    public DBPApplicationFeature(DBPApplicationFeature parent, String id, String label, String description) {
+    public DBPApplicationFeature(
+        @NotNull DBPApplicationFeature parent,
+        @NotNull String id,
+        @NotNull String label,
+        @Nullable String description
+    ) {
         this.parent = parent;
         this.id = id;
         this.label = label;
         this.description = description;
     }
 
+    @Nullable
     public DBPApplicationFeature getParent() {
         return parent;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getLabel() {
         return label;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }

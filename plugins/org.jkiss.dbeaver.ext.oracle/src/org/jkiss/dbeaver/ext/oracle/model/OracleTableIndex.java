@@ -99,6 +99,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
         this.nonUnique = !unique;
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId)
     {

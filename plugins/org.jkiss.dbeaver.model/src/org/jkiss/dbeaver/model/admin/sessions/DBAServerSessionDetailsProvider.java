@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.admin.sessions;
 
+import org.jkiss.code.NotNull;
+
 import java.util.List;
 
 /**
@@ -24,6 +26,7 @@ import java.util.List;
  */
 public interface DBAServerSessionDetailsProvider {
 
+    @NotNull
     List<DBAServerSessionDetails> getSessionDetails();
 
 }
