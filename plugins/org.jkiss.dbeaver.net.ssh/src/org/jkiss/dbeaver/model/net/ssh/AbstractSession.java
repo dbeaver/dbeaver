@@ -30,13 +30,10 @@ public abstract class AbstractSession implements SSHSession {
         @NotNull DBWHandlerConfiguration configuration
     ) throws DBException;
 
-    public abstract void disconnect() throws DBException;
+    public abstract void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException;
 
     @NotNull
     public abstract SSHPortForwardConfiguration setupPortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException;
-
-    @NotNull
-    public abstract SSHPortForwardConfiguration setupPortForward(@NotNull String remoteHost, int remotePort) throws DBException;
 
     public abstract void removePortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException;
 }

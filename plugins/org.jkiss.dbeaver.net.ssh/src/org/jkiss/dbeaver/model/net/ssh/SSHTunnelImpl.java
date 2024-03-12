@@ -228,7 +228,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         session = sessions[sessions.length - 1];
 
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
-        DBWUtils.updateConfigWithTunnelInfo(configuration, connectionInfo, portForward.getLocalHost(), portForward.getLocalPort());
+        DBWUtils.updateConfigWithTunnelInfo(configuration, connectionInfo, portForward.localHost(), portForward.localPort());
         return connectionInfo;
     }
 

@@ -47,15 +47,9 @@ public class JschSession extends AbstractSession {
     }
 
     @Override
-    public void disconnect() throws DBException {
+    public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
         session.disconnect();
         session = null;
-    }
-
-    @NotNull
-    @Override
-    public SSHPortForwardConfiguration setupPortForward(@NotNull String remoteHost, int remotePort) throws DBException {
-        return setupPortForward(new SSHPortForwardConfiguration("127.0.0.1", 0, remoteHost, remotePort));
     }
 
     @NotNull
@@ -63,17 +57,17 @@ public class JschSession extends AbstractSession {
     public SSHPortForwardConfiguration setupPortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException {
         try {
             final int port = session.setPortForwardingL(
-                configuration.getLocalHost(),
-                configuration.getLocalPort(),
-                configuration.getRemoteHost(),
-                configuration.getRemotePort()
+                configuration.localHost(),
+                configuration.localPort(),
+                configuration.remoteHost(),
+                configuration.remotePort()
             );
 
             return new SSHPortForwardConfiguration(
-                configuration.getLocalHost(),
+                configuration.localHost(),
                 port,
-                configuration.getRemoteHost(),
-                configuration.getRemotePort()
+                configuration.remoteHost(),
+                configuration.remotePort()
             );
         } catch (JSchException e) {
             throw new DBException("Unable to set up port forwarding", e);
@@ -83,7 +77,7 @@ public class JschSession extends AbstractSession {
     @Override
     public void removePortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException {
         try {
-            session.delPortForwardingL(configuration.getLocalHost(), configuration.getLocalPort());
+            session.delPortForwardingL(configuration.localHost(), configuration.localPort());
         } catch (JSchException e) {
             throw new DBException("Unable to remove port forwarding", e);
         }

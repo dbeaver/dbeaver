@@ -149,12 +149,12 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                 if (index == hosts.length - 1) {
                     log.debug(String.format(
                         "Set port forwarding %s:%d -> %s:%d",
-                        portForward.getLocalHost(), portForward.getLocalPort(),
-                        portForward.getRemoteHost(), portForward.getRemotePort()));
+                        portForward.localHost(), portForward.localPort(),
+                        portForward.remoteHost(), portForward.remotePort()));
                     setPortForwarding(
                         client,
-                        portForward.getLocalHost(), portForward.getLocalPort(),
-                        portForward.getRemoteHost(), portForward.getRemotePort());
+                        portForward.localHost(), portForward.localPort(),
+                        portForward.remoteHost(), portForward.remotePort());
                 }
             } catch (IOException e) {
                 closeTunnel(monitor);
