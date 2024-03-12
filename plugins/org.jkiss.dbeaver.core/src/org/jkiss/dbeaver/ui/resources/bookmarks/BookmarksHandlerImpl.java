@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -128,6 +129,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    @Nullable
     @Override
     public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         if (resource instanceof DBNBookmark) {

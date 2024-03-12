@@ -35,13 +35,14 @@ public class ClickhouseTableColumn extends GenericTableColumn {
         this.enumEntries = ClickhouseTypeParser.tryParseEnumEntries(typeName);
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return fullTypeName;
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) throws DBException {
+    public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         this.fullTypeName = fullTypeName;
         if (fullTypeName.toUpperCase().contains("ARRAY")) {
             setTypeName(fullTypeName);

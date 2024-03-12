@@ -350,6 +350,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return super.getName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return super.getFullTypeName();
@@ -371,6 +372,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return getParentObject().getDatabase();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         if (dataKind != null) {

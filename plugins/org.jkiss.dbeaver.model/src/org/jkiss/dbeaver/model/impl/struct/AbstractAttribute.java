@@ -113,6 +113,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
         this.ordinalPosition = ordinalPosition;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 20)
     public String getTypeName()
@@ -120,19 +121,20 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
         return typeName;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
     }
 
     @Override
-    public void setTypeName(String typeName) throws DBException
+    public void setTypeName(@NotNull String typeName) throws DBException
     {
         this.typeName = typeName;
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) throws DBException {
+    public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         String plainTypeName;
         int divPos = fullTypeName.indexOf("(");
         if (divPos == -1) {
@@ -192,11 +194,12 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
     }
 
     @Override
-    public void setScale(Integer scale)
+    public void setScale(@Nullable Integer scale)
     {
         this.scale = scale == null ? -1 : scale;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
     public Integer getPrecision()
@@ -205,7 +208,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
     }
 
     @Override
-    public void setPrecision(Integer precision)
+    public void setPrecision(@Nullable Integer precision)
     {
         this.precision = precision == null ? -1 : precision;
     }

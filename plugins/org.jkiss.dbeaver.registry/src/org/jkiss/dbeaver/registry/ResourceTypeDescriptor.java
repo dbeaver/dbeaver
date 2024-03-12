@@ -26,6 +26,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -95,26 +97,31 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         }
     }
 
+    @NotNull
     @Override
     public String getId() {
         return id;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return name;
     }
 
+    @Nullable
     @Override
     public DBPImage getIcon() {
         return icon;
     }
 
+    @Nullable
     @Override
     public DBPImage getFolderIcon() {
         return folderIcon;
     }
 
+    @NotNull
     @Override
     public String[] getFileExtensions() {
         Set<String> extensions = new LinkedHashSet<>();
@@ -135,7 +142,8 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         return resourceTypes;
     }
 
-    public String getDefaultRoot(DBPProject project) {
+    @Nullable
+    public String getDefaultRoot(@Nullable DBPProject project) {
         if (project == null) {
             return defaultRoot;
         }
@@ -173,7 +181,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     }
 
     @Override
-    public void setDefaultRoot(DBPProject project, String rootPath) {
+    public void setDefaultRoot(@NotNull DBPProject project, @Nullable String rootPath) {
         IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
         resourceHandlers.put(getId(), rootPath);
         synchronized (projectRoots) {
@@ -192,7 +200,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     }
 
     @Override
-    public boolean isApplicableTo(IResource resource, boolean testContent) {
+    public boolean isApplicableTo(@NotNull IResource resource, boolean testContent) {
         if (!contentTypes.isEmpty() && resource instanceof IFile) {
             if (testContent) {
                 try {

@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -178,13 +179,13 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
     }
 
     @Override
-    public void handleRegistryLoad(DBPDataSourceRegistry registry) {
+    public void handleRegistryLoad(@NotNull DBPDataSourceRegistry registry) {
         registry.addDataSourceListener(this);
         handledRegistries.add(registry);
     }
 
     @Override
-    public void handleRegistryUnload(DBPDataSourceRegistry registry) {
+    public void handleRegistryUnload(@NotNull DBPDataSourceRegistry registry) {
         handledRegistries.remove(registry);
         registry.removeDataSourceListener(this);
     }

@@ -136,7 +136,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
 
     @NotNull
     @Override
-    public Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException {
+    public Collection<String> getAvailableVersions(@NotNull DBRProgressMonitor monitor) throws IOException {
         return Collections.emptyList();
     }
 
@@ -146,7 +146,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     }
 
     @Override
-    public void setPreferredVersion(String version) {
+    public void setPreferredVersion(@NotNull String version) {
         // do nothing
     }
 

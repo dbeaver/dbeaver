@@ -173,7 +173,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
+    public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         try {
             initExporter(session.getProgressMonitor());
         } catch (DBException e) {
@@ -321,7 +321,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         final Object document;
 
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
@@ -504,7 +504,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         try {
             if (rowsExported > 0) {
                 insertBatch(true);
@@ -717,8 +717,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, @Nullable DBTTask task, boolean last) {
-        if (last && exception == null) {
+    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Throwable error, @Nullable DBTTask task, boolean last) {
+        if (last && error == null) {
             // Refresh navigator
             monitor.subTask("Refresh database model");
             try {
@@ -737,7 +737,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        if (!last && settings.isOpenTableOnFinish() && exception == null) {
+        if (!last && settings.isOpenTableOnFinish() && error == null) {
             try {
                 // Mappings can be outdated so is the target object.
                 // This may happen when several database consumers point to the same container node
@@ -777,10 +777,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 try {
                     final IDataTransferEventProcessor<DatabaseTransferConsumer> processor = descriptor.create();
 
-                    if (exception == null) {
+                    if (error == null) {
                         processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, task, entry.getValue());
                     } else {
-                        processor.processError(monitor, exception, this, task, entry.getValue());
+                        processor.processError(monitor, error, this, task, entry.getValue());
                     }
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
@@ -998,6 +998,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return this.binding.getDataSource();
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind() {
             return this.binding.getDataKind();

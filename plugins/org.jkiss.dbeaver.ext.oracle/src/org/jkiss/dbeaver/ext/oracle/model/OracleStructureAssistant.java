@@ -51,6 +51,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
@@ -66,6 +67,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return new DBSObjectType[] {
@@ -79,6 +81,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
@@ -89,6 +92,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {

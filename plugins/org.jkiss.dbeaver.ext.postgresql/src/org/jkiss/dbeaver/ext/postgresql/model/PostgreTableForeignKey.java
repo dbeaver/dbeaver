@@ -129,6 +129,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTa
         }
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, specific = true, order = 50)
     public PostgreTableBase getAssociatedEntity() {

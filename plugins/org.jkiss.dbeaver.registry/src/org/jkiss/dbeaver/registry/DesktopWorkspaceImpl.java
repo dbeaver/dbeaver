@@ -147,13 +147,14 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         return defaultHandler;
     }
 
+    @NotNull
     @Override
     public DBPResourceHandlerDescriptor[] getAllResourceHandlers() {
         return handlerDescriptors.toArray(new DBPResourceHandlerDescriptor[0]);
     }
 
     @Override
-    public IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate) {
+    public IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull Class<? extends DBPResourceHandler> handlerType, boolean forceCreate) {
         if (project == null) {
             return null;
         }
@@ -194,7 +195,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
+    public IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
         if (project == null || project.getRootResource() == null) {
             return null;
         }
@@ -221,7 +222,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public void refreshWorkspaceContents(DBRProgressMonitor monitor) {
+    public void refreshWorkspaceContents(@NotNull DBRProgressMonitor monitor) {
         try {
             IWorkspaceRoot root = getEclipseWorkspace().getRoot();
 

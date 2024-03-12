@@ -57,6 +57,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
@@ -74,6 +75,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return new DBSObjectType[] {
@@ -84,6 +86,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
@@ -96,6 +99,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {

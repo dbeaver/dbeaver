@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 
 /**
@@ -54,6 +55,7 @@ public class DBSEntityConstraintType {
         this.logical = logical;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }

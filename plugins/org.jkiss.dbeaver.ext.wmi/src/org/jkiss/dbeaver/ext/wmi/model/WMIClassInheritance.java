@@ -72,6 +72,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
         return subClass.getDataSource();
     }
 
+    @Nullable
     @Override
     public WMIClass getAssociatedEntity()
     {

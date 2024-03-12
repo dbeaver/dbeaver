@@ -51,7 +51,7 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
 
     @NotNull
     @Override
-    public EXEC_CONTEXT getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+    public EXEC_CONTEXT getDefaultContext(@NotNull DBRProgressMonitor monitor, boolean meta) {
         return executionContext;
     }
 
@@ -96,7 +96,7 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor) {
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
         Object lock = this.exclusiveLock.acquireExclusiveLock();
         try {
             executionContext.close();

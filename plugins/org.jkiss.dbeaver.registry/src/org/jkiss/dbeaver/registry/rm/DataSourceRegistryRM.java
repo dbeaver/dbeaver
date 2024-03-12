@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.rm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -113,8 +114,9 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
         }
     }
 
+    @NotNull
     @Override
-    public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+    public DataSourceFolder addFolder(@Nullable DBPDataSourceFolder parent, @NotNull String name) {
         if (getProject().isInMemory()) {
             return createFolder(parent, name);
         }
