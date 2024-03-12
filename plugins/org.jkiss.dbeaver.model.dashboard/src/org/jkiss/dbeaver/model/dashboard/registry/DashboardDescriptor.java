@@ -105,20 +105,18 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
     }
 
+    public interface MapQueryProvider {
+        DashboardMapQueryDescriptor getMapQuery(String id);
+    }
+
     DashboardDescriptor(
-        DashboardRegistry registry,
-        IConfigurationElement config) {
+        DBDashboardProvider provider,
+        MapQueryProvider mapQueryProvider,
+        IConfigurationElement config
+    ) {
         super(config);
 
-        String providerId = config.getAttribute("provider");
-        if (CommonUtils.isEmpty(providerId)) {
-            providerId = DashboardConstants.DEF_DASHBOARD_PROVIDER;
-        }
-        this.provider = registry.getDashboardProvider(providerId);
-        if (provider == null) {
-            log.error("Dashboard provider '" + providerId + "' not found for predefined dashboard '" + id + "'");
-        }
-
+        this.provider = provider;
         this.id = config.getAttribute("id");
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
@@ -144,7 +142,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         {
             String mapQueryId = config.getAttribute("mapQuery");
             if (!CommonUtils.isEmpty(mapQueryId)) {
-                this.mapQuery = registry.getMapQuery(mapQueryId);
+                this.mapQuery = mapQueryProvider.getMapQuery(mapQueryId);
                 if (this.mapQuery != null) {
                     this.mapKeys = CommonUtils.split(config.getAttribute("mapKeys"), ",");
                     this.mapLabels = CommonUtils.split(config.getAttribute("mapLabels"), ",");
@@ -179,7 +177,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         if (CommonUtils.isEmpty(providerId)) {
             providerId = DashboardConstants.DEF_DASHBOARD_PROVIDER;
         }
-        this.provider = registry.getDashboardProvider(providerId);
+        this.provider = registry.getDashboardProviderInstance(providerId);
         if (provider == null) {
             log.error("Dashboard provider '" + providerId + "' not found for saved dashboard '" + this.id + "'");
         }
@@ -247,8 +245,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.isCustom = source.isCustom;
     }
 
-    public DashboardDescriptor(String id, String name, String description, String group) {
+    public DashboardDescriptor(DBDashboardProvider provider, String id, String name, String description, String group) {
         super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
+        this.provider = provider;
         this.id = id;
         this.name = name;
         this.description = description;

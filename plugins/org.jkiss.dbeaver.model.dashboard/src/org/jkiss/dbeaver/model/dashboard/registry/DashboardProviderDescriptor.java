@@ -18,30 +18,33 @@ package org.jkiss.dbeaver.model.dashboard.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.dashboard.DBDashboard;
-import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
 
 /**
  * DashboardProviderDescriptor
  */
-public class DashboardProviderDescriptor extends AbstractContextDescriptor implements DBDashboardProvider {
+public class DashboardProviderDescriptor extends AbstractContextDescriptor implements DBPNamedObject {
     private static final Log log = Log.getLog(DashboardProviderDescriptor.class);
 
     private final String id;
+    private final String label;
+    private String description;
+    private final DBPImage icon;
     private final ObjectType implType;
     private final boolean supportsCustomDashboards;
+    private DBDashboardProvider instance;
 
     public DashboardProviderDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
+        this.label = config.getAttribute("label");
+        this.description = config.getAttribute("description");
+        this.icon = iconToImage(config.getAttribute("icon"));
         this.supportsCustomDashboards = CommonUtils.toBoolean(config.getAttribute("supportsCustomization"));
         this.implType = new ObjectType(config.getAttribute("class"));
     }
@@ -50,13 +53,41 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
         return id;
     }
 
-    @Override
-    public List<DBDashboard> loadDashboards(@NotNull DBRProgressMonitor monitor, @NotNull DBDashboardContext context) throws DBException {
-        return null;
+    public String getLabel() {
+        return label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public DBPImage getIcon() {
+        return icon;
     }
 
     public ObjectType getImplType() {
         return implType;
+    }
+
+    public boolean isSupportsCustomDashboards() {
+        return supportsCustomDashboards;
+    }
+
+    public DBDashboardProvider getInstance() {
+        if (instance == null) {
+            try {
+                instance = implType.createInstance(DBDashboardProvider.class);
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot instantiate dashboard provider '" + id + "'", e);
+            }
+        }
+        return instance;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return getLabel();
     }
 
 }

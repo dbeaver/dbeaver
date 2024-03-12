@@ -28,13 +28,16 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,6 +49,7 @@ import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DashboardManagerDialog extends BaseDialog {
@@ -94,10 +98,12 @@ public class DashboardManagerDialog extends BaseDialog {
                     List<? extends DBPNamedObject> result = null;
                     if (parentElement instanceof List list) {
                         result = list;
-                    } else if (parentElement instanceof DBPDataSourceProviderDescriptor) {
-                        result = DashboardRegistry.getInstance().getDashboards((DBPDataSourceProviderDescriptor)parentElement, false);
-                    } else if (parentElement instanceof DBPDriver) {
-                        result = DashboardRegistry.getInstance().getDashboards((DBPDriver)parentElement, false);
+                    } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
+                        result = DashboardRegistry.getInstance().getAllSupportedSources(dpd);
+                    } else if (parentElement instanceof DBPDataSourceProviderDescriptor dspd) {
+                        result = DashboardRegistry.getInstance().getDashboards(dspd, false);
+                    } else if (parentElement instanceof DBPDriver driver) {
+                        result = DashboardRegistry.getInstance().getDashboards(driver, false);
                     }
                     if (result == null) {
                         return new Object[0];
@@ -119,6 +125,8 @@ public class DashboardManagerDialog extends BaseDialog {
                         cell.setText(element.getName());
                         if (element instanceof DBPDriver driver) {
                             cell.setImage(DBeaverIcons.getImage(driver.getIcon()));
+                        } else if (element instanceof DashboardProviderDescriptor dpd) {
+                            cell.setImage(DBeaverIcons.getImage(dpd.getIcon()));
                         } else if (element instanceof DBPDataSourceProviderDescriptor dspd) {
                             cell.setImage(DBeaverIcons.getImage(dspd.getIcon()));
                         } else if (element instanceof DashboardDescriptor dashboardDescriptor) {
@@ -136,15 +144,20 @@ public class DashboardManagerDialog extends BaseDialog {
                             }
                         }
                     } else {
-                        if (element instanceof DBPDriver) {
-                            cell.setText(CommonUtils.notEmpty(((DBPDriver) element).getDescription()));
-                        } else if (element instanceof DBPDataSourceProviderDescriptor) {
-                            cell.setText(((DBPDataSourceProviderDescriptor) element).getDescription());
+                        if (element instanceof DBPDriver driver) {
+                            cell.setText(CommonUtils.notEmpty(driver.getDescription()));
+                        } else if (element instanceof DashboardProviderDescriptor dpd) {
+                            cell.setText(dpd.getDescription());
+                        } else if (element instanceof DBPDataSourceProviderDescriptor dspd) {
+                            cell.setText(dspd.getDescription());
                         }
                     }
                 }
             });
-            treeViewer.setInput(DashboardRegistry.getInstance().getAllSupportedSources());
+            List<DashboardProviderDescriptor> providers = new ArrayList<>(
+                DashboardRegistry.getInstance().getDashboardProviders());
+            providers.removeIf(dpd -> !dpd.isSupportsCustomDashboards());
+            treeViewer.setInput(providers);
 
             treeViewer.addDoubleClickListener(event -> {
                 if (selectedDashboard != null) {
@@ -154,10 +167,10 @@ public class DashboardManagerDialog extends BaseDialog {
             treeViewer.addSelectionChangedListener(event -> {
                 this.selectedDashboard = null;
                 ISelection selection = event.getSelection();
-                if (selection instanceof IStructuredSelection) {
-                    Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
-                    if (selectedObject instanceof DashboardDescriptor) {
-                        this.selectedDashboard = (DashboardDescriptor) selectedObject;
+                if (selection instanceof IStructuredSelection ss) {
+                    Object selectedObject = ss.getFirstElement();
+                    if (selectedObject instanceof DashboardDescriptor dd) {
+                        this.selectedDashboard = dd;
                     }
                 }
                 this.updateButtons();
@@ -239,7 +252,21 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void createDashboard() {
-        DashboardDescriptor newDashboard = new DashboardDescriptor("", "", "", "");
+        DashboardProviderDescriptor providerDescriptor = null;
+        TreeItem[] treeSelections = treeViewer.getTree().getSelection();
+        if (treeSelections.length == 1) {
+            for (TreeItem item = treeSelections[0]; item != null; item = item.getParentItem()) {
+                if (item.getData() instanceof DashboardProviderDescriptor dpd) {
+                    providerDescriptor = dpd;
+                    break;
+                }
+            }
+        }
+        if (providerDescriptor == null) {
+            providerDescriptor = DashboardRegistry.getInstance().getDashboardProvider(DashboardConstants.DEF_DASHBOARD_PROVIDER);
+        }
+        DashboardDescriptor newDashboard = new DashboardDescriptor(
+            providerDescriptor.getInstance(), "", "", "", "");
         DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboard(newDashboard);
@@ -289,7 +316,7 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void refreshDashboards() {
-        treeViewer.setInput(DashboardRegistry.getInstance().getAllSupportedSources());
+        treeViewer.setInput(DashboardRegistry.getInstance().getDashboardProviders());
         treeViewer.expandAll();
         updateButtons();
     }

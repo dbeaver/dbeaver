@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.dashboard.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -57,7 +59,6 @@ public class DashboardRegistry {
     }
 
     private final Map<String, DashboardProviderDescriptor> dashboardProviders = new LinkedHashMap<>();
-    private final Map<String, DashboardMapQueryDescriptor> mapQueries = new LinkedHashMap<>();
     private final Map<String, DashboardDescriptor> dashboards = new LinkedHashMap<>();
 
     private DashboardRegistry(IExtensionRegistry registry) {
@@ -71,29 +72,10 @@ public class DashboardRegistry {
             }
         }
 
-/*
         // Load all static dashboards
         DBDashboardContext staticContext = new DBDashboardContext();
-        for (DBDashboardProvider dp : dashboardProviders.values()) {
-            for (DBDashboard dashboard : dp.loadDashboards(new VoidProgressMonitor(), staticContext)) {
-                dashboards.put(dashboard.getId(), dashboard);
-            }
-        }
-*/
-
-        // Load map queries
-        for (IConfigurationElement ext : extElements) {
-            if ("mapQuery".equals(ext.getName())) {
-                DashboardMapQueryDescriptor query = new DashboardMapQueryDescriptor(ext);
-                if (!CommonUtils.isEmpty(query.getId()) && !CommonUtils.isEmpty(query.getQueryText())) {
-                    mapQueries.put(query.getId(), query);
-                }
-            }
-        }
-        // Load dashboards from extensions
-        for (IConfigurationElement ext : extElements) {
-            if ("dashboard".equals(ext.getName())) {
-                DashboardDescriptor dashboard = new DashboardDescriptor(this, ext);
+        for (DashboardProviderDescriptor dp : dashboardProviders.values()) {
+            for (DashboardDescriptor dashboard : dp.getInstance().loadStaticDashboards()) {
                 dashboards.put(dashboard.getId(), dashboard);
             }
         }
@@ -173,12 +155,20 @@ public class DashboardRegistry {
         }
     }
 
-    public List<DBDashboardProvider> getDashboardProviders() {
+    public List<DashboardProviderDescriptor> getDashboardProviders() {
         return new ArrayList<>(dashboardProviders.values());
     }
 
-    public DBDashboardProvider getDashboardProvider(String id) {
+    public DashboardProviderDescriptor getDashboardProvider(String id) {
         return dashboardProviders.get(id);
+    }
+
+    public DBDashboardProvider getDashboardProviderInstance(String id) {
+        DashboardProviderDescriptor dpd = dashboardProviders.get(id);
+        if (dpd != null) {
+            return dpd.getInstance();
+        }
+        return null;
     }
 
     /**
@@ -247,11 +237,13 @@ public class DashboardRegistry {
         }
     }
 
-    public List<DBPNamedObject> getAllSupportedSources() {
+    public List<DBPNamedObject> getAllSupportedSources(@NotNull DashboardProviderDescriptor dpd) {
         Set<DBPNamedObject> result = new LinkedHashSet<>();
         synchronized (syncRoot) {
             for (DashboardDescriptor dd : dashboards.values()) {
-                result.addAll(dd.getSupportedSources());
+                if (dd.getDashboardProvider() == dpd.getInstance()) {
+                    result.addAll(dd.getSupportedSources());
+                }
             }
         }
         ArrayList<DBPNamedObject> sortedDrivers = new ArrayList<>(result);
@@ -263,7 +255,4 @@ public class DashboardRegistry {
         saveConfigFile();
     }
 
-    public DashboardMapQueryDescriptor getMapQuery(String id) {
-        return mapQueries.get(id);
-    }
 }

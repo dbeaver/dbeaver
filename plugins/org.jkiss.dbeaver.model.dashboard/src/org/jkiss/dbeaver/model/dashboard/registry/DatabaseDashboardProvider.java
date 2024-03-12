@@ -16,15 +16,20 @@
  */
 package org.jkiss.dbeaver.model.dashboard.registry;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.dashboard.DBDashboard;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardFolder;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Database dashboard context
@@ -37,8 +42,38 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
     }
 
     @Override
-    public List<DBDashboard> loadDashboards(@NotNull DBRProgressMonitor monitor, @NotNull DBDashboardContext context) throws DBException {
-        return null;
+    public List<DashboardDescriptor> loadStaticDashboards() {
+        IExtensionRegistry registry = Platform.getExtensionRegistry();
+
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
+
+        List<DashboardDescriptor> dashboards = new ArrayList<>();
+        Map<String, DashboardMapQueryDescriptor> mapQueries = new LinkedHashMap<>();
+
+        // Load map queries
+        for (IConfigurationElement ext : extElements) {
+            if ("mapQuery".equals(ext.getName())) {
+                DashboardMapQueryDescriptor query = new DashboardMapQueryDescriptor(ext);
+                if (!CommonUtils.isEmpty(query.getId()) && !CommonUtils.isEmpty(query.getQueryText())) {
+                    mapQueries.put(query.getId(), query);
+                }
+            }
+        }
+        // Load dashboards from extensions
+        for (IConfigurationElement ext : extElements) {
+            if ("dashboard".equals(ext.getName())) {
+                DashboardDescriptor dashboard = new DashboardDescriptor(this, mapQueries::get, ext);
+                dashboards.add(dashboard);
+            }
+        }
+
+        return dashboards;
+    }
+
+    @NotNull
+    @Override
+    public List<DBDashboardFolder> loadRootFolders(@NotNull DBDashboardContext context) {
+        return List.of();
     }
 
 }
