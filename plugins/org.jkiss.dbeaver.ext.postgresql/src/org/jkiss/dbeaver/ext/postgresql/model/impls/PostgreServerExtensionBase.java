@@ -100,6 +100,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsDependencies() {
+        return true;
+    }
+
+    @Override
     public boolean supportsFunctionCreate() {
         return true;
     }
