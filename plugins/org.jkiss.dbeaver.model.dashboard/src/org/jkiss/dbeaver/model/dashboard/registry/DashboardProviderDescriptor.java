@@ -33,7 +33,7 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
 
     private final String id;
     private final String label;
-    private String description;
+    private final String description;
     private final DBPImage icon;
     private final ObjectType implType;
     private final boolean supportsCustomDashboards;
