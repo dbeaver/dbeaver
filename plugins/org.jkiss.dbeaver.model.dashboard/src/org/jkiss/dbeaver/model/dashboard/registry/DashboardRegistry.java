@@ -75,7 +75,7 @@ public class DashboardRegistry {
         // Load all static dashboards
         DBDashboardContext staticContext = new DBDashboardContext();
         for (DashboardProviderDescriptor dp : dashboardProviders.values()) {
-            for (DashboardDescriptor dashboard : dp.getInstance().loadStaticDashboards()) {
+            for (DashboardDescriptor dashboard : dp.getInstance().loadStaticDashboards(dp)) {
                 dashboards.put(dashboard.getId(), dashboard);
             }
         }
@@ -159,6 +159,10 @@ public class DashboardRegistry {
         return new ArrayList<>(dashboardProviders.values());
     }
 
+    public List<DashboardProviderDescriptor> getDashboardProviders(DBPDataSourceContainer dataSource) {
+        return new ArrayList<>(dashboardProviders.values());
+    }
+
     public DashboardProviderDescriptor getDashboardProvider(String id) {
         return dashboardProviders.get(id);
     }
@@ -176,18 +180,20 @@ public class DashboardRegistry {
      * Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
      */
     public List<DashboardDescriptor> getDashboards(DBPNamedObject source, boolean defaultOnly) {
-        if (source instanceof DBPDataSourceContainer) {
-            source = ((DBPDataSourceContainer) source).getDriver();
+        if (source instanceof DBPDataSourceContainer dsc) {
+            source = dsc.getDriver();
         }
         String providerId, driverId, driverClass;
-        if (source instanceof DBPDataSourceProviderDescriptor) {
-            providerId = ((DBPDataSourceProviderDescriptor) source).getId();
+        if (source instanceof DBPDataSourceProviderDescriptor dspd) {
+            providerId = dspd.getId();
             driverId = null;
             driverClass = null;
+        } else if (source instanceof DBPDriver driver) {
+            providerId = driver.getProviderId();
+            driverId = driver.getId();
+            driverClass = driver.getDriverClassName();
         } else {
-            providerId = ((DBPDriver)source).getProviderId();
-            driverId = ((DBPDriver)source).getId();
-            driverClass = ((DBPDriver)source).getDriverClassName();
+            return new ArrayList<>();
         }
 
         List<DashboardDescriptor> result = new ArrayList<>();
@@ -241,7 +247,7 @@ public class DashboardRegistry {
         Set<DBPNamedObject> result = new LinkedHashSet<>();
         synchronized (syncRoot) {
             for (DashboardDescriptor dd : dashboards.values()) {
-                if (dd.getDashboardProvider() == dpd.getInstance()) {
+                if (dd.getDashboardProvider() == dpd) {
                     result.addAll(dd.getSupportedSources());
                 }
             }

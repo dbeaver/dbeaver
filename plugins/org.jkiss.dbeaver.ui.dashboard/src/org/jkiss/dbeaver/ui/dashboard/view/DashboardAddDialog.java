@@ -27,18 +27,25 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Tree;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Dashboard add dialog
@@ -67,38 +74,63 @@ public class DashboardAddDialog extends BaseDialog {
 
 //        AdvancedListViewer listViewer = new AdvancedListViewer(dialogArea, SWT.NONE);
 //        listViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-        TableViewer dashboardTable = new TableViewer(dialogArea, SWT.BORDER | SWT.FULL_SELECTION);
+        TreeViewer dashboardTable = new TreeViewer(dialogArea, SWT.BORDER | SWT.FULL_SELECTION);
 
         dashboardTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-        Table table = dashboardTable.getTable();
+        Tree table = dashboardTable.getTree();
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 200;
         table.setLayoutData(gd);
         table.setHeaderVisible(true);
-        UIUtils.createTableColumn(table, SWT.LEFT, UIDashboardMessages.dialog_add_dashboard_column_name);
-        UIUtils.createTableColumn(table, SWT.LEFT, UIDashboardMessages.dialog_add_dashboard_column_description);
+        UIUtils.createTreeColumn(table, SWT.LEFT, UIDashboardMessages.dialog_add_dashboard_column_name);
+        UIUtils.createTreeColumn(table, SWT.LEFT, UIDashboardMessages.dialog_add_dashboard_column_description);
 
         dashboardTable.setLabelProvider(new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
-                DashboardDescriptor dashboardDescriptor = (DashboardDescriptor) cell.getElement();
-                if (cell.getColumnIndex() == 0) {
-                    cell.setText(dashboardDescriptor.getName());
-                } else {
-                    cell.setText(CommonUtils.notEmpty(dashboardDescriptor.getDescription()));
+                if (cell.getElement() instanceof DashboardProviderDescriptor dpd) {
+                    if (cell.getColumnIndex() == 0) {
+                        cell.setText(dpd.getName());
+                        cell.setImage(DBeaverIcons.getImage(dpd.getIcon()));
+                    } else {
+                        cell.setText(CommonUtils.notEmpty(dpd.getDescription()));
+                    }
+                } else if (cell.getElement() instanceof DashboardDescriptor dashboardDescriptor) {
+                    if (cell.getColumnIndex() == 0) {
+                        cell.setText(dashboardDescriptor.getName());
+                        DBPImage icon = null;
+                        if (dashboardDescriptor.isCustom()) {
+                            icon = DBIcon.TYPE_OBJECT;
+                        } else {
+                            DashboardRendererDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
+                            if (viewType != null) {
+                                icon = viewType.getIcon();
+                            }
+                        }
+                        if (icon != null) {
+                            cell.setImage(DBeaverIcons.getImage(icon));
+                        }
+
+                    } else {
+                        cell.setText(CommonUtils.notEmpty(dashboardDescriptor.getDescription()));
+                    }
                 }
             }
         });
         dashboardTable.addDoubleClickListener(event -> {
-            if (!dashboardTable.getSelection().isEmpty()) {
+            if ((dashboardTable.getStructuredSelection().getFirstElement() instanceof DashboardDescriptor)) {
                 okPressed();
             }
         });
         dashboardTable.addSelectionChangedListener(event -> {
             ISelection selection = dashboardTable.getSelection();
             if (selection instanceof IStructuredSelection ss) {
-                selectedDashboard = (DashboardDescriptor) ss.getFirstElement();
+                if (ss.getFirstElement() instanceof DashboardDescriptor dd) {
+                    selectedDashboard = dd;
+                } else {
+                    selectedDashboard = null;
+                }
             }
             enableButton(IDialogConstants.OK_ID, selectedDashboard != null);
         });
@@ -109,14 +141,31 @@ public class DashboardAddDialog extends BaseDialog {
                 UIUtils.drawMessageOverControl(table, e, msg, 0);
             }
         });
-        dashboardTable.setContentProvider(new ListContentProvider());
+        dashboardTable.setContentProvider(new TreeContentProvider() {
+            @Override
+            public Object[] getChildren(Object parentElement) {
+                if (parentElement instanceof DashboardProviderDescriptor dpd) {
+                    List<DashboardDescriptor> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboards(
+                        viewConfiguration.getDataSourceContainer(), false));
+                    dashboards.removeIf(descriptor -> viewConfiguration.getDashboardConfig(descriptor.getId()) != null);
+                    return dashboards.toArray();
+                }
+                return new Object[0];
+            }
 
-        java.util.List<DashboardDescriptor> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboards(
-            viewConfiguration.getDataSourceContainer(), false));
-        dashboards.removeIf(descriptor -> viewConfiguration.getDashboardConfig(descriptor.getId()) != null);
-        dashboardTable.setInput(dashboards);
+            @Override
+            public boolean hasChildren(Object element) {
+                return element instanceof DashboardProviderDescriptor;
+            }
+        });
 
-        UIUtils.asyncExec(() -> UIUtils.packColumns(table, true));
+        List<DashboardProviderDescriptor> dbProviders = DashboardRegistry.getInstance().getDashboardProviders(
+            viewConfiguration.getDataSourceContainer());
+
+        dashboardTable.setInput(dbProviders);
+        dashboardTable.expandAll();
+
+        UIUtils.asyncExec(() -> UIUtils.packColumns(table, true, null));
 
         return dialogArea;
     }

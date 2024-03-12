@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.dashboard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public interface DBDashboardProvider {
 
     String getId();
 
-    List<DashboardDescriptor> loadStaticDashboards();
+    List<DashboardDescriptor> loadStaticDashboards(DashboardProviderDescriptor dp);
 
     @NotNull
     List<DBDashboardFolder> loadRootFolders(@NotNull DBDashboardContext context);

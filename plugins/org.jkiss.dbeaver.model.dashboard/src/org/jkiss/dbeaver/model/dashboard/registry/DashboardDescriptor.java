@@ -48,7 +48,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard"; //$NON-NLS-1$
 
-    private DBDashboardProvider provider;
+    private DashboardProviderDescriptor provider;
 
     private String id;
     private String name;
@@ -110,7 +110,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     }
 
     DashboardDescriptor(
-        DBDashboardProvider provider,
+        DashboardProviderDescriptor provider,
         MapQueryProvider mapQueryProvider,
         IConfigurationElement config
     ) {
@@ -177,7 +177,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         if (CommonUtils.isEmpty(providerId)) {
             providerId = DashboardConstants.DEF_DASHBOARD_PROVIDER;
         }
-        this.provider = registry.getDashboardProviderInstance(providerId);
+        this.provider = registry.getDashboardProvider(providerId);
         if (provider == null) {
             log.error("Dashboard provider '" + providerId + "' not found for saved dashboard '" + this.id + "'");
         }
@@ -245,7 +245,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.isCustom = source.isCustom;
     }
 
-    public DashboardDescriptor(DBDashboardProvider provider, String id, String name, String description, String group) {
+    public DashboardDescriptor(DashboardProviderDescriptor provider, String id, String name, String description, String group) {
         super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
         this.provider = provider;
         this.id = id;
@@ -440,7 +440,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     @NotNull
     @Override
-    public DBDashboardProvider getDashboardProvider() {
+    public DashboardProviderDescriptor getDashboardProvider() {
         return provider;
     }
 
