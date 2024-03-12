@@ -152,7 +152,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         String objectName = sourceObject.getName();
         GenericDataSource dataSource = sourceObject.getDataSource();
-        if (isSqlServer() && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR,0)) {
+        if (isSqlServer() && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR, 0)) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT definition FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".sys.sql_modules WHERE object_id=OBJECT_ID(?)"
@@ -172,7 +172,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         if (getServerType() == ServerType.SYBASE) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "select proc_defn from SYS.SYSPROCEDURE s\n" +
+                    "SELECT proc_defn from SYS.SYSPROCEDURE s\n" +
                         "LEFT JOIN " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
                         "ON so.id = s.object_id\n" +
                         "WHERE s.proc_name=?"
