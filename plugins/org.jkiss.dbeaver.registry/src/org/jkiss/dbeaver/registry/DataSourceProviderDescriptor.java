@@ -77,7 +77,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @NotNull
     private SQLDialectMetadata scriptDialect;
     private boolean inheritClients;
-    private boolean inheritAuthModels;
+    private boolean inheritAuthModels = true;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config) {
         super(config);
@@ -110,7 +110,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             this.treeDescriptor = this.loadTreeInfo(trees[0]);
         }
         this.supportsDriverMigration = CommonUtils.toBoolean(config.getAttribute("supports-migration"));
-        this.inheritAuthModels = CommonUtils.toBoolean(config.getAttribute("inheritAuthModels"));
+        this.inheritAuthModels = CommonUtils.getBoolean(config.getAttribute("inheritAuthModels"), true);
     }
 
     void linkParentProvider(IConfigurationElement config) {
@@ -241,7 +241,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean matchesId(String id) {
         if (id.equals(this.id)) return true;
-        if (inheritAuthModels) {
+        if (!inheritAuthModels) {
             return false;
         }
         return parentProvider != null && parentProvider.matchesId(id);
