@@ -232,7 +232,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         return connectionInfo;
     }
 
-    @NotNull
+    @Nullable
     public SSHSessionController getController() {
         return controller;
     }

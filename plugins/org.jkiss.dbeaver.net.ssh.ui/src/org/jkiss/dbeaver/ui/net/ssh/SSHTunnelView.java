@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectListControl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class SSHTunnelView extends ViewPart {
@@ -104,6 +105,7 @@ public class SSHTunnelView extends ViewPart {
             .map(DBPDataSourceContainer::getActiveNetworkHandlers).flatMap(Stream::of)
             .filter(handler -> handler instanceof SSHTunnelImpl)
             .map(handler -> ((SSHTunnelImpl) handler).getController())
+            .filter(Objects::nonNull)
             .distinct()
             .map(SSHSessionController::getSessions).flatMap(Stream::of)
             .toList();

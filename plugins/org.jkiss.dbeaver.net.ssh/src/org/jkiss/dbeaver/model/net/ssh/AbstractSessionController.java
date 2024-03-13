@@ -53,7 +53,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     ) throws DBException {
         final AbstractSession session;
         if (origin != null) {
-            session = createJumpSession(getShareableSession(origin), configuration, destination, portForward);
+            session = createJumpSession(getShareableSession(origin), destination, portForward);
         } else {
             session = createDirectSession(destination, portForward);
         }
@@ -68,22 +68,21 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHPortForwardConfiguration portForward
     ) {
-        final ShareableSession<T> session = sessions.computeIfAbsent(destination, host -> {
-            log.debug("SSHSessionController: Creating new session to " + host);
-            return new ShareableSession<>(this, host);
-        });
-
+        ShareableSession<T> session = sessions.get(destination);
+        if (session == null) {
+            // Session will be registered during connect
+            session = new ShareableSession<>(this, destination);
+        }
         return new DirectSession<>(session, portForward);
     }
 
     @NotNull
-    private AbstractSession createJumpSession(
-        @NotNull DelegateSession<T> origin,
-        @NotNull DBWHandlerConfiguration configuration,
+    private JumpSession<T> createJumpSession(
+        @NotNull ShareableSession<T> origin,
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHPortForwardConfiguration portForward
-    ) throws DBException {
-        throw new DBException("Jump sessions are not supported");
+    ) {
+        return new JumpSession<>(origin, destination, portForward);
     }
 
     @Override
@@ -158,6 +157,66 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         sessions.remove(session.destination);
     }
 
+    protected static class JumpSession<T extends AbstractSession> extends DelegateSession<T> {
+        private final ShareableSession<T> origin;
+        private final SSHPortForwardConfiguration portForward;
+        private DelegateSession<T> destination;
+
+        public JumpSession(
+            @NotNull ShareableSession<T> origin,
+            @NotNull SSHHostConfiguration destination,
+            @Nullable SSHPortForwardConfiguration portForward
+        ) {
+            super(destination);
+            this.origin = origin;
+            this.portForward = portForward;
+        }
+
+        @Override
+        public void connect(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull SSHHostConfiguration destination,
+            @NotNull DBWHandlerConfiguration configuration
+        ) throws DBException {
+            final SSHPortForwardConfiguration jumpPortForward = origin.setupPortForward(new SSHPortForwardConfiguration(
+                SSHPortForwardConfiguration.LOCAL_HOST,
+                0,
+                destination.getHostname(),
+                destination.getPort()
+            ));
+
+            final SSHHostConfiguration jumpHost = new SSHHostConfiguration(
+                destination.getUsername(),
+                jumpPortForward.localHost(),
+                jumpPortForward.localPort(),
+                destination.getAuthConfiguration()
+            );
+
+            this.destination = origin.controller.createDirectSession(jumpHost, null);
+            super.connect(monitor, jumpHost, configuration);
+
+            if (portForward != null) {
+                super.setupPortForward(portForward);
+            }
+        }
+
+        @Override
+        public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
+            if (portForward != null) {
+                super.removePortForward(portForward);
+            }
+
+            super.disconnect(monitor, configuration);
+            origin.disconnect(monitor, configuration);
+        }
+
+        @NotNull
+        @Override
+        protected AbstractSession getSession() {
+            return destination;
+        }
+    }
+
     protected static class DirectSession<T extends AbstractSession> extends WrapperSession<T> {
         private final SSHPortForwardConfiguration portForward;
 
@@ -199,7 +258,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         protected final ShareableSession<T> inner;
 
         public WrapperSession(@NotNull ShareableSession<T> inner) {
-            super(inner.session, inner.destination);
+            super(inner.destination);
             this.inner = inner;
         }
 
@@ -227,18 +286,47 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         public void removePortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException {
             inner.removePortForward(configuration);
         }
+
+        @NotNull
+        @Override
+        protected AbstractSession getSession() {
+            return inner;
+        }
     }
 
     protected static class ShareableSession<T extends AbstractSession> extends DelegateSession<T> {
-        protected record PortForwardInfo(@NotNull SSHPortForwardConfiguration resolved, @NotNull AtomicInteger usages) {}
+        protected record PortForwardInfo(@NotNull SSHPortForwardConfiguration resolved, @NotNull AtomicInteger usages) {
+        }
 
         protected final Map<DBPDataSourceContainer, AtomicInteger> dataSources = new HashMap<>();
         protected final Map<SSHPortForwardConfiguration, PortForwardInfo> portForwards = new HashMap<>();
         protected final AbstractSessionController<T> controller;
+        protected final T session;
 
         public ShareableSession(@NotNull AbstractSessionController<T> controller, @NotNull SSHHostConfiguration destination) {
-            super(controller.createSession(), destination);
+            super(destination);
             this.controller = controller;
+            this.session = controller.createSession();
+        }
+
+
+        @Property(viewable = true, order = 1, name = "Destination")
+        public SSHHostConfiguration getDestination() {
+            return destination;
+        }
+
+        @Property(viewable = true, order = 2, name = "Used By")
+        public String getConsumerInfo() {
+            return dataSources.entrySet().stream()
+                .map(entry -> "%s (%s)".formatted(entry.getKey().getName(), entry.getValue()))
+                .collect(Collectors.joining(", "));
+        }
+
+        @Property(viewable = true, order = 3, name = "Port Forwards")
+        public String getPortForwardingInfo() {
+            return portForwards.values().stream()
+                .map(info -> "%s (%d)".formatted(info.resolved, info.usages.get()))
+                .collect(Collectors.joining(", "));
         }
 
         @Override
@@ -248,6 +336,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             @NotNull DBWHandlerConfiguration configuration
         ) throws DBException {
             if (dataSources.isEmpty()) {
+                log.debug("SSHSessionController: Creating new session to " + destination);
                 super.connect(monitor, destination, configuration);
                 controller.registerSession(this);
             }
@@ -256,7 +345,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             if (counter == null) {
                 dataSources.put(container, new AtomicInteger(1));
             } else {
-                log.debug("SSHSessionController: Reusing session for " + container.getName());
+                log.debug("SSHSessionController: Reusing session to " + destination + " for " + container.getName());
                 counter.incrementAndGet();
             }
         }
@@ -305,32 +394,17 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             }
         }
 
-        @Property(viewable = true, order = 1, name = "Destination")
-        public SSHHostConfiguration getDestination() {
-            return destination;
-        }
-
-        @Property(viewable = true, order = 2, name = "Used By")
-        public String getConsumerInfo() {
-            return dataSources.entrySet().stream()
-                .map(entry -> "%s (%s)".formatted(entry.getKey().getName(), entry.getValue()))
-                .collect(Collectors.joining(", "));
-        }
-
-        @Property(viewable = true, order = 3, name = "Port Forwards")
-        public String getPortForwardingInfo() {
-            return portForwards.values().stream()
-                .map(info -> "%s (%d)".formatted(info.resolved, info.usages.get()))
-                .collect(Collectors.joining(", "));
+        @NotNull
+        @Override
+        protected T getSession() {
+            return session;
         }
     }
 
-    protected static class DelegateSession<T extends AbstractSession> extends AbstractSession {
-        protected final T session;
+    protected static abstract class DelegateSession<T extends AbstractSession> extends AbstractSession {
         protected final SSHHostConfiguration destination;
 
-        public DelegateSession(@NotNull T session, @NotNull SSHHostConfiguration destination) {
-            this.session = session;
+        public DelegateSession(@NotNull SSHHostConfiguration destination) {
             this.destination = destination;
         }
 
@@ -341,26 +415,26 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             @NotNull DBWHandlerConfiguration configuration
         ) throws DBException {
             log.debug("SSHSessionController: Connecting session to " + destination);
-            session.connect(monitor, destination, configuration);
+            getSession().connect(monitor, destination, configuration);
         }
 
         @Override
         public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
             log.debug("SSHSessionController: Disconnecting session to " + destination);
-            session.disconnect(monitor, configuration);
+            getSession().disconnect(monitor, configuration);
         }
 
         @NotNull
         @Override
         public SSHPortForwardConfiguration setupPortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException {
             log.debug("SSHSessionController: Set up port forwarding " + configuration);
-            return session.setupPortForward(configuration);
+            return getSession().setupPortForward(configuration);
         }
 
         @Override
         public void removePortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException {
             log.debug("SSHSessionController: Remove port forwarding " + configuration);
-            session.removePortForward(configuration);
+            getSession().removePortForward(configuration);
         }
 
         @Override
@@ -369,7 +443,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             @NotNull OutputStream dst,
             @NotNull DBRProgressMonitor monitor
         ) throws DBException, IOException {
-            session.getFile(src, dst, monitor);
+            getSession().getFile(src, dst, monitor);
         }
 
         @Override
@@ -378,19 +452,22 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             @NotNull String dst,
             @NotNull DBRProgressMonitor monitor
         ) throws DBException, IOException {
-            session.putFile(src, dst, monitor);
+            getSession().putFile(src, dst, monitor);
         }
 
         @NotNull
         @Override
         public String getClientVersion() {
-            return session.getClientVersion();
+            return getSession().getClientVersion();
         }
 
         @NotNull
         @Override
         public String getServerVersion() {
-            return session.getServerVersion();
+            return getSession().getServerVersion();
         }
+
+        @NotNull
+        protected abstract AbstractSession getSession();
     }
 }
