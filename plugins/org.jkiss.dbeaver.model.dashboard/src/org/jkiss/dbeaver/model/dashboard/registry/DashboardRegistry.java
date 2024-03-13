@@ -21,16 +21,20 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardFolder;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -147,6 +151,59 @@ public class DashboardRegistry {
     public List<DashboardDescriptor> getAllDashboards() {
         synchronized (syncRoot) {
             return new ArrayList<>(dashboards.values());
+        }
+    }
+
+    public DashboardDescriptor findDashboard(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDashboardContext context,
+        @NotNull String id
+    ) throws DBException {
+        int divPos = id.indexOf(':');
+        String providerId = DashboardConstants.DEF_DASHBOARD_PROVIDER;
+        if (divPos != -1) {
+            providerId = id.substring(0, divPos);
+            id = id.substring(divPos + 1);
+        }
+        divPos = id.lastIndexOf('/');
+        String path = null;
+        if (divPos != -1) {
+            path = id.substring(0, divPos);
+            while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
+            while (path.startsWith("/")) path = path.substring(1);
+            id = id.substring(divPos + 1);
+        }
+        if (!CommonUtils.isEmpty(path)) {
+            DashboardProviderDescriptor provider = getDashboardProvider(providerId);
+            if (provider == null) {
+                log.debug("Dashboard provider '" + providerId + "' not found");
+                return null;
+            }
+            DBDashboardFolder curFolder = null;
+            for (String pathItem : path.split("/")) {
+                if (curFolder == null) {
+                    curFolder = DBUtils.findObject(provider.getInstance().loadRootFolders(provider, context), pathItem);
+                } else {
+                    curFolder = DBUtils.findObject(curFolder.loadSubFolders(monitor, context), pathItem);
+                }
+                if (curFolder == null) {
+                    break;
+                }
+            }
+            if (curFolder == null) {
+                log.debug("Folder path '" + path + "' cannot be resolved");
+                return null;
+            }
+            for (DashboardDescriptor dashboard : curFolder.loadDashboards(monitor, context)) {
+                if (dashboard.getId().equals(id)) {
+                    return dashboard;
+                }
+            }
+            log.debug("Dashboard '" + id + "' not found in path '" + path + "'");
+            return null;
+        }
+        synchronized (syncRoot) {
+            return dashboards.get(id);
         }
     }
 

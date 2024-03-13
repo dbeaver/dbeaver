@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
  */
 public interface DBDashboard extends DBPNamedObject {
 
+    @Nullable
+    String getPath();
+
     @NotNull
     String getId();
 

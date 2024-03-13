@@ -62,11 +62,11 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
     private final Composite chartComposite;
     private boolean autoUpdateEnabled;
 
-    public DBDashboardItem(DashboardList parent, String dashboardId) {
+    public DBDashboardItem(@NotNull DashboardList parent, @NotNull DashboardDescriptor dashboard) {
         super(parent, SWT.DOUBLE_BUFFERED);
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.groupContainer = parent;
-        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getDashboardConfig(dashboardId);
+        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getDashboardConfig(dashboard.getId());
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 3;
@@ -91,7 +91,8 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
             titleComposite.setLayout(fillLayout);
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
-            titleLabel.setText(dashboardConfig == null ? dashboardId : "  " + dashboardConfig.getDashboardDescriptor().getName());
+
+            titleLabel.setText(dashboardConfig == null ? dashboard.getId() : "  " + dashboard.getName());
 
             this.createContextMenu(titleLabel);
         }
@@ -129,7 +130,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText(NLS.bind(UIDashboardMessages.dashboard_item_errorlabel_text, dashboardConfig.getDashboardDescriptor().getName(), e.getMessage()));
+            errorLabel.setText(NLS.bind(UIDashboardMessages.dashboard_item_errorlabel_text, dashboardConfig.getDashboardId(), e.getMessage()));
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 
@@ -316,27 +317,32 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
 
     @Override
     public DBDashboardMapQuery getMapQuery() {
-        return dashboardConfig.getDashboardDescriptor().getMapQuery();
+        DashboardDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        return dashboard == null ? null : dashboard.getMapQuery();
     }
 
     @Override
     public String[] getMapKeys() {
-        return dashboardConfig.getDashboardDescriptor().getMapKeys();
+        DashboardDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        return dashboard == null ? null : dashboard.getMapKeys();
     }
 
     @Override
     public String[] getMapLabels() {
-        return dashboardConfig.getDashboardDescriptor().getMapLabels();
+        DashboardDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        return dashboard == null ? null : dashboard.getMapLabels();
     }
 
     @Override
     public JexlExpression getMapFormula() {
-        return dashboardConfig.getDashboardDescriptor().getMapFormulaExpr();
+        DashboardDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        return dashboard == null ? null : dashboard.getMapFormulaExpr();
     }
 
     @Override
     public List<? extends DBDashboardQuery> getQueryList() {
-        return dashboardConfig.getDashboardDescriptor().getQueries();
+        DashboardDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        return dashboard == null ? null : dashboard.getQueries();
     }
 
     @Override

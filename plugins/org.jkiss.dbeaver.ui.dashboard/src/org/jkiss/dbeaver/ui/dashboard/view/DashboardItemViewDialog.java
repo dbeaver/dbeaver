@@ -73,7 +73,7 @@ public class DashboardItemViewDialog extends BaseDialog {
 
         DBDashboardItem targetItem  = new DBDashboardItem(
             (DashboardList) dashboardListViewer.getDefaultGroup(),
-            sourceItem.getDashboard().getId());
+            sourceItem.getDashboard());
         targetItem.moveViewFrom(sourceItem, false);
 
         return dialogArea;

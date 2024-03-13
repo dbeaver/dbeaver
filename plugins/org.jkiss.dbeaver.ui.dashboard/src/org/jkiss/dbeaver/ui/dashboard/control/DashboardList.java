@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
@@ -188,17 +189,19 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         return viewContainer.getDataSourceContainer();
     }
 
+    @NotNull
     @Override
     public DashboardViewContainer getView() {
         return viewContainer;
     }
 
+    @NotNull
     public List<DBDashboardItem> getItems() {
         return items;
     }
 
     @Override
-    public void removeItem(DBDashboardContainer container) {
+    public void removeItem(@NotNull DBDashboardContainer container) {
         DBDashboardItem item = (DBDashboardItem) container;
         item.dispose();
         layout(true, true);
@@ -207,13 +210,9 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
     @Override
-    public void addItem(String dashboardId) {
-        DashboardDescriptor dashboardDescriptor = DashboardRegistry.getInstance().getDashboard(dashboardId);
-        if (dashboardDescriptor == null) {
-            return;
-        }
-        viewContainer.getViewConfiguration().readDashboardConfiguration(dashboardDescriptor);
-        new DBDashboardItem(this, dashboardId);
+    public void addItem(@NotNull DashboardDescriptor dashboard) {
+        viewContainer.getViewConfiguration().readDashboardConfiguration(dashboard);
+        new DBDashboardItem(this, dashboard);
         viewContainer.getViewConfiguration().saveSettings();
         layout(true, true);
     }
@@ -234,14 +233,17 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     public void createDashboardsFromConfiguration() {
         for (DashboardItemViewConfiguration itemConfig : viewContainer.getViewConfiguration().getDashboardItemConfigs()) {
-            addDashboard(itemConfig.getDashboardDescriptor());
+            DashboardDescriptor dashboard = itemConfig.getDashboardDescriptor();
+            if (dashboard != null) {
+                addDashboard(dashboard);
+            }
         }
     }
 
 
     private void addDashboard(DashboardDescriptor dashboard) {
         viewContainer.getViewConfiguration().readDashboardConfiguration(dashboard);
-        DBDashboardItem item = new DBDashboardItem(this, dashboard.getId());
+        DBDashboardItem item = new DBDashboardItem(this, dashboard);
     }
 
     void addItem(DBDashboardItem item) {
@@ -432,7 +434,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
                     for (int i = 0; i < newList.size(); i++) {
                         DBDashboardItem oldItem = newList.get(i);
-                        DBDashboardItem newItem = new DBDashboardItem(DashboardList.this, oldItem.getDashboard().getId());
+                        DBDashboardItem newItem = new DBDashboardItem(DashboardList.this, oldItem.getDashboard());
                         DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboard().getId());
                         dashboardConfig.setIndex(i);
                         newItem.moveViewFrom(oldItem, true);

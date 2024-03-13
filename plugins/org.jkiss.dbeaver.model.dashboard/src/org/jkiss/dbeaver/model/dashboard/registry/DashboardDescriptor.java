@@ -297,6 +297,19 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.id = id;
     }
 
+    @Nullable
+    @Override
+    public String getPath() {
+        if (folder == null) {
+            return null;
+        }
+        StringBuilder path = new StringBuilder();
+        for (DBDashboardFolder f = folder; f != null; f = f.getParent()) {
+            path.append('/').append(f.getName());
+        }
+        return path.toString();
+    }
+
     @Override
     @NotNull
     public String getName() {
