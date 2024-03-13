@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKeyColumn;
@@ -64,9 +63,9 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
                 foreignKey.addColumn(
                     new MySQLTableForeignKeyColumn(
                         foreignKey,
-                        (MySQLTableColumn) tableColumn.getOwnColumn(),
+                        tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
                         colIndex++,
-                        (MySQLTableColumn) tableColumn.getRefColumn()));
+                        tableColumn.getRefColumn()));
             }
             SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
             return foreignKey;

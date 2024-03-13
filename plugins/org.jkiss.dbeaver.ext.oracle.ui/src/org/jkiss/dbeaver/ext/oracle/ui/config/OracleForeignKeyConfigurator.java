@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.oracle.ui.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKeyColumn;
@@ -68,7 +67,7 @@ public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<Oracl
                 foreignKey.addColumn(
                     new OracleTableForeignKeyColumn(
                         foreignKey,
-                        (OracleTableColumn) tableColumn.getOwnColumn(),
+                        tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
                         colIndex++));
             }
             SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
