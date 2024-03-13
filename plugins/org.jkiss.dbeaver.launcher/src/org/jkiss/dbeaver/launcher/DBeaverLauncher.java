@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.launcher;
 
+import org.eclipse.equinox.launcher.JNIBridge;
+
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
