@@ -20,6 +20,7 @@ import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -85,7 +86,7 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
 
     @Override
     public boolean appliesTo(DBPObject object, Object context) {
-        return isExpressionTrue(enabledWhen, object);
+        return object instanceof DBPDataSourceContainer ds && getInstance().appliesTo(ds) && isExpressionTrue(enabledWhen, object);
     }
 
     public boolean isEnabled() {

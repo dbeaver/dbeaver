@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardFolder;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
@@ -75,6 +76,11 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
     @Override
     public List<DBDashboardFolder> loadRootFolders(@NotNull DashboardProviderDescriptor provider, @NotNull DBDashboardContext context) {
         return List.of();
+    }
+
+    @Override
+    public boolean appliesTo(@NotNull DBPDataSourceContainer dataSource) {
+        return true;
     }
 
 }
