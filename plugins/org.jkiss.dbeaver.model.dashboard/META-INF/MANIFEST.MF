@@ -11,7 +11,8 @@ Export-Package: org.jkiss.dbeaver.model.dashboard,
  org.jkiss.dbeaver.model.dashboard.data,
  org.jkiss.dbeaver.model.dashboard.registry
 Bundle-ClassPath: .
-Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
+Require-Bundle: org.eclipse.core.expressions,
+ org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry;visibility:=reexport,
  com.google.gson
 Bundle-Localization: OSGI-INF/l10n/bundle
