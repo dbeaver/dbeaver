@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.launcher;
+package org.eclipse.equinox.launcher;
 
 /**
  * <b>Note:</b> This class should not be referenced programmatically by
@@ -162,7 +162,7 @@ public class JNIBridge {
      *
      * @return boolean
      */
-    boolean isLibraryLoadedByJava() {
+    public boolean isLibraryLoadedByJava() {
         return libraryLoaded;
     }
 

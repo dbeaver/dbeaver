@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.generic.views;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKeyColumnTable;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -39,40 +38,43 @@ import java.util.Map;
  */
 public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator<GenericTableForeignKey> {
     @Override
-    public GenericTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull GenericTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
-        return new UITask<GenericTableForeignKey>() {
-            @Override
-            protected GenericTableForeignKey runTask() {
-                EditForeignKeyPage editPage = new EditForeignKeyPage(
-                    "Create foreign key",
-                    foreignKey,
-                    new DBSForeignKeyModifyRule[] {
-                        DBSForeignKeyModifyRule.NO_ACTION,
-                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                        DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT }, options);
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                foreignKey.setDeleteRule(editPage.getOnDeleteRule());
-                foreignKey.setUpdateRule(editPage.getOnUpdateRule());
-                foreignKey.setReferencedConstraint((DBSEntityReferrer) editPage.getUniqueConstraint());
-                foreignKey.setDeferability(DBSForeignKeyDeferability.NOT_DEFERRABLE);
-
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new GenericTableForeignKeyColumnTable(
-                            foreignKey,
-                            (GenericTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++,
-                            (GenericTableColumn) tableColumn.getRefColumn()));
-                }
-                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
-                return foreignKey;
+    public GenericTableForeignKey configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object table,
+        @NotNull GenericTableForeignKey foreignKey,
+        @NotNull Map<String, Object> options
+    ) {
+        return UITask.run(() -> {
+            EditForeignKeyPage editPage = new EditForeignKeyPage(
+                "Create foreign key",
+                foreignKey,
+                new DBSForeignKeyModifyRule[] {
+                    DBSForeignKeyModifyRule.NO_ACTION,
+                    DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                    DBSForeignKeyModifyRule.SET_NULL,
+                    DBSForeignKeyModifyRule.SET_DEFAULT }, options);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+
+            foreignKey.setDeleteRule(editPage.getOnDeleteRule());
+            foreignKey.setUpdateRule(editPage.getOnUpdateRule());
+            foreignKey.setReferencedConstraint((DBSEntityReferrer) editPage.getUniqueConstraint());
+            foreignKey.setDeferability(DBSForeignKeyDeferability.NOT_DEFERRABLE);
+
+            int colIndex = 1;
+            for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
+                foreignKey.addColumn(
+                    new GenericTableForeignKeyColumnTable(
+                        foreignKey,
+                        tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
+                        colIndex++,
+                        tableColumn.getRefColumn()));
+            }
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+            return foreignKey;
+        });
     }
 
 }
