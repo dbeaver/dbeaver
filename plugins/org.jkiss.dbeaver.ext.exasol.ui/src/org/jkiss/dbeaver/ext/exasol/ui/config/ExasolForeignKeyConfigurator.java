@@ -40,40 +40,36 @@ public class ExasolForeignKeyConfigurator implements DBEObjectConfigurator<Exaso
 
     @Override
     public ExasolTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull ExasolTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
-        ExasolTable table = (ExasolTable) container;
-        return new UITask<ExasolTableForeignKey>() {
-            @Override
-            protected ExasolTableForeignKey runTask() {
-                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog(ExasolMessages.dialog_create_foreign_key_title, foreignKey, options);
+        return UITask.run(() -> {
+            ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog(ExasolMessages.dialog_create_foreign_key_title, foreignKey, options);
 
-                if (!editPage.edit()) {
+            if (!editPage.edit()) {
+                return null;
+            }
+            foreignKey.setName(editPage.getName());
+            foreignKey.setReferencedConstraint((ExasolTableUniqueKey)editPage.getUniqueConstraint());
+            foreignKey.setEnabled(editPage.isEnabled());
+
+            List<ExasolTableForeignKeyColumn> columns = new ArrayList<>();
+            int cnt = 0;
+            for (ExasolCreateForeignKeyDialog.FKColumnInfo column : editPage.getColumns()) {
+                try {
+                    ExasolTable refTable = foreignKey.getReferencedConstraint().getTable();
+                    columns.add(new ExasolTableForeignKeyColumn(
+                            foreignKey,
+                            column.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
+                            refTable.getAttribute(monitor, column.getRefColumn().getName()),
+                            ++cnt));
+                } catch (DBException e) {
+                    log.error("Could not get Attribute Information from Table");
                     return null;
                 }
-                foreignKey.setName(editPage.getName());
-                foreignKey.setReferencedConstraint((ExasolTableUniqueKey)editPage.getUniqueConstraint());
-                foreignKey.setEnabled(editPage.isEnabled());
-
-                List<ExasolTableForeignKeyColumn> columns = new ArrayList<>();
-                int cnt = 0;
-                for (ExasolCreateForeignKeyDialog.FKColumnInfo column : editPage.getColumns()) {
-                    try {
-                        ExasolTable refTable = foreignKey.getReferencedConstraint().getTable();
-                        columns.add(new ExasolTableForeignKeyColumn(
-                                foreignKey,
-                                table.getAttribute(monitor, column.getOwnColumn().getName()),
-                                refTable.getAttribute(monitor, column.getRefColumn().getName()),
-                                ++cnt));
-                    } catch (DBException e) {
-                        log.error("Could not get Attribute Information from Table");
-                        return null;
-                    }
-                }
-
-                foreignKey.setAttributeReferences(columns);
-                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
-
-                return foreignKey;
             }
-        }.execute();
+
+            foreignKey.setAttributeReferences(columns);
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+
+            return foreignKey;
+        });
     }
 }
