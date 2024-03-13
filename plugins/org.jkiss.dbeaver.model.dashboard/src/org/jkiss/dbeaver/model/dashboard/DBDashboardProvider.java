@@ -27,11 +27,12 @@ import java.util.List;
  */
 public interface DBDashboardProvider {
 
+    @NotNull
     String getId();
 
-    List<DashboardDescriptor> loadStaticDashboards(DashboardProviderDescriptor dp);
+    List<DashboardDescriptor> loadStaticDashboards(@NotNull DashboardProviderDescriptor dp);
 
     @NotNull
-    List<DBDashboardFolder> loadRootFolders(@NotNull DBDashboardContext context);
+    List<DBDashboardFolder> loadRootFolders(@NotNull DashboardProviderDescriptor provider, @NotNull DBDashboardContext context);
 
 }

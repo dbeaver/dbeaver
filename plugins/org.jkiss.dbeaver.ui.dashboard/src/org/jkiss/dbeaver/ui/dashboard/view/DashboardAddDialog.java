@@ -28,11 +28,16 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardFolder;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -42,6 +47,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -51,6 +57,8 @@ import java.util.List;
  * Dashboard add dialog
  */
 public class DashboardAddDialog extends BaseDialog {
+
+    private static final Log log = Log.getLog(DashboardAddDialog.class);
 
     private static final String DIALOG_ID = "DBeaver.DashboardAddDialog";//$NON-NLS-1$
 
@@ -95,6 +103,13 @@ public class DashboardAddDialog extends BaseDialog {
                         cell.setImage(DBeaverIcons.getImage(dpd.getIcon()));
                     } else {
                         cell.setText(CommonUtils.notEmpty(dpd.getDescription()));
+                    }
+                } else if (cell.getElement() instanceof DBDashboardFolder folder) {
+                    if (cell.getColumnIndex() == 0) {
+                        cell.setText(folder.getName());
+                        cell.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+                    } else {
+                        cell.setText(CommonUtils.notEmpty(folder.getDescription()));
                     }
                 } else if (cell.getElement() instanceof DashboardDescriptor dashboardDescriptor) {
                     if (cell.getColumnIndex() == 0) {
@@ -144,18 +159,32 @@ public class DashboardAddDialog extends BaseDialog {
         dashboardTable.setContentProvider(new TreeContentProvider() {
             @Override
             public Object[] getChildren(Object parentElement) {
-                if (parentElement instanceof DashboardProviderDescriptor dpd) {
-                    List<DashboardDescriptor> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboards(
-                        viewConfiguration.getDataSourceContainer(), false));
-                    dashboards.removeIf(descriptor -> viewConfiguration.getDashboardConfig(descriptor.getId()) != null);
-                    return dashboards.toArray();
+                try {
+                    DBDashboardContext context = new DBDashboardContext(viewConfiguration.getDataSourceContainer());
+                    if (parentElement instanceof DBDashboardFolder df) {
+                        List<DBDashboardFolder> subFolders = df.loadSubFolders(new VoidProgressMonitor(), context);
+                        List<DashboardDescriptor> dashboards = df.loadDashboards(new VoidProgressMonitor(), context);
+                        return ArrayUtils.concatArrays(subFolders.toArray(), dashboards.toArray());
+                    } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
+                        if (dpd.isSupportsFolders()) {
+                            return dpd.getInstance().loadRootFolders(dpd, context).toArray();
+                        }
+                        List<DashboardDescriptor> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboards(
+                            dpd,
+                            viewConfiguration.getDataSourceContainer(),
+                            false));
+                        dashboards.removeIf(descriptor -> viewConfiguration.getDashboardConfig(descriptor.getId()) != null);
+                        return dashboards.toArray();
+                    }
+                } catch (DBException e) {
+                    log.error("Error reading dashboard info", e);
                 }
                 return new Object[0];
             }
 
             @Override
             public boolean hasChildren(Object element) {
-                return element instanceof DashboardProviderDescriptor;
+                return element instanceof DashboardProviderDescriptor || element instanceof DBDashboardFolder;
             }
         });
 
@@ -163,7 +192,7 @@ public class DashboardAddDialog extends BaseDialog {
             viewConfiguration.getDataSourceContainer());
 
         dashboardTable.setInput(dbProviders);
-        dashboardTable.expandAll();
+        dashboardTable.expandToLevel(2);
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(table, true, null));
 

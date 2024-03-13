@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jfree.chart.JFreeChart;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
@@ -90,4 +91,8 @@ public class DashboardChartComposite extends BaseChartComposite implements DBDas
         }
     }
 
+    @Override
+    public Control getDashboardControl() {
+        return getChartCanvas();
+    }
 }

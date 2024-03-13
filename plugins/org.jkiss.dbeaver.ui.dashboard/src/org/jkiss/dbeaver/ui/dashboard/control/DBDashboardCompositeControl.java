@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.swt.widgets.Control;
+
 /**
  * Dashboard control
  */
 public interface DBDashboardCompositeControl {
 
+    Control getDashboardControl();
 }

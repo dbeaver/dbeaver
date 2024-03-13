@@ -226,7 +226,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     void createDefaultDashboards() {
         List<DashboardDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(
-            viewContainer.getDataSourceContainer(), true);
+            null, viewContainer.getDataSourceContainer(), true);
         for (DashboardDescriptor dd : dashboards) {
             addDashboard(dd);
         }

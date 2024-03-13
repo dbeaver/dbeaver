@@ -36,13 +36,14 @@ import java.util.Map;
  */
 public class DatabaseDashboardProvider implements DBDashboardProvider {
 
+    @NotNull
     @Override
     public String getId() {
         return DashboardConstants.DEF_DASHBOARD_PROVIDER;
     }
 
     @Override
-    public List<DashboardDescriptor> loadStaticDashboards(DashboardProviderDescriptor dp) {
+    public List<DashboardDescriptor> loadStaticDashboards(@NotNull DashboardProviderDescriptor dp) {
         IExtensionRegistry registry = Platform.getExtensionRegistry();
 
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
@@ -72,7 +73,7 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
 
     @NotNull
     @Override
-    public List<DBDashboardFolder> loadRootFolders(@NotNull DBDashboardContext context) {
+    public List<DBDashboardFolder> loadRootFolders(@NotNull DashboardProviderDescriptor provider, @NotNull DBDashboardContext context) {
         return List.of();
     }
 

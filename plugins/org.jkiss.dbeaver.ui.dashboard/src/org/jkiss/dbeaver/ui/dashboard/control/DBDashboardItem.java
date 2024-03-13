@@ -133,24 +133,26 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 
-        if (dashboardControl instanceof DashboardChartComposite chart) {
-            initChartRenderer(chart);
-        }
+        initChartRenderer();
     }
 
-    private void initChartRenderer(DashboardChartComposite chart) {
-        Canvas chartCanvas = chart.getChartCanvas();
+    private void initChartRenderer() {
+        Control dbCanvas = dashboardControl instanceof DBDashboardCompositeControl chart ?
+            chart.getDashboardControl() : null;
+        if (dbCanvas == null) {
+            return;
+        }
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                chartCanvas.setFocus();
+                dbCanvas.setFocus();
             }
         };
+        dbCanvas.addMouseListener(mouseAdapter);
         this.addMouseListener(mouseAdapter);
-        chartCanvas.addMouseListener(mouseAdapter);
         titleLabel.addMouseListener(mouseAdapter);
 
-        chartCanvas.addFocusListener(new FocusListener() {
+        dbCanvas.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 groupContainer.setSelection(DBDashboardItem.this);
@@ -163,7 +165,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
             }
         });
 
-        chartCanvas.addKeyListener(new KeyAdapter() {
+        dbCanvas.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 groupContainer.handleKeyEvent(e);

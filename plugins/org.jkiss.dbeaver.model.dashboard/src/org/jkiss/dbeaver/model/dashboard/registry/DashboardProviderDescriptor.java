@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.model.dashboard.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +39,9 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
     private final DBPImage icon;
     private final ObjectType implType;
     private final boolean supportsCustomDashboards;
+    private final boolean supportsFolders;
     private DBDashboardProvider instance;
+    private final Expression enabledWhen;
 
     public DashboardProviderDescriptor(IConfigurationElement config) {
         super(config);
@@ -46,7 +50,9 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
         this.description = config.getAttribute("description");
         this.icon = iconToImage(config.getAttribute("icon"));
         this.supportsCustomDashboards = CommonUtils.toBoolean(config.getAttribute("supportsCustomization"));
+        this.supportsFolders = CommonUtils.toBoolean(config.getAttribute("supportsFolders"));
         this.implType = new ObjectType(config.getAttribute("class"));
+        this.enabledWhen = getEnablementExpression(config);
     }
 
     public String getId() {
@@ -71,6 +77,19 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
 
     public boolean isSupportsCustomDashboards() {
         return supportsCustomDashboards;
+    }
+
+    public boolean isSupportsFolders() {
+        return supportsFolders;
+    }
+
+    @Override
+    public boolean appliesTo(DBPObject object, Object context) {
+        return isExpressionTrue(enabledWhen, object);
+    }
+
+    public boolean isEnabled() {
+        return isExpressionTrue(enabledWhen, null);
     }
 
     public DBDashboardProvider getInstance() {

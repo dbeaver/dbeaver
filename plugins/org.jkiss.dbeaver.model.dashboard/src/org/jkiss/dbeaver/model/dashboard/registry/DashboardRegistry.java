@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -160,7 +161,10 @@ public class DashboardRegistry {
     }
 
     public List<DashboardProviderDescriptor> getDashboardProviders(DBPDataSourceContainer dataSource) {
-        return new ArrayList<>(dashboardProviders.values());
+        if (dataSource != null) {
+            return dashboardProviders.values().stream().filter(dp -> dp.appliesTo(dataSource)).toList();
+        }
+        return dashboardProviders.values().stream().filter(DashboardProviderDescriptor::isEnabled).toList();
     }
 
     public DashboardProviderDescriptor getDashboardProvider(String id) {
@@ -179,7 +183,11 @@ public class DashboardRegistry {
      * Find dashboard matching source.
      * Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
      */
-    public List<DashboardDescriptor> getDashboards(DBPNamedObject source, boolean defaultOnly) {
+    public List<DashboardDescriptor> getDashboards(
+        @Nullable DashboardProviderDescriptor provider,
+        @NotNull DBPNamedObject source,
+        boolean defaultOnly
+    ) {
         if (source instanceof DBPDataSourceContainer dsc) {
             source = dsc.getDriver();
         }
@@ -199,6 +207,9 @@ public class DashboardRegistry {
         List<DashboardDescriptor> result = new ArrayList<>();
         synchronized (syncRoot) {
             for (DashboardDescriptor dd : dashboards.values()) {
+                if (provider != null && provider != dd.getDashboardProvider()) {
+                    continue;
+                }
                 if (dd.matches(providerId, driverId, driverClass)) {
                     if (!defaultOnly || dd.isShowByDefault()) {
                         result.add(dd);

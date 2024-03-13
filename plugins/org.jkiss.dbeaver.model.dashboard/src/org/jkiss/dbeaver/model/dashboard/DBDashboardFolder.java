@@ -31,6 +31,9 @@ import java.util.List;
  */
 public interface DBDashboardFolder extends DBPNamedObject {
 
+    @Nullable
+    DBDashboardFolder getParent();
+
     @NotNull
     String getName();
 

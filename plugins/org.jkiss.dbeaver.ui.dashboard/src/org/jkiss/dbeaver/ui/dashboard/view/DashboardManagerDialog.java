@@ -62,7 +62,7 @@ public class DashboardManagerDialog extends BaseDialog {
     private Button copyButton;
     private Button editButton;
     private Button deleteButton;
-    private TreeViewer treeViewer;
+    private DashboardTreeViewer treeViewer;
 
     public DashboardManagerDialog(Shell shell) {
         super(shell, UIDashboardMessages.dialog_dashboard_manager_title, null);
@@ -83,7 +83,7 @@ public class DashboardManagerDialog extends BaseDialog {
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeViewer = new TreeViewer(group, SWT.BORDER);
+            treeViewer = new DashboardTreeViewer(group);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;
@@ -101,9 +101,12 @@ public class DashboardManagerDialog extends BaseDialog {
                     } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
                         result = DashboardRegistry.getInstance().getAllSupportedSources(dpd);
                     } else if (parentElement instanceof DBPDataSourceProviderDescriptor dspd) {
-                        result = DashboardRegistry.getInstance().getDashboards(dspd, false);
+                        result = DashboardRegistry.getInstance().getDashboards(
+                            getDashboardProviderFor(dspd), dspd, false);
                     } else if (parentElement instanceof DBPDriver driver) {
-                        result = DashboardRegistry.getInstance().getDashboards(driver, false);
+                        result = DashboardRegistry.getInstance().getDashboards(
+                            getDashboardProviderFor(driver),
+                            driver, false);
                     }
                     if (result == null) {
                         return new Object[0];
@@ -227,6 +230,15 @@ public class DashboardManagerDialog extends BaseDialog {
         return group;
     }
 
+    private DashboardProviderDescriptor getDashboardProviderFor(Object element) {
+        for (Object item = element; item != null; item = treeViewer.getParentItem(item)) {
+            if (item instanceof DashboardProviderDescriptor dpd) {
+                return dpd;
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(
@@ -266,7 +278,7 @@ public class DashboardManagerDialog extends BaseDialog {
             providerDescriptor = DashboardRegistry.getInstance().getDashboardProvider(DashboardConstants.DEF_DASHBOARD_PROVIDER);
         }
         DashboardDescriptor newDashboard = new DashboardDescriptor(
-            providerDescriptor, "", "", "", "", true);
+            providerDescriptor, null, "", "", "", "", true);
         DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboard(newDashboard);
@@ -320,4 +332,15 @@ public class DashboardManagerDialog extends BaseDialog {
         treeViewer.expandAll();
         updateButtons();
     }
+
+    private static class DashboardTreeViewer extends TreeViewer {
+        public DashboardTreeViewer(Composite group) {
+            super(group, SWT.BORDER);
+        }
+
+        Object getParentItem(Object item) {
+            return getParentElement(item);
+        }
+    }
+
 }

@@ -49,9 +49,13 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard"; //$NON-NLS-1$
 
-    private DashboardProviderDescriptor provider;
+    private final DashboardProviderDescriptor provider;
 
+    @Nullable
+    private DBDashboardFolder folder;
+    @NotNull
     private String id;
+    @NotNull
     private String name;
     private String description;
     private String group;
@@ -249,6 +253,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public DashboardDescriptor(
         @NotNull DashboardProviderDescriptor provider,
+        @Nullable DBDashboardFolder folder,
         @NotNull String id,
         @NotNull String name,
         @Nullable String description,
@@ -257,6 +262,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     ) {
         super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
         this.provider = provider;
+        this.folder = folder;
         this.id = id;
         this.name = name;
         this.description = description;
@@ -274,6 +280,11 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.maxAge = DashboardConstants.DEF_DASHBOARD_MAXIMUM_AGE;
 
         this.isCustom = custom;
+    }
+
+    @Nullable
+    public DBDashboardFolder getFolder() {
+        return folder;
     }
 
     @NotNull
