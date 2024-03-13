@@ -88,7 +88,7 @@
                     defaultPort="4000"
                     defaultUser="root"
                     webURL="https://pingcap.com/"
-                    propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                    propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                     description="TiDB Driver (MySQL Connector/J 8.0)"
                     categories="sql">
 
