@@ -47,7 +47,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
     private String source;
 
     public AltibaseSequence(GenericStructContainer container, String name) {
-        super(container, name, "", 0, 0, 0, 0);
+        super(container, name);
         
         // Default sequence
         this.startWith      = new BigDecimal(1);

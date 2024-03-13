@@ -20,22 +20,24 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectWithLongId;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
 public class DuckDBSequence extends GenericSequence implements DBPObjectWithLongId, GenericScriptObject {
 
-    private final long oid;
-    private final long startValue;
-    private final boolean cycle;
-    private final boolean temporary;
+    private long oid;
+    private long startValue;
+    private boolean cycle = false;
+    private boolean temporary;
 
-    private final String sql;
+    private String sql;
 
     public DuckDBSequence(
         GenericStructContainer container,
@@ -53,6 +55,10 @@ public class DuckDBSequence extends GenericSequence implements DBPObjectWithLong
         this.cycle = JDBCUtils.safeGetBoolean(dbResult, "cycle");
         this.temporary = JDBCUtils.safeGetBoolean(dbResult, "temporary");
         this.sql = JDBCUtils.safeGetString(dbResult, "sql");
+    }
+
+    public DuckDBSequence(@NotNull GenericStructContainer container, @NotNull String name) {
+        super(container, name);
     }
 
     @Override
@@ -78,6 +84,9 @@ public class DuckDBSequence extends GenericSequence implements DBPObjectWithLong
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) {
+        if (CommonUtils.isEmpty(sql)) {
+            sql = "CREATE SEQUENCE " + getFullyQualifiedName(DBPEvaluationContext.DDL);
+        }
         return sql;
     }
 }
