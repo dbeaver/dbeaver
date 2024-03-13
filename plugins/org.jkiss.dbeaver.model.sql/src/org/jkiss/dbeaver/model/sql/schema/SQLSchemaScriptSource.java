@@ -38,4 +38,9 @@ public interface SQLSchemaScriptSource {
     @Nullable
     Reader openSchemaUpdateScript(DBRProgressMonitor monitor, int versionNumber) throws IOException, DBException;
 
+    /**
+     * Opens db specific scripts.
+     */
+    @Nullable
+    Reader openSpecificSchemaUpdateScript(DBRProgressMonitor monitor, int versionNumber, String specificPrefix);
 }

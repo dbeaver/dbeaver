@@ -62,4 +62,15 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
         return new InputStreamReader(resource);
     }
 
+    @Nullable
+    @Override
+    public Reader openSpecificSchemaUpdateScript(DBRProgressMonitor monitor, int versionNumber, String specificPrefix) {
+        InputStream resource = classLoader.getResourceAsStream(
+            updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql");
+        if (resource == null) {
+            return null;
+        }
+        return new InputStreamReader(resource);
+    }
+
 }

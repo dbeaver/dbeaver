@@ -141,6 +141,7 @@ public final class SQLSchemaManager {
             log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
             try {
                 executeScript(monitor, connection, ddlStream, true);
+                executeSpecificSchemaScript(monitor, connection, updateToVer);
                 // Update schema version
                 versionManager.updateCurrentSchemaVersion(monitor, connection, targetSchemaName, updateToVer);
                 txn.commit();
@@ -150,6 +151,18 @@ public final class SQLSchemaManager {
             } finally {
                 ContentUtils.close(ddlStream);
             }
+        }
+    }
+
+    private void executeSpecificSchemaScript(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        int updateToVer
+    ) throws SQLException, IOException, DBException {
+        Reader specificDdl = scriptSource.openSpecificSchemaUpdateScript(monitor, updateToVer, targetDatabaseDialect.getDialectId());
+        if (specificDdl != null) {
+            executeScript(monitor, connection, specificDdl, true);
+            specificDdl.close();
         }
     }
 
