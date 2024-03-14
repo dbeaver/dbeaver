@@ -103,7 +103,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @NotNull DBWHandlerConfiguration configuration,
         long timeout
     ) throws DBException {
-        final DelegateSession<T> delegate = getDelegateSession(session);
+        final DelegateSession delegate = getDelegateSession(session);
 
         if (phase == DBCInvalidatePhase.BEFORE_INVALIDATE) {
             release(monitor, delegate, configuration, timeout);
@@ -123,7 +123,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     @NotNull
     @Override
     public DBPDataSourceContainer[] getDependentDataSources(@NotNull SSHSession session) {
-        return getShareableSession(session).dataSources.keySet().toArray(DBPDataSourceContainer[]::new);
+        return getDelegateSession(session).getDataSources();
     }
 
     @NotNull
@@ -140,10 +140,9 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     }
 
     @NotNull
-    @SuppressWarnings("unchecked")
-    protected DelegateSession<T> getDelegateSession(@NotNull SSHSession session) {
-        if (session instanceof DelegateSession<?> delegate) {
-            return (DelegateSession<T>) delegate;
+    protected DelegateSession getDelegateSession(@NotNull SSHSession session) {
+        if (session instanceof DelegateSession delegate) {
+            return delegate;
         } else {
             throw new IllegalStateException("Unexpected session type: " + session + " (" + session.getClass().getName() + ")");
         }
@@ -157,10 +156,12 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         sessions.remove(session.destination);
     }
 
-    protected static class JumpSession<T extends AbstractSession> extends DelegateSession<T> {
+    protected static class JumpSession<T extends AbstractSession> extends DelegateSession {
         private final ShareableSession<T> origin;
         private final SSHPortForwardConfiguration portForward;
-        private DelegateSession<T> destination;
+        private DelegateSession jumpDestination;
+        private SSHPortForwardConfiguration jumpPortForward;
+        private boolean registered;
 
         public JumpSession(
             @NotNull ShareableSession<T> origin,
@@ -170,50 +171,69 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             super(destination);
             this.origin = origin;
             this.portForward = portForward;
+            this.registered = true;
         }
 
         @Override
         public void connect(
             @NotNull DBRProgressMonitor monitor,
-            @NotNull SSHHostConfiguration destination,
+            @NotNull SSHHostConfiguration host,
             @NotNull DBWHandlerConfiguration configuration
         ) throws DBException {
-            final SSHPortForwardConfiguration jumpPortForward = origin.setupPortForward(new SSHPortForwardConfiguration(
+            if (!registered) {
+                // When opening session for the first time, it will be already connected
+                // When revalidating, it's closed and then must be opened again
+                origin.connect(monitor, origin.destination, configuration);
+                registered = true;
+            }
+
+            jumpPortForward = origin.setupPortForward(new SSHPortForwardConfiguration(
                 SSHPortForwardConfiguration.LOCAL_HOST,
                 0,
-                destination.getHostname(),
-                destination.getPort()
+                host.getHostname(),
+                host.getPort()
             ));
 
             final SSHHostConfiguration jumpHost = new SSHHostConfiguration(
-                destination.getUsername(),
+                host.getUsername(),
                 jumpPortForward.localHost(),
                 jumpPortForward.localPort(),
-                destination.getAuthConfiguration()
+                host.getAuthConfiguration()
             );
 
-            this.destination = origin.controller.createDirectSession(jumpHost, null);
-            super.connect(monitor, jumpHost, configuration);
+            jumpDestination = origin.controller.createDirectSession(jumpHost, null);
+            jumpDestination.connect(monitor, jumpHost, configuration);
 
             if (portForward != null) {
-                super.setupPortForward(portForward);
+                jumpDestination.setupPortForward(portForward);
             }
         }
 
         @Override
         public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
             if (portForward != null) {
-                super.removePortForward(portForward);
+                jumpDestination.removePortForward(portForward);
             }
 
-            super.disconnect(monitor, configuration);
+            jumpDestination.disconnect(monitor, configuration);
+            origin.removePortForward(jumpPortForward);
             origin.disconnect(monitor, configuration);
+
+            registered = false;
+            jumpDestination = null;
+            jumpPortForward = null;
         }
 
         @NotNull
         @Override
         protected AbstractSession getSession() {
-            return destination;
+            return jumpDestination;
+        }
+
+        @NotNull
+        @Override
+        protected DBPDataSourceContainer[] getDataSources() {
+            return origin.getDataSources();
         }
     }
 
@@ -254,7 +274,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
     }
 
-    protected static class WrapperSession<T extends AbstractSession> extends DelegateSession<T> {
+    protected static class WrapperSession<T extends AbstractSession> extends DelegateSession {
         protected final ShareableSession<T> inner;
 
         public WrapperSession(@NotNull ShareableSession<T> inner) {
@@ -292,9 +312,15 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         protected AbstractSession getSession() {
             return inner;
         }
+
+        @NotNull
+        @Override
+        protected DBPDataSourceContainer[] getDataSources() {
+            return inner.getDataSources();
+        }
     }
 
-    protected static class ShareableSession<T extends AbstractSession> extends DelegateSession<T> {
+    protected static class ShareableSession<T extends AbstractSession> extends DelegateSession {
         protected record PortForwardInfo(@NotNull SSHPortForwardConfiguration resolved, @NotNull AtomicInteger usages) {
         }
 
@@ -377,7 +403,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
                 return info.resolved;
             } else {
                 final SSHPortForwardConfiguration resolved = super.setupPortForward(configuration);
-                portForwards.put(configuration, new PortForwardInfo(resolved, new AtomicInteger(1)));
+                portForwards.put(resolved, new PortForwardInfo(resolved, new AtomicInteger(1)));
                 return resolved;
             }
         }
@@ -399,9 +425,15 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         protected T getSession() {
             return session;
         }
+
+        @NotNull
+        @Override
+        protected DBPDataSourceContainer[] getDataSources() {
+            return dataSources.keySet().toArray(new DBPDataSourceContainer[0]);
+        }
     }
 
-    protected static abstract class DelegateSession<T extends AbstractSession> extends AbstractSession {
+    protected static abstract class DelegateSession extends AbstractSession {
         protected final SSHHostConfiguration destination;
 
         public DelegateSession(@NotNull SSHHostConfiguration destination) {
@@ -469,5 +501,8 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
 
         @NotNull
         protected abstract AbstractSession getSession();
+
+        @NotNull
+        protected abstract DBPDataSourceContainer[] getDataSources();
     }
 }
