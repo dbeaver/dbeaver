@@ -278,7 +278,7 @@ class PreviewMappingDialog extends BaseProgressDialog {
         }
 
         @Override
-        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+        public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
             if (getPreviewRows().size() >= previewRowCount) {
                 fetchEnded = true;
                 return;

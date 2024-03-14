@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
@@ -26,6 +27,6 @@ public interface DBAPrivilegeType extends DBPNamedObject {
 
     boolean isValid();
 
-    boolean supportsType(Class<?> objectType);
+    boolean supportsType(@NotNull Class<?> objectType);
 
 }

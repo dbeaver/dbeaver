@@ -124,11 +124,13 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
         return DBValueFormatting.getObjectImage(attribute);
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return attribute.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return attribute.getFullTypeName();
@@ -139,16 +141,19 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
         return attribute.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return attribute.getDataKind();
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return attribute.getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return attribute.getPrecision();

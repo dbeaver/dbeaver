@@ -298,12 +298,14 @@ public class OracleDataType extends OracleObject<DBSObject>
         this.sourceDefinition = source;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
         return getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -315,12 +317,14 @@ public class OracleDataType extends OracleObject<DBSObject>
         return valueType;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {
         return JDBCUtils.resolveDataKind(getDataSource(), getName(), valueType);
     }
 
+    @Nullable
     @Override
     public Integer getScale()
     {

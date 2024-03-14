@@ -305,6 +305,7 @@ public class MySQLTable extends MySQLTableBase
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         List<DBSEntityConstraintInfo> result = new ArrayList<>();

@@ -57,6 +57,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      * Project unique ID.
      * May start with RMProjectType prefix
      */
+    @NotNull
     String getId();
 
     @NotNull
@@ -106,6 +107,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     /**
      * Secret key is used encrypt project data
      */
+    @NotNull
     SecretKey getLocalSecretKey();
 
     @NotNull
@@ -120,17 +122,20 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     SMSessionContext getSessionContext();
 
+    @Nullable
     default SMSession getWorkspaceSession() {
         return getSessionContext().findSpaceSession(getWorkspace());
     }
 
+    @Nullable
     Object getProjectProperty(String propName);
 
-    void setProjectProperty(String propName, Object propValue);
+    void setProjectProperty(@NotNull String propName, @Nullable Object propValue);
 
     /**
      * Returns logical resource path
      */
+    @NotNull
     String getResourcePath(@NotNull IResource resource);
 
     /**
@@ -139,6 +144,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     String[] findResources(@NotNull Map<String, ?> properties) throws DBException;
 
+    @Nullable
     Map<String, Object> getResourceProperties(@NotNull String resourcePath);
 
     @Nullable

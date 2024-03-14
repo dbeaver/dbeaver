@@ -64,7 +64,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
     @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
         if (privilegeTypes.isEmpty()) {
             return new DBEPersistAction[0];
         }
@@ -156,9 +156,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         };
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
         // In order to properly merge grant/revoke commands, we need to capture
         // the first one which grants and one which revokes and merge privileges
         // from other commands into them. Other commands are consumed later in process.

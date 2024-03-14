@@ -1,23 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corporation and others.
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
- * This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License 2.0
- * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-2.0/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * SPDX-License-Identifier: EPL-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Anton Leherbauer (Wind River Systems) - bug 301226
- *     Red Hat Inc. - bug 373640, 379102
- *     Ericsson AB (Pascal Rapicault) - bug 304132
- *     Rapicorp, Inc - Default the configuration to Application Support (bug 461725)
- *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 221969
- *     Sergei Kovalchuk <skov@dbeaver.com> - Bug (dbeaver/pro#21574) - Support common system path
- *******************************************************************************/
-package org.eclipse.equinox.launcher;
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.launcher;
+
+import org.eclipse.equinox.launcher.JNIBridge;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +26,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -36,16 +36,15 @@ import java.util.zip.ZipFile;
 /**
  * The launcher for Eclipse.
  *
+ * Copied from org.eclipse.equinox.launcher.Main
+ *
  * <b>Note:</b> This class should not be referenced programmatically by
  * other Java code. This class exists only for the purpose of launching Eclipse
  * from the command line. To launch Eclipse programmatically, use
  * org.eclipse.core.runtime.adaptor.EclipseStarter. The fields and methods
  * on this class are not API.
- *
- * @noextend This class is not intended to be subclassed by clients.
- * @noinstantiate This class is not intended to be instantiated by clients.
  */
-public class Main {
+public class DBeaverLauncher {
 
     /**
      * Indicates whether this instance is running in debug mode.
@@ -594,7 +593,6 @@ public class Main {
         if (!checkConfigurationLocation(configurationLocation))
             return;
 
-        setSecurityPolicy(bootPath);
         // splash handling is done here, because the default case needs to know
         // the location of the boot plugin we are going to use
         handleSplash(bootPath);
@@ -607,30 +605,7 @@ public class Main {
         //Nothing to do.
     }
 
-    protected void setSecurityPolicy(URL[] bootPath) {
-        String eclipseSecurity = System.getProperty(PROP_ECLIPSESECURITY);
-        if (eclipseSecurity != null) {
-            // setup a policy that grants the launcher and path for the framework AllPermissions.
-            // Do not set the security manager, this will be done by the framework itself.
-            ProtectionDomain domain = Main.class.getProtectionDomain();
-            CodeSource source = null;
-            if (domain != null)
-                source = Main.class.getProtectionDomain().getCodeSource();
-            if (domain == null || source == null) {
-                log("Can not automatically set the security manager. Please use a policy file."); //$NON-NLS-1$
-                return;
-            }
-            // get the list of codesource URLs to grant AllPermission to
-            URL[] rootURLs = new URL[bootPath.length + 1];
-            rootURLs[0] = source.getLocation();
-            System.arraycopy(bootPath, 0, rootURLs, 1, bootPath.length);
-            // replace the security policy
-            Policy eclipsePolicy = new EclipsePolicy(Policy.getPolicy(), rootURLs);
-            Policy.setPolicy(eclipsePolicy);
-        }
-    }
-
-    private void invokeFramework(String[] passThruArgs, URL[] bootPath) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, Error, Exception, InvocationTargetException {
+    private void invokeFramework(String[] passThruArgs, URL[] bootPath) throws Error, Exception {
         String type = PARENT_CLASSLOADER_BOOT;
         try {
             String javaVersion = System.getProperty("java.version"); //$NON-NLS-1$
@@ -746,25 +721,21 @@ public class Main {
      * in InternalBootLoader
      */
     protected String decode(String urlString) {
-        try {
-            //first encode '+' characters, because URLDecoder incorrectly converts
-            //them to spaces on certain class library implementations.
-            if (urlString.indexOf('+') >= 0) {
-                int len = urlString.length();
-                StringBuilder buf = new StringBuilder(len);
-                for (int i = 0; i < len; i++) {
-                    char c = urlString.charAt(i);
-                    if (c == '+')
-                        buf.append("%2B"); //$NON-NLS-1$
-                    else
-                        buf.append(c);
-                }
-                urlString = buf.toString();
+        //first encode '+' characters, because URLDecoder incorrectly converts
+        //them to spaces on certain class library implementations.
+        if (urlString.indexOf('+') >= 0) {
+            int len = urlString.length();
+            StringBuilder buf = new StringBuilder(len);
+            for (int i = 0; i < len; i++) {
+                char c = urlString.charAt(i);
+                if (c == '+')
+                    buf.append("%2B"); //$NON-NLS-1$
+                else
+                    buf.append(c);
             }
-            return URLDecoder.decode(urlString, "UTF-8"); //$NON-NLS-1$
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(e.getMessage());
+            urlString = buf.toString();
         }
+        return URLDecoder.decode(urlString, StandardCharsets.UTF_8); //$NON-NLS-1$
     }
 
     /**
@@ -774,7 +745,7 @@ public class Main {
      * @return the array of string tokens
      */
     protected String[] getArrayFromList(String prop) {
-        if (prop == null || prop.trim().equals("")) //$NON-NLS-1$
+        if (prop == null || prop.trim().isEmpty()) //$NON-NLS-1$
             return new String[0];
         ArrayList<String> list = new ArrayList<>();
         StringTokenizer tokens = new StringTokenizer(prop, ","); //$NON-NLS-1$
@@ -784,7 +755,7 @@ public class Main {
                 list.add(token);
             }
         }
-        return list.isEmpty() ? new String[0] : list.toArray(new String[list.size()]);
+        return list.isEmpty() ? new String[0] : list.toArray(new String[0]);
     }
 
     /**
@@ -801,7 +772,7 @@ public class Main {
             addDevEntries(base, result, OSGI);
         //The jars from the base always need to be added, even when running in dev mode (bug 46772)
         addBaseJars(base, result);
-        return result.toArray(new URL[result.size()]);
+        return result.toArray(new URL[0]);
     }
 
     URL constructURL(URL url, String name) {
@@ -840,7 +811,7 @@ public class Main {
             if (debug) {
                 System.out.println("Loading extension: " + extension); //$NON-NLS-1$
             }
-            URL extensionURL = null;
+            URL extensionURL;
             if (installLocation.getProtocol().equals("file")) { //$NON-NLS-1$
                 extensionResults.add(path);
                 extensionURL = new File(path).toURL();
@@ -860,7 +831,7 @@ public class Main {
             else
                 // this is a "normal" RFC 101 framework extension bundle just put the base path on the classpath
                 extensionProperties = new Properties();
-            String[] entries = extensionClassPath == null || extensionClassPath.length() == 0 ? new String[]{""} : getArrayFromList(extensionClassPath); //$NON-NLS-1$
+            String[] entries = extensionClassPath == null || extensionClassPath.isEmpty() ? new String[]{""} : getArrayFromList(extensionClassPath); //$NON-NLS-1$
             String qualifiedPath;
             if (System.getProperty(PROP_CLASSPATH) == null)
                 qualifiedPath = "."; //$NON-NLS-1$
@@ -885,7 +856,7 @@ public class Main {
                 addDevEntries(extensionURL, result, name);
             }
         }
-        extensionPaths = extensionResults.toArray(new String[extensionResults.size()]);
+        extensionPaths = extensionResults.toArray(new String[0]);
     }
 
     private void addBaseJars(URL base, ArrayList<URL> result) throws IOException {
@@ -927,7 +898,7 @@ public class Main {
                 if (string.equals(".")) { //$NON-NLS-1$
                     addEntry(base, result);
                 }
-                URL url = null;
+                URL url;
                 if (string.startsWith(FILE_SCHEME))
                     url = new File(string.substring(5)).toURL();
                 else
@@ -976,7 +947,7 @@ public class Main {
      * @throws MalformedURLException if a problem occurs computing the class path
      */
     private URL[] getBootPath(String base) throws IOException {
-        URL url = null;
+        URL url;
         if (base != null) {
             url = buildURL(base, true);
         } else {
@@ -1027,7 +998,7 @@ public class Main {
                 matches.add(candidate);
             }
         }
-        String[] names = matches.toArray(new String[matches.size()]);
+        String[] names = matches.toArray(new String[0]);
         int result = findMax(target, names);
         if (result == -1)
             return null;
@@ -1147,7 +1118,7 @@ public class Main {
     private Object[] getVersionElements(String version) {
         if (version.endsWith(".jar")) //$NON-NLS-1$
             version = version.substring(0, version.length() - 4);
-        Object[] result = {Integer.valueOf(0), Integer.valueOf(0), Integer.valueOf(0), ""}; //$NON-NLS-1$
+        Object[] result = {0, 0, 0, ""}; //$NON-NLS-1$
         StringTokenizer t = new StringTokenizer(version, "."); //$NON-NLS-1$
         String token;
         int i = 0;
@@ -1364,10 +1335,10 @@ public class Main {
             try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
                 props.load(inStream);
                 String appId = props.getProperty(PRODUCT_SITE_ID);
-                if (appId == null || appId.trim().length() == 0)
+                if (appId == null || appId.trim().isEmpty())
                     appId = ECLIPSE;
                 String appVersion = props.getProperty(PRODUCT_SITE_VERSION);
-                if (appVersion == null || appVersion.trim().length() == 0)
+                if (appVersion == null || appVersion.trim().isEmpty())
                     appVersion = ""; //$NON-NLS-1$
                 appName += File.separator + appId + "_" + appVersion + "_" + installDirHash; //$NON-NLS-1$ //$NON-NLS-2$
             } catch (IOException e) {
@@ -1436,7 +1407,7 @@ public class Main {
         ArrayList<String> list = new ArrayList<>(5);
         for (StringTokenizer tokens = new StringTokenizer(argString, " "); tokens.hasMoreElements(); ) //$NON-NLS-1$
             list.add(tokens.nextToken());
-        main(list.toArray(new String[list.size()]));
+        main(list.toArray(new String[0]));
     }
 
     /**
@@ -1457,11 +1428,11 @@ public class Main {
     public static void main(String[] args) {
         int result = 0;
         try {
-            result = new Main().run(args);
+            result = new DBeaverLauncher().run(args);
         } catch (Throwable t) {
             // This is *really* unlikely to happen - run() takes care of exceptional situations.
             // In case something weird happens, just dump stack - logging is not available at this point
-            t.printStackTrace();
+            t.printStackTrace(System.err);
         } finally {
             // If the return code is 23, that means that Equinox requested a restart.
             // In order to distinguish the request for a restart, do a System.exit(23)
@@ -1482,7 +1453,7 @@ public class Main {
      * @param args the command line arguments
      */
     public int run(String[] args) {
-        int result = 0;
+        int result;
         try {
             basicRun(args);
             String exitCode = System.getProperty(PROP_EXITCODE);
@@ -1879,11 +1850,11 @@ public class Main {
             try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
                 props.load(inStream);
                 String appId = props.getProperty(PRODUCT_SITE_ID);
-                if (appId == null || appId.trim().length() == 0) {
+                if (appId == null || appId.trim().isEmpty()) {
                     appId = ECLIPSE;
                 }
                 String appVersion = props.getProperty(PRODUCT_SITE_VERSION);
-                if (appVersion == null || appVersion.trim().length() == 0) {
+                if (appVersion == null || appVersion.trim().isEmpty()) {
                     appVersion = ""; //$NON-NLS-1$
                 }
                 productPath = appId + File.separator + appVersion;
@@ -2014,7 +1985,7 @@ public class Main {
         } catch (MalformedURLException e1) {
             return NO_TIMESTAMP;
         }
-        URLConnection connection = null;
+        URLConnection connection;
         try {
             connection = url.openConnection();
         } catch (IOException e) {
@@ -2050,7 +2021,7 @@ public class Main {
         if (propertyValue == null)
             // property not defined
             return;
-        URL locationURL = null;
+        URL locationURL;
         try {
             locationURL = new URL(propertyValue);
         } catch (MalformedURLException e) {
@@ -2098,7 +2069,7 @@ public class Main {
             return installLocation;
         }
 
-        ProtectionDomain domain = Main.class.getProtectionDomain();
+        ProtectionDomain domain = DBeaverLauncher.class.getProtectionDomain();
         CodeSource source = null;
         URL result = null;
         if (domain != null)
@@ -2177,8 +2148,8 @@ public class Main {
         // try to load saved configuration file (watch for failed prior save())
         if (url == null)
             return null;
-        Properties result = null;
-        IOException originalException = null;
+        Properties result;
+        IOException originalException;
         try {
             result = load(url, null); // try to load config file
         } catch (IOException e1) {
@@ -2201,7 +2172,7 @@ public class Main {
      */
     private Properties load(URL url, String suffix) throws IOException {
         // figure out what we will be loading
-        if (suffix != null && !suffix.equals("")) //$NON-NLS-1$
+        if (suffix != null && !suffix.isEmpty()) //$NON-NLS-1$
             url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile() + suffix);
 
         // try to load saved configuration file
@@ -2337,7 +2308,7 @@ public class Main {
                 }
             }
             // see if we can get a splash given the splash path
-            result = searchForSplash(path.toArray(new String[path.size()]));
+            result = searchForSplash(path.toArray(new String[0]));
             if (result != null) {
                 System.setProperty(PROP_SPLASHLOCATION, result);
                 return result;
@@ -2475,10 +2446,8 @@ public class Main {
             nl = nl.substring(0, lastSeparator);
         }
         //add the empty suffix last (most general)
-        for (String name : SPLASH_IMAGES) {
-            result.add(name);
-        }
-        return result.toArray(new String[result.size()]);
+        Collections.addAll(result, SPLASH_IMAGES);
+        return result.toArray(new String[0]);
     }
 
     /*
@@ -2701,100 +2670,6 @@ public class Main {
         }
     }
 
-    /*
-     * NOTE: It is ok here for EclipsePolicy to use 1.4 methods because the methods
-     * that it calls them from don't exist in Foundation so they will never be called. A more
-     * detailed explanation from Tom:
-     *
-     * They will never get called because in a pre 1.4 VM the methods
-     * getPermissions(CodeSource) and implies(ProtectionDomain, Permission) are
-     * undefined on the Policy class which is what EclipsePolicy extends.  EclipsePolicy
-     * implements these two methods so it can proxy them to the parent Policy.
-     * But since these methods are not actually defined on Policy in a pre-1.4 VM
-     * nobody will actually call them (unless they casted the policy to EclipsePolicy and
-     * called our methods)
-     */
-    private class EclipsePolicy extends Policy {
-        // The policy that this EclipsePolicy is replacing
-        private Policy policy;
-
-        // The set of URLs to give AllPermissions to; this is the set of bootURLs
-        private URL[] urls;
-
-        // The AllPermissions collection
-        private PermissionCollection allPermissions;
-
-        // The AllPermission permission
-        Permission allPermission = new AllPermission();
-
-        EclipsePolicy(Policy policy, URL[] urls) {
-            this.policy = policy;
-            this.urls = urls;
-            allPermissions = new PermissionCollection() {
-                private static final long serialVersionUID = 3258131349494708277L;
-
-                // A simple PermissionCollection that only has AllPermission
-                @Override
-                public void add(Permission permission) {
-                    //no adding to this policy
-                }
-
-                @Override
-                public boolean implies(Permission permission) {
-                    return true;
-                }
-
-                @Override
-                public Enumeration<Permission> elements() {
-                    return Collections.enumeration(Collections.singleton(allPermission));
-                }
-            };
-        }
-
-        @Override
-        public PermissionCollection getPermissions(CodeSource codesource) {
-            if (contains(codesource))
-                return allPermissions;
-            return policy == null ? allPermissions : policy.getPermissions(codesource);
-        }
-
-        @Override
-        public PermissionCollection getPermissions(ProtectionDomain domain) {
-            if (contains(domain.getCodeSource()))
-                return allPermissions;
-            return policy == null ? allPermissions : policy.getPermissions(domain);
-        }
-
-        @Override
-        public boolean implies(ProtectionDomain domain, Permission permission) {
-            if (contains(domain.getCodeSource()))
-                return true;
-            return policy == null ? true : policy.implies(domain, permission);
-        }
-
-        @Override
-        public void refresh() {
-            if (policy != null)
-                policy.refresh();
-        }
-
-        private boolean contains(CodeSource codeSource) {
-            if (codeSource == null)
-                return false;
-            URL location = codeSource.getLocation();
-            if (location == null)
-                return false;
-            // Check to see if this URL is in our set of URLs to give AllPermissions to.
-            for (URL url : urls) {
-                // We do simple equals test here because we assume the URLs will be the same objects.
-                if (url == location) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
     public class StartupClassLoader extends URLClassLoader {
 
         public StartupClassLoader(URL[] urls) {
@@ -2877,7 +2752,7 @@ public class Main {
                     // we have found the end of a var
                     String prop = null;
                     // get the value of the var from system properties
-                    if (var != null && var.length() > 0)
+                    if (var != null && !var.isEmpty())
                         prop = System.getProperty(var);
                     if (prop == null) {
                         prop = System.getenv(var);

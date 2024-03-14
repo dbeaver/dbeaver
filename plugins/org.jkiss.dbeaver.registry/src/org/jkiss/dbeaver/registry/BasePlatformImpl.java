@@ -271,6 +271,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return localTaskController;
     }
 
+    @NotNull
     @Override
     public DBTTaskController createTaskController() {
         DBPApplication application = getApplication();

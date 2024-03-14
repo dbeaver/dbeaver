@@ -880,12 +880,12 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) {
+        public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) {
 
         }
 
         @Override
-        public void fetchRow(DBCSession session, DBCResultSet resultSet)
+        public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
             throws DBCException {
             DBCResultSetMetaData rsMeta = resultSet.getMeta();
             List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
@@ -933,7 +933,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchEnd(DBCSession session, DBCResultSet resultSet) {
+        public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) {
 
         }
 

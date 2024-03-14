@@ -17,13 +17,18 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Resource handler info
  */
 public interface DBPResourceHandlerDescriptor {
 
+    @NotNull
     DBPResourceTypeDescriptor getResourceType();
 
+    @Nullable
     DBPResourceHandler getHandler();
 
 }

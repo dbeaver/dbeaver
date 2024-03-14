@@ -112,6 +112,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return inMemory;
     }
 
+    @NotNull
     @Override
     public String getId() {
         return getName();
@@ -235,6 +236,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     ////////////////////////////////////////////////////////
     // Secure storage
 
+    @NotNull
     @Override
     public SecretKey getLocalSecretKey() {
         return new SecretKeySpec(LOCAL_KEY_CACHE, DefaultValueEncryptor.KEY_ALGORITHM);
@@ -263,6 +265,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     ////////////////////////////////////////////////////////
     // Properties
 
+    @Nullable
     @Override
     public Object getProjectProperty(String propName) {
         synchronized (this) {
@@ -272,7 +275,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @Override
-    public void setProjectProperty(String propName, Object propValue) {
+    public void setProjectProperty(@NotNull String propName, @Nullable Object propValue) {
         synchronized (metadataSync) {
             loadProperties();
             if (propValue == null) {
@@ -498,12 +501,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     // Realm
 
     @Override
-    public boolean hasRealmPermission(String permission) {
+    public boolean hasRealmPermission(@NotNull String permission) {
         return true;
     }
 
     @Override
-    public boolean supportsRealmFeature(String feature) {
+    public boolean supportsRealmFeature(@NotNull String feature) {
         return true;
     }
 

@@ -17,7 +17,9 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -25,6 +27,13 @@ import org.jkiss.utils.CommonUtils;
 
 public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
     private String inputFile;
+
+    public AbstractScriptExecuteSettings() {
+    }
+
+    public AbstractScriptExecuteSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     public String getInputFile() {
         return inputFile;

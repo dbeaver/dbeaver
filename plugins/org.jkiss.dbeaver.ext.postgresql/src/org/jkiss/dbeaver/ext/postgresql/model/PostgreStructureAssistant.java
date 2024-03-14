@@ -60,6 +60,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         return dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
@@ -72,6 +73,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
@@ -81,6 +83,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {
@@ -90,6 +93,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         //TODO: currently, we do not search for data types, although it's absolutely possible.

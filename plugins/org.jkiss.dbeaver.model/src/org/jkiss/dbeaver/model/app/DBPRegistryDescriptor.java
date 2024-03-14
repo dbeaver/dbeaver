@@ -17,11 +17,13 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBPRegistryDescriptor
  */
-public interface DBPRegistryDescriptor<TYPE>
-{
+public interface DBPRegistryDescriptor<TYPE> {
+    @NotNull
     String getId();
 
     TYPE getInstance();

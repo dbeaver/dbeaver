@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
-        implements MySQLNativeCredentialsSettings, ExportSettingsExtension<MySQLDatabaseExportInfo> {
+    implements MySQLNativeCredentialsSettings, ExportSettingsExtension<MySQLDatabaseExportInfo> {
     private static final Log log = Log.getLog(MySQLExportSettings.class);
 
     public enum DumpMethod {
@@ -74,6 +75,14 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean overrideCredentials;
 
     public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
+
+    public MySQLExportSettings() {
+        super();
+    }
+
+    public MySQLExportSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     @NotNull
     public DumpMethod getMethod() {

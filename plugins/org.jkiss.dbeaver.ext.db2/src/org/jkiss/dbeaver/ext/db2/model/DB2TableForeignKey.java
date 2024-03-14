@@ -103,6 +103,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
         return getTable().getDataSource();
     }
 
+    @Nullable
     @Override
     public DB2Table getAssociatedEntity() {
         return refTable;
