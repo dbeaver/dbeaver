@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -33,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BigQueryDataSource extends GenericDataSource {
+
+    private final BigQueryFactory bqFactory = new BigQueryFactory();
 
     public BigQueryDataSource(
         @NotNull DBRProgressMonitor monitor,
@@ -79,4 +83,19 @@ public class BigQueryDataSource extends GenericDataSource {
         return super.resolveDataKind(typeName, valueType);
     }
 
+    @Override
+    protected BigQuerySession createConnection(
+        @NotNull DBRProgressMonitor monitor, 
+        @NotNull JDBCExecutionContext context, 
+        DBCExecutionPurpose purpose,
+        String taskTitle
+    ) {
+        return new BigQuerySession(context, monitor, purpose, taskTitle);
+    }
+
+    @Override
+    @NotNull
+    public JDBCFactory getJdbcFactory() {
+        return bqFactory;
+    }
 }
