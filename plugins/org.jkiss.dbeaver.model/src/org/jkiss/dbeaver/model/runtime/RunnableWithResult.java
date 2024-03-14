@@ -17,10 +17,15 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+
 /**
  * Runnable which stores some result
  */
 public abstract class RunnableWithResult<RESULT_TYPE> implements Runnable {
+
+    private static final Log log = Log.getLog(RunnableWithResult.class);
 
     private RESULT_TYPE result;
 
@@ -31,8 +36,12 @@ public abstract class RunnableWithResult<RESULT_TYPE> implements Runnable {
 
     @Override
     public final void run() {
-        result = runWithResult();
+        try {
+            result = runWithResult();
+        } catch (Exception e) {
+            log.error("Internal error: task " + getClass().getName() + "' failed", e);
+        }
     }
 
-    public abstract RESULT_TYPE runWithResult();
+    public abstract RESULT_TYPE runWithResult() throws DBException;
 }

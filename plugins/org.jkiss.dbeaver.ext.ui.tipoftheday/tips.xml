@@ -165,7 +165,7 @@
 	<tip product="ce">With DBeaver PRO, you can compare schemas, including all metadata objects, in one or different databases.
 		 Learn more about the powerful schema comparison in DBeaver PRO
 		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
-	<tip product="ce">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — for example, Crows Foot.</tip>
+	<tip product="ce">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — for example, Crow's Foot.</tip>
 	<tip product="ce,le,ee,ue">DBeaver PRO offers a convenient way to configure Kubernetes settings for connecting to databases in a Kubernetes cluster.<br/>
 		Learn more about Kubernetes configuration <a href="https://dbeaver.com/docs/dbeaver/Kubernetes-configuration/">here</a>.</tip>
 	<tip product="ce">You can connect to almost any database by using native ODBC drivers in <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">DBeaver PRO</a>.</tip>
@@ -195,7 +195,7 @@
 	<tip product="le,ee,ue">You can connect to almost any database by using native ODBC drivers <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">with the help of DBeaver ODBC</a>.</tip>
 	<tip product="le,ee,ue">You can connect to a Salesforce database using the
 		<a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce driver</a> created by the DBeaver team.</tip>
-	<tip product="le,ee,ue">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — Crows Foot or Bachman.</tip>
+	<tip product="le,ee,ue">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — Crow's Foot or Bachman.</tip>
 
 	<tip product="ee">DBeaver Enterprise is fully integrated with the <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Git
 		 version control system</a>. Keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>
