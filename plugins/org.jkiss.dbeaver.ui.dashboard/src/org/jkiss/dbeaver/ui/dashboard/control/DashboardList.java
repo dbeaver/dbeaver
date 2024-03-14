@@ -232,10 +232,12 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
     public void createDashboardsFromConfiguration() {
-        for (DashboardItemViewConfiguration itemConfig : viewContainer.getViewConfiguration().getDashboardItemConfigs()) {
+        for (DashboardItemViewConfiguration itemConfig : new ArrayList<>(viewContainer.getViewConfiguration().getDashboardItemConfigs())) {
             DashboardDescriptor dashboard = itemConfig.getDashboardDescriptor();
             if (dashboard != null) {
                 addDashboard(dashboard);
+            } else {
+                viewContainer.getViewConfiguration().readDashboardConfiguration(itemConfig);
             }
         }
     }

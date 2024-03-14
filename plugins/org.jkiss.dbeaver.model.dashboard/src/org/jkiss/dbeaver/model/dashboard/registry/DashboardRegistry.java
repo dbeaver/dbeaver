@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -182,9 +181,9 @@ public class DashboardRegistry {
             DBDashboardFolder curFolder = null;
             for (String pathItem : path.split("/")) {
                 if (curFolder == null) {
-                    curFolder = DBUtils.findObject(provider.getInstance().loadRootFolders(monitor, provider, context), pathItem);
+                    curFolder = findFolder(provider.getInstance().loadRootFolders(monitor, provider, context), pathItem);
                 } else {
-                    curFolder = DBUtils.findObject(curFolder.loadSubFolders(monitor, context), pathItem);
+                    curFolder = findFolder(curFolder.loadSubFolders(monitor, context), pathItem);
                 }
                 if (curFolder == null) {
                     break;
@@ -205,6 +204,15 @@ public class DashboardRegistry {
         synchronized (syncRoot) {
             return dashboards.get(id);
         }
+    }
+
+    private DBDashboardFolder findFolder(List<DBDashboardFolder> folders, String id) {
+        for (DBDashboardFolder folder : folders) {
+            if (folder.getId().equals(id)) {
+                return folder;
+            }
+        }
+        return null;
     }
 
     public DashboardDescriptor getDashboard(String id) {

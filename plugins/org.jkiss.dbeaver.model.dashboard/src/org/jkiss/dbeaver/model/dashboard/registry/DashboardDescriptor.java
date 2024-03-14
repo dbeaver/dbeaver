@@ -293,7 +293,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
         this.id = id;
     }
 
@@ -305,7 +305,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
         StringBuilder path = new StringBuilder();
         for (DBDashboardFolder f = folder; f != null; f = f.getParent()) {
-            path.append('/').append(f.getName());
+            path.insert(0, '/' + f.getId());
         }
         return path.toString();
     }
@@ -316,7 +316,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 

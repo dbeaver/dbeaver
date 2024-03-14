@@ -35,6 +35,9 @@ public interface DBDashboardFolder extends DBPNamedObject {
     DBDashboardFolder getParent();
 
     @NotNull
+    String getId();
+
+    @NotNull
     String getName();
 
     @Nullable

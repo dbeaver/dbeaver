@@ -104,6 +104,10 @@ public class DashboardViewConfiguration {
         }
     }
 
+    public boolean readDashboardConfiguration(DashboardItemViewConfiguration item) {
+        return items.remove(item);
+    }
+
     public void removeDashboard(String dashboardId) {
         int decValue = 0;
         for (int i = 0; i < items.size(); ) {
