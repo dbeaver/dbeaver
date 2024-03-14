@@ -28,7 +28,7 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.properties,
  org.jkiss.dbeaver.ui.registry,
  org.jkiss.dbeaver.ui.screenreaders,
- org.jkiss.dbeaver.ui.svg
+ org.jkiss.dbeaver.ui.swt
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.resources,
@@ -45,7 +45,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench,
  org.jkiss.dbeaver.model,
- org.jkiss.bundle.jsvg,
  org.eclipse.ui.forms,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.e4.ui.model.workbench
