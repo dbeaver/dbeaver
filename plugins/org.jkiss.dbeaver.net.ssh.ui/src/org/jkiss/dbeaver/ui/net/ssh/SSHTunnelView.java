@@ -111,6 +111,10 @@ public class SSHTunnelView extends ViewPart {
             .toList();
 
         UIUtils.asyncExec(() -> {
+            if (viewer.getControl().isDisposed()) {
+                return;
+            }
+
             viewer.getControl().setRedraw(false);
             viewer.clearListData();
             viewer.appendListData(sessions);
