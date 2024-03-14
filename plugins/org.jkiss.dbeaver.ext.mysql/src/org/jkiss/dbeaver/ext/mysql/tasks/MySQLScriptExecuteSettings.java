@@ -17,9 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -47,6 +49,14 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
     private boolean isForeignKeyCheckDisabled;
 
     private boolean overrideCredentials;
+
+    public MySQLScriptExecuteSettings() {
+    }
+
+    public MySQLScriptExecuteSettings(@NotNull DBPProject project) {
+        super(project);
+    }
+
 
     public LogLevel getLogLevel() {
         return logLevel;
