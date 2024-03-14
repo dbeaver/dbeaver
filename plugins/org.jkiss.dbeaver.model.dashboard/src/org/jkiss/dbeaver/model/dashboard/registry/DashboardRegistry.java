@@ -182,7 +182,7 @@ public class DashboardRegistry {
             DBDashboardFolder curFolder = null;
             for (String pathItem : path.split("/")) {
                 if (curFolder == null) {
-                    curFolder = DBUtils.findObject(provider.getInstance().loadRootFolders(provider, context), pathItem);
+                    curFolder = DBUtils.findObject(provider.getInstance().loadRootFolders(monitor, provider, context), pathItem);
                 } else {
                     curFolder = DBUtils.findObject(curFolder.loadSubFolders(monitor, context), pathItem);
                 }

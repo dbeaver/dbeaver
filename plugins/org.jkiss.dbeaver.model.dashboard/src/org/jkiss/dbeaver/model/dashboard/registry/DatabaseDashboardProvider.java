@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardFolder;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -74,7 +75,11 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
 
     @NotNull
     @Override
-    public List<DBDashboardFolder> loadRootFolders(@NotNull DashboardProviderDescriptor provider, @NotNull DBDashboardContext context) {
+    public List<DBDashboardFolder> loadRootFolders(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DashboardProviderDescriptor provider,
+        @NotNull DBDashboardContext context
+    ) {
         return List.of();
     }
 

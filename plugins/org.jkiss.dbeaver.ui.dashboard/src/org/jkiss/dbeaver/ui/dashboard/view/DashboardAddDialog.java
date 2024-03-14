@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,7 +109,11 @@ public class DashboardAddDialog extends BaseDialog {
                 } else if (cell.getElement() instanceof DBDashboardFolder folder) {
                     if (cell.getColumnIndex() == 0) {
                         cell.setText(folder.getName());
-                        cell.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+                        DBPImage icon = folder.getIcon();
+                        if (icon == null) {
+                            icon = DBIcon.TREE_FOLDER;
+                        }
+                        cell.setImage(DBeaverIcons.getImage(icon));
                     } else {
                         cell.setText(CommonUtils.notEmpty(folder.getDescription()));
                     }
@@ -166,8 +172,14 @@ public class DashboardAddDialog extends BaseDialog {
                         List<DashboardDescriptor> dashboards = df.loadDashboards(new VoidProgressMonitor(), context);
                         return ArrayUtils.concatArrays(subFolders.toArray(), dashboards.toArray());
                     } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
+                        List<Object> children = new ArrayList<>();
                         if (dpd.isSupportsFolders()) {
-                            return dpd.getInstance().loadRootFolders(dpd, context).toArray();
+                            try {
+                                UIUtils.runInProgressDialog(monitor -> children.addAll(dpd.getInstance().loadRootFolders(monitor, dpd, context)));
+                            } catch (InvocationTargetException e) {
+                                DBWorkbench.getPlatformUI().showError("Folders load error", null, e.getTargetException());
+                            }
+                            return children.toArray();
                         }
                         List<DashboardDescriptor> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboards(
                             dpd,
