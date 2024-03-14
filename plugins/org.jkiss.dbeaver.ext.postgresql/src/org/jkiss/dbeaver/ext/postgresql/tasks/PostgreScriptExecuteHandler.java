@@ -43,7 +43,7 @@ public class PostgreScriptExecuteHandler extends PostgreNativeToolHandler<Postgr
 
     @Override
     protected PostgreScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
-        PostgreScriptExecuteSettings settings = new PostgreScriptExecuteSettings();
+        PostgreScriptExecuteSettings settings = new PostgreScriptExecuteSettings(task.getProject());
         settings.loadSettings(context, new TaskPreferenceStore(task));
 
         return settings;
