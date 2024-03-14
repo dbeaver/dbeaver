@@ -42,21 +42,20 @@ import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class JschSessionController extends AbstractSessionController<JschSession> {
-    private static final Log log = Log.getLog(JschSessionController.class);
+public class JSCHSessionController extends AbstractSessionController<JSCHSession> {
+    private static final Log log = Log.getLog(JSCHSessionController.class);
 
     private final JSch jsch;
-    private AgentIdentityRepository agentIdentityRepository;
 
-    public JschSessionController() {
+    public JSCHSessionController() {
         jsch = new JSch();
         JSch.setLogger(new JschLogger());
     }
 
     @NotNull
     @Override
-    protected JschSession createSession() {
-        return new JschSession(this);
+    protected JSCHSession createSession() {
+        return new JSCHSession(this);
     }
 
     @NotNull
@@ -128,37 +127,6 @@ public class JschSessionController extends AbstractSessionController<JschSession
         } catch (JSchException e) {
             throw new DBException("Failed to create session", e);
         }
-    }
-
-    @NotNull
-    private IdentityRepository createAgentIdentityRepository() throws DBException {
-        if (agentIdentityRepository == null) {
-            AgentConnector connector = null;
-
-            try {
-                connector = new PageantConnector();
-                log.debug("SSHSessionController: connected with pageant");
-            } catch (Exception e) {
-                log.debug("SSHSessionController: pageant connect exception", e);
-            }
-
-            if (connector == null) {
-                try {
-                    connector = new SSHAgentConnector(new JUnixSocketFactory());
-                    log.debug("SSHSessionController: Connected with ssh-agent");
-                } catch (Exception e) {
-                    log.debug("SSHSessionController: ssh-agent connection exception", e);
-                }
-            }
-
-            if (connector == null) {
-                throw new DBException("Unable to initialize SSH agent");
-            }
-
-            agentIdentityRepository = new AgentIdentityRepository(connector);
-        }
-
-        return agentIdentityRepository;
     }
 
     private void setupHostKeyVerification(

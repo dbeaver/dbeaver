@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import com.jcraft.jsch.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,6 +42,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     private static final Log log = Log.getLog(AbstractSessionController.class);
 
     protected final Map<SSHHostConfiguration, ShareableSession<T>> sessions = new ConcurrentHashMap<>();
+    protected AgentIdentityRepository agentIdentityRepository;
 
     @NotNull
     @Override
@@ -124,6 +126,37 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     @Override
     public DBPDataSourceContainer[] getDependentDataSources(@NotNull SSHSession session) {
         return getDelegateSession(session).getDataSources();
+    }
+
+    @NotNull
+    protected IdentityRepository createAgentIdentityRepository() throws DBException {
+        if (agentIdentityRepository == null) {
+            AgentConnector connector = null;
+
+            try {
+                connector = new PageantConnector();
+                log.debug("SSHSessionController: connected with pageant");
+            } catch (Exception e) {
+                log.debug("SSHSessionController: pageant connect exception", e);
+            }
+
+            if (connector == null) {
+                try {
+                    connector = new SSHAgentConnector(new JUnixSocketFactory());
+                    log.debug("SSHSessionController: Connected with ssh-agent");
+                } catch (Exception e) {
+                    log.debug("SSHSessionController: ssh-agent connection exception", e);
+                }
+            }
+
+            if (connector == null) {
+                throw new DBException("Unable to initialize SSH agent");
+            }
+
+            agentIdentityRepository = new AgentIdentityRepository(connector);
+        }
+
+        return agentIdentityRepository;
     }
 
     @NotNull

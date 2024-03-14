@@ -29,11 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class JschSession extends AbstractSession {
-    private final JschSessionController controller;
+public class JSCHSession extends AbstractSession {
+    private final JSCHSessionController controller;
     private Session session;
 
-    public JschSession(@NotNull JschSessionController controller) {
+    public JSCHSession(@NotNull JSCHSessionController controller) {
         this.controller = controller;
     }
 
