@@ -38,9 +38,17 @@ public class BigQueryTrace implements DBCTrace {
             Object mDataHandler = BeanUtils.getInheritedFieldValue(mResultSet, "m_dataHandler"); //$NON-NLS-1$
             Object mBqResults = BeanUtils.getInheritedFieldValue(mDataHandler, "m_bqResults"); //$NON-NLS-1$
             Object mQueryResponse = BeanUtils.getInheritedFieldValue(mBqResults, "m_queryResponse"); //$NON-NLS-1$
-            Object totalBytes = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse, "getTotalBytesProcessed", new Class[0], new Object[0]); //$NON-NLS-1$
-            Object totalRows = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse, "getTotalRows", new Class[0], new Object[0]); //$NON-NLS-1$
-            Object cacheHit = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse, "getCacheHit", new Class[0], new Object[0]); //$NON-NLS-1$
+            Object totalBytes = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
+                "getTotalBytesProcessed", // $NON-NLS-1$
+                new Class[0],
+                new Object[0]);
+            Object totalRows = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
+                "getTotalRows", // $NON-NLS-1$
+                new Class[0],
+                new Object[0]);
+            Object cacheHit = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
+                "getCacheHit", // $NON-NLS-1$
+                new Class[0], new Object[0]);
             resultDetails.put("Total bytes processed", byteFormater.format(totalBytes)); //$NON-NLS-1$
             resultDetails.put("Total rows", String.valueOf(totalRows)); //$NON-NLS-1$
             resultDetails.put("Fetched from cache", String.valueOf(cacheHit)); //$NON-NLS-1$

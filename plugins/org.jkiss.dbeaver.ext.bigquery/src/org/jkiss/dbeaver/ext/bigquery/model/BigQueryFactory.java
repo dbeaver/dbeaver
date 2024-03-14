@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.bigquery.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class BigQueryFactory extends JDBCFactoryDefault {
 
