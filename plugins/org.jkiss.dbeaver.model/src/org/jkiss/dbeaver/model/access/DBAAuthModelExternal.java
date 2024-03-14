@@ -17,11 +17,13 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 
 /**
  * External auth model.
  */
 public interface DBAAuthModelExternal<CREDENTIALS extends DBAAuthCredentials> extends DBAAuthModel<CREDENTIALS> {
+    @Nullable
     String getRequiredExternalAuth(DBPConnectionConfiguration configuration);
 }
