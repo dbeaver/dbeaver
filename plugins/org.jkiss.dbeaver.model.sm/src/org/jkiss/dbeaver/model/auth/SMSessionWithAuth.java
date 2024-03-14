@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.opendistro;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
+package org.jkiss.dbeaver.model.auth;
 
-public class ElasticsearchDataSourceProvider extends GenericDataSourceProvider {
+import java.util.List;
 
-    private static final Log log = Log.getLog(ElasticsearchDataSourceProvider.class);
+/**
+ * Session which contain current user authentication information
+ */
+public interface SMSessionWithAuth extends SMSession {
 
-    public ElasticsearchDataSourceProvider()
-    {
-    }
-
-    @Override
-    public void init(@NotNull DBPPlatform platform) {
-
-    }
+    List<SMAuthInfo> getAuthInfos();
 
 }

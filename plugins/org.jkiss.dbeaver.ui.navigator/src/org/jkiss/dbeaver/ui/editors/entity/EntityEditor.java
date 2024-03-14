@@ -40,6 +40,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -239,8 +241,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Do not save entity editors in auto-save job (#2408)
             return;
         }
+        DBPProject ownerProject = getEditorInput().getNavigatorNode().getOwnerProject();
 
-        if (DBUtils.isReadOnly(getDatabaseObject())) {
+        if (
+            DBUtils.isReadOnly(getDatabaseObject())
+                || ownerProject == null
+                || !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
+        ) {
             DBWorkbench.getPlatformUI().showNotification(
                 "Read-only",
                 "Object [" + DBUtils.getObjectFullName(getDatabaseObject(), DBPEvaluationContext.UI) + "] is read-only",

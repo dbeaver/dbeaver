@@ -33,6 +33,9 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitValueFlatExpr(SQLQueryValueFlattenedExpression flattenedExpr, T arg);
 
     @Nullable
+    R visitValueVariableExpr(@NotNull SQLQueryValueVariableExpression varExpr, T arg);
+
+    @Nullable
     R visitValueColumnRefExpr(SQLQueryValueColumnReferenceExpression columnRefExpr, T arg);
     
     @Nullable
@@ -43,6 +46,9 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     
     @Nullable
     R visitValueIndexingExpr(@NotNull SQLQueryValueIndexingExpression indexingExpr, T arg);
+    
+    @Nullable
+    R visitValueTypeCastExpr(@NotNull SQLQueryValueTypeCastExpression typeCastExpr, T arg);
 
     @Nullable
     R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);

@@ -62,6 +62,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return false;
     }
 
+    @Nullable
     @Override
     public DBSObject getObject() {
         return this;
@@ -128,7 +129,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     }
 
     @Override
-    public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException {
+    public Collection<DBSObject> getChildrenObjects(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBNDatabaseNode[] children = getChildren(monitor);
         List<DBSObject> childObjects = new ArrayList<>();
         if (!ArrayUtils.isEmpty(children)) {

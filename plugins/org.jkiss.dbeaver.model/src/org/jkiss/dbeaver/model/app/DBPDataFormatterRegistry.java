@@ -32,7 +32,7 @@ public interface DBPDataFormatterRegistry
     DBDDataFormatterProfile getGlobalProfile();
 
     @Nullable
-    DBDDataFormatterProfile getCustomProfile(String name);
+    DBDDataFormatterProfile getCustomProfile(@NotNull String name);
 
     @NotNull
     List<DBDDataFormatterProfile> getCustomProfiles();

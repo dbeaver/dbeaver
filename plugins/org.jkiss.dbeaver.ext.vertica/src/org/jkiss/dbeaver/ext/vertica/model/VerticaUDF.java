@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -79,8 +80,9 @@ public class VerticaUDF extends AbstractProcedure<GenericDataSource, GenericStru
         return DBSProcedureType.FUNCTION;
     }
 
+    @Nullable
     @Override
-    public Collection<GenericProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;

@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.model.qm;
  */
 public class QMConstants {
     public static final String QM_SESSION_ID_ATTR = "qm_session_id";
+    public static final String QM_USERNAME_ATTR = "qm_username_id";
     public static final String QM_ANONYMOUS_DOMAIN = "anonymous";
     public static final String QM_ANONYMOUS_USER = "@anonymous@";
 

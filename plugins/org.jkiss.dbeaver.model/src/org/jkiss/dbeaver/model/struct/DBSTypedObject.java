@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPObject;
 
@@ -37,11 +39,13 @@ public interface DBSTypedObject extends DBPObject
      * Database specific type name
      * @return type name
      */
+    @NotNull
     String getTypeName();
 
     /**
      * Type name with all qualifiers.
      */
+    @NotNull
     String getFullTypeName();
 
     /**
@@ -55,18 +59,21 @@ public interface DBSTypedObject extends DBPObject
      * Determines kind of data for this typed object.
      * @return data kind
      */
+    @NotNull
     DBPDataKind getDataKind();
 
     /**
      * Value scale. Can be null if scale is not applicable/not specified to this data type.
      * @return scale
      */
+    @Nullable
     Integer getScale();
 
     /**
      * Value precision. Can be null if precision is not applicable/not specified to this data type.
      * @return precision
      */
+    @Nullable
     Integer getPrecision();
 
     /**

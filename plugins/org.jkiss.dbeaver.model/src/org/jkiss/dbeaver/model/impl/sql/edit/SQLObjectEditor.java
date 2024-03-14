@@ -364,8 +364,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             super(object, "JDBC Composite"); //$NON-NLS-1$
         }
 
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) throws DBException {
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectModifyActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);
@@ -373,7 +374,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
             validateObjectProperties(monitor, this, options);
         }
 
@@ -407,7 +408,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
             OBJECT_TYPE newObject = getObject();
             if (!newObject.isPersisted()) {
                 String objectName = newObject.getName();
@@ -430,8 +431,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             }
         }
 
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) throws DBException {
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);
@@ -470,8 +472,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             super(table, title);
         }
 
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) throws DBException {
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectDeleteActions(monitor, executionContext, actions, this, options);
             return actions.toArray(new DBEPersistAction[0]);
@@ -516,8 +519,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             return newName;
         }
 
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             if (CommonUtils.equalObjects(oldName, newName)) {
                 return new DBEPersistAction[0];
             }
@@ -526,8 +530,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             return actions.toArray(new DBEPersistAction[0]);
         }
 
+        @NotNull
         @Override
-        public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             // We need to dismiss all rename commands if there is a create command in the command queue.
             // Otherwise we issue redundant rename commands
             // See https://github.com/dbeaver/dbeaver/issues/11917
@@ -624,15 +629,17 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             return newPosition;
         }
 
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectReorderActions(monitor, executionContext, actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
+        @NotNull
         @Override
-        public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             // We need very first and very last reorder commands. They produce final rename
             final String mergeId = "reorder" + getObject().hashCode();
             ObjectReorderCommand reorderCmd = (ObjectReorderCommand) userParams.get(mergeId);

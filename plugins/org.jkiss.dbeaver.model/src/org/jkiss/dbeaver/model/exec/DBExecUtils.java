@@ -370,26 +370,28 @@ public class DBExecUtils {
         }
     }
 
-    public static void checkSmartAutoCommit(DBCSession session, String queryText) {
+    public static boolean checkSmartAutoCommit(DBCSession session, String queryText) {
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null) {
             try {
                 if (!txnManager.isAutoCommit()) {
-                    return;
+                    return false;
                 }
 
                 SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(session.getDataSource());
                 if (!sqlDialect.isTransactionModifyingQuery(queryText)) {
-                    return;
+                    return false;
                 }
 
                 if (txnManager.isAutoCommit()) {
                     txnManager.setAutoCommit(session.getProgressMonitor(), false);
+                    return true;
                 }
             } catch (DBCException e) {
                 log.warn(e);
             }
         }
+        return false;
     }
 
     public static void setExecutionContextDefaults(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, @Nullable String newInstanceName, @Nullable String curInstanceName, @Nullable String newObjectName) throws DBException {

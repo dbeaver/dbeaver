@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.resources.IResource;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
@@ -27,21 +29,27 @@ public interface DBPResourceTypeDescriptor {
 
     String RESOURCE_ROOT_FOLDER_NODE = "resourceRootFolder";
 
+    @NotNull
     String getId();
 
+    @NotNull
     String getName();
 
+    @Nullable
     DBPImage getIcon();
 
+    @Nullable
     DBPImage getFolderIcon();
 
+    @NotNull
     String[] getFileExtensions();
 
-    String getDefaultRoot(DBPProject project);
+    @Nullable
+    String getDefaultRoot(@Nullable DBPProject project);
 
-    void setDefaultRoot(DBPProject project, String rootPath);
+    void setDefaultRoot(@NotNull DBPProject project, @Nullable String rootPath);
 
     boolean isManagable();
 
-    boolean isApplicableTo(IResource resource, boolean testContent);
+    boolean isApplicableTo(@NotNull IResource resource, boolean testContent);
 }
