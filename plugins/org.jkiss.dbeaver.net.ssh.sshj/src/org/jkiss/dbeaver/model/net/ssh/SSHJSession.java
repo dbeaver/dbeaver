@@ -62,8 +62,11 @@ public class SSHJSession extends AbstractSession {
     @Override
     public void disconnect(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBWHandlerConfiguration configuration
+        @NotNull DBWHandlerConfiguration configuration,
+        long timeout
     ) throws DBException {
+        // FIXME: timeout is not used
+
         for (LocalPortListener listener : listeners.values()) {
             listener.disconnect();
         }

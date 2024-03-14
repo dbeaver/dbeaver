@@ -47,7 +47,12 @@ public class JSCHSession extends AbstractSession {
     }
 
     @Override
-    public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
+    public void disconnect(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        long timeout
+    ) {
+        // FIXME: timeout is not used
         session.disconnect();
         session = null;
     }

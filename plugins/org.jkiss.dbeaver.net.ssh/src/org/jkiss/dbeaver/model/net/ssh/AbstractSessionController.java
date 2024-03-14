@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractSessionController<T extends AbstractSession> implements SSHSessionController {
     private static final Log log = Log.getLog(AbstractSessionController.class);
+    private static final boolean DISABLE_SESSION_SHARING = Boolean.getBoolean("dbeaver.ssh.disableSessionSharing");
 
     protected final Map<SSHHostConfiguration, ShareableSession<T>> sessions = new ConcurrentHashMap<>();
     protected AgentIdentityRepository agentIdentityRepository;
@@ -94,7 +95,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @NotNull DBWHandlerConfiguration configuration,
         long timeout
     ) throws DBException {
-        getDelegateSession(session).disconnect(monitor, configuration);
+        getDelegateSession(session).disconnect(monitor, configuration, timeout);
     }
 
     @Override
@@ -182,10 +183,16 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     }
 
     protected void registerSession(@NotNull ShareableSession<T> session) {
+        if (DISABLE_SESSION_SHARING) {
+            return;
+        }
         sessions.put(session.destination, session);
     }
 
     protected void unregisterSession(@NotNull ShareableSession<T> session) {
+        if (DISABLE_SESSION_SHARING) {
+            return;
+        }
         sessions.remove(session.destination);
     }
 
@@ -243,14 +250,18 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
 
         @Override
-        public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
+        public void disconnect(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBWHandlerConfiguration configuration,
+            long timeout
+        ) throws DBException {
             if (portForward != null) {
                 jumpDestination.removePortForward(portForward);
             }
 
-            jumpDestination.disconnect(monitor, configuration);
+            jumpDestination.disconnect(monitor, configuration, timeout);
             origin.removePortForward(jumpPortForward);
-            origin.disconnect(monitor, configuration);
+            origin.disconnect(monitor, configuration, timeout);
 
             registered = false;
             jumpDestination = null;
@@ -297,13 +308,14 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @Override
         public synchronized void disconnect(
             @NotNull DBRProgressMonitor monitor,
-            @NotNull DBWHandlerConfiguration configuration
+            @NotNull DBWHandlerConfiguration configuration,
+            long timeout
         ) throws DBException {
             if (portForward != null) {
                 super.removePortForward(portForward);
             }
 
-            super.disconnect(monitor, configuration);
+            super.disconnect(monitor, configuration, timeout);
         }
     }
 
@@ -325,8 +337,12 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
 
         @Override
-        public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
-            inner.disconnect(monitor, configuration);
+        public void disconnect(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBWHandlerConfiguration configuration,
+            long timeout
+        ) throws DBException {
+            inner.disconnect(monitor, configuration, timeout);
         }
 
         @NotNull
@@ -410,7 +426,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
 
         @Override
-        public synchronized void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
+        public synchronized void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration, long timeout) throws DBException {
             final DBPDataSourceContainer container = configuration.getDataSource();
             final AtomicInteger counter = dataSources.get(container);
             if (counter == null) {
@@ -422,7 +438,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             }
             if (dataSources.isEmpty()) {
                 controller.unregisterSession(this);
-                super.disconnect(monitor, configuration);
+                super.disconnect(monitor, configuration, timeout);
             }
         }
 
@@ -484,9 +500,13 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
 
         @Override
-        public void disconnect(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration) throws DBException {
+        public void disconnect(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBWHandlerConfiguration configuration,
+            long timeout
+        ) throws DBException {
             log.debug("SSHSessionController: Disconnecting session to " + destination);
-            getSession().disconnect(monitor, configuration);
+            getSession().disconnect(monitor, configuration, timeout);
         }
 
         @NotNull
