@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -74,7 +73,7 @@ class KeepAlivePingJob extends AbstractJob {
                 () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
             synchronized (failedAttempts) {
                 String dsId = dataSource.getContainer().getId();
-                if (isAnySucceeded(results) || disconnectOnError) {
+                if (InvalidateJob.anySucceeded(results) || disconnectOnError) {
                     log.debug("Datasource " + dataSource.getName() + " invalidated: " + results);
                     failedAttempts.remove(dsId);
                 } else {
@@ -90,15 +89,6 @@ class KeepAlivePingJob extends AbstractJob {
             }
         }
         return Status.OK_STATUS;
-    }
-
-    private boolean isAnySucceeded(@NotNull List<InvalidateJob.ContextInvalidateResult> results) {
-        for (InvalidateJob.ContextInvalidateResult result : results) {
-            if (result instanceof InvalidateJob.ContextInvalidateResult.Success) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static int getFailedAttemptCount(DBPDataSource dataSource) {
