@@ -17,9 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -29,6 +31,13 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 public class OracleScriptExecuteSettings extends AbstractScriptExecuteSettings<DBSObject> {
 
     private static final Log log = Log.getLog(OracleScriptExecuteSettings.class);
+
+    public OracleScriptExecuteSettings() {
+    }
+
+    public OracleScriptExecuteSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     @Override
     public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {

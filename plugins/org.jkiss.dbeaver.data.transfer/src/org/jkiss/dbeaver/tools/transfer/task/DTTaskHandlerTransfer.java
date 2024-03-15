@@ -189,7 +189,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                 monitor.beginTask("Finalizing data transfer", 1);
                 try {
                     // End of transfer - signal last pipe about it
-                    dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, null, task, true);
+                    dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, error[0], task, true);
                 } finally {
                     monitor.done();
                 }
