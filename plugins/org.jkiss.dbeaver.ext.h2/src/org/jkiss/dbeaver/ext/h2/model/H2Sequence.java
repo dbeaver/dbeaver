@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.utils.CommonUtils;
 
 public class H2Sequence extends GenericSequence {
@@ -67,7 +68,7 @@ public class H2Sequence extends GenericSequence {
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 5)
+    @Property(viewable = true, editable = true, updatable = true, order = 5, length = PropertyLength.MULTILINE)
     public String getDescription() {
         return description;
     }
