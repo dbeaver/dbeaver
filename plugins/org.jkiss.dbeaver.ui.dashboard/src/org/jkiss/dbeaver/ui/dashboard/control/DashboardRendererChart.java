@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.FixedMillisecond;
@@ -55,6 +56,11 @@ public abstract class DashboardRendererChart implements DBDashboardRenderer {
         }
         dataset.addSeries(seriesCos);
 
+    }
+
+    @Override
+    public void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardItemViewConfiguration dashboardConfig) {
+        // nothing here
     }
 
     @Override

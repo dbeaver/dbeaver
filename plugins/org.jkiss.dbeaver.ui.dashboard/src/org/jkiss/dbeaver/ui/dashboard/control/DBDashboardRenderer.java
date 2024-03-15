@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 
 import java.util.Date;
@@ -39,6 +41,8 @@ public interface DBDashboardRenderer {
         @NotNull DBDashboardContainer container,
         @NotNull DashboardViewContainer viewContainer,
         @NotNull Point preferredSize);
+
+    void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardItemViewConfiguration dashboardConfig);
 
     void updateDashboardData(DBDashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
 

@@ -59,6 +59,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
     private DBDashboardRenderer renderer;
     private Composite dashboardControl;
     private final Label titleLabel;
+    private final ToolBar titleToolbar;
     private final Composite chartComposite;
     private boolean autoUpdateEnabled;
 
@@ -85,14 +86,18 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
             titleComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             titleComposite.setBackground(defBG);
             titleComposite.setForeground(defFG);
-            FillLayout fillLayout = new FillLayout();
-            fillLayout.marginHeight = 3;
-            fillLayout.marginWidth = 3;
-            titleComposite.setLayout(fillLayout);
+            GridLayout gridLayout = new GridLayout(2, false);
+            gridLayout.marginHeight = 3;
+            gridLayout.marginWidth = 3;
+            titleComposite.setLayout(gridLayout);
+
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
 
             titleLabel.setText(dashboardConfig == null ? dashboard.getId() : "  " + dashboard.getName());
+            titleLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            titleToolbar = new ToolBar(titleComposite, SWT.FLAT | SWT.HORIZONTAL);
 
             this.createContextMenu(titleLabel);
         }
@@ -127,6 +132,7 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
             curViewType = dashboardConfig.getViewType();
             renderer = curViewType.createRenderer();
             dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
+            renderer.fillDashboardToolbar(titleToolbar, dashboardControl, dashboardConfig);
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
