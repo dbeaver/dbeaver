@@ -77,6 +77,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @NotNull
     private SQLDialectMetadata scriptDialect;
     private boolean inheritClients;
+    private boolean inheritAuthModels = true;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config) {
         super(config);
@@ -109,6 +110,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             this.treeDescriptor = this.loadTreeInfo(trees[0]);
         }
         this.supportsDriverMigration = CommonUtils.toBoolean(config.getAttribute("supports-migration"));
+        this.inheritAuthModels = CommonUtils.getBoolean(config.getAttribute("inheritAuthModels"), true);
     }
 
     void linkParentProvider(IConfigurationElement config) {
@@ -239,6 +241,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean matchesId(String id) {
         if (id.equals(this.id)) return true;
+        if (!inheritAuthModels) {
+            return false;
+        }
         return parentProvider != null && parentProvider.matchesId(id);
     }
 
@@ -477,8 +482,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         String changeFolderType = config.getAttribute("changeFolderType");
         if (changeFolderType != null) {
             DBXTreeNode folderNode = baseItem.getParent();
-            if (folderNode instanceof DBXTreeFolder) {
-                ((DBXTreeFolder) folderNode).setType(changeFolderType);
+            if (folderNode instanceof DBXTreeFolder folder) {
+                folder.setType(changeFolderType);
+                String changeFolderLabel = config.getAttribute("changeFolderLabel");
+                if (CommonUtils.isNotEmpty(changeFolderLabel)) {
+                   folder.setLabel(changeFolderLabel);
+                   folder.setDescription(changeFolderLabel);
+                }
             } else {
                 log.error("Can't update folder type to " + changeFolderType);
             }

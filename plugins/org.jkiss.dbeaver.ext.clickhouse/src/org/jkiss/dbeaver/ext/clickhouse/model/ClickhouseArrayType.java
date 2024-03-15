@@ -34,6 +34,7 @@ public class ClickhouseArrayType extends ClickhouseAbstractDataType {
         this.name = "Array(" + componentType.getFullTypeName() + ")";
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return name;
@@ -44,6 +45,7 @@ public class ClickhouseArrayType extends ClickhouseAbstractDataType {
         return Types.ARRAY;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return DBPDataKind.ARRAY;

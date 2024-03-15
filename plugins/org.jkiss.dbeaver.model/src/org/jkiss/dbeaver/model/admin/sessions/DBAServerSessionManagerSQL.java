@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.admin.sessions;
 
+import org.jkiss.code.NotNull;
+
 import java.util.Map;
 
 /**
@@ -26,6 +28,7 @@ public interface DBAServerSessionManagerSQL {
 
     boolean canGenerateSessionReadQuery();
 
-    String generateSessionReadQuery(Map<String, Object> options);
+    @NotNull
+    String generateSessionReadQuery(@NotNull Map<String, Object> options);
 
 }

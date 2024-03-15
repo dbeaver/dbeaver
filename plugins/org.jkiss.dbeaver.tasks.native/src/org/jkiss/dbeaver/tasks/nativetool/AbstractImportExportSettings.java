@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tasks.nativetool;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -41,6 +42,14 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
 
     private String outputFolderPattern;
     private String outputFilePattern;
+
+    public AbstractImportExportSettings() {
+        super();
+    }
+
+    public AbstractImportExportSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     public String getOutputFolderPattern() {
         return outputFolderPattern;

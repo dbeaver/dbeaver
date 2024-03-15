@@ -90,7 +90,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     }
 
     @Override
-    public void fetchStart(DBCSession session, final DBCResultSet resultSet, long offset, long maxRows)
+    public void fetchStart(@NotNull DBCSession session, @NotNull final DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException {
         this.errorList.clear();
         this.rows.clear();
@@ -115,7 +115,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) {
+    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             try {
@@ -153,7 +153,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     }
 
     @Override
-    public void fetchEnd(DBCSession session, final DBCResultSet resultSet) {
+    public void fetchEnd(@NotNull DBCSession session, @NotNull final DBCResultSet resultSet) {
         if (!nextSegmentRead) {
             try {
                 // Read locators' metadata

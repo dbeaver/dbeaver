@@ -138,6 +138,13 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     if (childType == null) {
                         return false;
                     }
+                    if (PostgreProcedure.class.isAssignableFrom(childType)) {
+                        PostgrePrivilegeOwner owner = getDatabaseObject();
+                        if (owner instanceof PostgreRole role) {
+                            return role.supportsRoutinesPermissions();
+                        }
+                        return true;
+                    }
                     return PostgreTableReal.class.isAssignableFrom(childType) ||
                         PostgreSequence.class.isAssignableFrom(childType) ||
                         PostgreProcedure.class.isAssignableFrom(childType);

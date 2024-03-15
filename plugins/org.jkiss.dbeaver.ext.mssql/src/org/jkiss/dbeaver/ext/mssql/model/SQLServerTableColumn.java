@@ -182,6 +182,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     }
 
     //@Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @NotNull
     public String getFullTypeName() {
         if (dataType == null) {
             return String.valueOf(userTypeId);
@@ -192,6 +193,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return typeModifiers == null ? typeName : (typeName + CommonUtils.notEmpty(typeModifiers));
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return dataType == null ? String.valueOf(userTypeId) : dataType.getTypeName();
@@ -204,7 +206,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     }
 
     @Override
-    public void setDataType(SQLServerDataType dataType) {
+    public void setDataType(@NotNull SQLServerDataType dataType) {
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
     }
@@ -215,12 +217,14 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return super.getMaxLength();
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 43)
     public Integer getScale() {
         return super.getScale();
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 44)
     public Integer getPrecision() {
@@ -260,6 +264,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return defaultConstraintName;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType == null ? DBPDataKind.UNKNOWN : dataType.getDataKind();

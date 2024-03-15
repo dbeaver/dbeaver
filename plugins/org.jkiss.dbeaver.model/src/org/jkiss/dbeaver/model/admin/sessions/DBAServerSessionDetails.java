@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.admin.sessions;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -35,7 +36,9 @@ public interface DBAServerSessionDetails {
 
     DBPImage getDetailsIcon();
 
-    List<? extends DBPObject> getSessionDetails(DBCSession session, DBAServerSession serverSession) throws DBException;
+    List<? extends DBPObject> getSessionDetails(
+        @NotNull DBCSession session,
+        @NotNull DBAServerSession serverSession) throws DBException;
 
     Class<?> getDetailsType();
 }

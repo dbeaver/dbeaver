@@ -50,7 +50,9 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
 
     @NotNull
     List<? extends DBPProject> getProjects();
+    @Nullable
     DBPProject getActiveProject();
+    @Nullable
     DBPProject getProject(@NotNull String projectName);
 
     /**
@@ -67,6 +69,7 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
 
     void dispose();
 
+    @Nullable
     default SMSession getWorkspaceSession() {
         return getAuthContext().findSpaceSession(this);
     }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -51,8 +52,10 @@ public interface DBPResourceHandler {
     @NotNull
     String getTypeName(@NotNull IResource resource);
 
+    @Nullable
     String getResourceDescription(@NotNull IResource resource);
 
+    @Nullable
     List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource);
 
     @NotNull

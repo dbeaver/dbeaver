@@ -361,8 +361,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return body;
     }
 
+    @Nullable
     @Override
-    public List<PostgreProcedureParameter> getParameters(@Nullable DBRProgressMonitor monitor) {
+    public List<PostgreProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) {
         return params;
     }
 
@@ -630,6 +631,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
         if (getProcedureType() == DBSProcedureType.FUNCTION && procVolatile != null) {
             decl.append("\t").append(procVolatile.getCreateClause()).append(lineSeparator);
+        }
+        if (isStrict) {
+            decl.append("\tSTRICT").append(lineSeparator);
         }
         if (execCost > 0 && execCost != DEFAULT_COST) {
             decl.append("\tCOST ").append(CommonUtils.niceFormatFloat(execCost)).append(lineSeparator);

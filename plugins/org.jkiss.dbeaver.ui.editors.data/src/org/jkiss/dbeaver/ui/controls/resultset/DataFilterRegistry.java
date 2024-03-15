@@ -146,6 +146,7 @@ class DataFilterRegistry {
                 DBSAttributeBase attribute = new AbstractAttribute(
                     unquottedAttrName, dataKind.name(), 0, savedConstraint.getVisualPosition(), 0, 0, 0, false, false
                 ) {
+                    @NotNull
                     @Override
                     public DBPDataKind getDataKind() {
                         return dataKind;
@@ -618,6 +619,7 @@ class DataFilterRegistry {
             this.dataSource = dataSource;
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind() {
             return dataKind;

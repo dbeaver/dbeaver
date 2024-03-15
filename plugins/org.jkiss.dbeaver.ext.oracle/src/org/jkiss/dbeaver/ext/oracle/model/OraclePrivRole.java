@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -60,6 +61,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
         return defaultRole;
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId)
     {

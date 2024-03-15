@@ -56,6 +56,9 @@ public interface PostgreServerExtension {
 
     boolean supportsEventTriggers();
 
+    /** True if supports objects dependencies metadata reading */
+    boolean supportsDependencies();
+
     boolean supportsFunctionDefRead();
 
     boolean supportsFunctionCreate();

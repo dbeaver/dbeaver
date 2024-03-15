@@ -158,7 +158,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
+    public void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         if (!initialized) {
             // Can be invoked multiple times in case of per-segment transfer
             initExporter(session);
@@ -194,7 +194,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
         try {
             // Check for file split
             if (settings.isSplitOutFiles() && !parameters.isBinary && !firstRow) {
@@ -268,7 +268,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
+    public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
     }
 
     @Override
@@ -619,15 +619,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, @Nullable DBTTask task, boolean last) {
-        if (!last && exception == null) {
+    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Throwable error, @Nullable DBTTask task, boolean last) {
+        if (!last && error == null) {
             exportFooterInFile(monitor);
 
             closeExporter();
             return;
         }
 
-        if (!parameters.isBinary && settings.isOutputClipboard() && exception == null) {
+        if (!parameters.isBinary && settings.isOutputClipboard() && error == null) {
             if (outputBuffer != null) {
                 String strContents = outputBuffer.toString();
                 DBWorkbench.getPlatformUI().copyTextToClipboard(strContents, parameters.isHTML);
@@ -645,10 +645,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             try {
                 final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
 
-                if (exception == null) {
+                if (error == null) {
                     processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, task, entry.getValue());
                 } else {
-                    processor.processError(monitor, exception, this, task, entry.getValue());
+                    processor.processError(monitor, error, this, task, entry.getValue());
                 }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);

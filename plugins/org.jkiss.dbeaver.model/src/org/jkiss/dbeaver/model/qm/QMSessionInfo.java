@@ -20,9 +20,12 @@ public class QMSessionInfo {
     private final String userName;
     private final String userDomain;
 
-    public QMSessionInfo(String userName, String userDomain) {
+    private final String userIp;
+
+    public QMSessionInfo(String userName, String userDomain, String userIp) {
         this.userName = userName;
         this.userDomain = userDomain;
+        this.userIp = userIp;
     }
 
     public String getUserName() {
@@ -31,5 +34,9 @@ public class QMSessionInfo {
 
     public String getUserDomain() {
         return userDomain;
+    }
+
+    public String getUserIp() {
+        return userIp;
     }
 }

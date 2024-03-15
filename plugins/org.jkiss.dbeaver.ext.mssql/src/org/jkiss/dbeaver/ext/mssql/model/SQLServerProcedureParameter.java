@@ -134,11 +134,13 @@ public class SQLServerProcedureParameter implements DBSProcedureParameter, DBSAt
         return false;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return dataType.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -149,11 +151,13 @@ public class SQLServerProcedureParameter implements DBSProcedureParameter, DBSAt
         return dataType.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType.getDataKind();
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return scale;

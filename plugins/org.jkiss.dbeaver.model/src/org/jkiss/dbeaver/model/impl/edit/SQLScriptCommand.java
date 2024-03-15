@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -41,8 +42,9 @@ public class SQLScriptCommand<OBJECT_TYPE extends DBSObject> extends DBECommandA
     {
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(

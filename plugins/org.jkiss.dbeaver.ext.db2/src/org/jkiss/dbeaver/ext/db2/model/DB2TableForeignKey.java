@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author Denis Forveille
  */
-public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableKeyColumn> implements DBSTableForeignKey {
+public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableForeignKeyColumn> implements DBSTableForeignKey {
 
     private static final Log log = Log.getLog(DB2TableForeignKey.class);
 
@@ -52,7 +52,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableKe
     private DB2DeleteUpdateRule db2DeleteRule;
     private DB2DeleteUpdateRule db2UpdateRule;
 
-    private List<DB2TableKeyColumn> columns;
+    private List<DB2TableForeignKeyColumn> columns;
 
     private DB2TableUniqueKey referencedKey;
 
@@ -103,6 +103,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableKe
         return getTable().getDataSource();
     }
 
+    @Nullable
     @Override
     public DB2Table getAssociatedEntity() {
         return refTable;
@@ -130,11 +131,11 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableKe
     // Columns
     // -----------------
     @Override
-    public List<DB2TableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
-    public void setAttributeReferences(List<DB2TableKeyColumn> columns) {
+    public void setAttributeReferences(List<DB2TableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 

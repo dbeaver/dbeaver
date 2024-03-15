@@ -80,6 +80,7 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
     }
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_TABLE;

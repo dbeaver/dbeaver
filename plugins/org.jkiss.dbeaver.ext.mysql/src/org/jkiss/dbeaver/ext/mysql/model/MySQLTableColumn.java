@@ -55,7 +55,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     public enum KeyType implements JDBCColumnKeyType {
         PRI,
         UNI,
-        MUL;
+        MUL,
+        DUP, AGG; // StarRocks
 
         @Override
         public boolean isInUniqueKey()
@@ -236,17 +237,19 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getFullTypeName() {
         return fullTypeName;
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) throws DBException {
+    public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         super.setFullTypeName(fullTypeName);
         this.fullTypeName = fullTypeName;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
@@ -273,6 +276,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.getMaxLength();
     }
 
+    @Nullable
     @Override
     //@Property(viewable = true, order = 41)
     public Integer getScale()
@@ -280,6 +284,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.getScale();
     }
 
+    @Nullable
     @Override
     //@Property(viewable = true, order = 42)
     public Integer getPrecision()

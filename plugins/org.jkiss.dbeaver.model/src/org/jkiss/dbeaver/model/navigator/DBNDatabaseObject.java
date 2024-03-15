@@ -64,6 +64,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         return false;
     }
 
+    @Nullable
     @Override
     public DBSObject getObject() {
         return this;

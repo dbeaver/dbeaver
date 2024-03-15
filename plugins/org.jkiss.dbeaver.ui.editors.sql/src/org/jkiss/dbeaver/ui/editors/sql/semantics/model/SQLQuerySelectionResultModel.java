@@ -55,8 +55,8 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         this.sublists.add(new ColumnSpec(range, valueExpression, alias));
     }
 
-    public void addTupleSpec(@NotNull Interval range, @NotNull SQLQueryQualifiedName tableName) {
-        this.sublists.add(new TupleSpec(range, tableName));
+    public void addTupleSpec(@NotNull Interval range, @NotNull SQLQueryValueTupleReferenceExpression tupleRef) {
+        this.sublists.add(new TupleSpec(range, tupleRef));
     }
 
     public void addCompleteTupleSpec(@NotNull Interval range) {
@@ -156,22 +156,21 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
     }
 
     public static class TupleSpec extends ResultSublistSpec {
-        private final SQLQueryQualifiedName tableName;
-        private SourceResolutionResult resolutionResult;
-
-        public TupleSpec(@NotNull Interval region, @NotNull SQLQueryQualifiedName tableName) {
+        private final SQLQueryValueTupleReferenceExpression tupleReference;
+        
+        public TupleSpec(@NotNull Interval region, @NotNull SQLQueryValueTupleReferenceExpression tupleReference) {
             super(region);
-            this.tableName = tableName;
+            this.tupleReference = tupleReference;
         }
 
         @NotNull
         public SQLQueryQualifiedName getTableName() {
-            return this.tableName;
+            return this.tupleReference.getTableName();
         }
 
         @Nullable
-        public SourceResolutionResult getResolutionResult() {
-            return this.resolutionResult;
+        public SQLQueryRowsSourceModel getTupleSource() {
+            return this.tupleReference.getTupleSource();
         }
 
         @NotNull
@@ -181,18 +180,11 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
             @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
             @NotNull SQLQueryRecognitionContext statistics
         ) {
-            if (this.tableName.isNotClassified()) {
-                // TODO consider multiple joins of one table
-                SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
-                if (rr != null) {
-                    this.tableName.setDefinition(rr);
-                    this.resolutionResult = rr;
-                    return rr.source.getDataContext().getColumnsList().stream();
-                } else {
-                    this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                    statistics.appendError(this.tableName.entityName, "The table doesn't participate in this subquery context");
-                    return Stream.empty();
-                }
+            this.tupleReference.propagateContext(context, statistics);
+            
+            SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
+            if (tupleSource != null) {
+                return tupleSource.getDataContext().getColumnsList().stream();
             } else {
                 return Stream.empty();
             }
