@@ -1772,6 +1772,7 @@
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"     objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager"       objectType="org.jkiss.dbeaver.ext.generic.model.GenericTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericSequenceManager"       objectType="org.jkiss.dbeaver.ext.generic.model.GenericSequence"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">

@@ -24,6 +24,7 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.erd.ui,
  org.jkiss.dbeaver.erd.ui.command,
+ org.jkiss.dbeaver.erd.ui.connector,
  org.jkiss.dbeaver.erd.ui.directedit,
  org.jkiss.dbeaver.erd.ui.editor,
  org.jkiss.dbeaver.erd.ui.export,

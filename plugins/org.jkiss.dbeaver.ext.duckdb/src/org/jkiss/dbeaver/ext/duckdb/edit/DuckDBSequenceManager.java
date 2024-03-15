@@ -14,45 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ext.dameng.edit;
+package org.jkiss.dbeaver.ext.duckdb.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.dameng.model.DamengSchema;
-import org.jkiss.dbeaver.ext.dameng.model.DamengSequence;
+import org.jkiss.dbeaver.ext.duckdb.model.DuckDBSequence;
 import org.jkiss.dbeaver.ext.generic.edit.GenericSequenceManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-/**
- * @author Shengkai Bai
- */
-public class DamengSequenceManager extends GenericSequenceManager {
+public class DuckDBSequenceManager extends GenericSequenceManager {
 
     @Override
     public boolean canCreateObject(Object container) {
-        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
+        // TODO: We need to add treeInjection in the plugin.xml to work with this
+        //return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
+        return false;
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-
-    @Override
-    protected DamengSequence createDatabaseObject(
+    protected GenericSequence createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
         Object container,
@@ -60,9 +50,8 @@ public class DamengSequenceManager extends GenericSequenceManager {
         @NotNull Map<String, Object> options
     ) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
-        DamengSchema schema = (DamengSchema) structContainer.getSchema();
-        DamengSequence sequence = new DamengSequence((GenericStructContainer) container, getBaseObjectName());
-        setNewObjectName(monitor, schema, sequence);
+        DuckDBSequence sequence = new DuckDBSequence(structContainer, getBaseObjectName().toLowerCase(Locale.ROOT));
+        setNewObjectName(monitor, structContainer, sequence);
         return sequence;
     }
 
@@ -74,19 +63,7 @@ public class DamengSequenceManager extends GenericSequenceManager {
         @NotNull SQLObjectEditor<GenericSequence, GenericStructContainer>.ObjectCreateCommand command,
         @NotNull Map<String, Object> options
     ) {
-        DamengSequence sequence = (DamengSequence) command.getObject();
-        actions.add(new SQLDatabasePersistAction("Create sequence", sequence.buildStatement(false)));
-    }
-
-    @Override
-    protected void addObjectModifyActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actionList,
-        @NotNull SQLObjectEditor<GenericSequence, GenericStructContainer>.ObjectChangeCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        DamengSequence sequence = (DamengSequence) command.getObject();
-        actionList.add(new SQLDatabasePersistAction("Alter Sequence", sequence.buildStatement(true)));
+        DuckDBSequence sequence = (DuckDBSequence) command.getObject();
+        actions.add(new SQLDatabasePersistAction("Create sequence", sequence.getObjectDefinitionText(monitor, options)));
     }
 }
