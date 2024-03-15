@@ -118,7 +118,7 @@ public class AuthModelSelector extends Composite {
             o1.isDefaultModel() ? -1 :
                 o2.isDefaultModel() ? 1 :
                     o1.getName().compareTo(o2.getName()));
-        if (selectedAuthModel == null && !CommonUtils.isEmpty(defaultAuthModelId)) {
+        if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
                 if (amd.getId().equals(defaultAuthModelId)) {
@@ -127,7 +127,7 @@ public class AuthModelSelector extends Composite {
                     break;
                 }
             }
-            if (selectedAuthModel == null) {
+            if (selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) {
                 // First one
                 selectedAuthModel = allAuthModels.get(0);
                 dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());

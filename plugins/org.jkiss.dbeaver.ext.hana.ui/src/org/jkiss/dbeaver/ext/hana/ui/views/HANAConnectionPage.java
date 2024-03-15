@@ -138,7 +138,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         if (CommonUtils.isEmpty(portText.getText().trim()))
             return false;
         if (edition != HANAEdition.GENERIC) {
-            if (instanceText.getEditable()) {
+            if (instanceText.getEditable() && !CommonUtils.isEmpty(instanceText.getText())) {
                 int instance = CommonUtils.toInt(instanceText.getText().trim(), -1);
                 if(instance < 0 || instance > 99) return false;
             }

@@ -17,8 +17,17 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public abstract class AbstractImportSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
+public abstract class AbstractImportSettings<BASE_OBJECT extends DBSObject>
+    extends AbstractNativeToolSettings<BASE_OBJECT> {
 
+    public AbstractImportSettings() {
+    }
+
+    public AbstractImportSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 }

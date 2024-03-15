@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -180,8 +181,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
                 diagramLoadingJob = null;
             }
         });
-        diagramLoadingJob.schedule();
-
+        UIExecutionQueue.queueExec(diagramLoadingJob::schedule);
         setPartName(getEditorInput().getName());
     }
 

@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.mssql.ui.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKeyColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -38,38 +37,35 @@ public class SQLServerForeignKeyConfigurator implements DBEObjectConfigurator<SQ
 
     @Override
     public SQLServerTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
-        return new UITask<SQLServerTableForeignKey>() {
-            @Override
-            protected SQLServerTableForeignKey runTask() {
-                EditForeignKeyPage editPage = new EditForeignKeyPage(
-                    "Create foreign key",
-                    foreignKey,
-                    new DBSForeignKeyModifyRule[] {
-                        DBSForeignKeyModifyRule.NO_ACTION,
-                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                        DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT }, options);
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                foreignKey.setReferencedConstraint(editPage.getUniqueConstraint());
-                //foreignKey.setName(getNewConstraintName(monitor, foreignKey));
-                foreignKey.setDeleteRule(editPage.getOnDeleteRule());
-                foreignKey.setUpdateRule(editPage.getOnUpdateRule());
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new SQLServerTableForeignKeyColumn(
-                            foreignKey,
-                            (SQLServerTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++,
-                            (SQLServerTableColumn) tableColumn.getRefColumn()));
-                }
-                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
-                return foreignKey;
+        return UITask.run(() -> {
+            EditForeignKeyPage editPage = new EditForeignKeyPage(
+                "Create foreign key",
+                foreignKey,
+                new DBSForeignKeyModifyRule[] {
+                    DBSForeignKeyModifyRule.NO_ACTION,
+                    DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                    DBSForeignKeyModifyRule.SET_NULL,
+                    DBSForeignKeyModifyRule.SET_DEFAULT }, options);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+
+            foreignKey.setReferencedConstraint(editPage.getUniqueConstraint());
+            //foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+            foreignKey.setDeleteRule(editPage.getOnDeleteRule());
+            foreignKey.setUpdateRule(editPage.getOnUpdateRule());
+            int colIndex = 1;
+            for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
+                foreignKey.addColumn(
+                    new SQLServerTableForeignKeyColumn(
+                        foreignKey,
+                        tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
+                        colIndex++,
+                        tableColumn.getRefColumn()));
+            }
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+            return foreignKey;
+        });
     }
 
 }
