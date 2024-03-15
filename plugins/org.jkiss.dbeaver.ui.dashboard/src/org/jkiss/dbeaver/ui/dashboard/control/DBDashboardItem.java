@@ -456,4 +456,9 @@ public class DBDashboardItem extends Composite implements DBDashboardContainer {
         manager.add(new Separator());
     }
 
+    @Override
+    public String toString() {
+        DashboardDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        return dashboard == null ? dashboardConfig.getDashboardId() : dashboard.getName();
+    }
 }

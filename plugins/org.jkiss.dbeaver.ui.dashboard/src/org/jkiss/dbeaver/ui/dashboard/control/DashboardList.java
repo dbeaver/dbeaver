@@ -272,6 +272,9 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     public void setSelection(DBDashboardItem selection) {
         DBDashboardItem oldSelection = this.selectedItem;
+        if (oldSelection == selection) {
+            return;
+        }
         this.selectedItem = selection;
         if (oldSelection != null && !oldSelection.isDisposed()) {
             oldSelection.redraw();
