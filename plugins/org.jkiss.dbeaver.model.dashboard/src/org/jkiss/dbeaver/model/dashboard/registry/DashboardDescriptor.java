@@ -85,6 +85,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private DBDashboardValueType valueType;
     private DBDashboardInterval interval;
     private String dashboardURL;
+    private String dashboardExternalURL;
 
     public static class QueryMapping implements DBDashboardQuery {
         private final String queryText;
@@ -363,6 +364,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public void setDashboardURL(String dashboardURL) {
         this.dashboardURL = dashboardURL;
+    }
+
+    public String getDashboardExternalURL() {
+        return dashboardExternalURL;
+    }
+
+    public void setDashboardExternalURL(String dashboardExternalURL) {
+        this.dashboardExternalURL = dashboardExternalURL;
     }
 
     @NotNull
