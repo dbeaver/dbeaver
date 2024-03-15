@@ -167,7 +167,7 @@
                                        path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence"
+                        <folder type="org.jkiss.dbeaver.ext.dameng.model.DamengSequence"
                                 label="%tree.sequences.node.name"
                                 icon="#sequences" description="%tree.sequences.node.tip">
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences"
@@ -272,7 +272,7 @@
         <manager class="org.jkiss.dbeaver.ext.dameng.edit.DamengTableColumnManager"
                  objectType="org.jkiss.dbeaver.ext.dameng.model.DamengTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.dameng.edit.DamengSequenceManager"
-                 objectType="org.jkiss.dbeaver.ext.generic.model.GenericSequence"/>
+                 objectType="org.jkiss.dbeaver.ext.dameng.model.DamengSequence"/>
 
     </extension>
     <extension point="org.jkiss.dbeaver.sqlDialect">

@@ -299,10 +299,8 @@ public class STMKnownRuleNames {
     public static final String dropCharacterSetStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropCharacterSetStatement];
 
     // data statements
-    public static final String sqlDataStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlDataStatement];
     public static final String selectStatementSingleRow = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectStatementSingleRow];
     public static final String selectTargetList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectTargetList];
-    public static final String sqlDataChangeStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlDataChangeStatement];
     public static final String deleteStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_deleteStatement];
     public static final String insertStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_insertStatement];
     public static final String insertColumnsAndSource = SQLStandardParser.ruleNames[SQLStandardParser.RULE_insertColumnsAndSource];
