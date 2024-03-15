@@ -22,7 +22,7 @@ public record SSHHostConfiguration(
     @NotNull String username,
     @NotNull String hostname,
     int port,
-    @NotNull SSHAuthConfiguration authConfiguration
+    @NotNull SSHAuthConfiguration auth
 ) {
     @Override
     public String toString() {

@@ -241,7 +241,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
                 host.username(),
                 jumpPortForward.localHost(),
                 jumpPortForward.localPort(),
-                host.authConfiguration()
+                host.auth()
             );
 
             jumpDestination = origin.controller.createDirectSession(jumpHost, null);
