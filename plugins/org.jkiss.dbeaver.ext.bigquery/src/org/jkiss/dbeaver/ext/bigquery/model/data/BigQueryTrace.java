@@ -21,15 +21,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryResultSet;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.ByteNumberFormat;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class BigQueryTrace implements DBCTrace {
     private static final Log log = Log.getLog(BigQueryTrace.class);
     private Map<String, String> resultDetails;
-    private final ByteNumberFormat byteFormater = new ByteNumberFormat();
+    private final NumberFormat numberFormat = new DecimalFormat();
 
     public BigQueryTrace(@NotNull BigQueryResultSet resultSet) {
         resultDetails = new LinkedHashMap<>();
@@ -64,8 +65,8 @@ public class BigQueryTrace implements DBCTrace {
                 resultDetails.put("DML updated", String.valueOf(dmlUpdatedRowCount)); //$NON-NLS-1$
             }
             resultDetails.put("Fetched from cache", String.valueOf(cacheHit)); //$NON-NLS-1$
-            resultDetails.put("DML affected rows", String.valueOf(numDmlAffectedRows)); //$NON-NLS-1$
-            resultDetails.put("Total bytes processed", byteFormater.format(totalBytes)); //$NON-NLS-1$
+            resultDetails.put("DML affected rows", numDmlAffectedRows == null ? "none" : String.valueOf(numDmlAffectedRows)); //$NON-NLS-1$
+            resultDetails.put("Total bytes processed", numberFormat.format(totalBytes) + " bytes"); //$NON-NLS-1$
             resultDetails.put("Total rows", String.valueOf(totalRows)); //$NON-NLS-1$
         } catch (Throwable e) {
             log.error(e);
