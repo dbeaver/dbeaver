@@ -608,9 +608,9 @@
              notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
        </erdNotation>
        <erdNotation
-             description="Crow’s Foot diagram notation"
+             description="Crow's Foot diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
-             name="Crows Foot"
+             name="Crow's Foot"
              notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
        </erdNotation>
     </extension>

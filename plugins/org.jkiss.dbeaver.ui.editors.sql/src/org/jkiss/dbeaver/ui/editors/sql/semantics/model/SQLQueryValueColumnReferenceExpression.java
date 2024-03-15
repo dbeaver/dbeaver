@@ -63,14 +63,13 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
         return this.column;
     }
 
-    void propagateColumnDefinition(@Nullable SQLQueryResultColumn resultColumn, @NotNull SQLQueryRecognitionContext statistics) {
+    public static void propagateColumnDefinition(@NotNull SQLQuerySymbolEntry columnName, @Nullable SQLQueryResultColumn resultColumn, @NotNull SQLQueryRecognitionContext statistics) {
         // TODO consider ambiguity
         if (resultColumn != null) {
-            this.column = resultColumn;
-            this.columnName.setDefinition(resultColumn.symbol.getDefinition());
+            columnName.setDefinition(resultColumn.symbol.getDefinition());
         } else {
-            this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
-            statistics.appendError(this.columnName, "Column not found in dataset");
+            columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
+            statistics.appendError(columnName, "Column not found in dataset");
         }
     }
 
@@ -83,7 +82,8 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             if (rr != null) {
                 this.tableName.setDefinition(rr);
                 SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
-                this.propagateColumnDefinition(resultColumn, statistics);
+                propagateColumnDefinition(this.columnName, resultColumn, statistics);
+                this.column = resultColumn;
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
@@ -101,13 +101,15 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 } else {
                     forcedClass = SQLQueryModelRecognizer.tryFallbackSymbolForStringLiteral(dialect, this.columnName, resultColumn != null);
                 }
+            } else {
+                this.column = resultColumn;
             }
 
             if (forcedClass != null) {
                 this.columnName.getSymbol().setSymbolClass(forcedClass);
                 type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
             } else {
-                this.propagateColumnDefinition(resultColumn, statistics);
+                propagateColumnDefinition(this.columnName, resultColumn, statistics);
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             }
         } else {

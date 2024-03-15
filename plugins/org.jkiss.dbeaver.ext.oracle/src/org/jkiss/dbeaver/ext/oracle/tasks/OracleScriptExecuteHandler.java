@@ -49,7 +49,7 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
 
     @Override
     protected OracleScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
-        OracleScriptExecuteSettings settings = new OracleScriptExecuteSettings();
+        OracleScriptExecuteSettings settings = new OracleScriptExecuteSettings(task.getProject());
         settings.loadSettings(context, new TaskPreferenceStore(task));
 
         return settings;

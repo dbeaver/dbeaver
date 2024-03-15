@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver ERD UI
 Bundle-SymbolicName: org.jkiss.dbeaver.erd.ui;singleton:=true
-Bundle-Version: 3.0.86.qualifier
-Bundle-Release-Date: 20240304
+Bundle-Version: 3.0.87.qualifier
+Bundle-Release-Date: 20240325
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator
 Bundle-ActivationPolicy: lazy
@@ -24,6 +24,7 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.erd.ui,
  org.jkiss.dbeaver.erd.ui.command,
+ org.jkiss.dbeaver.erd.ui.connector,
  org.jkiss.dbeaver.erd.ui.directedit,
  org.jkiss.dbeaver.erd.ui.editor,
  org.jkiss.dbeaver.erd.ui.export,

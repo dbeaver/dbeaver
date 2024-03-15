@@ -54,7 +54,7 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);
 
     @Nullable
-    R visitSelectionModel(SQLQuerySelectionModel selection, T arg);
+    R visitSelectionModel(SQLQueryModel selection, T arg);
 
     @Nullable
     R visitRowsTableData(SQLQueryRowsTableDataModel tableData, T arg);
@@ -94,4 +94,17 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     @Nullable
     R visitRowsCteSubquery(@NotNull SQLQueryRowsCteSubqueryModel cteSubquery, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementDelete(@NotNull SQLQueryTableDeleteModel deleteStatement, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementInsert(@NotNull SQLQueryTableInsertModel insertStatement, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementUpdate(@NotNull SQLQueryTableUpdateModel updateStatement, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementUpdateSetClause(@NotNull SQLQueryTableUpdateModel.SetClauseModel setClause, @NotNull T arg);
+
 }

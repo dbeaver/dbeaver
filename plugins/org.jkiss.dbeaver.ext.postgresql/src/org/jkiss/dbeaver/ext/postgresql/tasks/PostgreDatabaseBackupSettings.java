@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -51,6 +52,13 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private boolean noOwner;
     private boolean dropObjects;
     private boolean createDatabase;
+
+    public PostgreDatabaseBackupSettings() {
+    }
+    
+    public PostgreDatabaseBackupSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     @NotNull
     public List<PostgreDatabaseBackupInfo> getExportObjects() {
