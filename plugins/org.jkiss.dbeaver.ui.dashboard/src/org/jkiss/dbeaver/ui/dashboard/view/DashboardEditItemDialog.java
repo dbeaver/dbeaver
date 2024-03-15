@@ -42,7 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class DashboardEditDialog extends BaseDialog {
+public class DashboardEditItemDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardEditDialog";//$NON-NLS-1$
 
@@ -66,7 +66,7 @@ public class DashboardEditDialog extends BaseDialog {
 
     private DBPNamedObject targetDatabase;
 
-    public DashboardEditDialog(Shell shell, DashboardDescriptor dashboardDescriptor) {
+    public DashboardEditItemDialog(Shell shell, DashboardDescriptor dashboardDescriptor) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_edit_dashboard_title, dashboardDescriptor.getName()), null);
 
         this.dashboardDescriptor = dashboardDescriptor;

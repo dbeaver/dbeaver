@@ -58,16 +58,16 @@ import java.util.List;
 /**
  * Dashboard add dialog
  */
-public class DashboardAddDialog extends BaseDialog {
+public class DashboardAddItemDialog extends BaseDialog {
 
-    private static final Log log = Log.getLog(DashboardAddDialog.class);
+    private static final Log log = Log.getLog(DashboardAddItemDialog.class);
 
     private static final String DIALOG_ID = "DBeaver.DashboardAddDialog";//$NON-NLS-1$
 
     private final DashboardViewConfiguration viewConfiguration;
     private DashboardDescriptor selectedDashboard;
 
-    public DashboardAddDialog(Shell parentShell, DashboardViewConfiguration viewConfiguration) {
+    public DashboardAddItemDialog(Shell parentShell, DashboardViewConfiguration viewConfiguration) {
         super(parentShell, UIDashboardMessages.dialog_add_dashboard_dialog_title, null);
 
         this.viewConfiguration = viewConfiguration;

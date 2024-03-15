@@ -28,7 +28,7 @@ public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            DashboardAddDialog addDialog = new DashboardAddDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
+            DashboardAddItemDialog addDialog = new DashboardAddItemDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
             if (addDialog.open() == IDialogConstants.OK_ID) {
                 DashboardDescriptor selectedDashboard = addDialog.getSelectedDashboard();
                 if (selectedDashboard != null) {

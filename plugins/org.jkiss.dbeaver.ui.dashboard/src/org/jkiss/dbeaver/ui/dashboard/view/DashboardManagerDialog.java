@@ -279,7 +279,7 @@ public class DashboardManagerDialog extends BaseDialog {
         }
         DashboardDescriptor newDashboard = new DashboardDescriptor(
             providerDescriptor, null, "", "", "", "", true);
-        DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), newDashboard);
+        DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboard(newDashboard);
             refreshDashboards();
@@ -297,7 +297,7 @@ public class DashboardManagerDialog extends BaseDialog {
                 break;
             }
         }
-        DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), newDashboard);
+        DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboard(newDashboard);
             refreshDashboards();
@@ -305,7 +305,7 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void editDashboard() {
-        DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), selectedDashboard);
+        DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), selectedDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().saveSettings();
             refreshDashboards();
