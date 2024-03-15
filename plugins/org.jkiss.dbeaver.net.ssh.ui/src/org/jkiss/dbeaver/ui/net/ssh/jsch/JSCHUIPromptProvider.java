@@ -49,20 +49,20 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
         @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
             if (shouldUsePassword()) {
-                setPassword(configuration.getAuthConfiguration().getPassword());
+                setPassword(configuration.authConfiguration().getPassword());
             }
             return super.promptKeyboardInteractive(destination, name, instruction, prompt, echo);
         }
 
         @Override
         public boolean promptPassword(String message) {
-            setPassword(configuration.getAuthConfiguration().getPassword());
+            setPassword(configuration.authConfiguration().getPassword());
             return true;
         }
 
         @Override
         public boolean promptPassphrase(String message) {
-            setPassphrase(configuration.getAuthConfiguration().getPassword());
+            setPassphrase(configuration.authConfiguration().getPassword());
             return true;
         }
 
@@ -74,7 +74,7 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
         }
 
         private boolean shouldUsePassword() {
-            final SSHAuthConfiguration auth = configuration.getAuthConfiguration();
+            final SSHAuthConfiguration auth = configuration.authConfiguration();
             return auth.getType().usesPassword() && (auth.isSavePassword() || CommonUtils.isNotEmpty(auth.getPassword()));
         }
 

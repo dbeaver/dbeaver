@@ -64,7 +64,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination
     ) throws DBException {
-        final SSHAuthConfiguration auth = destination.getAuthConfiguration();
+        final SSHAuthConfiguration auth = destination.authConfiguration();
 
         switch (auth.getType()) {
             case PASSWORD -> {
@@ -95,9 +95,9 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
 
         try {
             final Session session = jsch.getSession(
-                destination.getUsername(),
-                destination.getHostname(),
-                destination.getPort()
+                destination.username(),
+                destination.hostname(),
+                destination.port()
             );
 
             UserInfo userInfo = null;
@@ -110,7 +110,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
             }
 
             session.setUserInfo(userInfo);
-            session.setHostKeyAlias(destination.getHostname());
+            session.setHostKeyAlias(destination.hostname());
             session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
             session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
             setupHostKeyVerification(session, configuration);

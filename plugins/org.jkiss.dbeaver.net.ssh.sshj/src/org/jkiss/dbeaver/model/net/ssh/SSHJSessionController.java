@@ -58,7 +58,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         final int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
         final int keepAliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL) / 1000; // sshj uses seconds for keep-alive interval
 
-        final SSHAuthConfiguration auth = host.getAuthConfiguration();
+        final SSHAuthConfiguration auth = host.authConfiguration();
         final SSHClient client = new SSHClient();
 
         client.setConnectTimeout(connectTimeout);
@@ -71,28 +71,28 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
             log.debug("Error loading known hosts: " + e.getMessage());
         }
 
-        monitor.subTask(String.format("Instantiate tunnel to %s:%d", host.getHostname(), host.getPort()));
+        monitor.subTask(String.format("Instantiate tunnel to %s:%d", host.hostname(), host.port()));
 
         try {
-            client.connect(host.getHostname(), host.getPort());
+            client.connect(host.hostname(), host.port());
 
             switch (auth.getType()) {
                 case PASSWORD:
-                    client.authPassword(host.getUsername(), auth.getPassword());
+                    client.authPassword(host.username(), auth.getPassword());
                     break;
                 case PUBLIC_KEY:
                     if (auth.getKeyFile() != null) {
                         final String location = auth.getKeyFile().toAbsolutePath().toString();
                         if (CommonUtils.isEmpty(auth.getPassword())) {
-                            client.authPublickey(host.getUsername(), location);
+                            client.authPublickey(host.username(), location);
                         } else {
-                            client.authPublickey(host.getUsername(), client.loadKeys(location, auth.getPassword().toCharArray()));
+                            client.authPublickey(host.username(), client.loadKeys(location, auth.getPassword().toCharArray()));
                         }
                     } else {
                         final PasswordFinder finder = CommonUtils.isEmpty(auth.getPassword())
                             ? null
                             : PasswordUtils.createOneOff(auth.getPassword().toCharArray());
-                        client.authPublickey(host.getUsername(), client.loadKeys(auth.getKeyValue(), null, finder));
+                        client.authPublickey(host.username(), client.loadKeys(auth.getKeyValue(), null, finder));
                     }
                     break;
                 case AGENT: {
@@ -100,7 +100,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
                     for (Object identity : createAgentIdentityRepository().getIdentities()) {
                         methods.add(new DBeaverAuthAgent((Identity) identity));
                     }
-                    client.auth(host.getUsername(), methods);
+                    client.auth(host.username(), methods);
                     break;
                 }
                 default:
