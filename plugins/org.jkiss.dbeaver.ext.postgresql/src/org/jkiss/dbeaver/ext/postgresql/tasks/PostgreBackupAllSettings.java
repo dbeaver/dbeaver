@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -63,6 +64,12 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     private boolean noPrivileges;
     private boolean noOwner;
     private boolean addRolesPasswords;
+
+    public PostgreBackupAllSettings() {
+    }
+    public PostgreBackupAllSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     @NotNull
     @Override

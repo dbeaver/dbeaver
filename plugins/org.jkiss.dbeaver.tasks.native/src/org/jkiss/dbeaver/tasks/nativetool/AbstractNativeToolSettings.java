@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,12 +61,30 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     private DBPDataSourceContainer dataSourceContainer;
     private final List<BASE_OBJECT> databaseObjects = new ArrayList<>();
 
+    @Nullable
+    private DBPProject project;
+
+    protected AbstractNativeToolSettings() {
+    }
+
+    protected AbstractNativeToolSettings(@NotNull DBPProject project) {
+        this.project = project;
+    }
+
     public List<BASE_OBJECT> getDatabaseObjects() {
         return databaseObjects;
     }
 
+    @Nullable
     public DBPProject getProject() {
-        return dataSourceContainer == null ? null : dataSourceContainer.getProject();
+        if (project == null) {
+            setProject(dataSourceContainer == null ? null : dataSourceContainer.getProject());
+        }
+        return project;
+    }
+
+    private void setProject(@Nullable DBPProject project) {
+        this.project = project;
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
@@ -152,18 +169,20 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
         if (dataSourceContainer == null) {
             String dsID = preferenceStore.getString("dataSource");
             if (!CommonUtils.isEmpty(dsID)) {
-                String projectName = preferenceStore.getString("project");
-                DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                if (project == null) {
-                    if (!CommonUtils.isEmpty(projectName)) {
-                        log.error("Can't find project '" + projectName + "' for tool configuration");
+                if (getProject() == null) {
+                    String projectName = preferenceStore.getString("project");
+                    DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform()
+                        .getWorkspace()
+                        .getProject(projectName);
+                    if (project == null) {
+                        if (!CommonUtils.isEmpty(projectName)) {
+                            log.error("Can't find project '" + projectName + "' for tool configuration");
+                        }
+                        project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                     }
-                    project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                    setProject(project);
                 }
-                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsID);
-                if (dataSourceContainer == null) {
-                    log.error("Can't find datasource '" + dsID+ "' in project '" + project.getName() + "' for tool configuration");
-                }
+                dataSourceContainer = getProject().getDataSourceRegistry().getDataSource(dsID);
             }
         }
 

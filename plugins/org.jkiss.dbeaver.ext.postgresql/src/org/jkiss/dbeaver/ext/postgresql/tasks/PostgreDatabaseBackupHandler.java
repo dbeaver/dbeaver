@@ -49,7 +49,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
 
     @Override
     protected PostgreDatabaseBackupSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
-        PostgreDatabaseBackupSettings settings = new PostgreDatabaseBackupSettings();
+        PostgreDatabaseBackupSettings settings = new PostgreDatabaseBackupSettings(task.getProject());
         settings.loadSettings(context, new TaskPreferenceStore(task));
 
         return settings;
