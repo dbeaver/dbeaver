@@ -279,6 +279,9 @@ public class ObjectPropertyTester extends PropertyTester {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
             return false;
         }
+        if (node instanceof DBNProject && DBWorkbench.isDistributed()) {
+            return false;
+        }
         if (node instanceof DBNDatabaseNode) {
             if (((DBNDatabaseNode)node).isVirtual()) {
                 // Can't create virtual objects
