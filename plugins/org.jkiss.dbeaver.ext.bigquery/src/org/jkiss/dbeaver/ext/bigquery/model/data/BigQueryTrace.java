@@ -39,50 +39,26 @@ public class BigQueryTrace implements DBCTrace {
             Object mBqResults = BeanUtils.getInheritedFieldValue(mDataHandler, "m_bqResults"); //$NON-NLS-1$
             Object mQueryResponse = BeanUtils.getInheritedFieldValue(mBqResults, "m_queryResponse"); //$NON-NLS-1$
             // QueryResponse
-            Object totalBytes = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
-                "getTotalBytesProcessed", // $NON-NLS-1$
-                new Class[0], new Object[0]);
-            Object totalRows = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
-                "getTotalRows", // $NON-NLS-1$
-                new Class[0], new Object[0]);
-            Object cacheHit = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
-                "getCacheHit", // $NON-NLS-1$
-                new Class[0], new Object[0]);
-            Object numDmlAffectedRows = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
-                "getNumDmlAffectedRows", // $NON-NLS-1$
-                new Class[0], new Object[0]);
+            Object totalBytes = BeanUtils.invokeObjectMethod(mQueryResponse, "getTotalBytesProcessed"); // $NON-NLS-1$
+            Object totalRows = BeanUtils.invokeObjectMethod(mQueryResponse, "getTotalRows"); // $NON-NLS-1$
+            Object cacheHit = BeanUtils.invokeObjectMethod(mQueryResponse, "getCacheHit"); // $NON-NLS-1$
+            Object numDmlAffectedRows = BeanUtils.invokeObjectMethod(mQueryResponse, "getNumDmlAffectedRows"); // $NON-NLS-1$
             // DmlStatistics
-            Object dmlStats = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
-                "getDmlStats", // $NON-NLS-1$
-                new Class[0], new Object[0]);
+            Object dmlStats = BeanUtils.invokeObjectMethod(mQueryResponse, "getDmlStats"); // $NON-NLS-1$
             // JobReference
-            Object jobReference = BeanUtils.invokeObjectDeclaredMethod(mQueryResponse,
-                "getJobReference", // $NON-NLS-1$
-                new Class[0], new Object[0]);
+            Object jobReference = BeanUtils.invokeObjectMethod(mQueryResponse, "getJobReference"); // $NON-NLS-1$
             if (jobReference != null) {
-                Object jobId = BeanUtils.invokeObjectDeclaredMethod(jobReference,
-                    "getJobId", // $NON-NLS-1$
-                    new Class[0], new Object[0]);
-                Object location = BeanUtils.invokeObjectDeclaredMethod(jobReference,
-                    "getLocation", // $NON-NLS-1$
-                    new Class[0], new Object[0]);
-                Object projectId = BeanUtils.invokeObjectDeclaredMethod(jobReference,
-                    "getProjectId", // $NON-NLS-1$
-                    new Class[0], new Object[0]);
+                Object jobId = BeanUtils.invokeObjectMethod(jobReference, "getJobId"); // $NON-NLS-1$
+                Object location = BeanUtils.invokeObjectMethod(jobReference, "getLocation"); // $NON-NLS-1$
+                Object projectId = BeanUtils.invokeObjectMethod(jobReference, "getProjectId"); // $NON-NLS-1$
                 resultDetails.put("Job id", String.valueOf(jobId)); //$NON-NLS-1$
                 resultDetails.put("Location", String.valueOf(location)); //$NON-NLS-1$
                 resultDetails.put("Project id", String.valueOf(projectId)); //$NON-NLS-1$
             }
             if (dmlStats != null) {
-                Object dmlDeletedRowsCount = BeanUtils.invokeObjectDeclaredMethod(dmlStats,
-                    "getDeletedRowCount", // $NON-NLS-1$
-                    new Class[0], new Object[0]);
-                Object dmlInsertedRowCount = BeanUtils.invokeObjectDeclaredMethod(dmlStats,
-                    "getInsertedRowCount", // $NON-NLS-1$
-                    new Class[0], new Object[0]);
-                Object dmlUpdatedRowCount = BeanUtils.invokeObjectDeclaredMethod(dmlStats,
-                    "getUpdatedRowCount", // $NON-NLS-1$
-                    new Class[0], new Object[0]);
+                Object dmlDeletedRowsCount = BeanUtils.invokeObjectMethod(dmlStats, "getDeletedRowCount"); // $NON-NLS-1$
+                Object dmlInsertedRowCount = BeanUtils.invokeObjectMethod(dmlStats, "getInsertedRowCount"); // $NON-NLS-1$
+                Object dmlUpdatedRowCount = BeanUtils.invokeObjectMethod(dmlStats, "getUpdatedRowCount"); // $NON-NLS-1$
                 resultDetails.put("DML deleted", String.valueOf(dmlDeletedRowsCount)); //$NON-NLS-1$
                 resultDetails.put("DML inserted", String.valueOf(dmlInsertedRowCount)); //$NON-NLS-1$
                 resultDetails.put("DML updated", String.valueOf(dmlUpdatedRowCount)); //$NON-NLS-1$
