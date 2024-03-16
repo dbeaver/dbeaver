@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.gis;
 
+package org.jkiss.dbeaver.model.access;
+
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 
 /**
- * GisAttribute.
-*/
-public interface GisAttribute {
-    int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException;
-
+ * External auth model.
+ */
+public interface DBAAuthModelExternal<CREDENTIALS extends DBAAuthCredentials> extends DBAAuthModel<CREDENTIALS> {
     @Nullable
-    String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException;
+    String getRequiredExternalAuth(@NotNull DBPConnectionConfiguration configuration);
 }
