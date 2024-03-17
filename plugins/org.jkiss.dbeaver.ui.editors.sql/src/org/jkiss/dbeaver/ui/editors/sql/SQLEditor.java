@@ -869,17 +869,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     @Override
-    public IResultSetController getResultSetController() {
-        if (resultTabs != null && !resultTabs.isDisposed()) {
-            CTabItem activeResultsTab = getActiveResultsTab();
-            if (activeResultsTab != null && UIUtils.isUIThread()) {
-                Object tabControl = activeResultsTab.getData();
-                if (tabControl instanceof QueryResultsContainer) {
-                    return ((QueryResultsContainer) tabControl).viewer;
-                } else if (tabControl instanceof SingleTabQueryProcessor) {
-                    return ((SingleTabQueryProcessor) tabControl).getFirstResults().viewer;
-                }
-            }
+    public ResultSetViewer getResultSetController() {
+        if (curResultsContainer != null) {
+            return curResultsContainer.getResultSetController();
         }
         return null;
     }
@@ -1257,7 +1249,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (textViewer != null) {
             textViewer.getTextWidget().addTraverseListener(e -> {
                 if (e.detail == SWT.TRAVERSE_TAB_NEXT && e.stateMask == SWT.MOD1) {
-                    ResultSetViewer viewer = getActiveResultSetViewer();
+                    ResultSetViewer viewer = getResultSetController();
                     if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
                         viewer.getActivePresentation().getControl().setFocus();
                         e.detail = SWT.TRAVERSE_NONE;
@@ -1994,7 +1986,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void switchFocus(boolean results) {
         if (results) {
-            ResultSetViewer activeRS = getActiveResultSetViewer();
+            ResultSetViewer activeRS = getResultSetController();
             if (activeRS != null && activeRS.getActivePresentation() != null) {
                 activeRS.getActivePresentation().getControl().setFocus();
             } else {
@@ -2536,7 +2528,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute statement under cursor or selected text (if selection present)
             SQLScriptElement sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
-                ResultSetViewer activeViewer = getActiveResultSetViewer();
+                ResultSetViewer activeViewer = getResultSetController();
                 if (activeViewer != null) {
                     activeViewer.setStatus(SQLEditorMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
                 }
@@ -2623,7 +2615,7 @@ public class SQLEditor extends SQLEditorBase implements
                     return false;
                 }
             } catch (DBException ex) {
-                ResultSetViewer viewer = getActiveResultSetViewer();
+                ResultSetViewer viewer = getResultSetController();
                 if (viewer != null) {
                     viewer.setStatus(ex.getMessage(), DBPMessageType.ERROR);
                 }
@@ -2796,7 +2788,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void setStatus(String status, DBPMessageType messageType)
     {
-        ResultSetViewer resultsView = getActiveResultSetViewer();
+        ResultSetViewer resultsView = getResultSetController();
         if (resultsView != null) {
             resultsView.setStatus(status, messageType);
         }
@@ -3309,14 +3301,6 @@ public class SQLEditor extends SQLEditorBase implements
             if (IOUtils.isLocalURI(locationURI)) {
                 return new File(locationURI).toString();
             }
-        }
-        return null;
-    }
-
-    @Nullable
-    private ResultSetViewer getActiveResultSetViewer() {
-        if (curResultsContainer != null) {
-            return curResultsContainer.getResultSetController();
         }
         return null;
     }
@@ -4924,7 +4908,7 @@ public class SQLEditor extends SQLEditorBase implements
         public IFindReplaceTarget getTarget() {
             //getTarget determines current composite used for find/replace
             //We should update it, when we focus on the other panels or output view
-            ResultSetViewer rsv = getActiveResultSetViewer();
+            ResultSetViewer rsv = getResultSetController();
             TextViewer textViewer = getTextViewer();
             final SQLEditorOutputConsoleViewer outputViewer = SQLEditor.this.outputViewer.getViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget() != null && textViewer.getTextWidget().isFocusControl();
@@ -4960,7 +4944,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
-            ResultSetViewer rsv = getActiveResultSetViewer();
+            ResultSetViewer rsv = getResultSetController();
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget().isFocusControl();
             if (!focusInEditor) {
