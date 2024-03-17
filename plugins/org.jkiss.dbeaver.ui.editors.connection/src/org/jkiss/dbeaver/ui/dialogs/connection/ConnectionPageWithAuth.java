@@ -51,7 +51,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             if (panelExtender != null) {
                 panelExtender.run();
             }
-        }, () -> getSite().updateButtons());
+        }, () -> getSite().updateButtons(), true);
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
     }
