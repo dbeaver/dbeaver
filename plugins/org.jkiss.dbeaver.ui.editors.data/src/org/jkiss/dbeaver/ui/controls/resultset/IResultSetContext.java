@@ -39,6 +39,9 @@ public interface IResultSetContext
     @RuntimeAction
     boolean supportsReferences();
 
+    @RuntimeAction
+    boolean supportsTrace();
+
     String getDocumentContentType();
 
     @Nullable
@@ -47,5 +50,6 @@ public interface IResultSetContext
     DBCResultSet getResultSet();
 
     boolean hasAttributeOfType(String typeName);
+
 
 }
