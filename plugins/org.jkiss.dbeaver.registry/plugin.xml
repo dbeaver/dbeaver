@@ -35,6 +35,7 @@
         <language code="es" label="%language.es.label"/>
         <language code="tw" label="%language.tw.label"/>
         <language code="uk" label="%language.uk.label"/>
+        <language code="ro" label="%language.ro.label"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.driverManager">

@@ -10,4 +10,9 @@
               dialect="generic"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.duckdb.edit.DuckDBSequenceManager"
+                 objectType="org.jkiss.dbeaver.ext.duckdb.model.DuckDBSequence"/>
+    </extension>
+
 </plugin>

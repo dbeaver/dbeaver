@@ -23,7 +23,7 @@
             <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengSchema"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.dameng.ui.config.DamengSequenceConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengSequence"/>
         </configurator>
 
         <editor id="source.ddl"
@@ -38,6 +38,7 @@
             <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengTablespace"/>
             <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengUser"/>
             <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengRole"/>
+            <objectType name="org.jkiss.dbeaver.ext.dameng.model.DamengSequence"/>
         </editor>
     </extension>
 </plugin>
