@@ -182,18 +182,21 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
     }
 
-    protected void registerSession(@NotNull ShareableSession<T> session) {
-        if (DISABLE_SESSION_SHARING) {
-            return;
+    protected void registerSession(@NotNull ShareableSession<T> session, @NotNull DBWHandlerConfiguration configuration) {
+        if (canShareSessionForConfiguration(configuration)) {
+            sessions.put(session.destination, session);
         }
-        sessions.put(session.destination, session);
     }
 
-    protected void unregisterSession(@NotNull ShareableSession<T> session) {
-        if (DISABLE_SESSION_SHARING) {
-            return;
+    protected void unregisterSession(@NotNull ShareableSession<T> session, @NotNull DBWHandlerConfiguration configuration) {
+        if (canShareSessionForConfiguration(configuration)) {
+            sessions.remove(session.destination);
         }
-        sessions.remove(session.destination);
+    }
+
+    protected static boolean canShareSessionForConfiguration(@NotNull DBWHandlerConfiguration configuration) {
+        // Data source might be null if this tunnel is used for connection testing
+        return !DISABLE_SESSION_SHARING && configuration.getDataSource() != null;
     }
 
     protected static class JumpSession<T extends AbstractSession> extends DelegateSession {
@@ -393,7 +396,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @Property(viewable = true, order = 2, name = "Used By")
         public String getConsumerInfo() {
             return dataSources.entrySet().stream()
-                .map(entry -> "%s (%s)".formatted(entry.getKey().getName(), entry.getValue()))
+                .map(entry -> "%s (%s)".formatted(entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining(", "));
         }
 
@@ -413,14 +416,14 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             if (dataSources.isEmpty()) {
                 log.debug("SSHSessionController: Creating new session to " + destination);
                 super.connect(monitor, destination, configuration);
-                controller.registerSession(this);
+                controller.registerSession(this, configuration);
             }
             final DBPDataSourceContainer container = configuration.getDataSource();
             final AtomicInteger counter = dataSources.get(container);
             if (counter == null) {
                 dataSources.put(container, new AtomicInteger(1));
             } else {
-                log.debug("SSHSessionController: Reusing session to " + destination + " for " + container.getName());
+                log.debug("SSHSessionController: Reusing session to " + destination + " for " + container);
                 counter.incrementAndGet();
             }
         }
@@ -430,14 +433,14 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             final DBPDataSourceContainer container = configuration.getDataSource();
             final AtomicInteger counter = dataSources.get(container);
             if (counter == null) {
-                throw new DBException("Session is not acquired for " + container.getName());
+                throw new DBException("Session is not acquired for " + container);
             }
             if (counter.decrementAndGet() == 0) {
-                log.debug("SSHSessionController: Releasing session for " + container.getName());
+                log.debug("SSHSessionController: Releasing session for " + container);
                 dataSources.remove(container);
             }
             if (dataSources.isEmpty()) {
-                controller.unregisterSession(this);
+                controller.unregisterSession(this, configuration);
                 super.disconnect(monitor, configuration, timeout);
             }
         }
