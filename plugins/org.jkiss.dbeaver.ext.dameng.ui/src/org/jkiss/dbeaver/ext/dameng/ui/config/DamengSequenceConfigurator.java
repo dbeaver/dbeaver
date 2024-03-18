@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.dameng.ui.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
+import org.jkiss.dbeaver.ext.dameng.model.DamengSequence;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,9 +32,15 @@ import java.util.Map;
 /**
  * @author Shengkai Bai
  */
-public class DamengSequenceConfigurator implements DBEObjectConfigurator<GenericSequence> {
+public class DamengSequenceConfigurator implements DBEObjectConfigurator<DamengSequence> {
     @Override
-    public GenericSequence configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull GenericSequence sequence, @NotNull Map<String, Object> options) {
+    public DamengSequence configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object container,
+        @NotNull DamengSequence sequence,
+        @NotNull Map<String, Object> options
+    ) {
         return UITask.run(() -> {
             EntityEditPage editPage = new EntityEditPage(sequence.getDataSource(), DBSEntityType.SEQUENCE);
             if (!editPage.edit()) {

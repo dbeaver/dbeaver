@@ -21,6 +21,7 @@ import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.PointList;
+import org.jkiss.dbeaver.erd.ui.connector.ERDConnection;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +67,7 @@ public abstract class ERDConnectionRouter extends AutomaticRouter {
      * @return
      */
     public PolylineConnection getConnectionInstance() {
-        return new PolylineConnection();
+        return new ERDConnection();
     }
     
     @Override
