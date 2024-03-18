@@ -130,9 +130,16 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     List<DBAAuthProfile> getAllAuthProfiles();
     @NotNull
     List<DBAAuthProfile> getApplicableAuthProfiles(@Nullable DBPDriver driver);
+
     void updateAuthProfile(@NotNull DBAAuthProfile profile);
     void removeAuthProfile(@NotNull DBAAuthProfile profile);
 
+    /**
+     * Set collection of profiles.
+     *
+     * @param profiles - profile collection
+     */
+    void setAuthProfiles(@NotNull Collection<DBAAuthProfile> profiles);
 
     void flushConfig();
     void refreshConfig();
