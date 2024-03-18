@@ -68,8 +68,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
-    private static final String DBEAVER_CONFIG_FILE = "dbeaver.conf";
-    private static final String DBEAVER_PROP_LANGUAGE = "language";
+    private static final String DBEAVER_CONFIG_FILE = "global-settings.conf";
+    private static final String DBEAVER_PROP_LANGUAGE = "nl";
 
     private static final Log log = Log.getLog(DesktopPlatform.class);
 
