@@ -1,3 +1,6 @@
 name=${dbeaver-product}
 id=org.jkiss.dbeaver.core.appstore
 version=${dbeaver-version}
+snapshot=${project.version}
+branch=${sourceBranch}
+commit=${sourceCommit}
