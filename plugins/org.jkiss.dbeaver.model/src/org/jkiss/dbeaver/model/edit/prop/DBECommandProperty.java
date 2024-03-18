@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.edit.prop;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -81,8 +82,9 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         this.newValue = this.oldValue;
     }
 
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         if (!(prevCommand instanceof DBECommandProperty) || prevCommand.getObject() != getObject()) {
             // Dunno what to do with it
@@ -98,7 +100,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
     }
 
     @Override
-    public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         if (handler instanceof DBEPropertyValidator) {
             ((DBEPropertyValidator<OBJECT_TYPE>)handler).validate(getObject(), newValue);
@@ -113,8 +115,9 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         }
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
         if (handler instanceof DBEPropertyPersister) {
             return ((DBEPropertyPersister<OBJECT_TYPE>)handler).getPersistActions(getObject(), newValue);

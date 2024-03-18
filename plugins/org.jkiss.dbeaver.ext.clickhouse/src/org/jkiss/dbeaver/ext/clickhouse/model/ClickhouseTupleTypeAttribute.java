@@ -53,6 +53,7 @@ public class ClickhouseTupleTypeAttribute extends AbstractAttribute implements D
         return tupleType.getDataSource();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return attributeType.getDataKind();

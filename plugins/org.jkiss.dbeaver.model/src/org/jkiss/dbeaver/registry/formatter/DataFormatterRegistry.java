@@ -99,6 +99,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         return dataFormatterMap.get(typeId);
     }
 
+    @NotNull
     @Override
     public synchronized DBDDataFormatterProfile getGlobalProfile()
     {
@@ -112,7 +113,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
 
     @Override
     @Nullable
-    public synchronized DBDDataFormatterProfile getCustomProfile(String name)
+    public synchronized DBDDataFormatterProfile getCustomProfile(@NotNull String name)
     {
         for (DBDDataFormatterProfile profile : getCustomProfilesInternal()) {
             if (profile.getProfileName().equals(name)) {

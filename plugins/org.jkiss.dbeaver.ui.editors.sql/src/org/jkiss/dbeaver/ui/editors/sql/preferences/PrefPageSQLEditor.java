@@ -21,7 +21,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -163,15 +162,18 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Composite linksGroup = UIUtils.createControlGroup(composite, "", 1, GridData.FILL_HORIZONTAL, 0);
 
-            new PreferenceLinkArea(linksGroup, SWT.NONE,
-                PrefPageSQLEditor.TEXT_EDITOR_PAGE_ID,
+            UIUtils.createPreferenceLink(
+                linksGroup,
                 "<a>''{0}''</a> " + SQLEditorMessages.pref_page_sql_editor_link_text_editor,
-                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
-            new PreferenceLinkArea(linksGroup, SWT.NONE,
-                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+                PrefPageSQLEditor.TEXT_EDITOR_PAGE_ID,
+                (IWorkbenchPreferenceContainer) getContainer(), null
+            );
+            UIUtils.createPreferenceLink(
+                linksGroup,
                 SQLEditorMessages.pref_page_sql_editor_link_colors_and_fonts,
-                (IWorkbenchPreferenceContainer) getContainer(), null);
-
+                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+                (IWorkbenchPreferenceContainer) getContainer(), null
+            );
         }
         return composite;
     }

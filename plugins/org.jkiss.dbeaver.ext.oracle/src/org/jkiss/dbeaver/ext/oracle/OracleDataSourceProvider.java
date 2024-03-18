@@ -192,6 +192,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
         return null;
     }
 
+    @Nullable
     @Override
     public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         String userName = connectionInfo.getUserName();
@@ -207,6 +208,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
         return role == null ? userName : userName + " AS " + role;
     }
 
+    @Nullable
     @Override
     public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
         return connectionInfo.getUserPassword();

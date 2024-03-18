@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBDContent extends DBDValue {
 
+    @NotNull
     DBPDataSource getDataSource();
 
     /**
@@ -47,10 +48,10 @@ public interface DBDContent extends DBDValue {
     @NotNull
     String getContentType();
 
-    String getDisplayString(DBDDisplayFormat format);
+    String getDisplayString(@NotNull DBDDisplayFormat format);
 
     @Nullable
-    DBDContentStorage getContents(DBRProgressMonitor monitor) throws DBCException;
+    DBDContentStorage getContents(@NotNull DBRProgressMonitor monitor) throws DBCException;
 
     /**
      * Update contents
@@ -61,8 +62,8 @@ public interface DBDContent extends DBDValue {
      * @throws DBException
      */
     boolean updateContents(
-        DBRProgressMonitor monitor,
-        DBDContentStorage storage)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDContentStorage storage)
         throws DBException;
 
     /**

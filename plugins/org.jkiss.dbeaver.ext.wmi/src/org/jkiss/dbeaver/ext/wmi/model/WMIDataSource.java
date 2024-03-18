@@ -69,7 +69,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
 
     @NotNull
     @Override
-    public DBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+    public DBCExecutionContext getDefaultContext(@NotNull DBRProgressMonitor monitor, boolean meta) {
         return this;
     }
 
@@ -179,7 +179,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor)
+    public void shutdown(@NotNull DBRProgressMonitor monitor)
     {
         this.close();
     }

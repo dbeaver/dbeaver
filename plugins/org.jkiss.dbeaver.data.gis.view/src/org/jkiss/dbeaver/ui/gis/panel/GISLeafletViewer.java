@@ -92,6 +92,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
     private static final String PROP_FLIP_COORDINATES = "gis.flipCoords";
     private static final String PROP_SRID = "gis.srid";
+    private static final int UNDEFINED_SRID = -1;
 
     private volatile boolean browserCreating = false;
 
@@ -103,7 +104,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
     private Browser browser;
     private DBGeometry[] lastValue;
-    private int sourceSRID; // Explicitly set SRID
+    private int sourceSRID = UNDEFINED_SRID; // Explicitly set SRID
     private int actualSourceSRID; // SRID taken from geometry value
     private Path scriptFile;
     private final Composite statusBar;
@@ -323,7 +324,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             scriptFile = Files.createTempFile(tempDir, "view", "gis.html");
         }
 
-        int attributeSrid = GisConstants.SRID_SIMPLE;
+        int attributeSrid = UNDEFINED_SRID;
         if (bindings[0].getAttribute() instanceof GisAttribute) {
             try {
                 attributeSrid = ((GisAttribute) bindings[0].getAttribute())
@@ -357,11 +358,14 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             if (WKGUtils.isCurve(targetValue)) {
                 targetValue = WKGUtils.linearize((org.cugos.wkg.Geometry) targetValue);
             }
-            int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
-            if (srid == GisConstants.SRID_SIMPLE) {
+            int srid = sourceSRID;
+            if (srid == UNDEFINED_SRID && value.getSRID() != 0) {
+                srid = value.getSRID();
+            }
+            if (srid == UNDEFINED_SRID) {
                 srid = attributeSrid;
             }
-            if (srid == 0) {
+            if (srid == UNDEFINED_SRID) {
                 srid = GeometryDataUtils.getDefaultSRID();
             }
             if (srid == GisConstants.SRID_SIMPLE) {

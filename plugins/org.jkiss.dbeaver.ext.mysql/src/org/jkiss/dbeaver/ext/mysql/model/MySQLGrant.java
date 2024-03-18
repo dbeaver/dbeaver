@@ -87,12 +87,12 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         return true;
     }
 
-    public MySQLUser getSubject(DBRProgressMonitor monitor) {
+    public MySQLUser getSubject(@NotNull DBRProgressMonitor monitor) {
         return user;
     }
 
     @Override
-    public Object getObject(DBRProgressMonitor monitor) throws DBException {
+    public Object getObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (catalogName != null) {
             if (!isAllCatalogs()) {
                 MySQLCatalog catalog = user.getDataSource().getCatalog(catalogName);

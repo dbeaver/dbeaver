@@ -354,6 +354,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         return super.refreshObject(monitor);
     }
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_SEQUENCE;

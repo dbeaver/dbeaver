@@ -283,6 +283,7 @@ public class SQLServerTable extends SQLServerTableBase
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
     }
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(

@@ -50,7 +50,7 @@ public class PostgreDatabaseBackupAllHandler
 
     @Override
     protected PostgreBackupAllSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
-        PostgreBackupAllSettings settings = new PostgreBackupAllSettings();
+        PostgreBackupAllSettings settings = new PostgreBackupAllSettings(task.getProject());
         settings.loadSettings(context, new TaskPreferenceStore(task));
         return settings;
     }

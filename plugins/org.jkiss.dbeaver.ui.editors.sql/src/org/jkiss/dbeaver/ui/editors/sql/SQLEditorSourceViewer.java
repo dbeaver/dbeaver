@@ -17,10 +17,15 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
@@ -31,6 +36,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -91,6 +97,52 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         
         //textWidget.setAlwaysShowScrollBars(false);
         return textWidget;
+    }
+    
+    private boolean expandAnnotationsContaining(@NotNull ProjectionAnnotationModel projectionAnnotationModel, int offset) {
+        Iterator<Annotation> it = projectionAnnotationModel.getAnnotationIterator(offset, 0, true, true);
+        
+        boolean expanded = false;
+        while (it.hasNext()) {
+            Annotation annotation = it.next();
+            if (annotation instanceof ProjectionAnnotation p && p.isCollapsed()) {
+                Position position = projectionAnnotationModel.getPosition(annotation);
+                if (position != null && position.includes(offset)) {
+                    expanded = true;
+                    projectionAnnotationModel.expand(annotation);
+                }
+            }
+        }
+        return expanded;
+    }
+    
+    @Override
+    public boolean exposeModelRange(@NotNull IRegion modelRange) {
+        if (isProjectionMode()) {
+            // Underlying default implementation was
+            //     return projectionAnnotationModel.expandAll(modelRange.getOffset(), modelRange.getLength());
+            // , which is wrong because we don't want to expand annotations completely covered by the given range.
+            // We only want to expand annotations preventing the user from observation of the given range boundaries,
+            // so get the annotations intersecting range start end range end positions, and then expand them.
+            
+            ProjectionAnnotationModel projectionAnnotationModel = this.getProjectionAnnotationModel();
+            
+            boolean a = this.expandAnnotationsContaining(projectionAnnotationModel, modelRange.getOffset());
+            boolean b = this.expandAnnotationsContaining(projectionAnnotationModel, modelRange.getOffset() + modelRange.getLength());
+            boolean expanded = a | b;
+            if (expanded) {
+                projectionAnnotationModel.modifyAnnotations(null, null, null);
+            }
+            
+            return expanded;
+        }
+
+        if (!overlapsWithVisibleRegion(modelRange.getOffset(), modelRange.getLength())) {
+            resetVisibleRegion();
+            return true;
+        }
+
+        return false;
     }
 
     // Let source viewer reconfiguration possible (https://dbeaver.io/forum/viewtopic.php?f=2&t=2939)

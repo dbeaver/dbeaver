@@ -24,7 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentScriptItemSyntaxContext.TokenEntryAtOffset;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.ArrayList;
@@ -172,7 +172,7 @@ public class SQLDocumentSyntaxContext {
 
     public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(
         @NotNull String elementOriginalText,
-        @NotNull SQLQuerySelectionModel queryModel,
+        @NotNull SQLQueryModel queryModel,
         int offset,
         int length
     ) {
@@ -276,11 +276,11 @@ public class SQLDocumentSyntaxContext {
 
         NodesIterator<SQLDocumentScriptItemSyntaxContext> it1 = this.scriptItems.nodesIteratorAt(0);
         int off1 = it1.getCurrOffset();
-        if (it1.getCurrValue() != null && off1 < rangeStart) {
+        if (it1.getCurrValue() != null && off1 + it1.getCurrValue().length() < rangeStart) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
             this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }
-        while (it1.next() && (off1 = it1.getCurrOffset()) < rangeStart) {
+        while (it1.next() && (off1 = it1.getCurrOffset()) + it1.getCurrValue().length() < rangeStart) {
             keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, off1);
             this.forEachListener(l -> l.onScriptItemInvalidated(it1.getCurrValue()));
         }

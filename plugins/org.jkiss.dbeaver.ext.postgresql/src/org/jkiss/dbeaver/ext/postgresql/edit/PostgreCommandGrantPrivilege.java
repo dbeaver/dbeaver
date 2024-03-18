@@ -64,7 +64,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
     @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
         if (privilegeTypes.isEmpty()) {
             return new DBEPersistAction[0];
         }
@@ -83,13 +83,15 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
         PostgrePrivilegeOwner object = getObject();
         String objectName = "", roleName;
-        if (object instanceof PostgreRole) {
+        String roleType = null;
+        if (object instanceof PostgreRole role) {
             roleName = DBUtils.getQuotedIdentifier(object);
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
             } else if (privilege instanceof PostgreRolePrivilege) {
                 objectName = ((PostgreRolePrivilege) privilege).getFullObjectName();
             }
+            roleType = role.getSpecificRoleType();
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.privilege;
             if (permission.getGrantee() != null) {
@@ -142,7 +144,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
         String grantScript = scriptBeginning + (grant ? "GRANT " : "REVOKE ") + privName + grantedCols +
             " ON " + grantedTypedObject +
-            (grant ? " TO " : " FROM ") + roleName;
+            (grant ? " TO " : " FROM ") + (roleType != null ? roleType + " " : "") + roleName;
         if (grant && withGrantOption) {
             grantScript += " WITH GRANT OPTION";
         }
@@ -154,9 +156,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         };
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
         // In order to properly merge grant/revoke commands, we need to capture
         // the first one which grants and one which revokes and merge privileges
         // from other commands into them. Other commands are consumed later in process.

@@ -114,7 +114,6 @@
         <manager class="org.jkiss.dbeaver.ext.h2.edit.H2RoutineAliasManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2RoutineAlias"/>
         <manager class="org.jkiss.dbeaver.ext.h2.edit.H2TableManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2Table"/>
         <manager class="org.jkiss.dbeaver.ext.h2.edit.H2ConstraintManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2Constraint"/>
-        <manager class="org.jkiss.dbeaver.ext.h2.edit.H2SequenceManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2Sequence"/>
     </extension>
 
 </plugin>

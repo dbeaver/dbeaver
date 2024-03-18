@@ -48,7 +48,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
 
     @Override
     protected PostgreDatabaseRestoreSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
-        PostgreDatabaseRestoreSettings settings = new PostgreDatabaseRestoreSettings();
+        PostgreDatabaseRestoreSettings settings = new PostgreDatabaseRestoreSettings(task.getProject());
         settings.loadSettings(context, new TaskPreferenceStore(task));
 
         return settings;

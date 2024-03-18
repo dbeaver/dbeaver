@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -155,13 +156,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
         return new ArrayList<>(projects.values());
     }
 
+    @Nullable
     @Override
     public DBPProject getActiveProject() {
         return activeProject;
     }
 
     @Override
-    public void setActiveProject(DBPProject project) {
+    public void setActiveProject(@NotNull DBPProject project) {
         DBPProject oldActiveProject = this.activeProject;
         this.activeProject = project;
 
@@ -173,11 +175,13 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
         }
     }
 
+    @Nullable
     @Override
     public DBPProject getProject(@NotNull IProject project) {
         return projects.get(project);
     }
 
+    @Nullable
     @Override
     public DBPProject getProject(@NotNull String projectName) {
         IProject eProject = eclipseWorkspace.getRoot().getProject(projectName);
@@ -197,14 +201,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     @Override
-    public void addProjectListener(DBPProjectListener listener) {
+    public void addProjectListener(@NotNull DBPProjectListener listener) {
         synchronized (projectListeners) {
             projectListeners.add(listener);
         }
     }
 
     @Override
-    public void removeProjectListener(DBPProjectListener listener) {
+    public void removeProjectListener(@NotNull DBPProjectListener listener) {
         synchronized (projectListeners) {
             projectListeners.remove(listener);
         }
@@ -336,12 +340,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     @Override
-    public boolean hasRealmPermission(String permission) {
+    public boolean hasRealmPermission(@NotNull String permission) {
         return true;
     }
 
     @Override
-    public boolean supportsRealmFeature(String feature) {
+    public boolean supportsRealmFeature(@NotNull String feature) {
         return true;
     }
 

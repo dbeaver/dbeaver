@@ -22,12 +22,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -148,7 +152,18 @@ public class StreamProducerSettings implements IDataTransferSettings {
                     sdi.dispose();
                 }
             } catch (Exception e) {
-                dataTransferSettings.getState().addError(e);
+                if (e instanceof FileNotFoundException &&
+                    DBWorkbench.getPlatform().getApplication().isMultiuser() &&
+                    IOUtils.isLocalPath(entityMapping.getInputFile())
+                ) {
+                    dataTransferSettings.getState().addError(new DBException(
+                        "Local file '" + entityMapping.getInputFile() + "' doesn't exist or not accessible. " +
+                            "Use Cloud Storage to import/export data." +
+                            "\nLearn more at " + HelpUtils.getHelpExternalReference("Cloud-Storage"), e));
+                } else {
+                    dataTransferSettings.getState().addError(e);
+                }
+
                 log.error("IO error while reading columns from stream", e);
             }
         }

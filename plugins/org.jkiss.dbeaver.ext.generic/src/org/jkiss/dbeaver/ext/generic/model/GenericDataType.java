@@ -53,11 +53,13 @@ public class GenericDataType extends JDBCDataType<GenericStructContainer>
         return super.getDescription();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return GenericDataSource.getDataKind(getName(), getTypeID());
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 20)
     public Integer getPrecision()

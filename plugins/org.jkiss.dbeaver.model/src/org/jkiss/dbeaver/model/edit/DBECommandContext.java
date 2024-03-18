@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -36,11 +38,13 @@ public interface DBECommandContext extends DBPContextProvider {
 
     boolean isDirty();
 
+    @Nullable
     DBECommand getUndoCommand();
 
+    @Nullable
     DBECommand getRedoCommand();
 
-    void saveChanges(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException;
+    void saveChanges(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException;
 
     void resetChanges(boolean undoCommands);
 
@@ -48,13 +52,16 @@ public interface DBECommandContext extends DBPContextProvider {
 
     void redoCommand();
 
+    @NotNull
     Collection<? extends DBECommand<?>> getFinalCommands();
 
+    @NotNull
     Collection<? extends DBECommand<?>> getUndoCommands();
 
+    @NotNull
     Collection<DBPObject> getEditedObjects();
 
-    void addCommand(DBECommand command, DBECommandReflector reflector);
+    void addCommand(@NotNull DBECommand command, @Nullable DBECommandReflector reflector);
 
     void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute);
 

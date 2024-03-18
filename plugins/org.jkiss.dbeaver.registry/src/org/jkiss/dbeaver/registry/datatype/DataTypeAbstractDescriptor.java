@@ -117,6 +117,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         }
     }
 
+    @NotNull
     @Override
     public String getId()
     {

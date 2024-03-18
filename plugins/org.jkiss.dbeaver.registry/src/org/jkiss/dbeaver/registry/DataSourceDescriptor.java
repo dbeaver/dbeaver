@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModelExternal;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -435,6 +436,10 @@ public class DataSourceDescriptor
             return savePassword;
         }
         resolveSecretsIfNeeded();
+
+        if (isSharedCredentials() && !isSharedCredentialsSelected()) {
+            return false;
+        }
 
         if (secretsResolved && secretsContainsDatabaseCreds) {
             return true;
@@ -872,7 +877,6 @@ public class DataSourceDescriptor
         // Save only if secrets were already resolved or it is a new connection
         if (secretsResolved || (force && getProject().isUseSecretStorage())) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-
             persistSecrets(secretController, isNewDataSource);
         }
         return true;
@@ -892,24 +896,36 @@ public class DataSourceDescriptor
     }
 
     void persistSecrets(DBSSecretController secretController, boolean isNewDataSource) throws DBException {
+        if (!CommonUtils.isBitSet(
+            secretController.getSupportedFeatures(),
+            isSharedCredentials() ? DBSSecretController.FEATURE_SHARED_SECRETS_EDIT : DBSSecretController.FEATURE_PRIVATE_SECRETS_EDIT)
+        ) {
+            // Secret edit disabled
+            log.debug("Secret save is disabled in secret controller. Auth settings won't be saved.");
+            return;
+        }
+
+        var secret = saveToSecret();
         if (!isSharedCredentials()) {
-            var secret = saveToSecret();
             // Do not persist empty secrets for new datasources
             // If secret controller is external then it may take quite a time + may cause errors because of missing secret
             if (!isNewDataSource || secret != null) {
                 secretController.setPrivateSecretValue(this, new DBSSecretValue(getSecretValueId(), "", secret));
             }
+            secretsResolved = true;
         } else {
-            var secret = saveToSecret();
-            if (DBWorkbench.getPlatform().getApplication() instanceof DBSDefaultTeamProvider teamProvider) {
-                secretController.setSubjectSecretValue(teamProvider.getDefaultTeamId(), this, new DBSSecretValue(
-                    getSecretValueId(), "", secret
-                ));
-            } else {
-                throw new DBException("Application does not support shared secrets");
+            if (selectedSharedCredentials != null) {
+                String subjectId = DataSourceUtils.getSubjectFromSecret(selectedSharedCredentials);
+                try {
+                    secretController.setSubjectSecretValue(subjectId, this,
+                        new DBSSecretValue(subjectId, getSecretValueId(), "", secret));
+                    //the list of available secrets has changed, force update
+                    forgetSecrets();
+                } catch (DBException e) {
+                    throw new DBException("Cannot set team '" + subjectId + "' credentials: " + e.getMessage(), e);
+                }
             }
         }
-        secretsResolved = true;
     }
 
     @NotNull
@@ -925,6 +941,17 @@ public class DataSourceDescriptor
             this.availableSharedCredentials = List.of();
         }
         return availableSharedCredentials;
+    }
+
+    @NotNull
+    public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
+        var secretController = DBSSecretController.getProjectSecretController(getProject());
+        return secretController.listAllSharedSecrets(this);
+    }
+
+    @Nullable
+    public DBSSecretValue getSelectedSharedCredentials() {
+        return selectedSharedCredentials;
     }
 
     public synchronized void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
@@ -953,6 +980,9 @@ public class DataSourceDescriptor
                 }
             } else {
                 this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
+                if (this.availableSharedCredentials.size() == 1) {
+                    setSelectedSharedCredentials(availableSharedCredentials.get(0));
+                }
             }
         } finally {
             // we always consider the secret to be resolved,
@@ -1303,6 +1333,13 @@ public class DataSourceDescriptor
         var secretController = DBSSecretController.getProjectSecretController(getProject());
         resolveSecrets(secretController);
     }
+
+    public void refreshSecretFromConfiguration() {
+        if (selectedSharedCredentials != null) {
+            selectedSharedCredentials.setValue(saveToSecret());
+        }
+    }
+
 
     private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
         String jumpServerSettingsPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
@@ -2003,6 +2040,12 @@ public class DataSourceDescriptor
         }
 
         var reqAuthProvider = getConnectionConfiguration().getAuthModelDescriptor().getRequiredAuthProviderId();
+        if (!CommonUtils.isEmpty(reqAuthProvider)) {
+            return reqAuthProvider;
+        }
+        if (getConnectionConfiguration().getAuthModel() instanceof DBAAuthModelExternal<?> authModelExternal) {
+            return authModelExternal.getRequiredExternalAuth(getConnectionConfiguration());
+        }
         return CommonUtils.isEmpty(reqAuthProvider) ? null : reqAuthProvider;
     }
 
@@ -2186,7 +2229,11 @@ public class DataSourceDescriptor
         connectionInfo.setUserName(dbUserName);
         connectionInfo.setUserPassword(dbPassword);
         // Additional auth props
-        connectionInfo.setAuthProperties(dbAuthProperties);
+        if (!CommonUtils.isEmpty(dbAuthProperties)) {
+            for (Map.Entry<String, String> ap : dbAuthProperties.entrySet()) {
+                connectionInfo.setAuthProperty(ap.getKey(), ap.getValue());
+            }
+        }
 
         boolean emptyDatabaseCredsSaved = CommonUtils.toBoolean(props.getOrDefault(RegistryConstants.ATTR_EMPTY_DATABASE_CREDENTIALS, false));
         this.secretsContainsDatabaseCreds = props.containsKey(RegistryConstants.ATTR_USER)
@@ -2223,13 +2270,16 @@ public class DataSourceDescriptor
                 );
             }
         }
-        connectionInfo.getHandlers().forEach(
-            handler -> {
-                if (!handlersFromSecret.contains(handler.getId())) {
-                    handler.setSavePassword(false);
+        //private secret contains handlers config, shared - not
+        if (!isSharedCredentials()) {
+            connectionInfo.getHandlers().forEach(
+                handler -> {
+                    if (!handlersFromSecret.contains(handler.getId())) {
+                        handler.setSavePassword(false);
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 
     private void loadFromLegacySecret(DBSSecretController secretController) {

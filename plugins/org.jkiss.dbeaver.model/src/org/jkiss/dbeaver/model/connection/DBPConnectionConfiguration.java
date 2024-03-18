@@ -507,13 +507,17 @@ public class DBPConnectionConfiguration implements DBPObject {
         return authProperties;
     }
 
-    public void setAuthProperties(Map<String, String> authProperties) {
-        this.authProperties = authProperties;
+    public void setAuthProperties(@Nullable Map<String, String> authProperties) {
+        if (authProperties == null) {
+            this.authProperties = null;
+        } else {
+            this.authProperties = new LinkedHashMap<>(authProperties);
+        }
     }
 
-    public void setAuthProperty(String name, String value) {
+    public void setAuthProperty(@NotNull String name, @Nullable String value) {
         if (authProperties == null) {
-            authProperties = new HashMap<>();
+            authProperties = new LinkedHashMap<>();
         }
         if (value == null) {
             this.authProperties.remove(name);
