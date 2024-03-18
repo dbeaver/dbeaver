@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModelExternal;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -2037,6 +2038,12 @@ public class DataSourceDescriptor
         }
 
         var reqAuthProvider = getConnectionConfiguration().getAuthModelDescriptor().getRequiredAuthProviderId();
+        if (!CommonUtils.isEmpty(reqAuthProvider)) {
+            return reqAuthProvider;
+        }
+        if (getConnectionConfiguration().getAuthModel() instanceof DBAAuthModelExternal<?> authModelExternal) {
+            return authModelExternal.getRequiredExternalAuth(getConnectionConfiguration());
+        }
         return CommonUtils.isEmpty(reqAuthProvider) ? null : reqAuthProvider;
     }
 

@@ -136,6 +136,9 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         if (attribute == null) {
             return null;
         }
+        if (attributes == null) {
+            return null;
+        }
         for (ERDEntityAttribute attr : attributes) {
             if (attr.getObject() == attribute) {
                 return attr;

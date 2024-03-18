@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -57,6 +61,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private DBTTaskExecutionListener executionListener;
     private Log taskLog = log;
     private DBRProgressMonitor activeMonitor;
+    private DBTTaskRunStatus taskRunStatus = new DBTTaskRunStatus();
 
     private long startTime;
     private long elapsedTime;
@@ -94,8 +99,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             Log.setLogWriter(logStream);
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
             try {
-                DBTTaskRunStatus runResultStatus = executeTask(new TaskLoggingProgressMonitor(monitor, task), logStream);
-                taskRun.setExtraMessage(runResultStatus.getResultMessage());
+                taskRunStatus = executeTask(new TaskLoggingProgressMonitor(monitor, task), logStream);
+                taskRun.setExtraMessage(taskRunStatus.getResultMessage());
             } catch (Throwable e) {
                 taskError = e;
                 taskLog.error("Task fatal error", e);
@@ -134,6 +139,16 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     @Override
     public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         runnable.run(activeMonitor);
+    }
+
+    @NotNull
+    public DBTTaskRunStatus getTaskRunStatus() {
+        return taskRunStatus;
+    }
+
+    @Nullable
+    public Throwable getTaskError() {
+        return taskError;
     }
 
     private class LoggingExecutionListener implements DBTTaskExecutionListener {

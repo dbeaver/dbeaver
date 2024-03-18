@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -48,7 +49,9 @@ import java.util.List;
 /**
  * MySQLTableColumn
  */
-public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject
+public class MySQLTableColumn
+    extends JDBCTableColumn<MySQLTableBase>
+    implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject, GisAttribute
 {
     private static final Log log = Log.getLog(MySQLTableColumn.class);
 
@@ -78,6 +81,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private String extraInfo;
     private String genExpression;
     private long modifiers;
+    private Integer srid;
 
     private String fullTypeName;
     private List<String> enumValues;
@@ -193,6 +197,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
                     modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_UNSIGNED;
                     break;
             }
+        }
+
+        if (MySQLUtils.isColumnSridSupported(getDataSource())) {
+            srid = JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_SRS_ID);
         }
     }
 
@@ -393,6 +401,22 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     @Override
     public String getDescription() {
         return getComment();
+    }
+
+    @Override
+    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) {
+        return srid != null ? srid : -1;
+    }
+
+    @Nullable
+    @Override
+    public String getAttributeGeometryType(DBRProgressMonitor monitor) {
+        return MySQLUtils.isSpatialDataType(typeName) ? typeName : null;
+    }
+
+    @Nullable
+    public Integer getSrid() {
+        return srid;
     }
 
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {

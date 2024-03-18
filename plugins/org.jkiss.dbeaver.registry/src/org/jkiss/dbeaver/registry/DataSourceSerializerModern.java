@@ -527,6 +527,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Auth profiles
+            List<DBAAuthProfile> profiles = new ArrayList<>();
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "auth-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
@@ -542,9 +543,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 profile.setUserName(authCreds.getUserName());
                 profile.setUserPassword(authCreds.getUserPassword());
                 profile.setProperties(authCreds.getProperties());
-
-                registry.updateAuthProfile(profile);
+                profiles.add(profile);
             }
+            registry.setAuthProfiles(profiles);
 
             // Connections
             for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(configurationMap, "connections")) {
