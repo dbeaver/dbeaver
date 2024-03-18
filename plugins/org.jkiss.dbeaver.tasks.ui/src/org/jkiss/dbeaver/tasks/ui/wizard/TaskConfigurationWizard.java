@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -267,7 +266,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 // Execute directly in wizard
                 executor.executeTask();
             } else {
-                task.getProject().getTaskManager().runTask(task, executor, Collections.emptyMap());
+                task.getProject().getTaskManager().scheduleTask(task, executor);
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Task run error", e.getMessage(), e);
