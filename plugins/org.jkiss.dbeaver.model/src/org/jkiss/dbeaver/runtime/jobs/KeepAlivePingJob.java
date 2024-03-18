@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +69,8 @@ class KeepAlivePingJob extends AbstractJob {
                 dataSource,
                 disconnectOnError,
                 false,
-                () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+                new DefaultInvalidationFeedbackHandler()
+            );
             synchronized (failedAttempts) {
                 String dsId = dataSource.getContainer().getId();
                 if (InvalidateJob.anySucceeded(results) || disconnectOnError) {

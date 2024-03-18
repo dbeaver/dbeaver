@@ -21,13 +21,15 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPExclusiveResource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,9 +52,16 @@ public class InvalidateJob extends DataSourceJob
         }
     }
 
-    private long timeSpent;
+    public interface InvalidationFeedbackHandler {
+        boolean confirmInvalidate(@NotNull Set<DBPDataSourceContainer> containersToInvalidate);
+
+        void onInvalidateSuccess(@NotNull DBPDataSourceContainer container, @NotNull Collection<ContextInvalidateResult> results);
+
+        void onInvalidateFailure(@NotNull DBPDataSourceContainer container, @NotNull Collection<ContextInvalidateResult> results);
+    }
+
     private List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
-    private Runnable feedbackHandler;
+    private InvalidationFeedbackHandler feedbackHandler;
 
     public InvalidateJob(
         DBPDataSource dataSource)
@@ -64,15 +73,7 @@ public class InvalidateJob extends DataSourceJob
         return invalidateResults;
     }
 
-    public long getTimeSpent() {
-        return timeSpent;
-    }
-
-    public Runnable getFeedbackHandler() {
-        return feedbackHandler;
-    }
-
-    public void setFeedbackHandler(Runnable feedbackHandler) {
+    public void setFeedbackHandler(@Nullable InvalidationFeedbackHandler feedbackHandler) {
         this.feedbackHandler = feedbackHandler;
     }
 
@@ -94,7 +95,7 @@ public class InvalidateJob extends DataSourceJob
         @NotNull DBPDataSource dataSource,
         boolean disconnectOnFailure,
         boolean showErrors,
-        @Nullable Runnable feedback
+        @Nullable InvalidationFeedbackHandler feedbackHandler
     ) {
         final Set<DBPDataSourceContainer> containers = new LinkedHashSet<>();
         collectDependentDataSources(dataSource, containers);
@@ -106,7 +107,7 @@ public class InvalidateJob extends DataSourceJob
 
             final Object lock = container.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
             if (lock == DBPExclusiveResource.TASK_PROCESED) {
-                log.debug("Datasource '" + dataSource.getContainer().getName() + "' was already invalidated");
+                log.debug("Datasource '" + container.getName() + "' was already invalidated");
                 it.remove();
             } else {
                 locks.put(container, lock);
@@ -120,7 +121,12 @@ public class InvalidateJob extends DataSourceJob
         }
 
         try {
-            return invalidateDataSources0(monitor, containers, disconnectOnFailure, showErrors, feedback);
+            if (feedbackHandler == null || feedbackHandler.confirmInvalidate(containers)) {
+                return invalidateDataSources0(monitor, containers, disconnectOnFailure, showErrors, feedbackHandler);
+            } else {
+                log.debug("Invalidate cancelled by user");
+                return List.of();
+            }
         } finally {
             monitor.subTask("Release exclusive datasource locks");
             for (Map.Entry<DBPDataSourceContainer, Object> entry : locks.entrySet()) {
@@ -137,7 +143,7 @@ public class InvalidateJob extends DataSourceJob
         @NotNull Set<DBPDataSourceContainer> containers,
         boolean disconnectOnFailure,
         boolean showErrors,
-        @Nullable Runnable feedback
+        @Nullable InvalidationFeedbackHandler feedbackHandler
     ) {
         monitor.beginTask("Invalidate data sources", containers.size());
 
@@ -196,21 +202,12 @@ public class InvalidateJob extends DataSourceJob
                 }
 
                 if (phase == DBCInvalidatePhase.AFTER_INVALIDATE) {
-                    if (anySucceeded(results)) {
-                        DBeaverNotifications.showNotification(
-                            container.getDataSource(),
-                            DBeaverNotifications.NT_RECONNECT_SUCCESS,
-                            "Datasource was invalidated\n\nLive connection count: " + getSucceededCount(results) + "/" + results.size(),
-                            DBPMessageType.INFORMATION
-                        );
-                    } else if (showErrors) {
-                        DBeaverNotifications.showNotification(
-                            container.getDataSource(),
-                            DBeaverNotifications.NT_RECONNECT_FAILURE,
-                            "Datasource invalidate failed",
-                            DBPMessageType.ERROR,
-                            feedback
-                        );
+                    if (feedbackHandler != null) {
+                        if (anySucceeded(results)) {
+                            feedbackHandler.onInvalidateSuccess(container, results);
+                        } else if (showErrors) {
+                            feedbackHandler.onInvalidateFailure(container, results);
+                        }
                     }
 
                     monitor.worked(1);

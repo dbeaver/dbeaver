@@ -27,11 +27,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.DefaultInvalidationFeedbackHandler;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
@@ -42,6 +43,8 @@ import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+
+import java.util.Set;
 
 // TODO: invalidate ALL contexts
 public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
@@ -72,13 +75,23 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         if (dataSource != null) {
             //final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) context;
             DBPDataSourceContainer container = dataSource.getContainer();
-            if (!ArrayUtils.isEmpty(Job.getJobManager().find(container)) ||
-                !DataSourceHandler.checkAndCloseActiveTransaction(container, true)) {
+            if (!ArrayUtils.isEmpty(Job.getJobManager().find(container))) {
                 // Already connecting/disconnecting or cancelled - just return
                 return false;
             }
             final InvalidateJob invalidateJob = new InvalidateJob(dataSource);
-            invalidateJob.setFeedbackHandler(() -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+            invalidateJob.setFeedbackHandler(new DefaultInvalidationFeedbackHandler() {
+                @Override
+                public boolean confirmInvalidate(@NotNull Set<DBPDataSourceContainer> containersToInvalidate) {
+                    for (DBPDataSourceContainer container : containersToInvalidate) {
+                        if (!DataSourceHandler.checkAndCloseActiveTransaction(container, true)) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            });
             invalidateJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
@@ -93,6 +106,10 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                         } else {
                             connectedNum++;
                         }
+                    }
+                    if (totalNum == 0) {
+                        // no invalidation happened
+                        return;
                     }
                     if (connectedNum > 0) {
                         message.insert(0, "Connections reopened: " + connectedNum + " (of " + totalNum + ")");
