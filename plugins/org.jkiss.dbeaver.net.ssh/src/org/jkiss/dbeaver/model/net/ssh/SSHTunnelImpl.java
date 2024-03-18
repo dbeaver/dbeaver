@@ -184,12 +184,11 @@ public class SSHTunnelImpl implements DBWTunnel {
     @Override
     public void closeTunnel(DBRProgressMonitor monitor) throws DBException {
         if (session != null) {
-            controller.release(
-                monitor,
-                session,
-                configuration,
-                configuration.getDataSource().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT)
-            );
+            final DBPDataSourceContainer container = configuration.getDataSource();
+            final int timeout = container != null
+                ? container.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT)
+                : 0;
+            controller.release(monitor, session, configuration, timeout);
         }
         for (Runnable listener : this.listeners) {
             listener.run();
