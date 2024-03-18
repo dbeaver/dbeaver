@@ -284,8 +284,8 @@ public class DBeaverLauncher {
     private static final String DB_DATA_HOME = "@data.home"; //$NON-NLS-1$
 
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
-    private static final String DBEAVER_CONFIG_FILE = "dbeaver.conf";
-    private static final String DBEAVER_PROP_LANGUAGE = "language";
+    private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
+    private static final String DBEAVER_PROP_LANGUAGE = "nl";
 
     /**
      * A structured form for a version identifier.
