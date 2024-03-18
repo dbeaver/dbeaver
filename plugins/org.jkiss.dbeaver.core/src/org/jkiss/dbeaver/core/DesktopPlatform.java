@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStoreProvider;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -81,6 +82,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
     private DBPPlatformLanguage language;
+    private final DBPPreferenceStore preferenceStore;
 
     public static boolean isStandalone() {
         return BaseApplicationImpl.getInstance().isStandalone();
@@ -100,18 +102,18 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         isClosing = closing;
     }
 
-    public static DBPPreferenceStore getGlobalPreferenceStore() {
-        return DBeaverActivator.getInstance().getPreferences();
-    }
-
     public DesktopPlatform() {
         instance = this;
+        if (getApplication() instanceof DBPPreferenceStoreProvider preferenceStoreProvider) {
+            this.preferenceStore = preferenceStoreProvider.getPreferenceStore();
+        } else {
+            this.preferenceStore = DBeaverActivator.getInstance().getPreferences();
+        }
     }
 
     protected void initialize() {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize desktop platform...");
-
         {
             this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
             if (this.language == null) {
@@ -292,7 +294,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return DBeaverActivator.getInstance().getPreferences();
+        return preferenceStore;
     }
 
     @NotNull
