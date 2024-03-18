@@ -348,7 +348,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                             HolidayDecorations.install(composite.getParent());
                         }
                     } catch (Exception e) {
-                        log.error("Can't access onboarding composite", e);
+                        log.debug("Can't access onboarding composite", e);
                         broker.unsubscribe(this);
                     }
                 }
