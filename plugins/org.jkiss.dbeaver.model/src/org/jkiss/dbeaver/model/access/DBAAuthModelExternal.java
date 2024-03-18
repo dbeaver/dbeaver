@@ -15,31 +15,16 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.sql.schema;
+package org.jkiss.dbeaver.model.access;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.io.IOException;
-import java.io.Reader;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 
 /**
- * SQL schema manager.
- * Upgrades schema version if needed.
- * Converts schema create/update scripts into target database dialect.
+ * External auth model.
  */
-public interface SQLSchemaScriptSource {
-
-    @NotNull
-    Reader openSchemaCreateScript(@NotNull DBRProgressMonitor monitor) throws IOException, DBException;
-
+public interface DBAAuthModelExternal<CREDENTIALS extends DBAAuthCredentials> extends DBAAuthModel<CREDENTIALS> {
     @Nullable
-    Reader openSchemaUpdateScript(
-        @NotNull DBRProgressMonitor monitor,
-        int versionNumber,
-        @Nullable String specificPrefix
-    ) throws IOException, DBException;
-
+    String getRequiredExternalAuth(@NotNull DBPConnectionConfiguration configuration);
 }
