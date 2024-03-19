@@ -253,7 +253,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         SessionDetailsLoadService loadingService = new SessionDetailsLoadService(data);
         LoadingJob.createService(
             loadingService,
-            new ProgressLoaderVisualizer<Collection<DBPObject>>(loadingService, styledText) {
+            new ProgressLoaderVisualizer<>(loadingService, styledText) {
                 @Override
                 public void completeLoading(Collection<DBPObject> dbpObjects) {
                     StringBuilder text = new StringBuilder();
