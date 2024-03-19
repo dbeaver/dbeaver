@@ -26,11 +26,6 @@ import org.jkiss.dbeaver.registry.EclipsePluginApplicationImpl;
  */
 public class DBeaverPluginApplication extends EclipsePluginApplicationImpl {
 
-    @Override
-    public long getLastUserActivityTime() {
-        return -1;
-    }
-
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
