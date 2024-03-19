@@ -14,24 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.app;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+package org.jkiss.dbeaver.model.exec;
 
 /**
- * DB desktop application.
+ * Represents a phase of the invalidation process.
  */
-public interface DBPApplicationDesktop extends DBPApplication {
-
-    /**
-     * Returns last user activity time
-     * @return -1 by default
-     */
-    long getLastUserActivityTime();
-
-    @NotNull
-    DBPPreferenceStore getPreferenceStore();
-
+public enum DBCInvalidatePhase {
+    BEFORE_INVALIDATE,
+    INVALIDATE,
+    AFTER_INVALIDATE
 }

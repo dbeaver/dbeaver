@@ -8,9 +8,20 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.model.net.ssh.SSHImplementationJsch" class="org.jkiss.dbeaver.ui.net.ssh.jsch.JSCHUIPromptProviderAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.model.net.ssh.JSCHSessionController" class="org.jkiss.dbeaver.ui.net.ssh.jsch.JSCHUIPromptProviderAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider"/>
         </factory>
+    </extension>
+
+    <extension point="org.eclipse.ui.views">
+        <view
+            id="com.dbeaver.ssh.tunnels"
+            category="org.jkiss.dbeaver.core.category"
+            class="org.jkiss.dbeaver.ui.net.ssh.SSHTunnelView"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"
+            name="SSH tunnel explorer">
+            <description>SSH tunnel explorer. Allows to view and manage SSH tunnels.</description>
+        </view>
     </extension>
 
 </plugin>

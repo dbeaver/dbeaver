@@ -17,26 +17,26 @@
 package org.jkiss.dbeaver.model.net.ssh.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.net.ssh.SSHImplementation;
+import org.jkiss.dbeaver.model.net.ssh.SSHSessionController;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * SSHImplementationDescriptor
  */
-public class SSHImplementationDescriptor extends AbstractContextDescriptor
+public class SSHSessionControllerDescriptor extends AbstractContextDescriptor
 {
     static final String EXTENSION_ID = "org.jkiss.dbeaver.net.ssh"; //$NON-NLS-1$
 
     private final AbstractDescriptor.ObjectType implClass;
     private final String id;
     private final String label;
-    private final boolean supportsJumpServer;
+    private volatile SSHSessionController instance;
 
-    SSHImplementationDescriptor(
+    SSHSessionControllerDescriptor(
         IConfigurationElement config)
     {
         super(config);
@@ -44,7 +44,6 @@ public class SSHImplementationDescriptor extends AbstractContextDescriptor
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.implClass = new AbstractDescriptor.ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        this.supportsJumpServer = CommonUtils.getBoolean(config.getAttribute("supportsJumpServer"));
     }
 
     public ObjectType getImplClass() {
@@ -59,14 +58,17 @@ public class SSHImplementationDescriptor extends AbstractContextDescriptor
         return label;
     }
 
-    public boolean isSupportsJumpServer() {
-        return supportsJumpServer;
-    }
+    @NotNull
+    public SSHSessionController getInstance() throws DBException {
+        if (instance == null) {
+            synchronized (this) {
+                if (instance == null) {
+                    instance = implClass.createInstance(SSHSessionController.class);
+                }
+            }
+        }
 
-    public SSHImplementation createImplementation()
-        throws DBException
-    {
-        return implClass.createInstance(SSHImplementation.class);
+        return instance;
     }
 
 }
