@@ -18,18 +18,25 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.apache.commons.jexl3.JexlContext;
 import org.eclipse.ui.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
+import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
+import org.jkiss.dbeaver.model.dashboard.data.DashboardDatasetRow;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
-import org.jkiss.dbeaver.ui.dashboard.model.*;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -43,13 +50,13 @@ public class DashboardUpdater {
     private Map<DBPDataSourceContainer, List<MapQueryInfo>> mapQueries = new HashMap<>();
 
     private static class MapQueryInfo {
-        private final DashboardContainer dashboard;
+        private final DBDashboardContainer dashboard;
         private final DashboardViewContainer viewContainer;
-        private final DashboardMapQuery mapQuery;
+        private final DBDashboardMapQuery mapQuery;
         public Date timestamp;
         private Map<String, Object> mapValue = new HashMap<>();
 
-        public MapQueryInfo(DashboardContainer dashboard, DashboardViewContainer viewContainer, DashboardMapQuery mapQuery) {
+        public MapQueryInfo(DBDashboardContainer dashboard, DashboardViewContainer viewContainer, DBDashboardMapQuery mapQuery) {
             this.dashboard = dashboard;
             this.viewContainer = viewContainer;
             this.mapQuery = mapQuery;
@@ -61,11 +68,10 @@ public class DashboardUpdater {
 
     /**
      * 
-     * @param monitor
      * @return true if need pause to update dashboard, false if not
      */
-    public boolean updateDashboards(DBRProgressMonitor monitor) {
-        List<DashboardContainer> dashboards = new ArrayList<>();
+    public boolean updateDashboards(@NotNull DBRProgressMonitor monitor) {
+        List<DBDashboardContainer> dashboards = new ArrayList<>();
         if (getDashboardsToUpdate(dashboards)) {
             return true;
         }
@@ -75,12 +81,12 @@ public class DashboardUpdater {
         return false;
     }
 
-    private void updateDashboards(DBRProgressMonitor monitor, List<DashboardContainer> dashboards) {
+    private void updateDashboards(@NotNull DBRProgressMonitor monitor, @NotNull List<DBDashboardContainer> dashboards) {
         monitor.beginTask("Update dashboards", dashboards.size());
 
         // Get all map queries used by dashboards
-        for (DashboardContainer dashboard : dashboards) {
-            DashboardMapQuery mapQuery = dashboard.getMapQuery();
+        for (DBDashboardContainer dashboard : dashboards) {
+            DBDashboardMapQuery mapQuery = dashboard.getMapQuery();
             if (mapQuery != null) {
                 List<MapQueryInfo> queryList = mapQueries.computeIfAbsent(
                     dashboard.getDataSourceContainer(), k -> new ArrayList<>());
@@ -129,7 +135,7 @@ public class DashboardUpdater {
             }
         }
 
-        for (DashboardContainer dashboard : dashboards) {
+        for (DBDashboardContainer dashboard : dashboards) {
             if (!dashboard.isAutoUpdateEnabled()) {
                 continue;
             }
@@ -148,7 +154,7 @@ public class DashboardUpdater {
                     }
                 });
             } catch (DBException e) {
-                log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
+                log.debug("Error reading dashboard '" + dashboard.getDashboard().getId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
             }
             monitor.worked(1);
         }
@@ -180,7 +186,7 @@ public class DashboardUpdater {
         }
     }
 
-    private void updateDashboard(DBRProgressMonitor monitor, DashboardContainer dashboard) throws DBCException {
+    private void updateDashboard(DBRProgressMonitor monitor, DBDashboardContainer dashboard) throws DBCException {
         if (!dashboard.getDataSourceContainer().isConnected() || DBWorkbench.getPlatform().isShuttingDown()) {
             return;
         }
@@ -189,7 +195,7 @@ public class DashboardUpdater {
             fetchDashboardMapData(monitor, dashboard);
             return;
         }
-        List<? extends DashboardQuery> queries = dashboard.getQueryList();
+        List<? extends DBDashboardQuery> queries = dashboard.getQueryList();
         if (queries.isEmpty()) {
             return;
         }
@@ -199,7 +205,7 @@ public class DashboardUpdater {
             return;
         }
         try (DBCSession session = executionContext.openSession(
-            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboardTitle() + "' data")) {
+            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboard().getName() + "' data")) {
             session.enableLogging(false);
 
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
@@ -213,7 +219,7 @@ public class DashboardUpdater {
                 }
             }
             try {
-                for (DashboardQuery query : queries) {
+                for (DBDashboardQuery query : queries) {
                     try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.getQueryText(), false, false, false)) {
                         if (dbStat.executeStatement()) {
                             try (DBCResultSet dbResults = dbStat.openResultSet()) {
@@ -223,7 +229,7 @@ public class DashboardUpdater {
                             }
                         }
                     } catch (Exception e) {
-                        throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e, session.getExecutionContext());
+                        throw new DBCException("Error updating dashboard " + dashboard.getDashboard().getId(), e, session.getExecutionContext());
                     }
                 }
             } finally {
@@ -234,7 +240,7 @@ public class DashboardUpdater {
         }
     }
 
-    private void fetchDashboardMapData(DBRProgressMonitor monitor, DashboardContainer dashboard) {
+    private void fetchDashboardMapData(DBRProgressMonitor monitor, DBDashboardContainer dashboard) {
         MapQueryInfo mqi = getMapQueryData(dashboard);
         if (mqi == null) {
             return;
@@ -252,8 +258,8 @@ public class DashboardUpdater {
                 for (int i = 0; i < mapKeys.length; i++) {
                     Object value = mapValue.get(mapKeys[i]);
                     Number numValue;
-                    if (value instanceof Number) {
-                        numValue = (Number) value;
+                    if (value instanceof Number number) {
+                        numValue = number;
                     } else {
                         numValue = CommonUtils.toDouble(value);
                     }
@@ -295,7 +301,7 @@ public class DashboardUpdater {
 
                 Object result = dashboard.getMapFormula().evaluate(context);
                 if (result instanceof Number) {
-                    String columnName = dashboard.getDashboardTitle();
+                    String columnName = dashboard.getDashboard().getName();
                     if (!ArrayUtils.isEmpty(mapLabels)) {
                         columnName = mapLabels[0];
                     }
@@ -309,7 +315,7 @@ public class DashboardUpdater {
         }
     }
 
-    private void fetchDashboardData(DashboardContainer dashboard, DBCResultSet dbResults) throws DBCException {
+    private void fetchDashboardData(DBDashboardContainer dashboardContainer, DBCResultSet dbResults) throws DBCException {
         DBCResultSetMetaData meta = dbResults.getMeta();
         List<DBCAttributeMetaData> rsAttrs = meta.getAttributes();
         List<String> colNames = new ArrayList<>();
@@ -339,17 +345,17 @@ public class DashboardUpdater {
                 values[i] = dbResults.getAttributeValue(colNames.get(i));
             }
             dataset.addRow(new DashboardDatasetRow(timestamp, values));
-            if (dataset.getRows().size() >= dashboard.getDashboardMaxItems()) {
+            if (dataset.getRows().size() >= dashboardContainer.getDashboardMaxItems()) {
                 break;
             }
         }
 
-        switch (dashboard.getDashboardFetchType()) {
+        switch (dashboardContainer.getDashboard().getFetchType()) {
             case rows:
                 dataset = transposeDataset(dataset);
                 break;
         }
-        dashboard.updateDashboardData(dataset);
+        dashboardContainer.updateDashboardData(dataset);
     }
 
     private DashboardDataset transposeDataset(DashboardDataset dataset) {
@@ -386,15 +392,15 @@ public class DashboardUpdater {
         return newDataset;
     }
 
-    public boolean getDashboardsToUpdate(List<DashboardContainer> dashboards) {
+    public boolean getDashboardsToUpdate(List<DBDashboardContainer> dashboards) {
         boolean pauseDashboardUpdate = true;
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IViewReference view : page.getViewReferences()) {
                     if (view.getId().equalsIgnoreCase(DashboardView.VIEW_ID)) {
                         IWorkbenchPart part = view.getPart(false);
-                        if (part instanceof DashboardView && checkViewDashboards((DashboardView) part)) {
-                            getViewDashboards((DashboardView) part, dashboards);
+                        if (part instanceof DashboardView dv && checkViewDashboards(dv)) {
+                            getViewDashboards(dv, dashboards);
                             pauseDashboardUpdate = false;
                         }
                     }
@@ -409,20 +415,24 @@ public class DashboardUpdater {
         return viewManager != null && viewManager.getDataSourceContainer().isConnected();
     }
 
-    private void getViewDashboards(DashboardView view, List<DashboardContainer> dashboards) {
+    private void getViewDashboards(DashboardView view, List<DBDashboardContainer> dashboards) {
         long currentTime = System.currentTimeMillis();
         DashboardListViewer viewManager = view.getDashboardListViewer();
         for (DashboardGroupContainer group : viewManager.getGroups()) {
-            for (DashboardContainer dashboard : group.getItems()) {
-                Date lastUpdateTime = dashboard.getLastUpdateTime();
-                if (lastUpdateTime == null || (currentTime - lastUpdateTime.getTime()) >= dashboard.getUpdatePeriod()) {
-                    dashboards.add(dashboard);
+            for (DBDashboardContainer dashboardContainer : group.getItems()) {
+                if (dashboardContainer.getDashboard().getDataType() == DBDashboardDataType.provided) {
+                    // Skip all provided
+                    continue;
+                }
+                Date lastUpdateTime = dashboardContainer.getLastUpdateTime();
+                if (lastUpdateTime == null || (currentTime - lastUpdateTime.getTime()) >= dashboardContainer.getUpdatePeriod()) {
+                    dashboards.add(dashboardContainer);
                 }
             }
         }
     }
 
-    private MapQueryInfo getMapQueryData(DashboardContainer dashboard) {
+    private MapQueryInfo getMapQueryData(DBDashboardContainer dashboard) {
         List<MapQueryInfo> mapQueryInfos = mapQueries.get(dashboard.getDataSourceContainer());
         if (mapQueryInfos != null) {
             for (MapQueryInfo mqi : mapQueryInfos) {
