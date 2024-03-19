@@ -23,38 +23,38 @@ import org.eclipse.core.runtime.Platform;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SSHImplementationRegistry
+public class SSHSessionControllerRegistry
 {
-    private static SSHImplementationRegistry instance = null;
+    private static SSHSessionControllerRegistry instance = null;
 
-    public synchronized static SSHImplementationRegistry getInstance()
+    public synchronized static SSHSessionControllerRegistry getInstance()
     {
         if (instance == null) {
-            instance = new SSHImplementationRegistry(Platform.getExtensionRegistry());
+            instance = new SSHSessionControllerRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private final List<SSHImplementationDescriptor> descriptors = new ArrayList<>();
+    private final List<SSHSessionControllerDescriptor> descriptors = new ArrayList<>();
 
-    private SSHImplementationRegistry(IExtensionRegistry registry)
+    private SSHSessionControllerRegistry(IExtensionRegistry registry)
     {
         // Load data descriptors from external plugins
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(SSHImplementationDescriptor.EXTENSION_ID);
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(SSHSessionControllerDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
-                SSHImplementationDescriptor descriptor = new SSHImplementationDescriptor(ext);
+                SSHSessionControllerDescriptor descriptor = new SSHSessionControllerDescriptor(ext);
                 descriptors.add(descriptor);
             }
         }
     }
 
-    public List<SSHImplementationDescriptor> getDescriptors() {
+    public List<SSHSessionControllerDescriptor> getDescriptors() {
         return descriptors;
     }
 
-    public SSHImplementationDescriptor getDescriptor(String id) {
-        for (SSHImplementationDescriptor desc : descriptors) {
+    public SSHSessionControllerDescriptor getDescriptor(String id) {
+        for (SSHSessionControllerDescriptor desc : descriptors) {
             if (desc.getId().equals(id)) {
                 return desc;
             }

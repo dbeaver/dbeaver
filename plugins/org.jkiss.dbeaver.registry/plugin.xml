@@ -30,6 +30,7 @@
         <language code="ja" label="%language.ja.label"/>
         <language code="ko" label="%language.ko.label"/>
         <language code="pt_BR" label="%language.pt_BR.label"/>
+        <language code="ro" label="%language.ro.label"/>
         <language code="ru" label="%language.ru.label"/>
         <language code="zh" label="%language.zh.label"/>
         <language code="es" label="%language.es.label"/>
