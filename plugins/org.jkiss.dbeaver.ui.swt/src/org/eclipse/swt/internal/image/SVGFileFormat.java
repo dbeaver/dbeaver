@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.internal.DPIUtil;
 import org.jkiss.dbeaver.ui.swt.ImageConverter;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -54,7 +55,7 @@ public class SVGFileFormat extends FileFormat {
             return null;
         }
 
-        final float factor = DPIUtil.getDeviceZoom() / 100.0f;
+        final float factor = getScalingFactor();
         final int width = (int) (document.size().width * factor);
         final int height = (int) (document.size().height * factor);
 
@@ -77,5 +78,13 @@ public class SVGFileFormat extends FileFormat {
     @Override
     void unloadIntoByteStream(ImageLoader loader) {
         SWT.error(SWT.ERROR_NOT_IMPLEMENTED);
+    }
+
+    private static float getScalingFactor() {
+        if (RuntimeUtils.isMacOS() || DPIUtil.useCairoAutoScale()) {
+            return 1.0f;
+        } else {
+            return DPIUtil.getDeviceZoom() / 100.0f;
+        }
     }
 }

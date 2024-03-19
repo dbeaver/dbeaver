@@ -7,6 +7,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-ManifestVersion: 2
 Bundle-Release-Date: 20240325
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: org.jkiss.dbeaver.ui, org.jkiss.bundle.jsvg
+Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.bundle.jsvg
 Export-Package: org.jkiss.dbeaver.ui.swt
 Automatic-Module-Name: org.jkiss.dbeaver.ui.swt
