@@ -209,8 +209,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     @NotNull
     @Override
-    public DBPApplicationDesktop getApplication() {
-        return (DBPApplicationDesktop) BaseApplicationImpl.getInstance();
+    public DBPApplication getApplication() {
+        return BaseApplicationImpl.getInstance();
     }
 
     @NotNull
@@ -287,7 +287,10 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return getApplication().getPreferenceStore();
+        if (getApplication() instanceof DBPApplicationDesktop desktopApp) {
+            return desktopApp.getPreferenceStore();
+        }
+        return DBeaverActivator.getInstance().getPreferences();
     }
 
     @NotNull
