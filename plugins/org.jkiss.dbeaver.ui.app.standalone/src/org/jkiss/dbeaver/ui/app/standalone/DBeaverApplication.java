@@ -170,6 +170,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return lastUserActivityTime;
     }
 
+    @NotNull
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return DBeaverActivator.getInstance().getPreferences();
+    }
+
     @Override
     public Object start(IApplicationContext context) {
         instance = this;
