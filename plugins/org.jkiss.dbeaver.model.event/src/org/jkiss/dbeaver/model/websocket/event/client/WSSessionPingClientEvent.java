@@ -20,8 +20,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSClientEventType;
 
-public class WSTouchSessionClientEvent extends WSClientEvent {
-    protected WSTouchSessionClientEvent(@Nullable String topicId) {
-        super(WSClientEventType.TOUCH_SESSION.getEventId(), topicId);
+public class WSSessionPingClientEvent extends WSClientEvent {
+    protected WSSessionPingClientEvent(@Nullable String topicId) {
+        super(WSClientEventType.SESSION_PING.getEventId(), topicId);
     }
 }
