@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net.ssh.config;
+package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.code.NotNull;
-
-public record SSHPortForwardConfiguration(@NotNull String localHost, int localPort, @NotNull String remoteHost, int remotePort) {
-    public static final String LOCAL_HOST = "127.0.0.1";
-
-    @Override
-    public String toString() {
-        return localHost + ":" + localPort + " <- " + remoteHost + ":" + remotePort;
-    }
+/**
+ * Represents a phase of the invalidation process.
+ */
+public enum DBCInvalidatePhase {
+    BEFORE_INVALIDATE,
+    INVALIDATE,
+    AFTER_INVALIDATE
 }

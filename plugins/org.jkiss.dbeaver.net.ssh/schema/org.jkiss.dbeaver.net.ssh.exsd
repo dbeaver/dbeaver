@@ -31,7 +31,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.net.ssh.SSHImplementation"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.net.ssh.SSHSessionController"/>
                </appInfo>
             </annotation>
          </attribute>
