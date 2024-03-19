@@ -218,6 +218,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return null;
     }
 
+    @NotNull
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         return new DBWNetworkHandler[0];
