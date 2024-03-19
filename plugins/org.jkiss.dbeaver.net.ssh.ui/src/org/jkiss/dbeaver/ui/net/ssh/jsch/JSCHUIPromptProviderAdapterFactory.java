@@ -19,18 +19,18 @@ package org.jkiss.dbeaver.ui.net.ssh.jsch;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.net.ssh.JSCHSessionController;
 import org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider;
-import org.jkiss.dbeaver.model.net.ssh.SSHImplementationJsch;
 
 public class JSCHUIPromptProviderAdapterFactory implements IAdapterFactory {
 
     private static final Log log = Log.getLog(JSCHUIPromptProviderAdapterFactory.class);
 
-    private static final Class<?>[] CLASSES = new Class[] { SSHImplementationJsch.class };
+    private static final Class<?>[] CLASSES = new Class[] { JSCHSessionController.class };
     
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-        if (adaptableObject instanceof SSHImplementationJsch) {
+        if (adaptableObject instanceof JSCHSessionController) {
             if (adapterType == JSCHUserInfoPromptProvider.class) {
                 try {
                     return adapterType.cast(new JSCHUIPromptProvider());

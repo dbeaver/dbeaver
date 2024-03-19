@@ -23,10 +23,7 @@ import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
-import org.eclipse.gef.palette.PaletteContainer;
-import org.eclipse.gef.palette.PaletteDrawer;
-import org.eclipse.gef.palette.PaletteRoot;
-import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.palette.*;
 import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
@@ -213,7 +210,8 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                     }
                 }
                 for (Map.Entry<PaletteDrawer, List<ToolEntryTable>> entry : toolMap.entrySet()) {
-                    entry.getKey().setChildren(entry.getValue());
+                    List<PaletteEntry> paletteEntries = new ArrayList<>(entry.getValue());
+                    entry.getKey().setChildren(paletteEntries);
                 }
                 //editor.getPaletteContents().setChildren(tools);
                 ((DiagramPart) editpart).getDiagram().getModelAdapter().handleContentChange(editor);

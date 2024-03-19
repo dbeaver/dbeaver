@@ -102,10 +102,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         isClosing = closing;
     }
 
-    public static DBPPreferenceStore getGlobalPreferenceStore() {
-        return DBeaverActivator.getInstance().getPreferences();
-    }
-
     public DesktopPlatform() {
         instance = this;
     }
@@ -113,7 +109,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     protected void initialize() {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize desktop platform...");
-
         {
             this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
             if (this.language == null) {
@@ -216,8 +211,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     @NotNull
     @Override
-    public DBPApplication getApplication() {
-        return BaseApplicationImpl.getInstance();
+    public DBPApplicationDesktop getApplication() {
+        return (DBPApplicationDesktop) BaseApplicationImpl.getInstance();
     }
 
     @NotNull
@@ -302,7 +297,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return DBeaverActivator.getInstance().getPreferences();
+        return getApplication().getPreferenceStore();
     }
 
     @NotNull

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension-point id="org.jkiss.dbeaver.dashboard" name="Dashboards" schema="schema/org.jkiss.dbeaver.dashboard.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.dashboard">
+        <provider id="database"
+              class="org.jkiss.dbeaver.model.dashboard.registry.DatabaseDashboardProvider"
+              label="Database"
+              description="Database dashboards"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"
+              supportsCustomization="true"/>
+    </extension>
+
+</plugin>
