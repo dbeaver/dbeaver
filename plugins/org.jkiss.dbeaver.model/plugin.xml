@@ -220,6 +220,12 @@
         <extender id="dbfs" root="true" class="org.jkiss.dbeaver.model.navigator.fs.DBFNavigatorExtender"/>
     </extension>
 
-    resultset.maxrows
+    <extension point="org.jkiss.dbeaver.settings">
+        <propertyGroup id="editors" label="Editors">
+            <propertyGroup id="dataEditor" label="Data Editor">
+                <property id="resultset.maxrows" type="integer" scopes="global,user"/>
+            </propertyGroup>
+        </propertyGroup>
+    </extension>
 
 </plugin>
