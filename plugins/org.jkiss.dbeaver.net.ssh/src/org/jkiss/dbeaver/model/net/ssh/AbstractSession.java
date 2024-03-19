@@ -14,36 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.net;
+package org.jkiss.dbeaver.model.net.ssh;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
-import org.jkiss.dbeaver.model.net.DBWConfigProvider;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.IOException;
-
-/**
- * SSL Handler
- */
-public class SSLHandlerImpl implements DBWNetworkHandler, DBWConfigProvider {
-
-    @Override
-    public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo) throws DBException, IOException {
-        return null;
-    }
-
-    @Override
-    public void invalidateHandler(
+public abstract class AbstractSession implements SSHSession {
+    public abstract void connect(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSource dataSource,
-        @NotNull DBCInvalidatePhase phase
-    ) throws DBException {
-        // nothing to do
-    }
+        @NotNull SSHHostConfiguration destination,
+        @NotNull DBWHandlerConfiguration configuration
+    ) throws DBException;
+
+    public abstract void disconnect(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        long timeout
+    ) throws DBException;
+
+    @NotNull
+    public abstract SSHPortForwardConfiguration setupPortForward(
+        @NotNull SSHPortForwardConfiguration configuration
+    ) throws DBException;
+
+    public abstract void removePortForward(
+        @NotNull SSHPortForwardConfiguration configuration
+    ) throws DBException;
 }
