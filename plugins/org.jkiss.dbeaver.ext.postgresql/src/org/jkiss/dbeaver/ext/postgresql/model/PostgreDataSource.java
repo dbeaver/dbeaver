@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -96,6 +97,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
+    private boolean supportsJobs;
 
     private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
     private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
@@ -466,6 +468,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             supportsReltypeColumn = false;
         }
 
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pgagent.pga_job availability")) {
+            JDBCUtils.queryString(session, "SELECT 1 FROM pgagent.pga_job WHERE 1<>1 LIMIT 1");
+            supportsJobs = true;
+        } catch (Exception e) {
+            log.debug("Error reading pgagent.pga_job " + e.getMessage());
+            supportsJobs = false;
+        }
+
         // Read databases
         getDefaultInstance().cacheDataTypes(monitor, true);
     }
@@ -775,6 +785,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean supportsRoles() {
         return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities() && !getContainer().getNavigatorSettings().isHideFolders();
+    }
+
+    /**
+     * Show Jobs and Scheduling only if a database has pgagent extension.
+     */
+    @Association
+    public boolean supportsJobs() {
+        return supportsJobs;
     }
 
     @NotNull
