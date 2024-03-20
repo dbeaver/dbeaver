@@ -97,8 +97,8 @@
     <extension point="org.jkiss.dbeaver.settings">
         <propertyGroup id="editors" label="Editors">
             <propertyGroup id="sqlEditor" label="SQL Editor">
-                <property id="sql.proposals.insert.table.alias" validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN"
-                          type="string" scopes="global,user"/>
+                <property id="sql.proposals.insert.table.alias" label="Insert table aliases (in FROM clause)"
+                          validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN" type="string" scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>
     </extension>
