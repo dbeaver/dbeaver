@@ -107,4 +107,10 @@ public class CubridDataSource extends GenericDataSource
     public void setSupportMultiSchema(boolean supportMultiSchema) {
         this.supportMultiSchema = supportMultiSchema;
     }
+
+    @NotNull
+    @Override
+    public boolean splitProceduresAndFunctions() {
+        return true;
+    }
 }

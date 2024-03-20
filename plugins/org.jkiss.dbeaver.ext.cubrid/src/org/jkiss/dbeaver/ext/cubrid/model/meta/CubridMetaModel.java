@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -268,5 +272,38 @@ public class CubridMetaModel extends GenericMetaModel
         DBRProgressMonitor monitor = dbResult.getSession().getProgressMonitor();
         CubridTable cubridTable = (CubridTable) container.getDataSource().findTable(monitor, null, owner, tableName);
         return new CubridTrigger(cubridTable, name, description, dbResult);
+    }
+
+    @Override
+    public void loadProcedures(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull GenericObjectContainer container)
+            throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
+            String sql = "select * from db_stored_procedure where owner = ?";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                dbStat.setString(1, container.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String procedureName = JDBCUtils.safeGetString(dbResult, "sp_name");
+                        String description = JDBCUtils.safeGetString(dbResult, "comment");
+                        String type = JDBCUtils.safeGetString(dbResult, "sp_type");
+                        String target = JDBCUtils.safeGetString(dbResult, "target");
+                        String returnType = JDBCUtils.safeGetString(dbResult, "return_type");
+                        DBSProcedureType procedureType;
+                        if (type.equalsIgnoreCase(CubridConstants.TERM_PROCEDURE)) {
+                            procedureType = DBSProcedureType.PROCEDURE;
+                        } else if (type.equalsIgnoreCase(CubridConstants.TERM_FUNCTION)) {
+                            procedureType = DBSProcedureType.FUNCTION;
+                        } else {
+                            procedureType = DBSProcedureType.UNKNOWN;
+                        }
+                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, target, returnType));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Load procedures failed", e);
+        }
     }
 }
