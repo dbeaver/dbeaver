@@ -34,7 +34,7 @@
                     <items label="%tree.user.node.name" path="cubridUser" property="cubridUsers" icon="#schema">
                         <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
@@ -69,7 +69,7 @@
                             </items>
                             <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTable" label="%tree.system_tables.node.name" icon="#folder_table" description="%tree.system_table.node.tip" visibleIf="object.supportsSystemTable() &amp;&amp; object.showSystemTableFolder()">
                                 <items label="%tree.table.node.name" path="table" property="physicalSystemTables" icon="#table">
-                                    <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
@@ -106,14 +106,14 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
                             </items>
                             <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridView" label="%tree.system_views.node.name" icon="#folder_view" description="%tree.system_views.node.tip" visibleIf="object.supportsSystemView() &amp;&amp; object.showSystemTableFolder()">
                                 <items label="%tree.tview.node.name" path="view" property="systemViews" icon="#view">
-                                    <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
@@ -206,4 +206,8 @@
         </datasource>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
+    </extension>
 </plugin>
