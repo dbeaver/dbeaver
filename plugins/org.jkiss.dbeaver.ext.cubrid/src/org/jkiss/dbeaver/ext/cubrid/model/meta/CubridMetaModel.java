@@ -53,7 +53,8 @@ public class CubridMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(CubridMetaModel.class);
 
-    public String getTableOrViewName(GenericTableBase base) {
+    @Nullable
+    public String getTableOrViewName(@Nullable GenericTableBase base) {
         if (base != null) {
             if (base.isView()) {
                 return ((CubridView) base).getUniqueName();

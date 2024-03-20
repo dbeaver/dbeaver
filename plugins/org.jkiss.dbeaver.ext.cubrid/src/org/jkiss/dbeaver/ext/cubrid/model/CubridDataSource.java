@@ -48,7 +48,10 @@ public class CubridDataSource extends GenericDataSource
     private ArrayList<CubridCharset> charsets;
     private Map<String, CubridCollation> collations;
 
-    public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel)
+    public CubridDataSource(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBPDataSourceContainer container,
+            @NotNull CubridMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new CubridSQLDialect());
         this.metaModel = new CubridMetaModel();
@@ -61,7 +64,8 @@ public class CubridDataSource extends GenericDataSource
         return this;
     }
 
-    public List<GenericSchema> getCubridUsers(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public List<GenericSchema> getCubridUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return this.getSchemas();
     }
 
@@ -106,8 +110,9 @@ public class CubridDataSource extends GenericDataSource
         return collations.get(name);
     }
 
+    @NotNull
     @Override
-    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSDataType> getDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         Map<String, DBSDataType> types = new HashMap<>();
         for (DBSDataType dataType : super.getDataTypes(monitor)) {
             types.put(dataType.getName(), dataType);
@@ -180,11 +185,12 @@ public class CubridDataSource extends GenericDataSource
         loadCollations(monitor);
     }
 
+    @NotNull
     public boolean getSupportMultiSchema() {
         return this.supportMultiSchema;
     }
 
-    public void setSupportMultiSchema(boolean supportMultiSchema) {
+    public void setSupportMultiSchema(@NotNull boolean supportMultiSchema) {
         this.supportMultiSchema = supportMultiSchema;
     }
 

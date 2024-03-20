@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -35,13 +36,17 @@ public class CubridSQLDialect extends GenericSQLDialect
     }
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(
+            @NotNull JDBCSession session,
+            @NotNull JDBCDataSource dataSource,
+            @NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
     }
 
-    public boolean isSupportMultiSchema(JDBCSession session) {
+    @NotNull
+    public boolean isSupportMultiSchema(@NotNull JDBCSession session) {
         try {
             int major = session.getMetaData().getDatabaseMajorVersion();
             int minor = session.getMetaData().getDatabaseMinorVersion();
@@ -54,6 +59,7 @@ public class CubridSQLDialect extends GenericSQLDialect
         return false;
     }
 
+    @NotNull
     @Override
     public int getSchemaUsage() {
         return SQLDialect.USAGE_ALL;

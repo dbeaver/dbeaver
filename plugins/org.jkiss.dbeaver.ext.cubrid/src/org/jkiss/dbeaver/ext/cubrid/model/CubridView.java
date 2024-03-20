@@ -1,3 +1,4 @@
+
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2024 DBeaver Corp and others
@@ -32,10 +33,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 public class CubridView extends GenericView
 {
     public CubridView(
-            GenericStructContainer container,
-            String tableName,
-            String tableType,
-            JDBCResultSet dbResult) {
+            @NotNull GenericStructContainer container,
+            @Nullable String tableName,
+            @Nullable String tableType,
+            @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
         if (dbResult != null) {
             String type = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS);
@@ -45,11 +46,13 @@ public class CubridView extends GenericView
         }
     }
 
+    @NotNull
     @Override
     public CubridDataSource getDataSource() {
         return (CubridDataSource) super.getDataSource();
     }
 
+    @NotNull
     public String getUniqueName() {
         if (getDataSource().getSupportMultiSchema()) {
             return this.getSchema().getName() + "." + this.getName();
@@ -58,7 +61,7 @@ public class CubridView extends GenericView
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, order = 2)
     public GenericSchema getSchema() {
@@ -67,7 +70,7 @@ public class CubridView extends GenericView
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (this.isSystem()) {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
@@ -77,13 +80,15 @@ public class CubridView extends GenericView
 
     public static class OwnerListProvider implements IPropertyValueListProvider<CubridView>
     {
+        @NotNull
         @Override
         public boolean allowCustomValue() {
             return false;
         }
 
+        @NotNull
         @Override
-        public Object[] getPossibleValues(CubridView object) {
+        public Object[] getPossibleValues(@NotNull CubridView object) {
             return object.getDataSource().getSchemas().toArray();
         }
     }
