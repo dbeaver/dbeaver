@@ -20,9 +20,10 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
+import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardList;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
@@ -38,10 +39,10 @@ public class DashboardItemViewDialog extends BaseDialog {
     private static final String DIALOG_ID = "DBeaver.DashboardItemViewDialog";//$NON-NLS-1$
 
     private final DashboardViewContainer parentPart;
-    private final DashboardItem sourceItem;
+    private final DBDashboardItem sourceItem;
 
-    public DashboardItemViewDialog(DashboardViewContainer parentPart, DashboardItem sourceItem) {
-        super(parentPart.getSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
+    public DashboardItemViewDialog(DashboardViewContainer parentPart, DBDashboardItem sourceItem) {
+        super(parentPart.getWorkbenchSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
 
         this.parentPart = parentPart;
         this.sourceItem = sourceItem;
@@ -64,15 +65,15 @@ public class DashboardItemViewDialog extends BaseDialog {
         chartGroup.setLayout(new FillLayout());
 
         DashboardListViewer dashboardListViewer = new DashboardListViewer(
-            parentPart.getSite(),
+            parentPart.getWorkbenchSite(),
             sourceItem.getDataSourceContainer(),
             parentPart.getViewConfiguration());
         dashboardListViewer.setSingleChartMode(true);
         dashboardListViewer.createControl(chartGroup);
 
-        DashboardItem targetItem  = new DashboardItem(
+        DBDashboardItem targetItem  = new DBDashboardItem(
             (DashboardList) dashboardListViewer.getDefaultGroup(),
-            sourceItem.getDashboardId());
+            sourceItem.getDashboard());
         targetItem.moveViewFrom(sourceItem, false);
 
         return dialogArea;
@@ -80,9 +81,9 @@ public class DashboardItemViewDialog extends BaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+        Button okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
 
-        UIUtils.asyncExec(() -> getButton(IDialogConstants.OK_ID).setFocus());
+        UIUtils.asyncExec(okButton::setFocus);
     }
 
 }

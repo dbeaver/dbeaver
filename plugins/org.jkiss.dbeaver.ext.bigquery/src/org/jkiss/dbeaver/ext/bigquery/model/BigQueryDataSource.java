@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -77,6 +78,16 @@ public class BigQueryDataSource extends GenericDataSource {
             return DBPDataKind.STRUCT;
         }
         return super.resolveDataKind(typeName, valueType);
+    }
+
+    @Override
+    protected BigQuerySession createConnection(
+        @NotNull DBRProgressMonitor monitor, 
+        @NotNull JDBCExecutionContext context, 
+        DBCExecutionPurpose purpose,
+        String taskTitle
+    ) {
+        return new BigQuerySession(context, monitor, purpose, taskTitle);
     }
 
 }
