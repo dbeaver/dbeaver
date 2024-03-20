@@ -86,6 +86,11 @@ public class CubridUser extends GenericSchema
         return ((CubridDataSource) this.getDataSource()).getSupportMultiSchema();
     }
 
+    @NotNull
+    public boolean supportsTrigger() {
+        return this.getDataSource().getContainer().getConnectionConfiguration().getUserName().equals("dba");
+    }
+
     public CubridIndexCache getCubridIndexCache() {
         return cubridIndexCache;
     }

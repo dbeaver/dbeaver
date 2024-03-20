@@ -61,6 +61,11 @@ public class CubridTable extends GenericTable
         return (CubridUser) super.getContainer();
     }
 
+    @NotNull
+    public boolean supportsTrigger() {
+        return ((CubridUser) this.getContainer()).supportsTrigger();
+    }
+
     public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
             throws DBException {
         return getParent().getCubridIndexCache().getObjects(monitor, getContainer(), this);
