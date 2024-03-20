@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
@@ -140,5 +141,33 @@ public class CubridMetaModel extends GenericMetaModel
             return new CubridView(container, tableName, tableType, dbResult);
         }
         return new CubridTable(container, tableName, tableType, dbResult);
+    }
+
+    @NotNull
+    @Override
+    public JDBCStatement prepareSequencesLoadStatement(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer container)
+            throws SQLException {
+        String sql = "select *, owner.name from db_serial where owner.name = ?";
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
+
+    @Nullable
+    @Override
+    public GenericSequence createSequenceImpl(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer container,
+            @NotNull JDBCResultSet dbResult)
+            throws DBException {
+        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "name");
+        String description = JDBCUtils.safeGetString(dbResult, "comment");
+        Number lastValue = JDBCUtils.safeGetInteger(dbResult, "current_val");
+        Number minValue = JDBCUtils.safeGetInteger(dbResult, "min_val");
+        Number maxValue = JDBCUtils.safeGetInteger(dbResult, "max_val");
+        Number incrementBy = JDBCUtils.safeGetInteger(dbResult, "increment_val");
+        return new CubridSequence(container, name, description, lastValue, minValue, maxValue, incrementBy, dbResult);
     }
 }
