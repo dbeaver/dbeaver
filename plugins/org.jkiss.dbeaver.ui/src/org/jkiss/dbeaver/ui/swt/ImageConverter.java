@@ -12,7 +12,7 @@
  *    		   GMF's DisplayUtils
  ****************************************************************************/
 
-package org.jkiss.dbeaver.ui.svg;
+package org.jkiss.dbeaver.ui.swt;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
