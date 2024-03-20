@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 
 /**
  * EclipseApplicationImpl
  */
-public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
+public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop {
 
     @NotNull
     @Override

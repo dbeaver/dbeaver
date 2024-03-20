@@ -3,7 +3,7 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.dashboard" name="Dashboards" schema="schema/org.jkiss.dbeaver.dashboard.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dashboard.ui" name="Dashboards UI" schema="schema/org.jkiss.dbeaver.dashboard.ui.exsd"/>
 
     <extension point="org.eclipse.ui.views">
         <view
@@ -20,19 +20,6 @@
         <activity id="org.jkiss.dbeaver.dashboard.view" name="Dashboard view hide"/>
         <activityPatternBinding activityId="org.jkiss.dbeaver.dashboard.view" isEqualityPattern="true" pattern="org.jkiss.dbeaver.ui.dashboard/org.jkiss.dbeaver.ui.dashboardView"/>
     </extension>
-
-    <!--extension point="org.eclipse.ui.newWizards">
-        <wizard
-                category="org.jkiss.dbeaver.core.new.general"
-                class="org.jkiss.dbeaver.ui.dashboard.view.DashboardCreateWizard"
-                icon="icons/dashboard.png"
-                id="org.jkiss.dbeaver.dashboard.new.dashboard"
-                name="%wizard.org.jkiss.dbeaver.dashboard.new.dashboard.name">
-            <description>
-                %wizard.org.jkiss.dbeaver.dashboard.new.dashboard.description
-            </description>
-        </wizard>
-    </extension-->
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ui.dashboard.open" name="%command.org.jkiss.dbeaver.ui.dashboard.open.name" description="%command.org.jkiss.dbeaver.ui.dashboard.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -151,7 +138,7 @@
         <initializer class="org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardPreferencesInitializer"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dashboard">
+    <extension point="org.jkiss.dbeaver.dashboard.ui">
         <dashboardView id="timeseries" label="Time series" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.png"
             dataTypes="timeseries"
             renderer="org.jkiss.dbeaver.ui.dashboard.histogram.DashboardRendererTimeseries">
