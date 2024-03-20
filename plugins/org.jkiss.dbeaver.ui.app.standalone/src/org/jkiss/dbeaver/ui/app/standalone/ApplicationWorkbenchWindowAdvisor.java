@@ -45,6 +45,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopUI;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.registry.DataBaseInfo;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -52,7 +53,9 @@ import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.util.Arrays;
 import java.util.StringJoiner;
 
 public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor implements DBPProjectListener, IResourceChangeListener {
@@ -374,6 +377,23 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
                 initWorkbenchWindows();
+        }
+        logSupportedDataBases();
+    }
+
+    /**
+     * Log supported database details for arg -databaseLog
+     */
+    private void logSupportedDataBases() {
+        String[] applicationArgs = Platform.getApplicationArgs();
+        if (applicationArgs != null && Arrays.asList(applicationArgs).contains("-databaseLog")) { //$NON-NLS-1$
+            DataBaseInfo databaseInfoService = RuntimeUtils.getBundleService(DataBaseInfo.class, true);
+            if (databaseInfoService != null) {
+                DBeaverApplication instance = DBeaverApplication.getInstance();
+                
+                databaseInfoService.publishDataBaseInfo(
+                    instance.getDefaultWorkingFolder().resolve("supported.databases.json")); //$NON-NLS-1$
+            }
         }
     }
 
