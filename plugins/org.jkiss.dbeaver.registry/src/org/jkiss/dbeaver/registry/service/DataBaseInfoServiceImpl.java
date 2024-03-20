@@ -39,10 +39,8 @@ import java.util.List;
 
 public class DataBaseInfoServiceImpl implements DataBaseInfo {
     private static final String DATABASES_LABEL = "databases"; //$NON-NLS-1$
-
     private static final String DB_NAME_LABEL = "name"; //$NON-NLS-1$
     private static final String DB_CATEGORY_LABEL = "category"; //$NON-NLS-1$
-    private static final String DB_IS_EMB_LABEL = "embedded"; //$NON-NLS-1$
     private static final String PRODUCT_LABEL = "product"; //$NON-NLS-1$
     private static final String DESCRIPTION_LABEL = "description"; //$NON-NLS-1$
     private static final Log log = Log.getLog(DataBaseInfoServiceImpl.class);
@@ -68,7 +66,6 @@ public class DataBaseInfoServiceImpl implements DataBaseInfo {
                 for (DriverDescriptor driver : drivers) {
                     jsonWriter.beginObject();
                     JSONUtils.field(jsonWriter, DB_NAME_LABEL, driver.getName());
-                    JSONUtils.field(jsonWriter, DB_IS_EMB_LABEL, driver.isEmbedded());
                     JSONUtils.serializeObjectList(jsonWriter, DB_CATEGORY_LABEL, driver.getCategories());
                     jsonWriter.endObject();
                 }
