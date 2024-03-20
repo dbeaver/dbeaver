@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.registry;
 
 import java.nio.file.Path;
 
+/**
+ * Service interface for supported databases
+ */
 public interface DataBaseInfo {
 
     /**
-     * Publish file in json format with supported databases by path
+     * Publish file in json format with supported databases
+     * at required path
      *
      * @param path - path to store
      */
