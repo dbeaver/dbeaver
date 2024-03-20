@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -125,6 +126,25 @@ public class CubridUser extends GenericSchema
             }
         }
         return views;
+    }
+
+    @Nullable
+    @Override
+    public List<GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        cacheIndexes(monitor);
+        return cubridIndexCache.getAllObjects(monitor, this);
+    }
+
+    private void cacheIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        synchronized (cubridIndexCache) {
+            if(!cubridIndexCache.isFullyCached()) {
+                List<GenericTableIndex> newIndexCache = new ArrayList<>();
+                for(CubridTable table : getPhysicalTables(monitor)) {
+                    newIndexCache.addAll(table.getIndexes(monitor));
+                }
+                cubridIndexCache.setCache(newIndexCache);
+            }
+        }
     }
 
     public class CubridIndexCache extends JDBCCompositeCache<GenericStructContainer, CubridTable, GenericTableIndex, GenericTableIndexColumn>
