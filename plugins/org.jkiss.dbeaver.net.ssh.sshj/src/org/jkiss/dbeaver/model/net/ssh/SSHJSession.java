@@ -36,7 +36,9 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 public class SSHJSession extends AbstractSession {
     private static final Log log = Log.getLog(SSHJSession.class);
@@ -82,25 +84,15 @@ public class SSHJSession extends AbstractSession {
 
     @NotNull
     @Override
-    public SSHPortForwardConfiguration setupPortForward(@NotNull SSHPortForwardConfiguration cfg) throws DBException {
+    public SSHPortForwardConfiguration setupPortForward(@NotNull SSHPortForwardConfiguration config) throws DBException {
         try {
-            final ServerSocket ss = new ServerSocket(cfg.localPort(), 0, InetAddress.getByName(cfg.localHost()));
-            final Parameters parameters = new Parameters(cfg.localHost(), ss.getLocalPort(), cfg.remoteHost(), cfg.remotePort());
-            final LocalPortForwarder forwarder = client.newLocalPortForwarder(parameters, ss);
-            final LocalPortListener listener = new LocalPortListener(forwarder, parameters);
+            final LocalPortListener listener = LocalPortListener.setup(client, config);
+            final SSHPortForwardConfiguration resolved = Objects.requireNonNull(listener.resolved);
 
-            final SSHPortForwardConfiguration resolved = new SSHPortForwardConfiguration(
-                cfg.localHost(),
-                ss.getLocalPort(),
-                cfg.remoteHost(),
-                cfg.remotePort()
-            );
-
-            listener.start();
             listeners.put(resolved, listener);
 
             return resolved;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new DBException("Error setting up port forwarding", e);
         }
     }
@@ -186,21 +178,49 @@ public class SSHJSession extends AbstractSession {
     }
 
     private static class LocalPortListener extends Thread {
-        private final LocalPortForwarder forwarder;
+        private final SSHClient client;
+        private final SSHPortForwardConfiguration config;
+        private final CountDownLatch started;
 
-        public LocalPortListener(@NotNull LocalPortForwarder forwarder, @NotNull Parameters parameters) {
-            this.forwarder = forwarder;
+        private volatile LocalPortForwarder forwarder;
+        private volatile SSHPortForwardConfiguration resolved;
 
-            setName(String.format(
-                "Port forwarder listener (%s:%d -> %s:%d)",
-                parameters.getLocalHost(), parameters.getLocalPort(),
-                parameters.getRemoteHost(), parameters.getRemotePort()
-            ));
+        public LocalPortListener(
+            @NotNull SSHClient client,
+            @NotNull SSHPortForwardConfiguration config,
+            @NotNull CountDownLatch started
+        ) {
+            this.client = client;
+            this.config = config;
+            this.started = started;
+        }
+
+        @NotNull
+        public static LocalPortListener setup(
+            @NotNull SSHClient client,
+            @NotNull SSHPortForwardConfiguration config
+        ) throws InterruptedException {
+            final CountDownLatch started = new CountDownLatch(1);
+            final LocalPortListener listener = new LocalPortListener(client, config, started);
+
+            listener.start();
+            started.await();
+
+            return listener;
         }
 
         @Override
         public void run() {
             try {
+                final ServerSocket socket = new ServerSocket(config.localPort(), 0, InetAddress.getByName(config.localHost()));
+                final Parameters parameters = new Parameters(config.localHost(), socket.getLocalPort(), config.remoteHost(), config.remotePort());
+
+                this.forwarder = client.newLocalPortForwarder(parameters, socket);
+                this.resolved = new SSHPortForwardConfiguration(config.localHost(), socket.getLocalPort(), config.remoteHost(), config.remotePort());
+
+                setName("Port forwarder listener (" + resolved + ")");
+
+                started.countDown();
                 forwarder.listen();
             } catch (IOException e) {
                 log.error("Error while listening on the port forwarder", e);
@@ -211,6 +231,7 @@ public class SSHJSession extends AbstractSession {
             try {
                 if (forwarder.isRunning()) {
                     forwarder.close();
+                    forwarder = null;
                 }
             } catch (Exception e) {
                 log.error("Error while stopping port forwarding", e);
