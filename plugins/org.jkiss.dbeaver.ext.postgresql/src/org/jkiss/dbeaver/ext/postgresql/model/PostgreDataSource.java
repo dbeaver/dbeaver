@@ -130,13 +130,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public Object getDataSourceFeature(String featureId) {
-        switch (featureId) {
-            case DBPDataSource.FEATURE_MAX_STRING_LENGTH:
-                return 10485760;
-            case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS:
-                return true;
-        }
-        return super.getDataSourceFeature(featureId);
+        return switch (featureId) {
+            case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 10485760;
+            case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
+            default -> super.getDataSourceFeature(featureId);
+        };
     }
 
     @Override
@@ -414,7 +412,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    public DatabaseCache getDatabaseCache()
+    public SimpleObjectCache<PostgreDataSource, PostgreDatabase> getDatabaseCache()
     {
         return databaseCache;
     }
@@ -429,7 +427,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObject(name);
     }
 
-    public SettingCache getSettingCache() {
+    SettingCache getSettingCache() {
         return settingCache;
     }
 
@@ -443,37 +441,37 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.initialize(monitor);
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
-            serverVersion = JDBCUtils.queryString(session, "SELECT version()");
-        } catch (Exception e) {
-            log.debug("Error reading PostgreSQL version: " + e.getMessage());
-            serverVersion = "";
-        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+            session.enableLogging(false);
+            try {
+                serverVersion = JDBCUtils.queryString(session, "SELECT version()");
+            } catch (Exception e) {
+                log.debug("Error reading PostgreSQL version: " + e.getMessage());
+                serverVersion = "";
+            }
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pg_enum table availability")) {
-            supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
-        } catch (Exception e) {
-            log.debug("Error reading pg_enum " + e.getMessage());
-            supportsEnumTable = false;
-        }
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pg_class.reltype column availability")) {
-            supportsReltypeColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "reltype");
-        } catch (Exception e) {
-            log.debug("Error reading pg_class.reltype " + e.getMessage());
-            supportsReltypeColumn = false;
-        }
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pgagent.pga_job availability")) {
-            JDBCUtils.queryString(session, "SELECT 1 FROM pgagent.pga_job WHERE 1<>1 LIMIT 1");
-            supportsJobs = true;
-        } catch (Exception e) {
-            log.debug("Error reading pgagent.pga_job " + e.getMessage());
-            supportsJobs = false;
+            try {
+                supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
+            } catch (Exception e) {
+                log.debug("Error reading pg_enum " + e.getMessage());
+                supportsEnumTable = false;
+            }
+            try {
+                supportsReltypeColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "reltype");
+            } catch (Exception e) {
+                log.debug("Error reading pg_class.reltype " + e.getMessage());
+                supportsReltypeColumn = false;
+            }
+            try {
+                JDBCUtils.queryString(session, "SELECT 1 FROM pgagent.pga_job WHERE 1<>1 LIMIT 1");
+                supportsJobs = true;
+            } catch (Exception e) {
+                log.debug("Error reading pgagent.pga_job " + e.getMessage());
+                supportsJobs = false;
+            }
         }
 
         // Read databases
@@ -513,9 +511,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) {
         databaseCache.getAllObjects(monitor, this);
     }
 
@@ -649,7 +645,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
-    
+
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()
     {
