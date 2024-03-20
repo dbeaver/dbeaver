@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -194,7 +195,7 @@ public abstract class AbstractJob extends Job
                 }
                 preferenceStore = dataSource.getContainer().getPreferenceStore();
             } else {
-                preferenceStore = ModelPreferences.getPreferences();
+                preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             }
 
             int cancelCheckTimeout = preferenceStore.getInt(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT);
