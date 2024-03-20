@@ -35,14 +35,12 @@ import java.util.Map;
 
 public class CubridDataSource extends GenericDataSource
 {
-
     private final CubridMetaModel metaModel;
     private final CubridObjectContainer structureContainer;
     private boolean supportMultiSchema;
 
     public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel)
-            throws DBException
-    {
+            throws DBException {
         super(monitor, container, metaModel, new CubridSQLDialect());
         this.metaModel = new CubridMetaModel();
         this.structureContainer = new CubridObjectContainer(this);
@@ -51,13 +49,11 @@ public class CubridDataSource extends GenericDataSource
     @DPIContainer
     @NotNull
     @Override
-    public CubridDataSource getDataSource()
-    {
+    public CubridDataSource getDataSource() {
         return this;
     }
 
-    public List<GenericSchema> getCubridUsers(DBRProgressMonitor monitor) throws DBException
-    {
+    public List<GenericSchema> getCubridUsers(DBRProgressMonitor monitor) throws DBException {
         return this.getSchemas();
     }
 
@@ -68,8 +64,7 @@ public class CubridDataSource extends GenericDataSource
             @Nullable String catalogName,
             @Nullable String schemaName,
             @NotNull String tableName)
-            throws DBException
-    {
+            throws DBException {
         String[] schema = tableName.split("\\.");
         if (schema.length > 1) {
             CubridUser user = (CubridUser) this.getSchema(schema[0].toUpperCase());
@@ -79,14 +74,12 @@ public class CubridDataSource extends GenericDataSource
     }
 
     @NotNull
-    public CubridMetaModel getMetaModel()
-    {
+    public CubridMetaModel getMetaModel() {
         return metaModel;
     }
 
     @Override
-    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         Map<String, DBSDataType> types = new HashMap<>();
         for (DBSDataType dataType : super.getDataTypes(monitor)) {
             types.put(dataType.getName(), dataType);
@@ -94,24 +87,20 @@ public class CubridDataSource extends GenericDataSource
         return types.values();
     }
 
-    public CubridObjectContainer getObjectContainer()
-    {
+    public CubridObjectContainer getObjectContainer() {
         return structureContainer;
     }
 
     @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
     }
 
-    public boolean getSupportMultiSchema()
-    {
+    public boolean getSupportMultiSchema() {
         return this.supportMultiSchema;
     }
 
-    public void setSupportMultiSchema(boolean supportMultiSchema)
-    {
+    public void setSupportMultiSchema(boolean supportMultiSchema) {
         this.supportMultiSchema = supportMultiSchema;
     }
 }

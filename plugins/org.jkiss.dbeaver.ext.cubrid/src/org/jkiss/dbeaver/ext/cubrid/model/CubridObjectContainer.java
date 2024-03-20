@@ -37,12 +37,10 @@ import java.util.Locale;
 
 public class CubridObjectContainer extends GenericObjectContainer
 {
-
     private final CubridDataSource dataSource;
     private final CubridIndexCache cubridIndexCache;
 
-    protected CubridObjectContainer(CubridDataSource dataSource)
-    {
+    protected CubridObjectContainer(CubridDataSource dataSource) {
         super(dataSource);
         this.dataSource = dataSource;
         this.cubridIndexCache = new CubridIndexCache(this.getTableCache());
@@ -50,72 +48,60 @@ public class CubridObjectContainer extends GenericObjectContainer
 
     @NotNull
     @Override
-    public CubridDataSource getDataSource()
-    {
+    public CubridDataSource getDataSource() {
         return dataSource;
     }
 
-    public CubridIndexCache getCubridIndexCache()
-    {
+    public CubridIndexCache getCubridIndexCache() {
         return this.cubridIndexCache;
     }
 
     @Override
-    public GenericStructContainer getObject()
-    {
+    public GenericStructContainer getObject() {
         return this;
     }
 
     @Override
-    public GenericCatalog getCatalog()
-    {
+    public GenericCatalog getCatalog() {
         return null;
     }
 
     @Override
-    public GenericSchema getSchema()
-    {
+    public GenericSchema getSchema() {
         return null;
     }
 
     @NotNull
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(DBRProgressMonitor monitor)
-            throws DBException
-    {
+            throws DBException {
         return CubridTable.class;
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
+    public DBSObject getParentObject() {
         return this.getDataSource().getParentObject();
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return this.getDataSource().getName();
     }
 
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return this.getDataSource().getDescription();
     }
 
     public class CubridIndexCache extends JDBCCompositeCache<GenericStructContainer, CubridTable, GenericTableIndex, GenericTableIndexColumn>
     {
-
-        CubridIndexCache(TableCache tableCache)
-        {
+        CubridIndexCache(TableCache tableCache) {
             super(tableCache, CubridTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
         }
 
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, CubridTable forParent)
-                throws SQLException
-        {
+                throws SQLException {
             return session.getMetaData().getIndexInfo(null, null, forParent.getUniqueName(), false, true).getSourceStatement();
         }
 
@@ -126,11 +112,9 @@ public class CubridObjectContainer extends GenericObjectContainer
                 CubridTable parent,
                 String indexName,
                 JDBCResultSet dbResult)
-                throws SQLException, DBException
-        {
+                throws SQLException, DBException {
             boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-            String indexQualifier =
-                    JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
+            String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
             long cardinality = JDBCUtils.safeGetLong(dbResult, JDBCConstants.INDEX_CARDINALITY);
             int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
             String name = indexName;
@@ -165,8 +149,7 @@ public class CubridObjectContainer extends GenericObjectContainer
                 CubridTable parent,
                 GenericTableIndex object,
                 JDBCResultSet dbResult)
-                throws SQLException, DBException
-        {
+                throws SQLException, DBException {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
             String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.ASC_OR_DESC);
@@ -188,8 +171,7 @@ public class CubridObjectContainer extends GenericObjectContainer
         protected void cacheChildren(
                 DBRProgressMonitor monitor,
                 GenericTableIndex object,
-                List<GenericTableIndexColumn> children)
-        {
+                List<GenericTableIndexColumn> children) {
             object.setColumns(children);
         }
     }

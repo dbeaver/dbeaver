@@ -30,48 +30,40 @@ import java.util.List;
 
 public class CubridUser extends GenericSchema
 {
-
     private String name;
     private String comment;
 
-    public CubridUser(GenericDataSource dataSource, String schemaName, String comment)
-    {
+    public CubridUser(GenericDataSource dataSource, String schemaName, String comment) {
         super(dataSource, null, schemaName);
         this.name = schemaName;
         this.comment = comment;
     }
 
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Nullable
     @Property(viewable = true, order = 2)
-    public String getComment()
-    {
+    public String getComment() {
         return comment;
     }
 
-    public boolean supportsSystemTable()
-    {
+    public boolean supportsSystemTable() {
         return name.equals("DBA");
     }
 
-    public boolean supportsSystemView()
-    {
+    public boolean supportsSystemView() {
         return name.equals("DBA");
     }
 
-    public boolean showSystemTableFolder()
-    {
+    public boolean showSystemTableFolder() {
         return this.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
     }
 
     @Override
-    public List<CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException
-    {
+    public List<CubridTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
         List<CubridTable> tables = new ArrayList<>();
         for (GenericTable table : super.getPhysicalTables(monitor)) {
             if (!table.isSystem()) {
@@ -82,8 +74,7 @@ public class CubridUser extends GenericSchema
     }
 
     public List<? extends CubridTable> getPhysicalSystemTables(DBRProgressMonitor monitor)
-            throws DBException
-    {
+            throws DBException {
         List<CubridTable> tables = new ArrayList<>();
         for (GenericTable table : super.getPhysicalTables(monitor)) {
             if (table.isSystem()) {
@@ -94,8 +85,7 @@ public class CubridUser extends GenericSchema
     }
 
     @Override
-    public List<CubridView> getViews(DBRProgressMonitor monitor) throws DBException
-    {
+    public List<CubridView> getViews(DBRProgressMonitor monitor) throws DBException {
         List<CubridView> views = new ArrayList<>();
         for (GenericView view : super.getViews(monitor)) {
             if (!view.isSystem()) {
@@ -105,8 +95,7 @@ public class CubridUser extends GenericSchema
         return views;
     }
 
-    public List<CubridView> getSystemViews(DBRProgressMonitor monitor) throws DBException
-    {
+    public List<CubridView> getSystemViews(DBRProgressMonitor monitor) throws DBException {
         List<CubridView> views = new ArrayList<>();
         for (GenericView view : super.getViews(monitor)) {
             if (view.isSystem()) {

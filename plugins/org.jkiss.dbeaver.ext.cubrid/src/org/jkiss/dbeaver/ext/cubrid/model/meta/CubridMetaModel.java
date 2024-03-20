@@ -41,8 +41,7 @@ public class CubridMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(CubridMetaModel.class);
 
-    public String getTableOrViewName(GenericTableBase base) 
-    {
+    public String getTableOrViewName(GenericTableBase base) {
         if (base != null) {
             if (base.isView()) {
                 return ((CubridView) base).getUniqueName();
@@ -55,8 +54,7 @@ public class CubridMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
-            throws DBException
-    {
+            throws DBException {
         List<GenericSchema> users = new ArrayList<>();
         try {
             final JDBCPreparedStatement dbStat = session.prepareStatement("select * from db_user");
@@ -70,7 +68,7 @@ public class CubridMetaModel extends GenericMetaModel
                 users.add(user);
             }
         } catch (SQLException e) {
-        	log.error("Cannot load user", e);
+            log.error("Cannot load user", e);
         }
         return users;
     }
@@ -81,8 +79,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull GenericStructContainer owner,
             @Nullable GenericTableBase object,
             @Nullable String objectName)
-            throws SQLException
-    {
+            throws SQLException {
         String sql = "select a.*,a.class_name as TABLE_NAME, case when class_type = 'CLASS' then 'TABLE' \r\n"
                 + "when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE, \r\n"
                 + "b.current_val from db_class a LEFT JOIN db_serial b on \r\n"
@@ -99,8 +96,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCSession session,
             @NotNull GenericStructContainer owner,
             @Nullable GenericTableBase forTable)
-            throws SQLException
-    {
+            throws SQLException {
         return session.getMetaData().getColumns(null, null, this.getTableOrViewName(forTable), null).getSourceStatement();
     }
 
@@ -109,8 +105,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCSession session,
             @NotNull GenericStructContainer owner,
             @Nullable GenericTableBase forTable)
-            throws SQLException, DBException
-    {
+            throws SQLException, DBException {
         return session.getMetaData().getPrimaryKeys(null, null, this.getTableOrViewName(forTable)).getSourceStatement();
     }
 
@@ -119,8 +114,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCSession session,
             @NotNull GenericStructContainer owner,
             @Nullable GenericTableBase forTable)
-            throws SQLException
-    {
+            throws SQLException {
         return session.getMetaData().getImportedKeys(null, null, this.getTableOrViewName(forTable)).getSourceStatement();
     }
 
@@ -129,8 +123,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCSession session,
             @NotNull GenericStructContainer owner,
             @NotNull GenericMetaObject tableObject,
-            @NotNull JDBCResultSet dbResult)
-    {
+            @NotNull JDBCResultSet dbResult) {
         String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
         String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
         GenericTableBase table = createTableOrViewImpl(owner, tableName, tableType, dbResult);
@@ -142,8 +135,7 @@ public class CubridMetaModel extends GenericMetaModel
             GenericStructContainer container,
             @Nullable String tableName,
             @Nullable String tableType,
-            @Nullable JDBCResultSet dbResult)
-    {
+            @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new CubridView(container, tableName, tableType, dbResult);
         }

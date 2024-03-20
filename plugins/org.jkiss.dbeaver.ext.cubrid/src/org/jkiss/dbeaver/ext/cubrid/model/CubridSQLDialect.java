@@ -30,21 +30,18 @@ public class CubridSQLDialect extends GenericSQLDialect
     public static final String CUBRID_DIALECT_ID = "cubrid";
     private static final Log log = Log.getLog(CubridSQLDialect.class);
 
-    public CubridSQLDialect()
-    {
+    public CubridSQLDialect() {
         super("Cubrid", "cubrid");
     }
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData)
-    {
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
     }
 
-    public boolean isSupportMultiSchema(JDBCSession session)
-    {
+    public boolean isSupportMultiSchema(JDBCSession session) {
         try {
             int major = session.getMetaData().getDatabaseMajorVersion();
             int minor = session.getMetaData().getDatabaseMinorVersion();
@@ -58,8 +55,7 @@ public class CubridSQLDialect extends GenericSQLDialect
     }
 
     @Override
-    public int getSchemaUsage()
-    {
+    public int getSchemaUsage() {
         return SQLDialect.USAGE_ALL;
     }
 }
