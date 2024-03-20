@@ -36,14 +36,12 @@ import java.util.Map;
 public class CubridDataSource extends GenericDataSource
 {
     private final CubridMetaModel metaModel;
-    private final CubridObjectContainer structureContainer;
     private boolean supportMultiSchema;
 
     public CubridDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, CubridMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new CubridSQLDialect());
         this.metaModel = new CubridMetaModel();
-        this.structureContainer = new CubridObjectContainer(this);
     }
 
     @DPIContainer
@@ -85,10 +83,6 @@ public class CubridDataSource extends GenericDataSource
             types.put(dataType.getName(), dataType);
         }
         return types.values();
-    }
-
-    public CubridObjectContainer getObjectContainer() {
-        return structureContainer;
     }
 
     @Override
