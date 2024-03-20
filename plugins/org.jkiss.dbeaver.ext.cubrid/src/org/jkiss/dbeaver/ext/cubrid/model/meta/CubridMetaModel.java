@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.cubrid.CubridSQLFormatter;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CubridMetaModel extends GenericMetaModel
 {
@@ -305,5 +307,28 @@ public class CubridMetaModel extends GenericMetaModel
         } catch (SQLException e) {
             throw new DBException("Load procedures failed", e);
         }
+    }
+
+    @Nullable
+    @Override
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @Nullable GenericView object, @Nullable Map<String, Object> options) throws DBException {
+        JDBCSession session = DBUtils.openMetaSession(monitor, object, "load view ddl " + object.getName());
+        String ddl = "-- View definition not available";
+        String regex = "\\[|\\]";
+        try {
+            String sql= String.format("show create view %s", object.getName());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+            dbStat.executeStatement();
+            JDBCResultSet dbResult = dbStat.getResultSet();
+            while(dbResult.next()) {
+                ddl = "create or replace view \"" + dbResult.getString("View") + "\" as " + dbResult.getString("Create View");
+                ddl = ddl.replaceAll(regex, "\"");
+                ddl = new CubridSQLFormatter(ddl).format();
+                break;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ddl;
     }
 }
