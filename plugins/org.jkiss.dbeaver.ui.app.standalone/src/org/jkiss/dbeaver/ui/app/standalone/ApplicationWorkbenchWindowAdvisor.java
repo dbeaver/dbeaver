@@ -59,6 +59,10 @@ import java.util.Arrays;
 import java.util.StringJoiner;
 
 public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor implements DBPProjectListener, IResourceChangeListener {
+
+    private static final String OUTPUT_DATABASES_JSON = "supported.databases.json"; //$NON-NLS-1$
+    private static final String CLI_DATABASE_LOG = "-databaseLog"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
     
     // Eclipse fonts
@@ -386,13 +390,13 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
      */
     private void logSupportedDataBases() {
         String[] applicationArgs = Platform.getApplicationArgs();
-        if (applicationArgs != null && Arrays.asList(applicationArgs).contains("-databaseLog")) { //$NON-NLS-1$
+        if (applicationArgs != null && Arrays.asList(applicationArgs).contains(CLI_DATABASE_LOG)) {
             DataBaseInfo databaseInfoService = RuntimeUtils.getBundleService(DataBaseInfo.class, true);
             if (databaseInfoService != null) {
                 DBeaverApplication instance = DBeaverApplication.getInstance();
-                
+
                 databaseInfoService.publishDataBaseInfo(
-                    instance.getDefaultWorkingFolder().resolve("supported.databases.json")); //$NON-NLS-1$
+                    instance.getDefaultWorkingFolder().resolve(OUTPUT_DATABASES_JSON));
             }
         }
     }
