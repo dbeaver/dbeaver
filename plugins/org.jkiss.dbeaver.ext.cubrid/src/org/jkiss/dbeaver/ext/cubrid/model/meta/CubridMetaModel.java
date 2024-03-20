@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
@@ -169,5 +170,29 @@ public class CubridMetaModel extends GenericMetaModel
         Number maxValue = JDBCUtils.safeGetInteger(dbResult, "max_val");
         Number incrementBy = JDBCUtils.safeGetInteger(dbResult, "increment_val");
         return new CubridSequence(container, name, description, lastValue, minValue, maxValue, incrementBy, dbResult);
+    }
+
+    @NotNull
+    @Override
+    public JDBCStatement prepareSynonymsLoadStatement(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer container)
+            throws SQLException {
+        String sql = "select * from db_synonym where synonym_owner_name = ?";
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
+
+    @Nullable
+    @Override
+    public GenericSynonym createSynonymImpl(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer container,
+            @NotNull JDBCResultSet dbResult)
+            throws DBException {
+        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "synonym_name");
+        String description = JDBCUtils.safeGetString(dbResult, "comment");
+        return new CubridSynonym(container, name, description, dbResult);
     }
 }
