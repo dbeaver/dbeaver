@@ -139,17 +139,14 @@ public class CubridDataSource extends GenericDataSource
     public void loadCharsets(@NotNull DBRProgressMonitor monitor) throws DBException {
         charsets = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load charsets")) {
-            String sql = "select * from db_charset";
-            final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
-                while (dbResult.next()) {
-                    CubridCharset charset = new CubridCharset(this, dbResult);
-                    charsets.add(charset);
-	            }
-	        } finally {
-	             dbStat.close();
-	        }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("select * from db_charset")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        CubridCharset charset = new CubridCharset(this, dbResult);
+                        charsets.add(charset);
+                    }
+                }
+            }
         } catch (SQLException e) {
             throw new DBException("Load charsets failed", e);
         }
@@ -159,19 +156,16 @@ public class CubridDataSource extends GenericDataSource
     public void loadCollations(@NotNull DBRProgressMonitor monitor) throws DBException {
         collations = new LinkedHashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load collations")) {
-            String sql = "SHOW COLLATION";
-            final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
-                while (dbResult.next()) {
-                    String charsetName = JDBCUtils.safeGetString(dbResult, "charset");
-                    CubridCharset charset = getCharset(charsetName);
-                    CubridCollation collation = new CubridCollation(charset, dbResult);
-                    collations.put(collation.getName(), collation);
-                    charset.addCollation(collation);
-	            }
-            } finally {
-                dbStat.close();
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("show collation")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String charsetName = JDBCUtils.safeGetString(dbResult, "charset");
+                        CubridCharset charset = getCharset(charsetName);
+                        CubridCollation collation = new CubridCollation(charset, dbResult);
+                        collations.put(collation.getName(), collation);
+                        charset.addCollation(collation);
+                    }
+                }
             }
         } catch (SQLException e) {
             throw new DBException("Load collations failed", e);

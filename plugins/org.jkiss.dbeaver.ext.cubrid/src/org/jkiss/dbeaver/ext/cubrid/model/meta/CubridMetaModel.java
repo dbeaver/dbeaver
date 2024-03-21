@@ -70,19 +70,15 @@ public class CubridMetaModel extends GenericMetaModel
     public List<GenericSchema> loadSchemas(@NotNull JDBCSession session, @NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog)
             throws DBException {
         List<GenericSchema> users = new ArrayList<>();
-        try {
-            final JDBCPreparedStatement dbStat = session.prepareStatement("select * from db_user");
+        try (JDBCPreparedStatement dbStat = session.prepareStatement("select * from db_user")) {
             dbStat.executeStatement();
-            JDBCResultSet dbResult = dbStat.getResultSet();
-            try {
+            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
                 while (dbResult.next()) {
                     String name = JDBCUtils.safeGetStringTrimmed(dbResult, "name");
                     String description = JDBCUtils.safeGetStringTrimmed(dbResult, "comment");
                     CubridUser user = new CubridUser(dataSource, name, description);
                     users.add(user);
 	            }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             log.error("Cannot load user", e);
@@ -400,24 +396,19 @@ public class CubridMetaModel extends GenericMetaModel
     @Nullable
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @Nullable GenericView object, @Nullable Map<String, Object> options) throws DBException {
-        JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl " + object.getName());
-
         String ddl = "-- View definition not available";
         String regex = "\\[|\\]";
-        try {
-            String sql= String.format("show create view %s", object.getName());
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
+            String sql = String.format("show create view %s", object.getName());
             JDBCPreparedStatement dbStat = session.prepareStatement(sql);
             dbStat.executeStatement();
-            JDBCResultSet dbResult = dbStat.getResultSet();
-            try {
+            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
                 while(dbResult.next()) {
                     ddl = "create or replace view \"" + dbResult.getString("View") + "\" as " + dbResult.getString("Create View");
                     ddl = ddl.replaceAll(regex, "\"");
                     ddl = new CubridSQLFormatter(ddl).format();
                     break;
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
