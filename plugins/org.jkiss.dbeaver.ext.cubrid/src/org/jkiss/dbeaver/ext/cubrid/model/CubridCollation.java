@@ -70,6 +70,6 @@ public class CubridCollation implements DBSObject
     @NotNull
     @Override
     public DBSObject getParentObject() {
-        return null;
+        return dataSource;
     }
 }
