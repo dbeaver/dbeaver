@@ -72,7 +72,7 @@ public class DBeaverCommandLine
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, PARAM_HELP, false, "Help")
         .addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
-        .addOption(PARAM_DB_LIST, "database-driver-list", true, "Store list of supported database drivers in json format")
+        .addOption(PARAM_DB_LIST, "database-driver-list", true, "Show list of supported database drivers in json format")
         .addOption(PARAM_FILE, "file", true, "Open a file")
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
         .addOption(PARAM_THREAD_DUMP, "thread-dump", false, "Print instance thread dump")
