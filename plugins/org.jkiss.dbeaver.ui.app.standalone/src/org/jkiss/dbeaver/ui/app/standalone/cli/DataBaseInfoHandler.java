@@ -94,9 +94,15 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
                     jsonWriter.beginObject();
                     JSONUtils.field(jsonWriter, DB_NAME_LABEL, driver.getName());
                     JSONUtils.serializeObjectList(jsonWriter, DB_CATEGORY_LABEL, driver.getCategories());
-                    JSONUtils.field(jsonWriter, DB_EMBEDDED_LABEL, driver.isEmbedded());
-                    JSONUtils.field(jsonWriter, DB_REQUIRE_DOWNLOAD_LABEL, isRequireToDownload(driver.getDriverLibraries()));
-                    JSONUtils.field(jsonWriter, DB_ADITIONAL_FEATURE_LABEL, !driver.getDriverReplacementsInfo().isEmpty());
+                    if (driver.isEmbedded()) {
+                        JSONUtils.field(jsonWriter, DB_EMBEDDED_LABEL, "true"); //$NON-NLS-1$
+                    }
+                    if (isRequireToDownload(driver)) {
+                        JSONUtils.field(jsonWriter, DB_REQUIRE_DOWNLOAD_LABEL, "download "); //$NON-NLS-1$
+                    }
+                    if (isExtendedInPro(driver)) {
+                        JSONUtils.field(jsonWriter, DB_ADITIONAL_FEATURE_LABEL, "pro"); //$NON-NLS-1$
+                    }
                     jsonWriter.endObject();
                 }
                 jsonWriter.endArray();
@@ -121,12 +127,16 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
         return supportedDataBases;
     }
 
-    private boolean isRequireToDownload(List<? extends DBPDriverLibrary> libraries) {
-        return libraries
+    private boolean isRequireToDownload(DriverDescriptor driver) {
+        return driver.getDriverLibraries()
             .stream()
             .map(DBPDriverLibrary::getLocalFile)
             .filter(Objects::nonNull)
             .map(path -> path.toAbsolutePath().toString())
             .findAny().isEmpty();
+    }
+
+    private boolean isExtendedInPro(DriverDescriptor driver) {
+        return !driver.getDriverReplacementsInfo().isEmpty();
     }
 }
