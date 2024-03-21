@@ -19,8 +19,12 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.*;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
+import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -112,17 +116,12 @@ public class CubridProcedure extends GenericProcedure
         return proColumns;
     }
 
-    @NotNull
-    @Override
-    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        return getName();
-    }
-
     @Override
     public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure parameter")) {
-            String stmt = "select * from db_stored_procedure_args where sp_name = '" + getName() + "'";
+            String stmt = "select * from db_stored_procedure_args where sp_name = ?";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
+                dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String argName = JDBCUtils.safeGetString(dbResult, "arg_name");
