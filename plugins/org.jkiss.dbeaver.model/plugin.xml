@@ -277,6 +277,7 @@
         <propertyGroup id="editors" label="Editors">
             <propertyGroup id="dataEditor" label="Data Editor">
                 <property id="resultset.maxrows" label="Default fetch size" description="Default number of rows to fetch" type="integer"
+                          defaultValue="200"
                           scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>
