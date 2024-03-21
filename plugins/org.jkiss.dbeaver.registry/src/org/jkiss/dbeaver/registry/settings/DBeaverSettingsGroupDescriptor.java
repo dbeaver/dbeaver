@@ -36,7 +36,7 @@ public class DBeaverSettingsGroupDescriptor extends AbstractDescriptor {
     public DBeaverSettingsGroupDescriptor(IConfigurationElement cfg) {
         super(cfg);
         this.id = cfg.getAttribute("id");
-        this.displayName = cfg.getAttribute("id");
+        this.displayName = cfg.getAttribute("label");
     }
 
     synchronized void addSetting(@NotNull DBeaverSettingDescriptor setting) {
