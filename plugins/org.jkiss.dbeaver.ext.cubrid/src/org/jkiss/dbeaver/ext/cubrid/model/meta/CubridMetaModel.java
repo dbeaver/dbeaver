@@ -411,7 +411,7 @@ public class CubridMetaModel extends GenericMetaModel
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Cannot load view ddl", e);
         }
         return ddl;
     }
