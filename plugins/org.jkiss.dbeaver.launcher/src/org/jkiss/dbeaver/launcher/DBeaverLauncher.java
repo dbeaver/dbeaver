@@ -35,7 +35,9 @@ import java.util.zip.ZipFile;
 
 /**
  * The launcher for Eclipse.
+ *
  * Copied from org.eclipse.equinox.launcher.Main
+ *
  * <b>Note:</b> This class should not be referenced programmatically by
  * other Java code. This class exists only for the purpose of launching Eclipse
  * from the command line. To launch Eclipse programmatically, use
@@ -63,6 +65,11 @@ public class DBeaverLauncher {
      * The location of the configuration information for this instance
      */
     protected URL configurationLocation = null;
+
+    /**
+     * The location of the configuration information in the install root
+     */
+    protected String parentConfigurationLocation = null;
 
     /**
      * The id of the bundle that will contain the framework to run.  Defaults to org.eclipse.osgi.
@@ -116,6 +123,11 @@ public class DBeaverLauncher {
             takeDownSplash();
         }
 
+        public void updateSplash() {
+            if (bridge != null && !splashDown) {
+                bridge.updateSplash();
+            }
+        }
     }
 
     private final Thread splashHandler = new SplashHandler();
@@ -215,6 +227,7 @@ public class DBeaverLauncher {
     private static final String PROP_VM = "eclipse.vm"; //$NON-NLS-1$
     private static final String PROP_VMARGS = "eclipse.vmargs"; //$NON-NLS-1$
     private static final String PROP_COMMANDS = "eclipse.commands"; //$NON-NLS-1$
+    private static final String PROP_ECLIPSESECURITY = "eclipse.security"; //$NON-NLS-1$
 
     // Suffix for location properties - see LocationManager.
     private static final String READ_ONLY_AREA_SUFFIX = ".readOnly"; //$NON-NLS-1$
@@ -265,6 +278,10 @@ public class DBeaverLauncher {
 
     public static final String DBEAVER_DATA_FOLDER = "DBeaverData";
     private static final String DBEAVER_INSTALL_FOLDER = "install-data";
+    private static final String ENV_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
+    private static final String LOCATION_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
+    private static final String LOCATION_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
+    private static final String DB_DATA_HOME = "@data.home"; //$NON-NLS-1$
 
     /**
      * A structured form for a version identifier.
@@ -275,6 +292,13 @@ public class DBeaverLauncher {
     static class Identifier {
         private static final String DELIM = ". _-"; //$NON-NLS-1$
         private int major, minor, service;
+
+        Identifier(int major, int minor, int service) {
+            super();
+            this.major = major;
+            this.minor = minor;
+            this.service = service;
+        }
 
         /**
          * @throws NumberFormatException if cannot parse the major and minor version components
@@ -459,10 +483,11 @@ public class DBeaverLauncher {
             }
         }
         if (libPath == null && bootLocation != null) {
-            if (defaultPath != null && defaultPath.length > 0) {
+            URL[] urls = defaultPath;
+            if (urls != null && urls.length > 0) {
                 //the last one is most interesting
-                for (int i = defaultPath.length - 1; i >= 0 && libPath == null; i--) {
-                    File entryFile = new File(defaultPath[i].getFile());
+                for (int i = urls.length - 1; i >= 0 && libPath == null; i--) {
+                    File entryFile = new File(urls[i].getFile());
                     String dir = entryFile.getParent();
                     if (inDevelopmentMode) {
                         String devDir = dir + "/" + PLUGIN_ID + "/fragments"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -672,9 +697,7 @@ public class DBeaverLauncher {
         }
         File configDir = new File(locationUrl.getFile()).getAbsoluteFile();
         if (!configDir.exists()) {
-            if (!configDir.mkdirs()) {
-                log("Failed to create directory " + configDir.getAbsolutePath());
-            }
+            configDir.mkdirs();
             if (!configDir.exists()) {
                 System.setProperty(PROP_EXITCODE, "15"); //$NON-NLS-1$
                 System.setProperty(PROP_EXITDATA, "<title>Invalid Configuration Location</title>The configuration area at '" + configDir + //$NON-NLS-1$
@@ -791,7 +814,7 @@ public class DBeaverLauncher {
             URL extensionURL;
             if (installLocation.getProtocol().equals("file")) { //$NON-NLS-1$
                 extensionResults.add(path);
-                extensionURL = getFileURL(path);
+                extensionURL = new File(path).toURL();
             } else
                 extensionURL = new URL(installLocation.getProtocol(), installLocation.getHost(), installLocation.getPort(), path);
             //Load a property file of the extension, merge its content, and in case of dev mode add the bin entries
@@ -877,7 +900,7 @@ public class DBeaverLauncher {
                 }
                 URL url;
                 if (string.startsWith(FILE_SCHEME))
-                    url = getFileURL(string.substring(5));
+                    url = new File(string.substring(5)).toURL();
                 else
                     url = new URL(string);
                 addEntry(url, result);
@@ -903,7 +926,7 @@ public class DBeaverLauncher {
             File path = new File(location);
             URL url;
             if (path.isAbsolute())
-                url = getFileURL(path);
+                url = path.toURL();
             else {
                 // dev path is relative, combine with base location
                 char lastChar = location.charAt(location.length() - 1);
@@ -935,7 +958,7 @@ public class DBeaverLauncher {
             if (path == null)
                 throw new FileNotFoundException(String.format("Could not find framework under %s", pluginsLocation)); //$NON-NLS-1$
             if (url.getProtocol().equals("file")) //$NON-NLS-1$
-                url = getFileURL(path);
+                url = new File(path).toURL();
             else
                 url = new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
         }
@@ -1128,8 +1151,8 @@ public class DBeaverLauncher {
                 File toAdjust = new File(spec.substring(5));
                 toAdjust = resolveFile(toAdjust);
                 if (toAdjust.isDirectory())
-                    return adjustTrailingSlash(getFileURL(toAdjust), trailingSlash);
-                return getFileURL(toAdjust);
+                    return adjustTrailingSlash(toAdjust.toURL(), trailingSlash);
+                return toAdjust.toURL();
             }
             return new URL(spec);
         } catch (MalformedURLException e) {
@@ -1140,8 +1163,8 @@ public class DBeaverLauncher {
             try {
                 File toAdjust = new File(spec);
                 if (toAdjust.isDirectory())
-                    return adjustTrailingSlash(getFileURL(toAdjust), trailingSlash);
-                return getFileURL(toAdjust);
+                    return adjustTrailingSlash(toAdjust.toURL(), trailingSlash);
+                return toAdjust.toURL();
             } catch (MalformedURLException e1) {
                 return null;
             }
@@ -1376,6 +1399,18 @@ public class DBeaverLauncher {
     }
 
     /**
+     * Runs this launcher with the arguments specified in the given string.
+     *
+     * @param argString the arguments string
+     */
+    public static void main(String argString) {
+        ArrayList<String> list = new ArrayList<>(5);
+        for (StringTokenizer tokens = new StringTokenizer(argString, " "); tokens.hasMoreElements(); ) //$NON-NLS-1$
+            list.add(tokens.nextToken());
+        main(list.toArray(new String[0]));
+    }
+
+    /**
      * Runs the platform with the given arguments.  The arguments must identify
      * an application to run (e.g., <code>-application com.example.application</code>).
      * After running the application <code>System.exit(N)</code> is executed.
@@ -1492,7 +1527,6 @@ public class DBeaverLauncher {
             boolean found = false;
             // check for args without parameters (i.e., a flag arg)
             // check if debug should be enabled for the entire platform
-            assert args[i] != null;
             if (args[i].equalsIgnoreCase(DEBUG)) {
                 debug = true;
                 // passed thru this arg (i.e., do not set found = true)
@@ -1789,6 +1823,19 @@ public class DBeaverLauncher {
         return workingDirectory;
     }
 
+    private String resolveEnv(String source, String var, String prop) {
+        String value = System.getenv(prop); // $NON-NLS-1$
+        if (value == null) {
+            value = "";
+        }
+        return value + source.substring(var.length());
+    }
+
+    private String resolveLocation(String source, String var, String location) {
+        String result = location + source.substring(var.length());
+        return result.replaceFirst("^~", System.getProperty(PROP_USER_HOME));
+    }
+
     private String getProductProperties() throws IOException {
         String productPath = "";
         URL installURL = getInstallLocation();
@@ -2060,7 +2107,7 @@ public class DBeaverLauncher {
             try {
                 // create a file URL (via File) to normalize the form (e.g., put
                 // the leading / on if necessary)
-                path = getFileURL(path).getFile();
+                path = new File(path).toURL().getFile();
             } catch (MalformedURLException e1) {
                 // will never happen.  The path is straight from a URL.
             }
@@ -2194,7 +2241,7 @@ public class DBeaverLauncher {
             return;
 
         // determine the splash location
-        splashLocation = getSplashLocation();
+        splashLocation = getSplashLocation(defaultPath);
         if (debug)
             System.out.println("Splash location:\n    " + splashLocation); //$NON-NLS-1$
         if (splashLocation == null)
@@ -2235,7 +2282,7 @@ public class DBeaverLauncher {
      * If that does not work, look for a default splash.  Currently the splash must be in the file system
      * so the return value here is the file system path.
      */
-    private String getSplashLocation() {
+    private String getSplashLocation(URL[] bootPath) {
         //check the path passed in from -showsplash first.  The old launcher passed a timeout value
         //as the argument, so only use it if it isn't a number and the file exists.
         if (splashLocation != null && !Character.isDigit(splashLocation.charAt(0)) && new File(splashLocation).exists()) {
@@ -2625,8 +2672,16 @@ public class DBeaverLauncher {
 
     public class StartupClassLoader extends URLClassLoader {
 
+        public StartupClassLoader(URL[] urls) {
+            super(urls);
+        }
+
         public StartupClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
+        }
+
+        public StartupClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
+            super(urls, parent, factory);
         }
 
         @Override
@@ -2726,13 +2781,4 @@ public class DBeaverLauncher {
             buf.append(VARIABLE_DELIM_CHAR).append(var);
         return buf.toString();
     }
-
-    private static URL getFileURL(String filePath) throws MalformedURLException {
-        return new File(filePath).toURI().toURL();
-    }
-
-    private static URL getFileURL(File file) throws MalformedURLException {
-        return file.toURI().toURL();
-    }
-
 }
