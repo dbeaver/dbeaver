@@ -59,7 +59,7 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
             log.error("Directory by path '" + directory + "' does not exists"); //$NON-NLS-1$
             return;
         }
-        if(!path.toFile().isDirectory()) {
+        if (!path.toFile().isDirectory()) {
             log.error("Target location is not a directory '" + directory + "'"); //$NON-NLS-1$
             return;
         }
