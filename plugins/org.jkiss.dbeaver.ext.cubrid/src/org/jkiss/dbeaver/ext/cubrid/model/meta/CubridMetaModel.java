@@ -400,7 +400,8 @@ public class CubridMetaModel extends GenericMetaModel
     @Nullable
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @Nullable GenericView object, @Nullable Map<String, Object> options) throws DBException {
-        JDBCSession session = DBUtils.openMetaSession(monitor, object, "load view ddl " + object.getName());
+        JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl " + object.getName());
+
         String ddl = "-- View definition not available";
         String regex = "\\[|\\]";
         try {
