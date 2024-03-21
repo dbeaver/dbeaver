@@ -81,7 +81,7 @@ public class CubridProcedureParameter implements DBSProcedureParameter
     @Nullable
     @Override
     public DBSTypedObject getParameterType() {
-        return this;
+        return (DBSTypedObject) this;
     }
 
     @NotNull
