@@ -53,43 +53,43 @@ public class CubridTable extends GenericTable
             @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
 
-        String owner_name;
-        String collation_name;
+        String ownerName;
+        String collationName;
         if (dbResult != null) {
             String type = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS);
             this.reuseOID = (JDBCUtils.safeGetString(dbResult, CubridConstants.REUSE_OID)).equals("YES");
-            owner_name = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
-            collation_name = JDBCUtils.safeGetString(dbResult, CubridConstants.COLLATION);
+            ownerName = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
+            collationName = JDBCUtils.safeGetString(dbResult, CubridConstants.COLLATION);
             autoIncrement = JDBCUtils.safeGetInteger(dbResult, CubridConstants.AUTO_INCREMENT_VAL);
             if (type != null) {
                 this.setSystem(type.equals("YES"));
             }
         } else {
-            owner_name = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
-            collation_name = CubridConstants.DEFAULT_COLLATION;
+            ownerName = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+            collationName = CubridConstants.DEFAULT_COLLATION;
         }
 
         for(GenericSchema cubridOwner : this.getDataSource().getSchemaList()){
-            if(cubridOwner.getName().equals(owner_name)) {
+            if(cubridOwner.getName().equals(ownerName)) {
                 this.owner = (CubridUser) cubridOwner;
                 this.oldOwner = (CubridUser) cubridOwner;
             }
         }
 
         for(CubridCharset cbCharset : getDataSource().getCharsets()){
-            if(cbCharset.getName().equals(collation_name.split("_")[0])) {
+            if(cbCharset.getName().equals(collationName.split("_")[0])) {
                 this.charset = cbCharset;
             }
         }
 
-        ArrayList<CubridCollation> collation_list = new ArrayList<>();
+        ArrayList<CubridCollation> collationList = new ArrayList<>();
         for(String col : getDataSource().getCollations()) {
             CubridCollation collation = new CubridCollation(col);
-            collation_list.add(collation);
+            collationList.add(collation);
         }
 
-        for(CubridCollation cbCollation : collation_list){
-            if(cbCollation.getName().equals(collation_name)) {
+        for(CubridCollation cbCollation : collationList){
+            if(cbCollation.getName().equals(collationName)) {
                 this.collation = cbCollation;
             }
         }
