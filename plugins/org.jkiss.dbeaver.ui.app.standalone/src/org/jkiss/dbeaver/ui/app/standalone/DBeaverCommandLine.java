@@ -58,6 +58,7 @@ public class DBeaverCommandLine
     public static final String PARAM_STOP = "stop";
     public static final String PARAM_THREAD_DUMP = "dump";
     public static final String PARAM_CONNECT = "con";
+    public static final String PARAM_DB_LIST = "databaseList";
 
     public static final String PARAM_CLOSE_TABS = "closeTabs";
     public static final String PARAM_DISCONNECT_ALL = "disconnectAll";
@@ -71,6 +72,7 @@ public class DBeaverCommandLine
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, PARAM_HELP, false, "Help")
         .addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
+        .addOption(PARAM_DB_LIST, "database-driver-list", true, "Store list of supported database drivers in json format")
         .addOption(PARAM_FILE, "file", true, "Open a file")
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
         .addOption(PARAM_THREAD_DUMP, "thread-dump", false, "Print instance thread dump")
