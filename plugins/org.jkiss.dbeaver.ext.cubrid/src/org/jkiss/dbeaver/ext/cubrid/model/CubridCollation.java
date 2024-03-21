@@ -64,7 +64,7 @@ public class CubridCollation implements DBSObject
     @NotNull
     @Override
     public boolean isPersisted() {
-        return false;
+        return true;
     }
 
     @NotNull
