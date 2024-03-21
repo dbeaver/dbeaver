@@ -52,8 +52,8 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
     private static final String DB_NAME_LABEL = "name"; //$NON-NLS-1$
     private static final String DB_CATEGORY_LABEL = "category"; //$NON-NLS-1$
     private static final String DB_EMBEDDED_LABEL = "embedded"; //$NON-NLS-1$
-    private static final String DB_REQUIRE_DOWNLOAD_LABEL = "requireDownload"; //$NON-NLS-1$
-    private static final String DB_ADITIONAL_FEATURE_LABEL = "addvanceExtensionPro"; //$NON-NLS-1$
+    private static final String DB_REQUIRE_DOWNLOAD_LABEL = "download"; //$NON-NLS-1$
+    private static final String DB_ADITIONAL_FEATURE_LABEL = "pro"; //$NON-NLS-1$
     private static final Log log = Log.getLog(DataBaseInfoHandler.class);
     private static final Gson DB_GSON = new GsonBuilder()
         .setLenient()
@@ -95,13 +95,13 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
                     JSONUtils.field(jsonWriter, DB_NAME_LABEL, driver.getName());
                     JSONUtils.serializeObjectList(jsonWriter, DB_CATEGORY_LABEL, driver.getCategories());
                     if (driver.isEmbedded()) {
-                        JSONUtils.field(jsonWriter, DB_EMBEDDED_LABEL, "true"); //$NON-NLS-1$
+                        JSONUtils.field(jsonWriter, DB_EMBEDDED_LABEL, Boolean.TRUE);
                     }
                     if (isRequireToDownload(driver)) {
-                        JSONUtils.field(jsonWriter, DB_REQUIRE_DOWNLOAD_LABEL, "download "); //$NON-NLS-1$
+                        JSONUtils.field(jsonWriter, DB_REQUIRE_DOWNLOAD_LABEL, Boolean.TRUE);
                     }
                     if (isExtendedInPro(driver)) {
-                        JSONUtils.field(jsonWriter, DB_ADITIONAL_FEATURE_LABEL, "pro"); //$NON-NLS-1$
+                        JSONUtils.field(jsonWriter, DB_ADITIONAL_FEATURE_LABEL, Boolean.TRUE);
                     }
                     jsonWriter.endObject();
                 }
