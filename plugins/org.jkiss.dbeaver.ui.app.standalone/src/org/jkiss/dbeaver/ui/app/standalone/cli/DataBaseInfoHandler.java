@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List; 
 
 public class DataBaseInfoHandler implements CommandLineParameterHandler {
+    private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$
     private static final String DATABASES_LABEL = "databases"; //$NON-NLS-1$
     private static final String DB_NAME_LABEL = "name"; //$NON-NLS-1$
     private static final String DB_CATEGORY_LABEL = "category"; //$NON-NLS-1$
@@ -52,8 +53,17 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
         .create();
 
     @Override
-    public void handleParameter(CommandLine commandLine, String name, String value) {
-       publishDataBaseInfo(Path.of(value));
+    public void handleParameter(CommandLine commandLine, String name, String directory) {
+        Path path = Path.of(directory);
+        if (!path.toFile().exists()) {
+            log.error("Directory by path '" + directory + "' does not exists"); //$NON-NLS-1$
+            return;
+        }
+        if(!path.toFile().isDirectory()) {
+            log.error("Target location is not a directory '" + directory + "'"); //$NON-NLS-1$
+            return;
+        }
+        publishDataBaseInfo(path.resolve(OUTPUT_DATABASES_JSON));
     }
 
     private void publishDataBaseInfo(@NotNull Path path) {
