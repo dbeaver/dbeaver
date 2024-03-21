@@ -118,6 +118,12 @@ public class CubridMetaModel extends GenericMetaModel
 
     @NotNull
     @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @NotNull
+    @Override
     public JDBCStatement prepareUniqueConstraintsLoadStatement(
             @NotNull JDBCSession session,
             @NotNull GenericStructContainer owner,
@@ -151,17 +157,14 @@ public class CubridMetaModel extends GenericMetaModel
               new GenericTableConstraintColumn(object, tableColumn, keyOrder) };
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException {
-        String isUnique = JDBCUtils.safeGetString(dbResult, "is_unique");
         String isPrimary = JDBCUtils.safeGetString(dbResult, "is_primary_key");
         if(isPrimary.equals("YES")) {
             return DBSEntityConstraintType.PRIMARY_KEY;
-        } else if (isUnique.equals("YES")) {
-            return DBSEntityConstraintType.UNIQUE_KEY;
         } else {
-            return null;
+            return DBSEntityConstraintType.UNIQUE_KEY;
         }
     }
 
