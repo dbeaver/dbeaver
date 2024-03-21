@@ -37,7 +37,7 @@ import java.util.List;
 
 public class CubridProcedure extends GenericProcedure
 {
-    private List<CubridProcedureParameter> pro_columns;
+    private List<CubridProcedureParameter> proColumns;
     private String returnType;
 
     public CubridProcedure(
@@ -95,21 +95,21 @@ public class CubridProcedure extends GenericProcedure
     }
 
     public void addColumn(@NotNull CubridProcedureParameter column) {
-        if (this.pro_columns == null) {
-            this.pro_columns = new ArrayList<>();
+        if (this.proColumns == null) {
+            this.proColumns = new ArrayList<>();
         }
-        this.pro_columns.add(column);
+        this.proColumns.add(column);
     }
 
     @Nullable
     public List<CubridProcedureParameter> getParams(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (pro_columns == null) {
+        if (proColumns == null) {
             loadProcedureColumns(monitor);
-            if (pro_columns == null) {
-                pro_columns = new ArrayList<>();
+            if (proColumns == null) {
+                proColumns = new ArrayList<>();
             }
         }
-        return pro_columns;
+        return proColumns;
     }
 
     @NotNull
