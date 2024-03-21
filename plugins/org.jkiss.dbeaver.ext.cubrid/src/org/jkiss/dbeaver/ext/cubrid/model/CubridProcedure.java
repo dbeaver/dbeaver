@@ -128,7 +128,7 @@ public class CubridProcedure extends GenericProcedure
                         String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
                         String mode = JDBCUtils.safeGetString(dbResult, "mode");
                         String comment = JDBCUtils.safeGetString(dbResult, "comment");
-                        addColumn(new CubridProcedureParameter(getName(), argName, dataType, mode, comment));
+                        addColumn(new CubridProcedureParameter(this, getName(), argName, dataType, mode, comment));
                     }
                 }
             }

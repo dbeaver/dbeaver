@@ -34,11 +34,13 @@ public class CubridProcedureParameter implements DBSProcedureParameter
     private CubridProcedure procedure;
 
     public CubridProcedureParameter(
+            @NotNull CubridProcedure procedure,
             @NotNull String procName,
             @NotNull String argName,
             @NotNull String dataType,
             @NotNull String mode,
             @Nullable String comment) {
+        this.procedure = procedure;
         this.procName = procName;
         this.argName = argName;
         this.dataType = dataType;
@@ -99,7 +101,7 @@ public class CubridProcedureParameter implements DBSProcedureParameter
     @Nullable
     @Override
     public DBPDataSource getDataSource() {
-        return null;
+        return procedure.getDataSource();
     }
 
     @NotNull
