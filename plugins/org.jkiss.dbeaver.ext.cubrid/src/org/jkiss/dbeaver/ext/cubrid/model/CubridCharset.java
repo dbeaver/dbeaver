@@ -91,6 +91,6 @@ public class CubridCharset implements DBSObject
     @Nullable
     @Override
     public DBSObject getParentObject() {
-        return null;
+        return dataSource;
     }
 }
