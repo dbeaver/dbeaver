@@ -74,8 +74,8 @@ public class CubridMetaModel extends GenericMetaModel
             dbStat.executeStatement();
             try (JDBCResultSet dbResult = dbStat.getResultSet()) {
                 while (dbResult.next()) {
-                    String name = JDBCUtils.safeGetStringTrimmed(dbResult, "name");
-                    String description = JDBCUtils.safeGetStringTrimmed(dbResult, "comment");
+                    String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
+                    String description = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.COMMENT);
                     CubridUser user = new CubridUser(dataSource, name, description);
                     users.add(user);
 	            }
@@ -258,8 +258,8 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull GenericStructContainer container,
             @NotNull JDBCResultSet dbResult)
             throws DBException {
-        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "name");
-        String description = JDBCUtils.safeGetString(dbResult, "comment");
+        String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
+        String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
         Number lastValue = JDBCUtils.safeGetInteger(dbResult, "current_val");
         Number minValue = JDBCUtils.safeGetInteger(dbResult, "min_val");
         Number maxValue = JDBCUtils.safeGetInteger(dbResult, "max_val");
@@ -287,7 +287,7 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetStringTrimmed(dbResult, "synonym_name");
-        String description = JDBCUtils.safeGetString(dbResult, "comment");
+        String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
         return new CubridSynonym(container, name, description, dbResult);
     }
 
@@ -330,8 +330,8 @@ public class CubridMetaModel extends GenericMetaModel
             @Nullable String triggerName,
             @NotNull JDBCResultSet dbResult)
             throws DBException {
-        String name = JDBCUtils.safeGetString(dbResult, "name");
-        String description = JDBCUtils.safeGetString(dbResult, "comment");
+        String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
+        String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
         return new CubridTrigger(table, name, description, dbResult);
     }
 
@@ -354,8 +354,8 @@ public class CubridMetaModel extends GenericMetaModel
             @NotNull GenericStructContainer container,
             @NotNull JDBCResultSet dbResult)
             throws DBException {
-        String name = JDBCUtils.safeGetString(dbResult, "name");
-        String description = JDBCUtils.safeGetString(dbResult, "comment");
+        String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
+        String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
         String tableName = JDBCUtils.safeGetString(dbResult, "target_class_name");
         String owner = JDBCUtils.safeGetString(dbResult, "target_owner_name");
         DBRProgressMonitor monitor = dbResult.getSession().getProgressMonitor();
@@ -375,7 +375,7 @@ public class CubridMetaModel extends GenericMetaModel
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String procedureName = JDBCUtils.safeGetString(dbResult, "sp_name");
-                        String description = JDBCUtils.safeGetString(dbResult, "comment");
+                        String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
                         String type = JDBCUtils.safeGetString(dbResult, "sp_type");
                         String target = JDBCUtils.safeGetString(dbResult, "target");
                         String returnType = JDBCUtils.safeGetString(dbResult, "return_type");

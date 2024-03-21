@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -35,7 +36,7 @@ public class CubridTableColumn extends GenericTableColumn
             setName(JDBCUtils.safeGetString(dbResult, "Field"));
             setDataType(typeName);
             setRequired(JDBCUtils.safeGetString(dbResult, "Null").equals("NO"));
-            setDescription(JDBCUtils.safeGetString(dbResult, "Comment"));
+            setDescription(JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT));
             setDefaultValue(JDBCUtils.safeGetString(dbResult, "Default"));
             setAutoIncrement(JDBCUtils.safeGetString(dbResult, "Extra").equals("auto_increment"));
             setPersisted(true);

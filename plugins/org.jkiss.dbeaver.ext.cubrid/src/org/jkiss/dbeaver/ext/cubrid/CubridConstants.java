@@ -26,4 +26,6 @@ public class CubridConstants
     public static final String COLLATION = "collation";
     public static final String DEFAULT_COLLATION = "utf8_bin";
     public static final String REUSE_OID = "is_reuse_oid_class";
+    public static final String NAME = "name";
+    public static final String COMMENT = "comment";
 }

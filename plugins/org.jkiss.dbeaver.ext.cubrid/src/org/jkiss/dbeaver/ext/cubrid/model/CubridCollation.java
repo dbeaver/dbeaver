@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -35,7 +36,7 @@ public class CubridCollation implements DBSObject
     }
 
     protected CubridCollation(@NotNull CubridCharset charset, @NotNull ResultSet dbResult) throws SQLException {
-        this.name = JDBCUtils.safeGetString(dbResult, "collation");
+        this.name = JDBCUtils.safeGetString(dbResult, CubridConstants.COLLATION);
         this.charset = charset;
         this.dataSource = charset.getDataSource();
     }

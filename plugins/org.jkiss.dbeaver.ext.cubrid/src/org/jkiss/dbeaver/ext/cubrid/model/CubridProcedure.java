@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
@@ -127,7 +128,7 @@ public class CubridProcedure extends GenericProcedure
                         String argName = JDBCUtils.safeGetString(dbResult, "arg_name");
                         String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
                         String mode = JDBCUtils.safeGetString(dbResult, "mode");
-                        String comment = JDBCUtils.safeGetString(dbResult, "comment");
+                        String comment = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
                         addColumn(new CubridProcedureParameter(this, getName(), argName, dataType, mode, comment));
                     }
                 }
