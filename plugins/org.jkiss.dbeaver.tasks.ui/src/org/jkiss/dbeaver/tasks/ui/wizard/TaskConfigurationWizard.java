@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
@@ -51,7 +52,6 @@ import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -266,7 +266,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 // Execute directly in wizard
                 executor.executeTask();
             } else {
-                task.getProject().getTaskManager().runTask(task, executor, Collections.emptyMap());
+                task.getProject().getTaskManager().scheduleTask(task, executor);
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Task run error", e.getMessage(), e);
@@ -417,13 +417,14 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 promptVariables = promptTaskVariablesCheckbox.getSelection();
             }
         });
+        promptTaskVariablesCheckbox.notifyListeners(SWT.Selection, new Event());
     }
 
     private void configureVariables() {
         Map<String, Object> variables = getTaskVariables();
-        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), variables);
+        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), Map.of(currentTask, variables));
         if (dialog.open() == IDialogConstants.OK_ID) {
-            this.variables = dialog.getVariables();
+            this.variables = dialog.getVariables(currentTask);
         }
     }
 

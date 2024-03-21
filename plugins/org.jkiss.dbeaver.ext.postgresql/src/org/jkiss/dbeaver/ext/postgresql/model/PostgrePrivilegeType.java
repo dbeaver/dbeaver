@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeType;
 
 /**
@@ -46,6 +47,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     // Specific Cockroach types
     GRANT('g', true, PostgreDatabase.class, PostgreSchema.class, PostgreTableReal.class, PostgreDataType.class),
     ZONECONFIG('z', true, PostgreDatabase.class, PostgreTableReal.class),
+    ALTER('A', true, PostgreDatabase.class, PostgreSchema.class, PostgreTableReal.class), // Redshift-specific
 
     UNKNOWN((char)0, false);
 
@@ -73,7 +75,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     }
 
     @Override
-    public boolean supportsType(Class<?> objectType) {
+    public boolean supportsType(@NotNull Class<?> objectType) {
         if (PostgreRole.class.isAssignableFrom(objectType)) {
             return true;
         }

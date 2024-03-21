@@ -33,9 +33,13 @@ import java.io.Reader;
 public interface SQLSchemaScriptSource {
 
     @NotNull
-    Reader openSchemaCreateScript(DBRProgressMonitor monitor) throws IOException, DBException;
+    Reader openSchemaCreateScript(@NotNull DBRProgressMonitor monitor) throws IOException, DBException;
 
     @Nullable
-    Reader openSchemaUpdateScript(DBRProgressMonitor monitor, int versionNumber) throws IOException, DBException;
+    Reader openSchemaUpdateScript(
+        @NotNull DBRProgressMonitor monitor,
+        int versionNumber,
+        @Nullable String specificPrefix
+    ) throws IOException, DBException;
 
 }

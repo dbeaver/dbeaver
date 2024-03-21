@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.net.ssh.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 
+import java.util.Objects;
+
 public class SSHHostConfiguration {
     private final String username;
     private final String hostname;
@@ -53,5 +55,23 @@ public class SSHHostConfiguration {
     @NotNull
     public SSHAuthConfiguration getAuthConfiguration() {
         return auth;
+    }
+
+    @Override
+    public String toString() {
+        return username + "@" + hostname + ":" + port;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        SSHHostConfiguration that = (SSHHostConfiguration) object;
+        return port == that.port && Objects.equals(username, that.username) && Objects.equals(hostname, that.hostname);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username, hostname, port);
     }
 }

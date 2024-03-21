@@ -134,7 +134,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
     }
 
     @Override
-    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+    public DBDContentStorage getContents(@NotNull DBRProgressMonitor monitor)
         throws DBCException
     {
         if (storage == null && bfile != null) {
@@ -222,7 +222,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
     }
 
     @Override
-    public String getDisplayString(DBDDisplayFormat format)
+    public String getDisplayString(@NotNull DBDDisplayFormat format)
     {
         return bfile == null && storage == null ? null : "[BFILE:" + name + "]";
     }

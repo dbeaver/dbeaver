@@ -50,6 +50,7 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
         return pk;
     }
 
+    @Nullable
     @Override
     public DBSEntity getAssociatedEntity()
     {

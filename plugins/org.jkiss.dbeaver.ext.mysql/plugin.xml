@@ -213,7 +213,7 @@
                         defaultPort="3306"
                         defaultUser="root"
                         webURL="https://www.mysql.com/products/connector/"
-                        propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8 and later"
                         promoted="1"
                         categories="sql">
@@ -242,7 +242,7 @@
                     defaultPort="3306"
                     defaultUser="root"
                     webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
-                    propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                    propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                     description="Driver for MySQL NDB cluster"
                     categories="sql">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>

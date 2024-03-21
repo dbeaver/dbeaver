@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 
 import java.util.*;
+import java.util.function.LongSupplier;
 
 /**
  * DataSourceMonitorJob.
@@ -93,21 +95,21 @@ public class DataSourceMonitorJob extends AbstractJob {
 
     protected void doJob() {
         final DBPWorkspace workspace = platform.getWorkspace();
-        checkDataSourceAliveInWorkspace(workspace);
+        checkDataSourceAliveInWorkspace(workspace, getLastUserActivityTime(lastPingTime));
     }
 
-    protected void checkDataSourceAliveInWorkspace(DBPWorkspace workspace) {
+    protected void checkDataSourceAliveInWorkspace(DBPWorkspace workspace, long lastUserActivityTime) {
         for (DBPProject project : workspace.getProjects()) {
             if (project.isOpen() && project.isRegistryLoaded()) {
                 DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
                 for (DBPDataSourceContainer ds : dataSourceRegistry.getDataSources()) {
-                    checkDataSourceAlive(ds);
+                    checkDataSourceAlive(ds, lastUserActivityTime);
                 }
             }
         }
     }
 
-    private void checkDataSourceAlive(final DBPDataSourceContainer dataSourceDescriptor) {
+    private void checkDataSourceAlive(final DBPDataSourceContainer dataSourceDescriptor, long lastUserActivityTime) {
         if (!dataSourceDescriptor.isConnected()) {
             return;
         }
@@ -123,7 +125,7 @@ public class DataSourceMonitorJob extends AbstractJob {
 
         // End long transactions or connections
         if (getDisconnectTimeoutSeconds(dataSourceDescriptor) > 0 || getTransactionTimeoutSeconds(dataSourceDescriptor) > 0) {
-            if (endIdleTransactionOrConnection(dataSourceDescriptor)) {
+            if (endIdleTransactionOrConnection(dataSourceDescriptor, lastUserActivityTime)) {
                 return;
             }
         }
@@ -179,12 +181,11 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
     }
 
-    private boolean endIdleTransactionOrConnection(DBPDataSourceContainer dsDescriptor) {
+    private boolean endIdleTransactionOrConnection(DBPDataSourceContainer dsDescriptor, long lastUserActivityTime) {
         if (!dsDescriptor.isConnected()) {
             return false;
         }
 
-        final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
         if (lastUserActivityTime < 0) {
             return false;
         }
@@ -207,12 +208,7 @@ public class DataSourceMonitorJob extends AbstractJob {
             DisconnectJob disconnectJob = new DisconnectJob(dsDescriptor);
             disconnectJob.schedule();
 
-            DBeaverNotifications.showNotification(
-                dataSource,
-                DBeaverNotifications.NT_DISCONNECT_IDLE,
-                "Connection '" + dsDescriptor.getName() + "' has been closed after long idle period",
-                DBPMessageType.ERROR);
-
+            showNotification(dataSource);
             return true;
         }
 
@@ -273,6 +269,9 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getDisconnectTimeoutSeconds(@NotNull DBPDataSourceContainer container) {
+        if (container.getDriver().isEmbedded() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return 0;
+        }
         DBPConnectionConfiguration config = container.getConnectionConfiguration();
         if (!config.isCloseIdleConnection()) {
             return 0;
@@ -310,12 +309,23 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     public static long getLastUserActivityTime() {
-        long lastUserActivityTime = -1;
+        return getLastUserActivityTime(-1);
+    }
 
+    public static long getLastUserActivityTime(long lastUserActivityTime) {
         if (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop app) {
             lastUserActivityTime = app.getLastUserActivityTime();
         }
 
         return lastUserActivityTime;
+    }
+
+    protected void showNotification(@NotNull DBPDataSource dataSource) {
+        DBeaverNotifications.showNotification(
+            dataSource,
+            DBeaverNotifications.NT_DISCONNECT_IDLE,
+            "Connection '" + dataSource.getContainer().getName() + "' has been closed after long idle period",
+            DBPMessageType.ERROR
+        );
     }
 }

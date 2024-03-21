@@ -85,6 +85,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         return "resource";
     }
 
+    @Nullable
     @Override
     public String getResourceDescription(@NotNull IResource resource) {
         return resource.getName();

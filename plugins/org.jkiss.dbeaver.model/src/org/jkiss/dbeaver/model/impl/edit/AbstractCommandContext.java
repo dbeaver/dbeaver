@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -79,9 +82,9 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void saveChanges(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public void saveChanges(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (!executionContext.isConnected()) {
-            executionContext.invalidateContext(monitor, false);
+            executionContext.invalidateContext(monitor);
             if (!executionContext.isConnected()) {
                 throw new DBException("Context [" + executionContext.getContextName() + "] isn't connected to the database");
             }
@@ -320,6 +323,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBECommand<?>> getFinalCommands()
     {
@@ -339,6 +343,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBECommand<?>> getUndoCommands()
     {
@@ -359,6 +364,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @NotNull
     @Override
     public Collection<DBPObject> getEditedObjects()
     {
@@ -372,8 +378,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
     @Override
     public void addCommand(
-        DBECommand command,
-        DBECommandReflector reflector)
+        @NotNull DBECommand command,
+        @Nullable DBECommandReflector reflector)
     {
         addCommand(command, reflector, false);
     }
@@ -497,6 +503,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @Nullable
     @Override
     public DBECommand getUndoCommand()
     {
@@ -514,6 +521,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @Nullable
     @Override
     public DBECommand getRedoCommand()
     {

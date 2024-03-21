@@ -544,7 +544,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Override
     public boolean isRequired()
     {
-        return false;
+        return propInfo.required();
     }
 
     @Override

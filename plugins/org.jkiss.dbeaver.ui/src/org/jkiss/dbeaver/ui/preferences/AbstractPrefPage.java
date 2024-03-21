@@ -22,6 +22,8 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 /**
  * AbstractPrefPage
@@ -29,6 +31,9 @@ import org.jkiss.code.NotNull;
 public abstract class AbstractPrefPage extends PreferencePage {
     @Override
     protected Control createContents(Composite parent) {
+        if (!hasAccessToPage()) {
+            return UIUtils.createLabel(parent, UIMessages.preference_page_no_access);
+        }
         final Control content = createPreferenceContent(parent);
 
         Dialog.applyDialogFont(content);
@@ -42,4 +47,8 @@ public abstract class AbstractPrefPage extends PreferencePage {
 
     @NotNull
     protected abstract Control createPreferenceContent(@NotNull Composite parent);
+
+    protected boolean hasAccessToPage() {
+        return true;
+    }
 }

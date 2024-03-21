@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -217,6 +218,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return null;
     }
 
+    @NotNull
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         return new DBWNetworkHandler[0];
@@ -434,6 +436,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean isSharedCredentials() {
         return false;
+    }
+
+    @Override
+    public List<DBSSecretValue> listSharedCredentials() throws DBException {
+        return List.of();
     }
 
     @Override

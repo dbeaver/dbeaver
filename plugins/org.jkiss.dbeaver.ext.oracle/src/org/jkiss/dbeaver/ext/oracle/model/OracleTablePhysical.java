@@ -122,6 +122,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return realRowCount;
     }
 
+    @Nullable
     @Override
     public Object getLazyReference(Object propertyId)
     {

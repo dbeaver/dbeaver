@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -210,7 +210,7 @@ public class SQLBackgroundParsingJob {
     
     private void ensureVisibleRangeIsParsed() {
         TextViewer viewer = this.editor.getTextViewer();
-        if (viewer == null) {
+        if (viewer == null || viewer.getDocument() == null) {
             return;
         }
         int startOffset = viewer.getTopIndexStartOffset();
@@ -405,7 +405,7 @@ public class SQLBackgroundParsingJob {
                 }
                 try {
                     SQLQueryModelRecognizer recognizer = new SQLQueryModelRecognizer(executionContext, isReadMetadataForQueryAnalysis);
-                    SQLQuerySelectionModel queryModel = recognizer.recognizeQuery(
+                    SQLQueryModel queryModel = recognizer.recognizeQuery(
                         element.getOriginalText(),
                         RuntimeUtils.makeMonitor(monitor)
                     );

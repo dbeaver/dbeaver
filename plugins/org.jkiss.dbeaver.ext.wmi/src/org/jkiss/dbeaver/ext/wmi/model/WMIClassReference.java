@@ -44,6 +44,7 @@ public class WMIClassReference extends WMIClassAttribute implements DBSEntityAss
         return DBSEntityConstraintType.ASSOCIATION;
     }
 
+    @Nullable
     @Override
     public DBSEntity getAssociatedEntity()
     {

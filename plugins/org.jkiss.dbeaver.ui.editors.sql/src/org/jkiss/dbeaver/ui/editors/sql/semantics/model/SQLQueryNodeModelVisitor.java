@@ -33,19 +33,28 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitValueFlatExpr(SQLQueryValueFlattenedExpression flattenedExpr, T arg);
 
     @Nullable
+    R visitValueVariableExpr(@NotNull SQLQueryValueVariableExpression varExpr, T arg);
+
+    @Nullable
     R visitValueColumnRefExpr(SQLQueryValueColumnReferenceExpression columnRefExpr, T arg);
+    
+    @Nullable
+    R visitValueTupleRefExpr(@NotNull SQLQueryValueTupleReferenceExpression tupleRefExpr, T arg);
     
     @Nullable
     R visitValueMemberReferenceExpr(@NotNull SQLQueryValueMemberExpression memberRefExpr, T arg);
     
     @Nullable
     R visitValueIndexingExpr(@NotNull SQLQueryValueIndexingExpression indexingExpr, T arg);
+    
+    @Nullable
+    R visitValueTypeCastExpr(@NotNull SQLQueryValueTypeCastExpression typeCastExpr, T arg);
 
     @Nullable
     R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);
 
     @Nullable
-    R visitSelectionModel(SQLQuerySelectionModel selection, T arg);
+    R visitSelectionModel(SQLQueryModel selection, T arg);
 
     @Nullable
     R visitRowsTableData(SQLQueryRowsTableDataModel tableData, T arg);
@@ -85,4 +94,17 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     @Nullable
     R visitRowsCteSubquery(@NotNull SQLQueryRowsCteSubqueryModel cteSubquery, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementDelete(@NotNull SQLQueryTableDeleteModel deleteStatement, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementInsert(@NotNull SQLQueryTableInsertModel insertStatement, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementUpdate(@NotNull SQLQueryTableUpdateModel updateStatement, @NotNull T arg);
+
+    @Nullable
+    R visitTableStatementUpdateSetClause(@NotNull SQLQueryTableUpdateModel.SetClauseModel setClause, @NotNull T arg);
+
 }

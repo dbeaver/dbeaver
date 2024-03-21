@@ -105,11 +105,13 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
         return dataContainer;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return vAttribute.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return vAttribute.getFullTypeName();
@@ -120,6 +122,7 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
         return vAttribute.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return vAttribute.getDataKind();
@@ -130,6 +133,7 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
         return vAttribute.getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return vAttribute.getPrecision();

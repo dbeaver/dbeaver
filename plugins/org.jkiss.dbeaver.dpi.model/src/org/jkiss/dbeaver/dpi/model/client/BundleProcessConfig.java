@@ -207,7 +207,7 @@ class BundleProcessConfig {
         String javaExePath = resolveJavaExePath();
         cmd.add(javaExePath);
 
-        ModuleWiring launcherWiring = dependencies.get("org.eclipse.equinox.launcher");
+        ModuleWiring launcherWiring = dependencies.get("org.jkiss.dbeaver.launcher");
         if (launcherWiring != null) {
             cmd.add("-cp");
             cmd.add(getBundleReference(launcherWiring, false));
@@ -217,7 +217,7 @@ class BundleProcessConfig {
             //-Ddbeaver.debug.dpi.launch.parameters=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:15005
             cmd.add(debugParams);
         }
-        cmd.add("org.eclipse.equinox.launcher.Main");
+        cmd.add("org.jkiss.dbeaver.launcher.DBeaverLauncher");
 
         cmd.add("-launcher");
         cmd.add(System.getProperty("eclipse.launcher"));

@@ -134,7 +134,7 @@ public final class SQLSchemaManager {
     ) throws IOException, DBException, SQLException {
         for (int curVer = currentSchemaVersion; curVer < schemaVersionActual; curVer++) {
             int updateToVer = curVer + 1;
-            Reader ddlStream = scriptSource.openSchemaUpdateScript(monitor, updateToVer);
+            Reader ddlStream = scriptSource.openSchemaUpdateScript(monitor, updateToVer, targetDatabaseDialect.getDialectId());
             if (ddlStream == null) {
                 continue;
             }

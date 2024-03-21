@@ -152,6 +152,10 @@ lexer grammar SQLStandardLexer;
 
 DelimitedIdentifier: { tryConsumeQuottedIdentifier(_input) }? ({isIdentifierEndReached(_input)}? .)+;
 
+BatchVariableName: At Identifier;
+ClientVariableName: Dollar LeftBrace Identifier RightBrace;
+ClientParameterName: Colon Identifier;
+
 // letters to support case-insensitivity for keywords
 fragment A:[aA];
 fragment B:[bB];
@@ -328,6 +332,9 @@ ZONE: Z O N E ;
 
 
 // symbols
+At: '@';
+DoubleDollar: '$$';
+Dollar: '$';
 EqualsOperator: '=';
 NotEqualsOperator: '<>' | '!=';
 RightParen: ')';
@@ -335,6 +342,7 @@ LeftParen: '(';
 SingleQuote: '\'';
 BackQuote: '`';
 Comma: ',';
+TypeCast: '::';
 Colon: ':';
 Semicolon: ';';
 Ampersand: '&';
@@ -351,6 +359,8 @@ LessThanOperator: '<';
 LessThanOrEqualsOperator: '<=';
 LeftBracket: '[';
 RightBracket: ']';
+LeftBrace: '{';
+RightBrace: '}';
 MinusSign: '-';
 PlusSign: '+';
 QuestionMark: '?';

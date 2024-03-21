@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -26,7 +27,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBSEntityAssociationLazy extends DBSEntityAssociation {
 
     @Nullable
-    DBSEntityConstraint getReferencedConstraint(DBRProgressMonitor monitor) throws DBException;
+    DBSEntityConstraint getReferencedConstraint(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    DBSEntity getAssociatedEntity(DBRProgressMonitor monitor) throws DBException;
+    @Nullable
+    DBSEntity getAssociatedEntity(@NotNull DBRProgressMonitor monitor) throws DBException;
 }

@@ -79,8 +79,9 @@ public class PostgreRefCursor implements DBDCursor {
         }
     }
 
+    @NotNull
     @Override
-    public DBCResultSet openResultSet(DBCSession session) throws DBCException {
+    public DBCResultSet openResultSet(@NotNull DBCSession session) throws DBCException {
         try {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
             if (txnManager != null && txnManager.isAutoCommit()) {

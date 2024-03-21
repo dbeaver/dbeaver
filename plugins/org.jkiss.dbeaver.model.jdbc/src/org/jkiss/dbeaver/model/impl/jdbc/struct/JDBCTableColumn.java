@@ -105,6 +105,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         return super.getName();
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
@@ -113,7 +114,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
     }
 
     @Override
-    public void setTypeName(String typeName) throws DBException {
+    public void setTypeName(@NotNull String typeName) throws DBException {
         super.setTypeName(typeName);
         final DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, this);
         if (dataTypeProvider != null) {

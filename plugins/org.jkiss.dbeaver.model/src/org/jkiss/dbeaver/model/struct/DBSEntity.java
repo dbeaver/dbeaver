@@ -27,10 +27,11 @@ import java.util.List;
 /**
  * DBSEntity
  */
-public interface DBSEntity extends DBSObject
-{
+public interface DBSEntity extends DBSObject {
+
     /**
      * Entity type
+     *
      * @return entity type
      */
     @NotNull
@@ -38,16 +39,18 @@ public interface DBSEntity extends DBSObject
 
     /**
      * Gets this entity attributes
+     *
+     * @param monitor progress monitor
      * @return attribute list
      * @throws org.jkiss.dbeaver.DBException on any DB error
-     * @param monitor progress monitor
      */
     @Nullable
     List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Retrieve attribute by it's name (case insensitive)
-     * @param monitor progress monitor
+     *
+     * @param monitor       progress monitor
      * @param attributeName column name  @return column or null
      * @throws DBException on any DB error
      */
@@ -56,27 +59,30 @@ public interface DBSEntity extends DBSObject
 
     /**
      * Gets this entity constraints
+     *
+     * @param monitor progress monitor
      * @return association list
      * @throws org.jkiss.dbeaver.DBException on any DB error
-     * @param monitor progress monitor
      */
     @Nullable
     Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets this entity associations
+     *
+     * @param monitor progress monitor
      * @return association list
      * @throws org.jkiss.dbeaver.DBException on any DB error
-     * @param monitor progress monitor
      */
     @Nullable
     Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets associations which refers this entity
+     *
+     * @param monitor progress monitor
      * @return reference association list
      * @throws DBException on any DB error
-     * @param monitor progress monitor
      */
     @Nullable
     Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException;

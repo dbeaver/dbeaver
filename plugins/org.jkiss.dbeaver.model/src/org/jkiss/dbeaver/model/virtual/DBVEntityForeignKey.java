@@ -97,7 +97,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
 
     @NotNull
     @Override
-    public DBSEntityConstraint getReferencedConstraint(DBRProgressMonitor monitor) throws DBException {
+    public DBSEntityConstraint getReferencedConstraint(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getRealReferenceConstraint(monitor);
     }
 
@@ -166,14 +166,16 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         }
     }
 
+    @Nullable
     @Override
     public DBSEntity getAssociatedEntity() {
         DBSEntityConstraint refC = getReferencedConstraint();
         return refC == null ? null : refC.getParentObject();
     }
 
+    @Nullable
     @Override
-    public DBSEntity getAssociatedEntity(DBRProgressMonitor monitor) throws DBException {
+    public DBSEntity getAssociatedEntity(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getReferencedConstraint(monitor).getParentObject();
     }
 
