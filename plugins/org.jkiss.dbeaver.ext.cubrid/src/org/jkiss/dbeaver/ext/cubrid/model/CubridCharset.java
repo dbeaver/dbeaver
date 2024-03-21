@@ -85,7 +85,7 @@ public class CubridCharset implements DBSObject
     @Nullable
     @Override
     public boolean isPersisted() {
-        return false;
+        return true;
     }
 
     @Nullable
