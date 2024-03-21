@@ -23,11 +23,13 @@ import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -36,15 +38,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List; 
+import java.util.List;
+import java.util.Objects;
 
 public class DataBaseInfoHandler implements CommandLineParameterHandler {
     private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$
+    private static final String PRODUCT_ID_LABEL = "id"; //$NON-NLS-1$
+    private static final String PRODUCT_NAME_LABEL = "name"; //$NON-NLS-1$
+    private static final String PRODUCT_VERSION_LABEL = "version"; //$NON-NLS-1$
+    private static final String PRODUCT_DESCRIPTION_LABEL = "description"; //$NON-NLS-1$
+    private static final String PRODUCT_EDITION_LABEL = "edition"; //$NON-NLS-1$
     private static final String DATABASES_LABEL = "databases"; //$NON-NLS-1$
     private static final String DB_NAME_LABEL = "name"; //$NON-NLS-1$
     private static final String DB_CATEGORY_LABEL = "category"; //$NON-NLS-1$
-    private static final String PRODUCT_LABEL = "product"; //$NON-NLS-1$
-    private static final String DESCRIPTION_LABEL = "description"; //$NON-NLS-1$
+    private static final String DB_EMBEDDED_LABEL = "embedded"; //$NON-NLS-1$
+    private static final String DB_REQUIRE_DOWNLOAD_LABEL = "requireDownload"; //$NON-NLS-1$
+    private static final String DB_ADITIONAL_FEATURE_LABEL = "addvanceExtensionPro"; //$NON-NLS-1$
     private static final Log log = Log.getLog(DataBaseInfoHandler.class);
     private static final Gson DB_GSON = new GsonBuilder()
         .setLenient()
@@ -74,14 +83,20 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
             try (JsonWriter jsonWriter = DB_GSON.newJsonWriter(mdWriter)) {
                 jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                 jsonWriter.beginObject();
-                JSONUtils.field(jsonWriter, PRODUCT_LABEL, Platform.getProduct().getName());
-                JSONUtils.field(jsonWriter, DESCRIPTION_LABEL, Platform.getProduct().getDescription());
+                JSONUtils.field(jsonWriter, PRODUCT_ID_LABEL, Platform.getProduct().getId());
+                JSONUtils.field(jsonWriter, PRODUCT_EDITION_LABEL, Platform.getProduct().getProperty("appEdition")); //$NON-NLS-1$
+                JSONUtils.field(jsonWriter, PRODUCT_NAME_LABEL, GeneralUtils.getProductName());
+                JSONUtils.field(jsonWriter, PRODUCT_VERSION_LABEL, GeneralUtils.getPlainVersion());
+                JSONUtils.field(jsonWriter, PRODUCT_DESCRIPTION_LABEL, Platform.getProduct().getDescription());
                 jsonWriter.name(DATABASES_LABEL);
                 jsonWriter.beginArray();
                 for (DriverDescriptor driver : drivers) {
                     jsonWriter.beginObject();
                     JSONUtils.field(jsonWriter, DB_NAME_LABEL, driver.getName());
                     JSONUtils.serializeObjectList(jsonWriter, DB_CATEGORY_LABEL, driver.getCategories());
+                    JSONUtils.field(jsonWriter, DB_EMBEDDED_LABEL, driver.isEmbedded());
+                    JSONUtils.field(jsonWriter, DB_REQUIRE_DOWNLOAD_LABEL, isRequireToDownload(driver.getDriverLibraries()));
+                    JSONUtils.field(jsonWriter, DB_ADITIONAL_FEATURE_LABEL, !driver.getDriverReplacementsInfo().isEmpty());
                     jsonWriter.endObject();
                 }
                 jsonWriter.endArray();
@@ -104,5 +119,14 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
         }
         Collections.sort(supportedDataBases, (DriverDescriptor o1, DriverDescriptor o2) -> o1.getName().compareTo(o2.getName()));
         return supportedDataBases;
+    }
+
+    private boolean isRequireToDownload(List<? extends DBPDriverLibrary> libraries) {
+        return libraries
+            .stream()
+            .map(DBPDriverLibrary::getLocalFile)
+            .filter(Objects::nonNull)
+            .map(path -> path.toAbsolutePath().toString())
+            .findAny().isEmpty();
     }
 }
