@@ -67,15 +67,11 @@ public class SSHJSession extends AbstractSession {
         @NotNull DBWHandlerConfiguration configuration,
         long timeout
     ) throws DBException {
-        // FIXME: timeout is not used
-
-        for (LocalPortListener listener : listeners.values()) {
-            listener.disconnect();
-        }
-
+        // Listeners will be closed by the client itself
         listeners.clear();
 
         try {
+            // FIXME: timeout is not used
             client.disconnect();
         } catch (IOException e) {
             throw new DBException("Error disconnecting SSH session", e);
@@ -180,19 +176,14 @@ public class SSHJSession extends AbstractSession {
     private static class LocalPortListener extends Thread {
         private final SSHClient client;
         private final SSHPortForwardConfiguration config;
-        private final CountDownLatch started;
+        private final CountDownLatch started = new CountDownLatch(1);
 
         private volatile LocalPortForwarder forwarder;
         private volatile SSHPortForwardConfiguration resolved;
 
-        public LocalPortListener(
-            @NotNull SSHClient client,
-            @NotNull SSHPortForwardConfiguration config,
-            @NotNull CountDownLatch started
-        ) {
+        public LocalPortListener(@NotNull SSHClient client, @NotNull SSHPortForwardConfiguration config) {
             this.client = client;
             this.config = config;
-            this.started = started;
         }
 
         @NotNull
@@ -200,11 +191,10 @@ public class SSHJSession extends AbstractSession {
             @NotNull SSHClient client,
             @NotNull SSHPortForwardConfiguration config
         ) throws InterruptedException {
-            final CountDownLatch started = new CountDownLatch(1);
-            final LocalPortListener listener = new LocalPortListener(client, config, started);
+            final LocalPortListener listener = new LocalPortListener(client, config);
 
             listener.start();
-            started.await();
+            listener.await();
 
             return listener;
         }
@@ -215,8 +205,8 @@ public class SSHJSession extends AbstractSession {
                 final ServerSocket socket = new ServerSocket(config.localPort(), 0, InetAddress.getByName(config.localHost()));
                 final Parameters parameters = new Parameters(config.localHost(), socket.getLocalPort(), config.remoteHost(), config.remotePort());
 
-                this.forwarder = client.newLocalPortForwarder(parameters, socket);
-                this.resolved = new SSHPortForwardConfiguration(config.localHost(), socket.getLocalPort(), config.remoteHost(), config.remotePort());
+                forwarder = client.newLocalPortForwarder(parameters, socket);
+                resolved = new SSHPortForwardConfiguration(config.localHost(), socket.getLocalPort(), config.remoteHost(), config.remotePort());
 
                 setName("Port forwarder listener (" + resolved + ")");
 
@@ -229,12 +219,19 @@ public class SSHJSession extends AbstractSession {
 
         public void disconnect() {
             try {
-                if (forwarder.isRunning()) {
-                    forwarder.close();
-                    forwarder = null;
-                }
+                forwarder.close();
+                forwarder = null;
             } catch (Exception e) {
                 log.error("Error while stopping port forwarding", e);
+            }
+        }
+
+        private void await() throws InterruptedException {
+            started.await();
+
+            while (!forwarder.isRunning()) {
+                // Wait for the forwarder to actually start
+                Thread.yield();
             }
         }
     }
