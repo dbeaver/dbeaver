@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,7 +42,7 @@ public class SQLSyntaxManager {
     @NotNull
     private SQLDialect sqlDialect = BasicSQLDialect.INSTANCE;
     @NotNull
-    private DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
+    private DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
     @Nullable
     private String[][] identifierQuoteStrings;
     private String[][] stringQuoteStrings;

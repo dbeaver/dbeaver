@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -61,18 +61,18 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     public QMLogFileWriter()
     {
         lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        ModelPreferences.getPreferences().addPropertyChangeListener(this);
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
         initLogFile();
     }
 
     public void dispose()
     {
-        ModelPreferences.getPreferences().removePropertyChangeListener(this);
+        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
     }
 
     private synchronized void initLogFile()
     {
-        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         enabled = preferences.getBoolean(QMConstants.PROP_STORE_LOG_FILE);
         if (enabled) {
             final int daysToKeepLogs = preferences.getInt(QMConstants.PROP_HISTORY_DAYS);
