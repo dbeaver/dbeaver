@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.service;
+package org.jkiss.dbeaver.ui.app.standalone.cli;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
+
+import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.registry.DataBaseInfo;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,22 +37,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.List; 
 
-public class DataBaseInfoServiceImpl implements DataBaseInfo {
+public class DataBaseInfoHandler implements CommandLineParameterHandler {
     private static final String DATABASES_LABEL = "databases"; //$NON-NLS-1$
     private static final String DB_NAME_LABEL = "name"; //$NON-NLS-1$
     private static final String DB_CATEGORY_LABEL = "category"; //$NON-NLS-1$
     private static final String PRODUCT_LABEL = "product"; //$NON-NLS-1$
     private static final String DESCRIPTION_LABEL = "description"; //$NON-NLS-1$
-    private static final Log log = Log.getLog(DataBaseInfoServiceImpl.class);
+    private static final Log log = Log.getLog(DataBaseInfoHandler.class);
     private static final Gson DB_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .create();
 
     @Override
-    public void publishDataBaseInfo(@NotNull Path path) {
+    public void handleParameter(CommandLine commandLine, String name, String value) {
+       publishDataBaseInfo(Path.of(value));
+    }
+
+    private void publishDataBaseInfo(@NotNull Path path) {
         List<DriverDescriptor> drivers = getSupportedDBInstances();
         if (drivers.isEmpty()) {
             return;

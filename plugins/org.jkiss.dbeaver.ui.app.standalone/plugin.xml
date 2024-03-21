@@ -471,6 +471,14 @@
             hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
     </extension>
+    <extension point="org.jkiss.dbeaver.commandLine">
+        <parameter name="databaseList"
+            longName="database-driver-list"
+            description="Store supported database drivers in json format."
+            exitAfterExecute="true"
+            hasArg="true"
+            handler="org.jkiss.dbeaver.ui.app.standalone.cli.DataBaseInfoHandler"/>
+    </extension>
 
     <!-- Disable Eclipse debug and refactoring in standalone applications -->
     <extension point="org.eclipse.ui.activities">
