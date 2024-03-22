@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
@@ -69,7 +69,7 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
 
     @Override
     public boolean isUseFQNames() {
-        return getActivePreferenceStore().getBoolean(ModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ);
+        return getActivePreferenceStore().getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
 
     @Override
     public boolean isUseShortNames() {
-        return getActivePreferenceStore().getBoolean(ModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME);
+        return getActivePreferenceStore().getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME);
     }
 
     @Override

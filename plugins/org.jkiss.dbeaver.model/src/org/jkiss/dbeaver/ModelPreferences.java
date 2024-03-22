@@ -188,10 +188,6 @@ public final class ModelPreferences
     public static final String DICTIONARY_COLUMN_DIVIDER = "resultset.dictionary.columnDivider"; //$NON-NLS-1$
     public static final String RESULT_SET_USE_DATETIME_EDITOR = "resultset.datetime.editor";
 
-    public static final String SQL_EDITOR_PROPOSAL_SHORT_NAME = "SQLEditor.ContentAssistant.proposals.short.name";
-    public static final String SQL_EDITOR_PROPOSAL_ALWAYS_FQ = "SQLEditor.ContentAssistant.proposals.long.name";
-
-
     private static Bundle mainBundle;
     private static DBPPreferenceStore preferences;
 
@@ -323,9 +319,5 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
-
-        //SQL Editor
-        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME, false);
-        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ, false);
     }
 }
