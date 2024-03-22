@@ -233,15 +233,15 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             jumpPortForward = origin.setupPortForward(new SSHPortForwardConfiguration(
                 SSHPortForwardConfiguration.LOCAL_HOST,
                 0,
-                host.getHostname(),
-                host.getPort()
+                host.hostname(),
+                host.port()
             ));
 
             final SSHHostConfiguration jumpHost = new SSHHostConfiguration(
-                host.getUsername(),
+                host.username(),
                 jumpPortForward.localHost(),
                 jumpPortForward.localPort(),
-                host.getAuthConfiguration()
+                host.auth()
             );
 
             jumpDestination = origin.controller.createDirectSession(jumpHost, null);

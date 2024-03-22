@@ -48,21 +48,27 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
         @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
-            if (shouldUsePassword()) {
-                setPassword(configuration.getAuthConfiguration().getPassword());
+            if (configuration.auth() instanceof SSHAuthConfiguration.WithPassword auth) {
+                if (auth.savePassword() || CommonUtils.isNotEmpty(auth.password())) {
+                    setPassword(auth.password());
+                }
             }
             return super.promptKeyboardInteractive(destination, name, instruction, prompt, echo);
         }
 
         @Override
         public boolean promptPassword(String message) {
-            setPassword(configuration.getAuthConfiguration().getPassword());
+            if (configuration.auth() instanceof SSHAuthConfiguration.WithPassword auth) {
+                setPassword(auth.password());
+            }
             return true;
         }
 
         @Override
         public boolean promptPassphrase(String message) {
-            setPassphrase(configuration.getAuthConfiguration().getPassword());
+            if (configuration.auth() instanceof SSHAuthConfiguration.WithPassword auth) {
+                setPassphrase(auth.password());
+            }
             return true;
         }
 
@@ -71,11 +77,6 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
             // Just log it in debug
             log.debug("SSH server message:");
             log.debug(message);
-        }
-
-        private boolean shouldUsePassword() {
-            final SSHAuthConfiguration auth = configuration.getAuthConfiguration();
-            return auth.getType().usesPassword() && (auth.isSavePassword() || CommonUtils.isNotEmpty(auth.getPassword()));
         }
 
         @Override
