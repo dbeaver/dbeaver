@@ -17,8 +17,8 @@ pipeline{
     }
     environment {
         _pkg_path = '${WORKSPACE}/product/community/target/products/org.jkiss.dbeaver.core.product'
-        _file_browser_pwd = credentials('export-ssh-pwd')
-        _export_path = "/root/export/solution/tools/dbeaver/daily/${BRANCH_NAME}"
+        _file_browser_pwd = credentials('jenkins-ssh-pwd')
+        _export_path = "/data/cod/pkg_release/tools/dbeaver/daily/${BRANCH_NAME}"
         _date = "${date}"
         _version = "23.1"
         _merge_build = 'False'
@@ -78,11 +78,11 @@ pipeline{
             steps {
                 script {
                     sh("sh package.sh ${_version} ${_zip_pkg}")
-                    sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'mkdir -p ${_export_path}/latest' ")
-                    sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'rm -rf ${_export_path}/latest/DBeaver*' ")
-                    sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'mkdir -p ${_export_path}/${_date}' ")
-                    sh("sshpass -p ${_file_browser_pwd} scp ${_pkg_path}/${_zip_pkg} root@192.168.19.121:${_export_path}/${_date}")
-                    sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'cp ${_export_path}/${_date}/${_zip_pkg} ${_export_path}/latest/' ")
+                    sh("sshpass -p ${_file_browser_pwd} ssh -o StrictHostKeyChecking=no jenkins@192.168.29.112 'mkdir -p ${_export_path}/latest' ")
+                    sh("sshpass -p ${_file_browser_pwd} ssh -o StrictHostKeyChecking=no jenkins@192.168.29.112 'rm -rf ${_export_path}/latest/DBeaver*' ")
+                    sh("sshpass -p ${_file_browser_pwd} ssh -o StrictHostKeyChecking=no jenkins@192.168.29.112 'mkdir -p ${_export_path}/${_date}' ")
+                    sh("sshpass -p ${_file_browser_pwd} scp -o StrictHostKeyChecking=no ${_pkg_path}/${_zip_pkg} jenkins@192.168.29.112:${_export_path}/${_date}")
+                    sh("sshpass -p ${_file_browser_pwd} ssh -o StrictHostKeyChecking=no jenkins@192.168.29.112 'cp ${_export_path}/${_date}/${_zip_pkg} ${_export_path}/latest/' ")
                 }
             }
         }
