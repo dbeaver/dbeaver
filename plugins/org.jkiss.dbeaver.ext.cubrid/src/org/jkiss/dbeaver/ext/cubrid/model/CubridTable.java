@@ -65,7 +65,8 @@ public class CubridTable extends GenericTable
                 this.setSystem(type.equals("YES"));
             }
         } else {
-            ownerName = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+            ownerName = getDataSource().getContainer().getConnectionConfiguration().getUserName();
+            ownerName = ownerName != null ? ownerName.toUpperCase() : "";
             collationName = CubridConstants.DEFAULT_COLLATION;
         }
 

@@ -95,7 +95,7 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsTrigger() {
-        return this.getDataSource().getContainer().getConnectionConfiguration().getUserName().equals("dba");
+        return "dba".equals(getDataSource().getContainer().getConnectionConfiguration().getUserName());
     }
 
     @NotNull
