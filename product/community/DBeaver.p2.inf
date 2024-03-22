@@ -1,8 +1,8 @@
 instructions.configure=\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/office/latest/,name:DBeaver Office integration,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/office/latest/,name:DBeaver Office integration,enabled:true);\
-  addRepository(type:0,location:https${#58}//dbeaver.io/update/ai/latest/,name:DBeaver AI (GPT) integration,enabled:true);\
-  addRepository(type:1,location:https${#58}//dbeaver.io/update/ai/latest/,name:DBeaver AI (GPT) integration,enabled:true);\
+  addRepository(type:0,location:https${#58}//dbeaver.io/update/ai/latest/,name:DBeaver AI integration,enabled:true);\
+  addRepository(type:1,location:https${#58}//dbeaver.io/update/ai/latest/,name:DBeaver AI integration,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/git/latest/,name:DBeaver Git integration,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/git/latest/,name:DBeaver Git integration,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/svg/latest/,name:DBeaver SVG format support,enabled:true);\
