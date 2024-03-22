@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.notifications.sounds.BeepSoundProvider;
 import org.jkiss.dbeaver.ui.notifications.sounds.FileSoundProvider;
 import org.jkiss.dbeaver.ui.registry.NotificationDescriptor;
@@ -68,7 +69,9 @@ public abstract class NotificationUtils {
             }
         }
 
-        if (isSoundEnabled(id) && ModelPreferences.getPreferences().getBoolean(ModelPreferences.NOTIFICATIONS_SOUND_ENABLED)) {
+        if (isSoundEnabled(id) && DBWorkbench.getPlatform()
+            .getPreferenceStore()
+            .getBoolean(ModelPreferences.NOTIFICATIONS_SOUND_ENABLED)) {
             final NotificationSoundProvider soundProvider = getNotificationSoundProvider(id);
             if (soundProvider != null) {
                 scheduleNotificationSound(soundProvider);
@@ -88,7 +91,7 @@ public abstract class NotificationUtils {
         final String enableSoundKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_SOUND;
         final String soundFileKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_SOUND_FILE;
 
-        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         preferences.setDefault(enablePopupKey, true);
         preferences.setDefault(enableSoundKey, notification.isSoundEnabled());
 
@@ -111,7 +114,7 @@ public abstract class NotificationUtils {
         final String enableSoundKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_SOUND;
         final String soundFileKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_SOUND_FILE;
 
-        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         preferences.setDefault(enablePopupKey, true);
         preferences.setDefault(enableSoundKey, notification.isSoundEnabled());
 
@@ -121,12 +124,12 @@ public abstract class NotificationUtils {
     }
 
     private static boolean isPopupEnabled(@NotNull String id) {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED)
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED)
             && getNotificationSettings(id).isShowPopup();
     }
 
     private static boolean isSoundEnabled(@NotNull String id) {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED)
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED)
             && getNotificationSettings(id).isPlaySound();
     }
 
@@ -156,7 +159,9 @@ public abstract class NotificationUtils {
         final AbstractJob job = new AbstractJob("Play notification sound") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                sound.play(ModelPreferences.getPreferences().getFloat(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME) / 100.0f);
+                sound.play(DBWorkbench.getPlatform()
+                    .getPreferenceStore()
+                    .getFloat(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME) / 100.0f);
                 return Status.OK_STATUS;
             }
         };

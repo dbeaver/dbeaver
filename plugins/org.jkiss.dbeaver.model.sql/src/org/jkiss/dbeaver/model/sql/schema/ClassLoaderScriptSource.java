@@ -44,7 +44,7 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
 
     @NotNull
     @Override
-    public Reader openSchemaCreateScript(DBRProgressMonitor monitor) throws IOException, DBException {
+    public Reader openSchemaCreateScript(@NotNull DBRProgressMonitor monitor) throws IOException, DBException {
         InputStream resource = classLoader.getResourceAsStream(createScriptPath);
         if (resource == null) {
             throw new IOException("Resource '" + createScriptPath + "' not found in " + this.classLoader.getClass().getName());
@@ -54,12 +54,15 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
 
     @Nullable
     @Override
-    public Reader openSchemaUpdateScript(DBRProgressMonitor monitor, int versionNumber) throws IOException, DBException {
-        InputStream resource = classLoader.getResourceAsStream(updateScriptPrefix + versionNumber + ".sql");
+    public Reader openSchemaUpdateScript(
+        @NotNull DBRProgressMonitor monitor,
+        int versionNumber,
+        @Nullable String specificPrefix
+    ) throws IOException, DBException {
+        InputStream resource = classLoader.getResourceAsStream(updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql");
         if (resource == null) {
-            return null;
+            resource = classLoader.getResourceAsStream(updateScriptPrefix + versionNumber + ".sql");
         }
-        return new InputStreamReader(resource);
+        return resource == null ? null : new InputStreamReader(resource);
     }
-
 }

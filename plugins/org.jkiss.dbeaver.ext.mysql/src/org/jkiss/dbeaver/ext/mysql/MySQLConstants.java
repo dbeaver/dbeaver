@@ -146,6 +146,7 @@ public class MySQLConstants {
     public static final String COL_ROUTINE_COMMENT = "ROUTINE_COMMENT";
     public static final String COL_DEFINER = "DEFINER";
     public static final String COL_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
+    public static final String COL_SRS_ID = "SRS_ID";
 
     public static final String COL_TRIGGER_SCHEMA = "TRIGGER_SCHEMA";
     public static final String COL_TRIGGER_NAME = "TRIGGER_NAME";

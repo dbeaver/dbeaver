@@ -16,8 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.w3c.dom.Element;
@@ -25,9 +32,13 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 
 public class DashboardItemViewConfiguration {
-    private DashboardDescriptor dashboardDescriptor;
+    private static final Log log = Log.getLog(DashboardItemViewConfiguration.class);
 
-    private DashboardViewType viewType;
+    private final DashboardViewConfiguration viewConfiguration;
+    private String dashboardId;
+    private DashboardDescriptor dashboard;
+
+    private String viewTypeId;
     private int index;
     private float widthRatio;
     private long updatePeriod;
@@ -39,16 +50,50 @@ public class DashboardItemViewConfiguration {
     private boolean rangeTicksVisible;
     private String description;
 
+    public String getDashboardId() {
+        return dashboard == null ? dashboardId : dashboard.getId();
+    }
+
+    public String getFullDashboardId() {
+        if (dashboard != null) {
+            String path = dashboard.getPath();
+            if (path != null) {
+                path += "/";
+            } else {
+                path = "";
+            }
+            return dashboard.getDashboardProvider().getId() + ":" + path + dashboard.getId();
+        }
+        return dashboardId;
+    }
+
+    @Nullable
     public DashboardDescriptor getDashboardDescriptor() {
-        return dashboardDescriptor;
+        if (dashboard == null) {
+            try {
+                dashboard = DashboardRegistry.getInstance().findDashboard(
+                    new VoidProgressMonitor(),
+                    new DBDashboardContext(viewConfiguration.getDataSourceContainer()),
+                    dashboardId);
+            } catch (DBException e) {
+                log.debug("Dashboard '" + dashboardId + "' not found", e);
+                return null;
+            }
+        }
+        return dashboard;
     }
 
-    public DashboardViewType getViewType() {
-        return viewType;
+    public DBDashboardRendererType getViewType() {
+        String vtId = viewTypeId;
+        if (CommonUtils.isEmpty(vtId)) {
+            DashboardDescriptor dashboard = getDashboardDescriptor();
+            vtId = dashboard == null ? DashboardConstants.DEF_DASHBOARD_VIEW_TYPE : dashboard.getDashboardRenderer();
+        }
+        return DashboardUIRegistry.getInstance().getViewType(vtId);
     }
 
-    public void setViewType(DashboardViewType viewType) {
-        this.viewType = viewType;
+    public void setViewType(DBDashboardRendererType viewType) {
+        this.viewTypeId = viewType.getId();
     }
 
     public float getWidthRatio() {
@@ -131,9 +176,10 @@ public class DashboardItemViewConfiguration {
         this.description = description;
     }
 
-    DashboardItemViewConfiguration(DashboardDescriptor dashboardDescriptor, int index) {
-        this.dashboardDescriptor = dashboardDescriptor;
-        this.viewType = dashboardDescriptor.getDefaultViewType();
+    DashboardItemViewConfiguration(DashboardViewConfiguration viewConfiguration, DashboardDescriptor dashboardDescriptor, int index) throws DBException {
+        this.viewConfiguration = viewConfiguration;
+        this.dashboard = dashboardDescriptor;
+        this.viewTypeId = dashboardDescriptor.getDashboardRenderer();
         this.index = index;
         this.widthRatio = dashboardDescriptor.getWidthRatio();
         this.updatePeriod = dashboardDescriptor.getUpdatePeriod();
@@ -149,12 +195,13 @@ public class DashboardItemViewConfiguration {
     }
 
     public DashboardItemViewConfiguration(DashboardItemViewConfiguration source) {
+        this.viewConfiguration = source.viewConfiguration;
         copyFrom(source);
     }
 
     void copyFrom(DashboardItemViewConfiguration source) {
-        this.dashboardDescriptor = source.dashboardDescriptor;
-        this.viewType = source.viewType;
+        this.dashboard = source.dashboard;
+        this.viewTypeId = source.viewTypeId;
         this.index = source.index;
         this.widthRatio = source.widthRatio;
         this.updatePeriod = source.updatePeriod;
@@ -170,8 +217,8 @@ public class DashboardItemViewConfiguration {
     }
 
     void serialize(XMLBuilder xml) throws IOException {
-        xml.addAttribute("id", dashboardDescriptor.getId());
-        xml.addAttribute("viewType", viewType.getId());
+        xml.addAttribute("id", getFullDashboardId());
+        xml.addAttribute("viewType", viewTypeId);
         xml.addAttribute("index", index);
         xml.addAttribute("widthRatio", widthRatio);
         xml.addAttribute("updatePeriod", updatePeriod);
@@ -188,21 +235,16 @@ public class DashboardItemViewConfiguration {
         }
     }
 
-    public DashboardItemViewConfiguration(DashboardDescriptor dashboard, Element element) {
-        this.dashboardDescriptor = dashboard;
+    public DashboardItemViewConfiguration(DashboardViewConfiguration viewConfiguration, String id, Element element) {
+        this.viewConfiguration = viewConfiguration;
+        this.dashboardId = id;
 
-        String viewTypeId = element.getAttribute("viewType");
-        if (viewTypeId != null) {
-            this.viewType = DashboardRegistry.getInstance().getViewType(viewTypeId);
-        }
-        if (this.viewType == null) {
-            this.viewType = dashboard.getDefaultViewType();
-        }
+        this.viewTypeId = element.getAttribute("viewType");
         this.index = CommonUtils.toInt(element.getAttribute("index"));
-        this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"), dashboardDescriptor.getWidthRatio());
-        this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"), dashboardDescriptor.getUpdatePeriod());
-        this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"), dashboardDescriptor.getMaxItems());
-        this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"), dashboardDescriptor.getMaxAge());
+        this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"));
+        this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"));
+        this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"));
+        this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"));
 
         this.legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
         this.gridVisible = CommonUtils.getBoolean(element.getAttribute("gridVisible"), true);
@@ -214,6 +256,6 @@ public class DashboardItemViewConfiguration {
 
     @Override
     public String toString() {
-        return dashboardDescriptor.getId() + ":" + index;
+        return getDashboardId() + ":" + index;
     }
 }

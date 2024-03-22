@@ -41,8 +41,8 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -179,7 +179,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     updateJumpServerSettingsVisibility();
                 }
             });
-            for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
+            for (SSHSessionControllerDescriptor it : SSHSessionControllerRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
 
@@ -444,7 +444,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 tunnelImplCombo.select(0);
             }
         } else {
-            SSHImplementationDescriptor desc = SSHImplementationRegistry.getInstance().getDescriptor(implType);
+            SSHSessionControllerDescriptor desc = SSHSessionControllerRegistry.getInstance().getDescriptor(implType);
             if (desc != null) {
                 tunnelImplCombo.setText(desc.getLabel());
             } else {
@@ -502,7 +502,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         String implLabel = tunnelImplCombo.getText();
-        for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
+        for (SSHSessionControllerDescriptor it : SSHSessionControllerRegistry.getInstance().getDescriptors()) {
             if (it.getLabel().equals(implLabel)) {
                 configuration.setProperty(SSHConstants.PROP_IMPLEMENTATION, it.getId());
                 break;

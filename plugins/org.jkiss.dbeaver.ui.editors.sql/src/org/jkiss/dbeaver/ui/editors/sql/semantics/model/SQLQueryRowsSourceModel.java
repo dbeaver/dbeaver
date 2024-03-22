@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 
-public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
+public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     private SQLQueryDataContext dataContext;
 
     public SQLQueryRowsSourceModel(@NotNull Interval region) {
@@ -38,6 +38,11 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
         } else {
             return this.dataContext;
         }
+    }
+    
+    @Override
+    void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
+        this.propagateContext(dataContext, recognitionContext);
     }
 
     @NotNull

@@ -24,7 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentScriptItemSyntaxContext.TokenEntryAtOffset;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.ArrayList;
@@ -172,7 +172,7 @@ public class SQLDocumentSyntaxContext {
 
     public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(
         @NotNull String elementOriginalText,
-        @NotNull SQLQuerySelectionModel queryModel,
+        @NotNull SQLQueryModel queryModel,
         int offset,
         int length
     ) {

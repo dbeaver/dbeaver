@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+
 /**
  * DB desktop application.
  */
@@ -27,5 +30,8 @@ public interface DBPApplicationDesktop extends DBPApplication {
      * @return -1 by default
      */
     long getLastUserActivityTime();
+
+    @NotNull
+    DBPPreferenceStore getPreferenceStore();
 
 }

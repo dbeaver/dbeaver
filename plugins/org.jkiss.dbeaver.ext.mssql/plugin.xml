@@ -652,14 +652,6 @@
             <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
         </authModel>
         <authModel
-                id="sqlserver_kerberos"
-                desktop="true"
-                label="Kerberos"
-                description="Kerberos authentication"
-                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelKerberos">
-            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
-        </authModel>
-        <authModel
                 id="sqlserver_custom"
                 label="Custom"
                 description="Custom authentication schema"

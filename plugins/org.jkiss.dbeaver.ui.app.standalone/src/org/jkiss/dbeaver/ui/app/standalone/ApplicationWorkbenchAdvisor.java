@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -126,8 +127,13 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
-    
-    
+
+    // Move to Connections
+    private static final String[] NETWORK_PREF_PAGES = {
+        WORKBENCH_PREF_PAGE_ID + "/" + "org.eclipse.ui.net.NetPreferences",    // Network Connections
+    };
+
+
     /**
      * Diagram font
      */
@@ -269,6 +275,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
         patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
         patchPreferencePages(pm, GENERAL_PREF_PAGES, WORKBENCH_PREF_PAGE_ID);
+        patchPreferencePages(pm, NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
     }
 
     @NotNull

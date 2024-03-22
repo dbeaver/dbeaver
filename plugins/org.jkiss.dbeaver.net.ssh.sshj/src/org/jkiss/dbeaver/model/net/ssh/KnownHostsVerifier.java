@@ -41,7 +41,7 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
     @Override
     public boolean verify(String hostname, int port, PublicKey key) {
         if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
-            return super.verify(actualHostConfiguration.getHostname(), actualHostConfiguration.getPort(), key);
+            return super.verify(actualHostConfiguration.hostname(), actualHostConfiguration.port(), key);
         } else {
             return super.verify(hostname, port, key);
         }
@@ -50,7 +50,7 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
     @Override
     public List<String> findExistingAlgorithms(String hostname, int port) {
         if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
-            return super.findExistingAlgorithms(actualHostConfiguration.getHostname(), actualHostConfiguration.getPort());
+            return super.findExistingAlgorithms(actualHostConfiguration.hostname(), actualHostConfiguration.port());
         } else {
             return super.findExistingAlgorithms(hostname, port);
         }

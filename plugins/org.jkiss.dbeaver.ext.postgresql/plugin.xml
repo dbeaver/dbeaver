@@ -277,7 +277,7 @@
                 </folder>
 
                 <folder label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin" description="%tree.administer.node.tip">
-                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreJob" label="%tree.jobs.node.name" description="%tree.jobs.node.description">
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreJob" label="%tree.jobs.node.name" description="%tree.jobs.node.description" visibleIf="connected &amp;&amp; dataSource.supportsJobs()">
                         <items label="%tree.job.node.name" path="job" property="defaultInstance.jobs" icon="#job">
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep" label="%tree.job.steps.node.name">
                                 <items label="%tree.job.step.node.name" path="step" property="steps" icon="#job"/>
