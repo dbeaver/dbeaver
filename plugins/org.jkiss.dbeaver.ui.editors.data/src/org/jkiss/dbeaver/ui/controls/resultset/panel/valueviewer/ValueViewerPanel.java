@@ -281,6 +281,9 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
 
             viewPlaceholder.layout();
         }
+        if (valueEditor instanceof BaseValueEditor) {
+            ((BaseValueEditor) valueEditor).setAutoSaveEnabled(false);
+        }
         if (valueEditor != null) {
             try {
                 Object newValue = previewController.getValue();
@@ -307,6 +310,9 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                 log.error(e);
             }
             valueEditor.setDirty(false);
+        }
+        if (valueEditor instanceof BaseValueEditor) {
+            ((BaseValueEditor) valueEditor).setAutoSaveEnabled(true);
         }
     }
 
