@@ -196,6 +196,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
     private void addAutoSaveSupport(final Control inlineControl) {
         inlineControl.addDisposeListener(getAutoSaveListener());
+        this.setAutoSaveEnabled(true);
     }
 
     @NotNull
