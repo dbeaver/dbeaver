@@ -128,7 +128,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             //inlineControl.setFont(valueController.getEditPlaceholder().getFont());
             //inlineControl.setFocus();
 
-            if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
+            // In dialog it also should handle all standard stuff because we have params
+            // dialog
+            if (valueController instanceof IMultiController) {
                 inlineControl.addTraverseListener(e -> {
                     if (e.detail == SWT.TRAVERSE_RETURN) {
                         if (!valueController.isReadOnly()) {
@@ -156,19 +158,19 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
                     }
-
                 });
                 if (!UIUtils.isInDialog(inlineControl)) {
                     if (inlineControl instanceof Composite) {
                         for (Control childControl : ((Composite) inlineControl).getChildren()) {
                             if (!childControl.isDisposed()) {
-                                EditorUtils.trackControlContext(valueController.getValueSite(), childControl, RESULTS_EDIT_CONTEXT_ID);
+                                EditorUtils.trackControlContext(
+                                    valueController.getValueSite(),
+                                    childControl,
+                                    RESULTS_EDIT_CONTEXT_ID);
                             }
                         }
-                        addAutoSaveSupport(inlineControl);
-                    } else {
-                        addAutoSaveSupport(inlineControl);
                     }
+                    addAutoSaveSupport(inlineControl);
                 } else {
                     ((IMultiController) valueController).closeInlineEditor();
                 }
