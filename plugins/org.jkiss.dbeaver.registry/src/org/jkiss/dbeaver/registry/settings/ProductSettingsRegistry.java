@@ -21,27 +21,28 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyGroupDescriptor;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DBeaverSettingsRegistry {
+public class ProductSettingsRegistry {
     public static final String SETTINGS_EXTENSION_ID = "org.jkiss.dbeaver.settings"; //$NON-NLS-1$
-    private static DBeaverSettingsRegistry instance = null;
+    private static ProductSettingsRegistry instance = null;
 
-    private final Map<String, DBeaverSettingsGroupDescriptor> settings = new LinkedHashMap<>();
+    private final Map<String, PropertyGroupDescriptor<ProductSettingDescriptor>> settings = new LinkedHashMap<>();
 
-    public synchronized static DBeaverSettingsRegistry getInstance() {
+    public synchronized static ProductSettingsRegistry getInstance() {
         if (instance == null) {
-            instance = new DBeaverSettingsRegistry();
+            instance = new ProductSettingsRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private DBeaverSettingsRegistry() {
+    private ProductSettingsRegistry() {
     }
 
     private synchronized void loadExtensions(IExtensionRegistry registry) {
@@ -55,8 +56,11 @@ public class DBeaverSettingsRegistry {
         }
     }
 
-    private void parseSettingsGroup(IConfigurationElement ext, @Nullable DBeaverSettingsGroupDescriptor parentGroup) {
-        DBeaverSettingsGroupDescriptor settingsGroup = new DBeaverSettingsGroupDescriptor(ext);
+    private void parseSettingsGroup(
+        IConfigurationElement ext,
+        @Nullable PropertyGroupDescriptor<ProductSettingDescriptor> parentGroup
+    ) {
+        PropertyGroupDescriptor<ProductSettingDescriptor> settingsGroup = new PropertyGroupDescriptor<>(ext);
         if (settings.containsKey(settingsGroup.getId())) {
             settingsGroup = settings.get(settingsGroup.getId());
         } else {
@@ -70,15 +74,15 @@ public class DBeaverSettingsRegistry {
             if (PropertyDescriptor.TAG_PROPERTY_GROUP.equals(childExt.getName())) {
                 parseSettingsGroup(childExt, settingsGroup);
             } else if (PropertyDescriptor.TAG_PROPERTY.equals(childExt.getName())) {
-                DBeaverSettingDescriptor settingDescriptor = new DBeaverSettingDescriptor(settingsGroup.getFullId(),
+                ProductSettingDescriptor productSettingDescriptor = new ProductSettingDescriptor(settingsGroup.getFullId(),
                     childExt);
-                settingsGroup.addSetting(settingDescriptor);
+                settingsGroup.addProperty(productSettingDescriptor);
             }
         }
 
     }
 
-    public List<DBeaverSettingsGroupDescriptor> getSettings() {
+    public List<PropertyGroupDescriptor<ProductSettingDescriptor>> getSettings() {
         return new ArrayList<>(settings.values());
     }
 }

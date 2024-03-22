@@ -14,42 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.settings;
+package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DBeaverSettingsGroupDescriptor extends AbstractDescriptor {
+public class PropertyGroupDescriptor<T extends PropertyDescriptor> extends AbstractDescriptor {
     private final String id;
-    private final String displayName;
+    private final String label;
 
-    private DBeaverSettingsGroupDescriptor parentGroup;
-    private final List<DBeaverSettingDescriptor> settings = new ArrayList<>();
-    private final List<DBeaverSettingsGroupDescriptor> subGroups = new ArrayList<>();
+    private PropertyGroupDescriptor<T> parentGroup;
+    private final List<PropertyGroupDescriptor<T>> subGroups = new ArrayList<>();
+    private final List<T> properties = new ArrayList<>();
 
-    public DBeaverSettingsGroupDescriptor(IConfigurationElement cfg) {
+    public PropertyGroupDescriptor(IConfigurationElement cfg) {
         super(cfg);
         this.id = cfg.getAttribute("id");
-        this.displayName = cfg.getAttribute("label");
+        this.label = cfg.getAttribute("label");
     }
 
-    synchronized void addSetting(@NotNull DBeaverSettingDescriptor setting) {
-        this.settings.add(setting);
+    public void addProperty(@NotNull T setting) {
+        this.properties.add(setting);
     }
 
-    synchronized void addSubGroup(@NotNull DBeaverSettingsGroupDescriptor subGroup) {
+    public void addSubGroup(@NotNull PropertyGroupDescriptor<T> subGroup) {
         this.subGroups.add(subGroup);
     }
 
     @NotNull
-    public List<DBeaverSettingDescriptor> getSettings() {
-        return List.copyOf(settings);
+    public List<T> getSettings() {
+        return List.copyOf(properties);
     }
 
     @NotNull
@@ -64,20 +63,20 @@ public class DBeaverSettingsGroupDescriptor extends AbstractDescriptor {
 
     @NotNull
     public String getDisplayName() {
-        return CommonUtils.isEmpty(displayName) ? getId() : displayName;
+        return CommonUtils.isEmpty(label) ? getId() : label;
     }
 
     @NotNull
-    public List<DBeaverSettingsGroupDescriptor> getSubGroups() {
+    public List<PropertyGroupDescriptor<T>> getSubGroups() {
         return subGroups;
     }
 
     @Nullable
-    public DBeaverSettingsGroupDescriptor getParentGroup() {
+    public PropertyGroupDescriptor<T> getParentGroup() {
         return parentGroup;
     }
 
-    public void setParentGroup(@NotNull DBeaverSettingsGroupDescriptor parentGroup) {
+    public void setParentGroup(@NotNull PropertyGroupDescriptor<T> parentGroup) {
         this.parentGroup = parentGroup;
     }
 }

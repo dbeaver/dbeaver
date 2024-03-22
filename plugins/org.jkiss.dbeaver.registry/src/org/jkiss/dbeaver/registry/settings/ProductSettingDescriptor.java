@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DBeaverSettingDescriptor extends PropertyDescriptor {
+public class ProductSettingDescriptor extends PropertyDescriptor {
     private final List<String> scopes = new ArrayList<>();
 
-    public DBeaverSettingDescriptor(String category, IConfigurationElement cfg) {
+    public ProductSettingDescriptor(String category, IConfigurationElement cfg) {
         super(category, cfg);
         String excludeAttr = cfg.getAttribute("scopes");
         if (CommonUtils.isNotEmpty(excludeAttr)) {
