@@ -323,17 +323,17 @@ public class SSHTunnelImpl implements DBWTunnel {
                     if (privKeyValue == null) {
                         throw new DBException("Private key not specified");
                     }
-                    yield SSHAuthConfiguration.usingKey(privKeyValue, password, savePassword);
+                    yield new SSHAuthConfiguration.KeyData(privKeyValue, password, savePassword);
                 } else {
                     final Path file = Path.of(path);
                     if (!Files.exists(file)) {
                         throw new DBException("Private key file '" + path + "' does not exist");
                     }
-                    yield SSHAuthConfiguration.usingKey(file, password, savePassword);
+                    yield new SSHAuthConfiguration.KeyFile(file, password, savePassword);
                 }
             }
-            case PASSWORD -> SSHAuthConfiguration.usingPassword(password, savePassword);
-            case AGENT -> SSHAuthConfiguration.usingAgent();
+            case PASSWORD -> new SSHAuthConfiguration.Password(password, savePassword);
+            case AGENT -> new SSHAuthConfiguration.Agent();
         };
 
         return new SSHHostConfiguration(username, hostname, port, authentication);
