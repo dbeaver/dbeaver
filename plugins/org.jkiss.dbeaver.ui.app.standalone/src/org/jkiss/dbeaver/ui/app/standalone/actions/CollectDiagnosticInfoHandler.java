@@ -22,13 +22,13 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.ConfigurationInfo;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,24 +65,31 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        String archivePathString = getInfoArchivePathString();
-        if (archivePathString == null) {
-            // User cancelled folder picker dialog
+        String archiveDirectoryPathString = askForArchiveDirectoryPathString(event);
+        if (archiveDirectoryPathString == null) {
+            log.trace("User cancelled path picker dialog");
+            return null;
+        }
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        Path archivePath = Path.of(archiveDirectoryPathString, "dbeaver-diagnostic-info_%s.zip".formatted(now));
+        if (Files.exists(archivePath)) {
+            // Happens once in a blue moon
+            log.warn("File %s already exists".formatted(archivePath.toAbsolutePath()));
+            showError();
             return null;
         }
 
-        Path archivePath = Path.of(archivePathString);
+        log.trace("Writing diagnostic info archive");
         try {
-            Files.deleteIfExists(archivePath);
             try (var zipfs = FileSystems.newFileSystem(archivePath, Map.of("create", true))) {
                 for (File file : getLogFiles()) {
                     Files.copy(file.toPath(), zipfs.getPath(file.getName()));
                 }
                 Files.writeString(zipfs.getPath("configuration.txt"), ConfigurationInfo.getSystemSummary());
-                DBWorkbench.getPlatformUI().showInSystemExplorer(archivePathString);
             }
+            DBWorkbench.getPlatformUI().showInSystemExplorer(archivePath.toAbsolutePath().toString());
         } catch (IOException e) {
-            log.warn("Cannot collect diagnostic data into archive '%s': caught exception".formatted(archivePathString), e);
+            log.warn("Cannot collect diagnostic data into archive '%s': caught exception".formatted(archivePath.toAbsolutePath()), e);
             showError();
         }
 
@@ -88,13 +97,10 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     }
 
     @Nullable
-    private static String getInfoArchivePathString() {
-        FileDialog dialog = new FileDialog(UIUtils.getActiveWorkbenchShell(), SWT.SAVE);
-        dialog.setText(CoreApplicationMessages.collect_diagnostic_info_pick_path_title);
-        dialog.setOverwrite(true);
-        dialog.setFileName("dbeaver-diagnostic-info-%d.zip".formatted(System.currentTimeMillis()));
-        dialog.setFilterExtensions(new String[]{".zip"});
+    private static String askForArchiveDirectoryPathString(ExecutionEvent event) {
+        var dialog = new DirectoryDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
         dialog.setFilterPath(System.getProperty("user.home"));
+        dialog.setText(CoreApplicationMessages.collect_diagnostic_info_pick_path_title);
         return dialog.open();
     }
 
@@ -114,11 +120,14 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     private static Iterable<File> getLogFiles() {
         Collection<File> logs = new ArrayList<>();
         logs.add(Platform.getLogFileLocation().toFile());
+        File debugLogFile = getCurrentDebugLogFile();
+        if (debugLogFile.exists() && debugLogFile.isFile()) {
+            logs.add(debugLogFile);
+        }
 
         // Copy-paste from the LogOutputStream constructor and LogOutputStream.rotateCurrentLogFile
-        File debugLogFile = getCurrentDebugLogFile();
         File logFileLocation = debugLogFile.getParentFile();
-        if (logFileLocation == null) {
+        if (logFileLocation == null || !logFileLocation.isDirectory()) {
             return logs;
         }
         String fileName = debugLogFile.getName();
@@ -144,7 +153,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     @NotNull
     private static File getCurrentDebugLogFile() {
         // Copy-paste from DBeaverApplication.initDebugWriter
-        String logLocation = ModelPreferences.getPreferences().getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
+        String logLocation = DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
         if (CommonUtils.isEmpty(logLocation)) {
             logLocation = GeneralUtils.getMetadataFolder().resolve(DBConstants.DEBUG_LOG_FILE_NAME).toAbsolutePath().toString();
         }
