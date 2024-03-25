@@ -255,6 +255,9 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             properties.remove(key);
         }
 
+        // Ensure the config directory exists
+        Files.createDirectories(file.getParent());
+
         try (Writer writer = Files.newBufferedWriter(file)) {
             properties.store(writer, "DBeaver configuration");
         }
