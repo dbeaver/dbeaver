@@ -45,12 +45,12 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
     }
 
     @Override
-    public List<DashboardDescriptor> loadStaticDashboards(@NotNull DashboardProviderDescriptor dp) {
+    public List<DashboardItemDescriptor> loadStaticDashboards(@NotNull DashboardProviderDescriptor dp) {
         IExtensionRegistry registry = Platform.getExtensionRegistry();
 
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardItemDescriptor.EXTENSION_ID);
 
-        List<DashboardDescriptor> dashboards = new ArrayList<>();
+        List<DashboardItemDescriptor> dashboards = new ArrayList<>();
         Map<String, DashboardMapQueryDescriptor> mapQueries = new LinkedHashMap<>();
 
         // Load map queries
@@ -65,7 +65,7 @@ public class DatabaseDashboardProvider implements DBDashboardProvider {
         // Load dashboards from extensions
         for (IConfigurationElement ext : extElements) {
             if ("dashboard".equals(ext.getName())) {
-                DashboardDescriptor dashboard = new DashboardDescriptor(dp, mapQueries::get, ext);
+                DashboardItemDescriptor dashboard = new DashboardItemDescriptor(dp, mapQueries::get, ext);
                 dashboards.add(dashboard);
             }
         }

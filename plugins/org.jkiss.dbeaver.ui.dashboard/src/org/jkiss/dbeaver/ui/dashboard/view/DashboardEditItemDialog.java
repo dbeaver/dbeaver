@@ -26,11 +26,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.dashboard.*;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -46,7 +46,7 @@ public class DashboardEditItemDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardEditDialog";//$NON-NLS-1$
 
-    private final DashboardDescriptor dashboardDescriptor;
+    private final DashboardItemDescriptor dashboardDescriptor;
 
     private Text idText;
     private Text nameText;
@@ -57,7 +57,7 @@ public class DashboardEditItemDialog extends BaseDialog {
     private Text updatePeriodText;
     private Text maxItemsText;
     //private Text maxAgeText;
-    private List<DBDashboardRendererType> viewTypes;
+    private List<DashboardRendererType> viewTypes;
     private Combo dataTypeCombo;
     private Combo calcTypeCombo;
     private Combo valueTypeCombo;
@@ -66,7 +66,7 @@ public class DashboardEditItemDialog extends BaseDialog {
 
     private DBPNamedObject targetDatabase;
 
-    public DashboardEditItemDialog(Shell shell, DashboardDescriptor dashboardDescriptor) {
+    public DashboardEditItemDialog(Shell shell, DashboardItemDescriptor dashboardDescriptor) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_edit_dashboard_title, dashboardDescriptor.getName()), null);
 
         this.dashboardDescriptor = dashboardDescriptor;
@@ -187,7 +187,7 @@ public class DashboardEditItemDialog extends BaseDialog {
             String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
             StringBuilder sql = new StringBuilder();
-            for (DashboardDescriptor.QueryMapping query : dashboardDescriptor.getQueries()) {
+            for (DashboardItemDescriptor.QueryMapping query : dashboardDescriptor.getQueries()) {
                 sql.append(query.getQueryText().trim()).append(lineSeparator).append(lineSeparator);
             }
             if (dashboardDescriptor.getMapQuery() != null) {
@@ -210,7 +210,7 @@ public class DashboardEditItemDialog extends BaseDialog {
             viewTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
                 viewTypes = DashboardUIRegistry.getInstance().getAllViewTypes();
-                for (DBDashboardRendererType viewType : viewTypes) {
+                for (DashboardRendererType viewType : viewTypes) {
                     viewTypeCombo.add(viewType.getTitle());
                 }
                 DashboardRendererDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());

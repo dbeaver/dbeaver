@@ -23,9 +23,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardItem;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardList;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardListControl;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
@@ -39,9 +39,9 @@ public class DashboardItemViewDialog extends BaseDialog {
     private static final String DIALOG_ID = "DBeaver.DashboardItemViewDialog";//$NON-NLS-1$
 
     private final DashboardViewContainer parentPart;
-    private final DBDashboardItem sourceItem;
+    private final DashboardViewItem sourceItem;
 
-    public DashboardItemViewDialog(DashboardViewContainer parentPart, DBDashboardItem sourceItem) {
+    public DashboardItemViewDialog(DashboardViewContainer parentPart, DashboardViewItem sourceItem) {
         super(parentPart.getWorkbenchSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
 
         this.parentPart = parentPart;
@@ -71,8 +71,8 @@ public class DashboardItemViewDialog extends BaseDialog {
         dashboardListViewer.setSingleChartMode(true);
         dashboardListViewer.createControl(chartGroup);
 
-        DBDashboardItem targetItem  = new DBDashboardItem(
-            (DashboardList) dashboardListViewer.getDefaultGroup(),
+        DashboardViewItem targetItem  = new DashboardViewItem(
+            (DashboardListControl) dashboardListViewer.getDefaultGroup(),
             sourceItem.getDashboard());
         targetItem.moveViewFrom(sourceItem, false);
 

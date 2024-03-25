@@ -27,9 +27,9 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -116,7 +116,7 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
     public void setFocus() {
         if (dashboardListViewer != null) {
             DashboardGroupContainer group = dashboardListViewer.getDefaultGroup();
-            List<? extends DBDashboardContainer> items = group.getItems();
+            List<? extends DashboardViewItemContainer> items = group.getItems();
             if (!items.isEmpty()) {
                 group.selectItem(items.get(0));
             }

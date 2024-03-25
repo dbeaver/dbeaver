@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardItem;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
 
 public class HandlerDashboardViewItem extends HandlerDashboardAbstract {
 
@@ -27,9 +27,9 @@ public class HandlerDashboardViewItem extends HandlerDashboardAbstract {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            DBDashboardContainer selectedDashboard = getSelectedDashboard(view);
+            DashboardViewItemContainer selectedDashboard = getSelectedDashboard(view);
             if (selectedDashboard != null) {
-                DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(view.getDashboardListViewer(), (DBDashboardItem) selectedDashboard);
+                DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(view.getDashboardListViewer(), (DashboardViewItem) selectedDashboard);
                 viewDialog.open();
 
             }

@@ -14,14 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.control;
+package org.jkiss.dbeaver.model.dashboard;
 
-import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 
 /**
- * Dashboard control
+ * Dashboard
  */
-public interface DBDashboardCompositeControl {
+public interface DBDashboardItem extends DBPNamedObject {
 
-    Control getDashboardControl();
+    @Nullable
+    String getPath();
+
+    @NotNull
+    String getId();
+
+    @NotNull
+    String getName();
+
+    @Nullable
+    String getDescription();
+
+    boolean isCustom();
+
+    @NotNull
+    DashboardProviderDescriptor getDashboardProvider();
+
+    @NotNull
+    String getDashboardRenderer();
+
 }

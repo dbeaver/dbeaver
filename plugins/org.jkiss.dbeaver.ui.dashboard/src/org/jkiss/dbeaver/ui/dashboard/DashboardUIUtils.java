@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.ui.dashboard;
 
 import org.jfree.chart.axis.NumberTickUnitSource;
 import org.jfree.chart.axis.StandardTickUnitSource;
@@ -28,9 +28,9 @@ import java.time.Duration;
 /**
  * DashboardUtils
  */
-public class DashboardUtils {
+public class DashboardUIUtils {
 
-    private static final Log log = Log.getLog(DashboardUtils.class);
+    private static final Log log = Log.getLog(DashboardUIUtils.class);
 
     public static long parseDuration(String duration, long defValue) {
         if (!duration.startsWith("PT")) duration = "PT" + duration;

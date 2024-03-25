@@ -16,15 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
+
 /**
- * Dashboard UI constants
+ * Dashboard renderer type.
  */
-public class DashboardUIConstants {
+public interface DashboardRendererType {
 
+    String getId();
 
-    public static final String CMD_ADD_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.add";
-    public static final String CMD_REMOVE_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.remove";
-    public static final String CMD_RESET_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.reset";
-    public static final String CMD_VIEW_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.view";
+    String getTitle();
+
+    String getDescription();
+
+    DBPImage getIcon();
+
+    DBDashboardDataType[] getSupportedTypes();
+
+    DashboardItemRenderer createRenderer() throws DBException;
 
 }

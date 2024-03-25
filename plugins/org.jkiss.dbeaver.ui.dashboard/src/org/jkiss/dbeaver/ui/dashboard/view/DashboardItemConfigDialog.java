@@ -26,16 +26,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
@@ -47,16 +47,16 @@ public class DashboardItemConfigDialog extends BaseDialog {
     private static final String DIALOG_ID = "DBeaver.DashboardItemConfigDialog";//$NON-NLS-1$
     private static final boolean SHOW_QUERIES_BUTTON = false;
 
-    private final DashboardItemViewConfiguration dashboardConfig;
+    private final DashboardViewItemConfiguration dashboardConfig;
     private final DashboardViewConfiguration viewConfiguration;
-    private final DBDashboardContainer dashboardContainer;
+    private final DashboardViewItemContainer dashboardContainer;
 
-    public DashboardItemConfigDialog(Shell shell, DBDashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration) {
+    public DashboardItemConfigDialog(Shell shell, DashboardViewItemContainer dashboardContainer, DashboardViewConfiguration viewConfiguration) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getDashboard().getName()), null);
 
         this.viewConfiguration = viewConfiguration;
         this.dashboardContainer = dashboardContainer;
-        this.dashboardConfig = new DashboardItemViewConfiguration(dashboardContainer.getViewConfig());
+        this.dashboardConfig = new DashboardViewItemConfiguration(dashboardContainer.getViewConfig());
     }
 
     @Override
@@ -97,7 +97,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         StringBuilder sql = new StringBuilder();
-                        for (DashboardDescriptor.QueryMapping query : dashboardConfig.getDashboardDescriptor().getQueries()) {
+                        for (DashboardItemDescriptor.QueryMapping query : dashboardConfig.getDashboardDescriptor().getQueries()) {
                             sql.append(query.getQueryText()).append(";\n");
                         }
                         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -149,8 +149,8 @@ public class DashboardItemConfigDialog extends BaseDialog {
             Combo typeCombo = UIUtils.createLabelCombo(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view_tooltip, SWT.BORDER | SWT.READ_ONLY);
             typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
-                List<DBDashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
-                for (DBDashboardRendererType viewType : viewTypes) {
+                List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
+                for (DashboardRendererType viewType : viewTypes) {
                     typeCombo.add(viewType.getTitle());
                 }
                 typeCombo.setText(dashboardConfig.getViewType().getTitle());

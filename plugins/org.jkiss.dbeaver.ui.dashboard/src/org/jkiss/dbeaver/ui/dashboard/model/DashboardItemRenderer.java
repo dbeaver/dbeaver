@@ -14,23 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.control;
+package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 
 import java.util.Date;
 
 /**
  * Dashboard renderer
  */
-public interface DBDashboardRenderer {
+public interface DashboardItemRenderer {
 
     /**
      * Returns composite with embedded dashboard.
@@ -38,20 +36,20 @@ public interface DBDashboardRenderer {
      */
     Composite createDashboard(
         @NotNull Composite composite,
-        @NotNull DBDashboardContainer container,
+        @NotNull DashboardViewItemContainer container,
         @NotNull DashboardViewContainer viewContainer,
         @NotNull Point preferredSize);
 
-    void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardItemViewConfiguration dashboardConfig);
+    void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardViewItemConfiguration dashboardConfig);
 
-    void updateDashboardData(DBDashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
+    void updateDashboardData(DashboardViewItemContainer container, Date lastUpdateTime, DashboardDataset dataset);
 
-    void resetDashboardData(DBDashboardContainer dashboardItem, Date lastUpdateTime);
+    void resetDashboardData(DashboardViewItemContainer dashboardItem, Date lastUpdateTime);
 
-    void moveDashboardView(DBDashboardItem toItem, DBDashboardItem fromItem, boolean clearOriginal);
+    void moveDashboardView(DashboardViewItem toItem, DashboardViewItem fromItem, boolean clearOriginal);
 
-    void updateDashboardView(DBDashboardItem dashboardItem);
+    void updateDashboardView(DashboardViewItem dashboardItem);
 
-    void disposeDashboard(DBDashboardContainer container);
+    void disposeDashboard(DashboardViewItemContainer container);
 
 }

@@ -43,9 +43,9 @@ import java.util.List;
 /**
  * DashboardDescriptor
  */
-public class DashboardDescriptor extends AbstractContextDescriptor implements DBDashboard {
+public class DashboardItemDescriptor extends AbstractContextDescriptor implements DBDashboardItem {
 
-    private static final Log log = Log.getLog(DashboardDescriptor.class);
+    private static final Log log = Log.getLog(DashboardItemDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard"; //$NON-NLS-1$
 
@@ -116,7 +116,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         DashboardMapQueryDescriptor getMapQuery(String id);
     }
 
-    DashboardDescriptor(
+    DashboardItemDescriptor(
         DashboardProviderDescriptor provider,
         MapQueryProvider mapQueryProvider,
         IConfigurationElement config
@@ -176,7 +176,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.isCustom = false;
     }
 
-    DashboardDescriptor(DashboardRegistry registry, Element config) {
+    DashboardItemDescriptor(DashboardRegistry registry, Element config) {
         super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
 
         this.id = config.getAttribute("id");
@@ -222,7 +222,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.isCustom = true;
     }
 
-    public DashboardDescriptor(DashboardDescriptor source) {
+    public DashboardItemDescriptor(DashboardItemDescriptor source) {
         super(source.getPluginId());
 
         this.id = source.id;
@@ -252,7 +252,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.isCustom = source.isCustom;
     }
 
-    public DashboardDescriptor(
+    public DashboardItemDescriptor(
         @NotNull DashboardProviderDescriptor provider,
         @Nullable DBDashboardFolder folder,
         @NotNull String id,

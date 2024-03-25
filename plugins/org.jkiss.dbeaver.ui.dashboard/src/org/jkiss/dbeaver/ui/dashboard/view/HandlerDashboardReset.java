@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
 
 public class HandlerDashboardReset extends HandlerDashboardAbstract {
 
@@ -27,12 +27,12 @@ public class HandlerDashboardReset extends HandlerDashboardAbstract {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            DBDashboardContainer selectedDashboard = getSelectedDashboard(view);
+            DashboardViewItemContainer selectedDashboard = getSelectedDashboard(view);
             if (selectedDashboard != null) {
                 selectedDashboard.resetDashboardData();
             } else {
                 for (DashboardGroupContainer gc : view.getDashboardListViewer().getGroups()) {
-                    for (DBDashboardContainer dc : gc.getItems()) {
+                    for (DashboardViewItemContainer dc : gc.getItems()) {
                         dc.resetDashboardData();
                     }
                 }

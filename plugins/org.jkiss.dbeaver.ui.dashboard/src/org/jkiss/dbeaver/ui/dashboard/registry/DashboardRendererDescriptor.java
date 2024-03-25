@@ -22,14 +22,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * DashboardDescriptor
  */
-public class DashboardRendererDescriptor extends AbstractContextDescriptor implements DBDashboardRendererType
+public class DashboardRendererDescriptor extends AbstractContextDescriptor implements DashboardRendererType
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard.ui";
     private final String id;
@@ -87,8 +87,8 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
     }
 
     @Override
-    public DBDashboardRenderer createRenderer() throws DBException {
-        return implType.createInstance(DBDashboardRenderer.class);
+    public DashboardItemRenderer createRenderer() throws DBException {
+        return implType.createInstance(DashboardItemRenderer.class);
     }
 
     @Override

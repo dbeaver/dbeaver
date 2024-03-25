@@ -14,28 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.ui.dashboard.control;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
-import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardRenderer;
+import org.eclipse.swt.widgets.Control;
 
 /**
- * Dashboard renderer type.
+ * Dashboard control
  */
-public interface DBDashboardRendererType {
+public interface DashboardViewCompositeControl {
 
-    String getId();
-
-    String getTitle();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    DBDashboardDataType[] getSupportedTypes();
-
-    DBDashboardRenderer createRenderer() throws DBException;
-
+    Control getDashboardControl();
 }

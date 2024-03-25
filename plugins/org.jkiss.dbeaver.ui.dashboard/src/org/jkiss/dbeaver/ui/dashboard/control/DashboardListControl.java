@@ -29,30 +29,31 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DashboardList extends Composite implements DashboardGroupContainer {
+public class DashboardListControl extends Composite implements DashboardGroupContainer {
 
     private static final int ITEM_SPACING = 5;
 
     private final IWorkbenchSite site;
     private final DashboardViewContainer viewContainer;
-    private final List<DBDashboardItem> items = new ArrayList<>();
+    private final List<DashboardViewItem> items = new ArrayList<>();
     private final Font boldFont;
-    private DBDashboardItem selectedItem;
+    private DashboardViewItem selectedItem;
     private int listRowCount = 1;
     private int listColumnCount = 1;
 
-    public DashboardList(IWorkbenchSite site, Composite parent, DashboardViewContainer viewContainer) {
+    public DashboardListControl(IWorkbenchSite site, Composite parent, DashboardViewContainer viewContainer) {
         super(parent, SWT.DOUBLE_BUFFERED);
 
         this.site = site;
@@ -136,13 +137,13 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     void handleKeyEvent(KeyEvent e) {
         switch (e.keyCode) {
             case SWT.CR:
-                ActionUtils.runCommand(DashboardUIConstants.CMD_VIEW_DASHBOARD, DashboardList.this.site);
+                ActionUtils.runCommand(DashboardUIConstants.CMD_VIEW_DASHBOARD, DashboardListControl.this.site);
                 break;
             case SWT.DEL:
-                ActionUtils.runCommand(DashboardUIConstants.CMD_REMOVE_DASHBOARD, DashboardList.this.site);
+                ActionUtils.runCommand(DashboardUIConstants.CMD_REMOVE_DASHBOARD, DashboardListControl.this.site);
                 break;
             case SWT.INSERT:
-                ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, DashboardList.this.site);
+                ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, DashboardListControl.this.site);
                 break;
             case SWT.ARROW_LEFT:
             case SWT.ARROW_UP:
@@ -169,7 +170,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             } else if (curIndex >= items.size()) {
                 curIndex = 0;
             }
-            DBDashboardItem newSelection = items.get(curIndex);
+            DashboardViewItem newSelection = items.get(curIndex);
             newSelection.getDashboardControl().setFocus();
             setSelection(newSelection);
             newSelection.redraw();
@@ -196,13 +197,13 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
     @NotNull
-    public List<DBDashboardItem> getItems() {
+    public List<DashboardViewItem> getItems() {
         return items;
     }
 
     @Override
-    public void removeItem(@NotNull DBDashboardContainer container) {
-        DBDashboardItem item = (DBDashboardItem) container;
+    public void removeItem(@NotNull DashboardViewItemContainer container) {
+        DashboardViewItem item = (DashboardViewItem) container;
         item.dispose();
         layout(true, true);
         viewContainer.getViewConfiguration().removeDashboard(item.getDashboard().getId());
@@ -210,30 +211,30 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
     @Override
-    public void addItem(@NotNull DashboardDescriptor dashboard) {
+    public void addItem(@NotNull DashboardItemDescriptor dashboard) {
         viewContainer.getViewConfiguration().readDashboardConfiguration(dashboard);
-        new DBDashboardItem(this, dashboard);
+        new DashboardViewItem(this, dashboard);
         viewContainer.getViewConfiguration().saveSettings();
         layout(true, true);
     }
 
     @Override
-    public void selectItem(DBDashboardContainer item) {
-        setSelection((DBDashboardItem) item);
+    public void selectItem(DashboardViewItemContainer item) {
+        setSelection((DashboardViewItem) item);
         item.getDashboardControl().setFocus();
     }
 
     void createDefaultDashboards() {
-        List<DashboardDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(
+        List<DashboardItemDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(
             null, viewContainer.getDataSourceContainer(), true);
-        for (DashboardDescriptor dd : dashboards) {
+        for (DashboardItemDescriptor dd : dashboards) {
             addDashboard(dd);
         }
     }
 
     public void createDashboardsFromConfiguration() {
-        for (DashboardItemViewConfiguration itemConfig : new ArrayList<>(viewContainer.getViewConfiguration().getDashboardItemConfigs())) {
-            DashboardDescriptor dashboard = itemConfig.getDashboardDescriptor();
+        for (DashboardViewItemConfiguration itemConfig : new ArrayList<>(viewContainer.getViewConfiguration().getDashboardItemConfigs())) {
+            DashboardItemDescriptor dashboard = itemConfig.getDashboardDescriptor();
             if (dashboard != null) {
                 addDashboard(dashboard);
             } else {
@@ -243,18 +244,18 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
 
-    private void addDashboard(DashboardDescriptor dashboard) {
+    private void addDashboard(DashboardItemDescriptor dashboard) {
         viewContainer.getViewConfiguration().readDashboardConfiguration(dashboard);
-        DBDashboardItem item = new DBDashboardItem(this, dashboard);
+        DashboardViewItem item = new DashboardViewItem(this, dashboard);
     }
 
-    void addItem(DBDashboardItem item) {
+    void addItem(DashboardViewItem item) {
         addDragAndDropSupport(item);
 
         this.items.add(item);
     }
 
-    void removeItem(DBDashboardItem item) {
+    void removeItem(DashboardViewItem item) {
         this.items.remove(item);
     }
 
@@ -266,12 +267,12 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         return boldFont;
     }
 
-    public DBDashboardItem getSelectedItem() {
+    public DashboardViewItem getSelectedItem() {
         return selectedItem;
     }
 
-    public void setSelection(DBDashboardItem selection) {
-        DBDashboardItem oldSelection = this.selectedItem;
+    public void setSelection(DashboardViewItem selection) {
+        DashboardViewItem oldSelection = this.selectedItem;
         if (oldSelection == selection) {
             return;
         }
@@ -287,7 +288,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     public void clear() {
         selectedItem = null;
                 
-        for (DBDashboardItem item : List.copyOf(items)) {
+        for (DashboardViewItem item : List.copyOf(items)) {
             item.dispose();
         }
         
@@ -300,7 +301,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     // DnD
     /////////////////////////////////////////////////////////////////////////////////
 
-    private void addDragAndDropSupport(DBDashboardItem item)
+    private void addDragAndDropSupport(DashboardViewItem item)
     {
         Label dndControl = item.getTitleLabel();
         final int operations = DND.DROP_MOVE | DND.DROP_COPY;// | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT;
@@ -322,7 +323,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                         dragImage.dispose();
                         dragImage = null;
                     }
-                    GC gc = new GC(DashboardList.this);
+                    GC gc = new GC(DashboardListControl.this);
                     dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
                     gc.copyArea(
                         dragImage,
@@ -410,7 +411,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
             private boolean isDropSupported(DropTargetEvent event)
             {
-                DBDashboardItem overItem = getOverItem(event);
+                DashboardViewItem overItem = getOverItem(event);
                 if (selectedItem == null || overItem == null) {
                     return false;
                 }
@@ -419,12 +420,12 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
             private void moveDashboard(DropTargetEvent event)
             {
-                DBDashboardItem overItem = getOverItem(event);
+                DashboardViewItem overItem = getOverItem(event);
                 if (selectedItem == null || overItem == null || selectedItem == overItem) {
                     return;
                 }
 
-                List<DBDashboardItem> newList = new ArrayList<>(items);
+                List<DashboardViewItem> newList = new ArrayList<>(items);
                 int newIndex = newList.indexOf(overItem);
                 newList.remove(selectedItem);
                 newList.add(newIndex, selectedItem);
@@ -432,38 +433,38 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 DashboardViewConfiguration viewConfiguration = viewContainer.getViewConfiguration();
 
                 // Re-create  items
-                DashboardList.this.setRedraw(false);
+                DashboardListControl.this.setRedraw(false);
                 try {
                     selectedItem = null;
                     items.clear();
 
                     for (int i = 0; i < newList.size(); i++) {
-                        DBDashboardItem oldItem = newList.get(i);
-                        DBDashboardItem newItem = new DBDashboardItem(DashboardList.this, oldItem.getDashboard());
-                        DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboard().getId());
+                        DashboardViewItem oldItem = newList.get(i);
+                        DashboardViewItem newItem = new DashboardViewItem(DashboardListControl.this, oldItem.getDashboard());
+                        DashboardViewItemConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboard().getId());
                         dashboardConfig.setIndex(i);
                         newItem.moveViewFrom(oldItem, true);
                     }
 
                     // Dispose old items
-                    for (DBDashboardItem item : newList) {
+                    for (DashboardViewItem item : newList) {
                         item.dispose();
                     }
                 } finally {
-                    DashboardList.this.layout(true, true);
-                    DashboardList.this.setRedraw(true);
+                    DashboardListControl.this.layout(true, true);
+                    DashboardListControl.this.setRedraw(true);
                 }
 
                 viewConfiguration.saveSettings();
             }
 
-            private DBDashboardItem getOverItem(DropTargetEvent event) {
+            private DashboardViewItem getOverItem(DropTargetEvent event) {
                 Object source = event.getSource();
                 if (source instanceof DropTarget) {
                     Control control = ((DropTarget) source).getControl();
                     for (Composite parent = control.getParent(); parent != null; parent = parent.getParent()) {
-                        if (parent instanceof DBDashboardItem) {
-                            return (DBDashboardItem) parent;
+                        if (parent instanceof DashboardViewItem) {
+                            return (DashboardViewItem) parent;
                         }
                     }
                 }
@@ -473,7 +474,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         });
     }
 
-    public void showItem(DBDashboardContainer item) {
+    public void showItem(DashboardViewItemContainer item) {
 
     }
 

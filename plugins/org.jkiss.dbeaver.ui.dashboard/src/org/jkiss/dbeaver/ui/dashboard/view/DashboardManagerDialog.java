@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -56,7 +56,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardManagerDialog";//$NON-NLS-1$
 
-    private DashboardDescriptor selectedDashboard;
+    private DashboardItemDescriptor selectedDashboard;
 
     private Button newButton;
     private Button copyButton;
@@ -117,7 +117,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
                 @Override
                 public boolean hasChildren(Object element) {
-                    return !(element instanceof DashboardDescriptor);
+                    return !(element instanceof DashboardItemDescriptor);
                 }
             });
             treeViewer.setLabelProvider(new CellLabelProvider() {
@@ -132,7 +132,7 @@ public class DashboardManagerDialog extends BaseDialog {
                             cell.setImage(DBeaverIcons.getImage(dpd.getIcon()));
                         } else if (element instanceof DBPDataSourceProviderDescriptor dspd) {
                             cell.setImage(DBeaverIcons.getImage(dspd.getIcon()));
-                        } else if (element instanceof DashboardDescriptor dashboardDescriptor) {
+                        } else if (element instanceof DashboardItemDescriptor dashboardDescriptor) {
                             DBPImage icon = null;
                             if (dashboardDescriptor.isCustom()) {
                                 icon = DBIcon.TYPE_OBJECT;
@@ -172,7 +172,7 @@ public class DashboardManagerDialog extends BaseDialog {
                 ISelection selection = event.getSelection();
                 if (selection instanceof IStructuredSelection ss) {
                     Object selectedObject = ss.getFirstElement();
-                    if (selectedObject instanceof DashboardDescriptor dd) {
+                    if (selectedObject instanceof DashboardItemDescriptor dd) {
                         this.selectedDashboard = dd;
                     }
                 }
@@ -277,7 +277,7 @@ public class DashboardManagerDialog extends BaseDialog {
         if (providerDescriptor == null) {
             providerDescriptor = DashboardRegistry.getInstance().getDashboardProvider(DashboardConstants.DEF_DASHBOARD_PROVIDER);
         }
-        DashboardDescriptor newDashboard = new DashboardDescriptor(
+        DashboardItemDescriptor newDashboard = new DashboardItemDescriptor(
             providerDescriptor, null, "", "", "", "", true);
         DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
@@ -287,7 +287,7 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void copyDashboard() {
-        DashboardDescriptor newDashboard = new DashboardDescriptor(selectedDashboard);
+        DashboardItemDescriptor newDashboard = new DashboardItemDescriptor(selectedDashboard);
         newDashboard.setCustom(true);
         String origId = newDashboard.getId();
         for (int i = 2; ; i++) {

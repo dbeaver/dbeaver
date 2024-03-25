@@ -25,20 +25,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jfree.chart.JFreeChart;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
 
 /**
  * Dashboard chart composite
  */
-public class DashboardChartComposite extends BaseChartComposite implements DBDashboardCompositeControl {
+public class DashboardChartComposite extends BaseChartComposite implements DashboardViewCompositeControl {
 
     private final DashboardViewContainer viewContainer;
-    private final DBDashboardContainer dashboardContainer;
+    private final DashboardViewItemContainer dashboardContainer;
 
-    public DashboardChartComposite(DBDashboardContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(DashboardViewItemContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
@@ -86,7 +86,7 @@ public class DashboardChartComposite extends BaseChartComposite implements DBDas
         if (viewContainer.isSingleChartMode()) {
             restoreAutoBounds();
         } else {
-            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DBDashboardItem) dashboardContainer);
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DashboardViewItem) dashboardContainer);
             viewDialog.open();
         }
     }

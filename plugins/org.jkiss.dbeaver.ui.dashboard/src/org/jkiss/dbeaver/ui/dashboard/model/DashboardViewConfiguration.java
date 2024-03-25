@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +45,7 @@ public class DashboardViewConfiguration {
     private final String viewId;
 
     private final DBPDataSourceContainer dataSourceContainer;
-    private final List<DashboardItemViewConfiguration> items = new ArrayList<>();
+    private final List<DashboardViewItemConfiguration> items = new ArrayList<>();
 
     private boolean openConnectionOnActivate;
     private boolean useSeparateConnection;
@@ -60,7 +60,7 @@ public class DashboardViewConfiguration {
         return dataSourceContainer;
     }
 
-    public List<DashboardItemViewConfiguration> getDashboardItemConfigs() {
+    public List<DashboardViewItemConfiguration> getDashboardItemConfigs() {
         return items;
     }
 
@@ -80,8 +80,8 @@ public class DashboardViewConfiguration {
         this.useSeparateConnection = useSeparateConnection;
     }
 
-    public DashboardItemViewConfiguration getDashboardConfig(String dashboardId) {
-        for (DashboardItemViewConfiguration item : items) {
+    public DashboardViewItemConfiguration getDashboardConfig(String dashboardId) {
+        for (DashboardViewItemConfiguration item : items) {
             if (item.getDashboardId().equals(dashboardId)) {
                 return item;
             }
@@ -89,13 +89,13 @@ public class DashboardViewConfiguration {
         return null;
     }
 
-    public DashboardItemViewConfiguration readDashboardConfiguration(DashboardDescriptor dashboard) {
-        DashboardItemViewConfiguration dashboardConfig = getDashboardConfig(dashboard.getId());
+    public DashboardViewItemConfiguration readDashboardConfiguration(DashboardItemDescriptor dashboard) {
+        DashboardViewItemConfiguration dashboardConfig = getDashboardConfig(dashboard.getId());
         if (dashboardConfig != null) {
             return dashboardConfig;
         }
         try {
-            DashboardItemViewConfiguration itemViewConfiguration = new DashboardItemViewConfiguration(this, dashboard, items.size());
+            DashboardViewItemConfiguration itemViewConfiguration = new DashboardViewItemConfiguration(this, dashboard, items.size());
             items.add(itemViewConfiguration);
             return itemViewConfiguration;
         } catch (DBException e) {
@@ -104,14 +104,14 @@ public class DashboardViewConfiguration {
         }
     }
 
-    public boolean readDashboardConfiguration(DashboardItemViewConfiguration item) {
+    public boolean readDashboardConfiguration(DashboardViewItemConfiguration item) {
         return items.remove(item);
     }
 
     public void removeDashboard(String dashboardId) {
         int decValue = 0;
         for (int i = 0; i < items.size(); ) {
-            DashboardItemViewConfiguration item = items.get(i);
+            DashboardViewItemConfiguration item = items.get(i);
             if (item.getDashboardId().equals(dashboardId)) {
                 items.remove(i);
                 decValue++;
@@ -122,8 +122,8 @@ public class DashboardViewConfiguration {
         }
     }
 
-    public void updateDashboardConfig(DashboardItemViewConfiguration config) {
-        DashboardItemViewConfiguration curConfig = getDashboardConfig(config.getDashboardId());
+    public void updateDashboardConfig(DashboardViewItemConfiguration config) {
+        DashboardViewItemConfiguration curConfig = getDashboardConfig(config.getDashboardId());
         if (curConfig == null) {
             items.add(config);
         } else {
@@ -149,14 +149,14 @@ public class DashboardViewConfiguration {
             }
             for (Element dbElement : XMLUtils.getChildElementList(document.getDocumentElement(), "dashboard")) {
                 String dashboardId = dbElement.getAttribute("id");
-                DashboardItemViewConfiguration itemConfig = new DashboardItemViewConfiguration(this, dashboardId, dbElement);
+                DashboardViewItemConfiguration itemConfig = new DashboardViewItemConfiguration(this, dashboardId, dbElement);
                 items.add(itemConfig);
             }
         } catch (Exception e) {
             log.error("Error loading dashboard view configuration", e);
         }
 
-        items.sort(Comparator.comparingInt(DashboardItemViewConfiguration::getIndex));
+        items.sort(Comparator.comparingInt(DashboardViewItemConfiguration::getIndex));
     }
 
     public void saveSettings() {
@@ -177,7 +177,7 @@ public class DashboardViewConfiguration {
                     xml.addAttribute("openConnectionOnActivate", openConnectionOnActivate);
                     xml.addAttribute("useSeparateConnection", useSeparateConnection);
                 }
-                for (DashboardItemViewConfiguration itemConfig : items) {
+                for (DashboardViewItemConfiguration itemConfig : items) {
                     try (var ignored3 = xml.startElement("dashboard")) {
                         itemConfig.serialize(xml);
                     }

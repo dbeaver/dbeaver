@@ -14,36 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dashboard;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
+package org.jkiss.dbeaver.ui.dashboard;
 
 /**
- * Dashboard
+ * Dashboard UI constants
  */
-public interface DBDashboard extends DBPNamedObject {
+public class DashboardUIConstants {
 
-    @Nullable
-    String getPath();
 
-    @NotNull
-    String getId();
-
-    @NotNull
-    String getName();
-
-    @Nullable
-    String getDescription();
-
-    boolean isCustom();
-
-    @NotNull
-    DashboardProviderDescriptor getDashboardProvider();
-
-    @NotNull
-    String getDashboardRenderer();
+    public static final String CMD_ADD_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.add";
+    public static final String CMD_REMOVE_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.remove";
+    public static final String CMD_RESET_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.reset";
+    public static final String CMD_VIEW_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.view";
 
 }

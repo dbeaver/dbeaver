@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 
 import java.util.Date;
 import java.util.List;
@@ -32,11 +32,11 @@ import java.util.List;
 /**
  * Dashboard container
  */
-public interface DBDashboardContainer {
+public interface DashboardViewItemContainer {
 
-    DashboardDescriptor getDashboard();
+    DashboardItemDescriptor getDashboard();
 
-    DashboardItemViewConfiguration getViewConfig();
+    DashboardViewItemConfiguration getViewConfig();
 
     /**
      * Maximum item counts

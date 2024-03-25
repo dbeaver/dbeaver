@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
@@ -31,12 +31,12 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 
-public class DashboardItemViewConfiguration {
-    private static final Log log = Log.getLog(DashboardItemViewConfiguration.class);
+public class DashboardViewItemConfiguration {
+    private static final Log log = Log.getLog(DashboardViewItemConfiguration.class);
 
     private final DashboardViewConfiguration viewConfiguration;
     private String dashboardId;
-    private DashboardDescriptor dashboard;
+    private DashboardItemDescriptor dashboard;
 
     private String viewTypeId;
     private int index;
@@ -68,7 +68,7 @@ public class DashboardItemViewConfiguration {
     }
 
     @Nullable
-    public DashboardDescriptor getDashboardDescriptor() {
+    public DashboardItemDescriptor getDashboardDescriptor() {
         if (dashboard == null) {
             try {
                 dashboard = DashboardRegistry.getInstance().findDashboard(
@@ -83,16 +83,16 @@ public class DashboardItemViewConfiguration {
         return dashboard;
     }
 
-    public DBDashboardRendererType getViewType() {
+    public DashboardRendererType getViewType() {
         String vtId = viewTypeId;
         if (CommonUtils.isEmpty(vtId)) {
-            DashboardDescriptor dashboard = getDashboardDescriptor();
+            DashboardItemDescriptor dashboard = getDashboardDescriptor();
             vtId = dashboard == null ? DashboardConstants.DEF_DASHBOARD_VIEW_TYPE : dashboard.getDashboardRenderer();
         }
         return DashboardUIRegistry.getInstance().getViewType(vtId);
     }
 
-    public void setViewType(DBDashboardRendererType viewType) {
+    public void setViewType(DashboardRendererType viewType) {
         this.viewTypeId = viewType.getId();
     }
 
@@ -176,7 +176,7 @@ public class DashboardItemViewConfiguration {
         this.description = description;
     }
 
-    DashboardItemViewConfiguration(DashboardViewConfiguration viewConfiguration, DashboardDescriptor dashboardDescriptor, int index) throws DBException {
+    DashboardViewItemConfiguration(DashboardViewConfiguration viewConfiguration, DashboardItemDescriptor dashboardDescriptor, int index) throws DBException {
         this.viewConfiguration = viewConfiguration;
         this.dashboard = dashboardDescriptor;
         this.viewTypeId = dashboardDescriptor.getDashboardRenderer();
@@ -194,12 +194,12 @@ public class DashboardItemViewConfiguration {
         this.description = dashboardDescriptor.getDescription();
     }
 
-    public DashboardItemViewConfiguration(DashboardItemViewConfiguration source) {
+    public DashboardViewItemConfiguration(DashboardViewItemConfiguration source) {
         this.viewConfiguration = source.viewConfiguration;
         copyFrom(source);
     }
 
-    void copyFrom(DashboardItemViewConfiguration source) {
+    void copyFrom(DashboardViewItemConfiguration source) {
         this.dashboard = source.dashboard;
         this.viewTypeId = source.viewTypeId;
         this.index = source.index;
@@ -235,7 +235,7 @@ public class DashboardItemViewConfiguration {
         }
     }
 
-    public DashboardItemViewConfiguration(DashboardViewConfiguration viewConfiguration, String id, Element element) {
+    public DashboardViewItemConfiguration(DashboardViewConfiguration viewConfiguration, String id, Element element) {
         this.viewConfiguration = viewConfiguration;
         this.dashboardId = id;
 
