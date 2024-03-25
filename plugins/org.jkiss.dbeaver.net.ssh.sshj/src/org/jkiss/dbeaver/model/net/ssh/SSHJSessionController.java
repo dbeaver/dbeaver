@@ -58,7 +58,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         final int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
         final int keepAliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL) / 1000; // sshj uses seconds for keep-alive interval
 
-        final SSHAuthConfiguration auth = host.getAuthConfiguration();
+        final SSHAuthConfiguration auth = host.auth();
         final SSHClient client = new SSHClient();
 
         client.setConnectTimeout(connectTimeout);
@@ -71,40 +71,31 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
             log.debug("Error loading known hosts: " + e.getMessage());
         }
 
-        monitor.subTask(String.format("Instantiate tunnel to %s:%d", host.getHostname(), host.getPort()));
+        monitor.subTask(String.format("Instantiate tunnel to %s:%d", host.hostname(), host.port()));
 
         try {
-            client.connect(host.getHostname(), host.getPort());
+            client.connect(host.hostname(), host.port());
 
-            switch (auth.getType()) {
-                case PASSWORD:
-                    client.authPassword(host.getUsername(), auth.getPassword());
-                    break;
-                case PUBLIC_KEY:
-                    if (auth.getKeyFile() != null) {
-                        final String location = auth.getKeyFile().toAbsolutePath().toString();
-                        if (CommonUtils.isEmpty(auth.getPassword())) {
-                            client.authPublickey(host.getUsername(), location);
-                        } else {
-                            client.authPublickey(host.getUsername(), client.loadKeys(location, auth.getPassword().toCharArray()));
-                        }
-                    } else {
-                        final PasswordFinder finder = CommonUtils.isEmpty(auth.getPassword())
-                            ? null
-                            : PasswordUtils.createOneOff(auth.getPassword().toCharArray());
-                        client.authPublickey(host.getUsername(), client.loadKeys(auth.getKeyValue(), null, finder));
-                    }
-                    break;
-                case AGENT: {
-                    final List<AuthMethod> methods = new ArrayList<>();
-                    for (Object identity : createAgentIdentityRepository().getIdentities()) {
-                        methods.add(new DBeaverAuthAgent((Identity) identity));
-                    }
-                    client.auth(host.getUsername(), methods);
-                    break;
+            if (auth instanceof SSHAuthConfiguration.Password password) {
+                client.authPassword(host.username(), password.password());
+            } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
+                final String location = key.path().toAbsolutePath().toString();
+                if (CommonUtils.isEmpty(key.password())) {
+                    client.authPublickey(host.username(), location);
+                } else {
+                    client.authPublickey(host.username(), client.loadKeys(location, key.password().toCharArray()));
                 }
-                default:
-                    break;
+            } else if (auth instanceof SSHAuthConfiguration.KeyData key) {
+                final PasswordFinder finder = CommonUtils.isEmpty(key.password())
+                    ? null
+                    : PasswordUtils.createOneOff(key.password().toCharArray());
+                client.authPublickey(host.username(), client.loadKeys(key.data(), null, finder));
+            } else if (auth instanceof SSHAuthConfiguration.Agent) {
+                final List<AuthMethod> methods = new ArrayList<>();
+                for (Object identity : createAgentIdentityRepository().getIdentities()) {
+                    methods.add(new DBeaverAuthAgent((Identity) identity));
+                }
+                client.auth(host.username(), methods);
             }
         } catch (Exception e) {
             throw new DBException("Error establishing SSHJ tunnel", e);

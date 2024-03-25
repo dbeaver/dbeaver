@@ -377,7 +377,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private static final String DEFAULT_CONNECTION_TYPE_PREF = "default.connection.type";
 
     public static DBPConnectionType getDefaultConnectionType() {
-        String defTypeName = ModelPreferences.getPreferences().getString(DEFAULT_CONNECTION_TYPE_PREF);
+        String defTypeName = DBWorkbench.getPlatform().getPreferenceStore().getString(DEFAULT_CONNECTION_TYPE_PREF);
         if (CommonUtils.isEmpty(defTypeName)) {
             defTypeName = DEV.getName();
         }
@@ -386,7 +386,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     public static void setDefaultConnectionType(DBPConnectionType connectionType) {
-        ModelPreferences.getPreferences().setValue(DEFAULT_CONNECTION_TYPE_PREF, connectionType.getId());
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(DEFAULT_CONNECTION_TYPE_PREF, connectionType.getId());
     }
 
 }
