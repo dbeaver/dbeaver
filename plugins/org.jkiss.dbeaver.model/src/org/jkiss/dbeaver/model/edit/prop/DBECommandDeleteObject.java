@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit.prop;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -35,8 +36,9 @@ public abstract class DBECommandDeleteObject<OBJECT_TYPE extends DBPObject> exte
         super(object, title);
     }
 
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         if (prevCommand != null && prevCommand.getObject() == getObject()) {
             return null;

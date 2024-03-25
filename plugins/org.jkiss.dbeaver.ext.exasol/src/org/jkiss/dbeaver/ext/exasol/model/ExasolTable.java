@@ -314,6 +314,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     // Associations
     // -----------------
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(
@@ -441,7 +442,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
     
     @Override
-    public Collection<ExasolTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         ExasolTableForeignKeyCache associationCache = getSchema().getAssociationCache();
         Collection<ExasolTableForeignKey> refForeignKeys = new ArrayList<ExasolTableForeignKey>();
         for (ExasolTableForeignKey exasolTableForeignKey : associationCache.getObjects(monitor, getSchema(), null)) {

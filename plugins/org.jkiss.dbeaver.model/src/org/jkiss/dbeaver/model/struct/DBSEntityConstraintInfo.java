@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBSEntityConstraintInfo
  */
@@ -29,15 +31,18 @@ public class DBSEntityConstraintInfo {
         this.implClass = implClass;
     }
 
+    @NotNull
     public DBSEntityConstraintType getType() {
         return type;
     }
 
+    @NotNull
     public Class<? extends DBSEntityConstraint> getImplClass() {
         return implClass;
     }
 
-    public static DBSEntityConstraintInfo of(DBSEntityConstraintType type, Class<? extends DBSEntityConstraint> implClass) {
+    @NotNull
+    public static DBSEntityConstraintInfo of(@NotNull DBSEntityConstraintType type, @NotNull Class<? extends DBSEntityConstraint> implClass) {
         return new DBSEntityConstraintInfo(type, implClass);
     }
 }

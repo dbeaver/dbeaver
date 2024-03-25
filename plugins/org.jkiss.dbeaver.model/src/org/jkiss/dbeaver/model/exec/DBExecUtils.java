@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.DefaultInvalidationFeedbackHandler;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.utils.CommonUtils;
@@ -231,7 +232,8 @@ public class DBExecUtils {
                                 dataSource,
                                 false,
                                 true,
-                                () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+                                new DefaultInvalidationFeedbackHandler()
+                            );
                             if (i < tryCount - 1) {
                                 log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
                             }

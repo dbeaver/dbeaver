@@ -158,7 +158,7 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public void notifyAgent(String message, int status) {
-        if (!ModelPreferences.getPreferences().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
             // Notifications disabled
             return;
         }

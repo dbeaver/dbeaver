@@ -44,7 +44,7 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
+sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -255,7 +255,9 @@ valueExpressionPrimary: valueExpressionCast|valueExpressionAtom;
 valueExpressionCast: valueExpressionAtom TypeCast dataType;
 valueExpressionAtom: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |aggregateExpression|nullSpecification|truthValue|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
+    |aggregateExpression|nullSpecification|truthValue|variableExpression|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
+
+variableExpression: BatchVariableName|ClientVariableName|ClientParameterName;
 
 numericPrimary: (valueExpressionPrimary|extractExpression);
 factor: sign? numericPrimary;
@@ -334,13 +336,11 @@ dropViewStatement: DROP VIEW tableName dropBehaviour;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 
 // data statements
-sqlDataStatement: (selectStatementSingleRow|sqlDataChangeStatement);
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
-sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
-deleteStatement: DELETE FROM tableName whereClause?;
-insertStatement: INSERT INTO tableName? insertColumnsAndSource;
-insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
+deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
+insertStatement: INSERT INTO tableName? insertColumnsAndSource?;
+insertColumnsAndSource: (LeftParen (insertColumnList? | Asterisk) RightParen?)? (queryExpression | DEFAULT VALUES);
 insertColumnList: columnNameList;
 
 // UPDATE

@@ -46,7 +46,7 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
 
     @Override
     protected MySQLScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
-        MySQLScriptExecuteSettings settings = new MySQLScriptExecuteSettings();
+        MySQLScriptExecuteSettings settings = new MySQLScriptExecuteSettings(task.getProject());
         boolean isImport = task.getType().getId().equals(MySQLTasks.TASK_DATABASE_RESTORE);
         settings.setImport(isImport);
         settings.loadSettings(context, new TaskPreferenceStore(task));

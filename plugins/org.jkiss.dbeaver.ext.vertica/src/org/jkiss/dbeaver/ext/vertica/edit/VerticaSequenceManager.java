@@ -17,13 +17,12 @@
 package org.jkiss.dbeaver.ext.vertica.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.edit.GenericSequenceManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaSchema;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaSequence;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,38 +31,45 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-public class VerticaSequenceManager extends SQLObjectEditor<GenericSequence, VerticaSchema> implements DBEObjectRenamer<GenericSequence> {
+public class VerticaSequenceManager extends GenericSequenceManager implements DBEObjectRenamer<GenericSequence> {
 
     @Override
     public boolean canCreateObject(Object container) {
-        return true;
+        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
     }
 
     @Override
-    protected GenericSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected GenericSequence createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        Object container,
+        Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         VerticaSchema schema = (VerticaSchema) structContainer.getSchema();
-        VerticaSequence sequence = new VerticaSequence(structContainer, "new_sequence");
+        VerticaSequence sequence = new VerticaSequence(structContainer, getBaseObjectName().toLowerCase(Locale.ROOT));
         setNewObjectName(monitor, schema, sequence);
         return sequence;
     }
 
-    protected String getBaseObjectName() {
-        return "new_sequence";
-    }
-
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final StringBuilder sequenceOptions = new StringBuilder();
         GenericSequence sequence = command.getObject();
         sequenceOptions.append("CREATE SEQUENCE ").append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL));
@@ -75,25 +81,8 @@ public class VerticaSequenceManager extends SQLObjectEditor<GenericSequence, Ver
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
-        actions.add(
-            new SQLDatabasePersistAction("Drop sequence", "DROP SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
-        );
-    }
-
-    @Override
     public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
-    }
-
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, GenericSequence> getObjectsCache(GenericSequence object) {
-        DBSObject parentObject = object.getParentObject();
-        if (parentObject instanceof GenericStructContainer) {
-            return ((GenericStructContainer) parentObject).getSequenceCache();
-        }
-        return null;
     }
 
     @Override
@@ -102,8 +91,13 @@ public class VerticaSequenceManager extends SQLObjectEditor<GenericSequence, Ver
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         GenericSequence sequence = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
@@ -114,12 +108,18 @@ public class VerticaSequenceManager extends SQLObjectEditor<GenericSequence, Ver
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         GenericSequence sequence = command.getObject();
         final StringBuilder sequenceOptions = new StringBuilder();
         addSequenceOptions(sequence, sequenceOptions, command.getProperties());
 
-        if (sequenceOptions.length() > 0) {
+        if (!sequenceOptions.isEmpty()) {
             actionList.add(new SQLDatabasePersistAction(
                 "Alter sequence",
                 "ALTER SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + sequenceOptions
@@ -153,17 +153,6 @@ public class VerticaSequenceManager extends SQLObjectEditor<GenericSequence, Ver
                 ddl.append("NO ");
             }
             ddl.append("CYCLE");
-        }
-    }
-
-    @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<GenericSequence, PropertyHandler> command, Map<String, Object> options) {
-        GenericSequence sequence = command.getObject();
-        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
-            actions.add(new SQLDatabasePersistAction(
-                "Comment sequence",
-                "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(sequence, CommonUtils.notEmpty(command.getObject().getDescription()))));
         }
     }
 }

@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -190,5 +192,16 @@ public class DPIApplication extends DesktopApplicationImpl implements DBPApplica
 
     public void addDriverLibsLocation(@NotNull String driverId, @NotNull String[] driverLibsLocation) {
         this.driverLibsLocation.put(driverId, driverLibsLocation);
+    }
+
+    @Override
+    public long getLastUserActivityTime() {
+        return -1;
+    }
+
+    @NotNull
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return new BundlePreferenceStore(DPIPlatform.PLUGIN_ID);
     }
 }

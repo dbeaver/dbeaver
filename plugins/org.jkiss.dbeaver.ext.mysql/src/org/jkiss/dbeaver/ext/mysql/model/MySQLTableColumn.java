@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -48,7 +49,9 @@ import java.util.List;
 /**
  * MySQLTableColumn
  */
-public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject
+public class MySQLTableColumn
+    extends JDBCTableColumn<MySQLTableBase>
+    implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject, GisAttribute
 {
     private static final Log log = Log.getLog(MySQLTableColumn.class);
 
@@ -78,6 +81,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private String extraInfo;
     private String genExpression;
     private long modifiers;
+    private Integer srid;
 
     private String fullTypeName;
     private List<String> enumValues;
@@ -194,6 +198,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
                     break;
             }
         }
+
+        if (MySQLUtils.isColumnSridSupported(getDataSource())) {
+            srid = JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_SRS_ID);
+        }
     }
 
     private static List<String> parseEnumValues(String typeName) {
@@ -237,17 +245,19 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getFullTypeName() {
         return fullTypeName;
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) throws DBException {
+    public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         super.setFullTypeName(fullTypeName);
         this.fullTypeName = fullTypeName;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
@@ -274,6 +284,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.getMaxLength();
     }
 
+    @Nullable
     @Override
     //@Property(viewable = true, order = 41)
     public Integer getScale()
@@ -281,6 +292,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.getScale();
     }
 
+    @Nullable
     @Override
     //@Property(viewable = true, order = 42)
     public Integer getPrecision()
@@ -389,6 +401,22 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     @Override
     public String getDescription() {
         return getComment();
+    }
+
+    @Override
+    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) {
+        return srid != null ? srid : -1;
+    }
+
+    @Nullable
+    @Override
+    public String getAttributeGeometryType(DBRProgressMonitor monitor) {
+        return MySQLUtils.isSpatialDataType(typeName) ? typeName : null;
+    }
+
+    @Nullable
+    public Integer getSrid() {
+        return srid;
     }
 
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {

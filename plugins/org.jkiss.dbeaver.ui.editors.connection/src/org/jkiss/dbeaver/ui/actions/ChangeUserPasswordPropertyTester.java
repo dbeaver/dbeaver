@@ -21,7 +21,10 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.utils.CommonUtils;
 
 public class ChangeUserPasswordPropertyTester extends PropertyTester {
@@ -34,6 +37,11 @@ public class ChangeUserPasswordPropertyTester extends PropertyTester {
 
         if (property.equals("canChangePassword")) {
             DBNDataSource dsNode = (DBNDataSource) element;
+            DBPProject project = dsNode.getOwnerProject();
+            if (project == null || !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+                return false;
+            }
+
             DBPDataSourceContainer dataSourceContainer = dsNode.getDataSourceContainer();
             DBPDataSource dataSource = dataSourceContainer.getDataSource();
             String userName = dataSourceContainer.getConnectionConfiguration().getUserName();

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -151,5 +152,33 @@ public class MySQLUtils {
 
     public static boolean isAlterUSerSupported(MySQLDataSource dataSource) {
         return dataSource.isMariaDB() ? dataSource.isServerVersionAtLeast(10, 2) : dataSource.isServerVersionAtLeast(5, 7);
+    }
+
+    /**
+     * Check if column SRID ({@code SRID <srid>} attribute) is supported
+     */
+    public static boolean isColumnSridSupported(@NotNull MySQLDataSource dataSource) {
+        // There's no any documentation in which version this feature was added
+        return !dataSource.isMariaDB() && dataSource.isServerVersionAtLeast(8, 0);
+    }
+
+    /**
+     * Check if given type name is a spatial data type
+     */
+    public static boolean isSpatialDataType(@NotNull String name) {
+        // Switch expression looks ugly here, sorry
+        switch (name.toLowerCase(Locale.ROOT)) {
+            case MySQLConstants.TYPE_GEOMETRY:
+            case MySQLConstants.TYPE_POINT:
+            case MySQLConstants.TYPE_LINESTRING:
+            case MySQLConstants.TYPE_POLYGON:
+            case MySQLConstants.TYPE_MULTIPOINT:
+            case MySQLConstants.TYPE_MULTILINESTRING:
+            case MySQLConstants.TYPE_MULTIPOLYGON:
+            case MySQLConstants.TYPE_GEOMETRYCOLLECTION:
+                return true;
+            default:
+                return false;
+        }
     }
 }

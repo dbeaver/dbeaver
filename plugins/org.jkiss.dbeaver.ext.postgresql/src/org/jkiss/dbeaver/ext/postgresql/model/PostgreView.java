@@ -69,6 +69,7 @@ public class PostgreView extends PostgreViewBase
         return "VIEW";
     }
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_VIEW;

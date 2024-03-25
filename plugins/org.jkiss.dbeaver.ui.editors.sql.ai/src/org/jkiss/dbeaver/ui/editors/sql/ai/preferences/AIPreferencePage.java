@@ -108,12 +108,18 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
 
     @Override
     protected void performDefaults() {
+        if (!hasAccessToPage()) {
+            return;
+        }
         enableAICheck.setSelection(!settings.isAiDisabled());
         formatterConfigurator.loadSettings(settings);
     }
 
     @Override
     public boolean performOk() {
+        if (!hasAccessToPage()) {
+            return false;
+        }
         settings.setAiDisabled(!enableAICheck.getSelection());
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
@@ -254,5 +260,10 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         private void saveSettings(AIEngineSettings settings) {
             configurator.saveSettings(settings);
         }
+    }
+
+    @Override
+    protected boolean hasAccessToPage() {
+        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
     }
 }

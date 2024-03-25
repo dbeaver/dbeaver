@@ -221,6 +221,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         return hiddenState;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {
@@ -231,6 +232,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         return dataKind;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
@@ -260,7 +262,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     }
 
     @Override
-    public void setDataType(DB2DataType dataType) {
+    public void setDataType(@NotNull DB2DataType dataType) {
         onChangeDataType(this.dataType, dataType);
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
@@ -273,6 +275,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         return super.getMaxLength();
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 39)
     public Integer getScale()
@@ -298,6 +301,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     // return typeStringUnits;
     // }
 
+    @Nullable
     @Override
     @Property(viewable = false, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
     public Integer getPrecision()

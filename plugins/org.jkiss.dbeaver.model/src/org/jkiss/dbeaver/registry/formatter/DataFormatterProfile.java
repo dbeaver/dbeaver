@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry.formatter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -72,7 +73,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void saveProfile(DBPPreferenceStore store) throws IOException
+    public void saveProfile(@NotNull DBPPreferenceStore store) throws IOException
     {
         store.setValue(PROP_LANGUAGE, locale.getLanguage());
         store.setValue(PROP_COUNTRY, locale.getCountry());
@@ -81,12 +82,14 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         PrefUtils.savePreferenceStore(store);
     }
 
+    @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore()
     {
         return store;
     }
 
+    @NotNull
     @Override
     public String getProfileName()
     {
@@ -94,7 +97,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void setProfileName(String name)
+    public void setProfileName(@NotNull String name)
     {
         this.name = name;
     }
@@ -106,13 +109,14 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void setLocale(Locale locale)
+    public void setLocale(@NotNull Locale locale)
     {
         this.locale = locale;
     }
 
+    @NotNull
     @Override
-    public Map<String, Object> getFormatterProperties(DBPPreferenceStore store, String typeId)
+    public Map<String, Object> getFormatterProperties(@NotNull DBPPreferenceStore store, @NotNull String typeId)
     {
         DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         Map<String, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
@@ -130,7 +134,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void setFormatterProperties(DBPPreferenceStore store, String typeId, Map<String, Object> formatterProps)
+    public void setFormatterProperties(@NotNull DBPPreferenceStore store, @NotNull String typeId, @NotNull Map<String, Object> formatterProps)
     {
         DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         for (DBPPropertyDescriptor prop : formatter.getProperties()) {
@@ -167,7 +171,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void reset(DBPPreferenceStore store)
+    public void reset(@NotNull DBPPreferenceStore store)
     {
         if (store instanceof SimplePreferenceStore) {
             // Set all formatter properties to default
@@ -184,8 +188,9 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         loadProfile(store);
     }
 
+    @NotNull
     @Override
-    public DBDDataFormatter createFormatter(String typeId, DBSTypedObject type)
+    public DBDDataFormatter createFormatter(@NotNull String typeId, DBSTypedObject type)
         throws ReflectiveOperationException
     {
     	loadProfile(store);

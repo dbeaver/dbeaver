@@ -87,43 +87,51 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public boolean supportsSequences(GenericDataSource dataSource) {
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
     public JDBCStatement prepareSequencesLoadStatement(JDBCSession session, GenericStructContainer container) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
-                "SEQ_OBJ.NAME, " +
-                "SEQ_OBJ.INFO4 AS INCREMENT, " +
-                "SF_SEQUENCE_GET_MAX(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MAX_VALUE," +
-                "SF_SEQUENCE_GET_MIN(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MIN_VALUE," +
-                "SF_SEQ_CURRVAL(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS LAST_VALUE " +
-                "FROM " +
-                "SYSOBJECTS SEQ_OBJ, " +
-                "SYSOBJECTS SCH_OBJ " +
-                "WHERE SEQ_OBJ.SCHID = SCH_OBJ.ID " +
-                "AND SEQ_OBJ.SUBTYPE$ = 'SEQ' " +
-                "AND SCH_OBJ.NAME = ?");
+            "SEQ_OBJ.NAME, " +
+            "SEQ_OBJ.INFO4 AS INCREMENT, " +
+            "SF_SEQUENCE_GET_MAX(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MAX_VALUE," +
+            "SF_SEQUENCE_GET_MIN(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MIN_VALUE," +
+            "SF_SEQ_CURRVAL(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS LAST_VALUE, " +
+            "SF_SEQUENCE_GET_CACHE_NUM(SCH_OBJ.NAME,SEQ_OBJ.NAME) CACHE_SIZE," +
+            "SEQ_OBJ.INFO1 & 0x0000FF IS_CYCLE," +
+            "SEQ_OBJ.INFO1 & 0x00FF00 IS_ORDER," +
+            "SEQ_OBJ.INFO1 & 0xFF0000 IS_CACHE" +
+            "\nFROM " +
+            "SYSOBJECTS SEQ_OBJ, " +
+            "SYSOBJECTS SCH_OBJ " +
+            "\nWHERE SEQ_OBJ.SCHID = SCH_OBJ.ID " +
+            "AND SEQ_OBJ.SUBTYPE$ = 'SEQ' " +
+            "AND SCH_OBJ.NAME = ?");
         dbStat.setString(1, container.getName());
         return dbStat;
     }
 
     @Override
-    public GenericSequence createSequenceImpl(JDBCSession session, GenericStructContainer container, JDBCResultSet dbResult) throws DBException {
+    public GenericSequence createSequenceImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull JDBCResultSet dbResult
+    ) {
         String name = JDBCUtils.safeGetString(dbResult, 1);
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
-        Number lastValue = JDBCUtils.safeGetBigDecimal(dbResult, "LAST_VALUE");
-        Number incrementBy = JDBCUtils.safeGetBigDecimal(dbResult, "INCREMENT");
-        Number minValue = JDBCUtils.safeGetBigDecimal(dbResult, "MIN_VALUE");
-        Number maxValue = JDBCUtils.safeGetBigDecimal(dbResult, "MAX_VALUE");
-        return new GenericSequence(container, name, "", lastValue, minValue, maxValue, incrementBy);
+        long lastValue = JDBCUtils.safeGetLong(dbResult, "LAST_VALUE");
+        long incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT");
+        long minValue = JDBCUtils.safeGetLong(dbResult, "MIN_VALUE");
+        long maxValue = JDBCUtils.safeGetLong(dbResult, "MAX_VALUE");
+        return new DamengSequence(container, name, null, lastValue, minValue, maxValue, incrementBy, dbResult);
     }
 
     @Override
-    public boolean supportsDatabaseTriggers(GenericDataSource dataSource) {
+    public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
@@ -134,7 +142,11 @@ public class DamengMetaModel extends GenericMetaModel {
 
 
     @Override
-    public JDBCStatement prepareTableTriggersLoadStatement(JDBCSession session, GenericStructContainer container, GenericTableBase table) throws SQLException {
+    public JDBCStatement prepareTableTriggersLoadStatement(
+        JDBCSession session,
+        @NotNull GenericStructContainer container,
+        GenericTableBase table
+    ) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
                 "TABTRIG_OBJ_INNER.NAME AS TRIGGER_NAME, TAB_OBJ_INNER.NAME AS OWNER,* " +
                 "FROM " +
