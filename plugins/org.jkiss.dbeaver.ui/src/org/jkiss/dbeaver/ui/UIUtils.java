@@ -525,6 +525,7 @@ public class UIUtils {
             .setLabels(buttons)
             .setDefaultReply(Reply.NO)
             .setPrimaryImage(image)
+            .setDefaultFocus(buttons.length-1)
             .showMessageBox()
         );
         return reply[0] == Reply.OK;

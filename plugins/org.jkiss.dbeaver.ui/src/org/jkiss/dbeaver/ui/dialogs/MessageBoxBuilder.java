@@ -105,6 +105,11 @@ public final class MessageBoxBuilder {
         return this;
     }
 
+    @NotNull
+    public MessageBoxBuilder setDefaultFocus(int index) {
+        dialog.setDefaultAnswerIdx(index);
+        return this;
+    }
     // -----
 
     @Nullable
@@ -121,8 +126,10 @@ public final class MessageBoxBuilder {
                 labels.add(reply != null ? reply.getDisplayString() : "[null]");
             }
             dialog.setLabels(labels);
-        } 
-        dialog.setDefaultAnswerIdx(defaultIdx);
+        }
+        if (replies != null) {
+            dialog.setDefaultAnswerIdx(defaultIdx);
+        }
 
         // Open dialog, detect reply
         int answerIdx = dialog.open();
