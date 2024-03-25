@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -46,14 +48,21 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
     private DBPProject project;
     private String dashboardId;
 
-    public static DashboardView openView(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer) {
+    public static DashboardView openView(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull DBPProject project,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @Nullable String id) {
         try {
             return (DashboardView) workbenchWindow.getActivePage().showView(
                 DashboardView.VIEW_ID,
-                DashboardConfiguration.getViewId(dataSourceContainer),
+                DashboardConfiguration.getViewId(project, dataSourceContainer, id),
                 IWorkbenchPage.VIEW_ACTIVATE);
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError(UIDashboardMessages.error_dashboard_view_cannot_open_title, UIDashboardMessages.error_dashboard_view_cannot_open_msg, e);
+            DBWorkbench.getPlatformUI().showError(
+                UIDashboardMessages.error_dashboard_view_cannot_open_title,
+                UIDashboardMessages.error_dashboard_view_cannot_open_msg,
+                e);
         }
         return null;
     }

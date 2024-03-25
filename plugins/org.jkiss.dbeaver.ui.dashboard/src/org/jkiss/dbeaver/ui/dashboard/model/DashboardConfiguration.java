@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class DashboardConfiguration {
 
-    public static final String REF_PREFIX = "ref:";
+    public static final String REF_PREFIX = "ref#";
 
     public enum Parameter {
         project,
@@ -227,20 +227,20 @@ public class DashboardConfiguration {
                 }
             }
         }
-        return viewConfigFolder.resolve("view-" + viewId.replace("/", "_") + ".xml");
+        return viewConfigFolder.resolve("view-" + project.getName() +
+            (dataSourceContainer == null ? "" : "_" + dataSourceContainer.getId().replace("/", "_")) + ".xml");
     }
 
-
-    public static String getViewId(DBPDataSourceContainer dataSourceContainer) {
-        return REF_PREFIX +
-            Parameter.project.name() + "=" + dataSourceContainer.getProject().getName() + "," +
-            Parameter.datasource.name() + "=" + dataSourceContainer.getId();
-    }
-
-    public static String getViewId(DBPProject project, String id) {
-        return REF_PREFIX +
-            Parameter.project.name() + "=" + project.getName() + "," +
-            Parameter.id.name() + "=" + id;
+    public static String getViewId(DBPProject project, DBPDataSourceContainer dataSourceContainer, String id) {
+        StringBuilder viewId = new StringBuilder();
+        viewId.append(REF_PREFIX).append(Parameter.project.name()).append("=").append(project.getName());
+        if (dataSourceContainer != null) {
+            viewId.append(",").append(Parameter.datasource.name()).append("=").append(dataSourceContainer.getId());
+        }
+        if (id != null) {
+            viewId.append(",").append(Parameter.id.name()).append("=").append(id);
+        }
+        return viewId.toString();
     }
 
 }

@@ -40,10 +40,12 @@ public class HandlerDashboardOpen extends AbstractDataSourceHandler {
             dataSourceContainer = getActiveDataSourceContainer(event, true);
         }
         if (dataSourceContainer == null) {
-            DBWorkbench.getPlatformUI().showError(UIDashboardMessages.error_dashboard_view_no_connection_title, UIDashboardMessages.error_dashboard_view_no_connection_msg);
+            DBWorkbench.getPlatformUI().showError(
+                UIDashboardMessages.error_dashboard_view_no_connection_title,
+                UIDashboardMessages.error_dashboard_view_no_connection_msg);
             return null;
         }
-        DashboardView.openView(workbenchWindow, dataSourceContainer);
+        DashboardView.openView(workbenchWindow, dataSourceContainer.getProject(), dataSourceContainer, null);
         return null;
     }
 
