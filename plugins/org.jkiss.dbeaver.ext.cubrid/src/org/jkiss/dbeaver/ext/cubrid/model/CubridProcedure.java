@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -115,6 +116,12 @@ public class CubridProcedure extends GenericProcedure
             }
         }
         return proColumns;
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return getName();
     }
 
     @Override
