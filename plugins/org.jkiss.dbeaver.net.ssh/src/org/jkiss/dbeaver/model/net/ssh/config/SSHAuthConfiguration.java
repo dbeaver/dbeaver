@@ -18,83 +18,26 @@ package org.jkiss.dbeaver.model.net.ssh.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 
 import java.nio.file.Path;
 
-public class SSHAuthConfiguration {
-    private final SSHConstants.AuthType type;
-    private final String password;
-    private final Path keyFile;
-    private final String keyValue;
-    private final boolean savePassword;
+public sealed interface SSHAuthConfiguration {
+    sealed interface WithPassword extends SSHAuthConfiguration {
+        @Nullable
+        String password();
 
-    private SSHAuthConfiguration(@NotNull SSHConstants.AuthType type, @Nullable String password, boolean savePassword) {
-        this.type = type;
-        this.password = password;
-        this.keyFile = null;
-        this.keyValue = null;
-        this.savePassword = savePassword;
+        boolean savePassword();
     }
 
-    private SSHAuthConfiguration(@NotNull SSHConstants.AuthType type, @Nullable Path keyFile, @Nullable String password, boolean savePassword) {
-        this.type = type;
-        this.password = password;
-        this.keyFile = keyFile;
-        this.keyValue = null;
-        this.savePassword = savePassword;
+    record Password(@Nullable String password, boolean savePassword) implements WithPassword {
     }
 
-    private SSHAuthConfiguration(@NotNull SSHConstants.AuthType type, @NotNull String keyValue, @Nullable String password, boolean savePassword) {
-        this.type = type;
-        this.password = password;
-        this.keyFile = null;
-        this.keyValue = keyValue;
-        this.savePassword = savePassword;
+    record KeyFile(@NotNull Path path, @Nullable String password, boolean savePassword) implements WithPassword {
     }
 
-    @NotNull
-    public static SSHAuthConfiguration usingPassword(@NotNull String password, boolean savePassword) {
-        return new SSHAuthConfiguration(SSHConstants.AuthType.PASSWORD, password, savePassword);
+    record KeyData(@NotNull String data, @Nullable String password, boolean savePassword) implements WithPassword {
     }
 
-    @NotNull
-    public static SSHAuthConfiguration usingKey(@NotNull Path key, @Nullable String passphrase, boolean savePassword) {
-        return new SSHAuthConfiguration(SSHConstants.AuthType.PUBLIC_KEY, key, passphrase, savePassword);
+    record Agent() implements SSHAuthConfiguration {
     }
-
-    @NotNull
-    public static SSHAuthConfiguration usingKey(@NotNull String keyValue, @Nullable String passphrase, boolean savePassword) {
-        return new SSHAuthConfiguration(SSHConstants.AuthType.PUBLIC_KEY, keyValue, passphrase, savePassword);
-    }
-
-    @NotNull
-    public static SSHAuthConfiguration usingAgent() {
-        return new SSHAuthConfiguration(SSHConstants.AuthType.AGENT, null, false);
-    }
-
-    @NotNull
-    public SSHConstants.AuthType getType() {
-        return type;
-    }
-
-    @Nullable
-    public String getPassword() {
-        return password;
-    }
-
-    @Nullable
-    public Path getKeyFile() {
-        return keyFile;
-    }
-
-    @Nullable
-    public String getKeyValue() {
-        return keyValue;
-    }
-
-    public boolean isSavePassword() {
-        return savePassword;
-    }
-
 }

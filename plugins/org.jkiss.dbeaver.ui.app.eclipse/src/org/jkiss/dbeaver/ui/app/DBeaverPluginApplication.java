@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.EclipsePluginApplicationImpl;
 
 /**
@@ -23,4 +26,10 @@ import org.jkiss.dbeaver.registry.EclipsePluginApplicationImpl;
  */
 public class DBeaverPluginApplication extends EclipsePluginApplicationImpl {
 
+    @NotNull
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return DBeaverActivator.getInstance().getPreferences();
+
+    }
 }

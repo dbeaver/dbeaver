@@ -22,9 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreGeometryTypeHandler;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -77,19 +75,13 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
     }
 
     @Override
-    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException {
+    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) {
         return PostgreGeometryTypeHandler.getGeometrySRID(getTypeMod());
-    }
-
-    @NotNull
-    @Override
-    public DBGeometryDimension getAttributeGeometryDimension(DBRProgressMonitor monitor) throws DBCException {
-        return PostgreGeometryTypeHandler.getGeometryDimension(getTypeMod());
     }
 
     @Nullable
     @Override
-    public String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException {
+    public String getAttributeGeometryType(DBRProgressMonitor monitor) {
         return PostgreGeometryTypeHandler.getGeometryType(getTypeMod());
     }
 

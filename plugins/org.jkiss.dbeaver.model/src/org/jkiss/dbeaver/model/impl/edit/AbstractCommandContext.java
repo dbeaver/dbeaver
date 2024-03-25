@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -83,7 +84,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     @Override
     public void saveChanges(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (!executionContext.isConnected()) {
-            executionContext.invalidateContext(monitor, false);
+            executionContext.invalidateContext(monitor);
             if (!executionContext.isConnected()) {
                 throw new DBException("Context [" + executionContext.getContextName() + "] isn't connected to the database");
             }

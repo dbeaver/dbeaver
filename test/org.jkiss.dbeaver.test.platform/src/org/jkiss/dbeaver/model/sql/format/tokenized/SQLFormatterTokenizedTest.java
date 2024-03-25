@@ -70,7 +70,7 @@ public class SQLFormatterTokenizedTest {
     public void shouldDoDefaultFormat() {
         //given
         String expectedString = getExpectedString();
-        String inputString = "SELECT * FROM TABLE1 t WHERE a > 100 AND b BETWEEN 12 AND 45;  SELECT t.*, j1.x, j2.y FROM TABLE1 t JOIN JT1 j1 ON j1.a = t.a LEFT OUTER JOIN JT2 j2 ON j2.a = t.a AND j2.b = j1.b WHERE t.xxx NOT NULL;  DELETE FROM TABLE1 WHERE a = 1;  UPDATE TABLE1 SET a = 2 WHERE a = 1;  SELECT table1.id, table2.number, SUM(table1.amount) FROM table1 INNER JOIN table2 ON table.id = table2.table1_id WHERE table1.id IN ( SELECT table1_id FROM table3 WHERE table3.name = 'Foo Bar' AND table3.type = 'unknown_type') GROUP BY table1.id, table2.number ORDER BY table1.id;\n";
+        String inputString = "SELECT * FROM TABLE1 t WHERE a > 100 AND b BETWEEN 12 AND 45;  SELECT t.*, j1.x, j2.y FROM TABLE1 t JOIN JT1 j1 ON j1.a = t.a LEFT OUTER JOIN JT2 j2 ON j2.a = t.a AND j2.b = j1.b WHERE t.xxx IS NOT NULL;  DELETE FROM TABLE1 WHERE a = 1;  UPDATE TABLE1 SET a = 2 WHERE a = 1;  SELECT table1.id, table2.number, SUM(table1.amount) FROM table1 INNER JOIN table2 ON table1.id = table2.table1_id WHERE table1.id IN ( SELECT table1_id FROM table3 WHERE table3.name = 'Foo Bar' AND table3.type = 'unknown_type') GROUP BY table1.id, table2.number ORDER BY table1.id;\n";
 
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
 
@@ -328,7 +328,7 @@ public class SQLFormatterTokenizedTest {
                 .append("\tj2.a = t.a").append(lineBreak)
                 .append("\tAND j2.b = j1.b").append(lineBreak)
                 .append("WHERE").append(lineBreak)
-                .append("\tt.xxx NOT NULL;").append(lineBreak).append(lineBreak)
+                .append("\tt.xxx IS NOT NULL;").append(lineBreak).append(lineBreak)
                 .append("DELETE").append(lineBreak)
                 .append("FROM").append(lineBreak)
                 .append("\tTABLE1").append(lineBreak)
@@ -347,7 +347,7 @@ public class SQLFormatterTokenizedTest {
                 .append("FROM").append(lineBreak)
                 .append("\ttable1").append(lineBreak)
                 .append("INNER JOIN table2 ON").append(lineBreak)
-                .append("\ttable.id = table2.table1_id").append(lineBreak)
+                .append("\ttable1.id = table2.table1_id").append(lineBreak)
                 .append("WHERE").append(lineBreak)
                 .append("\ttable1.id IN (").append(lineBreak)
                 .append("\tSELECT").append(lineBreak)

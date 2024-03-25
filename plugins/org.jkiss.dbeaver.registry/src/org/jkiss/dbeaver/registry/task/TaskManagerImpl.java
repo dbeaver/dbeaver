@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.task;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
@@ -302,9 +304,33 @@ public class TaskManagerImpl implements DBTTaskManager {
         return statisticsFolder.resolve(task.getId());
     }
 
+    @NotNull
     @Override
-    public Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
-        TaskRunJob runJob = new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener);
+    public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
+        final TaskRunJob job = createJob((TaskImpl) task, listener);
+        final IStatus result = job.runDirectly(monitor);
+        final Throwable error = result.getException();
+        if (error != null) {
+            if (error instanceof DBException e) {
+                throw e;
+            } else {
+                throw new DBException("Error executing task", error);
+            }
+        }
+        return job.getTaskRunStatus();
+    }
+
+    @NotNull
+    @Override
+    public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
+        final TaskRunJob runJob = createJob((TaskImpl) task, listener);
+        runJob.schedule();
+        return runJob;
+    }
+
+    @NotNull
+    private TaskRunJob createJob(@NotNull TaskImpl task, @NotNull DBTTaskExecutionListener listener) {
+        TaskRunJob runJob = new TaskRunJob(task, Locale.getDefault(), listener);
         runJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void aboutToRun(IJobChangeEvent event) {
@@ -316,7 +342,6 @@ public class TaskManagerImpl implements DBTTaskManager {
                 runningTasks.remove((TaskRunJob) event.getJob());
             }
         });
-        runJob.schedule();
         return runJob;
     }
 

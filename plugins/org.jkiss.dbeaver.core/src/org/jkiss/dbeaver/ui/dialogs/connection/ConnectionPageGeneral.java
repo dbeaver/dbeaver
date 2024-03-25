@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -165,7 +166,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 connectionNameText.setText(dataSourceDescriptor.getName());
             } else {
                 if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
-                    String newName = generateConnectionName(settings, ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+                    String newName = generateConnectionName(settings,
+                        DBWorkbench.getPlatform()
+                            .getPreferenceStore()
+                            .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
                     if (!newName.isEmpty()) {
                         connectionNameText.setText(newName);
                     }
@@ -622,7 +626,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             name = dataSourceDescriptor.getName();
         } else {
             name = generateConnectionName(getWizard().getPageSettings(),
-                ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+                DBWorkbench.getPlatform()
+                    .getPreferenceStore()
+                    .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         }
 
         dataSource.setName(name);

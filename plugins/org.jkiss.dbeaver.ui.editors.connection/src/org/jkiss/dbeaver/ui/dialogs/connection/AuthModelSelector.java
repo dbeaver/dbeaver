@@ -62,18 +62,20 @@ public class AuthModelSelector extends Composite {
     private final Runnable changeListener;
     private Combo authModelCombo;
     private boolean authSettingsEnabled = true;
+    private boolean isEnableSharedConfigurator = true;
 
-    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener) {
+    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener, boolean enableShared) {
         super(parent, SWT.NONE);
         setLayout(new FillLayout());
 
         this.panelExtender = panelExtender;
         this.changeListener = changeListener;
+        this.isEnableSharedConfigurator = enableShared;
 
         modelConfigPlaceholder = UIUtils.createControlGroup(this, UIConnectionMessages.dialog_connection_auth_group, 2, GridData.FILL_HORIZONTAL, 0);
 
         UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(DBAAuthModel.class.getName());
-        if (configDescriptor != null) {
+        if (configDescriptor != null && isEnableSharedConfigurator) {
             try {
                 sharedConfigurator = configDescriptor.createConfigurator();
             } catch (Exception e) {
@@ -118,7 +120,7 @@ public class AuthModelSelector extends Composite {
             o1.isDefaultModel() ? -1 :
                 o2.isDefaultModel() ? 1 :
                     o1.getName().compareTo(o2.getName()));
-        if (selectedAuthModel == null && !CommonUtils.isEmpty(defaultAuthModelId)) {
+        if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
                 if (amd.getId().equals(defaultAuthModelId)) {
@@ -127,13 +129,13 @@ public class AuthModelSelector extends Composite {
                     break;
                 }
             }
-            if (selectedAuthModel == null) {
+            if (selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) {
                 // First one
                 selectedAuthModel = allAuthModels.get(0);
                 dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
             }
         }
-        if (sharedConfigurator != null) {
+        if (sharedConfigurator != null && isEnableSharedConfigurator) {
             sharedConfigurator.loadSettings(activeDataSource);
         }
 
@@ -276,5 +278,9 @@ public class AuthModelSelector extends Composite {
                 changeAuthModel();
             }
         }
+    }
+
+    public void setEnableSharedConfigurator(boolean isEnable) {
+        this.isEnableSharedConfigurator = isEnable;
     }
 }

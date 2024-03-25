@@ -61,7 +61,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
         {
-            DBPPreferenceStore store = ModelPreferences.getPreferences();
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
             // 1. Check for drivers download proxy
             final String proxyHost = store.getString(ModelPreferences.UI_PROXY_HOST);

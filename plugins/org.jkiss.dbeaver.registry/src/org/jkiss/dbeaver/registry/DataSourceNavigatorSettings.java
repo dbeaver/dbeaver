@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -198,7 +198,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     public static DBNBrowseSettings getDefaultSettings() {
-        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 
         String defPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);
         if (!CommonUtils.isEmpty(defPreset)) {
@@ -222,7 +222,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     public static void setDefaultSettings(DBNBrowseSettings settings) {
         // Save preset
-        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 
         String presetId = null;
         for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {

@@ -17,41 +17,15 @@
 package org.jkiss.dbeaver.model.net.ssh.config;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 
-public class SSHHostConfiguration {
-    private final String username;
-    private final String hostname;
-    private final int port;
-    private final SSHAuthConfiguration auth;
-
-    public SSHHostConfiguration(@NotNull String username, @NotNull String hostname, int port, @NotNull SSHAuthConfiguration authConfiguration) {
-        this.username = username;
-        this.hostname = hostname;
-        this.port = port;
-        this.auth = authConfiguration;
-    }
-
-    public SSHHostConfiguration(@NotNull String username, @NotNull String hostname, @NotNull SSHAuthConfiguration auth) {
-        this(username, hostname, SSHConstants.DEFAULT_SSH_PORT, auth);
-    }
-
-    @NotNull
-    public String getUsername() {
-        return username;
-    }
-
-    @NotNull
-    public String getHostname() {
-        return hostname;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    @NotNull
-    public SSHAuthConfiguration getAuthConfiguration() {
-        return auth;
+public record SSHHostConfiguration(
+    @NotNull String username,
+    @NotNull String hostname,
+    int port,
+    @NotNull SSHAuthConfiguration auth
+) {
+    @Override
+    public String toString() {
+        return username + "@" + hostname + ":" + port;
     }
 }

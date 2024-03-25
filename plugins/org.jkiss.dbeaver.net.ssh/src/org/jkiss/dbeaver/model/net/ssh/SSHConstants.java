@@ -42,10 +42,6 @@ public class SSHConstants {
     public enum AuthType {
         PASSWORD,
         PUBLIC_KEY,
-        AGENT;
-
-        public boolean usesPassword() {
-            return this == PASSWORD || this == PUBLIC_KEY;
-        }
+        AGENT
     }
 }

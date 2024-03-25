@@ -145,8 +145,8 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @NotNull
     @Override
-    public DBPApplication getApplication() {
-        return BaseApplicationImpl.getInstance();
+    public DBeaverHeadlessApplication getApplication() {
+        return (DBeaverHeadlessApplication) BaseApplicationImpl.getInstance();
     }
 
     @NotNull
@@ -169,7 +169,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return DBeaverTestActivator.getInstance().getPreferences();
+        return getApplication().getPreferenceStore();
     }
 
     @NotNull
