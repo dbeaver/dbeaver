@@ -81,7 +81,7 @@
 
 								<!-- Tests. Mockito-all is kept for old version build support. -->
 <!--								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>-->
-								<artifact><id>org.mockito:mockito-core:4.6.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.mockito:mockito-core:4.8.1</id><source>false</source><override>false</override></artifact>
 
 								<!-- Logback -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.logback:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-logback -->
