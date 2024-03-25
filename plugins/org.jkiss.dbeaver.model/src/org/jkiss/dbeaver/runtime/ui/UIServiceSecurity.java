@@ -48,18 +48,10 @@ public interface UIServiceSecurity {
     boolean validatePassword(DBPProject project, String title, String message, boolean forceEncryption);
 
     /**
-     * Reset credentials (login/password) for project
-     *
-     * @param project - current project
-     * @throws DBException - thrown exception 
-     */
-    void resetProjectCredentials(DBPProject project) throws DBException;
-
-    /**
-     * Reset data source configuration for encrypted project
+     * Reset project password
      *
      * @param project - current project
      * @throws DBException - thrown exception
      */
-    void resetProjectDataSourceConfiguration(DBPProject project) throws DBException;
+    void resetProjectPassword(DBPProject project) throws DBException;
 }
