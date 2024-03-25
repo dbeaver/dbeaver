@@ -32,11 +32,11 @@ import java.util.List;
 /**
  * Dashboard container
  */
-public interface DashboardViewItemContainer {
+public interface DashboardItemContainer {
 
     DashboardItemDescriptor getDashboard();
 
-    DashboardViewItemConfiguration getViewConfig();
+    DashboardItemConfiguration getViewConfig();
 
     /**
      * Maximum item counts

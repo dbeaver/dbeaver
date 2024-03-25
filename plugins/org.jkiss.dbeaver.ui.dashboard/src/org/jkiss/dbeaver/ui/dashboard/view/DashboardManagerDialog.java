@@ -101,10 +101,10 @@ public class DashboardManagerDialog extends BaseDialog {
                     } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
                         result = DashboardRegistry.getInstance().getAllSupportedSources(dpd);
                     } else if (parentElement instanceof DBPDataSourceProviderDescriptor dspd) {
-                        result = DashboardRegistry.getInstance().getDashboards(
+                        result = DashboardRegistry.getInstance().getDashboardItems(
                             getDashboardProviderFor(dspd), dspd, false);
                     } else if (parentElement instanceof DBPDriver driver) {
-                        result = DashboardRegistry.getInstance().getDashboards(
+                        result = DashboardRegistry.getInstance().getDashboardItems(
                             getDashboardProviderFor(driver),
                             driver, false);
                     }
@@ -281,7 +281,7 @@ public class DashboardManagerDialog extends BaseDialog {
             providerDescriptor, null, "", "", "", "", true);
         DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
-            DashboardRegistry.getInstance().createDashboard(newDashboard);
+            DashboardRegistry.getInstance().createDashboardItem(newDashboard);
             refreshDashboards();
         }
     }
@@ -291,7 +291,7 @@ public class DashboardManagerDialog extends BaseDialog {
         newDashboard.setCustom(true);
         String origId = newDashboard.getId();
         for (int i = 2; ; i++) {
-            if (DashboardRegistry.getInstance().getDashboard(newDashboard.getId()) != null) {
+            if (DashboardRegistry.getInstance().getDashboardItem(newDashboard.getId()) != null) {
                 newDashboard.setId(origId + " " + i);
             } else {
                 break;
@@ -299,7 +299,7 @@ public class DashboardManagerDialog extends BaseDialog {
         }
         DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
-            DashboardRegistry.getInstance().createDashboard(newDashboard);
+            DashboardRegistry.getInstance().createDashboardItem(newDashboard);
             refreshDashboards();
         }
     }
@@ -321,7 +321,7 @@ public class DashboardManagerDialog extends BaseDialog {
             UIDashboardMessages.dialog_dashboard_manager_shell_delete_title,
             NLS.bind(UIDashboardMessages.dialog_dashboard_manager_shell_delete_question, selectedDashboard.getName())))
         {
-            DashboardRegistry.getInstance().removeDashboard(selectedDashboard);
+            DashboardRegistry.getInstance().removeDashboardItem(selectedDashboard);
             selectedDashboard = null;
             refreshDashboards();
         }

@@ -28,14 +28,14 @@ import java.util.List;
 public interface DashboardGroupContainer {
 
     @NotNull
-    DashboardViewContainer getView();
+    DashboardContainer getView();
 
     @NotNull
-    List<? extends DashboardViewItemContainer> getItems();
+    List<? extends DashboardItemContainer> getItems();
 
-    void removeItem(@NotNull DashboardViewItemContainer item);
+    void removeItem(@NotNull DashboardItemContainer item);
 
     void addItem(@NotNull DashboardItemDescriptor descriptor);
 
-    void selectItem(@Nullable DashboardViewItemContainer item);
+    void selectItem(@Nullable DashboardItemContainer item);
 }

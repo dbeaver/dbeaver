@@ -25,13 +25,13 @@ import java.util.List;
 /**
  * Dashboard view container
  */
-public interface DashboardViewContainer extends DBPDataSourceContainerProvider {
+public interface DashboardContainer extends DBPDataSourceContainerProvider {
 
     List<? extends DashboardGroupContainer> getGroups();
 
     DBCExecutionContext getExecutionContext();
 
-    DashboardViewConfiguration getViewConfiguration();
+    DashboardConfiguration getViewConfiguration();
 
     boolean isSingleChartMode();
 

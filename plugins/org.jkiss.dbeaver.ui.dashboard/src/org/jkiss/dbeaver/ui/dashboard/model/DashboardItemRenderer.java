@@ -36,20 +36,20 @@ public interface DashboardItemRenderer {
      */
     Composite createDashboard(
         @NotNull Composite composite,
-        @NotNull DashboardViewItemContainer container,
-        @NotNull DashboardViewContainer viewContainer,
+        @NotNull DashboardItemContainer container,
+        @NotNull DashboardContainer viewContainer,
         @NotNull Point preferredSize);
 
-    void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardViewItemConfiguration dashboardConfig);
+    void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardItemConfiguration dashboardConfig);
 
-    void updateDashboardData(DashboardViewItemContainer container, Date lastUpdateTime, DashboardDataset dataset);
+    void updateDashboardData(DashboardItemContainer container, Date lastUpdateTime, DashboardDataset dataset);
 
-    void resetDashboardData(DashboardViewItemContainer dashboardItem, Date lastUpdateTime);
+    void resetDashboardData(DashboardItemContainer dashboardItem, Date lastUpdateTime);
 
     void moveDashboardView(DashboardViewItem toItem, DashboardViewItem fromItem, boolean clearOriginal);
 
     void updateDashboardView(DashboardViewItem dashboardItem);
 
-    void disposeDashboard(DashboardViewItemContainer container);
+    void disposeDashboard(DashboardItemContainer container);
 
 }

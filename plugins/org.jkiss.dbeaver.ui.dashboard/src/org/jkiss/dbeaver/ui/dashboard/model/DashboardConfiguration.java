@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -28,9 +31,10 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -38,29 +42,47 @@ import java.util.List;
 /**
  * DashboardViewConfiguration
  */
-public class DashboardViewConfiguration {
+public class DashboardConfiguration {
 
-    private static final Log log = Log.getLog(DashboardViewConfiguration.class);
+    public static final String REF_PREFIX = "ref:";
+
+    public enum Parameter {
+        project,
+        datasource,
+        id
+    };
+
+    private static final Log log = Log.getLog(DashboardConfiguration.class);
 
     private final String viewId;
 
+    @NotNull
+    private final DBPProject project;
     private final DBPDataSourceContainer dataSourceContainer;
-    private final List<DashboardViewItemConfiguration> items = new ArrayList<>();
+    private final String dashboardId;
+    private final List<DashboardItemConfiguration> items = new ArrayList<>();
 
     private boolean openConnectionOnActivate;
     private boolean useSeparateConnection;
 
-    public DashboardViewConfiguration(DBPDataSourceContainer dataSourceContainer, String viewId) {
+    public DashboardConfiguration(@NotNull DBPProject project, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable String dashboardId, String viewId) {
+        this.project = project;
         this.dataSourceContainer = dataSourceContainer;
+        this.dashboardId = dashboardId;
         this.viewId = viewId;
         loadSettings();
+    }
+
+    @NotNull
+    public DBPProject getProject() {
+        return project;
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
 
-    public List<DashboardViewItemConfiguration> getDashboardItemConfigs() {
+    public List<DashboardItemConfiguration> getDashboardItemConfigs() {
         return items;
     }
 
@@ -80,22 +102,22 @@ public class DashboardViewConfiguration {
         this.useSeparateConnection = useSeparateConnection;
     }
 
-    public DashboardViewItemConfiguration getDashboardConfig(String dashboardId) {
-        for (DashboardViewItemConfiguration item : items) {
-            if (item.getDashboardId().equals(dashboardId)) {
+    public DashboardItemConfiguration getItemConfig(String itemId) {
+        for (DashboardItemConfiguration item : items) {
+            if (item.getItemId().equals(itemId)) {
                 return item;
             }
         }
         return null;
     }
 
-    public DashboardViewItemConfiguration readDashboardConfiguration(DashboardItemDescriptor dashboard) {
-        DashboardViewItemConfiguration dashboardConfig = getDashboardConfig(dashboard.getId());
-        if (dashboardConfig != null) {
-            return dashboardConfig;
+    public DashboardItemConfiguration readDashboardItemConfiguration(DashboardItemDescriptor item) {
+        DashboardItemConfiguration itemConfig = getItemConfig(item.getId());
+        if (itemConfig != null) {
+            return itemConfig;
         }
         try {
-            DashboardViewItemConfiguration itemViewConfiguration = new DashboardViewItemConfiguration(this, dashboard, items.size());
+            DashboardItemConfiguration itemViewConfiguration = new DashboardItemConfiguration(this, item, items.size());
             items.add(itemViewConfiguration);
             return itemViewConfiguration;
         } catch (DBException e) {
@@ -104,15 +126,15 @@ public class DashboardViewConfiguration {
         }
     }
 
-    public boolean readDashboardConfiguration(DashboardViewItemConfiguration item) {
+    public boolean readDashboardItemConfiguration(DashboardItemConfiguration item) {
         return items.remove(item);
     }
 
-    public void removeDashboard(String dashboardId) {
+    public void removeItem(String itemID) {
         int decValue = 0;
         for (int i = 0; i < items.size(); ) {
-            DashboardViewItemConfiguration item = items.get(i);
-            if (item.getDashboardId().equals(dashboardId)) {
+            DashboardItemConfiguration item = items.get(i);
+            if (item.getItemId().equals(itemID)) {
                 items.remove(i);
                 decValue++;
             } else {
@@ -122,8 +144,8 @@ public class DashboardViewConfiguration {
         }
     }
 
-    public void updateDashboardConfig(DashboardViewItemConfiguration config) {
-        DashboardViewItemConfiguration curConfig = getDashboardConfig(config.getDashboardId());
+    public void updateItemConfig(DashboardItemConfiguration config) {
+        DashboardItemConfiguration curConfig = getItemConfig(config.getItemId());
         if (curConfig == null) {
             items.add(config);
         } else {
@@ -131,45 +153,49 @@ public class DashboardViewConfiguration {
         }
     }
 
-    public void clearDashboards() {
+    public void clearItems() {
         this.items.clear();
     }
 
     private void loadSettings() {
-        File configFile = getConfigFile();
-        if (!configFile.exists()) {
+        Path configFile = getConfigFile(false);
+        if (!Files.exists(configFile)) {
             return;
         }
 
         try {
-            Document document = XMLUtils.parseDocument(configFile);
+            Document document = XMLUtils.parseDocument(configFile.toFile());
             for (Element viewElement : XMLUtils.getChildElementList(document.getDocumentElement(), "view")) {
                 openConnectionOnActivate = CommonUtils.getBoolean(viewElement.getAttribute("openConnectionOnActivate"), openConnectionOnActivate);
                 useSeparateConnection = CommonUtils.getBoolean(viewElement.getAttribute("useSeparateConnection"), useSeparateConnection);
             }
             for (Element dbElement : XMLUtils.getChildElementList(document.getDocumentElement(), "dashboard")) {
                 String dashboardId = dbElement.getAttribute("id");
-                DashboardViewItemConfiguration itemConfig = new DashboardViewItemConfiguration(this, dashboardId, dbElement);
+                DashboardItemConfiguration itemConfig = new DashboardItemConfiguration(this, dashboardId, dbElement);
                 items.add(itemConfig);
             }
         } catch (Exception e) {
             log.error("Error loading dashboard view configuration", e);
         }
 
-        items.sort(Comparator.comparingInt(DashboardViewItemConfiguration::getIndex));
+        items.sort(Comparator.comparingInt(DashboardItemConfiguration::getIndex));
     }
 
     public void saveSettings() {
-        File configFile = getConfigFile();
+        Path configFile = getConfigFile(true);
 
         if (items.isEmpty()) {
-            if (configFile.exists() && !configFile.delete()) {
-                log.debug("Can't delete view configuration " + configFile.getAbsolutePath());
+            if (Files.exists(configFile)) {
+                try {
+                    Files.delete(configFile);
+                } catch (IOException e) {
+                    log.debug("Can't delete view configuration " + configFile, e);
+                }
             }
             return;
         }
 
-        try (OutputStream out = new FileOutputStream(configFile)){
+        try (OutputStream out = Files.newOutputStream(configFile)) {
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             try (var ignored = xml.startElement("dashboards")) {
@@ -177,7 +203,7 @@ public class DashboardViewConfiguration {
                     xml.addAttribute("openConnectionOnActivate", openConnectionOnActivate);
                     xml.addAttribute("useSeparateConnection", useSeparateConnection);
                 }
-                for (DashboardViewItemConfiguration itemConfig : items) {
+                for (DashboardItemConfiguration itemConfig : items) {
                     try (var ignored3 = xml.startElement("dashboard")) {
                         itemConfig.serialize(xml);
                     }
@@ -189,16 +215,32 @@ public class DashboardViewConfiguration {
         }
     }
 
-    private File getConfigFile() {
-        File pluginFolder = UIDashboardActivator.getDefault().getStateLocation().toFile();
-        File viewConfigFolder = new File(pluginFolder, "views");
-        if (!viewConfigFolder.exists()) {
-            if (!viewConfigFolder.mkdirs()) {
-                log.error("Can't create view config folder " + viewConfigFolder.getAbsolutePath());
+    private Path getConfigFile(boolean forceCreate) {
+        Path pluginFolder = UIDashboardActivator.getDefault().getStateLocation().toPath();
+        Path viewConfigFolder = pluginFolder.resolve("views");
+        if (!Files.exists(viewConfigFolder)) {
+            if (forceCreate) {
+                try {
+                    Files.createDirectories(viewConfigFolder);
+                } catch (IOException e) {
+                    log.error("Can't create view config folder " + viewConfigFolder, e);
+                }
             }
         }
-        return new File(viewConfigFolder, "view-" + viewId.replace("/", "_") + ".xml");
+        return viewConfigFolder.resolve("view-" + viewId.replace("/", "_") + ".xml");
     }
 
+
+    public static String getViewId(DBPDataSourceContainer dataSourceContainer) {
+        return REF_PREFIX +
+            Parameter.project.name() + "=" + dataSourceContainer.getProject().getName() + "," +
+            Parameter.datasource.name() + "=" + dataSourceContainer.getId();
+    }
+
+    public static String getViewId(DBPProject project, String id) {
+        return REF_PREFIX +
+            Parameter.project.name() + "=" + project.getName() + "," +
+            Parameter.id.name() + "=" + id;
+    }
 
 }

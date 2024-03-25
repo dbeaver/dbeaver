@@ -21,15 +21,16 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -40,15 +41,16 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
     static protected final Log log = Log.getLog(DashboardView.class);
 
     private DashboardListViewer dashboardListViewer;
-    private DashboardViewConfiguration configuration;
+    private DashboardConfiguration configuration;
     private DBPDataSourceContainer dataSourceContainer;
-    private ProgressPainter dashboardProgressPainter;
+    private DBPProject project;
+    private String dashboardId;
 
     public static DashboardView openView(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer) {
         try {
             return (DashboardView) workbenchWindow.getActivePage().showView(
                 DashboardView.VIEW_ID,
-                dataSourceContainer.getProject().getName() + "/" + dataSourceContainer.getId(),
+                DashboardConfiguration.getViewId(dataSourceContainer),
                 IWorkbenchPage.VIEW_ACTIVATE);
         } catch (PartInitException e) {
             DBWorkbench.getPlatformUI().showError(UIDashboardMessages.error_dashboard_view_cannot_open_title, UIDashboardMessages.error_dashboard_view_cannot_open_msg, e);
@@ -60,7 +62,7 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
         super();
     }
 
-    public DashboardViewConfiguration getConfiguration() {
+    public DashboardConfiguration getConfiguration() {
         return configuration;
     }
 
@@ -70,30 +72,69 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
     }
 
     private void createDashboardControls(Composite parent) {
-        dashboardProgressPainter = new ProgressPainter(parent);
+        ProgressPainter dashboardProgressPainter = new ProgressPainter(parent);
 
         try {
             String secondaryId = getViewSite().getSecondaryId();
             if (CommonUtils.isEmpty(secondaryId)) {
                 throw new IllegalStateException("Dashboard view requires active database connection");
             }
-            String projectName, dsId;
-            int divPos = secondaryId.indexOf("/");
-            if (divPos == -1) {
-                projectName = null;
-                dsId = secondaryId;
+            String projectName = null;
+            String datasourceId = null;
+            dashboardId = null;
+            if (secondaryId.startsWith(DashboardConfiguration.REF_PREFIX)) {
+                String[] params = secondaryId.substring(DashboardConfiguration.REF_PREFIX.length()).split(",");
+                for (String param : params) {
+                    int divPos = param.indexOf("=");
+                    if (divPos < 0) {
+                        log.debug("Invalid dashboard parameter '" + param + "'");
+                        continue;
+                    }
+                    DashboardConfiguration.Parameter dp = CommonUtils.valueOf(
+                        DashboardConfiguration.Parameter.class,
+                        param.substring(0, divPos),
+                        null);
+                    String value = param.substring(divPos + 1);
+                    switch (dp) {
+                        case project -> projectName = value;
+                        case id -> dashboardId = value;
+                        case datasource -> datasourceId = value;
+                    }
+                }
             } else {
-                projectName = secondaryId.substring(0, divPos);
-                dsId = secondaryId.substring(divPos + 1);
+                // Legacy, backward compatibility
+                String[] idParts = secondaryId.split("/");
+                if (idParts.length == 1) {
+                    datasourceId = idParts[0];
+                } else {
+                    projectName = idParts[0];
+                    datasourceId = idParts[1];
+                }
             }
-            dataSourceContainer = DBUtils.findDataSource(projectName, dsId);
-            if (dataSourceContainer == null) {
-                throw new IllegalStateException("Database connection '" + dsId + "' not found");
+            if (CommonUtils.isEmpty(dashboardId) && CommonUtils.isEmpty(projectName)) {
+                throw new IllegalStateException("Bad dashboard view ID: " + secondaryId);
             }
 
-            dataSourceContainer.getRegistry().addDataSourceListener(this);
+            if (CommonUtils.isEmpty(projectName)) {
+                dataSourceContainer = DBUtils.findDataSource(null, datasourceId);
+                if (datasourceId == null) {
+                    throw new IllegalStateException("Invalid datasource ID: " + datasourceId);
+                }
+                project = dataSourceContainer.getProject();
+            } else {
+                project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                if (project == null) {
+                    throw new IllegalStateException("Invalid project name: " + projectName);
+                }
+                if (!CommonUtils.isEmpty(datasourceId)) {
+                    dataSourceContainer = project.getDataSourceRegistry().getDataSource(datasourceId);
+                }
+            }
+            if (dataSourceContainer != null) {
+                dataSourceContainer.getRegistry().addDataSourceListener(this);
+            }
 
-            configuration = new DashboardViewConfiguration(dataSourceContainer, secondaryId);
+            configuration = new DashboardConfiguration(project, dataSourceContainer, dashboardId, secondaryId);
             dashboardListViewer = new DashboardListViewer(getSite(), dataSourceContainer, configuration);
             dashboardListViewer.createControl(parent);
 
@@ -116,7 +157,7 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
     public void setFocus() {
         if (dashboardListViewer != null) {
             DashboardGroupContainer group = dashboardListViewer.getDefaultGroup();
-            List<? extends DashboardViewItemContainer> items = group.getItems();
+            List<? extends DashboardItemContainer> items = group.getItems();
             if (!items.isEmpty()) {
                 group.selectItem(items.get(0));
             }
@@ -134,7 +175,9 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
         super.dispose();
 
         if (dashboardListViewer != null) {
-            dataSourceContainer.getRegistry().removeDataSourceListener(this);
+            if (dataSourceContainer != null) {
+                dataSourceContainer.getRegistry().removeDataSourceListener(this);
+            }
             dashboardListViewer.dispose();
             dashboardListViewer = null;
         }
@@ -154,12 +197,16 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
     }
 
     private void updateStatus() {
-        if (dataSourceContainer.isConnected()) {
-            DashboardUpdateJob.getDefault().resumeDashboardUpdate();
+        String partName;
+        if (dataSourceContainer != null) {
+            if (dataSourceContainer.isConnected()) {
+                DashboardUpdateJob.getDefault().resumeDashboardUpdate();
+            }
+            partName = dataSourceContainer.getName() + (dataSourceContainer.isConnected() ? "" : UIDashboardMessages.dashboard_view_status_off);
+        } else {
+            partName = project.getName() + ":" + dashboardId;
         }
-        UIUtils.asyncExec(() -> {
-            setPartName(dataSourceContainer.getName() + (dataSourceContainer.isConnected() ? "" : UIDashboardMessages.dashboard_view_status_off));
-        });
+        UIUtils.asyncExec(() -> setPartName(partName));
     }
 
 

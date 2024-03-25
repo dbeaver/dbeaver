@@ -46,14 +46,14 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     private static final int ITEM_SPACING = 5;
 
     private final IWorkbenchSite site;
-    private final DashboardViewContainer viewContainer;
+    private final DashboardContainer viewContainer;
     private final List<DashboardViewItem> items = new ArrayList<>();
     private final Font boldFont;
     private DashboardViewItem selectedItem;
     private int listRowCount = 1;
     private int listColumnCount = 1;
 
-    public DashboardListControl(IWorkbenchSite site, Composite parent, DashboardViewContainer viewContainer) {
+    public DashboardListControl(IWorkbenchSite site, Composite parent, DashboardContainer viewContainer) {
         super(parent, SWT.DOUBLE_BUFFERED);
 
         this.site = site;
@@ -192,7 +192,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
 
     @NotNull
     @Override
-    public DashboardViewContainer getView() {
+    public DashboardContainer getView() {
         return viewContainer;
     }
 
@@ -202,30 +202,30 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     }
 
     @Override
-    public void removeItem(@NotNull DashboardViewItemContainer container) {
+    public void removeItem(@NotNull DashboardItemContainer container) {
         DashboardViewItem item = (DashboardViewItem) container;
         item.dispose();
         layout(true, true);
-        viewContainer.getViewConfiguration().removeDashboard(item.getDashboard().getId());
+        viewContainer.getViewConfiguration().removeItem(item.getDashboard().getId());
         viewContainer.getViewConfiguration().saveSettings();
     }
 
     @Override
     public void addItem(@NotNull DashboardItemDescriptor dashboard) {
-        viewContainer.getViewConfiguration().readDashboardConfiguration(dashboard);
+        viewContainer.getViewConfiguration().readDashboardItemConfiguration(dashboard);
         new DashboardViewItem(this, dashboard);
         viewContainer.getViewConfiguration().saveSettings();
         layout(true, true);
     }
 
     @Override
-    public void selectItem(DashboardViewItemContainer item) {
+    public void selectItem(DashboardItemContainer item) {
         setSelection((DashboardViewItem) item);
         item.getDashboardControl().setFocus();
     }
 
     void createDefaultDashboards() {
-        List<DashboardItemDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(
+        List<DashboardItemDescriptor> dashboards = DashboardRegistry.getInstance().getDashboardItems(
             null, viewContainer.getDataSourceContainer(), true);
         for (DashboardItemDescriptor dd : dashboards) {
             addDashboard(dd);
@@ -233,19 +233,19 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     }
 
     public void createDashboardsFromConfiguration() {
-        for (DashboardViewItemConfiguration itemConfig : new ArrayList<>(viewContainer.getViewConfiguration().getDashboardItemConfigs())) {
+        for (DashboardItemConfiguration itemConfig : new ArrayList<>(viewContainer.getViewConfiguration().getDashboardItemConfigs())) {
             DashboardItemDescriptor dashboard = itemConfig.getDashboardDescriptor();
             if (dashboard != null) {
                 addDashboard(dashboard);
             } else {
-                viewContainer.getViewConfiguration().readDashboardConfiguration(itemConfig);
+                viewContainer.getViewConfiguration().readDashboardItemConfiguration(itemConfig);
             }
         }
     }
 
 
     private void addDashboard(DashboardItemDescriptor dashboard) {
-        viewContainer.getViewConfiguration().readDashboardConfiguration(dashboard);
+        viewContainer.getViewConfiguration().readDashboardItemConfiguration(dashboard);
         DashboardViewItem item = new DashboardViewItem(this, dashboard);
     }
 
@@ -294,7 +294,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         
         items.clear();
 
-        getView().getViewConfiguration().clearDashboards();
+        getView().getViewConfiguration().clearItems();
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -430,7 +430,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 newList.remove(selectedItem);
                 newList.add(newIndex, selectedItem);
 
-                DashboardViewConfiguration viewConfiguration = viewContainer.getViewConfiguration();
+                DashboardConfiguration viewConfiguration = viewContainer.getViewConfiguration();
 
                 // Re-create  items
                 DashboardListControl.this.setRedraw(false);
@@ -441,7 +441,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                     for (int i = 0; i < newList.size(); i++) {
                         DashboardViewItem oldItem = newList.get(i);
                         DashboardViewItem newItem = new DashboardViewItem(DashboardListControl.this, oldItem.getDashboard());
-                        DashboardViewItemConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboard().getId());
+                        DashboardItemConfiguration dashboardConfig = viewConfiguration.getItemConfig(newItem.getDashboard().getId());
                         dashboardConfig.setIndex(i);
                         newItem.moveViewFrom(oldItem, true);
                     }
@@ -474,7 +474,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         });
     }
 
-    public void showItem(DashboardViewItemContainer item) {
+    public void showItem(DashboardItemContainer item) {
 
     }
 

@@ -19,20 +19,20 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 
-public class HandlerDashboardReset extends HandlerDashboardAbstract {
+public class HandlerDashboardResetItem extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            DashboardViewItemContainer selectedDashboard = getSelectedDashboard(view);
+            DashboardItemContainer selectedDashboard = getSelectedDashboard(view);
             if (selectedDashboard != null) {
                 selectedDashboard.resetDashboardData();
             } else {
                 for (DashboardGroupContainer gc : view.getDashboardListViewer().getGroups()) {
-                    for (DashboardViewItemContainer dc : gc.getItems()) {
+                    for (DashboardItemContainer dc : gc.getItems()) {
                         dc.resetDashboardData();
                     }
                 }

@@ -28,10 +28,10 @@ import org.jfree.data.time.TimeSeriesDataItem;
 import org.jfree.ui.RectangleEdge;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
 
 import java.awt.*;
 
@@ -43,7 +43,7 @@ public abstract class DashboardRendererChart implements DashboardItemRenderer {
     protected static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
     protected static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
 
-    protected void generateSampleSeries(DashboardViewItemContainer container, TimeSeriesCollection dataset) {
+    protected void generateSampleSeries(DashboardItemContainer container, TimeSeriesCollection dataset) {
         TimeSeries seriesSin = new TimeSeries("Sin");
         long startTime = System.currentTimeMillis() - 1000 * 60 * 60 * 2;
         for (int i = 0; i < 100; i++) {
@@ -60,7 +60,7 @@ public abstract class DashboardRendererChart implements DashboardItemRenderer {
     }
 
     @Override
-    public void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardViewItemConfiguration dashboardConfig) {
+    public void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardItemConfiguration dashboardConfig) {
         // nothing here
     }
 
@@ -97,22 +97,22 @@ public abstract class DashboardRendererChart implements DashboardItemRenderer {
     }
 
     @Override
-    public void disposeDashboard(DashboardViewItemContainer container) {
+    public void disposeDashboard(DashboardItemContainer container) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         if (chartComposite != null) {
             chartComposite.setChart(null);
         }
     }
 
-    protected DashboardChartComposite getChartComposite(DashboardViewItemContainer container) {
+    protected DashboardChartComposite getChartComposite(DashboardItemContainer container) {
         return (DashboardChartComposite) container.getDashboardControl();
     }
 
-    protected DashboardChartComposite createChartComposite(Composite composite, DashboardViewItemContainer container, DashboardViewContainer viewContainer, org.eclipse.swt.graphics.Point preferredSize) {
+    protected DashboardChartComposite createChartComposite(Composite composite, DashboardItemContainer container, DashboardContainer viewContainer, org.eclipse.swt.graphics.Point preferredSize) {
         return new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize);
     }
 
-    protected void createDefaultLegend(DashboardViewItemConfiguration viewConfig, JFreeChart chart) {
+    protected void createDefaultLegend(DashboardItemConfiguration viewConfig, JFreeChart chart) {
         Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
         LegendTitle legend = chart.getLegend();
         legend.setPosition(RectangleEdge.BOTTOM);

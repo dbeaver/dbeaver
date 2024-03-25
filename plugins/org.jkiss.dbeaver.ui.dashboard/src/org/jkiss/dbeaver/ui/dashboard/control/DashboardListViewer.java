@@ -23,6 +23,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
@@ -33,23 +35,27 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardViewContainer {
+public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardContainer {
 
+    @NotNull
     private final IWorkbenchSite site;
+    @Nullable
     private final DBPDataSourceContainer dataSourceContainer;
-    private final DashboardViewConfiguration viewConfiguration;
+    @NotNull
+    private final DashboardConfiguration viewConfiguration;
 
     private volatile boolean useSeparateConnection;
+    @Nullable
     private volatile DBCExecutionContext isolatedContext;
 
     private DashboardListControl dashContainer;
@@ -66,13 +72,13 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         dashContainer.setRedraw(true);
     });
 
-    public DashboardListViewer(IWorkbenchSite site, DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
+    public DashboardListViewer(
+        @NotNull IWorkbenchSite site,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DashboardConfiguration viewConfiguration
+    ) {
         this.site = site;
         this.dataSourceContainer = dataSourceContainer;
-
-        if (!this.dataSourceContainer.isConnected()) {
-            //DataSourceConnectHandler
-        }
 
         this.viewConfiguration = viewConfiguration;
 
@@ -81,10 +87,11 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     public void dispose() {
         WorkspaceConfigEventManager.removeConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
-        
-        if (isolatedContext != null) {
-            if (isolatedContext.isConnected()) {
-                isolatedContext.close();
+
+        DBCExecutionContext context = isolatedContext;
+        if (context != null) {
+            if (context.isConnected()) {
+                context.close();
             }
             isolatedContext = null;
         }
@@ -126,6 +133,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 //        statusLabel.setText(this.dataSourceContainer.getName() + ": " + status);
     }
 
+    @Nullable
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
@@ -141,11 +149,15 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         if (useSeparateConnection && isolatedContext != null) {
             return isolatedContext;
         }
+        if (dataSourceContainer == null) {
+            return null;
+        }
         return DBUtils.getDefaultContext(dataSourceContainer.getDataSource().getDefaultInstance(), true);
     }
 
+    @NotNull
     @Override
-    public DashboardViewConfiguration getViewConfiguration() {
+    public DashboardConfiguration getViewConfiguration() {
         return viewConfiguration;
     }
 
@@ -170,8 +182,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     @Override
-    protected List getSelectionFromWidget() {
-        DashboardViewItemContainer selectedItem = dashContainer.getSelectedItem();
+    protected List<?> getSelectionFromWidget() {
+        DashboardItemContainer selectedItem = dashContainer.getSelectedItem();
         return selectedItem == null ? Collections.emptyList() : Collections.singletonList(selectedItem);
     }
 
@@ -182,7 +194,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     @Override
     public void reveal(Object element) {
-        DashboardViewItemContainer item = doFindItem(element);
+        DashboardItemContainer item = doFindItem(element);
         if (item != null) {
             dashContainer.showItem(item);
         }
@@ -212,7 +224,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     private void initConnection() {
         useSeparateConnection = viewConfiguration.isUseSeparateConnection();
         if (viewConfiguration.isOpenConnectionOnActivate()) {
-            if (!dataSourceContainer.isConnected()) {
+            if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
                     serviceConnections.connectDataSource(dataSourceContainer, status -> {
@@ -230,6 +242,9 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     private void openSeparateContext() {
+        if (dataSourceContainer == null) {
+            return;
+        }
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (dataSource == null) {
             return;

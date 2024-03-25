@@ -32,7 +32,7 @@ public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
             if (addDialog.open() == IDialogConstants.OK_ID) {
                 DashboardItemDescriptor selectedDashboard = addDialog.getSelectedDashboard();
                 if (selectedDashboard != null) {
-                    view.getConfiguration().readDashboardConfiguration(selectedDashboard);
+                    view.getConfiguration().readDashboardItemConfiguration(selectedDashboard);
                     view.getDashboardListViewer().getDefaultGroup().addItem(selectedDashboard);
                 }
             }

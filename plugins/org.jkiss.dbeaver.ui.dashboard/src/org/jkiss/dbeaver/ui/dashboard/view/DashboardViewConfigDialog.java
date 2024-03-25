@@ -30,14 +30,14 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 public class DashboardViewConfigDialog extends BaseDialog {
 
-    private final DashboardViewConfiguration viewConfiguration;
+    private final DashboardConfiguration viewConfiguration;
 
-    public DashboardViewConfigDialog(Shell shell, DashboardViewConfiguration viewConfiguration) {
+    public DashboardViewConfigDialog(Shell shell, DashboardConfiguration viewConfiguration) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_view_config_title, viewConfiguration.getDataSourceContainer().getName()), null);
 
         this.viewConfiguration = viewConfiguration;

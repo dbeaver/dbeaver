@@ -49,7 +49,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration">
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset">
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardResetItem">
             <enabledWhen>
                 <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
             </enabledWhen>

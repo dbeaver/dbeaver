@@ -31,12 +31,12 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 
-public class DashboardViewItemConfiguration {
-    private static final Log log = Log.getLog(DashboardViewItemConfiguration.class);
+public class DashboardItemConfiguration {
+    private static final Log log = Log.getLog(DashboardItemConfiguration.class);
 
-    private final DashboardViewConfiguration viewConfiguration;
-    private String dashboardId;
-    private DashboardItemDescriptor dashboard;
+    private final DashboardConfiguration viewConfiguration;
+    private String itemId;
+    private DashboardItemDescriptor dashboardItem;
 
     private String viewTypeId;
     private int index;
@@ -50,37 +50,37 @@ public class DashboardViewItemConfiguration {
     private boolean rangeTicksVisible;
     private String description;
 
-    public String getDashboardId() {
-        return dashboard == null ? dashboardId : dashboard.getId();
+    public String getItemId() {
+        return dashboardItem == null ? itemId : dashboardItem.getId();
     }
 
     public String getFullDashboardId() {
-        if (dashboard != null) {
-            String path = dashboard.getPath();
+        if (dashboardItem != null) {
+            String path = dashboardItem.getPath();
             if (path != null) {
                 path += "/";
             } else {
                 path = "";
             }
-            return dashboard.getDashboardProvider().getId() + ":" + path + dashboard.getId();
+            return dashboardItem.getDashboardProvider().getId() + ":" + path + dashboardItem.getId();
         }
-        return dashboardId;
+        return itemId;
     }
 
     @Nullable
     public DashboardItemDescriptor getDashboardDescriptor() {
-        if (dashboard == null) {
+        if (dashboardItem == null) {
             try {
-                dashboard = DashboardRegistry.getInstance().findDashboard(
+                dashboardItem = DashboardRegistry.getInstance().findDashboardItem(
                     new VoidProgressMonitor(),
                     new DBDashboardContext(viewConfiguration.getDataSourceContainer()),
-                    dashboardId);
+                    itemId);
             } catch (DBException e) {
-                log.debug("Dashboard '" + dashboardId + "' not found", e);
+                log.debug("Dashboard '" + itemId + "' not found", e);
                 return null;
             }
         }
-        return dashboard;
+        return dashboardItem;
     }
 
     public DashboardRendererType getViewType() {
@@ -176,9 +176,9 @@ public class DashboardViewItemConfiguration {
         this.description = description;
     }
 
-    DashboardViewItemConfiguration(DashboardViewConfiguration viewConfiguration, DashboardItemDescriptor dashboardDescriptor, int index) throws DBException {
+    DashboardItemConfiguration(DashboardConfiguration viewConfiguration, DashboardItemDescriptor dashboardDescriptor, int index) throws DBException {
         this.viewConfiguration = viewConfiguration;
-        this.dashboard = dashboardDescriptor;
+        this.dashboardItem = dashboardDescriptor;
         this.viewTypeId = dashboardDescriptor.getDashboardRenderer();
         this.index = index;
         this.widthRatio = dashboardDescriptor.getWidthRatio();
@@ -194,13 +194,13 @@ public class DashboardViewItemConfiguration {
         this.description = dashboardDescriptor.getDescription();
     }
 
-    public DashboardViewItemConfiguration(DashboardViewItemConfiguration source) {
+    public DashboardItemConfiguration(DashboardItemConfiguration source) {
         this.viewConfiguration = source.viewConfiguration;
         copyFrom(source);
     }
 
-    void copyFrom(DashboardViewItemConfiguration source) {
-        this.dashboard = source.dashboard;
+    void copyFrom(DashboardItemConfiguration source) {
+        this.dashboardItem = source.dashboardItem;
         this.viewTypeId = source.viewTypeId;
         this.index = source.index;
         this.widthRatio = source.widthRatio;
@@ -235,9 +235,9 @@ public class DashboardViewItemConfiguration {
         }
     }
 
-    public DashboardViewItemConfiguration(DashboardViewConfiguration viewConfiguration, String id, Element element) {
+    public DashboardItemConfiguration(DashboardConfiguration viewConfiguration, String id, Element element) {
         this.viewConfiguration = viewConfiguration;
-        this.dashboardId = id;
+        this.itemId = id;
 
         this.viewTypeId = element.getAttribute("viewType");
         this.index = CommonUtils.toInt(element.getAttribute("index"));
@@ -256,6 +256,6 @@ public class DashboardViewItemConfiguration {
 
     @Override
     public String toString() {
-        return getDashboardId() + ":" + index;
+        return getItemId() + ":" + index;
     }
 }

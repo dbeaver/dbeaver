@@ -25,8 +25,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jfree.chart.JFreeChart;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
 
@@ -35,16 +35,16 @@ import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
  */
 public class DashboardChartComposite extends BaseChartComposite implements DashboardViewCompositeControl {
 
-    private final DashboardViewContainer viewContainer;
-    private final DashboardViewItemContainer dashboardContainer;
+    private final DashboardContainer viewContainer;
+    private final DashboardItemContainer dashboardContainer;
 
-    public DashboardChartComposite(DashboardViewItemContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(DashboardItemContainer dashboardContainer, DashboardContainer viewContainer, Composite parent, int style, Point preferredSize) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
     }
 
-    public DashboardViewContainer getViewContainer() {
+    public DashboardContainer getViewContainer() {
         return viewContainer;
     }
 

@@ -49,11 +49,11 @@ import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import java.util.Date;
 import java.util.List;
 
-public class DashboardViewItem extends Composite implements DashboardViewItemContainer {
+public class DashboardViewItem extends Composite implements DashboardItemContainer {
 
     public static final int DEFAULT_HEIGHT = 200;
     private final DashboardListControl groupContainer;
-    private final DashboardViewItemConfiguration dashboardConfig;
+    private final DashboardItemConfiguration dashboardConfig;
 
     private Date lastUpdateTime;
     private DashboardRendererType curViewType;
@@ -68,7 +68,7 @@ public class DashboardViewItem extends Composite implements DashboardViewItemCon
         super(parent, SWT.DOUBLE_BUFFERED);
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.groupContainer = parent;
-        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getDashboardConfig(dashboard.getId());
+        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getItemConfig(dashboard.getId());
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 3;
@@ -137,7 +137,7 @@ public class DashboardViewItem extends Composite implements DashboardViewItemCon
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText(NLS.bind(UIDashboardMessages.dashboard_item_errorlabel_text, dashboardConfig.getDashboardId(), e.getMessage()));
+            errorLabel.setText(NLS.bind(UIDashboardMessages.dashboard_item_errorlabel_text, dashboardConfig.getItemId(), e.getMessage()));
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 
@@ -288,7 +288,7 @@ public class DashboardViewItem extends Composite implements DashboardViewItemCon
 */
     }
 
-    public DashboardViewItemConfiguration getDashboardConfig() {
+    public DashboardItemConfiguration getDashboardConfig() {
         return dashboardConfig;
     }
 
@@ -298,7 +298,7 @@ public class DashboardViewItem extends Composite implements DashboardViewItemCon
     }
 
     @Override
-    public DashboardViewItemConfiguration getViewConfig() {
+    public DashboardItemConfiguration getViewConfig() {
         return dashboardConfig;
     }
 
@@ -466,6 +466,6 @@ public class DashboardViewItem extends Composite implements DashboardViewItemCon
     @Override
     public String toString() {
         DashboardItemDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
-        return dashboard == null ? dashboardConfig.getDashboardId() : dashboard.getName();
+        return dashboard == null ? dashboardConfig.getItemId() : dashboard.getName();
     }
 }

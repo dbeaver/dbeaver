@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
@@ -47,16 +47,16 @@ public class DashboardItemConfigDialog extends BaseDialog {
     private static final String DIALOG_ID = "DBeaver.DashboardItemConfigDialog";//$NON-NLS-1$
     private static final boolean SHOW_QUERIES_BUTTON = false;
 
-    private final DashboardViewItemConfiguration dashboardConfig;
-    private final DashboardViewConfiguration viewConfiguration;
-    private final DashboardViewItemContainer dashboardContainer;
+    private final DashboardItemConfiguration dashboardConfig;
+    private final DashboardConfiguration viewConfiguration;
+    private final DashboardItemContainer dashboardContainer;
 
-    public DashboardItemConfigDialog(Shell shell, DashboardViewItemContainer dashboardContainer, DashboardViewConfiguration viewConfiguration) {
+    public DashboardItemConfigDialog(Shell shell, DashboardItemContainer dashboardContainer, DashboardConfiguration viewConfiguration) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getDashboard().getName()), null);
 
         this.viewConfiguration = viewConfiguration;
         this.dashboardContainer = dashboardContainer;
-        this.dashboardConfig = new DashboardViewItemConfiguration(dashboardContainer.getViewConfig());
+        this.dashboardConfig = new DashboardItemConfiguration(dashboardContainer.getViewConfig());
     }
 
     @Override
@@ -223,7 +223,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         super.okPressed();
-        viewConfiguration.updateDashboardConfig(this.dashboardConfig);
+        viewConfiguration.updateItemConfig(this.dashboardConfig);
         viewConfiguration.saveSettings();
     }
 }

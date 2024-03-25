@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -64,10 +64,10 @@ public class DashboardAddItemDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardAddDialog";//$NON-NLS-1$
 
-    private final DashboardViewConfiguration viewConfiguration;
+    private final DashboardConfiguration viewConfiguration;
     private DashboardItemDescriptor selectedDashboard;
 
-    public DashboardAddItemDialog(Shell parentShell, DashboardViewConfiguration viewConfiguration) {
+    public DashboardAddItemDialog(Shell parentShell, DashboardConfiguration viewConfiguration) {
         super(parentShell, UIDashboardMessages.dialog_add_dashboard_dialog_title, null);
 
         this.viewConfiguration = viewConfiguration;
@@ -181,11 +181,11 @@ public class DashboardAddItemDialog extends BaseDialog {
                             }
                             return children.toArray();
                         }
-                        List<DashboardItemDescriptor> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboards(
+                        List<DashboardItemDescriptor> dashboards = new ArrayList<>(DashboardRegistry.getInstance().getDashboardItems(
                             dpd,
                             viewConfiguration.getDataSourceContainer(),
                             false));
-                        dashboards.removeIf(descriptor -> viewConfiguration.getDashboardConfig(descriptor.getId()) != null);
+                        dashboards.removeIf(descriptor -> viewConfiguration.getItemConfig(descriptor.getId()) != null);
                         return dashboards.toArray();
                     }
                 } catch (DBException e) {

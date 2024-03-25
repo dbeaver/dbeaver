@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 /**
@@ -38,10 +38,10 @@ public class DashboardItemViewDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardItemViewDialog";//$NON-NLS-1$
 
-    private final DashboardViewContainer parentPart;
+    private final DashboardContainer parentPart;
     private final DashboardViewItem sourceItem;
 
-    public DashboardItemViewDialog(DashboardViewContainer parentPart, DashboardViewItem sourceItem) {
+    public DashboardItemViewDialog(DashboardContainer parentPart, DashboardViewItem sourceItem) {
         super(parentPart.getWorkbenchSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
 
         this.parentPart = parentPart;
