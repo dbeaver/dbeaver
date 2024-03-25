@@ -44,27 +44,16 @@ public class CubridSynonym extends GenericSynonym
         this.targetOwner = JDBCUtils.safeGetString(dbResult, "target_owner_name");
     }
 
-    @Nullable
-    @Override
-    public DBSObject getTargetObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
     @NotNull
     @Property(viewable = true, order = 2)
     public String getOwner() {
         return owner;
     }
 
-    @NotNull
-    @Property(viewable = true, order = 3)
-    public String getTargetName() {
-        return targetName;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 4)
-    public String getTargetOwner() {
-        return targetOwner;
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = false, order = 3)
+    public DBSObject getTargetObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().findTable(monitor, null, targetOwner, targetName);
     }
 }
