@@ -22,9 +22,6 @@
 
         <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
         <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/${local-p2-repo.version}</local-p2-repo.url>
-        <!-- <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo</local-p2-repo.url> -->
-        <!-- Orbit deps. We need it for CB at least -->
-        <orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository</orbit-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
@@ -39,11 +36,6 @@
         <repository>
             <id>local-contrib</id>
             <url>${local-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-        <repository>
-            <id>orbit-repo</id>
-            <url>${orbit-repo.url}</url>
             <layout>p2</layout>
         </repository>
     </repositories>
