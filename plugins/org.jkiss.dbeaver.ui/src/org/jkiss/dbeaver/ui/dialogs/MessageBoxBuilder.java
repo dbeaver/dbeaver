@@ -99,12 +99,18 @@ public final class MessageBoxBuilder {
         return this;
     }
 
+    /**
+     * Set custom labels
+     */
     @NotNull
     public MessageBoxBuilder setLabels(@NotNull String[] buttons) {
         dialog.setLabels(Arrays.asList(buttons));
         return this;
     }
 
+    /**
+     * Set default focus value
+     */
     @NotNull
     public MessageBoxBuilder setDefaultFocus(int index) {
         dialog.setDefaultAnswerIdx(index);
