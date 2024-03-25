@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractSessionController<T extends AbstractSession> implements SSHSessionController {
     private static final Log log = Log.getLog(AbstractSessionController.class);
-    private static final boolean DISABLE_SESSION_SHARING = Boolean.getBoolean("dbeaver.ssh.disableSessionSharing");
 
     protected final Map<SSHHostConfiguration, ShareableSession<T>> sessions = new ConcurrentHashMap<>();
     protected AgentIdentityRepository agentIdentityRepository;
@@ -196,7 +195,9 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
 
     protected static boolean canShareSessionForConfiguration(@NotNull DBWHandlerConfiguration configuration) {
         // Data source might be null if this tunnel is used for connection testing
-        return !DISABLE_SESSION_SHARING && configuration.getDataSource() != null;
+        return !SSHUtils.DISABLE_SESSION_SHARING
+            && configuration.getDataSource() != null
+            && configuration.getBooleanProperty(SSHConstants.PROP_SHARE_TUNNELS, true);
     }
 
     protected static class JumpSession<T extends AbstractSession> extends DelegateSession {
