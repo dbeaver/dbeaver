@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.core.DesktopUI;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
@@ -87,6 +89,18 @@ public abstract class EclipsePluginApplicationImpl extends DesktopApplicationImp
     @Override
     public Class<? extends DBPPlatformUI> getPlatformUIClass() {
         return DesktopUI.class;
+    }
+
+    @Override
+    public long getLastUserActivityTime() {
+        return -1;
+    }
+
+    @NotNull
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return DBeaverActivator.getInstance().getPreferences();
+
     }
 
 }

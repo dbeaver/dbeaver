@@ -26,6 +26,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -219,7 +220,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         fillToolBar(manager);
     }
 
-    private void aggregateSelection(IResultSetSelection selection) {
+    private void aggregateSelection(@NotNull IResultSetSelection selection) {
         if (!featureTracked) {
             DataEditorFeatures.RESULT_SET_PANEL_CALC.use(Map.of(
                 "functions", enabledFunctions.stream()
@@ -234,9 +235,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             for (Object element : selection.toList()) {
                 DBDAttributeBinding attr = selection.getElementAttribute(element);
                 ResultSetRow row = selection.getElementRow(element);
-                Object cellValue = model.getCellValue(attr, row);
-                List<Object> values = attrValues.computeIfAbsent(attr, k -> new ArrayList<>());
-                values.add(cellValue);
+                if (row != null) {
+                    Object cellValue = model.getCellValue(attr, row);
+                    List<Object> values = attrValues.computeIfAbsent(attr, k -> new ArrayList<>());
+                    values.add(cellValue);
+                }
             }
 
             for (Map.Entry<DBDAttributeBinding, List<Object>> entry : attrValues.entrySet()) {

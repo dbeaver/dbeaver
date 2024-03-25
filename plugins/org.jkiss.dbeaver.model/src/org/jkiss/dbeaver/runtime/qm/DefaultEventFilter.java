@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.qm.QMEvent;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * Default event filter based on preference settings.
@@ -39,7 +39,7 @@ public class DefaultEventFilter implements QMEventFilter {
 
     public void reloadPreferences()
     {
-        eventCriteria = QMUtils.createDefaultCriteria(ModelPreferences.getPreferences());
+        eventCriteria = QMUtils.createDefaultCriteria(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     @Override

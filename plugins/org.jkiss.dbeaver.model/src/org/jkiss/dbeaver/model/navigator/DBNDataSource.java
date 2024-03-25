@@ -71,6 +71,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         super.dispose(reflect);
     }
 
+    @Nullable
     @Override
     public DBPDataSourceContainer getObject()
     {

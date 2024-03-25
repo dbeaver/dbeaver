@@ -55,7 +55,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             1800, //30 minutes
             true,
-            3600, //1 hour
+            14400, //1 hour
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
@@ -71,7 +71,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             900, //30 minutes
             true,
-            1800, //30 minutes
+            7200, //2 hours
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         PROD = new DBPConnectionType(
@@ -87,7 +87,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             600, //10 minutes
             true,
-            900, //15 minutes
+            3600, //1 hour
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
 
@@ -377,7 +377,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private static final String DEFAULT_CONNECTION_TYPE_PREF = "default.connection.type";
 
     public static DBPConnectionType getDefaultConnectionType() {
-        String defTypeName = ModelPreferences.getPreferences().getString(DEFAULT_CONNECTION_TYPE_PREF);
+        String defTypeName = DBWorkbench.getPlatform().getPreferenceStore().getString(DEFAULT_CONNECTION_TYPE_PREF);
         if (CommonUtils.isEmpty(defTypeName)) {
             defTypeName = DEV.getName();
         }
@@ -386,7 +386,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     public static void setDefaultConnectionType(DBPConnectionType connectionType) {
-        ModelPreferences.getPreferences().setValue(DEFAULT_CONNECTION_TYPE_PREF, connectionType.getId());
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(DEFAULT_CONNECTION_TYPE_PREF, connectionType.getId());
     }
 
 }

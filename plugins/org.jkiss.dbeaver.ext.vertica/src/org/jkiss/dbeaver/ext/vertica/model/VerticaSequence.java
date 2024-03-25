@@ -43,10 +43,9 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
     private String identityTableName;
     private long cacheCount;
     private boolean isCycle;
-    private VerticaSchema schema;
+    private final VerticaSchema schema;
     private String description;
     private String source;
-    private boolean isPersisted;
 
     public VerticaSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy, String identityTableName, long cacheCount, boolean isCycle) {
         super(container, name, description, lastValue, minValue, maxValue, incrementBy);
@@ -56,14 +55,12 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
         this.isCycle = isCycle;
         this.schema = (VerticaSchema) container.getSchema();
         this.description = description;
-        this.isPersisted = true;
     }
 
-    public VerticaSequence(GenericStructContainer container, String name) {
-        super(container, name, null, 0, 1, 9223372036854775807L, 1);
+    public VerticaSequence(@NotNull GenericStructContainer container, @NotNull String name) {
+        super(container, name);
         this.schema = (VerticaSchema) container.getSchema();
         this.cacheCount = 25000;
-        this.isPersisted = false;
     }
 
     @NotNull
@@ -145,14 +142,9 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
     }
 
     @Override
-    public boolean isPersisted() {
-        return isPersisted;
-    }
-
-    @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) {
         if (source == null) {
-            if (!isPersisted) {
+            if (!isPersisted()) {
                 source = "CREATE SEQUENCE " + getFullyQualifiedName(DBPEvaluationContext.DML);
             } else {
                 StringBuilder ddl = new StringBuilder();
@@ -160,8 +152,10 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
                     .append(getFullyQualifiedName(DBPEvaluationContext.DML))
                     .append("\n\tINCREMENT BY ").append(getIncrementBy())
                     .append("\n\tMINVALUE ").append(getMinValue())
-                    .append("\n\tMAXVALUE ").append(getMaxValue())
-                    .append("\n\tSTART WITH ").append(getLastValue());
+                    .append("\n\tMAXVALUE ").append(getMaxValue());
+                if (getLastValue() != null) {
+                    ddl.append("\n\tSTART WITH ").append(getLastValue());
+                }
 
                 if (cacheCount <= 1) {
                     ddl.append("\n\tNO CACHE");

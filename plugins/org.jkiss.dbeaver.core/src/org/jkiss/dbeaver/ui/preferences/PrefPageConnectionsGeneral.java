@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -78,7 +77,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     public PrefPageConnectionsGeneral() {
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
-        connectionNamePattern = ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        connectionNamePattern = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
         defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
     }
 
@@ -173,7 +172,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 useWinTrustStoreCheck = UIUtils.createCheckbox(
                     winTrustStoreComposite,
                     CoreMessages.pref_page_connections_use_win_cert_label,
-                    ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                    DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
                 );
                 winTrustStoreComposite.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_disabled_tip);
                 useWinTrustStoreCheck.setEnabled(false);
@@ -181,7 +180,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 useWinTrustStoreCheck = UIUtils.createCheckbox(
                     settings,
                     CoreMessages.pref_page_connections_use_win_cert_label,
-                    ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                    DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
                 );
                 useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
             }
@@ -197,7 +196,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             useWinTrustStoreCheck = UIUtils.createCheckbox(
                 winTrustStoreComposite,
                 CoreMessages.pref_page_connections_use_win_cert_label,
-                ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
             );
             winTrustStoreComposite.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_disabled_tip);
             useWinTrustStoreCheck.setEnabled(false);
@@ -205,7 +204,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             useWinTrustStoreCheck = UIUtils.createCheckbox(
                 settings,
                 CoreMessages.pref_page_connections_use_win_cert_label,
-                ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
             );
             useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
         }
@@ -242,10 +241,13 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     private void addLinkToSettings(Composite composite, String pageID) {
-        new PreferenceLinkArea(composite, SWT.NONE,
-                pageID,
-                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
-                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+        UIUtils.createPreferenceLink(
+            composite,
+            "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
+            pageID,
+            (IWorkbenchPreferenceContainer) getContainer(),
+            null
+        );
     }
 
     @Override
@@ -260,7 +262,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
 
     @Override
     protected void performDefaults() {
-        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         connectionDefaultNamePatternText.setText(preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
@@ -292,9 +294,9 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         if (!defaultNavigatorSettings.equals(DataSourceNavigatorSettings.getDefaultSettings())) {
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
-        ModelPreferences.getPreferences().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
-            ModelPreferences.getPreferences().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
         return super.performOk();
     }

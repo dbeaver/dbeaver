@@ -104,6 +104,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getFullTypeName() {
@@ -125,7 +126,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Override
-    public void setDataType(OracleDataType type)
+    public void setDataType(@NotNull OracleDataType type)
     {
         this.type = type;
         this.typeName = type == null ? "" : type.getFullyQualifiedName(DBPEvaluationContext.DDL);
@@ -138,6 +139,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     //@Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @NotNull
     @Override
     public String getTypeName()
     {
@@ -158,6 +160,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return super.getPrecision();
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 42)
     public Integer getScale()

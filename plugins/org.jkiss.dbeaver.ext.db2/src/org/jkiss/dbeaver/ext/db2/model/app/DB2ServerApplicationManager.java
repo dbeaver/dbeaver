@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.app;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -46,14 +47,16 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<DB2ServerApplication> getSessions(DBCSession session, Map<String, Object> options) throws DBException
+    public Collection<DB2ServerApplication> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             return DB2Utils.readApplications(session.getProgressMonitor(), (JDBCSession) session);
@@ -63,7 +66,7 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
     }
 
     @Override
-    public void alterSession(DBCSession session, DB2ServerApplication sessionType, Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull DB2ServerApplication sessionType, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             String cmd = String.format(FORCE_APP_CMD, sessionType.getAgentId());
@@ -78,8 +81,9 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         return DB2Utils.SEL_APP;
     }
 }

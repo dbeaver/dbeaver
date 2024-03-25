@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -76,6 +77,7 @@ public class RedshiftTableColumn extends PostgreTableColumn {
         return getTypeName();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {

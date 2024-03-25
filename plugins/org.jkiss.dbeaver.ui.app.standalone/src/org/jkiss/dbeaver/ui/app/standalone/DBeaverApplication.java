@@ -170,6 +170,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return lastUserActivityTime;
     }
 
+    @NotNull
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return DBeaverActivator.getInstance().getPreferences();
+    }
+
     @Override
     public Object start(IApplicationContext context) {
         instance = this;
@@ -275,7 +281,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (RuntimeUtils.isWindows()
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
-            && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
         }

@@ -76,9 +76,26 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private static final Log log = Log.getLog(MySQLDataSource.class);
     private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+).+");
 
+    private static final Map<String, String> PROHIBITED_DRIVER_PROPERTIES = new HashMap<>();
+
+    static {
+        PROHIBITED_DRIVER_PROPERTIES.putAll(Map.of(
+            "autoDeserialize", "false",
+            "allowLocalInfile", "false",
+            "allowLoadLocalInfile", "false",
+            "allowUrlInLocalInfile", "false"
+        ));
+        PROHIBITED_DRIVER_PROPERTIES.put("allowLoadLocalInfileInPath", null);
+    }
+
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
-    private final CatalogCache catalogCache = new CatalogCache();
+    private final CatalogCache catalogCache = new CatalogCache() {
+        @Override
+        protected void detectCaseSensitivity(DBSObject object) {
+            setCaseSensitive(!getDataSource().getSQLDialect().useCaseInsensitiveNameLookup());
+        }
+    };
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private List<MySQLCharset> charsets;
@@ -1028,5 +1045,28 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             }
         }
         return readeAllCaches;
+    }
+
+    @Override
+    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+        super.fillConnectionProperties(connectionInfo, connectProps);
+
+        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return;
+        }
+
+        for (String prohibitedDriverProperty : PROHIBITED_DRIVER_PROPERTIES.keySet()) {
+            if (connectProps.containsKey(prohibitedDriverProperty)) {
+                log.warn("The driver settings contain a prohibited property, this property will be forcibly removed: "
+                    + prohibitedDriverProperty);
+            }
+            String propertyValue = PROHIBITED_DRIVER_PROPERTIES.get(prohibitedDriverProperty);
+            if (propertyValue == null) {
+                connectProps.remove(prohibitedDriverProperty);
+            } else {
+                log.debug("Set " + prohibitedDriverProperty + ":" + propertyValue);
+                connectProps.put(prohibitedDriverProperty, propertyValue);
+            }
+        }
     }
 }

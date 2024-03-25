@@ -88,7 +88,6 @@
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableColumnManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdProcedureManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedure"/>
-        <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdSequenceManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdSequence"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">

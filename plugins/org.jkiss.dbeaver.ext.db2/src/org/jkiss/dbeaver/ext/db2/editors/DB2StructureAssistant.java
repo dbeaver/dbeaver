@@ -84,23 +84,27 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     // Method Interface
     // -----------------
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return SUPP_OBJ_TYPES;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return getSupportedObjectTypes();
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return HYPER_LINKS_TYPES;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {

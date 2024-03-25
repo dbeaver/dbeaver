@@ -41,7 +41,11 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase<PostgreTa
         super(table, name, constraintType, resultSet);
         String sourceCopy = JDBCUtils.safeGetString(resultSet, "consrc_copy");
         if (sourceCopy == null && getDataSource().getServerType().supportsPGConstraintExpressionColumn()) {
-            this.source = JDBCUtils.safeGetString(resultSet, "consrc");
+            if (!getDataSource().isServerVersionAtLeast(12, 0)) {
+                this.source = JDBCUtils.safeGetString(resultSet, "consrc");
+            } else {
+                this.source = null;
+            }
         } else {
             this.source = sourceCopy;
         }

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.bigquery.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -27,6 +28,7 @@ public class BigQueryDataType extends GenericDataType {
         super(owner, valueType, name, remarks, unsigned, searchable, precision, minScale, maxScale);
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         if (getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {

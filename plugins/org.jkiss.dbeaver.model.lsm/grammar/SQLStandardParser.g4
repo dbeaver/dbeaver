@@ -44,7 +44,7 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
+sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -139,7 +139,7 @@ escapeCharacter: characterValueExpression;
 inPredicateValue: (tableSubquery|(LeftParen (valueExpression (Comma valueExpression)*) RightParen));
 
 rowValueConstructor: (rowValueConstructorElement|LeftParen rowValueConstructorList anyUnexpected?? RightParen|rowSubquery);
-rowValueConstructorElement: (valueExpression|nullSpecification|defaultSpecification);
+rowValueConstructorElement: (valueExpression|defaultSpecification);
 nullSpecification: NULL;
 defaultSpecification: DEFAULT;
 rowValueConstructorList: rowValueConstructorElement (Comma rowValueConstructorElement)*;
@@ -219,14 +219,14 @@ correspondingSpec: CORRESPONDING (BY LeftParen correspondingColumnList RightPare
 correspondingColumnList: columnNameList;
 caseExpression: (caseAbbreviation|simpleCase|searchedCase);
 caseAbbreviation: (NULLIF LeftParen valueExpression Comma valueExpression RightParen|COALESCE LeftParen valueExpression (Comma valueExpression)+ RightParen);
-simpleCase: CASE valueExpression (simpleWhenClause)+ (elseClause)? END;
-simpleWhenClause: WHEN valueExpression THEN result;
-result: valueExpression|NULL;
+simpleCase: CASE (valueExpression|searchCondition) (simpleWhenClause)+ (elseClause)? END;
+simpleWhenClause: WHEN (valueExpression|searchCondition) THEN result;
+result: valueExpression;
 elseClause: ELSE result;
 searchedCase: CASE (searchedWhenClause)+ (elseClause)? END;
 searchedWhenClause: WHEN searchCondition THEN result;
 castSpecification: CAST LeftParen castOperand AS dataType RightParen;
-castOperand: (valueExpression|NULL);
+castOperand: valueExpression;
 
 overClause: OVER LeftParen (PARTITION BY valueExpression (Comma valueExpression)*)? orderByClause? ((ROWS|RANGE) anyUnexpected)? RightParen;
 
@@ -251,9 +251,13 @@ numericOperation:                           (((Asterisk|Solidus) factor)+ (sign 
 intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 
-valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
+valueExpressionPrimary: valueExpressionCast|valueExpressionAtom;
+valueExpressionCast: valueExpressionAtom TypeCast dataType;
+valueExpressionAtom: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |aggregateExpression|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
+    |aggregateExpression|nullSpecification|truthValue|variableExpression|anyWordsWithProperty2|valueReference|anyWordsWithProperty;
+
+variableExpression: BatchVariableName|ClientVariableName|ClientParameterName;
 
 numericPrimary: (valueExpressionPrimary|extractExpression);
 factor: sign? numericPrimary;
@@ -332,13 +336,11 @@ dropViewStatement: DROP VIEW tableName dropBehaviour;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 
 // data statements
-sqlDataStatement: (selectStatementSingleRow|sqlDataChangeStatement);
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
-sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
-deleteStatement: DELETE FROM tableName whereClause?;
-insertStatement: INSERT INTO tableName? insertColumnsAndSource;
-insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
+deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
+insertStatement: INSERT INTO tableName? insertColumnsAndSource?;
+insertColumnsAndSource: (LeftParen (insertColumnList? | Asterisk) RightParen?)? (queryExpression | DEFAULT VALUES);
 insertColumnList: columnNameList;
 
 // UPDATE
@@ -348,7 +350,7 @@ setClause: ((setTarget | setTargetList) (EqualsOperator updateSource)?)|anyUnexp
 setTarget: valueReference;
 setTargetList: LeftParen valueReference? (Comma valueReference)* RightParen?;
 updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
-updateValue: valueExpression|nullSpecification|DEFAULT;
+updateValue: valueExpression|DEFAULT;
 
 // transactions
 sqlTransactionStatement: (setTransactionStatement|setConstraintsModeStatement|commitStatement|rollbackStatement);

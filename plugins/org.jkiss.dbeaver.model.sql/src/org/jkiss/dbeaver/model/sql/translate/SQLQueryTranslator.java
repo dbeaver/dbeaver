@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.sql.translate;
 
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
@@ -134,61 +136,21 @@ public class SQLQueryTranslator implements SQLTranslator {
 
         boolean defChanged = false;
         SQLDialect targetDialect = sqlTranslateContext.getTargetDialect();
+        SQLDialectDDLExtension extendedDialect = null;
+        if (targetDialect instanceof SQLDialectDDLExtension) {
+            extendedDialect = (SQLDialectDDLExtension) targetDialect;
+        }
         if (statement instanceof CreateTable) {
             CreateTable createTable = (CreateTable) statement;
-            SQLDialectDDLExtension extendedDialect = null;
-            if (targetDialect instanceof SQLDialectDDLExtension) {
-                extendedDialect = (SQLDialectDDLExtension) targetDialect;
-            }
 
             if (extendedDialect != null && extendedDialect.supportsCreateIfExists()) {
                 createTable.setIfNotExists(false);
                 defChanged = true;
             }
 
-            for (ColumnDefinition cd : createTable.getColumnDefinitions()) {
-                String newDataType = null;
-                switch (cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)) {
-                    case "CLOB":
-                        newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
-                        break;
-                    case "BLOB":
-                        newDataType = (extendedDialect != null) ? extendedDialect.getBlobDataType() : "blob";
-                        break;
-                    case "TEXT":
-                        String dialectName = targetDialect.getDialectName().toLowerCase();
-                        if (extendedDialect != null && (dialectName.equals("oracle") || dialectName.equals("sqlserver"))) {
-                            newDataType = extendedDialect.getClobDataType();
-                        }
-                        break;
-                    case "TIMESTAMP":
-                        if (extendedDialect != null) {
-                            newDataType = extendedDialect.getTimestampDataType();
-                        }
-                        break;
-                    case SQLConstants.DATA_TYPE_BIGINT:
-                        if (extendedDialect != null) {
-                            newDataType = extendedDialect.getBigIntegerType();
-                        }
-                        break;
-                    case "UUID":
-                        if (extendedDialect != null) {
-                            newDataType = extendedDialect.getUuidDataType();
-                        }
-                        break;
-                    case "BOOLEAN":
-                        if (extendedDialect != null) {
-                            newDataType = extendedDialect.getBooleanDataType();
-                        }
-                        break;
-                    default:
-                        //no action
-                        break;
-                }
-                if (newDataType != null) {
-                    cd.getColDataType().setDataType(newDataType);
-                    defChanged = true;
-                }
+            var columnDefinitions = createTable.getColumnDefinitions();
+            for (ColumnDefinition cd : columnDefinitions) {
+                defChanged |= translateColumnDataType(cd, extendedDialect, targetDialect);
 
                 if (!CommonUtils.isEmpty(cd.getColumnSpecs())) {
                     for (String columnSpec : new ArrayList<>(cd.getColumnSpecs())) {
@@ -241,6 +203,18 @@ public class SQLQueryTranslator implements SQLTranslator {
                     }
                 }
             }
+        } else if (statement instanceof Alter alter) {
+            if (alter.getAlterExpressions() != null) {
+                for (AlterExpression expr : alter.getAlterExpressions()) {
+                    var columnDataTypeList = expr.getColDataTypeList();
+                    if (columnDataTypeList == null) {
+                        continue;
+                    }
+                    for (ColumnDefinition columnDataType : columnDataTypeList) {
+                        defChanged |= translateColumnDataType(columnDataType, extendedDialect, targetDialect);
+                    }
+                }
+            }
         }
         if (defChanged) {
             String newQueryText = SQLFormatUtils.formatSQL(null,
@@ -258,6 +232,52 @@ public class SQLQueryTranslator implements SQLTranslator {
             return Collections.singletonList(query);
         }
         return extraQueries;
+    }
+
+    private boolean translateColumnDataType(ColumnDefinition cd, SQLDialectDDLExtension extendedDialect, SQLDialect targetDialect) {
+        String newDataType = null;
+        switch (cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)) {
+            case "CLOB":
+                newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
+                break;
+            case "BLOB":
+                newDataType = (extendedDialect != null) ? extendedDialect.getBlobDataType() : "blob";
+                break;
+            case "TEXT":
+                String dialectName = targetDialect.getDialectName().toLowerCase();
+                if (extendedDialect != null && (dialectName.equals("oracle") || dialectName.equals("sqlserver"))) {
+                    newDataType = extendedDialect.getClobDataType();
+                }
+                break;
+            case "TIMESTAMP":
+                if (extendedDialect != null) {
+                    newDataType = extendedDialect.getTimestampDataType();
+                }
+                break;
+            case SQLConstants.DATA_TYPE_BIGINT:
+                if (extendedDialect != null) {
+                    newDataType = extendedDialect.getBigIntegerType();
+                }
+                break;
+            case "UUID":
+                if (extendedDialect != null) {
+                    newDataType = extendedDialect.getUuidDataType();
+                }
+                break;
+            case "BOOLEAN":
+                if (extendedDialect != null) {
+                    newDataType = extendedDialect.getBooleanDataType();
+                }
+                break;
+            default:
+                //no action
+                break;
+        }
+        if (newDataType != null) {
+            cd.getColDataType().setDataType(newDataType);
+            return true;
+        }
+        return false;
     }
 
     /**

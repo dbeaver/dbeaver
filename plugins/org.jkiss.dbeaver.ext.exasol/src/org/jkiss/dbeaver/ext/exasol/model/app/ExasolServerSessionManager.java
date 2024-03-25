@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.app;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -60,13 +61,15 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return this.dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<ExasolServerSession> getSessions(DBCSession session, Map<String, Object> options)
+    public Collection<ExasolServerSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options)
         throws DBException {
         try {
             return readSessions((JDBCSession) session);
@@ -76,7 +79,7 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
     }
 
     @Override
-    public void alterSession(DBCSession session, ExasolServerSession sessionType, Map<String, Object> options)
+    public void alterSession(@NotNull DBCSession session, @NotNull ExasolServerSession sessionType, @NotNull Map<String, Object> options)
         throws DBException {
         try {
             String cmd = String.format(Boolean.TRUE.equals(options.get(PROP_KILL_QUERY)) ? KILL_STMT_CMD : KILL_APP_CMD, sessionType.getSessionID().toString());
@@ -125,8 +128,9 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         return SESS_ALL_QUERY;
     }
 }

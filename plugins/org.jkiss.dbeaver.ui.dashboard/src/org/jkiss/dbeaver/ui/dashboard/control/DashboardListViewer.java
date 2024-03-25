@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,11 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collections;
@@ -150,17 +150,17 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     @Override
-    public IWorkbenchSite getSite() {
+    public IWorkbenchSite getWorkbenchSite() {
         return site;
     }
 
     @Override
-    protected DashboardItem doFindInputItem(Object element) {
+    protected DBDashboardItem doFindInputItem(Object element) {
         return null;
     }
 
     @Override
-    protected DashboardItem doFindItem(Object element) {
+    protected DBDashboardItem doFindItem(Object element) {
         return null;
     }
 
@@ -171,7 +171,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     @Override
     protected List getSelectionFromWidget() {
-        DashboardContainer selectedItem = dashContainer.getSelectedItem();
+        DBDashboardContainer selectedItem = dashContainer.getSelectedItem();
         return selectedItem == null ? Collections.emptyList() : Collections.singletonList(selectedItem);
     }
 
@@ -182,7 +182,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     @Override
     public void reveal(Object element) {
-        DashboardContainer item = doFindItem(element);
+        DBDashboardContainer item = doFindItem(element);
         if (item != null) {
             dashContainer.showItem(item);
         }
@@ -193,7 +193,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         if (l.isEmpty()) {
             dashContainer.setSelection(null);
         } else {
-            DashboardItem item = doFindItem(l.get(0));
+            DBDashboardItem item = doFindItem(l.get(0));
             if (item != null) {
                 dashContainer.setSelection(item);
             }

@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
@@ -69,7 +66,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
 
     @NotNull
     @Override
-    public DBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+    public DBCExecutionContext getDefaultContext(@NotNull DBRProgressMonitor monitor, boolean meta) {
         return this;
     }
 
@@ -120,11 +117,9 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
         return this;
     }
 
-    @NotNull
     @Override
-    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException
-    {
-        throw new DBException("Connection invalidate not supported");
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException {
+        // nothing to do
     }
 
     @Nullable
@@ -179,7 +174,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor)
+    public void shutdown(@NotNull DBRProgressMonitor monitor)
     {
         this.close();
     }

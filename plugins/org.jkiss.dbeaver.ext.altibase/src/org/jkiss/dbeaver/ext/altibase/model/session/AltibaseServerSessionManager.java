@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.session;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,13 +44,15 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<AltibaseServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException {
+    public Collection<AltibaseServerSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -66,7 +69,7 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
     }
 
     @Override
-    public void alterSession(DBCSession session, AltibaseServerSession sessionType, Map<String, Object> options) throws DBException {
+    public void alterSession(@NotNull DBCSession session, @NotNull AltibaseServerSession sessionType, @NotNull Map<String, Object> options) throws DBException {
         try {
 
             String sql = String.format("ALTER DATABASE %s SESSION CLOSE %s",
@@ -86,8 +89,9 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         return "SELECT"
                 + " s.id session_id"
                 + " , s.trans_id tx_id"

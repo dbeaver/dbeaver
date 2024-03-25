@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.DefaultInvalidationFeedbackHandler;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.utils.CommonUtils;
@@ -231,7 +232,8 @@ public class DBExecUtils {
                                 dataSource,
                                 false,
                                 true,
-                                () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+                                new DefaultInvalidationFeedbackHandler()
+                            );
                             if (i < tryCount - 1) {
                                 log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
                             }
@@ -370,26 +372,28 @@ public class DBExecUtils {
         }
     }
 
-    public static void checkSmartAutoCommit(DBCSession session, String queryText) {
+    public static boolean checkSmartAutoCommit(DBCSession session, String queryText) {
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null) {
             try {
                 if (!txnManager.isAutoCommit()) {
-                    return;
+                    return false;
                 }
 
                 SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(session.getDataSource());
                 if (!sqlDialect.isTransactionModifyingQuery(queryText)) {
-                    return;
+                    return false;
                 }
 
                 if (txnManager.isAutoCommit()) {
                     txnManager.setAutoCommit(session.getProgressMonitor(), false);
+                    return true;
                 }
             } catch (DBCException e) {
                 log.warn(e);
             }
         }
+        return false;
     }
 
     public static void setExecutionContextDefaults(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, @Nullable String newInstanceName, @Nullable String curInstanceName, @Nullable String newObjectName) throws DBException {
