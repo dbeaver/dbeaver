@@ -67,12 +67,6 @@ public class CubridProcedureParameter implements DBSProcedureParameter
         return dataType;
     }
 
-    @NotNull
-    @Property(viewable = true, order = 4)
-    public String getMode() {
-        return mode;
-    }
-
     @Nullable
     @Override
     @Property(viewable = true, order = 5)
@@ -92,10 +86,20 @@ public class CubridProcedureParameter implements DBSProcedureParameter
         return procedure;
     }
 
-    @Nullable
+    @NotNull
     @Override
+    @Property(viewable = true, order = 4)
     public DBSProcedureParameterKind getParameterKind() {
-        return null;
+        switch (mode) {
+            case "IN" :
+                return DBSProcedureParameterKind.IN;
+            case "INOUT":
+                return DBSProcedureParameterKind.INOUT;
+            case "OUT" :
+                return DBSProcedureParameterKind.OUT;
+            default:
+                return DBSProcedureParameterKind.UNKNOWN;
+        }
     }
 
     @Nullable
