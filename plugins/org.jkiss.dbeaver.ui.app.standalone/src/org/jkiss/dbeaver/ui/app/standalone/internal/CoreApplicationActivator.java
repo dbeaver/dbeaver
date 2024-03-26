@@ -29,10 +29,10 @@ import org.eclipse.osgi.internal.hookregistry.HookRegistry;
 import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
-import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -166,7 +166,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
     private void useCustomSecretStorage() throws Exception {
         Path storagePath =
-            Path.of(RuntimeUtils.getWorkingDirectory(DBeaverApplication.DBEAVER_DATA_DIR))
+            Path.of(RuntimeUtils.getWorkingDirectory(DesktopPlatform.DBEAVER_DATA_DIR))
                 .resolve(DBEAVER_SECURE_DIR)
                 .resolve(DBEAVER_SECURE_FILE);
 
