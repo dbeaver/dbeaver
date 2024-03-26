@@ -783,6 +783,15 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             typeCastExpr.getValueExpr().apply(this, node);
             return null;
         }
+        
+        @Override
+        public Object visitValueConstantExpr(@NotNull SQLQueryValueConstantExpression constExpr, @NotNull OutlineQueryNode node) {
+            String extraText = this.obtainExprTypeNameString(constExpr);
+            DBPImage icon = this.obtainExprTypeIcon(constExpr);
+            
+            this.makeNode(node, constExpr, constExpr.getValueString(), extraText, icon);
+            return null;
+        }
 
         @Nullable
         private String obtainExprTypeNameString(@NotNull SQLQueryValueExpression expr) {
@@ -790,14 +799,23 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
             return typeName == null ? null : (" : " + typeName);
         }
+        
+        private static final Map<SQLQueryExprType, DBIcon> wellKnownTypeIcons = Map.of(
+            SQLQueryExprType.UNKNOWN, DBIcon.TYPE_UNKNOWN,
+            SQLQueryExprType.STRING, DBIcon.TYPE_STRING,
+            SQLQueryExprType.BOOLEAN, DBIcon.TYPE_BOOLEAN,
+            SQLQueryExprType.NUMERIC, DBIcon.TYPE_NUMBER,
+            SQLQueryExprType.DATETIME, DBIcon.TYPE_DATETIME
+        );
 
         @NotNull
         private DBPImage obtainExprTypeIcon(@NotNull SQLQueryValueExpression expr) {
             SQLQueryExprType type = expr.getValueType();
-            return type == null || type == SQLQueryExprType.UNKNOWN ? DBIcon.TYPE_UNKNOWN
-                : type == SQLQueryExprType.STRING ? DBIcon.TYPE_STRING
-                : type.getTypedDbObject() == null ? DBIcon.TYPE_UNKNOWN
-                : DBValueFormatting.getTypeImage(type.getTypedDbObject());
+            return type == null
+                ? DBIcon.TYPE_UNKNOWN
+                : type.getTypedDbObject() != null
+                    ? DBValueFormatting.getTypeImage(type.getTypedDbObject())
+                    : wellKnownTypeIcons.getOrDefault(type, DBIcon.TYPE_UNKNOWN);
         }
         
         @Nullable
