@@ -161,7 +161,7 @@ public class DashboardConfiguration {
         Document dbDocument = null;
 
         try {
-            String dbSerialized = dataSourceContainer.getProperty(DashboardConstants.DS_PROP_DASHBOARDS);
+            String dbSerialized = dataSourceContainer.getExtension(DashboardConstants.DS_PROP_DASHBOARDS);
             if (!CommonUtils.isEmpty(dbSerialized)) {
                 dbDocument = XMLUtils.parseDocument(new StringReader(dbSerialized));
             } else {
@@ -206,7 +206,7 @@ public class DashboardConfiguration {
             log.error("Error saving dashboard view configuration", e);
         }
 
-        dataSourceContainer.setProperty(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
+        dataSourceContainer.setExtension(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
         dataSourceContainer.persistConfiguration();
     }
 

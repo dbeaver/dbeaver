@@ -148,7 +148,9 @@ public class DataSourceDescriptor
     @NotNull
     private final DataSourcePreferenceStore preferenceStore;
     @NotNull
-    private final Map<String, String> properties;
+    private final Map<String, String> tags;
+    @NotNull
+    private final Map<String, String> extensions;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -222,7 +224,8 @@ public class DataSourceDescriptor
         this.originalDriver = originalDriver;
         this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
-        this.properties = new LinkedHashMap<>();
+        this.tags = new LinkedHashMap<>();
+        this.extensions = new LinkedHashMap<>();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
@@ -273,7 +276,8 @@ public class DataSourceDescriptor
             this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
         }
 
-        this.properties = new LinkedHashMap<>(source.properties);
+        this.tags = new LinkedHashMap<>(source.tags);
+        this.extensions = new LinkedHashMap<>(source.extensions);
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
@@ -1684,24 +1688,49 @@ public class DataSourceDescriptor
         registry.notifyDataSourceListeners(event);
     }
 
-    @Nullable
     @Override
-    public String getProperty(@NotNull String name) {
-        return properties.get(name);
+    public Map<String, String> getTags() {
+        return new LinkedHashMap<>(tags);
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags.clear();
+        this.tags.putAll(tags);
     }
 
     @Override
-    public void setProperty(@NotNull String name, @Nullable String value) {
+    public String getTagValue(String tagName) {
+        return tags.get(tagName);
+    }
+
+    @Override
+    public void setTagValue(String tagName, String tagValue) {
+        tags.put(tagName, tagValue);
+    }
+
+    @Nullable
+    @Override
+    public String getExtension(@NotNull String name) {
+        return extensions.get(name);
+    }
+
+    @Override
+    public void setExtension(@NotNull String name, @Nullable String value) {
         if (value == null) {
-            this.properties.remove(name);
+            this.extensions.remove(name);
         } else {
-            this.properties.put(name, value);
+            this.extensions.put(name, value);
         }
     }
 
     @NotNull
-    public Map<String, String> getProperties() {
-        return properties;
+    public Map<String, String> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<String, String> extensions) {
+        this.extensions.clear();
+        this.extensions.putAll(extensions);
     }
 
     @Override
@@ -1908,7 +1937,8 @@ public class DataSourceDescriptor
         this.virtualModel.copyFrom(descriptor.getVirtualModel());
 
         this.description = descriptor.description;
-        this.properties.putAll(descriptor.properties);
+        this.tags.putAll(descriptor.tags);
+        this.extensions.putAll(descriptor.extensions);
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
@@ -1950,7 +1980,7 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
-                CommonUtils.equalObjects(this.properties, source.properties) &&
+                CommonUtils.equalObjects(this.extensions, source.extensions) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
