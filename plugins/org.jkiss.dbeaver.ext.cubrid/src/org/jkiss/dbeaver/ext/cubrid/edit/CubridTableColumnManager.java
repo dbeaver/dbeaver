@@ -57,7 +57,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         DBSDataType columnType = findBestDataType(table, DBConstants.DEFAULT_DATATYPE_NAMES);
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
 
-        CubridTableColumn column = new CubridTableColumn(table, null);
+        CubridTableColumn column = new CubridTableColumn(table, null, null, false, null);
         column.setName(getNewColumnName(monitor, context, table));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnSize);

@@ -23,11 +23,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.TableCache;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -99,6 +101,12 @@ public class CubridUser extends GenericSchema
     }
 
     @NotNull
+    @Override
+    public TableCache createTableCache(@NotNull GenericDataSource datasource) {
+        return new CubridTableCache(datasource);
+    }
+
+    @NotNull
     public CubridIndexCache getCubridIndexCache() {
         return cubridIndexCache;
     }
@@ -166,6 +174,39 @@ public class CubridUser extends GenericSchema
                 }
                 cubridIndexCache.setCache(newIndexCache);
             }
+        }
+    }
+
+    public class CubridTableCache extends TableCache
+    {
+        protected CubridTableCache(@NotNull GenericDataSource dataSource) {
+            super(dataSource);
+        }
+
+        @NotNull
+        @Override
+        protected GenericTableColumn fetchChild(
+                @NotNull JDBCSession session,
+                @NotNull GenericStructContainer owner,
+                @NotNull GenericTableBase table,
+                @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException {
+            String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
+            String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
+            Boolean autoIncrement = false;
+            String sql = "show columns from " + ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table)
+                    + " where Field = ?";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                dbStat.setString(1, columnName);
+                try (JDBCResultSet result = dbStat.executeQuery()) {
+                    while (result.next()) {
+                        dataType = JDBCUtils.safeGetString(result, "Type");
+                        autoIncrement = JDBCUtils.safeGetString(result, "Extra").equals("auto_increment");
+                        break;
+                    }
+                }
+            }
+            return new CubridTableColumn(table, columnName, dataType, autoIncrement, dbResult);
         }
     }
 
