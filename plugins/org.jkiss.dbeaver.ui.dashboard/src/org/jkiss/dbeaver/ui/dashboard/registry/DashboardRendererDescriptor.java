@@ -21,8 +21,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,6 +40,8 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
     private final String description;
     private final DBPImage icon;
     private final ObjectType implType;
+    private final ObjectType itemConfigurationEditor;
+    private final ObjectType itemViewSettingsEditor;
     private final DBDashboardDataType[] supportedDataTypes;
     private final boolean nativeRenderer;
 
@@ -57,6 +62,8 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
         this.nativeRenderer = CommonUtils.toBoolean(config.getAttribute("native"));
 
         this.implType = new ObjectType(config.getAttribute("renderer"));
+        this.itemConfigurationEditor = new ObjectType(config.getAttribute("configurationEditor"));
+        this.itemViewSettingsEditor = new ObjectType(config.getAttribute("viewSettingsEditor"));
     }
 
     @Override
@@ -95,6 +102,16 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
     @Override
     public DashboardItemRenderer createRenderer() throws DBException {
         return implType.createInstance(DashboardItemRenderer.class);
+    }
+
+    @Override
+    public IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemConfiguration> createItemConfigurationEditor() throws DBException {
+        return itemConfigurationEditor.createInstance(IObjectPropertyConfigurator.class);
+    }
+
+    @Override
+    public IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemViewSettings> createItemViewSettingsEditor() throws DBException {
+        return itemViewSettingsEditor.createInstance(IObjectPropertyConfigurator.class);
     }
 
     @Override

@@ -26,7 +26,9 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
 import org.jfree.ui.RectangleEdge;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.AWTUtils;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
@@ -56,6 +58,16 @@ public abstract class DashboardRendererDatabaseChart extends DashboardRendererAb
         }
         dataset.addSeries(seriesCos);
 
+    }
+
+    @Override
+    public IObjectPropertyConfigurator<?, DashboardItemConfiguration> createItemConfigurationEditor() {
+        return new DatabaseChartConfigurationEditor();
+    }
+
+    @Override
+    public IObjectPropertyConfigurator<?, DashboardItemViewSettings> createItemViewSettingsEditor() {
+        return new DatabaseChartViewSettingsEditor();
     }
 
     @Override

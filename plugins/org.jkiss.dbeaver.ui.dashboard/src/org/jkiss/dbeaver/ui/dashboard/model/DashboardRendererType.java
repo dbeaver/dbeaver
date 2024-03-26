@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
 /**
  * Dashboard renderer type.
@@ -36,5 +38,9 @@ public interface DashboardRendererType {
     DBDashboardDataType[] getSupportedTypes();
 
     DashboardItemRenderer createRenderer() throws DBException;
+
+    IObjectPropertyConfigurator<?, DashboardItemConfiguration> createItemConfigurationEditor() throws DBException;
+
+    IObjectPropertyConfigurator<?, DashboardItemViewSettings> createItemViewSettingsEditor() throws DBException;
 
 }
