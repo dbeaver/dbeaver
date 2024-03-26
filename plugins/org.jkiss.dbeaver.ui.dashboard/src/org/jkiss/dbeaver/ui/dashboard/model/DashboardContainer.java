@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
@@ -35,6 +38,9 @@ public interface DashboardContainer extends DBPDataSourceContainerProvider {
 
     boolean isSingleChartMode();
 
+    @NotNull
     IWorkbenchSite getWorkbenchSite();
+    @Nullable
+    IWorkbenchPart getWorkbenchPart();
 
 }

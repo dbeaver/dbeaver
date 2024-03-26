@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     public static final int DEFAULT_HEIGHT = 200;
     private final DashboardListControl groupContainer;
-    private final DashboardItemConfiguration dashboardConfig;
+    private final DashboardItemViewSettings dashboardConfig;
 
     private Date lastUpdateTime;
     private DashboardRendererType curViewType;
@@ -64,11 +65,11 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     private final Composite chartComposite;
     private boolean autoUpdateEnabled;
 
-    public DashboardViewItem(@NotNull DashboardListControl parent, @NotNull DashboardItemDescriptor dashboard) {
+    public DashboardViewItem(@NotNull DashboardListControl parent, @NotNull DashboardItemConfiguration item) {
         super(parent, SWT.DOUBLE_BUFFERED);
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.groupContainer = parent;
-        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getItemConfig(dashboard.getId());
+        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getItemConfig(item.getId());
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 3;
@@ -95,7 +96,8 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
 
-            titleLabel.setText(dashboardConfig == null ? dashboard.getId() : "  " + dashboard.getName());
+            titleLabel.setText(dashboardConfig == null ? item.getId() : "  " + item.getName());
+            titleLabel.setToolTipText(CommonUtils.notEmpty(item.getDescription()));
             titleLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             titleToolbar = new ToolBar(titleComposite, SWT.FLAT | SWT.HORIZONTAL);
@@ -117,8 +119,12 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         this.autoUpdateEnabled = true;
     }
 
+    public DashboardListControl getGroupContainer() {
+        return groupContainer;
+    }
+
     private void createContextMenu(Control control) {
-        MenuManager menuMgr = new MenuManager(null, getDashboard().getId() + "_context_menu");
+        MenuManager menuMgr = new MenuManager(null, getItemDescriptor().getId() + "_context_menu");
         menuMgr.addMenuListener(manager -> {
             fillDashboardContextMenu(menuMgr, false);
         });
@@ -133,7 +139,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             curViewType = dashboardConfig.getViewType();
             renderer = curViewType.createRenderer();
             dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
-            renderer.fillDashboardToolbar(titleToolbar, dashboardControl, dashboardConfig);
+            renderer.fillDashboardToolbar(this, titleToolbar, dashboardControl, dashboardConfig);
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
@@ -288,17 +294,17 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 */
     }
 
-    public DashboardItemConfiguration getDashboardConfig() {
+    public DashboardItemViewSettings getDashboardConfig() {
         return dashboardConfig;
     }
 
     @Override
-    public DashboardItemDescriptor getDashboard() {
+    public DashboardItemConfiguration getItemDescriptor() {
         return dashboardConfig.getDashboardDescriptor();
     }
 
     @Override
-    public DashboardItemConfiguration getViewConfig() {
+    public DashboardItemViewSettings getItemConfiguration() {
         return dashboardConfig;
     }
 
@@ -324,31 +330,31 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     @Override
     public DBDashboardMapQuery getMapQuery() {
-        DashboardItemDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
         return dashboard == null ? null : dashboard.getMapQuery();
     }
 
     @Override
     public String[] getMapKeys() {
-        DashboardItemDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
         return dashboard == null ? null : dashboard.getMapKeys();
     }
 
     @Override
     public String[] getMapLabels() {
-        DashboardItemDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
         return dashboard == null ? null : dashboard.getMapLabels();
     }
 
     @Override
     public JexlExpression getMapFormula() {
-        DashboardItemDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
         return dashboard == null ? null : dashboard.getMapFormulaExpr();
     }
 
     @Override
     public List<? extends DBDashboardQuery> getQueryList() {
-        DashboardItemDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
         return dashboard == null ? null : dashboard.getQueries();
     }
 
@@ -432,12 +438,12 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         }
         if (!UIUtils.isInDialog(dashboardControl)) {
             MenuManager viewMenu = new MenuManager(UIDashboardMessages.dashboard_chart_composite_menu_manager_text);
-            List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(getDashboard().getDataType());
+            List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(getItemDescriptor().getDataType());
             for (DashboardRendererType viewType : viewTypes) {
                 Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
                     @Override
                     public boolean isChecked() {
-                        return getViewConfig().getViewType() == viewType;
+                        return getItemConfiguration().getViewType() == viewType;
                     }
 
                     @Override
@@ -465,7 +471,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     @Override
     public String toString() {
-        DashboardItemDescriptor dashboard = dashboardConfig.getDashboardDescriptor();
+        DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
         return dashboard == null ? dashboardConfig.getItemId() : dashboard.getName();
     }
 }

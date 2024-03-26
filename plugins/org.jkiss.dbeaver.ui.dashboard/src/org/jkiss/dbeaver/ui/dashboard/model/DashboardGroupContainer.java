@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public interface DashboardGroupContainer {
 
     void removeItem(@NotNull DashboardItemContainer item);
 
-    void addItem(@NotNull DashboardItemDescriptor descriptor);
+    void addItem(@NotNull DashboardItemConfiguration descriptor);
 
     void selectItem(@Nullable DashboardItemContainer item);
 }

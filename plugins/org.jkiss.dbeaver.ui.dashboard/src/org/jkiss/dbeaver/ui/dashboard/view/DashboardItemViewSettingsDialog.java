@@ -26,37 +26,38 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-public class DashboardItemConfigDialog extends BaseDialog {
+public class DashboardItemViewSettingsDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardItemConfigDialog";//$NON-NLS-1$
     private static final boolean SHOW_QUERIES_BUTTON = false;
 
-    private final DashboardItemConfiguration dashboardConfig;
+    private final DashboardItemViewSettings dashboardConfig;
     private final DashboardConfiguration viewConfiguration;
     private final DashboardItemContainer dashboardContainer;
 
-    public DashboardItemConfigDialog(Shell shell, DashboardItemContainer dashboardContainer, DashboardConfiguration viewConfiguration) {
-        super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getDashboard().getName()), null);
+    public DashboardItemViewSettingsDialog(Shell shell, DashboardItemContainer dashboardContainer, DashboardConfiguration viewConfiguration) {
+        super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getItemDescriptor().getName()), null);
 
         this.viewConfiguration = viewConfiguration;
         this.dashboardContainer = dashboardContainer;
-        this.dashboardConfig = new DashboardItemConfiguration(dashboardContainer.getViewConfig());
+        this.dashboardConfig = new DashboardItemViewSettings(dashboardContainer.getItemConfiguration());
     }
 
     @Override
@@ -97,7 +98,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         StringBuilder sql = new StringBuilder();
-                        for (DashboardItemDescriptor.QueryMapping query : dashboardConfig.getDashboardDescriptor().getQueries()) {
+                        for (DashboardItemConfiguration.QueryMapping query : dashboardConfig.getDashboardDescriptor().getQueries()) {
                             sql.append(query.getQueryText()).append(";\n");
                         }
                         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -115,7 +116,9 @@ public class DashboardItemConfigDialog extends BaseDialog {
             }
         }
 
-        {
+        DashboardRendererDescriptor renderer = DashboardUIRegistry.getInstance().getViewType(dashboardContainer.getItemDescriptor().getDashboardRenderer());
+
+        if (renderer != null && renderer.isNativeRenderer()) {
             Group updateGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate, 2, GridData.FILL_HORIZONTAL, 0);
 
             Text updatePeriodText = UIUtils.createLabelText(
@@ -143,7 +146,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
 */
         }
 
-        {
+        if (renderer != null && renderer.isNativeRenderer()) {
             Group viewGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardview, 2, GridData.FILL_HORIZONTAL, 0);
 
             Combo typeCombo = UIUtils.createLabelCombo(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view_tooltip, SWT.BORDER | SWT.READ_ONLY);
@@ -213,7 +216,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
         createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_item_config_buttons_configuration, false).addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), dashboardConfig.getDashboardDescriptor());
+                DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), dashboardConfig.getDashboardDescriptor());
                 editDialog.open();
             }
         });

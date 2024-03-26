@@ -41,11 +41,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DashboardDescriptor
+ * DashboardItemDescriptor
  */
-public class DashboardItemDescriptor extends AbstractContextDescriptor implements DBDashboardItem {
+public class DashboardItemConfiguration extends AbstractContextDescriptor implements DBDashboardItem {
 
-    private static final Log log = Log.getLog(DashboardItemDescriptor.class);
+    private static final Log log = Log.getLog(DashboardItemConfiguration.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard"; //$NON-NLS-1$
 
@@ -116,7 +116,7 @@ public class DashboardItemDescriptor extends AbstractContextDescriptor implement
         DashboardMapQueryDescriptor getMapQuery(String id);
     }
 
-    DashboardItemDescriptor(
+    DashboardItemConfiguration(
         DashboardProviderDescriptor provider,
         MapQueryProvider mapQueryProvider,
         IConfigurationElement config
@@ -176,7 +176,7 @@ public class DashboardItemDescriptor extends AbstractContextDescriptor implement
         this.isCustom = false;
     }
 
-    DashboardItemDescriptor(DashboardRegistry registry, Element config) {
+    DashboardItemConfiguration(DashboardRegistry registry, Element config) {
         super(DashboardConstants.DASHBOARDS_PLUGIN_ID);
 
         this.id = config.getAttribute("id");
@@ -222,7 +222,7 @@ public class DashboardItemDescriptor extends AbstractContextDescriptor implement
         this.isCustom = true;
     }
 
-    public DashboardItemDescriptor(DashboardItemDescriptor source) {
+    public DashboardItemConfiguration(DashboardItemConfiguration source) {
         super(source.getPluginId());
 
         this.id = source.id;
@@ -252,7 +252,7 @@ public class DashboardItemDescriptor extends AbstractContextDescriptor implement
         this.isCustom = source.isCustom;
     }
 
-    public DashboardItemDescriptor(
+    public DashboardItemConfiguration(
         @NotNull DashboardProviderDescriptor provider,
         @Nullable DBDashboardFolder folder,
         @NotNull String id,

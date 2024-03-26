@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -56,7 +56,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardManagerDialog";//$NON-NLS-1$
 
-    private DashboardItemDescriptor selectedDashboard;
+    private DashboardItemConfiguration selectedDashboard;
 
     private Button newButton;
     private Button copyButton;
@@ -117,7 +117,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
                 @Override
                 public boolean hasChildren(Object element) {
-                    return !(element instanceof DashboardItemDescriptor);
+                    return !(element instanceof DashboardItemConfiguration);
                 }
             });
             treeViewer.setLabelProvider(new CellLabelProvider() {
@@ -132,7 +132,7 @@ public class DashboardManagerDialog extends BaseDialog {
                             cell.setImage(DBeaverIcons.getImage(dpd.getIcon()));
                         } else if (element instanceof DBPDataSourceProviderDescriptor dspd) {
                             cell.setImage(DBeaverIcons.getImage(dspd.getIcon()));
-                        } else if (element instanceof DashboardItemDescriptor dashboardDescriptor) {
+                        } else if (element instanceof DashboardItemConfiguration dashboardDescriptor) {
                             DBPImage icon = null;
                             if (dashboardDescriptor.isCustom()) {
                                 icon = DBIcon.TYPE_OBJECT;
@@ -172,7 +172,7 @@ public class DashboardManagerDialog extends BaseDialog {
                 ISelection selection = event.getSelection();
                 if (selection instanceof IStructuredSelection ss) {
                     Object selectedObject = ss.getFirstElement();
-                    if (selectedObject instanceof DashboardItemDescriptor dd) {
+                    if (selectedObject instanceof DashboardItemConfiguration dd) {
                         this.selectedDashboard = dd;
                     }
                 }
@@ -277,9 +277,9 @@ public class DashboardManagerDialog extends BaseDialog {
         if (providerDescriptor == null) {
             providerDescriptor = DashboardRegistry.getInstance().getDashboardProvider(DashboardConstants.DEF_DASHBOARD_PROVIDER);
         }
-        DashboardItemDescriptor newDashboard = new DashboardItemDescriptor(
+        DashboardItemConfiguration newDashboard = new DashboardItemConfiguration(
             providerDescriptor, null, "", "", "", "", true);
-        DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), newDashboard);
+        DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboardItem(newDashboard);
             refreshDashboards();
@@ -287,7 +287,7 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void copyDashboard() {
-        DashboardItemDescriptor newDashboard = new DashboardItemDescriptor(selectedDashboard);
+        DashboardItemConfiguration newDashboard = new DashboardItemConfiguration(selectedDashboard);
         newDashboard.setCustom(true);
         String origId = newDashboard.getId();
         for (int i = 2; ; i++) {
@@ -297,7 +297,7 @@ public class DashboardManagerDialog extends BaseDialog {
                 break;
             }
         }
-        DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), newDashboard);
+        DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboardItem(newDashboard);
             refreshDashboards();
@@ -305,7 +305,7 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void editDashboard() {
-        DashboardEditItemDialog editDialog = new DashboardEditItemDialog(getShell(), selectedDashboard);
+        DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), selectedDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().saveSettings();
             refreshDashboards();

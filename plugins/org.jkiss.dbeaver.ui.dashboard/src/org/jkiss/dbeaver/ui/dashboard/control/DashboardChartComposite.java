@@ -27,8 +27,8 @@ import org.jfree.chart.JFreeChart;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewSettingsDialog;
 
 /**
  * Dashboard chart composite
@@ -70,7 +70,7 @@ public class DashboardChartComposite extends BaseChartComposite implements Dashb
     }
 
     protected boolean showChartConfigDialog() {
-        DashboardItemConfigDialog dialog = new DashboardItemConfigDialog(
+        DashboardItemViewSettingsDialog dialog = new DashboardItemViewSettingsDialog(
             this.getShell(),
             dashboardContainer,
             viewContainer.getViewConfiguration());

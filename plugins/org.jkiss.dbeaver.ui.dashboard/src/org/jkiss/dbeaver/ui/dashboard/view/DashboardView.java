@@ -144,7 +144,7 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
             }
 
             configuration = new DashboardConfiguration(project, dataSourceContainer, dashboardId, secondaryId);
-            dashboardListViewer = new DashboardListViewer(getSite(), dataSourceContainer, configuration);
+            dashboardListViewer = new DashboardListViewer(getSite(), this, dataSourceContainer, configuration);
             dashboardListViewer.createControl(parent);
 
             dashboardListViewer.createDashboardsFromConfiguration();

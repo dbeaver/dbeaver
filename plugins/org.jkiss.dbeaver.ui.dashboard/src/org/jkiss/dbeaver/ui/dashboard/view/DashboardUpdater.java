@@ -154,7 +154,7 @@ public class DashboardUpdater {
                     }
                 });
             } catch (DBException e) {
-                log.debug("Error reading dashboard '" + dashboard.getDashboard().getId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
+                log.debug("Error reading dashboard '" + dashboard.getItemDescriptor().getId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
             }
             monitor.worked(1);
         }
@@ -205,7 +205,7 @@ public class DashboardUpdater {
             return;
         }
         try (DBCSession session = executionContext.openSession(
-            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboard().getName() + "' data")) {
+            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getItemDescriptor().getName() + "' data")) {
             session.enableLogging(false);
 
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
@@ -229,7 +229,7 @@ public class DashboardUpdater {
                             }
                         }
                     } catch (Exception e) {
-                        throw new DBCException("Error updating dashboard " + dashboard.getDashboard().getId(), e, session.getExecutionContext());
+                        throw new DBCException("Error updating dashboard " + dashboard.getItemDescriptor().getId(), e, session.getExecutionContext());
                     }
                 }
             } finally {
@@ -301,7 +301,7 @@ public class DashboardUpdater {
 
                 Object result = dashboard.getMapFormula().evaluate(context);
                 if (result instanceof Number) {
-                    String columnName = dashboard.getDashboard().getName();
+                    String columnName = dashboard.getItemDescriptor().getName();
                     if (!ArrayUtils.isEmpty(mapLabels)) {
                         columnName = mapLabels[0];
                     }
@@ -350,7 +350,7 @@ public class DashboardUpdater {
             }
         }
 
-        switch (dashboardContainer.getDashboard().getFetchType()) {
+        switch (dashboardContainer.getItemDescriptor().getFetchType()) {
             case rows:
                 dataset = transposeDataset(dataset);
                 break;
@@ -420,7 +420,7 @@ public class DashboardUpdater {
         DashboardListViewer viewManager = view.getDashboardListViewer();
         for (DashboardGroupContainer group : viewManager.getGroups()) {
             for (DashboardItemContainer dashboardContainer : group.getItems()) {
-                if (dashboardContainer.getDashboard().getDataType() == DBDashboardDataType.provided) {
+                if (dashboardContainer.getItemDescriptor().getDataType() == DBDashboardDataType.provided) {
                     // Skip all provided
                     continue;
                 }

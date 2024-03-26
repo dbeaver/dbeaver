@@ -23,6 +23,16 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 
 public class HandlerDashboardViewItem extends HandlerDashboardAbstract {
 
+    public static final String CMD_ID = "org.jkiss.dbeaver.ui.dashboard.view";
+
+    public static void openDashboardViewDialog(DashboardItemContainer itemContainer) {
+        DashboardViewItem viewItem = (DashboardViewItem) itemContainer;
+        if (viewItem.getGroupContainer().getView().getWorkbenchPart() instanceof DashboardView view) {
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(view.getDashboardListViewer(), viewItem);
+            viewDialog.open();
+        }
+    }
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);

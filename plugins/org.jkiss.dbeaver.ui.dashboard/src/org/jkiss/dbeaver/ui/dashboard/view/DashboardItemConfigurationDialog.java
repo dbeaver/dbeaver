@@ -26,7 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.dashboard.*;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
@@ -42,11 +42,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class DashboardEditItemDialog extends BaseDialog {
+public class DashboardItemConfigurationDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardEditDialog";//$NON-NLS-1$
 
-    private final DashboardItemDescriptor dashboardDescriptor;
+    private final DashboardItemConfiguration itemDescriptor;
 
     private Text idText;
     private Text nameText;
@@ -66,12 +66,12 @@ public class DashboardEditItemDialog extends BaseDialog {
 
     private DBPNamedObject targetDatabase;
 
-    public DashboardEditItemDialog(Shell shell, DashboardItemDescriptor dashboardDescriptor) {
-        super(shell, NLS.bind(UIDashboardMessages.dialog_edit_dashboard_title, dashboardDescriptor.getName()), null);
+    public DashboardItemConfigurationDialog(Shell shell, DashboardItemConfiguration itemDescriptor) {
+        super(shell, NLS.bind(UIDashboardMessages.dialog_edit_dashboard_title, itemDescriptor.getName()), null);
 
-        this.dashboardDescriptor = dashboardDescriptor;
+        this.itemDescriptor = itemDescriptor;
 
-        List<DBPNamedObject> dataSourceMappings = dashboardDescriptor.getDataSourceMappings();
+        List<DBPNamedObject> dataSourceMappings = itemDescriptor.getDataSourceMappings();
         if (!dataSourceMappings.isEmpty()) {
             targetDatabase = dataSourceMappings.get(0);
         }
@@ -88,24 +88,27 @@ public class DashboardEditItemDialog extends BaseDialog {
     {
         Composite composite = super.createDialogArea(parent);
 
-        boolean readOnly = !dashboardDescriptor.isCustom();
+        boolean readOnly = !itemDescriptor.isCustom();
         int baseStyle = !readOnly ? SWT.NONE : SWT.READ_ONLY;
 
         if (readOnly) {
             UIUtils.createInfoLabel(composite, UIDashboardMessages.dialog_edit_dashboard_infolabels_predifined_dashboard);
         }
 
+        DashboardRendererDescriptor renderer = DashboardUIRegistry.getInstance().getViewType(itemDescriptor.getDashboardRenderer());
+        boolean isNativeItem = renderer != null && renderer.isNativeRenderer();
+
         {
             Group infoGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_edit_dashboard_maininfo, 4, GridData.FILL_HORIZONTAL, 0);
 
-            idText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_id, dashboardDescriptor.getId(), SWT.BORDER | baseStyle);
+            idText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_id, itemDescriptor.getId(), SWT.BORDER | baseStyle);
             idText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             idText.addModifyListener(e -> updateButtons());
-            nameText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_name, dashboardDescriptor.getName(), SWT.BORDER | baseStyle);
+            nameText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_name, itemDescriptor.getName(), SWT.BORDER | baseStyle);
             nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             nameText.addModifyListener(e -> updateButtons());
 
-            {
+            if (isNativeItem) {
                 UIUtils.createControlLabel(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_db);
                 Composite dbSelectorPanel = UIUtils.createComposite(infoGroup, 2);
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -130,52 +133,52 @@ public class DashboardEditItemDialog extends BaseDialog {
             }
 
 
-//            UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardDescriptor.getGroup()), SWT.BORDER | baseStyle)
-//                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-            dataTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DBDashboardDataType ddt : DBDashboardDataType.values()) {
-                dataTypeCombo.add(ddt.name());
+            if (isNativeItem) {
+                dataTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                for (DBDashboardDataType ddt : DBDashboardDataType.values()) {
+                    dataTypeCombo.add(ddt.name());
+                }
+                dataTypeCombo.setText(itemDescriptor.getDataType().name());
+                dataTypeCombo.setEnabled(!readOnly);
+
+                calcTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                for (DBDashboardCalcType dct : DBDashboardCalcType.values()) {
+                    calcTypeCombo.add(dct.name());
+                }
+                calcTypeCombo.setText(itemDescriptor.getCalcType().name());
+                calcTypeCombo.setEnabled(!readOnly);
+
+                valueTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                for (DBDashboardValueType dvt : DBDashboardValueType.values()) {
+                    valueTypeCombo.add(dvt.name());
+                }
+                valueTypeCombo.setText(itemDescriptor.getValueType().name());
+                valueTypeCombo.setEnabled(!readOnly);
+
+                intervalCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                for (DBDashboardInterval dvt : DBDashboardInterval.values()) {
+                    intervalCombo.add(dvt.name());
+                }
+                intervalCombo.setText(itemDescriptor.getInterval().name());
+                intervalCombo.setEnabled(!readOnly);
+
+                fetchTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                for (DBDashboardFetchType dft : DBDashboardFetchType.values()) {
+                    fetchTypeCombo.add(dft.name());
+                }
+                fetchTypeCombo.setText(itemDescriptor.getFetchType().name());
+                fetchTypeCombo.setEnabled(!readOnly);
+
+                UIUtils.createEmptyLabel(infoGroup, 2, 1);
+
+                descriptionText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_description, CommonUtils.notEmpty(itemDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
+                ((GridData) descriptionText.getLayoutData()).heightHint = 30;
+                ((GridData) descriptionText.getLayoutData()).widthHint = 300;
+                ((GridData) descriptionText.getLayoutData()).horizontalSpan = 3;
             }
-            dataTypeCombo.setText(dashboardDescriptor.getDataType().name());
-            dataTypeCombo.setEnabled(!readOnly);
-
-            calcTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DBDashboardCalcType dct : DBDashboardCalcType.values()) {
-                calcTypeCombo.add(dct.name());
-            }
-            calcTypeCombo.setText(dashboardDescriptor.getCalcType().name());
-            calcTypeCombo.setEnabled(!readOnly);
-
-            valueTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DBDashboardValueType dvt : DBDashboardValueType.values()) {
-                valueTypeCombo.add(dvt.name());
-            }
-            valueTypeCombo.setText(dashboardDescriptor.getValueType().name());
-            valueTypeCombo.setEnabled(!readOnly);
-
-            intervalCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DBDashboardInterval dvt : DBDashboardInterval.values()) {
-                intervalCombo.add(dvt.name());
-            }
-            intervalCombo.setText(dashboardDescriptor.getInterval().name());
-            intervalCombo.setEnabled(!readOnly);
-
-            fetchTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DBDashboardFetchType dft : DBDashboardFetchType.values()) {
-                fetchTypeCombo.add(dft.name());
-            }
-            fetchTypeCombo.setText(dashboardDescriptor.getFetchType().name());
-            fetchTypeCombo.setEnabled(!readOnly);
-
-            UIUtils.createEmptyLabel(infoGroup, 2, 1);
-
-            descriptionText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_description, CommonUtils.notEmpty(dashboardDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
-            ((GridData) descriptionText.getLayoutData()).heightHint = 30;
-            ((GridData) descriptionText.getLayoutData()).widthHint = 300;
-            ((GridData) descriptionText.getLayoutData()).horizontalSpan = 3;
         }
 
-        {
+        if (isNativeItem) {
             Group sqlGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_edit_dashboard_queries, 1, GridData.FILL_BOTH, 0);
             queryText = new Text(sqlGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | baseStyle);
             GridData gd = new GridData(GridData.FILL_BOTH);
@@ -187,23 +190,23 @@ public class DashboardEditItemDialog extends BaseDialog {
             String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
             StringBuilder sql = new StringBuilder();
-            for (DashboardItemDescriptor.QueryMapping query : dashboardDescriptor.getQueries()) {
+            for (DashboardItemConfiguration.QueryMapping query : itemDescriptor.getQueries()) {
                 sql.append(query.getQueryText().trim()).append(lineSeparator).append(lineSeparator);
             }
-            if (dashboardDescriptor.getMapQuery() != null) {
-                sql.append(dashboardDescriptor.getMapQuery().getQueryText()).append(lineSeparator).append(lineSeparator);
-                if (!ArrayUtils.isEmpty(dashboardDescriptor.getMapKeys())) {
-                    sql.append(UIDashboardMessages.dialog_edit_dashboard_queries_keys).append(" ").append(Arrays.toString(dashboardDescriptor.getMapKeys())).append(lineSeparator);
+            if (itemDescriptor.getMapQuery() != null) {
+                sql.append(itemDescriptor.getMapQuery().getQueryText()).append(lineSeparator).append(lineSeparator);
+                if (!ArrayUtils.isEmpty(itemDescriptor.getMapKeys())) {
+                    sql.append(UIDashboardMessages.dialog_edit_dashboard_queries_keys).append(" ").append(Arrays.toString(itemDescriptor.getMapKeys())).append(lineSeparator);
                 }
-                if (!ArrayUtils.isEmpty(dashboardDescriptor.getMapLabels())) {
-                    sql.append(UIDashboardMessages.dialog_edit_dashboard_queries_labels).append(" ").append(Arrays.toString(dashboardDescriptor.getMapLabels())).append(lineSeparator);
+                if (!ArrayUtils.isEmpty(itemDescriptor.getMapLabels())) {
+                    sql.append(UIDashboardMessages.dialog_edit_dashboard_queries_labels).append(" ").append(Arrays.toString(itemDescriptor.getMapLabels())).append(lineSeparator);
                 }
             }
             queryText.setText(sql.toString().trim());
             queryText.addModifyListener(e -> updateButtons());
         }
 
-        {
+        if (isNativeItem) {
             Group updateGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_edit_dashboard_rendering, 2, GridData.FILL_HORIZONTAL, 0);
 
             viewTypeCombo = UIUtils.createLabelCombo(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_combos_defaultview, UIDashboardMessages.dialog_edit_dashboard_rendering_combos_defaultview_tooltip, SWT.BORDER | SWT.READ_ONLY);
@@ -213,7 +216,7 @@ public class DashboardEditItemDialog extends BaseDialog {
                 for (DashboardRendererType viewType : viewTypes) {
                     viewTypeCombo.add(viewType.getTitle());
                 }
-                DashboardRendererDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(dashboardDescriptor.getDashboardRenderer());
+                DashboardRendererDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(itemDescriptor.getDashboardRenderer());
                 viewTypeCombo.setText(viewType.getTitle());
                 if (viewTypeCombo.getSelectionIndex() < 0) {
                     viewTypeCombo.select(0);
@@ -221,8 +224,8 @@ public class DashboardEditItemDialog extends BaseDialog {
             }
             viewTypeCombo.setEnabled(!readOnly);
 
-            updatePeriodText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_labels_updateperiod, String.valueOf(dashboardDescriptor.getUpdatePeriod()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-            maxItemsText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_labels_maxitems, String.valueOf(dashboardDescriptor.getMaxItems()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
+            updatePeriodText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_labels_updateperiod, String.valueOf(itemDescriptor.getUpdatePeriod()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
+            maxItemsText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_labels_maxitems, String.valueOf(itemDescriptor.getMaxItems()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
             //maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardDescriptor.getMaxAge()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
         }
 
@@ -241,31 +244,31 @@ public class DashboardEditItemDialog extends BaseDialog {
     private void updateButtons() {
         Button okButton = getButton(IDialogConstants.OK_ID);
         okButton.setEnabled(
-            dashboardDescriptor.isCustom() &&
+            itemDescriptor.isCustom() &&
             !idText.getText().isEmpty() &&
             !nameText.getText().isEmpty() &&
-            !queryText.getText().isEmpty() &&
-            viewTypeCombo.getSelectionIndex() >= 0 &&
+            (queryText == null || !queryText.getText().isEmpty()) &&
+            (viewTypeCombo == null || viewTypeCombo.getSelectionIndex() >= 0) &&
             targetDatabase != null
         );
     }
 
 
     private void saveSettings() {
-        dashboardDescriptor.setId(idText.getText());
-        dashboardDescriptor.setName(nameText.getText());
-        dashboardDescriptor.setDataSourceMappings(Collections.singletonList(targetDatabase));
-        dashboardDescriptor.setDescription(descriptionText.getText());
-        dashboardDescriptor.setDataType(DBDashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
-        dashboardDescriptor.setCalcType(DBDashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);
-        dashboardDescriptor.setValueType(DBDashboardValueType.values()[valueTypeCombo.getSelectionIndex()]);
-        dashboardDescriptor.setInterval(DBDashboardInterval.values()[intervalCombo.getSelectionIndex()]);
-        dashboardDescriptor.setFetchType(DBDashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
-        dashboardDescriptor.setQueries(queryText.getText().split("\\n\\s*\\n"));
+        itemDescriptor.setId(idText.getText());
+        itemDescriptor.setName(nameText.getText());
+        itemDescriptor.setDataSourceMappings(Collections.singletonList(targetDatabase));
+        itemDescriptor.setDescription(descriptionText.getText());
+        itemDescriptor.setDataType(DBDashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
+        itemDescriptor.setCalcType(DBDashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);
+        itemDescriptor.setValueType(DBDashboardValueType.values()[valueTypeCombo.getSelectionIndex()]);
+        itemDescriptor.setInterval(DBDashboardInterval.values()[intervalCombo.getSelectionIndex()]);
+        itemDescriptor.setFetchType(DBDashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
+        itemDescriptor.setQueries(queryText.getText().split("\\n\\s*\\n"));
 
-        dashboardDescriptor.setRenderer(viewTypes.get(viewTypeCombo.getSelectionIndex()).getId());
-        dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
-        dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
+        itemDescriptor.setRenderer(viewTypes.get(viewTypeCombo.getSelectionIndex()).getId());
+        itemDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), itemDescriptor.getUpdatePeriod()));
+        itemDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), itemDescriptor.getMaxItems()));
         //dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));
     }
 

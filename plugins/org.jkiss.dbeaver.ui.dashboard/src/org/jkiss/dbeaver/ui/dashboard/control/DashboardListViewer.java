@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -50,6 +51,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     @NotNull
     private final IWorkbenchSite site;
     @Nullable
+    private final IWorkbenchPart part;
+    @Nullable
     private final DBPDataSourceContainer dataSourceContainer;
     @NotNull
     private final DashboardConfiguration viewConfiguration;
@@ -74,10 +77,12 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     public DashboardListViewer(
         @NotNull IWorkbenchSite site,
+        @Nullable IWorkbenchPart part,
         @Nullable DBPDataSourceContainer dataSourceContainer,
         @NotNull DashboardConfiguration viewConfiguration
     ) {
         this.site = site;
+        this.part = part;
         this.dataSourceContainer = dataSourceContainer;
 
         this.viewConfiguration = viewConfiguration;
@@ -161,9 +166,16 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         return viewConfiguration;
     }
 
+    @NotNull
     @Override
     public IWorkbenchSite getWorkbenchSite() {
         return site;
+    }
+
+    @Nullable
+    @Override
+    public IWorkbenchPart getWorkbenchPart() {
+        return part;
     }
 
     @Override

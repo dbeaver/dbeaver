@@ -29,16 +29,15 @@ import org.jfree.ui.RectangleEdge;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
 
 import java.awt.*;
 
 /**
  * Base chart dashboard renderer
  */
-public abstract class DashboardRendererChart implements DashboardItemRenderer {
+public abstract class DashboardRendererDatabaseChart extends DashboardRendererAbstract {
 
     protected static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
     protected static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
@@ -60,8 +59,8 @@ public abstract class DashboardRendererChart implements DashboardItemRenderer {
     }
 
     @Override
-    public void fillDashboardToolbar(ToolBar toolBar, Composite chartComposite, DashboardItemConfiguration dashboardConfig) {
-        // nothing here
+    public void fillDashboardToolbar(DashboardItemContainer itemContainer, ToolBar toolBar, Composite chartComposite, DashboardItemViewSettings dashboardConfig) {
+        super.fillDashboardToolbar(itemContainer, toolBar, chartComposite, dashboardConfig);
     }
 
     @Override
@@ -112,7 +111,7 @@ public abstract class DashboardRendererChart implements DashboardItemRenderer {
         return new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize);
     }
 
-    protected void createDefaultLegend(DashboardItemConfiguration viewConfig, JFreeChart chart) {
+    protected void createDefaultLegend(DashboardItemViewSettings viewConfig, JFreeChart chart) {
         Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
         LegendTitle legend = chart.getLegend();
         legend.setPosition(RectangleEdge.BOTTOM);

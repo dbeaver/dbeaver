@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListControl;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
@@ -66,6 +67,7 @@ public class DashboardItemViewDialog extends BaseDialog {
 
         DashboardListViewer dashboardListViewer = new DashboardListViewer(
             parentPart.getWorkbenchSite(),
+            null,
             sourceItem.getDataSourceContainer(),
             parentPart.getViewConfiguration());
         dashboardListViewer.setSingleChartMode(true);
@@ -73,10 +75,15 @@ public class DashboardItemViewDialog extends BaseDialog {
 
         DashboardViewItem targetItem  = new DashboardViewItem(
             (DashboardListControl) dashboardListViewer.getDefaultGroup(),
-            sourceItem.getDashboard());
+            sourceItem.getItemDescriptor());
         targetItem.moveViewFrom(sourceItem, false);
 
         return dialogArea;
+    }
+
+    @Override
+    protected Control createButtonBar(Composite parent) {
+        return parent;
     }
 
     @Override

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
@@ -32,12 +32,12 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 
-public class DashboardItemConfiguration {
-    private static final Log log = Log.getLog(DashboardItemConfiguration.class);
+public class DashboardItemViewSettings {
+    private static final Log log = Log.getLog(DashboardItemViewSettings.class);
 
     private final DashboardConfiguration viewConfiguration;
     private String itemId;
-    private DashboardItemDescriptor dashboardItem;
+    private DashboardItemConfiguration dashboardItem;
 
     private String viewTypeId;
     private int index;
@@ -50,6 +50,33 @@ public class DashboardItemConfiguration {
     private boolean domainTicksVisible;
     private boolean rangeTicksVisible;
     private String description;
+
+    DashboardItemViewSettings(DashboardConfiguration viewConfiguration, DashboardItemConfiguration dashboardDescriptor, int index) throws DBException {
+        this.viewConfiguration = viewConfiguration;
+        this.dashboardItem = dashboardDescriptor;
+        this.viewTypeId = dashboardDescriptor.getDashboardRenderer();
+        this.index = index;
+        this.widthRatio = dashboardDescriptor.getWidthRatio();
+        this.updatePeriod = dashboardDescriptor.getUpdatePeriod();
+        this.maxItems = dashboardDescriptor.getMaxItems();
+        this.maxAge = dashboardDescriptor.getMaxAge();
+
+        this.legendVisible = true;
+        this.gridVisible = true;
+        this.domainTicksVisible = true;
+        this.rangeTicksVisible = true;
+
+        this.description = dashboardDescriptor.getDescription();
+    }
+
+    public DashboardItemViewSettings(DashboardItemViewSettings source) {
+        this.viewConfiguration = source.viewConfiguration;
+        copyFrom(source);
+    }
+
+    public DashboardConfiguration getViewConfiguration() {
+        return viewConfiguration;
+    }
 
     public String getItemId() {
         return dashboardItem == null ? itemId : dashboardItem.getId();
@@ -69,7 +96,7 @@ public class DashboardItemConfiguration {
     }
 
     @Nullable
-    public DashboardItemDescriptor getDashboardDescriptor() {
+    public DashboardItemConfiguration getDashboardDescriptor() {
         if (dashboardItem == null) {
             try {
                 dashboardItem = DashboardRegistry.getInstance().findDashboardItem(
@@ -87,7 +114,7 @@ public class DashboardItemConfiguration {
     public DashboardRendererType getViewType() {
         String vtId = viewTypeId;
         if (CommonUtils.isEmpty(vtId)) {
-            DashboardItemDescriptor dashboard = getDashboardDescriptor();
+            DashboardItemConfiguration dashboard = getDashboardDescriptor();
             vtId = dashboard == null ? DashboardConstants.DEF_DASHBOARD_VIEW_TYPE : dashboard.getDashboardRenderer();
         }
         return DashboardUIRegistry.getInstance().getViewType(vtId);
@@ -177,30 +204,7 @@ public class DashboardItemConfiguration {
         this.description = description;
     }
 
-    DashboardItemConfiguration(DashboardConfiguration viewConfiguration, DashboardItemDescriptor dashboardDescriptor, int index) throws DBException {
-        this.viewConfiguration = viewConfiguration;
-        this.dashboardItem = dashboardDescriptor;
-        this.viewTypeId = dashboardDescriptor.getDashboardRenderer();
-        this.index = index;
-        this.widthRatio = dashboardDescriptor.getWidthRatio();
-        this.updatePeriod = dashboardDescriptor.getUpdatePeriod();
-        this.maxItems = dashboardDescriptor.getMaxItems();
-        this.maxAge = dashboardDescriptor.getMaxAge();
-
-        this.legendVisible = true;
-        this.gridVisible = true;
-        this.domainTicksVisible = true;
-        this.rangeTicksVisible = true;
-
-        this.description = dashboardDescriptor.getDescription();
-    }
-
-    public DashboardItemConfiguration(DashboardItemConfiguration source) {
-        this.viewConfiguration = source.viewConfiguration;
-        copyFrom(source);
-    }
-
-    void copyFrom(DashboardItemConfiguration source) {
+    void copyFrom(DashboardItemViewSettings source) {
         this.dashboardItem = source.dashboardItem;
         this.viewTypeId = source.viewTypeId;
         this.index = source.index;
@@ -243,7 +247,7 @@ public class DashboardItemConfiguration {
         }
     }
 
-    public DashboardItemConfiguration(DashboardConfiguration viewConfiguration, String id, Element element) {
+    public DashboardItemViewSettings(DashboardConfiguration viewConfiguration, String id, Element element) {
         this.viewConfiguration = viewConfiguration;
         this.itemId = id;
 
