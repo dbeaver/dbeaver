@@ -22,17 +22,20 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -54,8 +57,6 @@ public class DashboardConfiguration {
 
     private static final Log log = Log.getLog(DashboardConfiguration.class);
 
-    private final String viewId;
-
     @NotNull
     private final DBPProject project;
     private final DBPDataSourceContainer dataSourceContainer;
@@ -69,7 +70,6 @@ public class DashboardConfiguration {
         this.project = project;
         this.dataSourceContainer = dataSourceContainer;
         this.dashboardId = dashboardId;
-        this.viewId = viewId;
         loadSettings();
     }
 
@@ -158,60 +158,76 @@ public class DashboardConfiguration {
     }
 
     private void loadSettings() {
-        Path configFile = getConfigFile(false);
-        if (!Files.exists(configFile)) {
-            return;
-        }
+        Document dbDocument = null;
 
         try {
-            Document document = XMLUtils.parseDocument(configFile.toFile());
-            for (Element viewElement : XMLUtils.getChildElementList(document.getDocumentElement(), "view")) {
-                openConnectionOnActivate = CommonUtils.getBoolean(viewElement.getAttribute("openConnectionOnActivate"), openConnectionOnActivate);
-                useSeparateConnection = CommonUtils.getBoolean(viewElement.getAttribute("useSeparateConnection"), useSeparateConnection);
+            String dbSerialized = dataSourceContainer.getProperty(DashboardConstants.DS_PROP_DASHBOARDS);
+            if (!CommonUtils.isEmpty(dbSerialized)) {
+                dbDocument = XMLUtils.parseDocument(new StringReader(dbSerialized));
+            } else {
+                // Backward compatibility - read from file
+                Path configFile = getConfigFile(false);
+                if (Files.exists(configFile)) {
+                    dbDocument = XMLUtils.parseDocument(configFile.toFile());
+                }
             }
-            for (Element dbElement : XMLUtils.getChildElementList(document.getDocumentElement(), "dashboard")) {
-                String dashboardId = dbElement.getAttribute("id");
-                DashboardItemConfiguration itemConfig = new DashboardItemConfiguration(this, dashboardId, dbElement);
-                items.add(itemConfig);
-            }
-        } catch (Exception e) {
-            log.error("Error loading dashboard view configuration", e);
+        } catch (XMLException e) {
+            log.error("Error parsing dashboards", e);
         }
 
-        items.sort(Comparator.comparingInt(DashboardItemConfiguration::getIndex));
+        if (dbDocument != null) {
+            try {
+                Element rootElement = dbDocument.getDocumentElement();
+                for (Element viewElement : XMLUtils.getChildElementList(rootElement, "view")) {
+                    openConnectionOnActivate = CommonUtils.getBoolean(viewElement.getAttribute("openConnectionOnActivate"), openConnectionOnActivate);
+                    useSeparateConnection = CommonUtils.getBoolean(viewElement.getAttribute("useSeparateConnection"), useSeparateConnection);
+                }
+                for (Element dbElement : XMLUtils.getChildElementList(rootElement, "dashboard")) {
+                    String dashboardId = dbElement.getAttribute("id");
+                    DashboardItemConfiguration itemConfig = new DashboardItemConfiguration(this, dashboardId, dbElement);
+                    items.add(itemConfig);
+                }
+            } catch (Exception e) {
+                log.error("Error loading dashboard view configuration", e);
+            }
+
+            items.sort(Comparator.comparingInt(DashboardItemConfiguration::getIndex));
+        }
     }
 
     public void saveSettings() {
-        Path configFile = getConfigFile(true);
-
-        if (items.isEmpty()) {
-            if (Files.exists(configFile)) {
-                try {
-                    Files.delete(configFile);
-                } catch (IOException e) {
-                    log.debug("Can't delete view configuration " + configFile, e);
-                }
-            }
-            return;
-        }
-
-        try (OutputStream out = Files.newOutputStream(configFile)) {
-            XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
-            try (var ignored = xml.startElement("dashboards")) {
-                try (var ignored2 = xml.startElement("view")) {
-                    xml.addAttribute("openConnectionOnActivate", openConnectionOnActivate);
-                    xml.addAttribute("useSeparateConnection", useSeparateConnection);
-                }
-                for (DashboardItemConfiguration itemConfig : items) {
-                    try (var ignored3 = xml.startElement("dashboard")) {
-                        itemConfig.serialize(xml);
-                    }
-                }
-            }
+        StringWriter buffer = new StringWriter();
+        try {
+            XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, false);
+            xml.setButify(false);
+            serializeConfig(xml);
             xml.flush();
         } catch (Exception e) {
             log.error("Error saving dashboard view configuration", e);
+        }
+
+        dataSourceContainer.setProperty(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
+        dataSourceContainer.persistConfiguration();
+    }
+
+    private void serializeConfig(XMLBuilder xml) throws IOException {
+        try (var ignored = xml.startElement("dashboards")) {
+            if (!CommonUtils.isEmpty(dashboardId)) {
+                xml.addAttribute("id", dashboardId);
+            }
+            try (var ignored2 = xml.startElement("view")) {
+                if (openConnectionOnActivate) {
+                    xml.addAttribute("openConnectionOnActivate", openConnectionOnActivate);
+                }
+                if (useSeparateConnection) {
+                    xml.addAttribute("useSeparateConnection", useSeparateConnection);
+                }
+            }
+            for (DashboardItemConfiguration itemConfig : items) {
+                try (var ignored3 = xml.startElement("dashboard")) {
+                    itemConfig.serialize(xml);
+                }
+            }
         }
     }
 

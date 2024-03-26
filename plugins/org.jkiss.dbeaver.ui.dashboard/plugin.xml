@@ -140,7 +140,7 @@
 
     <extension point="org.jkiss.dbeaver.dashboard.ui">
         <dashboardView id="timeseries" label="Time series" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.png"
-            dataTypes="timeseries"
+            dataTypes="timeseries" native="true"
             renderer="org.jkiss.dbeaver.ui.dashboard.histogram.DashboardRendererTimeseries">
 
         </dashboardView>

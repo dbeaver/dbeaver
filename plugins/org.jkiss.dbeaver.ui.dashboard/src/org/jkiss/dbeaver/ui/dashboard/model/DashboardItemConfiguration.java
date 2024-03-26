@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -217,18 +218,25 @@ public class DashboardItemConfiguration {
     }
 
     void serialize(XMLBuilder xml) throws IOException {
+        DashboardRendererDescriptor viewType = DashboardUIRegistry.getInstance().getViewType(viewTypeId);
+        boolean isNativeRenderer = viewType != null && viewType.isNativeRenderer();
+
         xml.addAttribute("id", getFullDashboardId());
         xml.addAttribute("viewType", viewTypeId);
+
         xml.addAttribute("index", index);
         xml.addAttribute("widthRatio", widthRatio);
         xml.addAttribute("updatePeriod", updatePeriod);
-        xml.addAttribute("maxItems", maxItems);
-        xml.addAttribute("maxAge", maxAge);
 
-        xml.addAttribute("legendVisible", legendVisible);
-        xml.addAttribute("gridVisible", gridVisible);
-        xml.addAttribute("domainTicksVisible", domainTicksVisible);
-        xml.addAttribute("rangeTicksVisible", rangeTicksVisible);
+        if (isNativeRenderer) {
+            xml.addAttribute("maxItems", maxItems);
+            xml.addAttribute("maxAge", maxAge);
+
+            xml.addAttribute("legendVisible", legendVisible);
+            xml.addAttribute("gridVisible", gridVisible);
+            xml.addAttribute("domainTicksVisible", domainTicksVisible);
+            xml.addAttribute("rangeTicksVisible", rangeTicksVisible);
+        }
 
         if (!CommonUtils.isEmpty(description)) {
             xml.addAttribute("description", description);

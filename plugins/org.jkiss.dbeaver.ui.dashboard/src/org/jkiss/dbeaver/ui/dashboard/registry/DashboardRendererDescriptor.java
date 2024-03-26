@@ -38,6 +38,7 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
     private final DBPImage icon;
     private final ObjectType implType;
     private final DBDashboardDataType[] supportedDataTypes;
+    private final boolean nativeRenderer;
 
     DashboardRendererDescriptor(
         IConfigurationElement config)
@@ -53,6 +54,7 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
         for (int i = 0; i < dataTypeNames.length; i++) {
             this.supportedDataTypes[i] = CommonUtils.valueOf(DBDashboardDataType.class, dataTypeNames[i], DBDashboardDataType.timeseries);
         }
+        this.nativeRenderer = CommonUtils.toBoolean(config.getAttribute("native"));
 
         this.implType = new ObjectType(config.getAttribute("renderer"));
     }
@@ -84,6 +86,10 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
     @Override
     public DBDashboardDataType[] getSupportedTypes() {
         return supportedDataTypes;
+    }
+
+    public boolean isNativeRenderer() {
+        return nativeRenderer;
     }
 
     @Override
