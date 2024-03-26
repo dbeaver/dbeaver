@@ -199,7 +199,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     private void addAutoSaveSupport(final Control inlineControl) {
         // add focus listener on control but not on the composite
         // require to handle data save in case of focus lost
-        if (inlineControl instanceof Composite cmps) {
+        if (inlineControl instanceof Composite cmps && cmps.getChildren().length > 0) {
             Control child = cmps.getChildren()[0];
             if (child != null) {
                 child.addFocusListener(new FocusAdapter() {

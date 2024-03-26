@@ -110,7 +110,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         }
         activeDatabaseName = catalogName;
 
-        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
+        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog, this);
 
         if (schema != null) {
             setDefaultSchema(monitor, schema, force);
@@ -130,7 +130,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         setActiveSchema(monitor, newSchemaName);
         GenericSchema oldActiveSchema = getDefaultSchema();
         activeSchemaName = newSchemaName;
-        DBUtils.fireObjectSelectionChange(oldActiveSchema, newActiveSchema);
+        DBUtils.fireObjectSelectionChange(oldActiveSchema, newActiveSchema, this);
     }
 
     @Override

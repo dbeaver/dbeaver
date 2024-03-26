@@ -18,7 +18,12 @@ package org.jkiss.dbeaver.model.net.ssh.config;
 
 import org.jkiss.code.NotNull;
 
-public record SSHPortForwardConfiguration(@NotNull String localHost, int localPort, @NotNull String remoteHost, int remotePort) {
+public record SSHPortForwardConfiguration(
+    @NotNull String localHost,
+    int localPort,
+    @NotNull String remoteHost,
+    int remotePort
+) {
     public static final String LOCAL_HOST = "127.0.0.1";
 
     @Override

@@ -64,40 +64,34 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination
     ) throws DBException {
-        final SSHAuthConfiguration auth = destination.getAuthConfiguration();
+        final SSHAuthConfiguration auth = destination.auth();
 
-        switch (auth.getType()) {
-            case PASSWORD -> {
-                log.debug("SSHSessionController: Using password authentication");
+        if (auth instanceof SSHAuthConfiguration.Password) {
+            log.debug("SSHSessionController: Using password authentication");
+        } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
+            log.debug("SSHSessionController: Using public key authentication");
+            try {
+                addIdentityKeyFile(monitor, configuration.getDataSource(), key.path(), key.password());
+            } catch (Exception e) {
+                throw new DBException("Error adding identity key", e);
             }
-            case PUBLIC_KEY -> {
-                log.debug("SSHSessionController: Using public key authentication");
-
-                try {
-                    if (auth.getKeyFile() != null) {
-                        try {
-                            addIdentityKeyFile(monitor, configuration.getDataSource(), auth.getKeyFile(), auth.getPassword());
-                        } catch (IOException e) {
-                            throw new DBException("Error adding identity key", e);
-                        }
-                    } else {
-                        addIdentityKeyValue(auth.getKeyValue(), auth.getPassword());
-                    }
-                } catch (JSchException e) {
-                    throw new DBException("Cannot add identity key", e);
-                }
+        } else if (auth instanceof SSHAuthConfiguration.KeyData key) {
+            log.debug("SSHSessionController: Using public key authentication");
+            try {
+                addIdentityKeyValue(key.data(), key.password());
+            } catch (Exception e) {
+                throw new DBException("Error adding identity key", e);
             }
-            case AGENT -> {
-                log.debug("SSHSessionController: Using agent authentication");
-                jsch.setIdentityRepository(createAgentIdentityRepository());
-            }
+        } else if (auth instanceof SSHAuthConfiguration.Agent) {
+            log.debug("SSHSessionController: Using agent authentication");
+            jsch.setIdentityRepository(createAgentIdentityRepository());
         }
 
         try {
             final Session session = jsch.getSession(
-                destination.getUsername(),
-                destination.getHostname(),
-                destination.getPort()
+                destination.username(),
+                destination.hostname(),
+                destination.port()
             );
 
             UserInfo userInfo = null;
@@ -110,12 +104,12 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
             }
 
             session.setUserInfo(userInfo);
-            session.setHostKeyAlias(destination.getHostname());
+            session.setHostKeyAlias(destination.hostname());
             session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
             session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
             setupHostKeyVerification(session, configuration);
 
-            if (auth.getType() == SSHConstants.AuthType.PASSWORD) {
+            if (auth instanceof SSHAuthConfiguration.Password) {
                 session.setConfig("PreferredAuthentications", "password,keyboard-interactive");
             } else {
                 session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
@@ -258,12 +252,12 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
     private record JschUserInfo(@NotNull SSHAuthConfiguration configuration) implements UserInfo, UIKeyboardInteractive {
         @Override
         public String getPassphrase() {
-            return configuration.getPassword();
+            return ((SSHAuthConfiguration.WithPassword) configuration).password();
         }
 
         @Override
         public String getPassword() {
-            return configuration.getPassword();
+            return getPassphrase();
         }
 
         @Override
@@ -295,7 +289,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
             boolean[] echo
         ) {
             log.debug("JSCH keyboard interactive auth");
-            return new String[]{configuration.getPassword()};
+            return new String[]{getPassphrase()};
         }
     }
 
