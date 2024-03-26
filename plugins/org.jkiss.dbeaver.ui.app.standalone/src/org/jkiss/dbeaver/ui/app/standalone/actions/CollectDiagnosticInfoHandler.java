@@ -80,18 +80,16 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         }
 
         log.trace("Writing diagnostic info archive");
-        try {
-            try (var zipfs = FileSystems.newFileSystem(archivePath, Map.of("create", true))) {
-                for (File file : getLogFiles()) {
-                    Files.copy(file.toPath(), zipfs.getPath(file.getName()));
-                }
-                Files.writeString(zipfs.getPath("configuration.txt"), ConfigurationInfo.getSystemSummary());
+        try (var zipfs = FileSystems.newFileSystem(archivePath, Map.of("create", true))) {
+            for (File file : getLogFiles()) {
+                Files.copy(file.toPath(), zipfs.getPath(file.getName()));
             }
-            DBWorkbench.getPlatformUI().showInSystemExplorer(archivePath.toAbsolutePath().toString());
+            Files.writeString(zipfs.getPath("configuration.txt"), ConfigurationInfo.getSystemSummary());
         } catch (IOException e) {
             log.warn("Cannot collect diagnostic data into archive '%s': caught exception".formatted(archivePath.toAbsolutePath()), e);
             showError();
         }
+        DBWorkbench.getPlatformUI().showInSystemExplorer(archivePath.toAbsolutePath().toString());
 
         return null;
     }
