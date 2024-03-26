@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -380,7 +380,7 @@ public class DataSourceUtils {
         }
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
         if (cfg.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
-            String hostText = getTargetTunnelHostName(cfg);
+            String hostText = DBWUtils.getTargetTunnelHostName(cfg);
             String hostPort = cfg.getHostPort();
             if (!CommonUtils.isEmpty(hostPort)) {
                 return hostText + ":" + hostPort;
@@ -391,24 +391,6 @@ public class DataSourceUtils {
         }
     }
 
-    @NotNull
-    public static String getTargetTunnelHostName(DBPConnectionConfiguration cfg) {
-        String hostText = cfg.getHostName();
-        // For localhost ry to get real host name from tunnel configuration
-        if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
-            for (DBWHandlerConfiguration hc : cfg.getHandlers()) {
-                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
-                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
-                    if (!CommonUtils.isEmpty(tunnelHost)) {
-                        hostText = tunnelHost;
-                        break;
-                    }
-                }
-            }
-        }
-        return CommonUtils.notEmpty(hostText);
-    }
-    
     public static boolean isFolderHasTemporaryDataSources(DataSourceFolder folder) {
         return folder.getDataSourceRegistry().getDataSources().stream().anyMatch(d -> d.getFolder() == folder && d.isTemporary());
     }

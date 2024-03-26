@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -184,6 +185,10 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         setMenu(menuMgr.createContextMenu(this));
 
         addDisposeListener(e -> menuMgr.dispose());
+    }
+
+    DBPProject getProject() {
+        return viewContainer.getViewConfiguration().getProject();
     }
 
     DBPDataSourceContainer getDataSourceContainer() {

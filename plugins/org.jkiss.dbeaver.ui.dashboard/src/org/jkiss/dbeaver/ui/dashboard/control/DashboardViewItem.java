@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
@@ -96,8 +98,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
 
-            titleLabel.setText(dashboardConfig == null ? item.getId() : "  " + item.getName());
-            titleLabel.setToolTipText(CommonUtils.notEmpty(item.getDescription()));
+            updateChartLabel(item);
             titleLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             titleLabel.setBackground(defBG);
 
@@ -119,6 +120,23 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         this.addPaintListener(this::paintItem);
 
         this.autoUpdateEnabled = true;
+    }
+
+    private void updateChartLabel(@NotNull DashboardItemConfiguration item) {
+        if (dashboardConfig == null) {
+            titleLabel.setText(item.getId());
+        } else {
+            titleLabel.setText(evaluateChartLabel(item.getTitle()));
+        }
+        titleLabel.setToolTipText(CommonUtils.notEmpty(item.getDescription()));
+    }
+
+    private String evaluateChartLabel(String label) {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer != null) {
+            return GeneralUtils.replaceVariables(label, dataSourceContainer.getVariablesResolver(true));
+        }
+        return label;
     }
 
     public DashboardListControl getGroupContainer() {
@@ -321,6 +339,11 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
     }
 
     @Override
+    public DBPProject getProject() {
+        return groupContainer.getProject();
+    }
+
+    @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return groupContainer.getDataSourceContainer();
     }
@@ -469,6 +492,11 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardUIConstants.CMD_RESET_DASHBOARD));
         }
         manager.add(new Separator());
+    }
+
+    @Override
+    public void refreshInfo() {
+        updateChartLabel(getItemDescriptor());
     }
 
     @Override

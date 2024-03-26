@@ -44,6 +44,7 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_edit_dashboard_maininfo;
     public static String dialog_edit_dashboard_maininfo_labels_id;
     public static String dialog_edit_dashboard_maininfo_labels_name;
+    public static String dialog_edit_dashboard_maininfo_labels_display_name;
     public static String dialog_edit_dashboard_maininfo_labels_db;
     public static String dialog_edit_dashboard_maininfo_buttons_select;
     public static String dialog_edit_dashboard_maininfo_labels_description;

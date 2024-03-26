@@ -64,8 +64,6 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
@@ -2028,27 +2026,8 @@ public class DataSourceDescriptor
 
     @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
-        return name -> {
-            DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
-            String propValue = configuration.getProperties().get(name);
-            if (propValue != null) {
-                return propValue;
-            }
-
-            name = name.toLowerCase(Locale.ENGLISH);
-            return switch (name) {
-                case DBPConnectionConfiguration.VARIABLE_HOST -> configuration.getHostName();
-                case DBPConnectionConfiguration.VARIABLE_PORT -> configuration.getHostPort();
-                case DBPConnectionConfiguration.VARIABLE_SERVER -> configuration.getServerName();
-                case DBPConnectionConfiguration.VARIABLE_DATABASE -> configuration.getDatabaseName();
-                case DBPConnectionConfiguration.VARIABLE_USER -> configuration.getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD -> configuration.getUserPassword();
-                case DBPConnectionConfiguration.VARIABLE_URL -> configuration.getUrl();
-                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE -> configuration.getConnectionType().getId();
-                case DBPConnectionConfiguration.VARIABLE_DATE -> RuntimeUtils.getCurrentDate();
-                default -> SystemVariablesResolver.INSTANCE.get(name);
-            };
-        };
+        DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
+        return new DataSourceVariableResolver(this, configuration);
     }
 
     @Override

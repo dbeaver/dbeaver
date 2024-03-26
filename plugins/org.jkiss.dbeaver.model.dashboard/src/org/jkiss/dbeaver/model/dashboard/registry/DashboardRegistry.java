@@ -272,7 +272,7 @@ public class DashboardRegistry {
                 if (provider != null && provider != dd.getDashboardProvider()) {
                     continue;
                 }
-                if (providerId == null || dd.matches(providerId, driverId, driverClass)) {
+                if (providerId == null || (dd.getDashboardProvider().isDatabaseRequired() && dd.matches(providerId, driverId, driverClass))) {
                     if (!defaultOnly || dd.isShowByDefault()) {
                         result.add(dd);
                     }

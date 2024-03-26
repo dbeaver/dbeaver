@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewCompositeControl;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
@@ -51,9 +52,10 @@ public class DashboardBrowserComposite extends Composite implements DashboardVie
         this.browser = new Browser(this, SWT.NONE);
         this.browser.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        String dashboardURL = dashboardContainer.getItemDescriptor().getDashboardURL();
+        DashboardItemConfiguration itemConfig = dashboardContainer.getItemDescriptor();
+        String dashboardURL = itemConfig.getDashboardURL();
         if (!CommonUtils.isEmpty(dashboardURL)) {
-            this.browser.setUrl(dashboardURL);
+            this.browser.setUrl(itemConfig.evaluateURL(dashboardURL, dashboardContainer.getProject(), dashboardContainer.getDataSourceContainer()));
         }
     }
 

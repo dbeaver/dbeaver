@@ -35,6 +35,14 @@ public interface DBDashboardItem extends DBPNamedObject {
     @NotNull
     String getName();
 
+    /**
+     * Custom name displayed in chart composite
+     */
+    @Nullable
+    String getDisplayName();
+
+    String getTitle();
+
     @Nullable
     String getDescription();
 

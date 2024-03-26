@@ -22,14 +22,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.dashboard.*;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -57,6 +63,7 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
     private String id;
     @NotNull
     private String name;
+    private String displayName;
     private String description;
     private String group;
     private String measure;
@@ -86,6 +93,7 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
     private DBDashboardInterval interval;
     private String dashboardURL;
     private String dashboardExternalURL;
+    private boolean resolveVariables = true;
 
     public static class QueryMapping implements DBDashboardQuery {
         private final String queryText;
@@ -126,6 +134,7 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         this.provider = provider;
         this.id = config.getAttribute("id");
         this.name = config.getAttribute("label");
+        this.displayName = config.getAttribute("displayName");
         this.description = config.getAttribute("description");
         this.group = config.getAttribute("group");
         this.measure = config.getAttribute("measure");
@@ -190,6 +199,7 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         }
 
         this.name = config.getAttribute("label");
+        this.displayName = config.getAttribute("displayName");
         this.description = config.getAttribute("description");
         this.group = config.getAttribute("group");
         this.measure = config.getAttribute("measure");
@@ -223,6 +233,7 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         }
         this.dashboardURL = config.getAttribute("url");
         this.dashboardExternalURL = config.getAttribute("externalUrl");
+        this.resolveVariables = CommonUtils.getBoolean(config.getAttribute("resolveVariables"), true);
 
         this.isCustom = true;
     }
@@ -233,6 +244,7 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         this.id = source.id;
         this.provider = source.provider;
         this.name = source.name;
+        this.displayName = source.displayName;
         this.description = source.description;
         this.group = source.group;
         this.measure = source.measure;
@@ -253,6 +265,10 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         this.dataSourceMappings.addAll(source.dataSourceMappings);
 
         this.queries.addAll(source.queries);
+
+        this.dashboardURL = source.dashboardURL;
+        this.dashboardExternalURL = source.dashboardExternalURL;
+        this.resolveVariables = source.resolveVariables;
 
         this.isCustom = source.isCustom;
     }
@@ -327,6 +343,20 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
     }
 
     @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    @Override
+    public String getTitle() {
+        return CommonUtils.isEmpty(displayName) ? name : displayName;
+    }
+
+    @Override
     public String getDescription() {
         return description;
     }
@@ -377,6 +407,14 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
 
     public void setDashboardExternalURL(String dashboardExternalURL) {
         this.dashboardExternalURL = dashboardExternalURL;
+    }
+
+    public boolean isResolveVariables() {
+        return resolveVariables;
+    }
+
+    public void setResolveVariables(boolean resolveVariables) {
+        this.resolveVariables = resolveVariables;
     }
 
     @NotNull
@@ -550,6 +588,19 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         return results;
     }
 
+    public String evaluateURL(String url, DBPProject project, DBPDataSourceContainer dataSourceContainer) {
+        if (resolveVariables) {
+            IVariableResolver variableResolver;
+            if (dataSourceContainer != null) {
+                variableResolver = new DataSourceVariableResolver(dataSourceContainer, dataSourceContainer.getConnectionConfiguration());
+            } else {
+                variableResolver = new SystemVariablesResolver();
+            }
+            return GeneralUtils.replaceVariables(url, variableResolver);
+        }
+        return url;
+    }
+
     void serialize(XMLBuilder xml) throws IOException {
         xml.addAttribute("id", id);
         if (provider != null) {
@@ -558,6 +609,9 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         xml.addAttribute("label", name);
         if (!CommonUtils.isEmpty(description)) {
             xml.addAttribute("description", description);
+        }
+        if (!CommonUtils.isEmpty(displayName)) {
+            xml.addAttribute("displayName", displayName);
         }
         if (!CommonUtils.isEmpty(group)) {
             xml.addAttribute("group", group);
@@ -590,6 +644,15 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         if (!CommonUtils.isEmpty(mapFormula)) {
             xml.addAttribute("mapFormula", mapFormula);
         }
+        if (!CommonUtils.isEmpty(dashboardURL)) {
+            xml.addAttribute("url", dashboardURL);
+        }
+        if (!CommonUtils.isEmpty(dashboardExternalURL)) {
+            xml.addAttribute("externalUrl", dashboardExternalURL);
+        }
+        if (resolveVariables) {
+            xml.addAttribute("resolveVariables", true);
+        }
 
         for (DataSourceMapping mapping : dataSourceMappings) {
             try (var ignored = xml.startElement("datasource")) {
@@ -601,13 +664,6 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
             try (var ignored = xml.startElement("query")) {
                 qm.serialize(xml);
             }
-        }
-
-        if (!CommonUtils.isEmpty(dashboardURL)) {
-            xml.addAttribute("url", dashboardURL);
-        }
-        if (!CommonUtils.isEmpty(dashboardExternalURL)) {
-            xml.addAttribute("externalUrl", dashboardExternalURL);
         }
 
         this.isCustom = true;

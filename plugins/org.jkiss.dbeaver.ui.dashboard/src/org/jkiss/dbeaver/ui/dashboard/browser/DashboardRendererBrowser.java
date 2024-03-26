@@ -58,7 +58,8 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
                 if (chartComposite instanceof DashboardBrowserComposite bc) {
                     DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
                     if (dashboard != null) {
-                        bc.getBrowser().setUrl(dashboard.getDashboardURL());
+                        bc.getBrowser().setUrl(dashboard.evaluateURL(dashboard.getDashboardURL(), itemContainer.getProject(), itemContainer.getDataSourceContainer()));
+                        itemContainer.refreshInfo();
                     }
                 }
             }
@@ -75,7 +76,7 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
                     if (CommonUtils.isEmpty(url)) {
                         return;
                     }
-                    ShellUtils.launchProgram(url);
+                    ShellUtils.launchProgram(dashboard.evaluateURL(url, itemContainer.getProject(), itemContainer.getDataSourceContainer()));
                 }
             }
         });

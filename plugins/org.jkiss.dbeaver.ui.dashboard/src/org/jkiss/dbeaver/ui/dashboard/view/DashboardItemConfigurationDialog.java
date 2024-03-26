@@ -36,16 +36,18 @@ import org.jkiss.utils.CommonUtils;
 public class DashboardItemConfigurationDialog extends BaseDialog {
 
     private final DashboardItemConfiguration itemDescriptor;
-
+    private final boolean newItem;
     private Text idText;
     private Text nameText;
+    private Text displayNameText;
     private Text descriptionText;
     private IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemConfiguration> itemConfigurationEditor;
 
-    public DashboardItemConfigurationDialog(Shell shell, DashboardItemConfiguration itemDescriptor) {
+    public DashboardItemConfigurationDialog(Shell shell, DashboardItemConfiguration itemDescriptor, boolean isNewItem) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_edit_dashboard_title, itemDescriptor.getName()), null);
 
         this.itemDescriptor = itemDescriptor;
+        this.newItem = isNewItem;
     }
 
     @Override
@@ -73,11 +75,16 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
 
             idText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_id, itemDescriptor.getId(), SWT.BORDER | baseStyle);
             idText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-            idText.addModifyListener(e -> updateButtons());
+            if (newItem) {
+                idText.addModifyListener(e -> updateButtons());
+            } else {
+                idText.setEditable(false);
+            }
             nameText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_name, itemDescriptor.getName(), SWT.BORDER | baseStyle);
             nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             nameText.addModifyListener(e -> updateButtons());
-
+            displayNameText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_display_name, itemDescriptor.getDisplayName(), SWT.BORDER | baseStyle);
+            displayNameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 
             descriptionText = UIUtils.createLabelText(
                 infoGroup,
@@ -130,6 +137,7 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
     private void saveSettings() {
         itemDescriptor.setId(idText.getText());
         itemDescriptor.setName(nameText.getText());
+        itemDescriptor.setDisplayName(displayNameText.getText());
         itemDescriptor.setDescription(descriptionText.getText());
         if (itemConfigurationEditor != null) {
             itemConfigurationEditor.saveSettings(itemDescriptor);

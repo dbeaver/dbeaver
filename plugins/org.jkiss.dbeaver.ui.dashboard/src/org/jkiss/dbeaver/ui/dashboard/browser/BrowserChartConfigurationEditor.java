@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.browser;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
@@ -29,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 public class BrowserChartConfigurationEditor implements IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemConfiguration> {
 
     private Text urlText;
+    private Button resolveVariablesCheck;
 
     @Override
     public void createControl(@NotNull Composite composite, DashboardItemConfiguration itemDescriptor, @NotNull Runnable propertyChangeListener) {
@@ -40,16 +42,25 @@ public class BrowserChartConfigurationEditor implements IObjectPropertyConfigura
         gd.heightHint = UIUtils.getFontHeight(urlText) * 8;
         gd.widthHint = UIUtils.getFontHeight(urlText) * 50;
         urlText.setLayoutData(gd);
+
+        resolveVariablesCheck = UIUtils.createCheckbox(
+            composite,
+            "Resolve variables",
+            "Resolve environment and database-specific variables in URL",
+            itemDescriptor.isResolveVariables(),
+            2);
     }
 
     @Override
     public void loadSettings(@NotNull DashboardItemConfiguration itemConfiguration) {
         urlText.setText(CommonUtils.notEmpty(itemConfiguration.getDashboardURL()));
+        resolveVariablesCheck.setSelection(itemConfiguration.isResolveVariables());
     }
 
     @Override
     public void saveSettings(@NotNull DashboardItemConfiguration itemDescriptor) {
         itemDescriptor.setDashboardURL(urlText.getText());
+        itemDescriptor.setResolveVariables(resolveVariablesCheck.getSelection());
     }
 
     @Override

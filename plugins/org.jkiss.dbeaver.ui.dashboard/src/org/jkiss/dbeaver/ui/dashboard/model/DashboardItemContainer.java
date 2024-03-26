@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardMapQuery;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardQuery;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
@@ -53,6 +54,8 @@ public interface DashboardItemContainer {
      */
     long getUpdatePeriod();
 
+    DBPProject getProject();
+
     DBPDataSourceContainer getDataSourceContainer();
 
     DashboardGroupContainer getGroup();
@@ -84,4 +87,6 @@ public interface DashboardItemContainer {
     void fillDashboardContextMenu(
         @NotNull IMenuManager manager,
         boolean singleChartMode);
+
+    void refreshInfo();
 }

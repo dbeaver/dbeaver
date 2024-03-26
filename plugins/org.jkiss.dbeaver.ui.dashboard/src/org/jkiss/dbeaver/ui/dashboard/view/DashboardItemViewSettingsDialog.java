@@ -146,7 +146,7 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
         createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_item_config_buttons_configuration, false).addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), itemViewSettings.getDashboardDescriptor());
+                DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), itemViewSettings.getDashboardDescriptor(), false);
                 editDialog.open();
             }
         });
