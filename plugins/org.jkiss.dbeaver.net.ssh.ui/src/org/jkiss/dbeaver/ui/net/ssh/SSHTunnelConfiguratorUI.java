@@ -173,10 +173,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             client.setLayoutData(new GridData(GridData.FILL_BOTH));
             group.setClient(client);
 
-            final Group generalGroup = UIUtils.createControlGroup(client, "General", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            final Group generalGroup = UIUtils.createControlGroup(
+                client,
+                SSHUIMessages.model_ssh_configurator_group_general_text,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
             ((GridData) generalGroup.getLayoutData()).horizontalSpan = 2;
 
-            tunnelImplCombo = UIUtils.createLabelCombo(generalGroup, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
+            tunnelImplCombo = UIUtils.createLabelCombo(
+                generalGroup,
+                SSHUIMessages.model_ssh_configurator_label_implementation,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
             tunnelImplCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             tunnelImplCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -198,9 +208,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             enableTunnelSharingCheck = UIUtils.createCheckbox(
                 generalGroup,
-                "Enable tunnel sharing",
-                "Allows database connections to share the same SSH tunnel if they use the same SSH configuration.\n" +
-                    "This can significantly improve connection initialization speed and reduce the load on the SSH server.",
+                SSHUIMessages.model_ssh_configurator_label_share_tunnels,
+                SSHUIMessages.model_ssh_configurator_label_share_tunnels_description,
                 true,
                 2
             );
@@ -208,28 +217,68 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             // Hide tunnel sharing option if it's disabled
             UIUtils.setControlVisible(enableTunnelSharingCheck, !SSHUtils.DISABLE_SESSION_SHARING);
 
-            final Group portForwardingGroup = UIUtils.createControlGroup(client, "Port Forwarding", 4, GridData.FILL_HORIZONTAL, 0);
-            localHostText = UIUtils.createLabelText(portForwardingGroup, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            final Group portForwardingGroup = UIUtils.createControlGroup(
+                client,
+                SSHUIMessages.model_ssh_configurator_group_port_forwarding_text,
+                4,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
+            localHostText = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_local_host,
+                null,
+                SWT.BORDER,
+                new GridData(GridData.FILL_HORIZONTAL)
+            );
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
             localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            localPortSpinner = UIUtils.createLabelText(portForwardingGroup, SSHUIMessages.model_ssh_configurator_label_local_port, String.valueOf(0));
+            localPortSpinner = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_local_port,
+                String.valueOf(0)
+            );
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
             setNumberEditStyles(localPortSpinner);
 
-            remoteHostText = UIUtils.createLabelText(portForwardingGroup, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            remoteHostText = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_remote_host,
+                null,
+                SWT.BORDER,
+                new GridData(GridData.FILL_HORIZONTAL)
+            );
             remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
             remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            remotePortSpinner = UIUtils.createLabelText(portForwardingGroup, SSHUIMessages.model_ssh_configurator_label_remote_port, String.valueOf(0));
+            remotePortSpinner = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_remote_port,
+                String.valueOf(0)
+            );
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
             setNumberEditStyles(remotePortSpinner);
 
-            final Group timeoutsGroup = UIUtils.createControlGroup(client, "Timeouts", 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            keepAliveText = UIUtils.createLabelText(timeoutsGroup, SSHUIMessages.model_ssh_configurator_label_keep_alive, String.valueOf(0));
+            final Group timeoutsGroup = UIUtils.createControlGroup(
+                client,
+                SSHUIMessages.model_ssh_configurator_group_timeouts_text,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+            keepAliveText = UIUtils.createLabelText(
+                timeoutsGroup,
+                SSHUIMessages.model_ssh_configurator_label_keep_alive,
+                String.valueOf(0)
+            );
             setNumberEditStyles(keepAliveText);
 
 
-            tunnelTimeout = UIUtils.createLabelText(timeoutsGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT));
+            tunnelTimeout = UIUtils.createLabelText(
+                timeoutsGroup,
+                SSHUIMessages.model_ssh_configurator_label_tunnel_timeout,
+                String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT)
+            );
             setNumberEditStyles(tunnelTimeout);
         }
 
