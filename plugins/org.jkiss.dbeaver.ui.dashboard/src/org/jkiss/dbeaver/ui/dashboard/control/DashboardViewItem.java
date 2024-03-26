@@ -99,8 +99,10 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
             titleLabel.setText(dashboardConfig == null ? item.getId() : "  " + item.getName());
             titleLabel.setToolTipText(CommonUtils.notEmpty(item.getDescription()));
             titleLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            titleLabel.setBackground(defBG);
 
             titleToolbar = new ToolBar(titleComposite, SWT.FLAT | SWT.HORIZONTAL);
+            titleToolbar.setBackground(defBG);
 
             this.createContextMenu(titleLabel);
         }

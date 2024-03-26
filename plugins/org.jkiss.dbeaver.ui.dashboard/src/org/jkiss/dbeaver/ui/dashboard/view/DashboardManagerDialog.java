@@ -99,7 +99,11 @@ public class DashboardManagerDialog extends BaseDialog {
                     if (parentElement instanceof List list) {
                         result = list;
                     } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
-                        result = DashboardRegistry.getInstance().getAllSupportedSources(dpd);
+                        if (dpd.isDatabaseRequired()) {
+                            result = DashboardRegistry.getInstance().getAllSupportedSources(dpd);
+                        } else {
+                            result = DashboardRegistry.getInstance().getDashboardItems(dpd, null, false);
+                        }
                     } else if (parentElement instanceof DBPDataSourceProviderDescriptor dspd) {
                         result = DashboardRegistry.getInstance().getDashboardItems(
                             getDashboardProviderFor(dspd), dspd, false);
@@ -157,10 +161,7 @@ public class DashboardManagerDialog extends BaseDialog {
                     }
                 }
             });
-            List<DashboardProviderDescriptor> providers = new ArrayList<>(
-                DashboardRegistry.getInstance().getDashboardProviders());
-            providers.removeIf(dpd -> !dpd.isSupportsCustomDashboards());
-            treeViewer.setInput(providers);
+            setViewerInput();
 
             treeViewer.addDoubleClickListener(event -> {
                 if (selectedDashboard != null) {
@@ -180,7 +181,7 @@ public class DashboardManagerDialog extends BaseDialog {
             });
 
             UIUtils.asyncExec(() -> {
-                treeViewer.expandAll();
+                treeViewer.expandToLevel(2);
                 UIUtils.packColumns(treeViewer.getTree(), true, null);
             });
         }
@@ -228,6 +229,13 @@ public class DashboardManagerDialog extends BaseDialog {
 
         this.updateButtons();
         return group;
+    }
+
+    private void setViewerInput() {
+        List<DashboardProviderDescriptor> providers = new ArrayList<>(
+            DashboardRegistry.getInstance().getDashboardProviders());
+        providers.removeIf(dpd -> !dpd.isSupportsCustomDashboards());
+        treeViewer.setInput(providers);
     }
 
     private DashboardProviderDescriptor getDashboardProviderFor(Object element) {
@@ -279,6 +287,7 @@ public class DashboardManagerDialog extends BaseDialog {
         }
         DashboardItemConfiguration newDashboard = new DashboardItemConfiguration(
             providerDescriptor, null, "", "", "", "", true);
+        newDashboard.setRenderer(providerDescriptor.getDefaultRenderer());
         DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
             DashboardRegistry.getInstance().createDashboardItem(newDashboard);
@@ -328,8 +337,8 @@ public class DashboardManagerDialog extends BaseDialog {
     }
 
     private void refreshDashboards() {
-        treeViewer.setInput(DashboardRegistry.getInstance().getDashboardProviders());
-        treeViewer.expandAll();
+        setViewerInput();
+        treeViewer.expandToLevel(2);
         updateButtons();
     }
 

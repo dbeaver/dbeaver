@@ -198,7 +198,10 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.dataType = CommonUtils.valueOf(DBDashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
-        this.renderer = config.getAttribute("defaultView");
+        this.renderer = config.getAttribute("viewType");
+        if (CommonUtils.isEmpty(this.renderer)) {
+            this.renderer = config.getAttribute("defaultView");
+        }
         if (CommonUtils.isEmpty(this.renderer)) {
             this.renderer = DashboardConstants.DEF_DASHBOARD_VIEW_TYPE;
         }
@@ -218,6 +221,8 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
         for (Element ds : XMLUtils.getChildElementList(config, "query")) {
             queries.add(new QueryMapping(ds));
         }
+        this.dashboardURL = config.getAttribute("url");
+        this.dashboardExternalURL = config.getAttribute("externalUrl");
 
         this.isCustom = true;
     }
@@ -596,6 +601,13 @@ public class DashboardItemConfiguration extends AbstractContextDescriptor implem
             try (var ignored = xml.startElement("query")) {
                 qm.serialize(xml);
             }
+        }
+
+        if (!CommonUtils.isEmpty(dashboardURL)) {
+            xml.addAttribute("url", dashboardURL);
+        }
+        if (!CommonUtils.isEmpty(dashboardExternalURL)) {
+            xml.addAttribute("externalUrl", dashboardExternalURL);
         }
 
         this.isCustom = true;

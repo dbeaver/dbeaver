@@ -251,23 +251,19 @@ public class DashboardRegistry {
      */
     public List<DashboardItemConfiguration> getDashboardItems(
         @Nullable DashboardProviderDescriptor provider,
-        @NotNull DBPNamedObject source,
+        @Nullable DBPNamedObject source,
         boolean defaultOnly
     ) {
         if (source instanceof DBPDataSourceContainer dsc) {
             source = dsc.getDriver();
         }
-        String providerId, driverId, driverClass;
+        String providerId = null, driverId = null, driverClass = null;
         if (source instanceof DBPDataSourceProviderDescriptor dspd) {
             providerId = dspd.getId();
-            driverId = null;
-            driverClass = null;
         } else if (source instanceof DBPDriver driver) {
             providerId = driver.getProviderId();
             driverId = driver.getId();
             driverClass = driver.getDriverClassName();
-        } else {
-            return new ArrayList<>();
         }
 
         List<DashboardItemConfiguration> result = new ArrayList<>();
@@ -276,7 +272,7 @@ public class DashboardRegistry {
                 if (provider != null && provider != dd.getDashboardProvider()) {
                     continue;
                 }
-                if (dd.matches(providerId, driverId, driverClass)) {
+                if (providerId == null || dd.matches(providerId, driverId, driverClass)) {
                     if (!defaultOnly || dd.isShowByDefault()) {
                         result.add(dd);
                     }

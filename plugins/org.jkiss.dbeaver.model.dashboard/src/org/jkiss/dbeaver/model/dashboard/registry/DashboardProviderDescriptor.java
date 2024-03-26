@@ -41,6 +41,8 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
     private final ObjectType implType;
     private final boolean supportsCustomDashboards;
     private final boolean supportsFolders;
+    private final boolean databaseRequired;
+    private final String defaultRenderer;
     private DBDashboardProvider instance;
     private final Expression enabledWhen;
 
@@ -52,6 +54,8 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
         this.icon = iconToImage(config.getAttribute("icon"));
         this.supportsCustomDashboards = CommonUtils.toBoolean(config.getAttribute("supportsCustomization"));
         this.supportsFolders = CommonUtils.toBoolean(config.getAttribute("supportsFolders"));
+        this.databaseRequired = CommonUtils.toBoolean(config.getAttribute("databaseRequired"));
+        this.defaultRenderer = CommonUtils.toString(config.getAttribute("defaultRenderer"));
         this.implType = new ObjectType(config.getAttribute("class"));
         this.enabledWhen = getEnablementExpression(config);
     }
@@ -82,6 +86,14 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
 
     public boolean isSupportsFolders() {
         return supportsFolders;
+    }
+
+    public boolean isDatabaseRequired() {
+        return databaseRequired;
+    }
+
+    public String getDefaultRenderer() {
+        return defaultRenderer;
     }
 
     @Override

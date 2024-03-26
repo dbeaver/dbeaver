@@ -35,6 +35,7 @@ public class BrowserChartConfigurationEditor implements IObjectPropertyConfigura
         boolean readOnly = !itemDescriptor.isCustom();
         int baseStyle = !readOnly ? SWT.NONE : SWT.READ_ONLY;
         urlText = UIUtils.createLabelText(composite, "URL", CommonUtils.notEmpty(itemDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
+        urlText.addModifyListener(e -> propertyChangeListener.run());
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = UIUtils.getFontHeight(urlText) * 8;
         gd.widthHint = UIUtils.getFontHeight(urlText) * 50;

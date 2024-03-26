@@ -43,7 +43,10 @@ public class DashboardBrowserComposite extends Composite implements DashboardVie
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
 
-        setLayout(new GridLayout(1, false));
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        setLayout(layout);
 
         this.browser = new Browser(this, SWT.NONE);
         this.browser.setLayoutData(new GridData(GridData.FILL_BOTH));

@@ -79,7 +79,11 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
             nameText.addModifyListener(e -> updateButtons());
 
 
-            descriptionText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_description, CommonUtils.notEmpty(itemDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
+            descriptionText = UIUtils.createLabelText(
+                infoGroup,
+                UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_description,
+                CommonUtils.notEmpty(itemDescriptor.getDescription()),
+                SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
             descriptionText.addModifyListener(e -> updateButtons());
             ((GridData) descriptionText.getLayoutData()).heightHint = 30;
             ((GridData) descriptionText.getLayoutData()).widthHint = 300;

@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
@@ -34,15 +33,6 @@ import org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem;
  * Abstract chart dashboard renderer
  */
 public abstract class DashboardRendererAbstract implements DashboardItemRenderer {
-    @Override
-    public IObjectPropertyConfigurator<?, DashboardItemConfiguration> createItemConfigurationEditor() {
-        return null;
-    }
-
-    @Override
-    public IObjectPropertyConfigurator<?, DashboardItemViewSettings> createItemViewSettingsEditor() {
-        return null;
-    }
 
     public void fillDashboardToolbar(DashboardItemContainer itemContainer, ToolBar toolBar, Composite chartComposite, DashboardItemViewSettings dashboardConfig) {
         if (!UIUtils.isInDialog(chartComposite)) {
@@ -60,6 +50,7 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                     dialog.open();
                 }
             });
+            UIUtils.createToolBarSeparator(toolBar, SWT.VERTICAL);
         }
     }
 

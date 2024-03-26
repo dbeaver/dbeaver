@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
 
@@ -67,7 +68,14 @@ public class DashboardRendererBrowser extends DashboardRendererAbstract {
             public void widgetSelected(SelectionEvent e) {
                 DashboardItemConfiguration dashboard = dashboardConfig.getDashboardDescriptor();
                 if (dashboard != null) {
-                    ShellUtils.launchProgram(dashboard.getDashboardExternalURL());
+                    String url = dashboard.getDashboardExternalURL();
+                    if (CommonUtils.isEmpty(url)) {
+                        url = dashboard.getDashboardURL();
+                    }
+                    if (CommonUtils.isEmpty(url)) {
+                        return;
+                    }
+                    ShellUtils.launchProgram(url);
                 }
             }
         });

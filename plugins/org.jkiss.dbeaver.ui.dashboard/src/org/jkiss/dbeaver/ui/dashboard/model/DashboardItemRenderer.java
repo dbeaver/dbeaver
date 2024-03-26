@@ -21,8 +21,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.dashboard.data.DashboardDataset;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 
 import java.util.Date;
@@ -41,10 +39,6 @@ public interface DashboardItemRenderer {
         @NotNull DashboardItemContainer container,
         @NotNull DashboardContainer viewContainer,
         @NotNull Point preferredSize);
-
-    IObjectPropertyConfigurator<?, DashboardItemConfiguration> createItemConfigurationEditor();
-
-    IObjectPropertyConfigurator<?, DashboardItemViewSettings> createItemViewSettingsEditor();
 
     void fillDashboardToolbar(DashboardItemContainer itemContainer, ToolBar toolBar, Composite chartComposite, DashboardItemViewSettings dashboardConfig);
 
