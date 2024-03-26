@@ -146,6 +146,13 @@
             viewSettingsEditor="org.jkiss.dbeaver.ui.dashboard.control.DatabaseChartViewSettingsEditor">
 
         </dashboardView>
+        <dashboardView id="browser" label="Browser" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/browser.png"
+            dataTypes="provided"
+            renderer="org.jkiss.dbeaver.ui.dashboard.browser.DashboardRendererBrowser"
+            configurationEditor="org.jkiss.dbeaver.ui.dashboard.browser.BrowserChartConfigurationEditor"
+            viewSettingsEditor="org.jkiss.dbeaver.ui.dashboard.browser.BrowserChartViewSettingsEditor">
+
+        </dashboardView>
     </extension>
 
 </plugin>

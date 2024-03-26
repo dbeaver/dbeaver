@@ -30,34 +30,32 @@ import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
-
 public class DashboardItemViewSettingsDialog extends BaseDialog {
 
-    private static final String DIALOG_ID = "DBeaver.DashboardItemConfigDialog";//$NON-NLS-1$
     private static final boolean SHOW_QUERIES_BUTTON = false;
 
-    private final DashboardItemViewSettings dashboardConfig;
+    private final DashboardItemViewSettings itemViewSettings;
     private final DashboardConfiguration viewConfiguration;
     private final DashboardItemContainer dashboardContainer;
+    private IObjectPropertyConfigurator<DashboardItemViewSettings, DashboardItemViewSettings> itemViewSettingsEditor;
 
     public DashboardItemViewSettingsDialog(Shell shell, DashboardItemContainer dashboardContainer, DashboardConfiguration viewConfiguration) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_item_config_title, dashboardContainer.getItemDescriptor().getName()), null);
 
         this.viewConfiguration = viewConfiguration;
         this.dashboardContainer = dashboardContainer;
-        this.dashboardConfig = new DashboardItemViewSettings(dashboardContainer.getItemConfiguration());
+        this.itemViewSettings = new DashboardItemViewSettings(dashboardContainer.getItemConfiguration());
     }
 
     @Override
@@ -74,14 +72,14 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
         {
             Group infoGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo, 4, GridData.FILL_HORIZONTAL, 0);
 
-            //UIUtils.createLabelText(infoGroup, "ID", dashboardConfig.getDashboardDescriptor().getId(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_name, dashboardConfig.getDashboardDescriptor().getName(), SWT.BORDER | SWT.READ_ONLY)
+            UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_name,
+                    itemViewSettings.getDashboardDescriptor().getName(), SWT.BORDER | SWT.READ_ONLY)
                 .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 
             UIUtils.createControlLabel(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_description).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Text descriptionText = new Text(infoGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-            descriptionText.setText(CommonUtils.notEmpty(dashboardConfig.getDescription()));
-            descriptionText.addModifyListener(e -> dashboardConfig.setDescription(descriptionText.getText()));
+            descriptionText.setText(CommonUtils.notEmpty(itemViewSettings.getDescription()));
+            descriptionText.addModifyListener(e -> itemViewSettings.setDescription(descriptionText.getText()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 200;
             gd.heightHint = 50;
@@ -98,7 +96,7 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         StringBuilder sql = new StringBuilder();
-                        for (DashboardItemConfiguration.QueryMapping query : dashboardConfig.getDashboardDescriptor().getQueries()) {
+                        for (DashboardItemConfiguration.QueryMapping query : itemViewSettings.getDashboardDescriptor().getQueries()) {
                             sql.append(query.getQueryText()).append(";\n");
                         }
                         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -118,87 +116,19 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
 
         DashboardRendererDescriptor renderer = DashboardUIRegistry.getInstance().getViewType(dashboardContainer.getItemDescriptor().getDashboardRenderer());
 
-        if (renderer != null && renderer.isNativeRenderer()) {
-            Group updateGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate, 2, GridData.FILL_HORIZONTAL, 0);
-
-            Text updatePeriodText = UIUtils.createLabelText(
-                updateGroup,
-                UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate_labels_updateperiod,
-                String.valueOf(dashboardConfig.getUpdatePeriod()),
-                SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL));
-            updatePeriodText.addModifyListener(e ->
-                dashboardConfig.setUpdatePeriod(
-                    CommonUtils.toLong(updatePeriodText.getText(), dashboardConfig.getUpdatePeriod())));
-            Text maxItemsText = UIUtils.createLabelText(
-                updateGroup,
-                UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate_labels_maxitems,
-                String.valueOf(dashboardConfig.getMaxItems()),
-                SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL));
-            maxItemsText.addModifyListener(e ->
-                dashboardConfig.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardConfig.getMaxItems())));
-/*
-            Text maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardConfig.getMaxAge()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
-            maxAgeText.addModifyListener(e -> {
-                dashboardConfig.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardConfig.getMaxAge()));
-            });
-*/
-        }
-
-        if (renderer != null && renderer.isNativeRenderer()) {
-            Group viewGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardview, 2, GridData.FILL_HORIZONTAL, 0);
-
-            Combo typeCombo = UIUtils.createLabelCombo(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view_tooltip, SWT.BORDER | SWT.READ_ONLY);
-            typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            {
-                List<DashboardRendererType> viewTypes = DashboardUIRegistry.getInstance().getSupportedViewTypes(dashboardConfig.getDashboardDescriptor().getDataType());
-                for (DashboardRendererType viewType : viewTypes) {
-                    typeCombo.add(viewType.getTitle());
-                }
-                typeCombo.setText(dashboardConfig.getViewType().getTitle());
-                typeCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setViewType(viewTypes.get(typeCombo.getSelectionIndex()));
-                    }
-                });
+        if (renderer != null) {
+            try {
+                itemViewSettingsEditor = renderer.createItemViewSettingsEditor();
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Error creating configuration editor", null, e);
             }
+        }
+        if (itemViewSettingsEditor != null) {
+            Composite configComposite = UIUtils.createComposite(composite, 1);
+            configComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            itemViewSettingsEditor.createControl(configComposite, itemViewSettings, () -> {});
 
-            UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_legend, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_legend_tooltip, dashboardConfig.isLegendVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setLegendVisible(((Button)e.widget).getSelection());
-                    }
-                });
-            UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_grid, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_grid_tooltip, dashboardConfig.isGridVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setGridVisible(((Button)e.widget).getSelection());
-                    }
-                });
-            UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_domainaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_domainaxis_tooltip, dashboardConfig.isDomainTicksVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setDomainTicksVisible(((Button)e.widget).getSelection());
-                    }
-                });
-            UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis_tooltip, dashboardConfig.isRangeTicksVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection());
-                    }
-                });
-/*
-            Text widthRatioText = UIUtils.createLabelText(viewGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
-            widthRatioText.addModifyListener(e -> {
-                dashboardConfig.setWidthRatio((float) CommonUtils.toDouble(widthRatioText.getText(), dashboardConfig.getWidthRatio()));
-            });
-*/
+            itemViewSettingsEditor.loadSettings(itemViewSettings);
         }
 
         return parent;
@@ -216,7 +146,7 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
         createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_item_config_buttons_configuration, false).addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), dashboardConfig.getDashboardDescriptor());
+                DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), itemViewSettings.getDashboardDescriptor());
                 editDialog.open();
             }
         });
@@ -226,7 +156,10 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         super.okPressed();
-        viewConfiguration.updateItemConfig(this.dashboardConfig);
+        if (itemViewSettingsEditor != null) {
+            itemViewSettingsEditor.saveSettings(itemViewSettings);
+        }
+        viewConfiguration.updateItemConfig(this.itemViewSettings);
         viewConfiguration.saveSettings();
     }
 }

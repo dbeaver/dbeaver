@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRendererDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.utils.CommonUtils;
 
 public class DashboardItemConfigurationDialog extends BaseDialog {
 
@@ -38,6 +39,7 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
 
     private Text idText;
     private Text nameText;
+    private Text descriptionText;
     private IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemConfiguration> itemConfigurationEditor;
 
     public DashboardItemConfigurationDialog(Shell shell, DashboardItemConfiguration itemDescriptor) {
@@ -75,6 +77,12 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
             nameText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_name, itemDescriptor.getName(), SWT.BORDER | baseStyle);
             nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             nameText.addModifyListener(e -> updateButtons());
+
+
+            descriptionText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_description, CommonUtils.notEmpty(itemDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
+            descriptionText.addModifyListener(e -> updateButtons());
+            ((GridData) descriptionText.getLayoutData()).heightHint = 30;
+            ((GridData) descriptionText.getLayoutData()).widthHint = 300;
         }
 
         try {
@@ -118,6 +126,7 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
     private void saveSettings() {
         itemDescriptor.setId(idText.getText());
         itemDescriptor.setName(nameText.getText());
+        itemDescriptor.setDescription(descriptionText.getText());
         if (itemConfigurationEditor != null) {
             itemConfigurationEditor.saveSettings(itemDescriptor);
         }

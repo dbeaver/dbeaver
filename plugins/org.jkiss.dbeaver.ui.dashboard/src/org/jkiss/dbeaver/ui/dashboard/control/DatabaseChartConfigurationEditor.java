@@ -45,7 +45,6 @@ import java.util.List;
 
 public class DatabaseChartConfigurationEditor implements IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemConfiguration> {
 
-    private Text descriptionText;
     private Text queryText;
 
     private Combo viewTypeCombo;
@@ -129,12 +128,6 @@ public class DatabaseChartConfigurationEditor implements IObjectPropertyConfigur
                 }
                 fetchTypeCombo.setText(itemDescriptor.getFetchType().name());
                 fetchTypeCombo.setEnabled(!readOnly);
-
-                UIUtils.createEmptyLabel(mainGroup, 2, 1);
-
-                descriptionText = UIUtils.createLabelText(mainGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_description, CommonUtils.notEmpty(itemDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
-                ((GridData) descriptionText.getLayoutData()).heightHint = 30;
-                ((GridData) descriptionText.getLayoutData()).widthHint = 300;
             }
         }
 
@@ -202,7 +195,6 @@ public class DatabaseChartConfigurationEditor implements IObjectPropertyConfigur
     @Override
     public void saveSettings(@NotNull DashboardItemConfiguration itemDescriptor) {
         itemDescriptor.setDataSourceMappings(Collections.singletonList(targetDatabase));
-        itemDescriptor.setDescription(descriptionText.getText());
         itemDescriptor.setDataType(DBDashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
         itemDescriptor.setCalcType(DBDashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);
         itemDescriptor.setValueType(DBDashboardValueType.values()[valueTypeCombo.getSelectionIndex()]);

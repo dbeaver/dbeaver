@@ -110,7 +110,7 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
     }
 
     @Override
-    public IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemViewSettings> createItemViewSettingsEditor() throws DBException {
+    public IObjectPropertyConfigurator<DashboardItemViewSettings, DashboardItemViewSettings> createItemViewSettingsEditor() throws DBException {
         return itemViewSettingsEditor.createInstance(IObjectPropertyConfigurator.class);
     }
 
