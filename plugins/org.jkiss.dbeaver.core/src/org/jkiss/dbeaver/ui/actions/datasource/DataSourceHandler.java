@@ -32,6 +32,7 @@ import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreFeatures;
@@ -55,6 +56,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -109,7 +111,15 @@ public class DataSourceHandler {
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        DBWorkbench.getPlatformUI().showError(connectJob.getName(), null, result);
+                        Throwable connectError = connectJob.getConnectError();
+                        System.out.println("DataSourceHandler.connectToDataSource(...).new JobChangeAdapter() {...}.done()");
+                        if (connectError.getCause() instanceof DBCDriverException driverExc) {
+                            DriverEditDialog.showBadConfigDialog(null, "Driver instatiation error", driverExc.getDriver(), driverExc);
+                        
+                            
+                        } else {
+                            DBWorkbench.getPlatformUI().showError(connectJob.getName(), null, result);
+                        }
                     }
                 }
             };

@@ -985,6 +985,14 @@ public class DriverEditDialog extends HelpEnabledDialog {
         return drivers;
     }
 
+    public static void showBadConfigDialog(final Shell shell, final String message, final DBPDriver  driver, final DBException error) {
+        //log.debug(message);
+        Runnable runnable = () -> {
+            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, driver.getName());
+            new BadDriverConfigDialog(shell, title, message == null ? title : message, error, driver).open();
+        };
+        UIUtils.syncExec(runnable);
+    }
 
     public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
         //log.debug(message);
@@ -998,7 +1006,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private static class BadDriverConfigDialog extends StandardErrorDialog {
 
-        private final DBPDataSource dataSource;
+        private DBPDataSource dataSource;
+        
+        private DBPDriver driver;
 
         BadDriverConfigDialog(Shell shell, String title, String message, DBException error) {
             super(
@@ -1008,6 +1018,17 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
                 IStatus.ERROR);
             dataSource = error.getDataSource();
+        }
+
+        BadDriverConfigDialog(Shell shell, String title, String message, DBException error, DBPDriver driver) {
+            super(
+                shell == null ? UIUtils.getActiveWorkbenchShell() : shell,
+                title,
+                message,
+                RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
+                IStatus.ERROR);
+            dataSource = error.getDataSource();
+            this.driver = driver;
         }
 
         @Override
@@ -1020,12 +1041,22 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         protected void buttonPressed(int id) {
             if (id == IDialogConstants.RETRY_ID) {
-                UIUtils.asyncExec(() -> {
-                    DriverEditDialog dialog = new DriverEditDialog(
-                        UIUtils.getActiveWorkbenchShell(),
-                        dataSource.getContainer().getDriver());
-                    dialog.open();
-                });
+                if(dataSource != null) {
+                    UIUtils.asyncExec(() -> {
+                        DriverEditDialog dialog = new DriverEditDialog(
+                            UIUtils.getActiveWorkbenchShell(),
+                            dataSource.getContainer().getDriver());
+                        dialog.open();
+                    });    
+                } else if(driver!=null) {
+                    UIUtils.asyncExec(() -> {
+                        DriverEditDialog dialog = new DriverEditDialog(
+                            UIUtils.getActiveWorkbenchShell(),
+                            driver);
+                        dialog.open();
+                    });    
+                }
+                
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
