@@ -140,7 +140,8 @@
                     webURL="https://www.cubrid.org/manual/en/11.2/api/jdbc.html#configuration-connection"
                     categories="sql">
 
-                    <file type="jar" path="maven:/cubrid:cubrid-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
+                    <file type="jar" path="drivers/cubrid" bundle="drivers.cubrid"/>
                     <replace provider="generic" driver="cubrid_jdbc"/>
 
                     <property name="altHosts" value=""/>
