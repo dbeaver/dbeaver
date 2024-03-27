@@ -111,12 +111,13 @@ public class DataSourceHandler {
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        Throwable connectError = connectJob.getConnectError();
-                        System.out.println("DataSourceHandler.connectToDataSource(...).new JobChangeAdapter() {...}.done()");
-                        if (connectError.getCause() instanceof DBCDriverException driverExc) {
-                            DriverEditDialog.showBadConfigDialog(null, "Driver instatiation error", driverExc.getDriver(), driverExc);
-                        
-                            
+                        Throwable error = connectJob.getConnectError();
+                        if (error.getCause() instanceof DBCDriverException driverException) {
+                            DriverEditDialog.showBadConfigDialog(
+                                null,
+                                "Driver instatiation error",
+                                driverException.getDriver(),
+                                driverException);
                         } else {
                             DBWorkbench.getPlatformUI().showError(connectJob.getName(), null, result);
                         }
