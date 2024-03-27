@@ -1276,15 +1276,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     // Load driver classes into core module using plugin class loader
                     driverClass = Class.forName(driverClassName, true, classLoader);
                 } catch (Throwable e) {
-                    throw new DBCDriverException("Driver libraries (.jars) is not supplied in the product delivery"
-                        + " or libraries (.jars) not found in path."
-                        + "\nDriver configuration is not valid",
+                    throw new DBCDriverException("Error creating driver '"
+                        + getFullName()
+                        + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings.\n\nReason: can't load driver class '"
+                        + driverClassName
+                        + "'",
                         driverClassName,
                         getFullName(),
                         this,
                         e);
                 }
-
                 // Create driver instance
                 /*if (!this.isInternalDriver())*/
                 {

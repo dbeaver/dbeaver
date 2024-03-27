@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 public class DBCDriverException extends DBCException {
@@ -24,11 +25,17 @@ public class DBCDriverException extends DBCException {
     private String driverFullName;
     private DBPDriver driver;
 
-    public DBCDriverException(String message, String driverClassName, String driverFullName, DBPDriver driver,  Throwable e) {
+    public DBCDriverException(
+        @NotNull String message,
+        @NotNull String driverClassName,
+        @NotNull String driverFullName,
+        @NotNull DBPDriver driver,
+        @NotNull Throwable e
+    ) {
         super(message, e);
         this.driverClassName = driverClassName;
         this.driverFullName = driverFullName;
-        this.driver =  driver;
+        this.driver = driver;
     }
 
     public String getDriverClassName() {

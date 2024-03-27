@@ -1055,24 +1055,23 @@ public class DriverEditDialog extends HelpEnabledDialog {
         protected void buttonPressed(int id) {
             if (id == IDialogConstants.RETRY_ID) {
                 if (dataSource != null) {
-                    UIUtils.asyncExec(() -> {
-                        DriverEditDialog dialog = new DriverEditDialog(
-                            UIUtils.getActiveWorkbenchShell(),
-                            dataSource.getContainer().getDriver());
-                        dialog.open();
-                    });
+                    openDriverEditDialog(dataSource.getContainer().getDriver());
                 } else if (driver != null) {
-                    UIUtils.asyncExec(() -> {
-                        DriverEditDialog dialog = new DriverEditDialog(
-                            UIUtils.getActiveWorkbenchShell(),
-                            driver);
-                        dialog.open();
-                    });
+                    openDriverEditDialog(driver);
                 }
 
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
+        }
+
+        private void openDriverEditDialog(@NotNull DBPDriver driver) {
+            UIUtils.asyncExec(() -> {
+                DriverEditDialog dialog = new DriverEditDialog(
+                    UIUtils.getActiveWorkbenchShell(),
+                    driver);
+                dialog.open();
+            });
         }
     }
 
