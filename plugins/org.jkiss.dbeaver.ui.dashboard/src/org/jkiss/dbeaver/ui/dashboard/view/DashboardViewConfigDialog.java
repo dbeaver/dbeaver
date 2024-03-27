@@ -106,7 +106,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         super.okPressed();
-        viewConfiguration.saveSettings();
+        viewConfiguration.saveToDataSource();
     }
 
 }

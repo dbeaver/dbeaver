@@ -11,7 +11,7 @@
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.dashboard.view.DashboardView"
                 allowMultiple="true"
-                icon="icons/dashboard.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
                 name="%view.dashboard.title"/>
     </extension>
 
@@ -32,7 +32,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="icons/dashboard.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"/>
         <image commandId="org.jkiss.dbeaver.ui.dashboard.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
     </extension>
 
@@ -121,7 +121,7 @@
             <tool id="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
                   label="%command.org.jkiss.dbeaver.ui.dashboard.open.name"
                   description="%command.org.jkiss.dbeaver.ui.dashboard.open.description"
-                  icon="icons/dashboard.png"
+                  icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
                   singleton="false">
                 <command id="org.jkiss.dbeaver.ui.dashboard.open">
                     <objectType name="org.jkiss.dbeaver.model.DBPDataSource"/>
@@ -132,6 +132,10 @@
 
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.ui.dashboard.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+B"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler type="dashboard" class="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardResourceHandler"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
@@ -153,6 +157,25 @@
             viewSettingsEditor="org.jkiss.dbeaver.ui.dashboard.browser.BrowserChartViewSettingsEditor">
 
         </dashboardView>
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <wizard
+                category="org.jkiss.dbeaver.core.new.general"
+                class="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardCreateWizard"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
+                id="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardCreateWizard"
+                name="%wizard.dashboard.name">
+            <description>
+                %wizard.dashboard.description
+            </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <newWizardShortcut id="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardCreateWizard"/>
+        </perspectiveExtension>
     </extension>
 
 </plugin>

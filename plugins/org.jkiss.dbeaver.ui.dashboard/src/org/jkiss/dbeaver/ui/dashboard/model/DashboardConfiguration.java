@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.eclipse.core.resources.IFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,6 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -59,6 +61,8 @@ public class DashboardConfiguration {
 
     @NotNull
     private final DBPProject project;
+    @Nullable
+    private IFile dashboardFile;
     private final DBPDataSourceContainer dataSourceContainer;
     private final String dashboardId;
     private final List<DashboardItemViewSettings> items = new ArrayList<>();
@@ -66,11 +70,27 @@ public class DashboardConfiguration {
     private boolean openConnectionOnActivate;
     private boolean useSeparateConnection;
 
-    public DashboardConfiguration(@NotNull DBPProject project, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable String dashboardId, String viewId) {
+    public DashboardConfiguration(
+        @NotNull DBPProject project,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @Nullable String dashboardId,
+        String viewId
+    ) {
         this.project = project;
         this.dataSourceContainer = dataSourceContainer;
         this.dashboardId = dashboardId;
-        loadSettings();
+        loadFromDataSource();
+    }
+
+    public DashboardConfiguration(
+        @NotNull DBPProject project,
+        @NotNull IFile dashboardFile
+    ) {
+        this.project = project;
+        this.dataSourceContainer = null;
+        this.dashboardId = dashboardFile.getName();
+        this.dashboardFile = dashboardFile;
+        loadFromFile(dashboardFile);
     }
 
     @NotNull
@@ -157,7 +177,7 @@ public class DashboardConfiguration {
         this.items.clear();
     }
 
-    private void loadSettings() {
+    private void loadFromDataSource() {
         Document dbDocument = null;
 
         try {
@@ -175,6 +195,24 @@ public class DashboardConfiguration {
             log.error("Error parsing dashboards", e);
         }
 
+        loadConfiguration(dbDocument);
+    }
+
+    private void loadFromFile(IFile file) {
+        Document dbDocument = null;
+
+        if (file.exists()) {
+            try (InputStream is = file.getContents()) {
+                dbDocument = XMLUtils.parseDocument(is);
+            } catch (Exception e) {
+                log.error("Error parsing dashboards", e);
+            }
+
+            loadConfiguration(dbDocument);
+        }
+   }
+
+    private void loadConfiguration(Document dbDocument) {
         if (dbDocument != null) {
             try {
                 Element rootElement = dbDocument.getDocumentElement();
@@ -195,7 +233,20 @@ public class DashboardConfiguration {
         }
     }
 
-    public void saveSettings() {
+    public String saveToString() {
+        StringWriter buffer = new StringWriter();
+        try {
+            XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, true);
+            xml.setButify(true);
+            serializeConfig(xml);
+            xml.flush();
+        } catch (Exception e) {
+            log.error("Error saving dashboard configuration to file", e);
+        }
+        return buffer.toString();
+    }
+
+    public void saveToDataSource() {
         StringWriter buffer = new StringWriter();
         try {
             XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, false);
@@ -203,7 +254,7 @@ public class DashboardConfiguration {
             serializeConfig(xml);
             xml.flush();
         } catch (Exception e) {
-            log.error("Error saving dashboard view configuration", e);
+            log.error("Error saving dashboard configuration to datasource", e);
         }
 
         dataSourceContainer.setExtension(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
