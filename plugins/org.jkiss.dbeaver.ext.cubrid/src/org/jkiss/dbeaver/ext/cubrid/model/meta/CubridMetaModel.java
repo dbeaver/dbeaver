@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
-import org.jkiss.dbeaver.ext.cubrid.CubridSQLFormatter;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
@@ -390,17 +390,14 @@ public class CubridMetaModel extends GenericMetaModel
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @Nullable GenericView object, @Nullable Map<String, Object> options) throws DBException {
         String ddl = "-- View definition not available";
-        String regex = "\\[|\\]";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
             String sql = String.format("show create view %s", object.getName());
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-            dbStat.executeStatement();
-            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
-                while(dbResult.next()) {
-                    ddl = "create or replace view \"" + dbResult.getString("View") + "\" as " + dbResult.getString("Create View");
-                    ddl = ddl.replaceAll(regex, "\"");
-                    ddl = new CubridSQLFormatter(ddl).format();
-                    break;
+            try(JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while(dbResult.next()) {
+                        ddl = "create or replace view \"" + dbResult.getString("View") + "\" as " + dbResult.getString("Create View");
+                        return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
+                    }
                 }
             }
         } catch (SQLException e) {
