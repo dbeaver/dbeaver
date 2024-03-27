@@ -43,16 +43,17 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * A handler that collects diagnostic info, packs it into a zip archive and saves on a disk location specified by the user.
@@ -63,40 +64,49 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        String archiveDirectoryPathString = askForArchiveDirectoryPathString(event);
-        if (archiveDirectoryPathString == null) {
+        File archive = getArchive(event);
+        if (archive == null) {
             log.trace("User cancelled path picker dialog");
             return null;
         }
-        Path archivePath = Path.of(archiveDirectoryPathString, "dbeaver-diagnostic-info-%d.zip".formatted(System.currentTimeMillis()));
-        if (Files.exists(archivePath)) {
+        if (archive.exists()) {
             // Happens once in a blue moon
-            log.warn("File %s already exists".formatted(archivePath.toAbsolutePath()));
+            log.warn("File %s already exists".formatted(archive));
             showError();
             return null;
         }
 
         log.trace("Writing diagnostic info archive");
-        try (var zipfs = FileSystems.newFileSystem(archivePath, Map.of("create", true))) {
-            for (File file : getLogFiles()) {
-                Files.copy(file.toPath(), zipfs.getPath(file.getName()));
+        try (var out = new ZipOutputStream(new FileOutputStream(archive))) {
+            for (File file: getLogFiles()) {
+                out.putNextEntry(new ZipEntry(file.getName()));
+                try (var in = new FileInputStream(file)) {
+                    in.transferTo(out);
+                }
+                out.closeEntry();
             }
-            Files.writeString(zipfs.getPath("configuration.txt"), ConfigurationInfo.getSystemSummary());
+            out.putNextEntry(new ZipEntry("configuration.txt"));
+            out.write(ConfigurationInfo.getSystemSummary().getBytes(StandardCharsets.UTF_8));
+            out.closeEntry();
         } catch (IOException e) {
-            log.warn("Cannot collect diagnostic data into archive '%s': caught exception".formatted(archivePath.toAbsolutePath()), e);
+            log.warn("Cannot collect diagnostic data into archive '%s': caught exception".formatted(archive), e);
             showError();
         }
-        DBWorkbench.getPlatformUI().showInSystemExplorer(archivePath.toAbsolutePath().toString());
+        UIUtils.asyncExec(() -> ShellUtils.showInSystemExplorer(archive));
 
         return null;
     }
 
     @Nullable
-    private static String askForArchiveDirectoryPathString(ExecutionEvent event) {
+    private static File getArchive(ExecutionEvent event) {
         var dialog = new DirectoryDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
         dialog.setFilterPath(System.getProperty("user.home"));
         dialog.setText(CoreApplicationMessages.collect_diagnostic_info_pick_path_title);
-        return dialog.open();
+        String response = dialog.open();
+        if (response == null) {
+            return null;
+        }
+        return new File(response, "dbeaver-diagnostic-info-%d.zip".formatted(System.currentTimeMillis()));
     }
 
     private static void showError() {
