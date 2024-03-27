@@ -54,9 +54,9 @@ sign: PlusSign|MinusSign;
 literal: (signedNumericLiteral|generalLiteral);
 unsignedNumericLiteral: (UnsignedInteger|DecimalLiteral|ApproximateNumericLiteral);
 signedNumericLiteral: sign? unsignedNumericLiteral;
-characterStringLiteral: (Introducer characterSetSpecification)? StringLiteralContent;
-generalLiteral: (characterStringLiteral|NationalCharacterStringLiteral|BitStringLiteral|HexStringLiteral|datetimeLiteral|intervalLiteral);
-datetimeLiteral: (dateLiteral|timeLiteral|timestampLiteral);
+characterStringLiteral: ((Introducer characterSetSpecification)? StringLiteralContent)|NationalCharacterStringLiteral|BitStringLiteral|HexStringLiteral;
+generalLiteral: characterStringLiteral|datetimeLiteral|intervalLiteral;
+datetimeLiteral: dateLiteral|timeLiteral|timestampLiteral;
 dateLiteral: DATE StringLiteralContent;
 timeLiteral: TIME StringLiteralContent;
 timestampLiteral: TIMESTAMP StringLiteralContent;
@@ -116,7 +116,7 @@ searchCondition: (booleanTerm (OR booleanTerm)*)? anyUnexpected??; // (.*?) - fo
 booleanTerm: booleanFactor (AND booleanFactor)*;
 booleanFactor: (NOT)? booleanTest;
 booleanTest: booleanPrimary (IS (NOT)? truthValue)?;
-booleanPrimary: (predicate|LeftParen searchCondition RightParen);
+booleanPrimary: (predicate|LeftParen searchCondition RightParen|truthValue);
 predicate: (existsPredicate|likePredicate|rowValuePredicate);
 
 rowValuePredicate: rowValueConstructor (comparisonPredicate|betweenPredicate|inPredicate|nullPredicate|quantifiedComparisonPredicate|matchPredicate|overlapsPredicate);

@@ -49,6 +49,8 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     
     @Nullable
     R visitValueTypeCastExpr(@NotNull SQLQueryValueTypeCastExpression typeCastExpr, T arg);
+    
+    R visitValueConstantExpr(@NotNull SQLQueryValueConstantExpression constExpr, T arg);
 
     @Nullable
     R visitSelectionResult(SQLQuerySelectionResultModel selectionResult, T arg);
@@ -106,5 +108,4 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     @Nullable
     R visitTableStatementUpdateSetClause(@NotNull SQLQueryTableUpdateModel.SetClauseModel setClause, @NotNull T arg);
-
 }
