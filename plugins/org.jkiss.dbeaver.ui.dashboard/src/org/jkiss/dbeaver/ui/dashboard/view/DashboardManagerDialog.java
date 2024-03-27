@@ -50,7 +50,9 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DashboardManagerDialog extends BaseDialog {
 
@@ -92,6 +94,7 @@ public class DashboardManagerDialog extends BaseDialog {
             UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, UIDashboardMessages.dialog_dashboard_manager_treecolumn_name);
             //UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, "Description");
 
+            Map<Object, Object> parentMap = new HashMap<>();
             treeViewer.setContentProvider(new TreeContentProvider() {
                 @Override
                 public Object[] getChildren(Object parentElement) {
@@ -106,14 +109,17 @@ public class DashboardManagerDialog extends BaseDialog {
                         }
                     } else if (parentElement instanceof DBPDataSourceProviderDescriptor dspd) {
                         result = DashboardRegistry.getInstance().getDashboardItems(
-                            getDashboardProviderFor(dspd), dspd, false);
+                            getDashboardProviderFor(parentMap, dspd), dspd, false);
                     } else if (parentElement instanceof DBPDriver driver) {
                         result = DashboardRegistry.getInstance().getDashboardItems(
-                            getDashboardProviderFor(driver),
+                            getDashboardProviderFor(parentMap, driver),
                             driver, false);
                     }
                     if (result == null) {
                         return new Object[0];
+                    }
+                    for (Object child : result) {
+                        parentMap.put(child, parentElement);
                     }
                     result.sort(DBUtils.nameComparator());
                     return result.toArray();
@@ -238,8 +244,8 @@ public class DashboardManagerDialog extends BaseDialog {
         treeViewer.setInput(providers);
     }
 
-    private DashboardProviderDescriptor getDashboardProviderFor(Object element) {
-        for (Object item = element; item != null; item = treeViewer.getParentItem(item)) {
+    private DashboardProviderDescriptor getDashboardProviderFor(Map<Object, Object> parentMap, Object element) {
+        for (Object item = element; item != null; item = parentMap.get(item)) {
             if (item instanceof DashboardProviderDescriptor dpd) {
                 return dpd;
             }
@@ -347,9 +353,6 @@ public class DashboardManagerDialog extends BaseDialog {
             super(group, SWT.BORDER);
         }
 
-        Object getParentItem(Object item) {
-            return getParentElement(item);
-        }
     }
 
 }
