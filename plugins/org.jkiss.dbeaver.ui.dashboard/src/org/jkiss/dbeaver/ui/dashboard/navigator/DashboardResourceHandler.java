@@ -37,16 +37,14 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.editor.DashboardEditorStandalone;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -159,11 +157,10 @@ public class DashboardResourceHandler extends AbstractResourceHandler {
         try {
             DBRRunnableWithProgress runnable = monitor1 -> {
                 try {
-                    DashboardConfiguration newDashboard = new DashboardConfiguration(project, file);
-
-                    String diagramState = newDashboard.saveToString();
-                    InputStream data = new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8));
-                    file.create(data, true, RuntimeUtils.getNestedMonitor(monitor1));
+                    DashboardConfigurationList configList;
+                    configList = new DashboardConfigurationList(project, file.getLocation().toPath());
+                    configList.saveConfiguration();
+                    file.refreshLocal(1, RuntimeUtils.getNestedMonitor(monitor1));
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

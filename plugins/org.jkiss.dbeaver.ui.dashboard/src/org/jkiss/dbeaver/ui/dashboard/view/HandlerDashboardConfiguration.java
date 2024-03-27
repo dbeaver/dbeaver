@@ -24,9 +24,10 @@ public class HandlerDashboardConfiguration extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DashboardView view = getActiveDashboardView(event);
+        DataSourceDashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            DashboardViewConfigDialog dialog = new DashboardViewConfigDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
+            DashboardViewConfigDialog dialog = new DashboardViewConfigDialog(
+                HandlerUtil.getActiveShell(event), view);
             dialog.open();
         }
         return null;

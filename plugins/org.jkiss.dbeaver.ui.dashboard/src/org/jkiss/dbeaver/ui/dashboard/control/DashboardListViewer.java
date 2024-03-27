@@ -36,12 +36,10 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -52,8 +50,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     private final IWorkbenchSite site;
     @Nullable
     private final IWorkbenchPart part;
-    @Nullable
-    private final DBPDataSourceContainer dataSourceContainer;
+    @NotNull
+    private final DashboardConfigurationList configuration;
     @NotNull
     private final DashboardConfiguration viewConfiguration;
 
@@ -78,13 +76,12 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     public DashboardListViewer(
         @NotNull IWorkbenchSite site,
         @Nullable IWorkbenchPart part,
-        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DashboardConfigurationList configuration,
         @NotNull DashboardConfiguration viewConfiguration
     ) {
         this.site = site;
         this.part = part;
-        this.dataSourceContainer = dataSourceContainer;
-
+        this.configuration = configuration;
         this.viewConfiguration = viewConfiguration;
 
         initConnection();
@@ -100,6 +97,12 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             }
             isolatedContext = null;
         }
+    }
+
+    @Override
+    @NotNull
+    public DashboardConfigurationList getConfiguration() {
+        return configuration;
     }
 
     @Override
@@ -141,7 +144,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     @Nullable
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        return dataSourceContainer;
+        return configuration.getDataSourceContainer();
     }
 
     @Override
@@ -154,6 +157,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         if (useSeparateConnection && isolatedContext != null) {
             return isolatedContext;
         }
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer == null) {
             return null;
         }
@@ -176,6 +180,15 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     @Override
     public IWorkbenchPart getWorkbenchPart() {
         return part;
+    }
+
+    @Override
+    public void saveChanges() {
+        try {
+            configuration.saveConfiguration();
+        } catch (IOException e) {
+            DBWorkbench.getPlatformUI().showError("Save error", null, e);
+        }
     }
 
     @Override
@@ -236,6 +249,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     private void initConnection() {
         useSeparateConnection = viewConfiguration.isUseSeparateConnection();
         if (viewConfiguration.isOpenConnectionOnActivate()) {
+            DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
             if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
@@ -254,6 +268,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     private void openSeparateContext() {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer == null) {
             return;
         }

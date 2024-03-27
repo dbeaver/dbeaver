@@ -397,9 +397,9 @@ public class DashboardUpdater {
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IViewReference view : page.getViewReferences()) {
-                    if (view.getId().equalsIgnoreCase(DashboardView.VIEW_ID)) {
+                    if (view.getId().equalsIgnoreCase(DataSourceDashboardView.VIEW_ID)) {
                         IWorkbenchPart part = view.getPart(false);
-                        if (part instanceof DashboardView dv && checkViewDashboards(dv)) {
+                        if (part instanceof DataSourceDashboardView dv && checkViewDashboards(dv)) {
                             getViewDashboards(dv, dashboards);
                             pauseDashboardUpdate = false;
                         }
@@ -410,12 +410,12 @@ public class DashboardUpdater {
         return pauseDashboardUpdate;
     }
     
-    private boolean checkViewDashboards(DashboardView view) {
+    private boolean checkViewDashboards(DataSourceDashboardView view) {
         DashboardListViewer viewManager = view.getDashboardListViewer();
         return viewManager != null && viewManager.getDataSourceContainer().isConnected();
     }
 
-    private void getViewDashboards(DashboardView view, List<DashboardItemContainer> dashboards) {
+    private void getViewDashboards(DataSourceDashboardView view, List<DashboardItemContainer> dashboards) {
         long currentTime = System.currentTimeMillis();
         DashboardListViewer viewManager = view.getDashboardListViewer();
         for (DashboardGroupContainer group : viewManager.getGroups()) {

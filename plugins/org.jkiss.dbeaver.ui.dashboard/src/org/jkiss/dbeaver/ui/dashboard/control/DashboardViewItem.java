@@ -474,7 +474,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
                     @Override
                     public void runWithEvent(Event event) {
                         getDashboardConfig().setViewType(viewType);
-                        getGroup().getView().getViewConfiguration().saveToDataSource();
+                        getGroup().getView().saveChanges();
                         updateDashboardView();
                     }
                 };

@@ -31,31 +31,33 @@ import org.jkiss.dbeaver.ui.controls.ProgressPainter;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-public class DashboardView extends ViewPart implements DBPDataSourceContainerProvider, DBPEventListener {
+public class DataSourceDashboardView extends ViewPart implements DBPDataSourceContainerProvider, DBPEventListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
-    static protected final Log log = Log.getLog(DashboardView.class);
+    static protected final Log log = Log.getLog(DataSourceDashboardView.class);
 
     private DashboardListViewer dashboardListViewer;
+    private DashboardConfigurationList configurationList;
     private DashboardConfiguration configuration;
     private DBPDataSourceContainer dataSourceContainer;
     private DBPProject project;
     private String dashboardId;
 
-    public static DashboardView openView(
+    public static DataSourceDashboardView openView(
         @NotNull IWorkbenchWindow workbenchWindow,
         @NotNull DBPProject project,
         @Nullable DBPDataSourceContainer dataSourceContainer,
         @Nullable String id) {
         try {
-            return (DashboardView) workbenchWindow.getActivePage().showView(
-                DashboardView.VIEW_ID,
+            return (DataSourceDashboardView) workbenchWindow.getActivePage().showView(
+                DataSourceDashboardView.VIEW_ID,
                 DashboardConfiguration.getViewId(project, dataSourceContainer, id),
                 IWorkbenchPage.VIEW_ACTIVATE);
         } catch (PartInitException e) {
@@ -67,12 +69,21 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
         return null;
     }
 
-    public DashboardView() {
+    public DataSourceDashboardView() {
         super();
+    }
+
+    public DashboardConfigurationList getConfigurationList() {
+        return configurationList;
     }
 
     public DashboardConfiguration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return configuration.getDataSourceContainer();
     }
 
     @Override
@@ -123,6 +134,9 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
             if (CommonUtils.isEmpty(dashboardId) && CommonUtils.isEmpty(projectName)) {
                 throw new IllegalStateException("Bad dashboard view ID: " + secondaryId);
             }
+            if (CommonUtils.isEmpty(dashboardId)) {
+                dashboardId = DashboardConfigurationList.DEFAULT_DASHBOARD_ID;
+            }
 
             if (CommonUtils.isEmpty(projectName)) {
                 dataSourceContainer = DBUtils.findDataSource(null, datasourceId);
@@ -141,15 +155,20 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
             }
             if (dataSourceContainer != null) {
                 dataSourceContainer.getRegistry().addDataSourceListener(this);
+
+                configurationList = new DashboardConfigurationList(dataSourceContainer);
+                configuration = configurationList.getDashboard(dashboardId);
+                if (configuration == null) {
+                    configuration = configurationList.createDashboard(dashboardId, DashboardConfigurationList.DEFAULT_DASHBOARD_NAME);
+                }
+
+                dashboardListViewer = new DashboardListViewer(getSite(), this, configurationList, configuration);
+                dashboardListViewer.createControl(parent);
+
+                dashboardListViewer.createDashboardsFromConfiguration();
+
+                getSite().setSelectionProvider(dashboardListViewer);
             }
-
-            configuration = new DashboardConfiguration(project, dataSourceContainer, dashboardId, secondaryId);
-            dashboardListViewer = new DashboardListViewer(getSite(), this, dataSourceContainer, configuration);
-            dashboardListViewer.createControl(parent);
-
-            dashboardListViewer.createDashboardsFromConfiguration();
-
-            getSite().setSelectionProvider(dashboardListViewer);
 
             parent.layout(true, true);
 
@@ -228,9 +247,5 @@ public class DashboardView extends ViewPart implements DBPDataSourceContainerPro
         return dashboardListViewer;
     }
 
-    @Override
-    public DBPDataSourceContainer getDataSourceContainer() {
-        return null;
-    }
 
 }

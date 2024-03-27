@@ -26,7 +26,7 @@ public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DashboardView view = getActiveDashboardView(event);
+        DataSourceDashboardView view = getActiveDashboardView(event);
         if (view != null) {
             DashboardAddItemDialog addDialog = new DashboardAddItemDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
             if (addDialog.open() == IDialogConstants.OK_ID) {

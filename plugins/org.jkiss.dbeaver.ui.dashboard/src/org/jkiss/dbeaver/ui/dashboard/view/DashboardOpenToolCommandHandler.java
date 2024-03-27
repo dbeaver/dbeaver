@@ -41,7 +41,7 @@ public class DashboardOpenToolCommandHandler extends AbstractHandler {
             return null;
         }
         DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
-        return DashboardView.openView(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer.getProject(), dataSourceContainer, null);
+        return DataSourceDashboardView.openView(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer.getProject(), dataSourceContainer, null);
     }
 
 }

@@ -160,6 +160,6 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
             itemViewSettingsEditor.saveSettings(itemViewSettings);
         }
         viewConfiguration.updateItemConfig(this.itemViewSettings);
-        viewConfiguration.saveToDataSource();
+        dashboardContainer.getGroup().getView().saveChanges();
     }
 }

@@ -26,15 +26,15 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 
 public abstract class HandlerDashboardAbstract extends AbstractHandler {
 
-    protected DashboardView getActiveDashboardView(ExecutionEvent event) {
+    protected DataSourceDashboardView getActiveDashboardView(ExecutionEvent event) {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof DashboardView dv) {
+        if (activePart instanceof DataSourceDashboardView dv) {
             return dv;
         }
         return null;
     }
 
-    protected DashboardItemContainer getSelectedDashboard(DashboardView view) {
+    protected DashboardItemContainer getSelectedDashboard(DataSourceDashboardView view) {
         ISelection selection = view.getSite().getSelectionProvider().getSelection();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection ss) {
             Object firstElement = ss.getFirstElement();

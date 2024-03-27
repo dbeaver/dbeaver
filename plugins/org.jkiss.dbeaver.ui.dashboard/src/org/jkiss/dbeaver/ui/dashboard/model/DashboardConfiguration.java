@@ -23,23 +23,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -64,33 +54,47 @@ public class DashboardConfiguration {
     @Nullable
     private IFile dashboardFile;
     private final DBPDataSourceContainer dataSourceContainer;
-    private final String dashboardId;
+    private String dashboardId;
+    private String dashboardName;
     private final List<DashboardItemViewSettings> items = new ArrayList<>();
 
     private boolean openConnectionOnActivate;
     private boolean useSeparateConnection;
 
-    public DashboardConfiguration(
+    DashboardConfiguration(
         @NotNull DBPProject project,
         @Nullable DBPDataSourceContainer dataSourceContainer,
-        @Nullable String dashboardId,
-        String viewId
+        @Nullable String dashboardId
     ) {
         this.project = project;
         this.dataSourceContainer = dataSourceContainer;
         this.dashboardId = dashboardId;
-        loadFromDataSource();
     }
 
-    public DashboardConfiguration(
+    DashboardConfiguration(
         @NotNull DBPProject project,
         @NotNull IFile dashboardFile
     ) {
         this.project = project;
         this.dataSourceContainer = null;
-        this.dashboardId = dashboardFile.getName();
+        this.dashboardId = dashboardFile.getFullPath().toString();
         this.dashboardFile = dashboardFile;
-        loadFromFile(dashboardFile);
+    }
+
+    public String getDashboardId() {
+        return dashboardId;
+    }
+
+    public String getDashboardName() {
+        return dashboardName;
+    }
+
+    public void setDashboardName(String dashboardName) {
+        this.dashboardName = dashboardName;
+    }
+
+    public String getTitle() {
+        return CommonUtils.isEmpty(dashboardName) ? dashboardId : dashboardName;
     }
 
     @NotNull
@@ -177,94 +181,14 @@ public class DashboardConfiguration {
         this.items.clear();
     }
 
-    private void loadFromDataSource() {
-        Document dbDocument = null;
 
-        try {
-            String dbSerialized = dataSourceContainer.getExtension(DashboardConstants.DS_PROP_DASHBOARDS);
-            if (!CommonUtils.isEmpty(dbSerialized)) {
-                dbDocument = XMLUtils.parseDocument(new StringReader(dbSerialized));
-            } else {
-                // Backward compatibility - read from file
-                Path configFile = getConfigFile(false);
-                if (Files.exists(configFile)) {
-                    dbDocument = XMLUtils.parseDocument(configFile.toFile());
-                }
-            }
-        } catch (XMLException e) {
-            log.error("Error parsing dashboards", e);
-        }
-
-        loadConfiguration(dbDocument);
-    }
-
-    private void loadFromFile(IFile file) {
-        Document dbDocument = null;
-
-        if (file.exists()) {
-            try (InputStream is = file.getContents()) {
-                dbDocument = XMLUtils.parseDocument(is);
-            } catch (Exception e) {
-                log.error("Error parsing dashboards", e);
-            }
-
-            loadConfiguration(dbDocument);
-        }
-   }
-
-    private void loadConfiguration(Document dbDocument) {
-        if (dbDocument != null) {
-            try {
-                Element rootElement = dbDocument.getDocumentElement();
-                for (Element viewElement : XMLUtils.getChildElementList(rootElement, "view")) {
-                    openConnectionOnActivate = CommonUtils.getBoolean(viewElement.getAttribute("openConnectionOnActivate"), openConnectionOnActivate);
-                    useSeparateConnection = CommonUtils.getBoolean(viewElement.getAttribute("useSeparateConnection"), useSeparateConnection);
-                }
-                for (Element dbElement : XMLUtils.getChildElementList(rootElement, "dashboard")) {
-                    String dashboardId = dbElement.getAttribute("id");
-                    DashboardItemViewSettings itemConfig = new DashboardItemViewSettings(this, dashboardId, dbElement);
-                    items.add(itemConfig);
-                }
-            } catch (Exception e) {
-                log.error("Error loading dashboard view configuration", e);
-            }
-
-            items.sort(Comparator.comparingInt(DashboardItemViewSettings::getIndex));
-        }
-    }
-
-    public String saveToString() {
-        StringWriter buffer = new StringWriter();
-        try {
-            XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, true);
-            xml.setButify(true);
-            serializeConfig(xml);
-            xml.flush();
-        } catch (Exception e) {
-            log.error("Error saving dashboard configuration to file", e);
-        }
-        return buffer.toString();
-    }
-
-    public void saveToDataSource() {
-        StringWriter buffer = new StringWriter();
-        try {
-            XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, false);
-            xml.setButify(false);
-            serializeConfig(xml);
-            xml.flush();
-        } catch (Exception e) {
-            log.error("Error saving dashboard configuration to datasource", e);
-        }
-
-        dataSourceContainer.setExtension(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
-        dataSourceContainer.persistConfiguration();
-    }
-
-    private void serializeConfig(XMLBuilder xml) throws IOException {
+    void serializeConfig(XMLBuilder xml) throws IOException {
         try (var ignored = xml.startElement("dashboards")) {
             if (!CommonUtils.isEmpty(dashboardId)) {
                 xml.addAttribute("id", dashboardId);
+            }
+            if (!CommonUtils.isEmpty(dashboardName)) {
+                xml.addAttribute("name", dashboardName);
             }
             try (var ignored2 = xml.startElement("view")) {
                 if (openConnectionOnActivate) {
@@ -282,20 +206,34 @@ public class DashboardConfiguration {
         }
     }
 
-    private Path getConfigFile(boolean forceCreate) {
-        Path pluginFolder = UIDashboardActivator.getDefault().getStateLocation().toPath();
-        Path viewConfigFolder = pluginFolder.resolve("views");
-        if (!Files.exists(viewConfigFolder)) {
-            if (forceCreate) {
-                try {
-                    Files.createDirectories(viewConfigFolder);
-                } catch (IOException e) {
-                    log.error("Can't create view config folder " + viewConfigFolder, e);
+    void loadConfiguration(Element rootElement) {
+        if (rootElement != null) {
+            try {
+                if (CommonUtils.isEmpty(dashboardId)) {
+                    dashboardId = rootElement.getAttribute("id");
                 }
+                if (CommonUtils.isEmpty(dashboardId)) {
+                    dashboardId = DashboardConfigurationList.DEFAULT_DASHBOARD_ID;
+                }
+                dashboardName = rootElement.getAttribute("name");
+                if (CommonUtils.isEmpty(dashboardName)) {
+                    dashboardName = DashboardConfigurationList.DEFAULT_DASHBOARD_NAME;
+                }
+                for (Element viewElement : XMLUtils.getChildElementList(rootElement, "view")) {
+                    openConnectionOnActivate = CommonUtils.getBoolean(viewElement.getAttribute("openConnectionOnActivate"), openConnectionOnActivate);
+                    useSeparateConnection = CommonUtils.getBoolean(viewElement.getAttribute("useSeparateConnection"), useSeparateConnection);
+                }
+                for (Element dbElement : XMLUtils.getChildElementList(rootElement, "dashboard")) {
+                    String dashboardId = dbElement.getAttribute("id");
+                    DashboardItemViewSettings itemConfig = new DashboardItemViewSettings(this, dashboardId, dbElement);
+                    items.add(itemConfig);
+                }
+            } catch (Exception e) {
+                log.error("Error loading dashboard view configuration", e);
             }
+
+            items.sort(Comparator.comparingInt(DashboardItemViewSettings::getIndex));
         }
-        return viewConfigFolder.resolve("view-" + project.getName() +
-            (dataSourceContainer == null ? "" : "_" + dataSourceContainer.getId().replace("/", "_")) + ".xml");
     }
 
     public static String getViewId(DBPProject project, DBPDataSourceContainer dataSourceContainer, String id) {

@@ -30,17 +30,18 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+
+import java.io.IOException;
 
 public class DashboardViewConfigDialog extends BaseDialog {
 
-    private final DashboardConfiguration viewConfiguration;
+    private final DataSourceDashboardView view;
 
-    public DashboardViewConfigDialog(Shell shell, DashboardConfiguration viewConfiguration) {
-        super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_view_config_title, viewConfiguration.getDataSourceContainer().getName()), null);
+    public DashboardViewConfigDialog(Shell shell, DataSourceDashboardView view) {
+        super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_view_config_title, view.getDataSourceContainer().getName()), null);
 
-        this.viewConfiguration = viewConfiguration;
+        this.view = view;
     }
 
     @Override
@@ -57,12 +58,17 @@ public class DashboardViewConfigDialog extends BaseDialog {
         {
             Group viewGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg, 2, GridData.FILL_HORIZONTAL, 0);
 
-            Button connectOnActivationCheck = UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_connect, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_connect_tooltip, viewConfiguration.isOpenConnectionOnActivate(), 2);
+            Button connectOnActivationCheck = UIUtils.createCheckbox(
+                viewGroup,
+                UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_connect,
+                UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_connect_tooltip,
+                view.getConfiguration().isOpenConnectionOnActivate(),
+                2);
             connectOnActivationCheck
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        viewConfiguration.setOpenConnectionOnActivate(((Button)e.widget).getSelection());
+                        view.getConfiguration().setOpenConnectionOnActivate(((Button)e.widget).getSelection());
                     }
                 });
             //connectOnActivationCheck.setEnabled(false);
@@ -106,7 +112,11 @@ public class DashboardViewConfigDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         super.okPressed();
-        viewConfiguration.saveToDataSource();
+        try {
+            view.getConfigurationList().saveConfiguration();
+        } catch (IOException e) {
+            DBWorkbench.getPlatformUI().showError("Error saving dashboard view", null, e);
+        }
     }
 
 }

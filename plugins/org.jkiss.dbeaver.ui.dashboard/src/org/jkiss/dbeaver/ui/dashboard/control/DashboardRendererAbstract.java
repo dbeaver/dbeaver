@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -47,7 +48,9 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                 public void widgetSelected(SelectionEvent e) {
                     DashboardItemViewSettingsDialog dialog = new DashboardItemViewSettingsDialog(
                         UIUtils.getActiveShell(), itemContainer, itemContainer.getItemConfiguration().getViewConfiguration());
-                    dialog.open();
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        itemContainer.getGroup().getView().saveChanges();
+                    }
                 }
             });
             UIUtils.createToolBarSeparator(toolBar, SWT.VERTICAL);

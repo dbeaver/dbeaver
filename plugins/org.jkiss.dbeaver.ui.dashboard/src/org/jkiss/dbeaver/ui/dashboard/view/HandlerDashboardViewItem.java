@@ -27,19 +27,25 @@ public class HandlerDashboardViewItem extends HandlerDashboardAbstract {
 
     public static void openDashboardViewDialog(DashboardItemContainer itemContainer) {
         DashboardViewItem viewItem = (DashboardViewItem) itemContainer;
-        if (viewItem.getGroupContainer().getView().getWorkbenchPart() instanceof DashboardView view) {
-            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(view.getDashboardListViewer(), viewItem);
+        if (viewItem.getGroupContainer().getView().getWorkbenchPart() instanceof DataSourceDashboardView view) {
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(
+                view.getDashboardListViewer(),
+                view.getConfigurationList(),
+                viewItem);
             viewDialog.open();
         }
     }
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DashboardView view = getActiveDashboardView(event);
+        DataSourceDashboardView view = getActiveDashboardView(event);
         if (view != null) {
             DashboardItemContainer selectedDashboard = getSelectedDashboard(view);
             if (selectedDashboard != null) {
-                DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(view.getDashboardListViewer(), (DashboardViewItem) selectedDashboard);
+                DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(
+                    view.getDashboardListViewer(),
+                    view.getConfigurationList(),
+                    (DashboardViewItem) selectedDashboard);
                 viewDialog.open();
 
             }

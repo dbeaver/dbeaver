@@ -24,7 +24,7 @@ public class HandlerDashboardRemoveItem extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DashboardView view = getActiveDashboardView(event);
+        DataSourceDashboardView view = getActiveDashboardView(event);
         if (view != null) {
             DashboardItemContainer selectedDashboard = getSelectedDashboard(view);
             if (selectedDashboard != null) {

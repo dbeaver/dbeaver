@@ -30,6 +30,9 @@ import java.util.List;
  */
 public interface DashboardContainer extends DBPDataSourceContainerProvider {
 
+    @NotNull
+    DashboardConfigurationList getConfiguration();
+
     List<? extends DashboardGroupContainer> getGroups();
 
     DBCExecutionContext getExecutionContext();
@@ -43,4 +46,5 @@ public interface DashboardContainer extends DBPDataSourceContainerProvider {
     @Nullable
     IWorkbenchPart getWorkbenchPart();
 
+    void saveChanges();
 }

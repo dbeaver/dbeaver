@@ -212,14 +212,14 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         item.dispose();
         layout(true, true);
         viewContainer.getViewConfiguration().removeItem(item.getItemDescriptor().getId());
-        viewContainer.getViewConfiguration().saveToDataSource();
+       viewContainer.saveChanges();
     }
 
     @Override
     public void addItem(@NotNull DashboardItemConfiguration dashboard) {
         viewContainer.getViewConfiguration().readDashboardItemConfiguration(dashboard);
         new DashboardViewItem(this, dashboard);
-        viewContainer.getViewConfiguration().saveToDataSource();
+        viewContainer.saveChanges();
         layout(true, true);
     }
 
@@ -460,7 +460,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                     DashboardListControl.this.setRedraw(true);
                 }
 
-                viewConfiguration.saveToDataSource();
+                viewContainer.saveChanges();
             }
 
             private DashboardViewItem getOverItem(DropTargetEvent event) {

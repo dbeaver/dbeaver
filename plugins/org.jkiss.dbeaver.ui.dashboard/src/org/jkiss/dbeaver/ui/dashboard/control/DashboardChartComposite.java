@@ -38,7 +38,13 @@ public class DashboardChartComposite extends BaseChartComposite implements Dashb
     private final DashboardContainer viewContainer;
     private final DashboardItemContainer dashboardContainer;
 
-    public DashboardChartComposite(DashboardItemContainer dashboardContainer, DashboardContainer viewContainer, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(
+        DashboardItemContainer dashboardContainer,
+        DashboardContainer viewContainer,
+        Composite parent,
+        int style,
+        Point preferredSize
+    ) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
@@ -77,6 +83,7 @@ public class DashboardChartComposite extends BaseChartComposite implements Dashb
         boolean changed = dialog.open() == IDialogConstants.OK_ID;
         if (changed) {
             dashboardContainer.updateDashboardView();
+            viewContainer.saveChanges();
         }
         return changed;
     }
@@ -86,7 +93,10 @@ public class DashboardChartComposite extends BaseChartComposite implements Dashb
         if (viewContainer.isSingleChartMode()) {
             restoreAutoBounds();
         } else {
-            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DashboardViewItem) dashboardContainer);
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(
+                viewContainer,
+                viewContainer.getConfiguration(),
+                (DashboardViewItem) dashboardContainer);
             viewDialog.open();
         }
     }

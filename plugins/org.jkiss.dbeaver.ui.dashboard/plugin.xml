@@ -9,7 +9,7 @@
         <view
                 id="org.jkiss.dbeaver.ui.dashboardView"
                 category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.dashboard.view.DashboardView"
+                class="org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView"
                 allowMultiple="true"
                 icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
                 name="%view.dashboard.title"/>
@@ -26,6 +26,7 @@
         <command id="org.jkiss.dbeaver.ui.dashboard.configure" name="%command.org.jkiss.dbeaver.ui.dashboard.configure.name" description="%command.org.jkiss.dbeaver.ui.dashboard.configure.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.reset" name="%command.org.jkiss.dbeaver.ui.dashboard.reset.name" description="%command.org.jkiss.dbeaver.ui.dashboard.reset.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
+        <command id="org.jkiss.dbeaver.ui.dashboard.create" name="%command.org.jkiss.dbeaver.ui.dashboard.create.name" description="%command.org.jkiss.dbeaver.ui.dashboard.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.add" name="%command.org.jkiss.dbeaver.ui.dashboard.add.name" description="%command.org.jkiss.dbeaver.ui.dashboard.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.remove" name="%command.org.jkiss.dbeaver.ui.dashboard.remove.name" description="%command.org.jkiss.dbeaver.ui.dashboard.remove.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.view" name="%command.org.jkiss.dbeaver.ui.dashboard.view.name" description="%command.org.jkiss.dbeaver.ui.dashboard.view.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -43,10 +44,17 @@
             <enabledWhen>
                 <and>
                     <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
-                    <reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
                 </and>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.create" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardCreate">
+            <enabledWhen>
+                <and>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </and>
+            </enabledWhen>
+        </handler>
+
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration">
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardResetItem">
@@ -72,7 +80,7 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="dashboard" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.open" style="pulldown" id="org.jkiss.dbeaver.menu.dashboards">
                 <visibleWhen>
                     <and>
                         <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
@@ -112,6 +120,14 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <separator name="additions" visible="true"/>
+        </menuContribution>
+
+        <menuContribution locationURI="menu:org.jkiss.dbeaver.menu.dashboards">
+            <dynamic id="org.jkiss.dbeaver.menu.dashboards.pulldown" class="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardDynamicMenuContributor"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.create">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
 
     </extension>

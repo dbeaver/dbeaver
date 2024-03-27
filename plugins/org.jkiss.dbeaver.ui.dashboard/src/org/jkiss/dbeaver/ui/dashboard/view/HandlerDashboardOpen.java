@@ -45,7 +45,7 @@ public class HandlerDashboardOpen extends AbstractDataSourceHandler {
                 UIDashboardMessages.error_dashboard_view_no_connection_msg);
             return null;
         }
-        DashboardView.openView(workbenchWindow, dataSourceContainer.getProject(), dataSourceContainer, null);
+        DataSourceDashboardView.openView(workbenchWindow, dataSourceContainer.getProject(), dataSourceContainer, null);
         return null;
     }
 
