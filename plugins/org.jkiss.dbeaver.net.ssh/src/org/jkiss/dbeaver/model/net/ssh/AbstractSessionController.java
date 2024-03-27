@@ -57,7 +57,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         if (origin != null) {
             session = createJumpSession(getShareableSession(origin), destination, portForward);
         } else {
-            session = createDirectSession(destination, portForward);
+            session = createDirectSession(configuration, destination, portForward);
         }
 
         session.connect(monitor, destination, configuration);
@@ -67,10 +67,11 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
 
     @NotNull
     private DirectSession<T> createDirectSession(
+        @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration destination,
         @Nullable SSHPortForwardConfiguration portForward
     ) {
-        ShareableSession<T> session = sessions.get(destination);
+        ShareableSession<T> session = getSharedSession(configuration, destination);
         if (session == null) {
             // Session will be registered during connect
             session = new ShareableSession<>(this, destination);
@@ -193,6 +194,18 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         }
     }
 
+    @Nullable
+    private ShareableSession<T> getSharedSession(
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull SSHHostConfiguration destination
+    ) {
+        if (canShareSessionForConfiguration(configuration)) {
+            return sessions.get(destination);
+        } else {
+            return null;
+        }
+    }
+
     protected static boolean canShareSessionForConfiguration(@NotNull DBWHandlerConfiguration configuration) {
         // Data source might be null if this tunnel is used for connection testing
         return !SSHUtils.DISABLE_SESSION_SHARING
@@ -245,7 +258,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
                 host.auth()
             );
 
-            jumpDestination = origin.controller.createDirectSession(jumpHost, null);
+            jumpDestination = origin.controller.createDirectSession(configuration, jumpHost, null);
             jumpDestination.connect(monitor, jumpHost, configuration);
 
             if (portForward != null) {
