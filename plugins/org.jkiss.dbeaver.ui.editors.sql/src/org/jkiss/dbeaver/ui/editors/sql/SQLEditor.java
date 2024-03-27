@@ -97,6 +97,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
@@ -771,7 +773,7 @@ public class SQLEditor extends SQLEditorBase implements
                 new AbstractJob("Notify context change") {
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
-                        DBUtils.fireObjectSelect(instance, true);
+                        DBUtils.fireObjectSelect(instance, true, newContext);
                         return Status.OK_STATUS;
                     }
                 }.schedule(200);
@@ -2888,8 +2890,14 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     protected void onDataSourceChange() {
-        if (resultsSash == null || resultsSash.isDisposed()) {
+        this.onDataSourceChange(true);
+    }
+    
+    protected void onDataSourceChange(boolean contextChanged) {
+        if (contextChanged) {
             reloadSyntaxRules();
+        }
+        if (resultsSash == null || resultsSash.isDisposed()) {
             return;
         }
 
@@ -2930,8 +2938,6 @@ public class SQLEditor extends SQLEditorBase implements
             // Update command states
             SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
             SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXPLAIN);
-
-            reloadSyntaxRules();
         }
 
         if (!isHideQueryText()) {
@@ -3140,7 +3146,23 @@ public class SQLEditor extends SQLEditorBase implements
                             break;
                     }
                     updateExecutionContext(null);
-                    onDataSourceChange();
+                    
+                    boolean contextChanged = false;
+                    if (event.getAction().equals(DBPEvent.Action.OBJECT_SELECT)
+                        && event.getData() == this.getExecutionContext()
+                        && event.getEnabled()
+                    ) {
+                        DBCExecutionContext execContext = this.getExecutionContext();
+                        DBCExecutionContextDefaults<DBSCatalog, DBSSchema> ctxDefault = execContext == null
+                            ? null
+                            : execContext.getContextDefaults();
+                        if (ctxDefault != null
+                            && (event.getObject() == ctxDefault.getDefaultCatalog() || event.getObject() == ctxDefault.getDefaultSchema())
+                        ) {
+                            contextChanged = true;
+                        }
+                    }
+                    onDataSourceChange(contextChanged);
                 }
             );
         }
@@ -5012,7 +5034,7 @@ public class SQLEditor extends SQLEditorBase implements
                         protected IStatus run(DBRProgressMonitor monitor) {
                             monitor.beginTask("Refresh default objects", 1);
                             try {
-                                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults);
+                                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults, executionContext);
                             } finally {
                                 monitor.done();
                             }

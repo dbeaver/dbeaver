@@ -517,6 +517,23 @@ public class UIUtils {
         return reply[0] == Reply.YES;
     }
 
+    /**
+     * Confirm action with custom labels
+     *
+     */
+    public static boolean confirmAction(@Nullable Shell shell, String title, String message, @NotNull DBPImage image, String[] buttons) {
+        final Reply[] reply = { null };
+        syncExec(() -> reply[0] = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
+            .setTitle(title)
+            .setMessage(message)
+            .setLabels(buttons)
+            .setDefaultReply(Reply.NO)
+            .setPrimaryImage(image)
+            .setDefaultFocus(buttons.length - 1)
+            .showMessageBox());
+        return reply[0] == Reply.OK;
+    }
+
     public static int getFontHeight(Control control) {
         return getFontHeight(control.getFont());
     }

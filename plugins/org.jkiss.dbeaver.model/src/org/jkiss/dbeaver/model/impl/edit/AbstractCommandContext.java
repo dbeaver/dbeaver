@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -121,13 +120,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                 }
             }
         }
+
         try {
             executeCommands(monitor, options, useAutoCommit ? null : txnManager);
 
             // Clear commands. We can't undo after save
             clearCommandQueues();
         } catch (Throwable e) {
-            // Rollback changes
+            // Rollback changes of last command
             if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback script transaction")) {
                     session.enableLogging(false);
@@ -139,19 +139,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             throw e;
         } finally {
             if (txnManager != null && txnManager.isSupportsTransactions()) {
-                try {
-                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
-                        if (!txnManager.isAutoCommit()) {
-                            session.enableLogging(false);
-                            txnManager.commit(session);
-                        }
-                    } finally {
-                        if (oldAutoCommit != useAutoCommit) {
-                            txnManager.setAutoCommit(monitor, oldAutoCommit);
-                        }
-                    }
-                } catch (DBCException e) {
-                    log.warn("Can't commit changes", e);
+                if (oldAutoCommit != useAutoCommit) {
+                    txnManager.setAutoCommit(monitor, oldAutoCommit);
                 }
             }
         }
@@ -224,9 +213,9 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                     throw error;
                                 }
                                 if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
-                                    // Disable logging to avoid QM handlers notifications.
-                                    session.enableLogging(false);
-                                    // Commit all processed changes
+                                    // Commit all processed changes for every command
+                                    // Because most databases do not support transactional DDL
+                                    /// and we cannot revert saved changes anyway
                                     txnManager.commit(session);
                                 }
                             }
