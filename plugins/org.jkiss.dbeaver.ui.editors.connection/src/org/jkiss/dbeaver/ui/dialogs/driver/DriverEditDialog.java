@@ -1054,22 +1054,22 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         protected void buttonPressed(int id) {
             if (id == IDialogConstants.RETRY_ID) {
-                if(dataSource != null) {
+                if (dataSource != null) {
                     UIUtils.asyncExec(() -> {
                         DriverEditDialog dialog = new DriverEditDialog(
                             UIUtils.getActiveWorkbenchShell(),
                             dataSource.getContainer().getDriver());
                         dialog.open();
-                    });    
-                } else if(driver!=null) {
+                    });
+                } else if (driver != null) {
                     UIUtils.asyncExec(() -> {
                         DriverEditDialog dialog = new DriverEditDialog(
                             UIUtils.getActiveWorkbenchShell(),
                             driver);
                         dialog.open();
-                    });    
+                    });
                 }
-                
+
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
