@@ -83,7 +83,7 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
 
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        return configuration.getDataSourceContainer();
+        return configuration == null ? null : configuration.getDataSourceContainer();
     }
 
     @Override
