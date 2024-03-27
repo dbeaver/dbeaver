@@ -78,7 +78,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
 
         log.trace("Writing diagnostic info archive");
         try (var out = new ZipOutputStream(new FileOutputStream(archive))) {
-            for (File file: getLogFiles()) {
+            for (File file : getLogFiles()) {
                 out.putNextEntry(new ZipEntry(file.getName()));
                 try (var in = new FileInputStream(file)) {
                     in.transferTo(out);
