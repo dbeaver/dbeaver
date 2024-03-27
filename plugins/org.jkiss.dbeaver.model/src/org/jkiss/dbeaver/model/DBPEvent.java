@@ -48,7 +48,7 @@ public class DBPEvent
     private Map<String, Object> options;
 
     public DBPEvent(Action action, DBSObject object) {
-        this(action, object, false, null);
+        this(action, object, null);
     }
 
     public DBPEvent(Action action, DBSObject object, boolean enabled) {
@@ -56,7 +56,9 @@ public class DBPEvent
     }
 
     public DBPEvent(Action action, DBSObject object, @Nullable Object data) {
-        this(action, object, false, data);
+        this.action = action;
+        this.object = object;
+        this.data = data;
     }
 
     public DBPEvent(Action action, DBSObject object, boolean enabled, @Nullable Object data) {
