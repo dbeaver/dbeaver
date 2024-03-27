@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -985,8 +986,20 @@ public class DriverEditDialog extends HelpEnabledDialog {
         return drivers;
     }
 
-    public static void showBadConfigDialog(final Shell shell, final String message, final DBPDriver  driver, final DBException error) {
-        //log.debug(message);
+    /**
+     * Show error dialog with configuration driver option  
+     *
+     * @param shell - shell
+     * @param message - text 
+     * @param driver - driver
+     * @param error - exception
+     */
+    public static void showBadConfigDialog(
+        @NotNull Shell shell, 
+        @NotNull String message, 
+        @NotNull DBPDriver driver, 
+        @NotNull DBException error
+   ) {
         Runnable runnable = () -> {
             String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, driver.getName());
             new BadDriverConfigDialog(shell, title, message == null ? title : message, error, driver).open();

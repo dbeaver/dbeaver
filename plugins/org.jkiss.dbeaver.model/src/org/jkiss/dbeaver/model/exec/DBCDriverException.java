@@ -42,17 +42,4 @@ public class DBCDriverException extends DBCException {
     public DBPDriver getDriver() {
         return driver;
     }
-    
-    @Override
-    public String getMessage() {
-        return "Error of instantiation driver name: '"
-            + getDriverFullName()
-            + "',  class: '"
-            + getDriverClassName()
-            + "'"
-            + "\nCause: "
-            + "\n\t 1. Driver libraries (.jars) is not supplied in the product delivery"
-            + "\n\t 2. Driver libraries (.jars) not found in path"
-            + "\n\t 3. Driver configuration is not valid";
-    }
 }

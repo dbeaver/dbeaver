@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -32,10 +33,10 @@ import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
@@ -115,7 +116,9 @@ public class DataSourceHandler {
                         if (error.getCause() instanceof DBCDriverException driverException) {
                             DriverEditDialog.showBadConfigDialog(
                                 null,
-                                "Driver instatiation error",
+                                NLS.bind(CoreMessages.initialization_driver_error_msg,
+                                    driverException.getDriverFullName(),
+                                    driverException.getDriverClassName()),
                                 driverException.getDriver(),
                                 driverException);
                         } else {

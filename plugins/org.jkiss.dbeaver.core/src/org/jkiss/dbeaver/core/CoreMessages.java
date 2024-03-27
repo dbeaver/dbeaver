@@ -623,6 +623,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_accessibility_screen_reader_msg;
     public static String pref_page_accessibility_screen_reader_description;
     public static String pref_page_accessibility_screen_reader_group_lbl;
+    
+    public static String initialization_driver_error_msg;
 
     static {
         // initialize resource bundle
