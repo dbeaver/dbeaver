@@ -47,8 +47,6 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,8 +68,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             log.trace("User cancelled path picker dialog");
             return null;
         }
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        Path archivePath = Path.of(archiveDirectoryPathString, "dbeaver-diagnostic-info_%s.zip".formatted(now));
+        Path archivePath = Path.of(archiveDirectoryPathString, "dbeaver-diagnostic-info-%d.zip".formatted(System.currentTimeMillis()));
         if (Files.exists(archivePath)) {
             // Happens once in a blue moon
             log.warn("File %s already exists".formatted(archivePath.toAbsolutePath()));
