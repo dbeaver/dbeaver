@@ -21,10 +21,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -82,12 +79,13 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     }
 
     @Override
-    public Object getParent(Object child)
-    {
-        if (child instanceof DBNNode) {
-            return ((DBNNode)child).getParentNode();
-        } else if (child instanceof TreeNodeSpecial) {
-            return ((TreeNodeSpecial)child).getParent();
+    public Object getParent(Object child) {
+        if (child instanceof DBNLocalFolder node) {
+            return node.getLogicalParent();
+        } else if (child instanceof DBNNode node) {
+            return node.getParentNode();
+        } else if (child instanceof TreeNodeSpecial node) {
+            return node.getParent();
         } else {
             return null;
         }
