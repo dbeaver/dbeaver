@@ -18,7 +18,10 @@
 package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
@@ -26,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.utils.CommonUtils;
 
 
@@ -35,6 +39,7 @@ class DashboardCreateWizardPage extends WizardPage {
     private DBPProject project;
     private String dashboardId;
     private String dashboardName;
+    private boolean initDefCharts;
 
     protected DashboardCreateWizardPage(@Nullable DBPProject project, DBPDataSourceContainer dataSourceContainer) {
         super("New dashboard");
@@ -50,6 +55,10 @@ class DashboardCreateWizardPage extends WizardPage {
 
     public String getDashboardName() {
         return dashboardName;
+    }
+
+    public boolean isInitDefCharts() {
+        return initDefCharts;
     }
 
     @Override
@@ -90,6 +99,18 @@ class DashboardCreateWizardPage extends WizardPage {
             updateState();
         });
 
+        Button initDefChartsCheck = UIUtils.createCheckbox(
+            configGroup,
+            UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_init_default,
+            UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_init_default_tooltip,
+            true,
+            2);
+        initDefChartsCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                initDefCharts = initDefChartsCheck.getSelection();
+            }
+        });
         setControl(configGroup);
     }
 

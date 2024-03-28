@@ -117,7 +117,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         listRowCount = 1;
         // Calculate pack efficiency for different number of rows
         for (int rowCount = 1; rowCount < 50; rowCount++) {
-            int itemsPerRow = (int) Math.ceil((float)totalItems / rowCount);
+            int itemsPerRow = (int) Math.ceil((float) totalItems / rowCount);
 
             int itemWidth = listAreaSize.x / itemsPerRow;
             int itemHeight = itemWidth / 3;
@@ -131,8 +131,8 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 break;
             }
         }
-        listColumnCount = (int)Math.ceil((float)totalItems / listRowCount);
-        ((GridLayout)getLayout()).numColumns = listColumnCount;
+        listColumnCount = (int) Math.ceil((float) totalItems / listRowCount);
+        ((GridLayout) getLayout()).numColumns = listColumnCount;
     }
 
     void handleKeyEvent(KeyEvent e) {
@@ -212,7 +212,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         item.dispose();
         layout(true, true);
         viewContainer.getViewConfiguration().removeItem(item.getItemDescriptor().getId());
-       viewContainer.saveChanges();
+        viewContainer.saveChanges();
     }
 
     @Override
@@ -230,10 +230,12 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     }
 
     void createDefaultDashboards() {
-        List<DashboardItemConfiguration> dashboards = DashboardRegistry.getInstance().getDashboardItems(
-            null, viewContainer.getDataSourceContainer(), true);
-        for (DashboardItemConfiguration dd : dashboards) {
-            addDashboard(dd);
+        if (viewContainer.getViewConfiguration().isInitDefaultCharts()) {
+            List<DashboardItemConfiguration> dashboards = DashboardRegistry.getInstance().getDashboardItems(
+                null, viewContainer.getDataSourceContainer(), true);
+            for (DashboardItemConfiguration dd : dashboards) {
+                addDashboard(dd);
+            }
         }
     }
 
@@ -296,11 +298,11 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
      */
     public void clear() {
         selectedItem = null;
-                
+
         for (DashboardViewItem item : List.copyOf(items)) {
             item.dispose();
         }
-        
+
         items.clear();
 
         getView().getViewConfiguration().clearItems();
@@ -310,14 +312,13 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     // DnD
     /////////////////////////////////////////////////////////////////////////////////
 
-    private void addDragAndDropSupport(DashboardViewItem item)
-    {
+    private void addDragAndDropSupport(DashboardViewItem item) {
         Label dndControl = item.getTitleLabel();
         final int operations = DND.DROP_MOVE | DND.DROP_COPY;// | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT;
 
         final DragSource source = new DragSource(dndControl, operations);
         source.setTransfer(DashboardTransfer.INSTANCE);
-        source.addDragListener (new DragSourceListener() {
+        source.addDragListener(new DragSourceListener() {
 
             private Image dragImage;
             private long lastDragEndTime;
@@ -344,13 +345,14 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             }
 
             @Override
-            public void dragSetData (DragSourceEvent event) {
+            public void dragSetData(DragSourceEvent event) {
                 if (selectedItem != null) {
                     if (DashboardTransfer.INSTANCE.isSupportedType(event.dataType)) {
                         event.data = selectedItem;
                     }
                 }
             }
+
             @Override
             public void dragFinished(DragSourceEvent event) {
                 if (dragImage != null) {
@@ -370,32 +372,27 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         dropTarget.setTransfer(DashboardTransfer.INSTANCE, TextTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetListener() {
             @Override
-            public void dragEnter(DropTargetEvent event)
-            {
+            public void dragEnter(DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
             @Override
-            public void dragLeave(DropTargetEvent event)
-            {
+            public void dragLeave(DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
             @Override
-            public void dragOperationChanged(DropTargetEvent event)
-            {
+            public void dragOperationChanged(DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
             @Override
-            public void dragOver(DropTargetEvent event)
-            {
+            public void dragOver(DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
             @Override
-            public void drop(DropTargetEvent event)
-            {
+            public void drop(DropTargetEvent event) {
                 handleDragEvent(event);
                 if (event.detail == DND.DROP_MOVE) {
                     UIUtils.asyncExec(() -> moveDashboard(event));
@@ -403,13 +400,11 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             }
 
             @Override
-            public void dropAccept(DropTargetEvent event)
-            {
+            public void dropAccept(DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
-            private void handleDragEvent(DropTargetEvent event)
-            {
+            private void handleDragEvent(DropTargetEvent event) {
                 if (!isDropSupported(event)) {
                     event.detail = DND.DROP_NONE;
                 } else {
@@ -418,8 +413,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 event.feedback = DND.FEEDBACK_SELECT;
             }
 
-            private boolean isDropSupported(DropTargetEvent event)
-            {
+            private boolean isDropSupported(DropTargetEvent event) {
                 DashboardViewItem overItem = getOverItem(event);
                 if (selectedItem == null || overItem == null) {
                     return false;
@@ -427,8 +421,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 return overItem != selectedItem;
             }
 
-            private void moveDashboard(DropTargetEvent event)
-            {
+            private void moveDashboard(DropTargetEvent event) {
                 DashboardViewItem overItem = getOverItem(event);
                 if (selectedItem == null || overItem == null || selectedItem == overItem) {
                     return;
@@ -498,12 +491,12 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
 
         @Override
         protected int[] getTypeIds() {
-            return new int[] { TYPEID };
+            return new int[]{TYPEID};
         }
 
         @Override
         protected String[] getTypeNames() {
-            return new String[] { TYPE_NAME };
+            return new String[]{TYPE_NAME};
         }
 
     }

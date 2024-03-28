@@ -60,6 +60,7 @@ public class DashboardConfiguration {
 
     private boolean openConnectionOnActivate;
     private boolean useSeparateConnection;
+    private boolean initDefaultCharts = true;
 
     DashboardConfiguration(
         @NotNull DBPProject project,
@@ -124,6 +125,14 @@ public class DashboardConfiguration {
 
     public void setUseSeparateConnection(boolean useSeparateConnection) {
         this.useSeparateConnection = useSeparateConnection;
+    }
+
+    public boolean isInitDefaultCharts() {
+        return initDefaultCharts;
+    }
+
+    public void setInitDefaultCharts(boolean initDefaultCharts) {
+        this.initDefaultCharts = initDefaultCharts;
     }
 
     public DashboardItemViewSettings getItemConfig(String itemId) {
@@ -197,6 +206,9 @@ public class DashboardConfiguration {
                 if (useSeparateConnection) {
                     xml.addAttribute("useSeparateConnection", useSeparateConnection);
                 }
+                if (!initDefaultCharts) {
+                    xml.addAttribute("initDefaultCharts", initDefaultCharts);
+                }
             }
             for (DashboardItemViewSettings itemConfig : items) {
                 try (var ignored3 = xml.startElement("dashboard")) {
@@ -222,6 +234,7 @@ public class DashboardConfiguration {
                 for (Element viewElement : XMLUtils.getChildElementList(rootElement, "view")) {
                     openConnectionOnActivate = CommonUtils.getBoolean(viewElement.getAttribute("openConnectionOnActivate"), openConnectionOnActivate);
                     useSeparateConnection = CommonUtils.getBoolean(viewElement.getAttribute("useSeparateConnection"), useSeparateConnection);
+                    initDefaultCharts = CommonUtils.getBoolean(viewElement.getAttribute("initDefaultCharts"), initDefaultCharts);
                 }
                 for (Element dbElement : XMLUtils.getChildElementList(rootElement, "dashboard")) {
                     String dashboardId = dbElement.getAttribute("id");

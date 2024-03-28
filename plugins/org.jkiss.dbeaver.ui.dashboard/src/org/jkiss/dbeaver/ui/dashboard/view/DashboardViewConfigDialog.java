@@ -36,6 +36,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
     private final DataSourceDashboardView view;
     private Text dashboardNameText;
+    private Button initWithDefaultChartsCheck;
     private Button connectOnActivationCheck;
 
     public DashboardViewConfigDialog(Shell shell, DataSourceDashboardView view) {
@@ -66,6 +67,12 @@ public class DashboardViewConfigDialog extends BaseDialog {
                 UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_display_name,
                 CommonUtils.notEmpty(view.getConfiguration().getDashboardName()));
 
+            initWithDefaultChartsCheck = UIUtils.createCheckbox(
+                viewGroup,
+                UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_init_default,
+                UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_init_default_tooltip,
+                view.getConfiguration().isInitDefaultCharts(),
+                2);
             connectOnActivationCheck = UIUtils.createCheckbox(
                 viewGroup,
                 UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_connect,
@@ -117,6 +124,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
                 throw new IOException("Empty dashboard name");
             }
             view.getConfiguration().setDashboardName(dbName);
+            view.getConfiguration().setInitDefaultCharts(initWithDefaultChartsCheck.getSelection());
             view.getConfiguration().setOpenConnectionOnActivate(connectOnActivationCheck.getSelection());
             view.getConfigurationList().saveConfiguration();
 

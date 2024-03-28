@@ -125,6 +125,7 @@ public class DashboardCreateWizard extends Wizard implements INewWizard {
                 DashboardConfiguration dashboard = configurationList.createDashboard(
                     pageContent.getDashboardId(),
                     pageContent.getDashboardName());
+                dashboard.setInitDefaultCharts(pageContent.isInitDefCharts());
                 configurationList.saveConfiguration();
                 DataSourceDashboardView.openView(
                     UIUtils.getActiveWorkbenchWindow(),
