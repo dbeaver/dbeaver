@@ -356,6 +356,9 @@ public class DBNModel implements IResourceChangeListener {
         //2 because project node is 1, fake resource node must be 2 in the path
         if (currentLevel == 2 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
             currentLevel++;
+        } else if (currentLevel == 1 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
+            currentLevel++;
+            expectedNodePathName = nodePath.pathItems.get(currentLevel);
         }
         DBNNode[] children = currentNode.getChildren(monitor);
         if (children == null) {
