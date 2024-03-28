@@ -64,8 +64,14 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLCatalog, MySQLDat
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final MySQLCatalog catalog = command.getObject();
-        final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
-        appendDatabaseModifiers(catalog, script);
+        final StringBuilder script;
+        if (catalog.getDataSource().isDoris()) {
+            script = new StringBuilder("CREATE DATABASE `" + catalog.getName() + "`");
+        } else {
+            script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
+            appendDatabaseModifiers(catalog, script);
+        }
+
         actions.add(
             new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
         );
