@@ -1345,7 +1345,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     @Override
-    protected void updatePageCompletion() {
+    public void updatePageCompletion() {
         super.updatePageCompletion();
         updateAutoAssign();
     }

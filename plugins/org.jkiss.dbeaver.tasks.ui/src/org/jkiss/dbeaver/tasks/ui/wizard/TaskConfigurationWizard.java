@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageActive;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
@@ -69,6 +70,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     private boolean promptVariables;
     private DBTTaskContext taskContext;
     @Nullable private DBTTaskFolder currentSelectedTaskFolder;
+    private ActiveWizardPage wizardWithError;
 
     protected TaskConfigurationWizard() {
     }
@@ -211,30 +213,55 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean canFinish() {
-        if (isCurrentTaskSaved()) {
-            return true;
-        }
-        for (IWizardPage page : getPages()) {
-            if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
-                return false;
-            }
-        }
-        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
-        if (taskPage != null && !taskPage.isPageComplete()) {
+        boolean noErrors = getContainer().getCurrentPage() == null
+            || getContainer().getCurrentPage().getErrorMessage() == null;
+        if (containsPagesWithErrors()) {
             return false;
         }
+        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+        return taskPage == null || taskPage.isPageComplete();
+    }
 
-        return true;
+    private boolean containsPagesWithErrors() {
+        IWizardPage currentPage = getContainer().getCurrentPage();
+        if (currentPage != null && currentPage.getErrorMessage() == null) {
+            getContainer().setErrorMessage(null);
+        }
+        for (IWizardPage page : getPages()) {
+            // We need to make sure that change at the current page didn't break any other loaded pages
+            if (
+                page instanceof ActiveWizardPage activeWizardPage
+                    && currentPage != activeWizardPage
+                    && page.getControl() != null
+                    && !page.getControl().isDisposed()
+            ) {
+                activeWizardPage.updatePageCompletion();
+                if (activeWizardPage.getErrorMessage() != null && getContainer().getErrorMessage() == null) {
+                    getContainer().setErrorMessage(
+                        activeWizardPage.getTitle() + ": " + activeWizardPage.getErrorMessage());
+                }
+            }
+            if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void checkErrorStatus() {
+        if (wizardWithError != null && !getContainer().getCurrentPage().equals(wizardWithError)) {
+            wizardWithError.updatePageCompletion();
+            if (wizardWithError.getErrorMessage() == null) {
+                getContainer().setErrorMessage(null);
+            }
+        }
     }
 
     protected boolean isPageNeedsCompletion(IWizardPage page) {
         if (page instanceof TaskConfigurationWizardPageTask) {
             return false;
         }
-        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
-            return false;
-        }
-        return true;
+        return !(page instanceof IWizardPageNavigable) || ((IWizardPageNavigable) page).isPageApplicable();
     }
 
     @Override
@@ -244,9 +271,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         }
 
         if (isRunTaskOnFinish()) {
-            if (!runTask()) {
-                return false;
-            }
+            return runTask();
         }
 
         return true;
