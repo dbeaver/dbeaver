@@ -20,13 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 @SuppressWarnings("serial")
-public class DBCDriverException extends DBCException {
+public class DBCDriverFilesMissingException extends DBCException {
     
     private String driverClassName;
     private String driverFullName;
     private DBPDriver driver;
 
-    public DBCDriverException(
+    public DBCDriverFilesMissingException(
         @NotNull String message,
         @NotNull String driverClassName,
         @NotNull String driverFullName,
