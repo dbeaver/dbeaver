@@ -18,23 +18,29 @@ package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
-import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 
 public class HandlerDashboardDelete extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DataSourceDashboardView view = getActiveDashboardView(event);
+        DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             if (UIUtils.confirmAction(
                 HandlerUtil.getActiveShell(event),
                 "Delete dashboard",
                 "Are you sure you want to delete dashboard '" + view.getConfiguration().getTitle() + "'?")
             ) {
-                HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().hideView(view);
+                if (view instanceof IViewPart viewPart) {
+                    HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().hideView(viewPart);
+                } else if (view instanceof IEditorPart editorPart) {
+                    HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().closeEditor(editorPart, false);
+                }
                 DashboardConfigurationList configurationList;
                 if (view.getDataSourceContainer() != null) {
                     configurationList = new DashboardConfigurationList(view.getDataSourceContainer());

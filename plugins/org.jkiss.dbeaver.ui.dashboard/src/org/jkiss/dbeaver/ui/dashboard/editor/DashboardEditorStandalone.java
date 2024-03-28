@@ -24,7 +24,9 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.DashboardIcons;
@@ -34,13 +36,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 
 /**
  * Standalone dashboard editor
  */
-public class DashboardEditorStandalone extends SinglePageDatabaseEditor<IEditorInput> implements IResourceChangeListener {
+public class DashboardEditorStandalone extends SinglePageDatabaseEditor<IEditorInput> implements DashboardViewer, IResourceChangeListener {
 
     private static final Log log = Log.getLog(DashboardEditorStandalone.class);
 
@@ -148,5 +151,31 @@ public class DashboardEditorStandalone extends SinglePageDatabaseEditor<IEditorI
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
         return RefreshResult.REFRESHED;
+    }
+
+    @Nullable
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dashboardConfig.getDataSourceContainer();
+    }
+
+    @Override
+    public DashboardConfigurationList getConfigurationList() {
+        return configurationList;
+    }
+
+    @Override
+    public DashboardConfiguration getConfiguration() {
+        return dashboardConfig;
+    }
+
+    @Override
+    public DashboardListViewer getDashboardListViewer() {
+        return dashboardListViewer;
+    }
+
+    @Override
+    public void updateStatus() {
+
     }
 }

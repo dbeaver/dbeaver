@@ -19,14 +19,14 @@ package org.jkiss.dbeaver.ui.dashboard.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardViewConfigDialog;
-import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 
 public class HandlerDashboardConfiguration extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) {
-        DataSourceDashboardView view = getActiveDashboardView(event);
+        DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             DashboardViewConfigDialog dialog = new DashboardViewConfigDialog(
                 HandlerUtil.getActiveShell(event), view);

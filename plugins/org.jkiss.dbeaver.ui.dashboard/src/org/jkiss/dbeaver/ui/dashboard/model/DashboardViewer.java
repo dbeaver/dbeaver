@@ -14,14 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dashboard;
+package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.jkiss.dbeaver.model.DBIcon;
+import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 
-public class DashboardIcons {
-    public static final DBIcon DASHBOARD = new DBIcon("dashboard", "dashboard.png"); //$NON-NLS-1$ //$NON-NLS-2$
+/**
+ * Dashboard viewer
+ */
+public interface DashboardViewer extends DBPDataSourceContainerProvider {
 
-    static {
-        DBIcon.loadIcons(DashboardIcons.class);
-    }
+    DashboardConfigurationList getConfigurationList();
+
+    DashboardConfiguration getConfiguration();
+
+    DashboardListViewer getDashboardListViewer();
+
+    void updateStatus();
+
+    IWorkbenchSite getSite();
 }

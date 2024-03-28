@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.ui.dashboard.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
-import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 
 public class HandlerDashboardRemoveItem extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DataSourceDashboardView view = getActiveDashboardView(event);
+        DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             DashboardItemContainer selectedDashboard = getSelectedDashboard(view);
             if (selectedDashboard != null) {

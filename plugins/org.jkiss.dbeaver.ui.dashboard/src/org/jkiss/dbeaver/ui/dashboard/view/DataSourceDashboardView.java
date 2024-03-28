@@ -30,15 +30,12 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-public class DataSourceDashboardView extends ViewPart implements DBPDataSourceContainerProvider, DBPEventListener {
+public class DataSourceDashboardView extends ViewPart implements DashboardViewer, DBPDataSourceContainerProvider, DBPEventListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
     static protected final Log log = Log.getLog(DataSourceDashboardView.class);
@@ -73,10 +70,12 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
         super();
     }
 
+    @Override
     public DashboardConfigurationList getConfigurationList() {
         return configurationList;
     }
 
+    @Override
     public DashboardConfiguration getConfiguration() {
         return configuration;
     }
@@ -227,6 +226,7 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
         }
     }
 
+    @Override
     public void updateStatus() {
         String partName;
         if (DashboardConfigurationList.DEFAULT_DASHBOARD_NAME.equals(configuration.getDashboardName())) {
@@ -252,6 +252,7 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
         super.saveState(memento);
     }
 
+    @Override
     public DashboardListViewer getDashboardListViewer() {
         return dashboardListViewer;
     }

@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 
@@ -40,7 +41,7 @@ public class HandlerDashboardViewItem extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DataSourceDashboardView view = getActiveDashboardView(event);
+        DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             DashboardItemContainer selectedDashboard = getSelectedDashboard(view);
             if (selectedDashboard != null) {

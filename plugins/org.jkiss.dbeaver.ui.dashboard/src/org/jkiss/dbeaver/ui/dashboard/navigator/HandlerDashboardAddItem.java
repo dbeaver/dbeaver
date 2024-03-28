@@ -21,14 +21,14 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardAddItemDialog;
-import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 
 public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DataSourceDashboardView view = getActiveDashboardView(event);
+        DashboardViewer view = getActiveDashboardView(event);
         if (view != null) {
             DashboardAddItemDialog addDialog = new DashboardAddItemDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
             if (addDialog.open() == IDialogConstants.OK_ID) {

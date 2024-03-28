@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -34,12 +35,12 @@ import java.io.IOException;
 
 public class DashboardViewConfigDialog extends BaseDialog {
 
-    private final DataSourceDashboardView view;
+    private final DashboardViewer view;
     private Text dashboardNameText;
     private Button initWithDefaultChartsCheck;
     private Button connectOnActivationCheck;
 
-    public DashboardViewConfigDialog(Shell shell, DataSourceDashboardView view) {
+    public DashboardViewConfigDialog(Shell shell, DashboardViewer view) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_view_config_title, view.getDataSourceContainer().getName()), null);
 
         this.view = view;

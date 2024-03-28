@@ -23,19 +23,19 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
-import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 
 public abstract class HandlerDashboardAbstract extends AbstractHandler {
 
-    protected DataSourceDashboardView getActiveDashboardView(ExecutionEvent event) {
+    protected DashboardViewer getActiveDashboardView(ExecutionEvent event) {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof DataSourceDashboardView dv) {
+        if (activePart instanceof DashboardViewer dv) {
             return dv;
         }
         return null;
     }
 
-    protected DashboardItemContainer getSelectedDashboard(DataSourceDashboardView view) {
+    protected DashboardItemContainer getSelectedDashboard(DashboardViewer view) {
         ISelection selection = view.getSite().getSelectionProvider().getSelection();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection ss) {
             Object firstElement = ss.getFirstElement();
