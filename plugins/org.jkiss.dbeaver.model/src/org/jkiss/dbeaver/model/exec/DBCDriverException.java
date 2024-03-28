@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.model.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 
+@SuppressWarnings("serial")
 public class DBCDriverException extends DBCException {
-    private static final long serialVersionUID = 1L;
+    
     private String driverClassName;
     private String driverFullName;
     private DBPDriver driver;
