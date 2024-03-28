@@ -353,10 +353,8 @@ public class DBNModel implements IResourceChangeListener {
         }
         String expectedNodePathName = nodePath.pathItems.get(currentLevel);
         //skip fake root resource node
-        //2 because project node is 1, fake resource node must be 2 in the path
-        if (currentLevel == 2 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
-            currentLevel++;
-        } else if (currentLevel == 1 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
+        //1 because project node is 0, fake resource node must be 1 in the path
+        if (currentLevel == 1 && DBNResource.FAKE_RESOURCE_ROOT_NODE.equals(expectedNodePathName)) {
             currentLevel++;
             expectedNodePathName = nodePath.pathItems.get(currentLevel);
         }
