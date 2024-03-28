@@ -931,9 +931,7 @@ public class DataSourceDescriptor
         if (!isSharedCredentials()) {
             return List.of();
         }
-        if (availableSharedCredentials != null) {
-            return availableSharedCredentials;
-        }
+        forgetSecrets();
         resolveSecretsIfNeeded();
         if (availableSharedCredentials == null) {
             this.availableSharedCredentials = List.of();
@@ -941,10 +939,11 @@ public class DataSourceDescriptor
         return availableSharedCredentials;
     }
 
-    @NotNull
-    public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
-        var secretController = DBSSecretController.getProjectSecretController(getProject());
-        return secretController.listAllSharedSecrets(this);
+    private synchronized List<DBSSecretValue> listSharedCredentialFromCache() throws DBException {
+        if (availableSharedCredentials != null) {
+            return availableSharedCredentials;
+        }
+        return listSharedCredentials();
     }
 
     @Nullable
@@ -1110,7 +1109,7 @@ public class DataSourceDescriptor
         resolveSecretsIfNeeded();
 
         if (isSharedCredentials() && !isSharedCredentialsSelected()) {
-            var sharedCreds = listSharedCredentials();
+            var sharedCreds = listSharedCredentialFromCache();
             if (!CommonUtils.isEmpty(sharedCreds)) {
                 log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
                 setSelectedSharedCredentials(sharedCreds.get(0));
