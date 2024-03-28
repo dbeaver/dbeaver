@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleCon
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCorrelatedSourceModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,7 @@ public abstract class SQLQueryDataContext {
     
     public class KnownSourcesInfo {
         private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
-        
+
         public void registerTableReference(SQLQueryRowsSourceModel source, DBSEntity table) {
             if (source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()) {
                 source = cc.getSource();
@@ -84,7 +85,7 @@ public abstract class SQLQueryDataContext {
             SQLQueryRowsSourceModel ssource = source;
             this.sources.compute(source, (k, v) -> v == null ? SourceResolutionResult.forRealTableByName(ssource, table) : SourceResolutionResult.withRealTable(v, table));
         }
-        
+
         public void registerAlias(SQLQueryRowsSourceModel source, SQLQuerySymbol alias) {
             if (source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()) {
                 source = cc.getSource();
@@ -93,31 +94,12 @@ public abstract class SQLQueryDataContext {
             this.sources.compute(source, (k, v) -> v == null ? SourceResolutionResult.forSourceByAlias(ssource, alias) : SourceResolutionResult.withAlias(v, alias));
         }
 
-        public Map<String, String> obtainAliasesByTableName() {
-            Map<String, String> result = new HashMap<>();
-            for (SourceResolutionResult rr: this.sources.values()) {
-                if (rr.tableOrNull != null) {
-                    String name = DBUtils.getObjectFullName(rr.tableOrNull, DBPEvaluationContext.DML);
-                    result.put(name, rr.aliasOrNull == null ? null : rr.aliasOrNull.getName());
-                } else if (rr.aliasOrNull != null) {
-                    result.putIfAbsent(rr.aliasOrNull.getName(), null);
-                }
-            }
-            return result;
+        public Map<SQLQueryRowsSourceModel, SourceResolutionResult> getResolutionResults() {
+            return Collections.unmodifiableMap(this.sources);
         }
-//        
-//        public Set<String> obtainSubqueryAliases() {
-//            Set<String> result = new HashSet<>();
-//            for (SourceResolutionResult rr: this.sources.values()) {
-//                if (rr.tableOrNull == null && rr.aliasOrNull != null) {
-//                    result.add(rr.aliasOrNull.getName());
-//                }
-//            }
-//            return result;
-//        }
     }
 
-    public KnownSourcesInfo getKnwonSources() {
+    public KnownSourcesInfo getKnownSources() {
         KnownSourcesInfo result = new KnownSourcesInfo();
         this.collectKnownSources(result);
         return result;

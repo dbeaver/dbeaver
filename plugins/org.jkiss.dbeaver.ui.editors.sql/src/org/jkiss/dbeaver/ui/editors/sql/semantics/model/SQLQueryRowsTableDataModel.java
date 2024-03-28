@@ -135,7 +135,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
                     // seems cte reference resolved
                     this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
-                    context = context.overrideResultTuple(rr.source.getDataContext().getColumnsList());
+                    context = context.overrideResultTuple(rr.source.getResultDataContext().getColumnsList());
                 } else {
                     this.name.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     statistics.appendError(this.name.entityName, "Table not found");

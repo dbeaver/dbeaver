@@ -424,6 +424,7 @@ public class SQLBackgroundParsingJob {
                         for (SQLQuerySymbolEntry entry : queryModel.getAllSymbols()) {
                             itemContext.registerToken(entry.getInterval().a, entry);
                         }
+                        itemContext.refreshCompleted();
                     }
                 } catch (Throwable ex) {
                     log.debug("Error while analyzing query text: " + element.getOriginalText(), ex);

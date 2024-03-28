@@ -95,7 +95,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem { // qualifi
                     this.schemaName.getSymbol().setSymbolClass(SQLQuerySymbolClass.SCHEMA);
                 }
                 if (this.catalogName != null) {
-                    DBSObject catalog = realTable.getParentObject();
+                    DBSObject catalog = schema.getParentObject();
                     if (catalog != null) {
                         this.catalogName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(catalog, SQLQuerySymbolClass.CATALOG));
                     } else {

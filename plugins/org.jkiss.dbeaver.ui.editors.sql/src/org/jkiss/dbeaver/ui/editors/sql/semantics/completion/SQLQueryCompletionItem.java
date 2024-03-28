@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.completion;
 
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
 public abstract class SQLQueryCompletionItem {
     
@@ -41,6 +43,10 @@ public abstract class SQLQueryCompletionItem {
         return null;
     }
     
+    public DBPNamedObject getObject() {
+        return null;
+    }
+    
     
     public static SQLQueryCompletionItem forReservedWord(String text) {
         return new SQLReservedWordCompletionItem(text);
@@ -54,8 +60,12 @@ public abstract class SQLQueryCompletionItem {
         return new SQLTableNameCompletionItem(table, isUsed);
     }
     
-    public static SQLQueryCompletionItem forSubsetColumn(SQLQueryResultColumn columnInfo) {
-        return new SQLColumnNameCompletionItem(columnInfo);
+    public static SQLQueryCompletionItem forSubsetColumn(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo) {
+        return new SQLColumnNameCompletionItem(columnInfo, sourceInfo);
+    }
+    
+    public static SQLQueryCompletionItem forDbObject(DBPNamedObject object) {
+        return new SQLDbNamedObjectCompletionItem(object);
     }
     
     private static class SQLSubqueryAliasCompletionItem extends SQLQueryCompletionItem {
@@ -88,13 +98,17 @@ public abstract class SQLQueryCompletionItem {
     
     private static class SQLColumnNameCompletionItem extends SQLQueryCompletionItem {
         private final SQLQueryResultColumn columnInfo;
+        private final SourceResolutionResult sourceInfo;
 
-        public SQLColumnNameCompletionItem(SQLQueryResultColumn columnInfo) {
+        public SQLColumnNameCompletionItem(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo) {
             this.columnInfo = columnInfo;
+            this.sourceInfo = sourceInfo;
         }        
         
         @Override
         public String getText() {
+//            String prefix = this.sourceInfo != null && this.sourceInfo.aliasOrNull != null ? this.sourceInfo.aliasOrNull.getName() + "." : ""; 
+//            return prefix + this.columnInfo.symbol.getName();
             return this.columnInfo.symbol.getName();
         }
         
@@ -129,6 +143,11 @@ public abstract class SQLQueryCompletionItem {
                     ? SQLQueryCompletionItemKind.DERIVED_COLUMN_NAME
                     : SQLQueryCompletionItemKind.TABLE_COLUMN_NAME;
         }
+        
+        @Override
+        public DBPNamedObject getObject() {
+            return this.columnInfo.realAttr;
+        }
     }
     
     private static class SQLTableNameCompletionItem extends SQLQueryCompletionItem {  
@@ -147,7 +166,7 @@ public abstract class SQLQueryCompletionItem {
         
         @Override
         public String getExtraText() {
-            return (DBUtils.isView(this.table) ? "View " : "Table ") + DBUtils.getObjectFullName(table, DBPEvaluationContext.DML);
+            return (DBUtils.isView(this.table) ? "View " : "Table ") + DBUtils.getObjectFullName(this.table, DBPEvaluationContext.DML);
         }
         
         @Override
@@ -158,6 +177,11 @@ public abstract class SQLQueryCompletionItem {
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return this.isUsed ? SQLQueryCompletionItemKind.USED_TABLE_NAME : SQLQueryCompletionItemKind.NEW_TABLE_NAME;
+        }
+        
+        @Override
+        public DBPNamedObject getObject() {
+            return this.table;
         }
     }
     
@@ -181,6 +205,39 @@ public abstract class SQLQueryCompletionItem {
         @Override
         public String getDescription() {
             return "Reserved word of the query language";
+        }
+    }
+
+    private static class SQLDbNamedObjectCompletionItem extends SQLQueryCompletionItem {  
+        private final DBPNamedObject object;
+
+        public SQLDbNamedObjectCompletionItem(DBPNamedObject object) {
+            this.object = object;
+        }
+        
+        @Override
+        public String getText() {
+            return this.object.getName();
+        }
+        
+        @Override
+        public String getExtraText() {
+            return DBUtils.getObjectFullName(this.object, DBPEvaluationContext.DML);
+        }
+        
+        @Override
+        public String getDescription() {
+            return this.getExtraText();
+        }
+        
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return null;
+        }
+        
+        @Override
+        public DBPNamedObject getObject() {
+            return this.object;
         }
     }
 }

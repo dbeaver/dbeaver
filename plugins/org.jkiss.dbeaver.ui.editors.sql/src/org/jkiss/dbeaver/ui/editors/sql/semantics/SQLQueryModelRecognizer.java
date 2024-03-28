@@ -49,14 +49,15 @@ import java.util.function.Predicate;
 
 public class SQLQueryModelRecognizer {
 
-    
     private final HashSet<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
     
     private final boolean isReadMetadataForSemanticAnalysis;
 
     private final DBCExecutionContext executionContext;
     
-    private final Set<String> reservedWords; 
+    private final Set<String> reservedWords;
+    
+    private final LinkedList<SQLQueryLexicalScope> currentLexicalScopes = new LinkedList<>();
 
     private SQLQueryDataContext queryDataContext;
     
@@ -329,43 +330,53 @@ public class SQLQueryModelRecognizer {
                 SQLQuerySelectionResultModel resultModel = new SQLQuerySelectionResultModel(
                     selectListNode, (selectListNode.getChildCount() + 1) / 2
                 );
-                for (int i = 0; i < selectListNode.getChildCount(); i += 2) {
-                    STMTreeNode selectSublist = selectListNode.getStmChild(i);
-                    if (selectSublist.getChildCount() > 0) {
-                        STMTreeNode sublistNode = selectSublist.getStmChild(0);
-                        if (sublistNode != null) {
-                            switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
-                                case SQLStandardParser.RULE_derivedColumn -> {
-                                    // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
-                                    SQLQueryValueExpression expr = r.collectValueExpression(sublistNode.getStmChild(0));
-                                    if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
-                                        resultModel.addTupleSpec(sublistNode, tupleRef);
-                                    } else {
-                                        if (sublistNode.getChildCount() > 1) {
-                                            STMTreeNode asClause = sublistNode.getStmChild(1);
-                                            SQLQuerySymbolEntry asColumnName = r.collectIdentifier(
-                                                asClause.getStmChild(asClause.getChildCount() - 1)
-                                            );
-                                            resultModel.addColumnSpec(sublistNode, expr, asColumnName);
+
+                SQLQueryLexicalScope selectListScope;
+                try (LexicalScopeHolder selectListScopeHolder = r.openScope()) {
+                    selectListScope = selectListScopeHolder.lexicalScope;
+                    selectListScope.registerSyntaxNode(n.getStmChild(0)); // SELECT keyword
+                    
+                    for (int i = 0; i < selectListNode.getChildCount(); i += 2) {
+                        STMTreeNode selectSublist = selectListNode.getStmChild(i);
+                        if (selectSublist.getChildCount() > 0) {
+                            STMTreeNode sublistNode = selectSublist.getStmChild(0);
+                            if (sublistNode != null) {
+                                switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
+                                    case SQLStandardParser.RULE_derivedColumn -> {
+                                        // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
+                                        SQLQueryValueExpression expr = r.collectValueExpression(sublistNode.getStmChild(0));
+                                        if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
+                                            resultModel.addTupleSpec(sublistNode, tupleRef);
                                         } else {
-                                            resultModel.addColumnSpec(sublistNode, expr);
+                                            if (sublistNode.getChildCount() > 1) {
+                                                STMTreeNode asClause = sublistNode.getStmChild(1);
+                                                SQLQuerySymbolEntry asColumnName = r.collectIdentifier(
+                                                    asClause.getStmChild(asClause.getChildCount() - 1)
+                                                );
+                                                resultModel.addColumnSpec(sublistNode, expr, asColumnName);
+                                            } else {
+                                                resultModel.addColumnSpec(sublistNode, expr);
+                                            }
                                         }
                                     }
-                                }
-                                case SQLStandardParser.RULE_anyUnexpected -> {
-                                    // error in query text, ignoring it
-                                }
-                                default -> {
-                                    resultModel.addCompleteTupleSpec(sublistNode);
+                                    case SQLStandardParser.RULE_anyUnexpected -> {
+                                        // TODO register these pieces in the lexical scope
+                                        // error in query text, ignoring it
+                                    }
+                                    default -> {
+                                        resultModel.addCompleteTupleSpec(sublistNode);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                
                 SQLQueryRowsSourceModel source = cc.isEmpty() ? r.queryDataContext.getDefaultTable(n) : cc.get(0);
                 STMTreeNode tableExpr = n.findChildOfName(STMKnownRuleNames.tableExpression);
+                SQLQueryRowsProjectionModel projectionModel;
                 if (tableExpr != null) {
-                    // tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
+                    selectListScope.registerSyntaxNode(tableExpr.getStmChild(0)); // FROM keyword
                     SQLQueryValueExpression whereExpr = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.whereClause))
                         .map(r::collectValueExpression).orElse(null);
                     SQLQueryValueExpression havingClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.havingClause))
@@ -374,10 +385,11 @@ public class SQLQueryModelRecognizer {
                         .map(r::collectValueExpression).orElse(null);
                     SQLQueryValueExpression orderByClause = Optional.ofNullable(tableExpr.findChildOfName(STMKnownRuleNames.orderByClause))
                         .map(r::collectValueExpression).orElse(null);
-                    return new SQLQueryRowsProjectionModel(n, source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
+                    projectionModel = new SQLQueryRowsProjectionModel(n, selectListScope, source, resultModel, whereExpr, havingClause, groupByClause, orderByClause);
                 } else {
-                    return new SQLQueryRowsProjectionModel(n, source, resultModel);
+                    projectionModel = new SQLQueryRowsProjectionModel(n, selectListScope, source, resultModel);
                 }
+                return projectionModel;
             }),
             Map.entry(STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
                 // can they both be missing?
@@ -420,7 +432,7 @@ public class SQLQueryModelRecognizer {
         this.executionContext = executionContext;
         this.reservedWords = new HashSet<>(this.obtainSqlDialect().getReservedWords());
     }
-    
+
     private void traverseForIdentifiers(
         @NotNull STMTreeNode root,
         @NotNull BiConsumer<SQLQueryQualifiedName, SQLQuerySymbolEntry> columnAction,
@@ -775,9 +787,10 @@ public class SQLQueryModelRecognizer {
     ) {
         SQLQuerySymbolEntry entry = new SQLQuerySymbolEntry(syntaxNode, name, rawName);
         this.symbolEntries.add(entry);
+        this.registerScopeItem(entry);
         return entry;
     }
-    
+
     private static final Set<String> tableNameContainers = Set.of(
         STMKnownRuleNames.referencedTableAndColumns,
         STMKnownRuleNames.qualifier,
@@ -816,7 +829,7 @@ public class SQLQueryModelRecognizer {
             case 1 -> {
                 node = actual.get(0);
                 yield node.getNodeName().equals(STMKnownRuleNames.tableName) ? collectQualifiedName(node, forceUnquotted)
-                        : new SQLQueryQualifiedName(node, collectIdentifier(node, forceUnquotted));
+                        : this.registerScopeItem(new SQLQueryQualifiedName(node, collectIdentifier(node, forceUnquotted)));
             }
             default -> throw new UnsupportedOperationException("Ambiguous tableName collection at " + node.getNodeName());
         };
@@ -836,7 +849,7 @@ public class SQLQueryModelRecognizer {
         
         SQLQuerySymbolEntry entityName = collectIdentifier(entityNameNode.getStmChild(entityNameNode.getChildCount() - 1), forceUnquotted);
         if (entityNameNode.getChildCount() == 1) {
-            return new SQLQueryQualifiedName(entityNameNode, entityName);
+            return this.registerScopeItem(new SQLQueryQualifiedName(entityNameNode, entityName));
         } else {
             STMTreeNode schemaNameNode = entityNameNode.getStmChild(0);
             SQLQuerySymbolEntry schemaName = collectIdentifier(
@@ -844,14 +857,14 @@ public class SQLQueryModelRecognizer {
                 forceUnquotted
             );
             if (schemaNameNode.getChildCount() == 1) {
-                return new SQLQueryQualifiedName(entityNameNode, schemaName, entityName);
+                return this.registerScopeItem(new SQLQueryQualifiedName(entityNameNode, schemaName, entityName));
             } else {
                 STMTreeNode catalogNameNode = schemaNameNode.getStmChild(0);
                 SQLQuerySymbolEntry catalogName = collectIdentifier(
                     catalogNameNode.getStmChild(catalogNameNode.getChildCount() - 1),
                     forceUnquotted
                 );
-                return new SQLQueryQualifiedName(entityNameNode, catalogName, schemaName, entityName);
+                return this.registerScopeItem(new SQLQueryQualifiedName(entityNameNode, catalogName, schemaName, entityName));
             }    
         }
     }
@@ -885,45 +898,51 @@ public class SQLQueryModelRecognizer {
         if (knownRecognizableValueExpressionNames.contains(node.getNodeName())) {
             return collectKnownValueExpression(node);
         } else {
-            Stack<STMTreeNode> stack = new Stack<>();
-            Stack<List<SQLQueryValueExpression>> childLists = new Stack<>();
-            stack.add(node);
-            childLists.push(new ArrayList<>(1));
-
-            while (stack.size() > 0) {
-                STMTreeNode n = stack.pop();
-                
-                if (n != null) {
-                    STMTreeNode rn = n;
-                    while (rn.getChildCount() == 1 && !knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
-                        rn = rn.getStmChild(0);
-                    }
-                    if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
-                        childLists.peek().add(collectKnownValueExpression(rn));
+            try (LexicalScopeHolder sh = this.openScope()) {
+                Stack<STMTreeNode> stack = new Stack<>();
+                Stack<List<SQLQueryValueExpression>> childLists = new Stack<>();
+                stack.add(node);
+                childLists.push(new ArrayList<>(1));
+    
+                while (stack.size() > 0) {
+                    STMTreeNode n = stack.pop();
+                    
+                    if (n != null) {
+                        STMTreeNode rn = n;
+                        while (rn.getChildCount() == 1 && !knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
+                            rn = rn.getStmChild(0);
+                        }
+                        if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
+                            childLists.peek().add(collectKnownValueExpression(rn));
+                        } else {
+                            stack.push(n);
+                            stack.push(null);
+                            childLists.push(new ArrayList<>(rn.getChildCount()));
+                            for (int i = rn.getChildCount() - 1; i >= 0; i--) {
+                                stack.push(rn.getStmChild(i));
+                            }
+                        }
                     } else {
-                        stack.push(n);
-                        stack.push(null);
-                        childLists.push(new ArrayList<>(rn.getChildCount()));
-                        for (int i = rn.getChildCount() - 1; i >= 0; i--) {
-                            stack.push(rn.getStmChild(i));
+                        // TODO register unexpected pieces in the lexical scope
+                        STMTreeNode content = stack.pop();
+                        List<SQLQueryValueExpression> children = childLists.pop();
+                        if (children.size() > 0) {
+                            SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression c 
+                                ? c 
+                                : new SQLQueryValueFlattenedExpression(content, children);
+                            childLists.peek().add(e);
                         }
                     }
-                } else {
-                    STMTreeNode content = stack.pop();
-                    List<SQLQueryValueExpression> children = childLists.pop();
-                    if (children.size() > 0) {
-                        SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression c 
-                            ? c 
-                            : new SQLQueryValueFlattenedExpression(content, children);
-                        childLists.peek().add(e);
-                    }
                 }
+                
+                List<SQLQueryValueExpression> roots = childLists.pop();
+                SQLQueryValueExpression result = roots.isEmpty() ?
+                    new SQLQueryValueFlattenedExpression(node, Collections.emptyList()) :
+                    roots.get(0);
+                
+                result.registerLexicalScope(sh.lexicalScope);
+                return result;
             }
-            
-            List<SQLQueryValueExpression> roots = childLists.pop();
-            return roots.isEmpty() ?
-                new SQLQueryValueFlattenedExpression(node, Collections.emptyList()) :
-                roots.get(0);
         }
     }
 
@@ -1032,5 +1051,44 @@ public class SQLQueryModelRecognizer {
             };
         }
         return forcedClass;
+    }
+
+    private SQLQueryLexicalScope beginScope() {
+        SQLQueryLexicalScope scope = new SQLQueryLexicalScope();
+        this.currentLexicalScopes.addLast(scope);
+        return scope;
+    }
+
+    private void endScope(SQLQueryLexicalScope scope) {
+        if (this.currentLexicalScopes.peekLast() != scope) {
+            throw new IllegalStateException();
+        }
+        this.currentLexicalScopes.removeLast();
+    }
+    
+    private <T extends SQLQueryLexicalScopeItem> T registerScopeItem(T item) {
+        SQLQueryLexicalScope scope = this.currentLexicalScopes.peekLast();
+        if (scope != null) {
+            scope.registerItem(item);
+        }
+        return item;
+    }
+    
+    private class LexicalScopeHolder implements AutoCloseable {
+
+        public final SQLQueryLexicalScope lexicalScope;
+        
+        public LexicalScopeHolder(SQLQueryLexicalScope scope) {
+            this.lexicalScope = scope;
+        }
+
+        @Override
+        public void close() {
+            SQLQueryModelRecognizer.this.endScope(this.lexicalScope);   
+        }
+    }
+    
+    private LexicalScopeHolder openScope() {
+        return new LexicalScopeHolder(this.beginScope());
     }
 }

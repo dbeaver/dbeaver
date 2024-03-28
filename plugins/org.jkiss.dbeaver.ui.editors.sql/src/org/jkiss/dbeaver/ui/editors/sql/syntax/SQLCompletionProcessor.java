@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLExperimentalAutocompletionMode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
@@ -159,40 +160,46 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
 
             SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
-            SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(request);
+            SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request);
             DBPDataSource dataSource = editor.getDataSource();
-            if (request.getWordPart() != null) {
+            
+            SQLExperimentalAutocompletionMode mode =  SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
+            
+            AbstractJob newJob = !mode.useNewAnalyzer ? null : new AbstractJob("Analyzing query for proposals...") {{
+                    setSystem(true);
+                    setUser(false);
+                    schedule();
+                }
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    try {
+                        monitor.beginTask("Seeking for SQL completion proposals", 1);
+                        try {
+                            monitor.subTask("Find proposals");
+                            DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
+                        } finally {
+                            monitor.done();
+                        }
+                        return Status.OK_STATUS;
+                    } catch (Throwable e) {
+                        log.error(e);
+                        return Status.CANCEL_STATUS;
+                    }
+                }
+            };
+            
+            if (request.getWordPart() != null && mode.useOldAnalyzer) {
                 if (dataSource != null) {
                     ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
                     searchJob.schedule();
-                    
-                    AbstractJob newJob = new AbstractJob("Analyzing query for proposals...") {{
-                            setSystem(true);
-                            setUser(false);
-                        }
-                        @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
-                            try {
-                                monitor.beginTask("Seeking for SQL completion proposals", 1);
-                                try {
-                                    monitor.subTask("Find proposals");
-                                    DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
-                                } finally {
-                                    monitor.done();
-                                }
-                                return Status.OK_STATUS;
-                            } catch (Throwable e) {
-                                log.error(e);
-                                return Status.CANCEL_STATUS;
-                            }
-                        }
-                    };
-                    newJob.schedule();
 
                     // Wait until job finished
                     UIUtils.waitJobCompletion(searchJob);
-                    UIUtils.waitJobCompletion(newJob);
                 }
+            }
+            
+            if (newJob != null) {
+            	UIUtils.waitJobCompletion(newJob);
             }
 
             List<SQLCompletionProposalBase> a = newAnalyzer.getProposals();

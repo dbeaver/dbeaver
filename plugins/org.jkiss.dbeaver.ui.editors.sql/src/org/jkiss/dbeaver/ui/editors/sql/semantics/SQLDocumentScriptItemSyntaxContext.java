@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 
 public class SQLDocumentScriptItemSyntaxContext {
+
+    private static final Log log = Log.getLog(SQLDocumentScriptItemSyntaxContext.class);
+
     public static class TokenEntryAtOffset {
         public final int offset;
         public final SQLQuerySymbolEntry entry;
@@ -37,6 +41,7 @@ public class SQLDocumentScriptItemSyntaxContext {
     private final SQLQuerySelectionModel queryModel;
     private int length;
     private boolean hasDelta = false;
+    private final Object hasDeltaLock = new Object(); 
 
     public SQLDocumentScriptItemSyntaxContext(
         @NotNull String originalText,
@@ -87,18 +92,40 @@ public class SQLDocumentScriptItemSyntaxContext {
     }
 
     public void applyDelta(int offset, int oldLength, int newLength) {
-        if (oldLength > 0) {
-            // TODO remove the affected fragment and apply offset for the rest
-            throw new UnsupportedOperationException(); 
-        } else { // simple insertion
-            this.entries.applyOffset(offset, newLength);
+        synchronized (this.hasDeltaLock) {
+            if (oldLength > 0) {
+                // TODO remove the affected fragment and apply offset for the rest
+                throw new UnsupportedOperationException(); 
+            } else { // simple insertion
+                this.entries.applyOffset(offset, newLength);
+            }
+            this.length += newLength - oldLength;
+            this.hasDelta = true;
         }
-        this.length += newLength - oldLength;
-        this.hasDelta = true;
     }
 
     public void clear() {
-        this.entries.clear();
-        this.hasDelta = false;
+        synchronized (this.hasDeltaLock) {
+            this.entries.clear();
+        }
+    }
+    
+    void refreshCompleted() {
+        synchronized (this.hasDeltaLock) {
+            this.hasDelta = false;
+            this.hasDeltaLock.notifyAll();
+        }
+    }
+    
+    void waitForRefresh() {
+        synchronized (this.hasDeltaLock) {
+            while (this.hasDelta) {
+                try {
+                    this.hasDeltaLock.wait();
+                } catch (InterruptedException e) {
+                    log.debug(e);
+                }
+            }
+        }
     }
 }

@@ -59,9 +59,14 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
     public SQLQueryResultColumn getColumnIfTrivialExpression() {
         return null;
     }
+
+    @Override
+    public SQLQueryDataContext getGivenDataContext() {
+        return this.dataContext;
+    }
     
     @Override
-    public SQLQueryDataContext getDataContext() {
+    public SQLQueryDataContext getResultDataContext() {
         return this.dataContext;
     }
 

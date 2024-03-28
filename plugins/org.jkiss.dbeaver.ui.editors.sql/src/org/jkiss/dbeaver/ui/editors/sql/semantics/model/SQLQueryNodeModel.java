@@ -21,8 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryLexicalScope;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryLexicalScopeKind;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.ArrayList;
@@ -35,12 +33,9 @@ public abstract class SQLQueryNodeModel {
 
     private final Interval region;
     private final STMTreeNode syntaxNode;
-    private List<SQLQueryNodeModel> subnodes; 
-    private List<SQLQueryLexicalScope> scopes = null;
+    private List<SQLQueryNodeModel> subnodes = null; // TODO validate that subnodes are being registeger correctly for all nodes 
+    private List<SQLQueryLexicalScope> lexicalScopes  = null;
 
-//    protected SQLQueryNodeModel(@NotNull Interval region, SQLQueryNodeModel ... subnodes) {
-//        this(region, null, subnodes);
-//    }
     
     protected SQLQueryNodeModel(@NotNull Interval region, STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
         this.region = region;
@@ -53,19 +48,27 @@ public abstract class SQLQueryNodeModel {
             this.subnodes.sort(Comparator.comparingInt(n -> n.region.a));
         }
     }
+
+    public void registerLexicalScope(SQLQueryLexicalScope lexicalScope) {
+        List<SQLQueryLexicalScope> scopes = this.lexicalScopes;
+        if (scopes == null) {
+            this.lexicalScopes = scopes = new ArrayList<>();
+        }
+        scopes.add(lexicalScope);
+    }
     
     public SQLQueryLexicalScope findLexicalScope(int position) {
-        int index = AbstractSyntaxNode.binarySearchByKey(this.scopes, s -> s.getInterval().a, position, Comparator.comparingInt(x -> x));
-        if (index < 0) {
-            index = ~index;
+        List<SQLQueryLexicalScope> scopes = this.lexicalScopes;
+        if (scopes != null) {
+            for (SQLQueryLexicalScope s: scopes) {
+                Interval region = s.getInterval();
+                if (region.a <= position && region.b >= position) {
+                    return s;
+                }
+            }
         }
-        return this.scopes.get(index);
-    }
-
-    protected SQLQueryLexicalScope registerScope(STMTreeNode start, STMTreeNode end, boolean includesStart, boolean includesEnd, SQLQueryLexicalScopeKind kind) {
-        SQLQueryLexicalScope scope = new SQLQueryLexicalScope(start, end, includesStart, includesEnd, kind);
-        this.scopes = AbstractSyntaxNode.orderedInsert(this.scopes, s -> s.getInterval().a, scope , Comparator.comparingInt(x -> x));
-        return scope;
+        
+        return null;
     }
 
     protected void registerSubnode(SQLQueryNodeModel subnode) {
@@ -87,19 +90,19 @@ public abstract class SQLQueryNodeModel {
 
     protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg);
     
-    protected SQLQueryNodeModel findChildNodeContaining(int offset) { // TODO check it
+    protected SQLQueryNodeModel findChildNodeContaining(int position) { // TODO check it
         if (this.subnodes != null) {
             if (this.subnodes.size() == 1) {
                 SQLQueryNodeModel node = this.subnodes.get(0);
-                return node.region.a <= offset && node.region.b >= offset ? node : null;
+                return node.region.a <= position && node.region.b >= position ? node : null;
             } else {
-                int index = AbstractSyntaxNode.binarySearchByKey(this.subnodes, n -> n.region.a, offset, Comparator.comparingInt(x -> x));
+                int index = AbstractSyntaxNode.binarySearchByKey(this.subnodes, n -> n.region.a, position, Comparator.comparingInt(x -> x));
                 if (index >= 0) {
                     SQLQueryNodeModel node = this.subnodes.get(index);
                     int i = index + 1;
                     while (i < this.subnodes.size()) {
                         SQLQueryNodeModel next = this.subnodes.get(i++);
-                        if (next.region.a > offset) {
+                        if (next.region.a > position) {
                             break;
                         } else {
                             node = next;
@@ -110,9 +113,9 @@ public abstract class SQLQueryNodeModel {
                 } else {
                     for (int i = ~index - 1; i >= 0; i--) {
                         SQLQueryNodeModel node = this.subnodes.get(i);
-                        if (node.region.a <= offset && node.region.b >= offset) {
+                        if (node.region.a <= position && node.region.b >= position) {
                             return node;
-                        } else if (node.region.b < offset) {
+                        } else if (node.region.b < position) {
                             break;
                         }
                     }
@@ -122,5 +125,7 @@ public abstract class SQLQueryNodeModel {
         return null;
     }
     
-    public abstract SQLQueryDataContext getDataContext();
+    public abstract SQLQueryDataContext getGivenDataContext();
+    
+    public abstract SQLQueryDataContext getResultDataContext();
 }

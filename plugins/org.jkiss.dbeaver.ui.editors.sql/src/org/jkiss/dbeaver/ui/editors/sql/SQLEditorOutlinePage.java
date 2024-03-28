@@ -915,7 +915,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode node) {
-            String suffix = projection.getDataContext().getColumnsList().stream()
+            String suffix = projection.getResultDataContext().getColumnsList().stream()
                 .map(c -> c.symbol.getName())
                 .collect(Collectors.joining(", ", "(", ")"));
             this.makeNode(node, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());

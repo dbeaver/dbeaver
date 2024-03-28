@@ -21,11 +21,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsCteModel.SQLQueryRowsCteSubqueryModel;
 
 public class SourceResolutionResult {
     public final SQLQueryRowsSourceModel source;
     public final DBSEntity tableOrNull;
     public final SQLQuerySymbol aliasOrNull;
+    public final boolean isCteSubquery;
 
     private SourceResolutionResult(
         @NotNull SQLQueryRowsSourceModel source,
@@ -35,6 +37,7 @@ public class SourceResolutionResult {
         this.source = source;
         this.tableOrNull = tableOrNull;
         this.aliasOrNull = aliasOrNull;
+        this.isCteSubquery = source instanceof SQLQueryRowsCteSubqueryModel;
     }
 
     @NotNull

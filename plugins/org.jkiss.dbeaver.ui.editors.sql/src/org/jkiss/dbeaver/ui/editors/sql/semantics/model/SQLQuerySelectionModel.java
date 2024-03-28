@@ -53,8 +53,13 @@ public class SQLQuerySelectionModel extends SQLQueryNodeModel {
     }
     
     @Override
-    public SQLQueryDataContext getDataContext() {
-        return this.resultSource == null ? null : this.resultSource.getDataContext();
+    public SQLQueryDataContext getGivenDataContext() {
+        return this.resultSource == null ? null : this.resultSource.getGivenDataContext();
+    }
+    
+    @Override
+    public SQLQueryDataContext getResultDataContext() {
+        return this.resultSource == null ? null : this.resultSource.getResultDataContext();
     }
 
     public void propagateContex(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {

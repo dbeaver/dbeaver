@@ -1,40 +1,42 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import java.util.Comparator;
-import java.util.List;
-
 import org.antlr.v4.runtime.misc.Interval;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
-public class SQLQueryLexicalScope {    
-    private final STMTreeNode start, end;
-    private final boolean includesStart, includesEnd;
-    private final Interval region;
-    private final SQLQueryLexicalScopeKind kind;
-    
-    private SQLQueryDataContext context = null;
-    private List<SQLQueryLexicalScopeItem> items = null;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
 
-    public SQLQueryLexicalScope(STMTreeNode start, STMTreeNode end, boolean includesStart, boolean includesEnd, SQLQueryLexicalScopeKind kind) {
-        this.start = start;
-        this.end = end;
-        this.includesStart = includesStart;
-        this.includesEnd = includesEnd;
-        
-        Interval a = start.getRealInterval(), b = end.getRealInterval();
-        this.region = Interval.of(includesStart ? a.a : (a.b + 1), includesEnd ? b.b : (b.a - 1));
-        this.kind = kind;
-    }
+public class SQLQueryLexicalScope {
+    private SQLQueryDataContext context = null;
+    private List<SQLQueryLexicalScopeItem> items = new ArrayList<>();
+    private List<STMTreeNode> syntaxNodes = new ArrayList<>();
     
+    private Interval interval = null;
+
     public Interval getInterval() {
-        return this.region;
-    }
+        if (this.interval == null) {
     
+            int a = Stream.concat(
+                items.stream().map(x -> x.getSyntaxNode().getRealInterval().a),
+                syntaxNodes.stream().map(x -> x.getRealInterval().a)
+            ).mapToInt(x -> x).min().orElse(0);
+
+            int b = Stream.concat(
+                items.stream().map(x -> x.getSyntaxNode().getRealInterval().a),
+                syntaxNodes.stream().map(x -> x.getRealInterval().a)
+            ).mapToInt(x -> x).max().orElse(Integer.MAX_VALUE);
+
+            this.interval = Interval.of(a, b);
+        }
+        
+        return this.interval;
+    }
+
     public SQLQueryDataContext getContext() {
-        return this.context;
+        return this.context; // if it is not set, then use context of the model node, from which the scope was obtained
     }
     
     public void setContext(SQLQueryDataContext context) {
@@ -42,15 +44,17 @@ public class SQLQueryLexicalScope {
     }
     
     public void registerItem(SQLQueryLexicalScopeItem item) {
-        this.items = AbstractSyntaxNode.orderedInsert(this.items, x -> x.getSyntaxNode().getRealInterval().a, item, Comparator.comparingInt(x -> x));
+        this.items.add(item);
     }
     
-    public SQLQueryCompletionScope prepareCompletionScope() {
-        return switch (this.kind) {
-            case KEYWORDS -> SQLQueryCompletionScope.forKeywords(this);
-            case ROWSETS -> SQLQueryCompletionScope.forTableReferences(this);
-            case VALUES -> SQLQueryCompletionScope.forValueExpressions(this);
-            default -> throw new UnsupportedOperationException("Unexpected lexical scope kind " + this.kind);
-        };
+    public void registerSyntaxNode(STMTreeNode syntaxNode) {
+        this.syntaxNodes.add(syntaxNode);
+    }
+    
+    public SQLQueryLexicalScopeItem findItem(int position) {
+        return this.items.stream()
+           .filter(t -> t.getSyntaxNode().getRealInterval().properlyContains(Interval.of(position, position)))
+           .min(Comparator.comparingInt(t -> t.getSyntaxNode().getRealInterval().a))
+           .orElse(null);
     }
 }

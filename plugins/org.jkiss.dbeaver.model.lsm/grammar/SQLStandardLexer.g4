@@ -150,7 +150,7 @@ lexer grammar SQLStandardLexer;
     int cnt;
 }
 
-// DelimitedIdentifier: { tryConsumeQuottedIdentifier(_input) }? ({isIdentifierEndReached(_input)}? .)+;
+DelimitedIdentifier: { tryConsumeQuottedIdentifier(_input) }? ({isIdentifierEndReached(_input)}? .)+;
 
 BatchVariableName: At Identifier;
 ClientVariableName: Dollar LeftBrace Identifier RightBrace;

@@ -88,7 +88,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
             if (rr != null) {
                 this.tableName.setDefinition(rr);
-                SQLQueryResultColumn resultColumn = rr.source.getDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
+                SQLQueryResultColumn resultColumn = rr.source.getResultDataContext().resolveColumn(statistics.getMonitor(), this.columnName.getName());
                 this.propagateColumnDefinition(resultColumn, statistics);
                 type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
             } else {

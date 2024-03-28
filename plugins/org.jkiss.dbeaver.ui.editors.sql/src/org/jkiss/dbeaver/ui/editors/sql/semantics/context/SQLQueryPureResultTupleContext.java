@@ -54,8 +54,8 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
     }
     
     @Override
-    public KnownSourcesInfo getKnwonSources() {
-        return this.parent.getKnwonSources();
+    public KnownSourcesInfo getKnownSources() {
+        return this.parent.getKnownSources();
     }
 }
 

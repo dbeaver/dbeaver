@@ -49,7 +49,12 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
     }
     
     @Override
-    public SQLQueryDataContext getDataContext() {
+    public SQLQueryDataContext getGivenDataContext() {
+        return this.dataContext;
+    }
+    
+    @Override
+    public SQLQueryDataContext getResultDataContext() {
         return this.dataContext;
     }
     
@@ -99,7 +104,12 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         }
         
         @Override
-        public SQLQueryDataContext getDataContext() {
+        public SQLQueryDataContext getGivenDataContext() {
+            return SQLQuerySelectionResultModel.this.dataContext;
+        }
+        
+        @Override
+        public SQLQueryDataContext getResultDataContext() {
             return SQLQuerySelectionResultModel.this.dataContext;
         }
 
@@ -123,6 +133,8 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
             super(syntaxNode);
             this.valueExpression = valueExpression;
             this.alias = alias;
+            
+            this.registerSubnode(valueExpression);
         }
 
         @NotNull
@@ -182,6 +194,8 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         public TupleSpec(STMTreeNode syntaxNode, @NotNull SQLQueryValueTupleReferenceExpression tupleReference) {
             super(syntaxNode);
             this.tupleReference = tupleReference;
+            
+            this.registerSubnode(tupleReference);
         }
 
         @NotNull
@@ -205,7 +219,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
             
             SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
             if (tupleSource != null) {
-                return tupleSource.getDataContext().getColumnsList().stream();
+                return tupleSource.getResultDataContext().getColumnsList().stream();
             } else {
                 return Stream.empty();
             }

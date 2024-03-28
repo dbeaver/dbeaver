@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 
 public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
-    private SQLQueryDataContext dataContext = null;
+    private SQLQueryDataContext givenDataContext = null, resultDataContext = null;
 
     public SQLQueryRowsSourceModel(@NotNull STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
         super(syntaxNode.getRealInterval(), syntaxNode, subnodes);
@@ -34,13 +34,18 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
     public SQLQueryRowsSourceModel(@NotNull Interval region, STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
         super(region, syntaxNode, subnodes);
     }
+    
+    @Override
+    public SQLQueryDataContext getGivenDataContext() {
+        return this.givenDataContext;
+    }
 
     @NotNull
-    public SQLQueryDataContext getDataContext() {
-        if (this.dataContext == null) {
+    public SQLQueryDataContext getResultDataContext() {
+        if (this.resultDataContext == null) {
             throw new UnsupportedOperationException("Data context was not resolved for the rows source yet");
         } else {
-            return this.dataContext;
+            return this.resultDataContext;
         }
     }
 
@@ -49,7 +54,8 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return this.dataContext = this.propagateContextImpl(context, statistics);
+        this.givenDataContext = context;
+        return this.resultDataContext = this.propagateContextImpl(context, statistics);
     }
 
     @NotNull
