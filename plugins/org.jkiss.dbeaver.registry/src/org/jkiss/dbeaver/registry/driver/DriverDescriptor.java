@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
+import org.jkiss.dbeaver.model.exec.DBCDriverFilesMissingException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
@@ -1274,10 +1275,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 try {
                     // Load driver classes into core module using plugin class loader
                     driverClass = Class.forName(driverClassName, true, classLoader);
-                } catch (Throwable ex) {
-                    throw new DBException("Error creating driver '" + getFullName() + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings.\n\nReason: can't load driver class '" + driverClassName + "'", ex);
+                } catch (Throwable e) {
+                    throw new DBCDriverFilesMissingException(this, e);
                 }
-
                 // Create driver instance
                 /*if (!this.isInternalDriver())*/
                 {
