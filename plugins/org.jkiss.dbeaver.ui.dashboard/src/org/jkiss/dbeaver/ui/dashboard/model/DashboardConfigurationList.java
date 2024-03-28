@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,10 +35,7 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,12 +57,12 @@ public class DashboardConfigurationList {
     @NotNull
     private final DBPProject project;
     @Nullable
-    private Path dashboardFile;
+    private IFile dashboardFile;
     @Nullable
     private final DBPDataSourceContainer dataSourceContainer;
-    private Map<String, DashboardConfiguration> dashboards = new LinkedHashMap<>();
+    private final Map<String, DashboardConfiguration> dashboards = new LinkedHashMap<>();
 
-    public DashboardConfigurationList(@NotNull DBPProject project, @Nullable Path dashboardFile) {
+    public DashboardConfigurationList(@NotNull DBPProject project, @Nullable IFile dashboardFile) {
         this.project = project;
         this.dashboardFile = dashboardFile;
         this.dataSourceContainer = null;
@@ -81,7 +81,7 @@ public class DashboardConfigurationList {
     }
 
     @Nullable
-    public Path getDashboardFile() {
+    public IFile getDashboardFile() {
         return dashboardFile;
     }
 
@@ -111,11 +111,11 @@ public class DashboardConfigurationList {
         loadConfiguration(dbDocument);
     }
 
-    private void loadFromFile(Path file) {
+    private void loadFromFile(IFile file) {
         Document dbDocument = null;
 
-        if (Files.exists(file)) {
-            try (InputStream is = Files.newInputStream(file)) {
+        if (file.exists()) {
+            try (InputStream is = file.getContents()) {
                 dbDocument = XMLUtils.parseDocument(is);
             } catch (Exception e) {
                 log.error("Error parsing dashboards", e);
@@ -158,7 +158,11 @@ public class DashboardConfigurationList {
 
     public void saveConfiguration() throws IOException {
         if (dashboardFile != null) {
-            Files.writeString(dashboardFile, saveToString(), StandardCharsets.UTF_8);
+            try {
+                dashboardFile.setContents(new ByteArrayInputStream(saveToString().getBytes(StandardCharsets.UTF_8)), true, false, new NullProgressMonitor());
+            } catch (CoreException e) {
+                throw new IOException(e.getMessage(), e);
+            }
         } else if (dataSourceContainer != null) {
             saveToDataSource();
         } else {

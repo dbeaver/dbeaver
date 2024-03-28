@@ -15,6 +15,15 @@
                 name="%view.dashboard.title"/>
     </extension>
 
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="%editor.dashboard.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
+                class="org.jkiss.dbeaver.ui.dashboard.editor.DashboardEditorStandalone"
+                id="org.jkiss.dbeaver.ui.dashboard.editor.DashboardEditorStandalone">
+        </editor>
+    </extension>
+
     <!-- Hide dashboard view from Show View menu -->
     <extension point="org.eclipse.ui.activities">
         <activity id="org.jkiss.dbeaver.dashboard.view" name="Dashboard view hide"/>

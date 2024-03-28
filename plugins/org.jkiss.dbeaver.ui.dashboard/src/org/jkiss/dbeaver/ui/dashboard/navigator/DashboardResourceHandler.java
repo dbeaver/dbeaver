@@ -158,7 +158,7 @@ public class DashboardResourceHandler extends AbstractResourceHandler {
             DBRRunnableWithProgress runnable = monitor1 -> {
                 try {
                     DashboardConfigurationList configList;
-                    configList = new DashboardConfigurationList(project, file.getLocation().toPath());
+                    configList = new DashboardConfigurationList(project, file);
                     configList.saveConfiguration();
                     file.refreshLocal(1, RuntimeUtils.getNestedMonitor(monitor1));
                 } catch (Exception e) {

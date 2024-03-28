@@ -19,15 +19,21 @@ package org.jkiss.dbeaver.ui.dashboard.editor;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.dashboard.DashboardIcons;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 
@@ -40,6 +46,7 @@ public class DashboardEditorStandalone extends SinglePageDatabaseEditor<IEditorI
 
     private DashboardListViewer dashboardListViewer;
     private DashboardConfiguration dashboardConfig;
+    private DashboardConfigurationList configurationList;
 
     public DashboardEditorStandalone() {
     }
@@ -52,17 +59,37 @@ public class DashboardEditorStandalone extends SinglePageDatabaseEditor<IEditorI
 
     @Override
     public void createEditorControl(Composite parent) {
-        dashboardListViewer = new DashboardListViewer(getSite(), this, null, dashboardConfig);
+        dashboardListViewer = new DashboardListViewer(getSite(), this, configurationList, dashboardConfig);
+        dashboardListViewer.createControl(parent);
     }
 
     @Override
     public void setFocus() {
-        dashboardListViewer.getControl().setFocus();
+        Control control = dashboardListViewer.getControl();
+        if (control != null) {
+            control.setFocus();
+        }
     }
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+        super.init(site, input);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+
+        IFile file = EditorUtils.getFileFromInput(input);
+        if (file == null) {
+            throw new PartInitException("Cannot get file from editor input " + input);
+        }
+
+        DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        if (project == null) {
+            throw new PartInitException("Cannot get project from file " + file);
+        }
+        configurationList = new DashboardConfigurationList(project, file);
+        configurationList.checkDefaultDashboardExistence();
+        dashboardConfig = configurationList.getDashboards().get(0);
+
+        setTitleImage(DBeaverIcons.getImage(DashboardIcons.DASHBOARD));
     }
 
     @Override
