@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -47,31 +48,44 @@ import java.util.Date;
 public class CustomTimeEditor {
     private final int style;
     private final boolean isPanel;
+    private final boolean isInline;
+    private final Calendar calendar = Calendar.getInstance();
+
     private DateTime dateEditor;
     private DateTime timeEditor;
     private Composite basePart;
-
     private Label timeLabel;
     private Label dateLabel;
     private int millis = -1;
     private String dateAsText = "";
-    private final boolean isInline;
-
     private InputMode inputMode = InputMode.NONE;
-    private final Calendar calendar = Calendar.getInstance();
     private Text textEditor;
     private Listener modifyListener;
     private SelectionAdapter selectionListener;
+    private TraverseListener textTraverseListener;
     private boolean editable;
     private CLabel warningLabel;
     private Composite mainComposite;
     private JDBCType jdbcType;
+    private TraverseListener traverseForwardListener;
+    private TraverseListener traverseBackwardsListener;
 
-    private enum InputMode {
-        NONE,
-        DATE,
-        TIME,
-        DATETIME
+
+    public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
+        this.isInline = isInline;
+        this.isPanel = isPanel;
+        this.style = style;
+        initEditor(parent, style);
+    }
+
+    private static void setWithoutListener(@NotNull Control control, Listener listener, @NotNull Runnable blockToRun) {
+        if (listener != null) {
+            control.removeListener(SWT.Modify, listener);
+            blockToRun.run();
+            control.addListener(SWT.Modify, listener);
+        } else {
+            blockToRun.run();
+        }
     }
 
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
@@ -87,61 +101,11 @@ public class CustomTimeEditor {
         disposeNotNeededEditors();
     }
 
-    private void disposeNotNeededEditors() {
-        if (jdbcType != null) {
-            switch (jdbcType) {
-                case DATE:
-                    inputMode = InputMode.DATE;
-                    disposeEditor(timeEditor, timeLabel);
-                    break;
-                case TIME:
-                    inputMode = InputMode.TIME;
-                    disposeEditor(dateEditor, dateLabel);
-                    break;
-                default:
-                    inputMode = InputMode.DATETIME;
-                    break;
-            }
-        }
-    }
-
-    public CustomTimeEditor(@NotNull Composite parent, int style, boolean isPanel, boolean isInline) {
-        this.isInline = isInline;
-        this.isPanel = isPanel;
-        this.style = style;
-        initEditor(parent, style);
-    }
-
-    @NotNull
-    private Composite initEditor(@NotNull Composite parent, int style) {
-
-        if (!isInline) {
-            GridLayout layout = new GridLayout(1, false);
-            mainComposite = new Composite(parent, style);
-            mainComposite.setLayout(layout);
-            mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
-        basePart = new Composite(isInline ? parent : mainComposite, style);
-        basePart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout basePartLayout = new GridLayout(2, false);
-        if (isInline) {
-            basePartLayout.marginHeight = 0;
-            basePartLayout.marginWidth = 0;
-        }
-        basePart.setLayout(basePartLayout);
-        setToDateComposite();
-
-
-        //fixes calendar issues on inline mode
-        basePart.pack();
-        return isInline ? basePart : mainComposite;
-    }
-
     /**
      * Disposes all DateTime editors and their labels and creates text editor
      */
     public void setToTextComposite() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isActive(textEditor)) {
             return;
         }
         disposeEditor(timeEditor, timeLabel);
@@ -151,6 +115,7 @@ public class CustomTimeEditor {
         textEditor = new Text(basePart, isPanel && !isInline ? style : SWT.BORDER);
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
+
         if (warningLabel != null) {
             warningLabel.dispose();
             warningLabel = null;
@@ -162,15 +127,6 @@ public class CustomTimeEditor {
             mainComposite.layout();
         }
         basePart.layout();
-    }
-
-    private void disposeEditor(Control editor, Label editorLabel) {
-        if (editor != null) {
-            editor.dispose();
-            if (editorLabel != null) {
-                editorLabel.dispose();
-            }
-        }
     }
 
     /**
@@ -208,15 +164,21 @@ public class CustomTimeEditor {
 
     public void updateListeners() {
         if (selectionListener != null) {
-            if (dateEditor != null && !dateEditor.isDisposed()) {
+            if (isActive(dateEditor)) {
                 dateEditor.addSelectionListener(selectionListener);
             }
-            if (timeEditor != null && !timeEditor.isDisposed()) {
+            if (isActive(timeEditor)) {
                 timeEditor.addSelectionListener(selectionListener);
             }
         }
-        if (modifyListener != null && textEditor != null && !textEditor.isDisposed()) {
-            textEditor.addListener(SWT.Modify, modifyListener);
+        applyTraverseListeners();
+        if (isActive(textEditor)) {
+            if (modifyListener != null) {
+                textEditor.addListener(SWT.Modify, modifyListener);
+            }
+            if (textTraverseListener != null) {
+                textEditor.addTraverseListener(textTraverseListener);
+            }
         }
     }
 
@@ -230,45 +192,55 @@ public class CustomTimeEditor {
         updateListeners();
     }
 
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
     public void addModifyListener(@NotNull Listener listener) {
         modifyListener = listener;
         updateListeners();
     }
 
-    private static void setWithoutListener(@NotNull Control control, Listener listener, @NotNull Runnable blockToRun) {
-        if (listener != null) {
-            control.removeListener(SWT.Modify, listener);
-            blockToRun.run();
-            control.addListener(SWT.Modify, listener);
-        } else {
-            blockToRun.run();
-        }
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
+    public void addTextModeTraverseListener(@NotNull TraverseListener listener) {
+        textTraverseListener = listener;
+        updateListeners();
+    }
+
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
+    public void addTraverseForwardListener(@NotNull TraverseListener listener) {
+        traverseForwardListener = listener;
+        updateListeners();
+    }
+
+    /**
+     * Creates listeners for date editors.
+     *
+     * @param listener listener to add to all existing editors
+     */
+    public void addTraverseBackwardsListener(@NotNull TraverseListener listener) {
+        traverseBackwardsListener = listener;
+        updateListeners();
     }
 
 
-    private void updateWarningLabel(@Nullable Object value) {
-        if (isInline) {
-            return;
-        }
-        if (value == null && (textEditor == null || textEditor.isDisposed())) {
-            if (warningLabel != null && !warningLabel.isDisposed()) {
-                return;
-            }
-            warningLabel = new CLabel(mainComposite, style);
-            warningLabel.setText("Original value was null, using current time");
-            warningLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-            mainComposite.layout();
-        } else {
-            if (warningLabel != null) {
-                warningLabel.dispose();
-                mainComposite.layout();
-            }
-        }
-    }
-
+    /**
+     * Set value for the text field.
+     *
+     * @param value text to add
+     */
     public void setTextValue(@Nullable String value) {
         dateAsText = value;
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isActive(textEditor)) {
             setWithoutListener(textEditor, modifyListener, () -> textEditor.setText(dateAsText));
         }
     }
@@ -302,26 +274,13 @@ public class CustomTimeEditor {
         setDateFromCalendar();
     }
 
-    private void setDateFromCalendar() {
-        if (dateEditor != null && !dateEditor.isDisposed()) {
-            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH));
-        }
-        if (timeEditor != null && !timeEditor.isDisposed()) {
-            timeEditor.addTraverseListener(e -> timeEditor.setFocus());
-            timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
-            try {
-                millis = calendar.get(Calendar.MILLISECOND);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                //Calendar doesn't have any way to
-                millis = -1;
-            }
-        }
+    public boolean isTextMode() {
+        return isActive(textEditor);
     }
 
     @Nullable
     public String getValueAsString() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isActive(textEditor)) {
             return textEditor.getText();
         }
         return null;
@@ -357,13 +316,13 @@ public class CustomTimeEditor {
     }
 
     public void allowEdit() {
-        if (this.dateEditor != null && !this.dateEditor.isDisposed()) {
+        if (isActive(dateEditor)) {
             this.dateEditor.setEnabled(editable);
         }
-        if (this.timeEditor != null && !this.timeEditor.isDisposed()) {
+        if (isActive(timeEditor)) {
             this.timeEditor.setEnabled(editable);
         }
-        if (this.textEditor != null && !this.textEditor.isDisposed()){
+        if (isActive(textEditor)) {
             this.textEditor.setEditable(editable);
         }
     }
@@ -373,7 +332,7 @@ public class CustomTimeEditor {
     }
 
     public void selectAllContent() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isActive(textEditor)) {
             textEditor.selectAll();
         }
     }
@@ -398,5 +357,134 @@ public class CustomTimeEditor {
         } else {
             throw new DBCException(value.toString());
         }
+    }
+
+    private void disposeNotNeededEditors() {
+        if (jdbcType != null) {
+            switch (jdbcType) {
+                case DATE:
+                    inputMode = InputMode.DATE;
+                    disposeEditor(timeEditor, timeLabel);
+                    break;
+                case TIME:
+                    inputMode = InputMode.TIME;
+                    disposeEditor(dateEditor, dateLabel);
+                    break;
+                default:
+                    inputMode = InputMode.DATETIME;
+                    break;
+            }
+        }
+    }
+
+    @NotNull
+    private Composite initEditor(@NotNull Composite parent, int style) {
+
+        if (!isInline) {
+            GridLayout layout = new GridLayout(1, false);
+            mainComposite = new Composite(parent, style);
+            mainComposite.setLayout(layout);
+            mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+        basePart = new Composite(isInline ? parent : mainComposite, style);
+        basePart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout basePartLayout = new GridLayout(2, false);
+        if (isInline) {
+            basePartLayout.marginHeight = 0;
+            basePartLayout.marginWidth = 0;
+        }
+        basePart.setLayout(basePartLayout);
+        setToDateComposite();
+        //fixes calendar issues on inline mode
+        basePart.pack();
+        return isInline ? basePart : mainComposite;
+    }
+
+    private void disposeEditor(Control editor, Label editorLabel) {
+        if (editor != null) {
+            editor.dispose();
+            if (editorLabel != null) {
+                editorLabel.dispose();
+            }
+        }
+    }
+
+    private void applyTraverseListeners() {
+        if (traverseBackwardsListener != null && traverseForwardListener != null) {
+            if (isActive(dateEditor)) {
+                dateEditor.addTraverseListener(traverseBackwardsListener);
+                if (isActive(timeEditor)) {
+                    dateEditor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT && !timeEditor.isDisposed()) {
+                            timeEditor.setFocus();
+                            e.doit = false;
+                        }
+                    });
+                    timeEditor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_PREVIOUS && !timeEditor.isDisposed()) {
+                            dateEditor.setFocus();
+                            e.doit = false;
+                        }
+                    });
+                    timeEditor.addTraverseListener(traverseForwardListener);
+                } else {
+                    dateEditor.addTraverseListener(traverseForwardListener);
+                }
+            } else if (isActive(timeEditor)) {
+                timeEditor.addTraverseListener(traverseBackwardsListener);
+                timeEditor.addTraverseListener(traverseForwardListener);
+            }
+        }
+    }
+
+    private void updateWarningLabel(@Nullable Object value) {
+        if (isInline) {
+            return;
+        }
+        if (value == null && (textEditor == null || textEditor.isDisposed())) {
+            if (warningLabel != null && !warningLabel.isDisposed()) {
+                return;
+            }
+            warningLabel = new CLabel(mainComposite, style);
+            warningLabel.setText("Original value was null, using current time");
+            warningLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+            mainComposite.layout();
+        } else {
+            if (warningLabel != null) {
+                warningLabel.dispose();
+                mainComposite.layout();
+            }
+        }
+    }
+
+    private void setDateFromCalendar() {
+        if (dateEditor != null && !dateEditor.isDisposed()) {
+            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH));
+        }
+        if (isActive(timeEditor)) {
+            timeEditor.setTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+            try {
+                millis = calendar.get(Calendar.MILLISECOND);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                //Calendar doesn't have any way to
+                millis = -1;
+            }
+        }
+        if (isActive(dateEditor)) {
+            dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+        }
+    }
+
+    private boolean isActive(Control control) {
+        return control != null && !control.isDisposed();
+    }
+
+    private enum InputMode {
+        NONE,
+        DATE,
+        TIME,
+        DATETIME
     }
 }
