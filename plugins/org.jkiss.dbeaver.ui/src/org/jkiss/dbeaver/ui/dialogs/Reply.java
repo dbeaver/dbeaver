@@ -24,6 +24,7 @@ public final class Reply {
     public static final Reply NO = new Reply(IDialogConstants.NO_LABEL);
     public static final Reply OK = new Reply(IDialogConstants.OK_LABEL);
     public static final Reply CANCEL = new Reply(IDialogConstants.CANCEL_LABEL);
+    public static final Reply CLOSE = new Reply(IDialogConstants.CLOSE_LABEL);
 
     @NotNull
     private final String displayString;

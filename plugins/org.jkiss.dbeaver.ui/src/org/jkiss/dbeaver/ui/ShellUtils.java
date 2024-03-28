@@ -71,9 +71,21 @@ public final class ShellUtils {
         }
     }
 
+    /**
+     * Opens the default file system explorer and highlights the file denoted by the supplied path.
+     *
+     * @param path of a file to highlight
+     */
     public static void showInSystemExplorer(@NotNull String path) {
-        final File file = new File(path);
+        showInSystemExplorer(new File(path));
+    }
 
+    /**
+     * Opens the default file system explorer and highlights the supplied file.
+     *
+     * @param file to highlight
+     */
+    public static void showInSystemExplorer(@NotNull File file) {
         try {
             final String cmd = formShowInSystemExplorerCommand(file);
             final Process process;
