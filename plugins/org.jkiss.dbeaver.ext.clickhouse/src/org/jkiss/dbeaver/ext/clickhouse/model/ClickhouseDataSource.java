@@ -81,7 +81,7 @@ public class ClickhouseDataSource extends GenericDataSource {
         return engineCache.getCachedObject(engineName);
     }
 
-    @Nullable
+    @NotNull
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);

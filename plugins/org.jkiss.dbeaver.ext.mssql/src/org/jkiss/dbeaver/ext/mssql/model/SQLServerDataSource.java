@@ -194,6 +194,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return serverLoginCache;
     }
 
+    @NotNull
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
