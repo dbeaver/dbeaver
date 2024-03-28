@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 
 public class SQLDocumentScriptItemSyntaxContext {
 
@@ -38,14 +38,14 @@ public class SQLDocumentScriptItemSyntaxContext {
 
     private final OffsetKeyedTreeMap<SQLQuerySymbolEntry> entries = new OffsetKeyedTreeMap<>();
     private final String originalText;
-    private final SQLQuerySelectionModel queryModel;
+    private final SQLQueryModel queryModel;
     private int length;
     private boolean hasDelta = false;
     private final Object hasDeltaLock = new Object(); 
 
     public SQLDocumentScriptItemSyntaxContext(
         @NotNull String originalText,
-        @NotNull SQLQuerySelectionModel queryModel,
+        @NotNull SQLQueryModel queryModel,
         int length
     ) {
         this.originalText = originalText;
@@ -59,7 +59,7 @@ public class SQLDocumentScriptItemSyntaxContext {
     }
 
     @NotNull
-    public SQLQuerySelectionModel getQueryModel() {
+    public SQLQueryModel getQueryModel() {
         return this.queryModel;
     }
 

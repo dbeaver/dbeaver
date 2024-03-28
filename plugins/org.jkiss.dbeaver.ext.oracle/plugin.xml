@@ -122,7 +122,8 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView" label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">
+                        <folder id="materializedView" type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"
+                                label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">
                             <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">

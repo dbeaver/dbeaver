@@ -97,10 +97,12 @@ public class DBWHandlerConfiguration {
         }
     }
 
+    @Nullable
     public DBPDriver getDriver() {
         return dataSource == null ? null : dataSource.getDriver();
     }
 
+    @Nullable
     public DBPDataSourceContainer getDataSource() {
         return dataSource;
     }

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.completion;
 
-
-import net.bytebuddy.dynamic.scaffold.MethodGraph;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -41,7 +39,6 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeI
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
-
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -179,17 +176,21 @@ public abstract class SQLQueryCompletionContext {
                     }
                 }
                 
-                DBSObject prefixContext = prefix.size() == 0 ? dbcExecutionContext.getDataSource() : SQLSearchUtils.findObjectByFQN(
-                    monitor,
-                    (DBSObjectContainer) dbcExecutionContext.getDataSource(),
-                    dbcExecutionContext,
-                    prefix,
-                    false,
-                    new SQLIdentifierDetector(dbcExecutionContext.getDataSource().getSQLDialect())
-                );
-                return prefixContext == null
-                    ? Collections.emptyList()
-                    : this.prepareObjectComponentCompletions(monitor, prefixContext, tail, componentType);
+                if (dbcExecutionContext == null || dbcExecutionContext.getDataSource() == null) {
+                    return Collections.emptyList();
+                } else {
+                    DBSObject prefixContext = prefix.size() == 0 ? dbcExecutionContext.getDataSource() : SQLSearchUtils.findObjectByFQN(
+                        monitor,
+                        (DBSObjectContainer) dbcExecutionContext.getDataSource(),
+                        dbcExecutionContext,
+                        prefix,
+                        false,
+                        new SQLIdentifierDetector(dbcExecutionContext.getDataSource().getSQLDialect())
+                    );
+                    return prefixContext == null
+                        ? Collections.emptyList()
+                        : this.prepareObjectComponentCompletions(monitor, prefixContext, tail, componentType);
+                }
             }
 
             @NotNull
@@ -349,7 +350,7 @@ public abstract class SQLQueryCompletionContext {
                     }
                 }
 
-                if (dbcExecutionContext.getDataSource().getDefaultInstance() instanceof DBSObjectContainer container) {
+                if (dbcExecutionContext != null && dbcExecutionContext.getDataSource() != null && dbcExecutionContext.getDataSource().getDefaultInstance() instanceof DBSObjectContainer container) {
                     try {
                         collectTables(monitor, container, alreadyReferencedTables, tableRefs);
                     } catch (DBException e) {

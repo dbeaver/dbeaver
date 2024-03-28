@@ -30,7 +30,7 @@ import java.sql.SQLException;
 /**
  * PostgreCollation
  */
-public class PostgreCollation implements PostgreObject {
+public class PostgreCollation extends PostgreInformation {
 
     private PostgreDatabase database;
     private PostgreSchema schema;
@@ -44,6 +44,7 @@ public class PostgreCollation implements PostgreObject {
 
     public PostgreCollation(DBRProgressMonitor monitor, PostgreDatabase database, ResultSet dbResult)
         throws SQLException, DBException {
+        super(database);
         this.database = database;
         this.loadInfo(monitor, dbResult);
     }

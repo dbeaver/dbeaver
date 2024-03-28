@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeContentTypeProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -66,6 +67,12 @@ class ResultSetContextImpl implements IResultSetContext {
             return dataSource.getInfo().supportsReferentialIntegrity();
         }
         return false;
+    }
+
+    @Override
+    public boolean supportsTrace() {
+        DBCTrace trace = viewer.getModel().getTrace();
+        return (trace != null);
     }
 
     @Override

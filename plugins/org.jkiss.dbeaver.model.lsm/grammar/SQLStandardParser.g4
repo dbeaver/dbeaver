@@ -44,7 +44,7 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
+sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -54,9 +54,9 @@ sign: PlusSign|MinusSign;
 literal: (signedNumericLiteral|generalLiteral);
 unsignedNumericLiteral: (UnsignedInteger|DecimalLiteral|ApproximateNumericLiteral);
 signedNumericLiteral: sign? unsignedNumericLiteral;
-characterStringLiteral: (Introducer characterSetSpecification)? StringLiteralContent;
-generalLiteral: (characterStringLiteral|NationalCharacterStringLiteral|BitStringLiteral|HexStringLiteral|datetimeLiteral|intervalLiteral);
-datetimeLiteral: (dateLiteral|timeLiteral|timestampLiteral);
+characterStringLiteral: ((Introducer characterSetSpecification)? StringLiteralContent)|NationalCharacterStringLiteral|BitStringLiteral|HexStringLiteral;
+generalLiteral: characterStringLiteral|datetimeLiteral|intervalLiteral;
+datetimeLiteral: dateLiteral|timeLiteral|timestampLiteral;
 dateLiteral: DATE StringLiteralContent;
 timeLiteral: TIME StringLiteralContent;
 timestampLiteral: TIMESTAMP StringLiteralContent;
@@ -116,7 +116,7 @@ searchCondition: (booleanTerm (OR booleanTerm)*)? anyUnexpected??; // (.*?) - fo
 booleanTerm: booleanFactor (AND booleanFactor)*;
 booleanFactor: (NOT)? booleanTest;
 booleanTest: booleanPrimary (IS (NOT)? truthValue)?;
-booleanPrimary: (predicate|LeftParen searchCondition RightParen);
+booleanPrimary: (predicate|LeftParen searchCondition RightParen|truthValue);
 predicate: (existsPredicate|likePredicate|rowValuePredicate);
 
 rowValuePredicate: rowValueConstructor (comparisonPredicate|betweenPredicate|inPredicate|nullPredicate|quantifiedComparisonPredicate|matchPredicate|overlapsPredicate);
@@ -176,7 +176,7 @@ intersectTerm: (INTERSECT (ALL)? (correspondingSpec)? queryPrimary);
 nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
-setQuantifier: (DISTINCT|ALL);
+setQuantifier: DISTINCT | ALL | UNIQUE;
 selectList: selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
 selectSublist: (Asterisk|derivedColumn)? anyUnexpected??; // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
@@ -336,13 +336,11 @@ dropViewStatement: DROP VIEW tableName dropBehaviour;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 
 // data statements
-sqlDataStatement: (selectStatementSingleRow|sqlDataChangeStatement);
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: parameterSpecification (Comma parameterSpecification)*;
-sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
-deleteStatement: DELETE FROM tableName whereClause?;
-insertStatement: INSERT INTO tableName? insertColumnsAndSource;
-insertColumnsAndSource: ((LeftParen (insertColumnList?|Asterisk) RightParen?)? queryExpression|DEFAULT VALUES)?;
+deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
+insertStatement: INSERT INTO tableName? insertColumnsAndSource?;
+insertColumnsAndSource: (LeftParen (insertColumnList? | Asterisk) RightParen?)? (queryExpression | DEFAULT VALUES);
 insertColumnList: columnNameList;
 
 // UPDATE

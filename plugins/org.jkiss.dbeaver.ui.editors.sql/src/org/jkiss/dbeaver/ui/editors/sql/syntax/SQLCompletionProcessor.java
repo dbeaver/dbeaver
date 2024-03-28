@@ -177,7 +177,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                             monitor.beginTask("Seeking for SQL completion proposals", 1);
                             try {
                                 monitor.subTask("Find proposals");
-                                DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
+                                if (editor.getDataSource() != null) {
+                                    DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
+                                } else {
+                                    newAnalyzer.run(monitor);
+                                }
                             } finally {
                                 monitor.done();
                             }

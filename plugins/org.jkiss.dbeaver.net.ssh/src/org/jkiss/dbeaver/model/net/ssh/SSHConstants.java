@@ -37,15 +37,12 @@ public class SSHConstants {
     public static final String PROP_REMOTE_HOST = "remoteHost";
     public static final String PROP_REMOTE_PORT = "remotePort";
     public static final String PROP_BYPASS_HOST_VERIFICATION = "bypassHostVerification";
+    public static final String PROP_SHARE_TUNNELS = "shareTunnels";
     //private static final int CONNECT_TIMEOUT = 10000;
 
     public enum AuthType {
         PASSWORD,
         PUBLIC_KEY,
-        AGENT;
-
-        public boolean usesPassword() {
-            return this == PASSWORD || this == PUBLIC_KEY;
-        }
+        AGENT
     }
 }

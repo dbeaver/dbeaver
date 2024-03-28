@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -25,7 +26,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -99,15 +99,31 @@ public final class MessageBoxBuilder {
         return this;
     }
 
+    /**
+     * Set custom labels
+     */
+    @NotNull
+    public MessageBoxBuilder setLabels(@NotNull String[] buttons) {
+        dialog.setLabels(Arrays.asList(buttons));
+        return this;
+    }
+
+    /**
+     * Set default focus value
+     */
+    @NotNull
+    public MessageBoxBuilder setDefaultFocus(int index) {
+        dialog.setDefaultAnswerIdx(index);
+        return this;
+    }
     // -----
 
     @Nullable
     public Reply showMessageBox() {
         // create labels from replies, find default reply
-        List<String> labels;
         int defaultIdx = 0;
         if (replies != null) {
-            labels = new ArrayList<>(replies.size());
+            List<String> labels = new ArrayList<>(replies.size());
             for (int i = 0; i < replies.size(); i++) {
                 Reply reply = replies.get(i);
                 if (reply == defaultReply) {
@@ -115,16 +131,21 @@ public final class MessageBoxBuilder {
                 }
                 labels.add(reply != null ? reply.getDisplayString() : "[null]");
             }
-        } else {
-            labels = Collections.emptyList();
+            dialog.setLabels(labels);
         }
-        dialog.setLabels(labels);
-        dialog.setDefaultAnswerIdx(defaultIdx);
+        if (replies != null) {
+            dialog.setDefaultAnswerIdx(defaultIdx);
+        }
 
         // Open dialog, detect reply
         int answerIdx = dialog.open();
         if (replies == null || !CommonUtils.isValidIndex(answerIdx, replies.size())) {
-            return null;
+            return switch (dialog.getReturnCode()) {
+                case IDialogConstants.OK_ID -> Reply.OK;
+                case IDialogConstants.CANCEL_ID -> Reply.CANCEL;
+                case IDialogConstants.NO_ID -> Reply.NO;
+                default -> null;
+            };
         }
         return replies.get(answerIdx);
     }

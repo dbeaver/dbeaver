@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionC
 import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections.SynaxInspectionResult;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQuerySelectionModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.ArrayDeque;
@@ -112,7 +112,7 @@ public class SQLDocumentSyntaxContext {
             scriptItem.item.waitForRefresh();
             int position = offset - scriptItem.offset;
 
-            SQLQuerySelectionModel model = scriptItem.item.getQueryModel();
+            SQLQueryModel model = scriptItem.item.getQueryModel();
             if (model != null) {
                 STMTreeNode syntaxNode = model.getSyntaxNode();
                 
@@ -251,7 +251,7 @@ public class SQLDocumentSyntaxContext {
 
     public SQLDocumentScriptItemSyntaxContext registerScriptItemContext(
         @NotNull String elementOriginalText,
-        @NotNull SQLQuerySelectionModel queryModel,
+        @NotNull SQLQueryModel queryModel,
         int offset,
         int length
     ) {

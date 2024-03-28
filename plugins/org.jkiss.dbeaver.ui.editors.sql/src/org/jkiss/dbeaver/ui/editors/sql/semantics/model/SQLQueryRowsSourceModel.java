@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 
-public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
+public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     private SQLQueryDataContext givenDataContext = null;
     private SQLQueryDataContext resultDataContext = null;
 
@@ -48,6 +48,11 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
         } else {
             return this.resultDataContext;
         }
+    }
+    
+    @Override
+    void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
+        this.propagateContext(dataContext, recognitionContext);
     }
 
     @NotNull

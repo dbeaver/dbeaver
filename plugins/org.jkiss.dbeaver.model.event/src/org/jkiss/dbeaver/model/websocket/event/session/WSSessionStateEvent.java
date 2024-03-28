@@ -18,14 +18,35 @@ package org.jkiss.dbeaver.model.websocket.event.session;
 
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
+import java.util.Map;
+
 public class WSSessionStateEvent extends WSAbstractSessionEvent {
+    private final long lastAccessTime;
     private final long remainingTime;
     private final boolean isValid;
+    private final boolean isCacheExpired;
+    private final String locale;
+    private final Map<String, Object> actionParameters;
 
-    public WSSessionStateEvent(long remainingTime, boolean isValid) {
+    public WSSessionStateEvent(
+        long lastAccessTime,
+        long remainingTime,
+        boolean isValid,
+        boolean isCacheExpired,
+        String locale,
+        Map<String, Object> actionParameters
+    ) {
         super(WSEventType.SESSION_STATE);
+        this.lastAccessTime = lastAccessTime;
         this.remainingTime = remainingTime;
         this.isValid = isValid;
+        this.isCacheExpired = isCacheExpired;
+        this.locale = locale;
+        this.actionParameters = actionParameters;
+    }
+
+    public long getLastAccessTime() {
+        return lastAccessTime;
     }
 
     public long getRemainingTime() {
@@ -34,5 +55,17 @@ public class WSSessionStateEvent extends WSAbstractSessionEvent {
 
     public boolean isValid() {
         return isValid;
+    }
+
+    public boolean isCacheExpired() {
+        return isCacheExpired;
+    }
+
+    public String getLocale() {
+        return locale;
+    }
+
+    public Map<String, Object> getActionParameters() {
+        return actionParameters;
     }
 }

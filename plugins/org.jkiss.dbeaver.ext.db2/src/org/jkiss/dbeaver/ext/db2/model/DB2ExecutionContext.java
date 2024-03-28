@@ -102,7 +102,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
         activeSchemaName = schema.getName();
 
         // Send notifications
-        DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema);
+        DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema, this);
     }
 
     @Override

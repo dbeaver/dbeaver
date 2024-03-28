@@ -108,7 +108,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @NotNull
     @Override
     public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
-        return new SQLQueryRowsTableValueModel(syntaxNode);
+        return new SQLQueryRowsTableValueModel(syntaxNode, Collections.emptyList());
     }
     
     @Override

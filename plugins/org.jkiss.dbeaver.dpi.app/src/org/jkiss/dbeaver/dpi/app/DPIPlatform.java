@@ -22,9 +22,7 @@ import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
-import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -132,8 +130,8 @@ public class DPIPlatform extends BasePlatformImpl {
 
     @NotNull
     @Override
-    public DBPApplication getApplication() {
-        return BaseApplicationImpl.getInstance();
+    public DPIApplication getApplication() {
+        return (DPIApplication) BaseApplicationImpl.getInstance();
     }
 
     @NotNull
@@ -144,7 +142,7 @@ public class DPIPlatform extends BasePlatformImpl {
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return new BundlePreferenceStore(PLUGIN_ID);
+        return getApplication().getPreferenceStore();
     }
 
     @NotNull

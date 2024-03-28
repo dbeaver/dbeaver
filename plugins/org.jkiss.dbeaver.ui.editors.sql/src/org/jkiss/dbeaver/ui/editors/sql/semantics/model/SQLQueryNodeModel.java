@@ -95,7 +95,7 @@ public abstract class SQLQueryNodeModel {
         if (this.subnodes != null) {
             if (this.subnodes.size() == 1) {
                 SQLQueryNodeModel node = this.subnodes.get(0);
-                return node.region.a <= position && node.region.b >= position ? node : null;
+                return node.region.a <= position && node.region.b >= position - 1 ? node : null;
             } else {
                 int index = AbstractSyntaxNode.binarySearchByKey(this.subnodes, n -> n.region.a, position, Comparator.comparingInt(x -> x));
                 if (index >= 0) {
@@ -103,7 +103,7 @@ public abstract class SQLQueryNodeModel {
                     int i = index + 1;
                     while (i < this.subnodes.size()) {
                         SQLQueryNodeModel next = this.subnodes.get(i++);
-                        if (next.region.a > position) {
+                        if (next.region.a > position - 1) {
                             break;
                         } else {
                             node = next;
@@ -114,7 +114,7 @@ public abstract class SQLQueryNodeModel {
                 } else {
                     for (int i = ~index - 1; i >= 0; i--) {
                         SQLQueryNodeModel node = this.subnodes.get(i);
-                        if (node.region.a <= position && node.region.b >= position) {
+                        if (node.region.a <= position && node.region.b >= position - 1) {
                             return node;
                         } else if (node.region.b < position) {
                             break;
