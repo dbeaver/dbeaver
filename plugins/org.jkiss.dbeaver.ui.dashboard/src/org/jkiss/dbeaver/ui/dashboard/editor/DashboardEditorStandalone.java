@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.DashboardIcons;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -95,7 +96,12 @@ public class DashboardEditorStandalone extends SinglePageDatabaseEditor<IEditorI
         configurationList.checkDefaultDashboardExistence();
         dashboardConfig = configurationList.getDashboards().get(0);
 
+        String fileName = getEditorInput().getName();
+        if (fileName.endsWith("." + DashboardConstants.DASHBOARD_EXT)) {
+            fileName = fileName.substring(0, fileName.length() - 1 - DashboardConstants.DASHBOARD_EXT.length());
+        }
         setTitleImage(DBeaverIcons.getImage(DashboardIcons.DASHBOARD));
+        setPartName(fileName);
     }
 
     @Override

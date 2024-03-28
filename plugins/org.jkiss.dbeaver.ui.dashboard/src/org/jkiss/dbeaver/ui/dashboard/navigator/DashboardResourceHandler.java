@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.navigator.DBNDashboard;
 import org.jkiss.dbeaver.model.dashboard.navigator.DBNDashboardFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -54,8 +55,6 @@ import java.util.List;
 public class DashboardResourceHandler extends AbstractResourceHandler {
 
     private static final Log log = Log.getLog(DashboardResourceHandler.class);
-
-    private static final String DASHBOARD_EXT = "dashboard"; //$NON-NLS-1$
 
     public static IFolder getDashboardsFolder(DBPProject project, boolean forceCreate) throws CoreException {
         return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, DashboardResourceHandler.class, forceCreate);
@@ -148,7 +147,7 @@ public class DashboardResourceHandler extends AbstractResourceHandler {
         }
         ResourceUtils.checkFolderExists(folder, monitor);
 
-        final IFile file = ResourceUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), DASHBOARD_EXT);
+        final IFile file = ResourceUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), DashboardConstants.DASHBOARD_EXT);
         DBPProject project = DBWorkbench.getPlatform(DBPPlatformDesktop.class).getWorkspace().getProject(file.getProject());
         if (project == null) {
             throw new DBException("Can't detect project for file " + file);

@@ -243,6 +243,9 @@ public class DataSourceDashboardView extends ViewPart implements DashboardViewer
                 DashboardUpdateJob.getDefault().resumeDashboardUpdate();
             }
         }
+        if (dataSourceContainer != null) {
+            setTitleToolTip("Connection: " + dataSourceContainer.getName() + " (" + dataSourceContainer.getDriver().getFullName() + ")");
+        }
         UIUtils.asyncExec(() -> setPartName(partName));
     }
 

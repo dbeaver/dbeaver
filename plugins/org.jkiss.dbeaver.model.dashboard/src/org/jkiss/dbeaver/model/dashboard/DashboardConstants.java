@@ -44,4 +44,5 @@ public class DashboardConstants {
     public static final String DASHBOARDS_PLUGIN_ID = "org.jkiss.dbeaver.model.dashboard";
     public static final String DASHBOARDS_LEGACY_PLUGIN_ID = "org.jkiss.dbeaver.model.ui.dashboard";
 
+    public static final String DASHBOARD_EXT = "dashboard"; //$NON-NLS-1$
 }

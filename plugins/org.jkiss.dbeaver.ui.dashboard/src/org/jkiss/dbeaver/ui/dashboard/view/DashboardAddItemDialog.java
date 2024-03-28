@@ -167,7 +167,12 @@ public class DashboardAddItemDialog extends BaseDialog {
             @Override
             public Object[] getChildren(Object parentElement) {
                 try {
-                    DBDashboardContext context = new DBDashboardContext(viewConfiguration.getDataSourceContainer());
+                    DBDashboardContext context;
+                    if (viewConfiguration.getDataSourceContainer() != null) {
+                        context = new DBDashboardContext(viewConfiguration.getDataSourceContainer());
+                    } else {
+                        context = new DBDashboardContext(viewConfiguration.getProject());
+                    }
                     if (parentElement instanceof DBDashboardFolder df) {
                         List<DBDashboardFolder> subFolders = df.loadSubFolders(new VoidProgressMonitor(), context);
                         List<DashboardItemConfiguration> dashboards = df.loadDashboards(new VoidProgressMonitor(), context);
@@ -192,7 +197,7 @@ public class DashboardAddItemDialog extends BaseDialog {
                         return dashboards.toArray();
                     }
                 } catch (DBException e) {
-                    log.error("Error reading dashboard info", e);
+                    DBWorkbench.getPlatformUI().showError("Error reading dashboard info", null, e);
                 }
                 return new Object[0];
             }
