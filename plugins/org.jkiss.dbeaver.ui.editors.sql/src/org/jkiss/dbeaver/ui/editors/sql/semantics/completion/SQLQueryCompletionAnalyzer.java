@@ -1,10 +1,5 @@
 package org.jkiss.dbeaver.ui.editors.sql.semantics.completion;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -20,6 +15,12 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProposal;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
 
@@ -44,7 +45,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             SQLQueryCompletionSet completionSet = completionContext.prepareProposal(monitor, position);
             
             this.proposals = new ArrayList<>(completionSet.getItems().size()); 
-            for (SQLQueryCompletionItem item: completionSet.getItems()) {
+            for (SQLQueryCompletionItem item : completionSet.getItems()) {
                 DBPNamedObject object = null;
                 DBPImage image = item.getKind() == null ? DBValueFormatting.getObjectImage(item.getObject()) : switch (item.getKind()) {
                     case RESERVED -> UIIcon.SQL_TEXT;

@@ -142,72 +142,73 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         List<SQLCompletionProposalBase> proposals;
         switch (contentType) {
-        case IDocument.DEFAULT_CONTENT_TYPE:
-        case SQLParserPartitions.CONTENT_TYPE_SQL_STRING:
-        case SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED:
-            if (lookupTemplates) {
-                return makeTemplateProposals(viewer, request);
-            }
-
-            try {
-                String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
-                if (wordDetector.getStartOffset() >= commandPrefix.length() &&
-                    viewer.getDocument().get(wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix)) {
-                    return makeCommandProposals(request, request.getWordPart());
+            case IDocument.DEFAULT_CONTENT_TYPE:
+            case SQLParserPartitions.CONTENT_TYPE_SQL_STRING:
+            case SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED:
+                if (lookupTemplates) {
+                    return makeTemplateProposals(viewer, request);
                 }
-            } catch (BadLocationException e) {
-                log.debug(e);
-            }
 
-            SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
-            SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request);
-            DBPDataSource dataSource = editor.getDataSource();
-            
-            SQLExperimentalAutocompletionMode mode =  SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
-            
-            AbstractJob newJob = !mode.useNewAnalyzer ? null : new AbstractJob("Analyzing query for proposals...") {{
-                    setSystem(true);
-                    setUser(false);
-                    schedule();
+                try {
+                    String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
+                    if (wordDetector.getStartOffset() >= commandPrefix.length() &&
+                        viewer.getDocument().get(wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix)) {
+                        return makeCommandProposals(request, request.getWordPart());
+                    }
+                } catch (BadLocationException e) {
+                    log.debug(e);
                 }
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    try {
-                        monitor.beginTask("Seeking for SQL completion proposals", 1);
+
+                SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
+                SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request);
+                DBPDataSource dataSource = editor.getDataSource();
+
+                SQLExperimentalAutocompletionMode mode =  SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
+
+                AbstractJob newJob = !mode.useNewAnalyzer ? null : new AbstractJob("Analyzing query for proposals...") {{
+                        setSystem(true);
+                        setUser(false);
+                        schedule();
+                    }
+
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
                         try {
-                            monitor.subTask("Find proposals");
-                            DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
-                        } finally {
-                            monitor.done();
+                            monitor.beginTask("Seeking for SQL completion proposals", 1);
+                            try {
+                                monitor.subTask("Find proposals");
+                                DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), newAnalyzer);
+                            } finally {
+                                monitor.done();
+                            }
+                            return Status.OK_STATUS;
+                        } catch (Throwable e) {
+                            log.error(e);
+                            return Status.CANCEL_STATUS;
                         }
-                        return Status.OK_STATUS;
-                    } catch (Throwable e) {
-                        log.error(e);
-                        return Status.CANCEL_STATUS;
+                    }
+                };
+
+                if (request.getWordPart() != null && mode.useOldAnalyzer) {
+                    if (dataSource != null) {
+                        ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
+                        searchJob.schedule();
+
+                        // Wait until job finished
+                        UIUtils.waitJobCompletion(searchJob);
                     }
                 }
-            };
-            
-            if (request.getWordPart() != null && mode.useOldAnalyzer) {
-                if (dataSource != null) {
-                    ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
-                    searchJob.schedule();
 
-                    // Wait until job finished
-                    UIUtils.waitJobCompletion(searchJob);
+                if (newJob != null) {
+                    UIUtils.waitJobCompletion(newJob);
                 }
-            }
-            
-            if (newJob != null) {
-            	UIUtils.waitJobCompletion(newJob);
-            }
 
-            List<SQLCompletionProposalBase> a = newAnalyzer.getProposals();
-            List<SQLCompletionProposalBase> b = analyzer.getProposals();
-            proposals = Stream.concat(a.stream(), b.stream()).toList();
-            break;
-        default:
-            proposals = Collections.emptyList();
+                List<SQLCompletionProposalBase> a = newAnalyzer.getProposals();
+                List<SQLCompletionProposalBase> b = analyzer.getProposals();
+                proposals = Stream.concat(a.stream(), b.stream()).toList();
+                break;
+            default:
+                proposals = Collections.emptyList();
         }
 
         List<ICompletionProposal> result = new ArrayList<>();

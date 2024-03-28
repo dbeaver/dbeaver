@@ -25,7 +25,8 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 
 public abstract class SQLQueryRowsSourceModel extends SQLQueryNodeModel {
-    private SQLQueryDataContext givenDataContext = null, resultDataContext = null;
+    private SQLQueryDataContext givenDataContext = null;
+    private SQLQueryDataContext resultDataContext = null;
 
     public SQLQueryRowsSourceModel(@NotNull STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
         super(syntaxNode.getRealInterval(), syntaxNode, subnodes);

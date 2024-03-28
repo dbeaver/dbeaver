@@ -104,13 +104,11 @@ public class SQLDocumentSyntaxContext {
         SQLStandardLexer.DelimitedIdentifier,
         SQLStandardLexer.Quotted
     );
-    
-    public SQLQueryCompletionContext obtainCompletionContext(DBCExecutionContext dbcExecutionContext, int offset) {
+
+    @NotNull
+    public SQLQueryCompletionContext obtainCompletionContext(@Nullable DBCExecutionContext dbcExecutionContext, int offset) {
         ScriptItemAtOffset scriptItem = this.findScriptItem(offset);
         if (scriptItem != null) { // TODO consider statements separation which is ignored for now
-//            if (scriptItem.item.hasDelta()) {
-//                throw new IllegalStateException("Fresh parse cycle required");
-//            }
             scriptItem.item.waitForRefresh();
             int position = offset - scriptItem.offset;
 
@@ -142,21 +140,21 @@ public class SQLDocumentSyntaxContext {
                         index = ~index - 1;
                     }
                     if (allTerms.get(index).getRealInterval().b == position  - 1) {
-                        for(int i = index; i >= 0; i--) {
+                        for (int i = index; i >= 0; i--) {
                             STMTreeTermNode term = allTerms.get(i);
-                            System.out.println("#" + i + "@" + term.getRealInterval() + " " + term.getTextContent() + " - " + SQLStandardLexer.tokenNames[term.symbol.getType()]);
-                            if (knownIdentifierPartTerms.contains(term.symbol.getType()) || term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved) {
+                            if (knownIdentifierPartTerms.contains(term.symbol.getType())
+                                || term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved
+                            ) {
                                 nameNodes.addFirst(term);
                             } else {
                                 break;
                             }
                         }
                     }
-                    System.out.println("hit @" + position + " --> #" + index + " --> " + nameNodes);
                     
                 }
                 
-                return SQLQueryCompletionContext.prepare(scriptItem, dbcExecutionContext, position, sr, context, lexicalItem, nameNodes.toArray(STMTreeTermNode[]::new)); 
+                return SQLQueryCompletionContext.prepare(scriptItem, dbcExecutionContext, sr, context, lexicalItem, nameNodes.toArray(STMTreeTermNode[]::new));
             } else {
                 return SQLQueryCompletionContext.EMPTY;
             }

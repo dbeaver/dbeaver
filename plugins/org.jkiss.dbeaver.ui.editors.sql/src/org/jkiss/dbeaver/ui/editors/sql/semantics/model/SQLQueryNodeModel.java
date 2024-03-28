@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +45,7 @@ public abstract class SQLQueryNodeModel {
         if (subnodes == null || subnodes.length == 0) {
             this.subnodes = null;
         } else {
-            this.subnodes = Stream.of(subnodes).filter(n -> n != null).collect(Collectors.toCollection(() -> new ArrayList<>(subnodes.length)));
+            this.subnodes = Stream.of(subnodes).filter(Objects::nonNull).collect(Collectors.toCollection(() -> new ArrayList<>(subnodes.length)));
             this.subnodes.sort(Comparator.comparingInt(n -> n.region.a));
         }
     }
@@ -60,7 +61,7 @@ public abstract class SQLQueryNodeModel {
     public SQLQueryLexicalScope findLexicalScope(int position) {
         List<SQLQueryLexicalScope> scopes = this.lexicalScopes;
         if (scopes != null) {
-            for (SQLQueryLexicalScope s: scopes) {
+            for (SQLQueryLexicalScope s : scopes) {
                 Interval region = s.getInterval();
                 if (region.a <= position && region.b >= position) {
                     return s;

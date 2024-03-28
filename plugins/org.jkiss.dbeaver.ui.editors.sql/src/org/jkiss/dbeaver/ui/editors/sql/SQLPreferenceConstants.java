@@ -68,7 +68,8 @@ public class SQLPreferenceConstants {
         NEW(false, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_new_engine),
         COMBINED(true, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_combined);
     
-        public final boolean useOldAnalyzer, useNewAnalyzer;
+        public final boolean useOldAnalyzer;
+        public final boolean useNewAnalyzer;
 
         public final String title;
     

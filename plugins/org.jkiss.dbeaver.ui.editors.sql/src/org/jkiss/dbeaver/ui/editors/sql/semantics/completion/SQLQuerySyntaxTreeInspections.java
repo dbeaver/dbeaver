@@ -16,33 +16,36 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.semantics.completion;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.atn.*;
-import org.antlr.v4.runtime.misc.*;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.*;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class SQLQuerySyntaxTreeInspections {
 
-    private final static Set<String> knownReservedWords = new HashSet<>(BasicSQLDialect.INSTANCE.getReservedWords());
-    
+    @NotNull
+    private static final Set<String> knownReservedWords = new HashSet<>(BasicSQLDialect.INSTANCE.getReservedWords());
+
+    @NotNull
     private static final Set<Integer> reachabilityTestRules = Set.of(
         SQLStandardParser.RULE_tableName,
         SQLStandardParser.RULE_columnReference,
         SQLStandardParser.RULE_identifier,
         SQLStandardParser.RULE_columnName
     );
-    
+
+    @NotNull
     private static final Set<Integer> knownReservedWordsExcludeRules = Stream.of(reachabilityTestRules, Set.of(
         SQLStandardParser.RULE_nonReserved,
         SQLStandardParser.RULE_anyUnexpected,
@@ -51,49 +54,9 @@ public class SQLQuerySyntaxTreeInspections {
         SQLStandardParser.RULE_correlationName,
         SQLStandardParser.RULE_tableHintKeywords
     )).flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());
-    
-//    public static Collection<String> forKeywordsAt(SQLQueryNodeModel sqlQueryNodeModel, int position) {
-//            return prepareReservedWordsAtSubtreePosition(sqlQueryNodeModel.getSyntaxNode(), position);
-//    }
 
-    public static void main(String[] args) {
-//        System.out.println(String.join(", ", prepareReservedWordsAtRoot()));
-        
-        var input = CharStreams.fromString("select * from tab1 left join tab2 on a > b where ( s ) < 2");
-        var ll = new SQLStandardLexer(input, Map.of("'", "'"));
-        var tokens = new CommonTokenStream(ll);
-        tokens.fill();
-        var pp = new SQLStandardParser(tokens);
-        SqlQueriesContext tree = pp.sqlQueries();
-
-        test(pp, tree, null);
-        test(pp, tree, "select");
-        test(pp, tree, "*");
-        test(pp, tree, "from");
-        test(pp, tree, "tab1");
-        test(pp, tree, "left");
-        test(pp, tree, "join");
-        test(pp, tree, "tab2");
-        test(pp, tree, "on");
-        test(pp, tree, "b");
-        test(pp, tree, "where");
-        test(pp, tree, "(");
-        // test(pp, tree, "t");
-        test(pp, tree, "<");
-        test(pp, tree, "2");
-    }
-
-    private static void test(SQLStandardParser pp, SqlQueriesContext tree, String str) {
-        System.out.println("After " + str);
-        var node = str == null ? null : ((STMTreeTermNode)SyntaxParserTest.findNode(tree, t -> str.equals(Trees.getNodeText(t, pp)))).getRealInterval();
-        var r = prepareAbstractSyntaxInspection(tree, str == null ? -1 : (node.b + 1));
-        System.out.println("  " + String.join(", ", r.predictedWords));
-        System.out.println("  " + r.getReachabilityByName().entrySet().stream().filter(kv -> kv.getValue()).map(kv -> kv.getKey()).collect(Collectors.toList()));
-        System.out.println("");
-    }
-    
-    
-    private static Pair<STMTreeNode, Boolean> findChildBeforeOrAtPosition(STMTreeNode node, int position) {
+    @NotNull
+    private static Pair<STMTreeNode, Boolean> findChildBeforeOrAtPosition(@NotNull STMTreeNode node, int position) {
         STMTreeNode nodeBefore = null;
         Interval nodeBeforeRange = null;
         for (int i = 0; i < node.getChildCount(); i++) {
@@ -110,15 +73,17 @@ public class SQLQuerySyntaxTreeInspections {
         }
         return Pair.of(nodeBefore, false);
     }
-    
-    public static final SynaxInspectionResult prepareOffquerySyntaxInspection() {
+
+    @NotNull
+    public static SynaxInspectionResult prepareOffquerySyntaxInspection() {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
         ATNState initialState = atn.states.get(atn.ruleToStartState[SQLStandardParser.RULE_sqlQueries].stateNumber);
-        return inspectAbstractSyntaxAtState(atn, emptyStack, initialState);
+        return inspectAbstractSyntaxAtState(emptyStack, initialState);
     }
-    
-    public static final SynaxInspectionResult prepareAbstractSyntaxInspection(STMTreeNode root, int position) {
+
+    @Nullable
+    public static SynaxInspectionResult prepareAbstractSyntaxInspection(@NotNull STMTreeNode root, int position) {
         STMTreeNode subroot = root;
         ATN atn = SQLStandardParser._ATN;
         
@@ -162,8 +127,9 @@ public class SQLQuerySyntaxTreeInspections {
             return inspectAbstractSyntaxAtTreeState(subroot, initialState);
         }            
     }
-    
-    private static STMTreeTermNode findLastTerm(STMTreeNode root) {
+
+    @Nullable
+    private static STMTreeTermNode findLastTerm(@NotNull STMTreeNode root) {
         System.out.println(root.getTextContent());
         ListNode<STMTreeNode> stack = ListNode.of(root);
         while (ListNode.hasAny(stack)) {
@@ -180,8 +146,9 @@ public class SQLQuerySyntaxTreeInspections {
         }
         return null;
     }
-    
-    public static List<STMTreeTermNode> prepareTerms(STMTreeNode root) {
+
+    @NotNull
+    public static List<STMTreeTermNode> prepareTerms(@NotNull STMTreeNode root) {
         List<STMTreeTermNode> terms = new ArrayList<>();
         ListNode<STMTreeNode> stack = ListNode.of(root);
         while (ListNode.hasAny(stack)) {
@@ -199,17 +166,17 @@ public class SQLQuerySyntaxTreeInspections {
         return terms;
     }
 
-    private static final SynaxInspectionResult inspectAbstractSyntaxAtTreeState(STMTreeNode node, ATNState initialState) {
-        ATN atn = SQLStandardParser._ATN;
+    @Nullable
+    private static SynaxInspectionResult inspectAbstractSyntaxAtTreeState(@NotNull STMTreeNode node, @NotNull ATNState initialState) {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
-            for (STMTreeNode n = node instanceof TerminalNode ? node.getStmParent() : node; 
-                 n != null && n instanceof RuleNode rn;
+            for (STMTreeNode n = node instanceof TerminalNode ? node.getStmParent() : node;
+                 n instanceof RuleNode rn;
                  n = n.getStmParent()) {
                 path.addFirst(rn);
             }
-            for (RuleNode rn: path) {
+            for (RuleNode rn : path) {
                 stack = ListNode.push(stack, rn.getRuleContext().getRuleIndex());
             }
         }
@@ -218,13 +185,14 @@ public class SQLQuerySyntaxTreeInspections {
         if (atnStateIndex < 0) { 
             return null;  // TODO error node met, consider using previous valid node 
         } else {
-            return inspectAbstractSyntaxAtState(atn, stack, initialState);
+            return inspectAbstractSyntaxAtState(stack, initialState);
         }
     }
     
     public static class SynaxInspectionResult {
+        @NotNull
         public final Set<String> predictedWords;
-        
+        @NotNull
         private final Map<Integer, Boolean> reachabilityTests;
         
         public final boolean expectingTableReference;
@@ -232,8 +200,8 @@ public class SQLQuerySyntaxTreeInspections {
         public final boolean expectingIdentifier;
         
         public SynaxInspectionResult(
-            Set<String> predictedWords, 
-            Map<Integer, Boolean> reachabilityTests, 
+            @NotNull Set<String> predictedWords,
+            @NotNull Map<Integer, Boolean> reachabilityTests,
             boolean expectingTableReference,
             boolean expectingColumnReference,
             boolean expectingIdentifier
@@ -244,23 +212,25 @@ public class SQLQuerySyntaxTreeInspections {
             this.expectingColumnReference = expectingColumnReference;
             this.expectingIdentifier = expectingIdentifier;
         }
-        
+
+        @NotNull
         public Map<String, Boolean> getReachabilityByName() {
             return this.reachabilityTests.entrySet().stream()
-                .collect(Collectors.toMap(e -> SQLStandardParser.ruleNames[e.getKey()], e -> e.getValue()));
+                .collect(Collectors.toMap(e -> SQLStandardParser.ruleNames[e.getKey()], Map.Entry::getValue));
         }
     }
-    
-    private static final SynaxInspectionResult inspectAbstractSyntaxAtState(ATN atn, ListNode<Integer> stack, ATNState initialState) {
+
+    @NotNull
+    private static SynaxInspectionResult inspectAbstractSyntaxAtState(@NotNull ListNode<Integer> stack, @NotNull ATNState initialState) {
         Set<String> predictedWords = new HashSet<>();
         
         Map<Integer, Boolean> reachabilityTests = new HashMap<>(reachabilityTestRules.size());
         reachabilityTestRules.forEach(n -> reachabilityTests.put(n, false));
-        Collection<Transition> tt = collectFollowingTerms(atn, stack, initialState, knownReservedWordsExcludeRules, reachabilityTests);
+        Collection<Transition> tt = collectFollowingTerms(stack, initialState, knownReservedWordsExcludeRules, reachabilityTests);
 
         IntervalSet transitionTokens = getTransitionTokens(tt);
         
-        for (Interval interval: transitionTokens.getIntervals()) {
+        for (Interval interval : transitionTokens.getIntervals()) {
             int a = interval.a;
             int b = interval.b;
             for (int v = a; v <= b; v++) {
@@ -280,23 +250,22 @@ public class SQLQuerySyntaxTreeInspections {
         );
     }
 
-    private static IntervalSet getTransitionTokens(Collection<Transition> transitions) {
+    @NotNull
+    private static IntervalSet getTransitionTokens(@NotNull Collection<Transition> transitions) {
         IntervalSet tokens = new IntervalSet();
-        for (Transition transition: transitions) {
+        for (Transition transition : transitions) {
             switch (transition.getSerializationType()) {
-                case Transition.ATOM: 
-                {
-                    tokens.add(((AtomTransition)transition).label);
+                case Transition.ATOM:  {
+                    tokens.add(((AtomTransition) transition).label);
                     break;
                 }
-                case Transition.RANGE:
-                {
-                    RangeTransition t = (RangeTransition)transition;
+                case Transition.RANGE: {
+                    RangeTransition t = (RangeTransition) transition;
                     tokens.add(t.from, t.to);
                     break;
                 }
                 case Transition.SET:
-                    tokens.addAll(((SetTransition)transition).set);
+                    tokens.addAll(((SetTransition) transition).set);
                     break;
                 case Transition.NOT_SET: 
                 case Transition.WILDCARD:
@@ -315,8 +284,13 @@ public class SQLQuerySyntaxTreeInspections {
         }
         return tokens;
     }
-    
-    private static Collection<Transition> collectFollowingTerms(ATN atn, ListNode<Integer> stateStack,  ATNState initialState, Set<Integer> exceptRules, Map<Integer, Boolean> reachabilityTest) {
+
+    @NotNull
+    private static Collection<Transition> collectFollowingTerms(
+        @NotNull  ListNode<Integer> stateStack,
+        @NotNull ATNState initialState, Set<Integer> exceptRules,
+        @NotNull Map<Integer, Boolean> reachabilityTest
+    ) {
         HashSet<ATNState> visited = new HashSet<>();
         HashSet<Transition> results = new HashSet<>();
         LinkedList<Pair<ATNState, ListNode<Integer>>> q = new LinkedList<>();
@@ -332,50 +306,38 @@ public class SQLQuerySyntaxTreeInspections {
             ATNState state = pair.getFirst();
             ListNode<Integer> stack = pair.getSecond();
             
-            for (Transition transition: state.getTransitions()) {
+            for (Transition transition : state.getTransitions()) {
                 switch (transition.getSerializationType()) {
-                    case Transition.ATOM:
-                    case Transition.RANGE:
-                    case Transition.SET:
-                    case Transition.NOT_SET: 
-                    case Transition.WILDCARD:
+                    case Transition.ATOM, Transition.RANGE, Transition.SET, Transition.NOT_SET, Transition.WILDCARD ->
                         results.add(transition);
-                        break;
-                    case Transition.RULE:
-                    case Transition.EPSILON:
-                    case Transition.PREDICATE:
-                    case Transition.ACTION:
-                    case Transition.PRECEDENCE:
-                    {
+                    case Transition.RULE, Transition.EPSILON, Transition.PREDICATE, Transition.ACTION, Transition.PRECEDENCE -> {
                         ListNode<Integer> transitionStack;
                         switch (state.getStateType()) {
-                        case ATNState.RULE_STOP: 
-                            if (stack != null && stack.data != null && stack.next != null && stack.next.data != null && transition.target.ruleIndex == stack.next.data.intValue()) {
-                                transitionStack = stack.next; // pop
-                            } else {
-                                continue;
+                            case ATNState.RULE_STOP -> {
+                                if (stack != null && stack.data != null && stack.next != null && stack.next.data != null
+                                    && transition.target.ruleIndex == stack.next.data
+                                ) {
+                                    transitionStack = stack.next; // pop
+                                } else {
+                                    continue;
+                                }
                             }
-                            break;
-                        case ATNState.RULE_START:
-                            reachabilityTest.computeIfPresent(state.ruleIndex, (k, v) -> true);
-                            if (exceptRules.contains(state.ruleIndex)) {
-                                continue;
-                            } else {
-                                transitionStack = ListNode.push(stack, state.ruleIndex);
+                            case ATNState.RULE_START -> {
+                                reachabilityTest.computeIfPresent(state.ruleIndex, (k, v) -> true);
+                                if (exceptRules.contains(state.ruleIndex)) {
+                                    continue;
+                                } else {
+                                    transitionStack = ListNode.push(stack, state.ruleIndex);
+                                }
                             }
-                            break;
-                        default:
-                                transitionStack = stack;
-                                break;
+                            default -> transitionStack = stack;
                         }
 
                         if (visited.add(transition.target)) {
                             q.addLast(Pair.of(transition.target, transitionStack));
                         }
-                        break;
                     }
-                    default:
-                        throw new UnsupportedOperationException("Unrecognized ATN transition type.");
+                    default -> throw new UnsupportedOperationException("Unrecognized ATN transition type.");
                 }
             }
         }
