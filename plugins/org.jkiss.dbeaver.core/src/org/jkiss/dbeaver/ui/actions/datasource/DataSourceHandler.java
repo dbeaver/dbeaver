@@ -116,9 +116,7 @@ public class DataSourceHandler {
                         if (error.getCause() instanceof DBCDriverFilesMissingException driverException) {
                             DriverEditDialog.showBadConfigDialog(
                                 null,
-                                NLS.bind(CoreMessages.initialization_driver_error_msg,
-                                    driverException.getDriverFullName(),
-                                    driverException.getDriverClassName()),
+                                driverException.getErrorMessage(),
                                 driverException.getDriver(),
                                 driverException);
                         } else {
