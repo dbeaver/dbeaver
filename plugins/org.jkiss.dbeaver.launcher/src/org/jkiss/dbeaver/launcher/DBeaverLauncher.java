@@ -595,8 +595,9 @@ public class DBeaverLauncher {
             return;
 
         // verify configuration location is writable
-        if (!checkConfigurationLocation(configurationLocation))
-            return;
+        // FIXME: disable this check for products which run in read-only environment, e.g. cloud based
+        //if (!checkConfigurationLocation(configurationLocation))
+        //    return;
 
         // splash handling is done here, because the default case needs to know
         // the location of the boot plugin we are going to use
