@@ -44,6 +44,7 @@ public class PrefPageConnectionClient extends TargetPrefPage
 
     private static final String[] ALLOWED_VARIABLES = new String[] {
         DBPConnectionConfiguration.VARIABLE_HOST,
+        DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL,
         DBPConnectionConfiguration.VARIABLE_PORT,
         DBPConnectionConfiguration.VARIABLE_SERVER,
         DBPConnectionConfiguration.VARIABLE_DATABASE,

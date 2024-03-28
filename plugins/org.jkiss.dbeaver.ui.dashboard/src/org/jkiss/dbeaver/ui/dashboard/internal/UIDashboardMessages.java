@@ -44,6 +44,7 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_edit_dashboard_maininfo;
     public static String dialog_edit_dashboard_maininfo_labels_id;
     public static String dialog_edit_dashboard_maininfo_labels_name;
+    public static String dialog_edit_dashboard_maininfo_labels_display_name;
     public static String dialog_edit_dashboard_maininfo_labels_db;
     public static String dialog_edit_dashboard_maininfo_buttons_select;
     public static String dialog_edit_dashboard_maininfo_labels_description;
@@ -109,6 +110,8 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_dashboard_view_config_group_viewcfg;
     public static String dialog_dashboard_view_config_group_viewcfg_checkbox_connect;
     public static String dialog_dashboard_view_config_group_viewcfg_checkbox_connect_tooltip;
+    public static String dialog_dashboard_view_config_group_viewcfg_checkbox_init_default;
+    public static String dialog_dashboard_view_config_group_viewcfg_checkbox_init_default_tooltip;
     public static String dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn;
     public static String dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn_tooltip;
     public static String dialog_dashboard_view_config_button_manage;

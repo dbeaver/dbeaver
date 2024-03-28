@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -35,6 +36,7 @@ public class ConnectionNameResolver implements IVariableResolver {
 
     public static final String[] CONNECTION_NAME_VARIABLES = new String[]{
         DBPConnectionConfiguration.VARIABLE_HOST,
+        DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL,
         DBPConnectionConfiguration.VARIABLE_PORT,
         DBPConnectionConfiguration.VARIABLE_SERVER,
         DBPConnectionConfiguration.VARIABLE_DATABASE,
@@ -48,6 +50,7 @@ public class ConnectionNameResolver implements IVariableResolver {
 
     public static final String[][] CONNECTION_NAME_VARIABLES_INFO = new String[][]{
         {DBPConnectionConfiguration.VARIABLE_HOST, "target database host"},
+        {DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL, "tunnel database host"},
         {DBPConnectionConfiguration.VARIABLE_PORT, "target database port"},
         {DBPConnectionConfiguration.VARIABLE_SERVER, "target server name"},
         {DBPConnectionConfiguration.VARIABLE_DATABASE, "target database name"},
@@ -119,6 +122,8 @@ public class ConnectionNameResolver implements IVariableResolver {
             switch (name) {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();
+                case DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL:
+                    return DBWUtils.getTargetTunnelHostName(configuration);
                 case DBPConnectionConfiguration.VARIABLE_PORT:
                     return configuration.getHostPort();
                 case DBPConnectionConfiguration.VARIABLE_SERVER:
@@ -132,6 +137,7 @@ public class ConnectionNameResolver implements IVariableResolver {
                 case DBPConnectionConfiguration.VARIABLE_URL:
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
+                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE_LEGACY:
                     return configuration.getConnectionType().getId();
                 default:
                     break;

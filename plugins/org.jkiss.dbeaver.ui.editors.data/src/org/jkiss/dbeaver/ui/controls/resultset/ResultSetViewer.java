@@ -1614,8 +1614,10 @@ public class ResultSetViewer extends Viewer
      * Freaking E4 do not do it. I've spent a couple of days fighting it. Guys, you owe me.
      */
     @Override
-    public void updateToolbar()
-    {
+    public void updateToolbar() {
+        if (statusBar == null || statusBar.isDisposed()) {
+            return;
+        }
         if (statusBar != null) statusBar.setRedraw(false);
         try {
             for (ToolBarManager tb : toolbarList) {
@@ -1630,8 +1632,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    public void redrawData(boolean attributesChanged, boolean rowsChanged)
-    {
+    public void redrawData(boolean attributesChanged, boolean rowsChanged) {
         if (viewerPanel.isDisposed()) {
             return;
         }
@@ -5179,127 +5180,132 @@ public class ResultSetViewer extends Viewer
         }
 
         private void afterDataRead() {
+            UIUtils.syncExec(this::updateResultsInUI);
+        }
+
+        private void updateResultsInUI() {
             final Throwable error = getError();
             if (getStatistics() != null) {
                 model.setStatistics(getStatistics());
             }
-            UIUtils.syncExec(() -> {
-                try {
-                    final DBSDataContainer dataContainer = executionSource.getDataContainer();
-                    final Control control1 = getControl();
-                    if (control1.isDisposed()) {
-                        return;
+            try {
+                final DBSDataContainer dataContainer = executionSource.getDataContainer();
+                final Control control1 = getControl();
+                if (control1.isDisposed()) {
+                    return;
+                }
+                model.setUpdateInProgress(null);
+
+                // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
+                if (saveHistory && error == null) {
+                    setNewState(dataContainer, executionSource.getUseDataFilter());
+                }
+
+                boolean panelUpdated = false;
+                final boolean metadataChanged = !scroll && model.isMetadataChanged();
+                if (error != null) {
+                    String errorMessage = error.getMessage();
+                    setStatus(errorMessage, DBPMessageType.ERROR);
+
+                    String sqlText;
+                    SQLScriptElement query = null;
+                    if (dataContainer instanceof SQLQueryContainer) {
+                        query = ((SQLQueryContainer) dataContainer).getQuery();
                     }
-                    model.setUpdateInProgress(null);
 
-                    // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
-                    if (saveHistory && error == null) {
-                        setNewState(dataContainer, executionSource.getUseDataFilter());
-                    }
-
-                    boolean panelUpdated = false;
-                    final boolean metadataChanged = !scroll && model.isMetadataChanged();
-                    if (error != null) {
-                        String errorMessage = error.getMessage();
-                        setStatus(errorMessage, DBPMessageType.ERROR);
-
-                        String sqlText;
-                        SQLScriptElement query = null;
-                        if (dataContainer instanceof SQLQueryContainer) {
-                            query = ((SQLQueryContainer) dataContainer).getQuery();
-                        }
-
-                        if (error instanceof DBSQLException) {
-                            sqlText = ((DBSQLException) error).getSqlQuery();
-                        } else if (query != null) {
-                            sqlText = query.getText();
-                        } else {
-                            sqlText = getActiveQueryText();
-                        }
-
-                        if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQuery) {
-                            String extraErrorMessage = ((SQLQuery) query).getExtraErrorMessage();
-                            if (CommonUtils.isNotEmpty(extraErrorMessage)) {
-                                errorMessage = errorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
-                            }
-                        }
-
-                        if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
-                            DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
-                        } else {
-                            if (CommonUtils.isEmpty(errorMessage)) {
-                                if (error.getCause() instanceof InterruptedException) {
-                                    errorMessage = "Query execution was interrupted";
-                                } else {
-                                    errorMessage = "Error executing query";
-                                }
-                            }
-                            showErrorPresentation(sqlText, errorMessage, error);
-                            log.error(errorMessage, error);
-                        }
+                    if (error instanceof DBSQLException) {
+                        sqlText = ((DBSQLException) error).getSqlQuery();
+                    } else if (query != null) {
+                        sqlText = query.getText();
                     } else {
-                        if (!metadataChanged) {
-                            // Seems to be refresh
-                            // Restore original position
-                            restorePresentationState(presentationState);
-                        }
-                        /*
-                        We allow zero length row list for the situations when we load new an empty resultSet and the last resultSet
-                        wasn't empty. Previously we didn't update the selected row count which caused a problem described in #15767
-                        Now we call the ResultSetStatListener even if the resultSet is empty.
-                         */
-                        if (focusRow >= 0 && (focusRow < model.getRowCount() || model.getRowCount() == 0) && model.getVisibleAttributeCount() > 0) {
-                            if (getCurrentRow() == null && model.getRowCount() > 0) {
-                                setCurrentRow(getModel().getRow(focusRow));
-                            }
-                            if (getActivePresentation().getCurrentAttribute() == null || model.getRowCount() == 0) {
-                                getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
-                                panelUpdated = true; // Attribute viewer refreshed
-                            }
-                        }
+                        sqlText = getActiveQueryText();
                     }
-                    activePresentation.updateValueView();
 
-                    if (!scroll) {
-                        final DBDDataFilter dataFilter = executionSource.getDataFilter();
-                        if (dataFilter != null) {
-                            boolean visibilityChanged = !model.getDataFilter().equalVisibility(dataFilter);
-                            model.updateDataFilter(dataFilter, true);
-                            // New data filter may have different columns visibility
-                            redrawData(visibilityChanged, false);
+                    if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQuery) {
+                        String extraErrorMessage = ((SQLQuery) query).getExtraErrorMessage();
+                        if (CommonUtils.isNotEmpty(extraErrorMessage)) {
+                            errorMessage = errorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
                         }
                     }
-                    if (!panelUpdated) {
-                        updatePanelsContent(true);
-                    }
-                    if (getStatistics() == null || !getStatistics().isEmpty()) {
-                        if (error == null) {
-                            // Update status (update execution statistics)
-                            updateStatusMessage();
-                        }
-                        try {
-                            fireResultSetLoad();
-                        } catch (Throwable e) {
-                            log.debug("Error handling resulset load", e);
-                        }
-                    }
-                    UIUtils.asyncExec(() -> {
-                        updateFiltersText(true);
-                        updateToolbar();
-                    });
 
-                    // auto-refresh
-                    autoRefreshControl.scheduleAutoRefresh(error != null);
-                } finally {
-                    if (finalizer != null) {
-                        try {
-                            finalizer.run();
-                        } catch (Throwable e) {
-                            log.error(e);
+                    if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
+                        DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
+                    } else {
+                        if (CommonUtils.isEmpty(errorMessage)) {
+                            if (error.getCause() instanceof InterruptedException) {
+                                errorMessage = "Query execution was interrupted";
+                            } else {
+                                errorMessage = "Error executing query";
+                            }
+                        }
+                        showErrorPresentation(sqlText, errorMessage, error);
+                        log.error(errorMessage, error);
+                    }
+                } else {
+                    if (!metadataChanged) {
+                        // Seems to be refresh
+                        // Restore original position
+                        restorePresentationState(presentationState);
+                    }
+                    /*
+                    We allow zero length row list for the situations when we load new an empty resultSet and the last resultSet
+                    wasn't empty. Previously we didn't update the selected row count which caused a problem described in #15767
+                    Now we call the ResultSetStatListener even if the resultSet is empty.
+                     */
+                    if (focusRow >= 0 && (focusRow < model.getRowCount() || model.getRowCount() == 0) && model.getVisibleAttributeCount() > 0) {
+                        if (getCurrentRow() == null && model.getRowCount() > 0) {
+                            setCurrentRow(getModel().getRow(focusRow));
+                        }
+                        if (getActivePresentation().getCurrentAttribute() == null || model.getRowCount() == 0) {
+                            getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
+                            panelUpdated = true; // Attribute viewer refreshed
                         }
                     }
                 }
-            });
+                activePresentation.updateValueView();
+
+                if (!scroll) {
+                    final DBDDataFilter dataFilter = executionSource.getDataFilter();
+                    if (dataFilter != null) {
+                        boolean visibilityChanged = !model.getDataFilter().equalVisibility(dataFilter);
+                        model.updateDataFilter(dataFilter, true);
+                        // New data filter may have different columns visibility
+                        redrawData(visibilityChanged, false);
+                    }
+                }
+                if (!panelUpdated) {
+                    updatePanelsContent(true);
+                }
+                if (getStatistics() == null || !getStatistics().isEmpty()) {
+                    if (error == null) {
+                        // Update status (update execution statistics)
+                        updateStatusMessage();
+                    }
+                    try {
+                        fireResultSetLoad();
+                    } catch (Throwable e) {
+                        log.debug("Error handling resulset load", e);
+                    }
+                }
+                UIUtils.asyncExec(() -> {
+                    if (getControl().isDisposed()) {
+                        return;
+                    }
+                    updateFiltersText(true);
+                    updateToolbar();
+                });
+
+                // auto-refresh
+                autoRefreshControl.scheduleAutoRefresh(error != null);
+            } finally {
+                if (finalizer != null) {
+                    try {
+                        finalizer.run();
+                    } catch (Throwable e) {
+                        log.error(e);
+                    }
+                }
+            }
         }
     }
 

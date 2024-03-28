@@ -22,13 +22,15 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardItem;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardList;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardListControl;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewItem;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 /**
@@ -38,13 +40,15 @@ public class DashboardItemViewDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardItemViewDialog";//$NON-NLS-1$
 
-    private final DashboardViewContainer parentPart;
-    private final DBDashboardItem sourceItem;
+    private final DashboardContainer parentPart;
+    private final DashboardConfigurationList configuration;
+    private final DashboardViewItem sourceItem;
 
-    public DashboardItemViewDialog(DashboardViewContainer parentPart, DBDashboardItem sourceItem) {
+    public DashboardItemViewDialog(DashboardContainer parentPart, DashboardConfigurationList configuration, DashboardViewItem sourceItem) {
         super(parentPart.getWorkbenchSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
 
         this.parentPart = parentPart;
+        this.configuration = configuration;
         this.sourceItem = sourceItem;
     }
 
@@ -66,17 +70,23 @@ public class DashboardItemViewDialog extends BaseDialog {
 
         DashboardListViewer dashboardListViewer = new DashboardListViewer(
             parentPart.getWorkbenchSite(),
-            sourceItem.getDataSourceContainer(),
+            null,
+            configuration,
             parentPart.getViewConfiguration());
         dashboardListViewer.setSingleChartMode(true);
         dashboardListViewer.createControl(chartGroup);
 
-        DBDashboardItem targetItem  = new DBDashboardItem(
-            (DashboardList) dashboardListViewer.getDefaultGroup(),
-            sourceItem.getDashboard());
+        DashboardViewItem targetItem  = new DashboardViewItem(
+            (DashboardListControl) dashboardListViewer.getDefaultGroup(),
+            sourceItem.getItemDescriptor());
         targetItem.moveViewFrom(sourceItem, false);
 
         return dialogArea;
+    }
+
+    @Override
+    protected Control createButtonBar(Composite parent) {
+        return parent;
     }
 
     @Override

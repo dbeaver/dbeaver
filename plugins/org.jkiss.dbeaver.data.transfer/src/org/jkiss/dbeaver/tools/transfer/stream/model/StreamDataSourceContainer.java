@@ -55,6 +55,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data container transfer producer
@@ -295,12 +296,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Nullable
     @Override
-    public String getProperty(@NotNull String name) {
+    public String getExtension(@NotNull String name) {
         return null;
     }
 
     @Override
-    public void setProperty(@NotNull String name, @Nullable String value) {
+    public void setExtension(@NotNull String name, @Nullable String value) {
 
     }
 
@@ -483,6 +484,21 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
         // do nothing
+    }
+
+    @Override
+    public Map<String, String> getTags() {
+        return null;
+    }
+
+    @Override
+    public String getTagValue(String tagName) {
+        return null;
+    }
+
+    @Override
+    public void setTagValue(String tagName, String tagValue) {
+
     }
 
     @Override

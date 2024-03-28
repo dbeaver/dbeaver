@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public interface DBDashboardFolder extends DBPNamedObject {
         throws DBException;
 
     @NotNull
-    List<DashboardDescriptor> loadDashboards(@NotNull DBRProgressMonitor monitor, @NotNull DBDashboardContext context)
+    List<DashboardItemConfiguration> loadDashboards(@NotNull DBRProgressMonitor monitor, @NotNull DBDashboardContext context)
         throws DBException;
 
 

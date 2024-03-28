@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Job which runs every second and updates necessary dashboards
@@ -56,6 +56,7 @@ public class DashboardUpdateJob extends AbstractJob {
         if (isSchedule.get() && !DBWorkbench.getPlatform().isShuttingDown()) {
             schedule(JOB_DELAY);
         }
+
         return Status.OK_STATUS;
     }
 

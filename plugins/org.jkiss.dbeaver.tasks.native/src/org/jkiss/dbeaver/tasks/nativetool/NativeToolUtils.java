@@ -34,8 +34,8 @@ public abstract class NativeToolUtils {
 
     private static final Log log = Log.getLog(NativeToolUtils.class);
     
-    public static final String VARIABLE_HOST = "host";
-    public static final String VARIABLE_DATABASE = "database";
+    public static final String VARIABLE_HOST = DBPConnectionConfiguration.VARIABLE_HOST;
+    public static final String VARIABLE_DATABASE = DBPConnectionConfiguration.VARIABLE_DATABASE;
     public static final String VARIABLE_SCHEMA = "schema";
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_DATE = "date";
@@ -45,7 +45,7 @@ public abstract class NativeToolUtils {
     public static final String VARIABLE_DAY = "day";
     public static final String VARIABLE_HOUR = "hour";
     public static final String VARIABLE_MINUTE = "minute";
-    public static final String VARIABLE_CONN_TYPE = "connectionType";
+    public static final String VARIABLE_CONN_TYPE = DBPConnectionConfiguration.VARIABLE_CONN_TYPE;
 
     public static final String[] ALL_VARIABLES = {
         VARIABLE_HOST,

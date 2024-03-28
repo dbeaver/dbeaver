@@ -23,6 +23,8 @@ public class DashboardConstants {
 
     public static final String PREF_OPEN_SEPARATE_CONNECTION = "dashboard.openSeparateConnection";
 
+    public static final String DS_PROP_DASHBOARDS = "dashboards";
+
     public static final String RS_COL_TIMESTAMP = "STAT_TIMESTAMP";
 
     public static final int DEF_DASHBOARD_MAXIMUM_ITEM_COUNT = 300;
@@ -42,4 +44,5 @@ public class DashboardConstants {
     public static final String DASHBOARDS_PLUGIN_ID = "org.jkiss.dbeaver.model.dashboard";
     public static final String DASHBOARDS_LEGACY_PLUGIN_ID = "org.jkiss.dbeaver.model.ui.dashboard";
 
+    public static final String DASHBOARD_EXT = "dashboard"; //$NON-NLS-1$
 }

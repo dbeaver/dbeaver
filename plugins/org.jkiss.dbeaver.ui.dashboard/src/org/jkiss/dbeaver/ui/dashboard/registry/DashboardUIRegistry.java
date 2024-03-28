@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -66,13 +66,13 @@ public class DashboardUIRegistry {
     }
 
 
-    public List<DBDashboardRendererType> getAllViewTypes() {
+    public List<DashboardRendererType> getAllViewTypes() {
         return new ArrayList<>(viewTypeList);
     }
 
-    public List<DBDashboardRendererType> getSupportedViewTypes(DBDashboardDataType dataType) {
-        List<DBDashboardRendererType> result = new ArrayList<>();
-        for (DBDashboardRendererType vt : viewTypeList) {
+    public List<DashboardRendererType> getSupportedViewTypes(DBDashboardDataType dataType) {
+        List<DashboardRendererType> result = new ArrayList<>();
+        for (DashboardRendererType vt : viewTypeList) {
             if (ArrayUtils.contains(vt.getSupportedTypes(), dataType)) {
                 result.add(vt);
             }

@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -83,23 +84,28 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         return null;
     }
 
+    @Nullable
     public static DBPDataSourceContainer getActiveDataSourceContainer(ExecutionEvent event, boolean useEditor) {
-        if (useEditor) {
-            IEditorPart editor = HandlerUtil.getActiveEditor(event);
-            if (editor != null) {
-                DBPDataSourceContainer container = getDataSourceContainerFromPart(editor);
-                if (container != null) {
-                    return container;
-                }
+        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+        IEditorPart activeEditor = useEditor ? HandlerUtil.getActiveEditor(event) : null;
+        ISelection selection = HandlerUtil.getCurrentSelection(event);
+
+        return getActiveDataSourceContainer(activeEditor, activePart, selection);
+    }
+
+    @Nullable
+    public static DBPDataSourceContainer getActiveDataSourceContainer(IEditorPart activeEditor, IWorkbenchPart activePart, ISelection selection) {
+        if (activeEditor != null) {
+            DBPDataSourceContainer container = getDataSourceContainerFromPart(activeEditor);
+            if (container != null) {
+                return container;
             }
             return null;
         }
-        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         DBPDataSourceContainer container = getDataSourceContainerFromPart(activePart);
         if (container != null) {
             return container;
         }
-        ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
         if (selectedObject instanceof DBPDataSourceContainer) {

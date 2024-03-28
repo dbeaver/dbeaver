@@ -21,15 +21,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardDataType;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.control.DBDashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardRendererType;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardRendererType;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * DashboardDescriptor
  */
-public class DashboardRendererDescriptor extends AbstractContextDescriptor implements DBDashboardRendererType
+public class DashboardRendererDescriptor extends AbstractContextDescriptor implements DashboardRendererType
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard.ui";
     private final String id;
@@ -37,7 +40,10 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
     private final String description;
     private final DBPImage icon;
     private final ObjectType implType;
+    private final ObjectType itemConfigurationEditor;
+    private final ObjectType itemViewSettingsEditor;
     private final DBDashboardDataType[] supportedDataTypes;
+    private final boolean nativeRenderer;
 
     DashboardRendererDescriptor(
         IConfigurationElement config)
@@ -53,8 +59,11 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
         for (int i = 0; i < dataTypeNames.length; i++) {
             this.supportedDataTypes[i] = CommonUtils.valueOf(DBDashboardDataType.class, dataTypeNames[i], DBDashboardDataType.timeseries);
         }
+        this.nativeRenderer = CommonUtils.toBoolean(config.getAttribute("native"));
 
         this.implType = new ObjectType(config.getAttribute("renderer"));
+        this.itemConfigurationEditor = new ObjectType(config.getAttribute("configurationEditor"));
+        this.itemViewSettingsEditor = new ObjectType(config.getAttribute("viewSettingsEditor"));
     }
 
     @Override
@@ -86,9 +95,23 @@ public class DashboardRendererDescriptor extends AbstractContextDescriptor imple
         return supportedDataTypes;
     }
 
+    public boolean isNativeRenderer() {
+        return nativeRenderer;
+    }
+
     @Override
-    public DBDashboardRenderer createRenderer() throws DBException {
-        return implType.createInstance(DBDashboardRenderer.class);
+    public DashboardItemRenderer createRenderer() throws DBException {
+        return implType.createInstance(DashboardItemRenderer.class);
+    }
+
+    @Override
+    public IObjectPropertyConfigurator<DashboardItemConfiguration, DashboardItemConfiguration> createItemConfigurationEditor() throws DBException {
+        return itemConfigurationEditor.createInstance(IObjectPropertyConfigurator.class);
+    }
+
+    @Override
+    public IObjectPropertyConfigurator<DashboardItemViewSettings, DashboardItemViewSettings> createItemViewSettingsEditor() throws DBException {
+        return itemViewSettingsEditor.createInstance(IObjectPropertyConfigurator.class);
     }
 
     @Override
