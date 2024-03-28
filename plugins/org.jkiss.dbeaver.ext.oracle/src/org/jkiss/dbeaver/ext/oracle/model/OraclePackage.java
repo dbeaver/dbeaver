@@ -250,7 +250,8 @@ public class OraclePackage extends OracleSchemaObject
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT P.*,CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'FUNCTION' END as PROCEDURE_TYPE FROM ALL_PROCEDURES P\n" +
-                "LEFT OUTER JOIN ALL_ARGUMENTS A ON A.OWNER=P.OWNER AND A.PACKAGE_NAME=P.OBJECT_NAME AND A.OBJECT_NAME=P.PROCEDURE_NAME AND A.ARGUMENT_NAME IS NULL AND A.DATA_LEVEL=0\n" +
+                "LEFT OUTER JOIN ALL_ARGUMENTS A ON A.OWNER=P.OWNER AND A.PACKAGE_NAME=P.OBJECT_NAME AND A.OBJECT_NAME=P.PROCEDURE_NAME" +
+                    " AND A.SUBPROGRAM_ID=P.SUBPROGRAM_ID AND A.ARGUMENT_NAME IS NULL AND A.DATA_LEVEL=0\n" +
                 "WHERE P.OWNER=? AND P.OBJECT_NAME=?\n" +
                 "ORDER BY P.PROCEDURE_NAME");
             dbStat.setString(1, owner.getSchema().getName());
