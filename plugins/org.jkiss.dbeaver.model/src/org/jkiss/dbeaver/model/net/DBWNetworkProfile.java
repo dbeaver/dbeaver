@@ -121,7 +121,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
 
         List<Map<String, Object>> handlersConfigs = new ArrayList<>();
         for (DBWHandlerConfiguration cfg : configurations) {
-            Map<String, Object> hcProps = cfg.saveToMap();
+            Map<String, Object> hcProps = cfg.saveSecretsToMap();
             if (!hcProps.isEmpty()) {
                 hcProps.put("id", cfg.getId());
                 handlersConfigs.add(hcProps);
@@ -156,16 +156,15 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
             String configId = JSONUtils.getString(hc, "id");
             DBWHandlerConfiguration configuration = getConfiguration(configId);
             if (configuration != null) {
-                configuration.loadFromMap(hc);
+                configuration.loadSecretsFromMap(hc);
             }
         }
     }
 
     private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
-        if (!(secretController instanceof DBSSecretBrowser) || getProject() == null) {
+        if (!(secretController instanceof DBSSecretBrowser secretBrowser) || getProject() == null) {
             return;
         }
-        DBSSecretBrowser secretBrowser = (DBSSecretBrowser) secretController;
         for (DBWHandlerConfiguration cfg : configurations) {
             String prefix = "projects/" + getProject().getId() + "/network/" + cfg.getId() + "/profile/" + getProfileId();
             Map<String, String> secureProps = new LinkedHashMap<>();
