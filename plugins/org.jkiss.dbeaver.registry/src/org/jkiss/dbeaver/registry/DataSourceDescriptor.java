@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.dpi.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -691,6 +688,7 @@ public class DataSourceDescriptor
         return clientHome;
     }
 
+    @NotNull
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         if (proxyHandler == null && tunnelHandler == null) {
@@ -1407,12 +1405,29 @@ public class DataSourceDescriptor
 
         if (initialize) {
             monitor.subTask("Initialize data source");
+            // Disable manual commit for init stage (because it may produce errors and modify transaction scope)
+            boolean revertMetaToManualCommit = false;
+            try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                if (txnManager != null && !txnManager.isAutoCommit()) {
+                    txnManager.setAutoCommit(monitor, true);
+                    revertMetaToManualCommit = true;
+                }
+            }
             try {
                 dataSource.initialize(monitor);
                 dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
             } catch (Throwable e) {
                 log.error("Error initializing datasource", e);
                 throw e;
+            }
+            if (revertMetaToManualCommit) {
+                try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                    if (txnManager != null && txnManager.isAutoCommit()) {
+                        txnManager.setAutoCommit(monitor, false);
+                    }
+                }
             }
         }
     }

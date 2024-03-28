@@ -7,4 +7,3 @@ Main-Class: org.jkiss.dbeaver.launcher.DBeaverLauncher
 Bundle-Version: 1.0.1.qualifier
 Automatic-Module-Name: org.jkiss.dbeaver.launcher
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: org.eclipse.equinox.launcher

@@ -23,7 +23,6 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.workbench.IResourceUtilities;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.renderers.swt.StackRenderer;
@@ -62,7 +61,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.jkiss.dbeaver.ui.svg.SVGResourceUtility;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
@@ -79,14 +77,6 @@ public class DBeaverStackRenderer extends StackRenderer {
             subscribePerspectiveSwitched();
         } catch (Throwable e) {
             log.error("Error setting perspective switch listener", e);
-        }
-
-        try {
-            final IWorkbench workbench = PlatformUI.getWorkbench();
-            final IEclipseContext context = workbench.getService(IEclipseContext.class);
-            context.set(IResourceUtilities.class, new SVGResourceUtility());
-        } catch (Throwable e) {
-            log.error("Error injecting resource utility", e);
         }
     }
 
@@ -348,7 +338,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                             HolidayDecorations.install(composite.getParent());
                         }
                     } catch (Exception e) {
-                        log.error("Can't access onboarding composite", e);
+                        log.debug("Can't access onboarding composite", e);
                         broker.unsubscribe(this);
                     }
                 }

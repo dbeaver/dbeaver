@@ -17,10 +17,19 @@
 
 package org.jkiss.dbeaver.model.exec.trace;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Execution trace
  */
 public interface DBCTrace {
 
+    /**
+     * Default trace property list
+     */
+    default Collection<DBCTraceProperty> getTraceProperty() {
+        return Collections.emptyList();
+    }
 
 }

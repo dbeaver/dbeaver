@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
@@ -72,7 +73,14 @@ public interface SMController extends DBPObjectController,
      * @param value the value
      * @throws DBException the db exception
      */
-    void setCurrentUserParameter(String name, Object value) throws DBException;
+    void setCurrentUserParameter(@NotNull String name, @Nullable Object value) throws DBException;
+
+    /**
+     * Sets user parameters.
+     *
+     * @throws DBException the db exception
+     */
+    void setCurrentUserParameters(@NotNull Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials

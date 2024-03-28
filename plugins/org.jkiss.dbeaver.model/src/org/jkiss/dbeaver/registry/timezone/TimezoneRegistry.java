@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -37,7 +38,7 @@ public class TimezoneRegistry {
     }
 
     public static void setDefaultZone(@Nullable ZoneId id) {
-        DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (id != null) {
             if (!TimeZone.getDefault().getID().equals(id.getId())) {
                 TimeZone.setDefault(TimeZone.getTimeZone(id));
@@ -56,7 +57,7 @@ public class TimezoneRegistry {
     public static void overrideTimezone() {
         userDefaultTimezone = System.getProperty("user.timezone");
         System.setProperty("user.old.timezone", userDefaultTimezone);
-        DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (timezone != null && !timezone.equals(DBConstants.DEFAULT_TIMEZONE)) {
             TimeZone.setDefault(TimeZone.getTimeZone(timezone));

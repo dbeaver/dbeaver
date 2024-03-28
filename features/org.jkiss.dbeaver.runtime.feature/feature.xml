@@ -61,6 +61,7 @@
     <plugin id="org.jkiss.dbeaver.data.transfer" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.tasks.native" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.erd.model" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model.dashboard" version="0.0.0" />
 
     <plugin id="org.jkiss.dbeaver.dpi.app" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.dpi.model" version="0.0.0" />

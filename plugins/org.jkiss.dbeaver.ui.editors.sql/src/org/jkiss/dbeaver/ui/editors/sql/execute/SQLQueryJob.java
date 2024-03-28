@@ -467,7 +467,7 @@ public class SQLQueryJob extends DataSourceJob
 
             // Check and invalidate connection
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
-                executionContext.invalidateContext(monitor, true);
+                executionContext.invalidateContext(monitor);
                 connectionInvalidated = true;
             }
 

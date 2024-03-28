@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import org.eclipse.core.net.proxy.IProxyService;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
@@ -50,8 +52,12 @@ public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
     }
 
     @Override
-    public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
-
+    public void invalidateHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBCInvalidatePhase phase
+    ) throws DBException {
+        // nothing to do
     }
 
     @Override
