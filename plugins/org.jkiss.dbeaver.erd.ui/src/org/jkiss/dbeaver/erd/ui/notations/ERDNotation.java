@@ -20,6 +20,7 @@ import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Interface of ER Diagram style notation
@@ -34,6 +35,7 @@ public interface ERDNotation {
      * @param frgColor    - front end color
      */
     public void applyNotationForArrows(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull PolylineConnection conn,
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,

@@ -20,6 +20,7 @@ import org.eclipse.draw2d.ConnectionEndpointLocator;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
@@ -30,7 +31,7 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDAssociationType;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -46,19 +47,23 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
     private static final Log log = Log.getLog(CrowsFootDiagramNotation.class);
 
     @Override
-    public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
+    public void applyNotationForArrows(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
+    ) {
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
         if (constraintType == DBSEntityConstraintType.PRIMARY_KEY) {
             // source 0..1
             createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ZERO_OR_ONE, LABEL_0_TO_1);
         } else if (constraintType.isAssociation() &&
-            association.getSourceEntity() instanceof ERDEntity &&
-            association.getTargetEntity() instanceof ERDEntity) {
+            association.getSourceEntity() instanceof ERDEntity src &&
+            association.getTargetEntity() instanceof ERDEntity trg) {
             // source - 1..n
             try {
-                ERDEntity src = (ERDEntity) association.getSourceEntity();
                 DBSEntity entity = src.getObject();
-                VoidProgressMonitor monitor = new VoidProgressMonitor();
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     // get index for require source attributes
@@ -85,6 +90,8 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                 log.error(e.getMessage(), e);
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
+                /* Clean up whatever needs to be handled before interrupting */
+                Thread.currentThread().interrupt();
             }
         }
         conn.setLineWidth(1);
@@ -114,10 +121,13 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         conn.setTargetDecoration(targetDecor);
     }
 
-
-
     @Override
-    public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
+    public void applyNotationForEntities(
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor
+    ) {
         // nothing
     }
 

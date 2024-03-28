@@ -27,6 +27,7 @@ import org.eclipse.gef.EditPolicy;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.policy.DiagramXYLayoutPolicy;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Used to delegate between the GraphLayoutAuto and the GraphLayoutXY classes
@@ -54,8 +55,13 @@ public class DelegatingLayoutManager implements LayoutManager {
     //********************* layout manager methods methods
     // ****************************/
 
-    public void rearrange(IFigure container)
-    {
+    /**
+     * Rearrange figure on the diagram 
+     */
+    public void rearrange(DBRProgressMonitor monitor, IFigure container) {
+        if (monitor.isCanceled()) {
+            return;
+        }
         graphLayoutManager.layout(container);
         xyLayoutManager.cleanupConstraints();
     }

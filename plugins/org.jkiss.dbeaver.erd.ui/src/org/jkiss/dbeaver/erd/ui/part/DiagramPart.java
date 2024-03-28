@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,7 +63,6 @@ import java.util.List;
  * @author Serge Rider
  */
 public class DiagramPart extends PropertyAwarePart {
-    
     private ERDConnectionRouter router;
     private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
@@ -81,9 +81,13 @@ public class DiagramPart extends PropertyAwarePart {
         }
     };
     private DelegatingLayoutManager delegatingLayoutManager;
-    private Font normalFont, boldFont, italicFont, boldItalicFont;
+    private Font normalFont;
+    private Font boldFont;
+    private Font italicFont;
+    private Font boldItalicFont;
 
     public DiagramPart() {
+        //default constructor
     }
 
     /**
@@ -150,6 +154,7 @@ public class DiagramPart extends PropertyAwarePart {
         return figure;
     }
 
+    @Override
     @NotNull
     public EntityDiagram getDiagram()
     {
@@ -188,29 +193,34 @@ public class DiagramPart extends PropertyAwarePart {
         return boldItalicFont;
     }
 
-    public void rearrangeDiagram()
-    {
-        for (Object part : getChildren()) {
-            if (part instanceof NodePart) {
-                resetConnectionConstraints(((NodePart) part).getSourceConnections());
-            }
+    /**
+     * The method designed for re-arrangement of diagram, reset alignment elements
+     * to original
+     */
+    public void rearrangeDiagram(@NotNull DBRProgressMonitor monitor) {
+        if (monitor.isCanceled()) {
+            return;
         }
-        //delegatingLayoutManager.set
-        delegatingLayoutManager.rearrange(getFigure());
-
-        //getFigure().setLayoutManager(delegatingLayoutManager);
-        //getFigure().getLayoutManager().layout(getFigure());
+        getChildren().forEach(c -> {
+            if (c instanceof NodePart np) {
+                resetConnectionConstraints(monitor, np.getSourceConnections());
+            }
+        });
+        delegatingLayoutManager.rearrange(monitor, getFigure());
         getFigure().repaint();
     }
 
-    private void resetConnectionConstraints(List sourceConnections) {
+    private void resetConnectionConstraints(DBRProgressMonitor monitor, List<?> sourceConnections) {
+        if (monitor.isCanceled()) {
+            return;
+        }
         if (!CommonUtils.isEmpty(sourceConnections)) {
             for (Object sc : sourceConnections) {
-                if (sc instanceof AbstractConnectionEditPart) {
-                    ((AbstractConnectionEditPart) sc).getConnectionFigure().setRoutingConstraint(null);
-                    if (sc instanceof AssociationPart) {
-                        ((AssociationPart) sc).getAssociation().setInitBends(null);
-                        ((AssociationPart) sc).setConnectionRouting((PolylineConnection) ((AbstractConnectionEditPart) sc).getConnectionFigure());
+                if (sc instanceof AbstractConnectionEditPart abstractPart) {
+                    abstractPart.getConnectionFigure().setRoutingConstraint(null);
+                    if (sc instanceof AssociationPart associationPart) {
+                        associationPart.getAssociation().setInitBends(null);
+                        associationPart.setConnectionRouting(monitor, (PolylineConnection) abstractPart.getConnectionFigure());
                     }
                 }
             }

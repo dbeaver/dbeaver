@@ -707,13 +707,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public void refreshDiagram(boolean force, boolean refreshMetadata) {
-        if (isLoaded && force) {
-            loadDiagram(refreshMetadata);
-            DiagramPart diagramPart = getDiagramPart();
-            if (diagramPart != null) {
-                diagramPart.rearrangeDiagram();
+        UIUtils.runUIJob(ERDUIMessages.erd_job_rearrange_diagram_title, monitor -> {
+            if (isLoaded && force) {
+                loadDiagram(refreshMetadata);
+                DiagramPart diagramPart = getDiagramPart();
+                if (diagramPart != null) {
+                    diagramPart.getDiagram().setMonitorForDiagram(monitor);
+                    diagramPart.rearrangeDiagram(monitor);
+                }
             }
-        }
+        });
     }
 
     @Override
@@ -1272,15 +1275,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     private void refreshEntityAndAttributes() {
-        List<ERDEntity> entities = getDiagram().getEntities();
-        for (ERDEntity entity : entities) {
+        getDiagram().getEntities().forEach(entity -> {
             entity.reloadAttributes(getDiagram());
-        }
-        for (Object object : getGraphicalViewer().getContents().getChildren()) {
-            if (object instanceof EntityPart) {
-                ((EntityPart) object).refresh();
+        });
+        getGraphicalViewer().getContents().getChildren().forEach(editPart -> {
+            if (editPart instanceof EntityPart) {
+                ((EntityPart) editPart).refresh();
             }
-        }
+        });
     }
 
     protected class ProgressControl extends ProgressPageControl {
@@ -1580,14 +1582,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         @Override
         public void completeLoading(EntityDiagram result) {
-            super.completeLoading(result);
-            super.visualizeLoading();
-            if (result != null && !result.getEntities().isEmpty()) {
-                setErrorMessage(null);
-            }
-            getGraphicalViewer().setContents(result);
-            getDiagramPart().rearrangeDiagram();
-            finishLoading();
+            UIUtils.runUIJob(ERDUIMessages.erd_job_rearrange_diagram_title, monitor -> {
+                super.completeLoading(result);
+                super.visualizeLoading();
+                if (result != null && !result.getEntities().isEmpty()) {
+                    setErrorMessage(null);
+                }
+                getGraphicalViewer().setContents(result);
+                getDiagramPart().rearrangeDiagram(monitor);
+                finishLoading();
+            });
         }
 
         protected abstract void finishLoading();
