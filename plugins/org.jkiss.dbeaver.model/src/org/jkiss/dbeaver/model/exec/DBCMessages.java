@@ -14,31 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.exec;
 
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 
-@SuppressWarnings("serial")
-public class DBCDriverFilesMissingException extends DBCException {
-
-    private DBPDriver driver;
-
-    public DBCDriverFilesMissingException(
-        @NotNull DBPDriver driver,
-        @NotNull Throwable e) {
-        super(DBCMessages.initialization_driver_error_details, e);
-        this.driver = driver;
+public class DBCMessages extends NLS {
+    
+    public static String initialization_driver_error_msg;
+    public static String initialization_driver_error_details;
+    
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(DBCMessages.class.getName(), DBCMessages.class);
     }
 
-    public DBPDriver getDriver() {
-        return driver;
-    }
-
-    public String getErrorMessage() {
-        return NLS.bind(DBCMessages.initialization_driver_error_msg,
-            driver.getFullName(),
-            driver.getDriverClassName());
+    private DBCMessages() {
     }
 }
