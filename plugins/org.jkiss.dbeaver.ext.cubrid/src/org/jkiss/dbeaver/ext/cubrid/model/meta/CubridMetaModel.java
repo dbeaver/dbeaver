@@ -394,7 +394,7 @@ public class CubridMetaModel extends GenericMetaModel
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @Nullable GenericView object, @Nullable Map<String, Object> options) throws DBException {
         String ddl = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
-            String sql = String.format("show create view %s", object.getName());
+            String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
             try(JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while(dbResult.next()) {
