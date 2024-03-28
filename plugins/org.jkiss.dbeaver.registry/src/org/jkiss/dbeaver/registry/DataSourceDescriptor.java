@@ -926,6 +926,10 @@ public class DataSourceDescriptor
         }
     }
 
+    /**
+     * this method always forcibly updates an available secrets and should always return actual secrets,
+     * to get secrets using cache use {@link #listSharedCredentialFromCache}
+     */
     @NotNull
     public synchronized List<DBSSecretValue> listSharedCredentials() throws DBException {
         if (!isSharedCredentials()) {
@@ -939,6 +943,9 @@ public class DataSourceDescriptor
         return availableSharedCredentials;
     }
 
+    /**
+     * returns secrets from the cache or reads them if they do not exist, may contain outdated secrets
+     */
     private synchronized List<DBSSecretValue> listSharedCredentialFromCache() throws DBException {
         if (availableSharedCredentials != null) {
             return availableSharedCredentials;
