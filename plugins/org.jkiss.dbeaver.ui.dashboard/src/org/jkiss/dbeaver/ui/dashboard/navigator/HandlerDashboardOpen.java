@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 
 public class HandlerDashboardOpen extends AbstractDataSourceHandler {
@@ -51,7 +50,7 @@ public class HandlerDashboardOpen extends AbstractDataSourceHandler {
             workbenchWindow,
             dataSourceContainer.getProject(),
             dataSourceContainer,
-            DashboardConfigurationList.DEFAULT_DASHBOARD_ID);
+            null);
         return null;
     }
 

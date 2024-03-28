@@ -22,21 +22,21 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 
 public class DashboardViewConfigDialog extends BaseDialog {
 
     private final DataSourceDashboardView view;
+    private Text dashboardNameText;
+    private Button connectOnActivationCheck;
 
     public DashboardViewConfigDialog(Shell shell, DataSourceDashboardView view) {
         super(shell, NLS.bind(UIDashboardMessages.dialog_dashboard_view_config_title, view.getDataSourceContainer().getName()), null);
@@ -58,20 +58,20 @@ public class DashboardViewConfigDialog extends BaseDialog {
         {
             Group viewGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg, 2, GridData.FILL_HORIZONTAL, 0);
 
-            Button connectOnActivationCheck = UIUtils.createCheckbox(
+            Text dashboardIdText = UIUtils.createLabelText(viewGroup,
+                "ID",
+                CommonUtils.notEmpty(view.getConfiguration().getDashboardId()));
+            dashboardIdText.setEnabled(false);
+            dashboardNameText = UIUtils.createLabelText(viewGroup,
+                UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_display_name,
+                CommonUtils.notEmpty(view.getConfiguration().getDashboardName()));
+
+            connectOnActivationCheck = UIUtils.createCheckbox(
                 viewGroup,
                 UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_connect,
                 UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_connect_tooltip,
                 view.getConfiguration().isOpenConnectionOnActivate(),
                 2);
-            connectOnActivationCheck
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        view.getConfiguration().setOpenConnectionOnActivate(((Button)e.widget).getSelection());
-                    }
-                });
-            //connectOnActivationCheck.setEnabled(false);
 
             // #4209 Dashboard: disable separate connection option (too aggressive)
             /*Button separateConnectionCheck = UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn_tooltip, viewConfiguration.isUseSeparateConnection(), 2);
@@ -94,7 +94,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
             final Button managerButton = createButton(
                 parent,
                 IDialogConstants.CANCEL_ID,
-                UIDashboardMessages.dialog_dashboard_view_config_button_manage,
+                UIDashboardMessages.dialog_add_dashboard_button_manage,
                 false
             );
             ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
@@ -111,9 +111,16 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        super.okPressed();
         try {
+            String dbName = dashboardNameText.getText();
+            if (CommonUtils.isEmpty(dbName)) {
+                throw new IOException("Empty dashboard name");
+            }
+            view.getConfiguration().setDashboardName(dbName);
+            view.getConfiguration().setOpenConnectionOnActivate(connectOnActivationCheck.getSelection());
             view.getConfigurationList().saveConfiguration();
+
+            super.okPressed();
         } catch (IOException e) {
             DBWorkbench.getPlatformUI().showError("Error saving dashboard view", null, e);
         }

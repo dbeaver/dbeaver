@@ -134,9 +134,6 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
             if (CommonUtils.isEmpty(dashboardId) && CommonUtils.isEmpty(projectName)) {
                 throw new IllegalStateException("Bad dashboard view ID: " + secondaryId);
             }
-            if (CommonUtils.isEmpty(dashboardId)) {
-                dashboardId = DashboardConfigurationList.DEFAULT_DASHBOARD_ID;
-            }
 
             if (CommonUtils.isEmpty(projectName)) {
                 dataSourceContainer = DBUtils.findDataSource(null, datasourceId);
@@ -157,9 +154,15 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
                 dataSourceContainer.getRegistry().addDataSourceListener(this);
 
                 configurationList = new DashboardConfigurationList(dataSourceContainer);
+                configurationList.checkDefaultDashboardExistence();
+                if (CommonUtils.isEmpty(dashboardId)) {
+                    dashboardId = configurationList.getDashboards().get(0).getDashboardId();
+                }
+
                 configuration = configurationList.getDashboard(dashboardId);
                 if (configuration == null) {
-                    configuration = configurationList.createDashboard(dashboardId, DashboardConfigurationList.DEFAULT_DASHBOARD_NAME);
+                    dashboardId = DashboardConfigurationList.DEFAULT_DASHBOARD_ID;
+                    configuration = configurationList.getDashboard(dashboardId);
                 }
 
                 dashboardListViewer = new DashboardListViewer(getSite(), this, configurationList, configuration);
@@ -224,9 +227,9 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
         }
     }
 
-    private void updateStatus() {
+    public void updateStatus() {
         String partName;
-        if (configuration.getDashboardId().equals(DashboardConfigurationList.DEFAULT_DASHBOARD_ID)) {
+        if (DashboardConfigurationList.DEFAULT_DASHBOARD_NAME.equals(configuration.getDashboardName())) {
             if (dataSourceContainer != null) {
                 if (dataSourceContainer.isConnected()) {
                     DashboardUpdateJob.getDefault().resumeDashboardUpdate();

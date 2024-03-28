@@ -26,7 +26,9 @@
         <command id="org.jkiss.dbeaver.ui.dashboard.configure" name="%command.org.jkiss.dbeaver.ui.dashboard.configure.name" description="%command.org.jkiss.dbeaver.ui.dashboard.configure.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.reset" name="%command.org.jkiss.dbeaver.ui.dashboard.reset.name" description="%command.org.jkiss.dbeaver.ui.dashboard.reset.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
-        <command id="org.jkiss.dbeaver.ui.dashboard.create" name="%command.org.jkiss.dbeaver.ui.dashboard.create.name" description="%command.org.jkiss.dbeaver.ui.dashboard.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.create" name="%command.org.jkiss.dbeaver.ui.dashboard.create.name" description="%command.org.jkiss.dbeaver.ui.dashboard.create.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="datasource" name="Create dashboard for active datasource" optional="true"/>
+        </command>
         <command id="org.jkiss.dbeaver.ui.dashboard.delete" name="%command.org.jkiss.dbeaver.ui.dashboard.delete.name" description="%command.org.jkiss.dbeaver.ui.dashboard.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.add" name="%command.org.jkiss.dbeaver.ui.dashboard.add.name" description="%command.org.jkiss.dbeaver.ui.dashboard.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.remove" name="%command.org.jkiss.dbeaver.ui.dashboard.remove.name" description="%command.org.jkiss.dbeaver.ui.dashboard.remove.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -72,7 +74,12 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardRemoveItem">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+                <and>
+                    <with variable="selection">
+                        <count value="1"/>
+                    </with>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.view" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardViewItem">
@@ -124,6 +131,7 @@
             <dynamic id="org.jkiss.dbeaver.menu.dashboards.pulldown" class="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardDynamicMenuContributor"/>
             <separator name="additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.create" label="%command.org.jkiss.dbeaver.ui.dashboard.create.alterName">
+                <parameter name="datasource" value="true"/>
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>

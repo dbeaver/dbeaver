@@ -27,15 +27,18 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 
 public class DashboardCreateWizard extends Wizard implements INewWizard {
 
+    private final DBPDataSourceContainer dataSourceContainer;
     @Nullable
     private IFolder folder;
     private DashboardCreateWizardPage pageContent;
@@ -44,49 +47,55 @@ public class DashboardCreateWizard extends Wizard implements INewWizard {
     @Nullable
     private DBPProject project;
     
-    public DashboardCreateWizard() {
+    public DashboardCreateWizard(DBPDataSourceContainer dataSourceContainer) {
+        this.dataSourceContainer = dataSourceContainer;
 	}
 
 	@Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle("Create dashboard");
         setNeedsProgressMonitor(true);
-        IFolder dashboardFolder = null;
-        if (selection != null) {
-            Object element = selection.getFirstElement();
-            if (element != null) {
-                dashboardFolder = Platform.getAdapterManager().getAdapter(element, IFolder.class);
-			}
-        }
-        if (dashboardFolder == null) {
-            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        	if (activeProject == null) {
-				errorMessage = "Can't create dashboard without active project";
-			} else {
-	        	try {
-					dashboardFolder = DashboardResourceHandler.getDashboardsFolder(activeProject, true);
-				} catch (CoreException e) {
-					errorMessage = e.getMessage();
-				}
-			}
 
-			// Check for entity selection
-            if (selection != null && !selection.isEmpty()) {
-        	    if (Platform.getAdapterManager().getAdapter(selection.getFirstElement(), DBSEntity.class) != null) {
-        	        entitySelection = selection;
+        if (dataSourceContainer != null) {
+            this.project = dataSourceContainer.getProject();
+        } else {
+            IFolder dashboardFolder = null;
+            if (selection != null) {
+                Object element = selection.getFirstElement();
+                if (element != null) {
+                    dashboardFolder = Platform.getAdapterManager().getAdapter(element, IFolder.class);
                 }
             }
-        }
-        if (dashboardFolder != null) {
-            this.folder = dashboardFolder;
-            this.project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(dashboardFolder.getProject());
+            if (dashboardFolder == null) {
+                DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                if (activeProject == null) {
+                    errorMessage = "Can't create dashboard without active project";
+                } else {
+                    try {
+                        dashboardFolder = DashboardResourceHandler.getDashboardsFolder(activeProject, true);
+                    } catch (CoreException e) {
+                        errorMessage = e.getMessage();
+                    }
+                }
+
+                // Check for entity selection
+                if (selection != null && !selection.isEmpty()) {
+                    if (Platform.getAdapterManager().getAdapter(selection.getFirstElement(), DBSEntity.class) != null) {
+                        entitySelection = selection;
+                    }
+                }
+            }
+            if (dashboardFolder != null) {
+                this.folder = dashboardFolder;
+                this.project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(dashboardFolder.getProject());
+            }
         }
     }
 
     @Override
     public void addPages() {
         super.addPages();
-        pageContent = new DashboardCreateWizardPage(project);
+        pageContent = new DashboardCreateWizardPage(project, dataSourceContainer);
         addPage(pageContent);
         if (getContainer() != null) {
             //WizardDialog call
@@ -106,15 +115,26 @@ public class DashboardCreateWizard extends Wizard implements INewWizard {
 	@Override
 	public boolean performFinish() {
         try {
-            IFile diagramFile = DashboardResourceHandler.createDashboard(
-                pageContent.getDashboardName(),
-                folder,
-                new VoidProgressMonitor());
+            if (dataSourceContainer != null) {
+                DashboardConfigurationList configurationList = new DashboardConfigurationList(dataSourceContainer);
+                configurationList.checkDefaultDashboardExistence();
+                // Add fake default dashboard
+                configurationList.createDashboard(
+                    pageContent.getDashboardId(),
+                    pageContent.getDashboardName());
+                configurationList.saveConfiguration();
+                return true;
+            } else {
+                IFile diagramFile = DashboardResourceHandler.createDashboard(
+                    pageContent.getDashboardName(),
+                    folder,
+                    new VoidProgressMonitor());
 
-            DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(diagramFile);
-            if (handler != null) {
+                DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(diagramFile);
+                if (handler != null) {
                     handler.openResource(diagramFile);
                     return true;
+                }
             }
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Error creating dashboard", null, e);

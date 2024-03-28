@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -32,14 +33,19 @@ class DashboardCreateWizardPage extends WizardPage {
 
     @Nullable
     private DBPProject project;
+    private String dashboardId;
     private String dashboardName;
 
-    protected DashboardCreateWizardPage(@Nullable DBPProject project) {
+    protected DashboardCreateWizardPage(@Nullable DBPProject project, DBPDataSourceContainer dataSourceContainer) {
         super("New dashboard");
-        setTitle("Create new dashboard");
+        setTitle("Create new dashboard" + (dataSourceContainer == null ? "" : " for '" + dataSourceContainer.getName() + "'"));
         setDescription("Specify dashboard properties");
 
         this.project = project;
+    }
+
+    public String getDashboardId() {
+        return dashboardId;
     }
 
     public String getDashboardName() {
@@ -52,22 +58,25 @@ class DashboardCreateWizardPage extends WizardPage {
             setErrorMessage("The user needs more permissions to create a new diagram.");
             return false;
         }
-        boolean hasName = !CommonUtils.isEmpty(dashboardName);
-        if (!hasName) {
+        setErrorMessage(null);
+        if (CommonUtils.isEmpty(dashboardId)) {
+            setErrorMessage("Set dashboard ID");
+        }
+        if (CommonUtils.isEmpty(dashboardName)) {
             setErrorMessage("Set dashboard name");
-        } else {
-            setErrorMessage(null);
         }
-        if (getErrorMessage() != null) {
-            return false;
-        }
-        return hasName;
+        return getErrorMessage() == null;
     }
 
     @Override
     public void createControl(Composite parent) {
         Composite configGroup = UIUtils.createControlGroup(parent, "Settings", 2, GridData.FILL_BOTH, 0);
 
+        final Text dashboardIdText = UIUtils.createLabelText(configGroup, "ID", null); //$NON-NLS-1$
+        dashboardIdText.addModifyListener(e -> {
+            dashboardId = dashboardIdText.getText();
+            updateState();
+        });
         final Text dashboardNameText = UIUtils.createLabelText(configGroup, "Name", null); //$NON-NLS-1$
         dashboardNameText.addModifyListener(e -> {
             dashboardName = dashboardNameText.getText();

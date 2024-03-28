@@ -35,7 +35,12 @@ public class HandlerDashboardDelete extends HandlerDashboardAbstract {
                 "Are you sure you want to delete dashboard '" + view.getConfiguration().getTitle() + "'?")
             ) {
                 HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().hideView(view);
-                DashboardConfigurationList configurationList = view.getConfigurationList();
+                DashboardConfigurationList configurationList;
+                if (view.getDataSourceContainer() != null) {
+                    configurationList = new DashboardConfigurationList(view.getDataSourceContainer());
+                } else {
+                    configurationList = view.getConfigurationList();
+                }
                 configurationList.deleteDashBoard(view.getConfiguration());
             }
         }

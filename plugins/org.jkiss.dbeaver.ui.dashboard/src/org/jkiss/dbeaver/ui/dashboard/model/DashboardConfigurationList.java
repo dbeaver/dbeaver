@@ -243,4 +243,13 @@ public class DashboardConfigurationList {
         }
 
     }
+
+    public void checkDefaultDashboardExistence() {
+        if (dashboards.isEmpty()) {
+            // Add fake default dashboard
+            this.createDashboard(
+                DashboardConfigurationList.DEFAULT_DASHBOARD_ID,
+                DashboardConfigurationList.DEFAULT_DASHBOARD_NAME);
+        }
+    }
 }

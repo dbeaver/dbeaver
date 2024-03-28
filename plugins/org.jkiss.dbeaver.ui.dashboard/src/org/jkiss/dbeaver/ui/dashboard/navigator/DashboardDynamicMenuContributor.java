@@ -55,6 +55,13 @@ public class DashboardDynamicMenuContributor extends DataSourceMenuContributor {
         }
         if (ds != null) {
             DashboardConfigurationList configurationList = new DashboardConfigurationList(ds);
+            configurationList.checkDefaultDashboardExistence();
+            if (configurationList.getDashboards().isEmpty()) {
+                // Add fake default dashboard
+                configurationList.createDashboard(
+                    DashboardConfigurationList.DEFAULT_DASHBOARD_ID,
+                    DashboardConfigurationList.DEFAULT_DASHBOARD_NAME);
+            }
             for (DashboardConfiguration dashboard : configurationList.getDashboards()) {
                 menuItems.add(ActionUtils.makeActionContribution(new ShowDashBoardAction(dashboard), true));
             }

@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardViewConfigDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 public class HandlerDashboardConfiguration extends HandlerDashboardAbstract {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) {
         DataSourceDashboardView view = getActiveDashboardView(event);
         if (view != null) {
             DashboardViewConfigDialog dialog = new DashboardViewConfigDialog(
                 HandlerUtil.getActiveShell(event), view);
-            dialog.open();
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                view.updateStatus();
+            }
         }
         return null;
     }

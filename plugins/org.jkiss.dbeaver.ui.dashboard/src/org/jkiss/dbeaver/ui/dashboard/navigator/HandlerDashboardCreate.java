@@ -17,19 +17,29 @@
 package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.utils.CommonUtils;
 
 public class HandlerDashboardCreate extends AbstractDataSourceHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) {
+        DBPDataSourceContainer dataSourceContainer = null;
+        if (CommonUtils.toBoolean(event.getParameter("datasource"))) {
+            dataSourceContainer = getDataSourceContainerFromPart(HandlerUtil.getActivePart(event));
+            if (dataSourceContainer == null) {
+                DBWorkbench.getPlatformUI().showError("Cannot create dashboard", "Cannot determine active datasource");
+                return null;
+            }
+        }
+
         ActiveWizardDialog dialog = new ActiveWizardDialog(
             HandlerUtil.getActiveWorkbenchWindow(event),
-            new DashboardCreateWizard());
+            new DashboardCreateWizard(dataSourceContainer));
         dialog.open();
 
         return null;
