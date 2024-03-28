@@ -179,7 +179,8 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                dbCanvas.setFocus();
+                groupContainer.setSelection(DashboardViewItem.this);
+                //dbCanvas.forceFocus();
             }
         };
         dbCanvas.addMouseListener(mouseAdapter);

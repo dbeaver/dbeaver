@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.view;
+package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
-public class HandlerDashboardRemoveItem extends HandlerDashboardAbstract {
+public class HandlerDashboardCreate extends AbstractDataSourceHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        DataSourceDashboardView view = getActiveDashboardView(event);
-        if (view != null) {
-            DashboardItemContainer selectedDashboard = getSelectedDashboard(view);
-            if (selectedDashboard != null) {
-                selectedDashboard.getGroup().removeItem(selectedDashboard);
-            }
+    public Object execute(ExecutionEvent event) throws ExecutionException
+    {
+        ActiveWizardDialog dialog = new ActiveWizardDialog(
+            HandlerUtil.getActiveWorkbenchWindow(event),
+            new DashboardCreateWizard());
+        dialog.open();
 
-        }
         return null;
     }
 

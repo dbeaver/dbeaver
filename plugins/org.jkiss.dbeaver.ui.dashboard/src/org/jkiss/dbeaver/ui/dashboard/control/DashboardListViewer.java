@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
@@ -126,6 +126,17 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     }
 
+    @Override
+    public ISelection getSelection() {
+        return getStructuredSelection();
+    }
+
+    @Override
+    public IStructuredSelection getStructuredSelection() {
+        DashboardViewItem selectedItem = dashContainer.getSelectedItem();
+        return selectedItem == null ? new StructuredSelection() : new StructuredSelection(selectedItem);
+    }
+
     public void createDashboardsFromConfiguration() {
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
             dashContainer.createDefaultDashboards();
@@ -180,6 +191,11 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     @Override
     public IWorkbenchPart getWorkbenchPart() {
         return part;
+    }
+
+    @Override
+    public void updateSelection() {
+        fireSelectionChanged(new SelectionChangedEvent(this, getSelection()));
     }
 
     @Override

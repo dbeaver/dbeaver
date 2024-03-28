@@ -53,6 +53,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -170,6 +171,7 @@ public class DashboardAddItemDialog extends BaseDialog {
                     if (parentElement instanceof DBDashboardFolder df) {
                         List<DBDashboardFolder> subFolders = df.loadSubFolders(new VoidProgressMonitor(), context);
                         List<DashboardItemConfiguration> dashboards = df.loadDashboards(new VoidProgressMonitor(), context);
+                        dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
                         return ArrayUtils.concatArrays(subFolders.toArray(), dashboards.toArray());
                     } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
                         List<Object> children = new ArrayList<>();
@@ -186,6 +188,7 @@ public class DashboardAddItemDialog extends BaseDialog {
                             viewConfiguration.getDataSourceContainer(),
                             false));
                         dashboards.removeIf(descriptor -> viewConfiguration.getItemConfig(descriptor.getId()) != null);
+                        dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
                         return dashboards.toArray();
                     }
                 } catch (DBException e) {

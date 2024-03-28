@@ -228,9 +228,13 @@ public class DashboardRegistry {
 
     public List<DashboardProviderDescriptor> getDashboardProviders(DBPDataSourceContainer dataSource) {
         if (dataSource != null) {
-            return dashboardProviders.values().stream().filter(dp -> dp.appliesTo(dataSource)).toList();
+            return dashboardProviders.values().stream().filter(dp -> dp.appliesTo(dataSource))
+                .sorted(Comparator.comparing(DashboardProviderDescriptor::getName))
+                .toList();
         }
-        return dashboardProviders.values().stream().filter(DashboardProviderDescriptor::isEnabled).toList();
+        return dashboardProviders.values().stream().filter(DashboardProviderDescriptor::isEnabled)
+            .sorted(Comparator.comparing(DashboardProviderDescriptor::getName))
+            .toList();
     }
 
     public DashboardProviderDescriptor getDashboardProvider(String id) {

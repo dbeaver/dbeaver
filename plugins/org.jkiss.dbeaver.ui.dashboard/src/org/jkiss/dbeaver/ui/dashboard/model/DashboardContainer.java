@@ -46,5 +46,7 @@ public interface DashboardContainer extends DBPDataSourceContainerProvider {
     @Nullable
     IWorkbenchPart getWorkbenchPart();
 
+    void updateSelection();
+
     void saveChanges();
 }

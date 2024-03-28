@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
+import org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardViewItem;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewSettingsDialog;
-import org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem;
 
 /**
  * Abstract chart dashboard renderer

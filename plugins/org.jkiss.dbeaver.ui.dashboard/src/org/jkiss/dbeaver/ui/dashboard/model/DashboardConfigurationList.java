@@ -166,31 +166,30 @@ public class DashboardConfigurationList {
         }
     }
 
-    private String saveToString() {
+    private String saveToString() throws IOException {
         StringWriter buffer = new StringWriter();
-        try {
-            XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, true);
-            xml.setButify(true);
-            serializeConfig(xml);
-            xml.flush();
-        } catch (Exception e) {
-            log.error("Error saving dashboard configuration to file", e);
-        }
+        XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, true);
+        xml.setButify(true);
+        serializeConfig(xml);
+        xml.flush();
+
         return buffer.toString();
     }
 
-    private void saveToDataSource() {
-        StringWriter buffer = new StringWriter();
-        try {
+    private void saveToDataSource() throws IOException {
+        if (dataSourceContainer == null) {
+            throw new IOException("Dashboard configuration is not connected with datasource");
+        }
+        if (dashboards.isEmpty()) {
+            dataSourceContainer.setExtension(DashboardConstants.DS_PROP_DASHBOARDS, null);
+        } else {
+            StringWriter buffer = new StringWriter();
             XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, false);
             xml.setButify(false);
             serializeConfig(xml);
             xml.flush();
-        } catch (Exception e) {
-            log.error("Error saving dashboard configuration to datasource", e);
+            dataSourceContainer.setExtension(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
         }
-
-        dataSourceContainer.setExtension(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
         dataSourceContainer.persistConfiguration();
     }
 
@@ -234,4 +233,14 @@ public class DashboardConfigurationList {
         return configuration;
     }
 
+    public void deleteDashBoard(DashboardConfiguration dashboard) {
+        if (this.dashboards.remove(dashboard.getDashboardId()) != null) {
+            try {
+                saveConfiguration();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
 }

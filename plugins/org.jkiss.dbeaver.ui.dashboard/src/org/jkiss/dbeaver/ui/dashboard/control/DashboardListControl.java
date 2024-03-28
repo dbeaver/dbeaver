@@ -282,9 +282,13 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             return;
         }
         this.selectedItem = selection;
+        if (selection != null && !selection.isDisposed()) {
+            selection.redraw();
+        }
         if (oldSelection != null && !oldSelection.isDisposed()) {
             oldSelection.redraw();
         }
+        viewContainer.updateSelection();
     }
 
     /**

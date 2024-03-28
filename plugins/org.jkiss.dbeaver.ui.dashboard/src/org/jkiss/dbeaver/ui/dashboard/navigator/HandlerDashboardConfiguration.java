@@ -19,19 +19,19 @@ package org.jkiss.dbeaver.ui.dashboard.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardViewConfigDialog;
+import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 
-public class CreateDashboardHandler extends AbstractDataSourceHandler {
+public class HandlerDashboardConfiguration extends HandlerDashboardAbstract {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
-            HandlerUtil.getActiveWorkbenchWindow(event),
-            new DashboardCreateWizard());
-        dialog.open();
-
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        DataSourceDashboardView view = getActiveDashboardView(event);
+        if (view != null) {
+            DashboardViewConfigDialog dialog = new DashboardViewConfigDialog(
+                HandlerUtil.getActiveShell(event), view);
+            dialog.open();
+        }
         return null;
     }
 
