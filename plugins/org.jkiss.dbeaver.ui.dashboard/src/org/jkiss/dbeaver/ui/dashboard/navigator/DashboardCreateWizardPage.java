@@ -72,14 +72,21 @@ class DashboardCreateWizardPage extends WizardPage {
     public void createControl(Composite parent) {
         Composite configGroup = UIUtils.createControlGroup(parent, "Settings", 2, GridData.FILL_BOTH, 0);
 
+        final Text dashboardNameText = UIUtils.createLabelText(configGroup, "Name", null); //$NON-NLS-1$
         final Text dashboardIdText = UIUtils.createLabelText(configGroup, "ID", null); //$NON-NLS-1$
-        dashboardIdText.addModifyListener(e -> {
-            dashboardId = dashboardIdText.getText();
+
+        dashboardNameText.addModifyListener(e -> {
+            String oldId = CommonUtils.notEmpty(CommonUtils.escapeIdentifier(dashboardName)).toLowerCase();
+            dashboardName = dashboardNameText.getText();
+
+            if (oldId.equals(dashboardIdText.getText())) {
+                dashboardIdText.setText(CommonUtils.notEmpty(CommonUtils.escapeIdentifier(dashboardName)).toLowerCase());
+            }
+
             updateState();
         });
-        final Text dashboardNameText = UIUtils.createLabelText(configGroup, "Name", null); //$NON-NLS-1$
-        dashboardNameText.addModifyListener(e -> {
-            dashboardName = dashboardNameText.getText();
+        dashboardIdText.addModifyListener(e -> {
+            dashboardId = dashboardIdText.getText();
             updateState();
         });
 
