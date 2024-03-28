@@ -159,7 +159,12 @@ public class DashboardConfigurationList {
     public void saveConfiguration() throws IOException {
         if (dashboardFile != null) {
             try {
-                dashboardFile.setContents(new ByteArrayInputStream(saveToString().getBytes(StandardCharsets.UTF_8)), true, false, new NullProgressMonitor());
+                ByteArrayInputStream contents = new ByteArrayInputStream(saveToString().getBytes(StandardCharsets.UTF_8));
+                if (!dashboardFile.exists()) {
+                    dashboardFile.create(contents, true, new NullProgressMonitor());
+                } else {
+                    dashboardFile.setContents(contents, true, false, new NullProgressMonitor());
+                }
             } catch (CoreException e) {
                 throw new IOException(e.getMessage(), e);
             }

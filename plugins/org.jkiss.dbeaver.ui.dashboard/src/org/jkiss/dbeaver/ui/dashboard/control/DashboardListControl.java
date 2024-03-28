@@ -232,7 +232,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     }
 
     void createDefaultDashboards() {
-        if (viewContainer.getViewConfiguration().isInitDefaultCharts()) {
+        if (viewContainer.getViewConfiguration().isInitDefaultCharts() && viewContainer.getDataSourceContainer() != null) {
             List<DashboardItemConfiguration> dashboards = DashboardRegistry.getInstance().getDashboardItems(
                 null, viewContainer.getDataSourceContainer(), true);
             for (DashboardItemConfiguration dd : dashboards) {
