@@ -1278,7 +1278,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 } catch (Throwable e) {
                     throw new DBCDriverException("Error creating driver '"
                         + getFullName()
-                        + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings.\n\nReason: can't load driver class '"
+                        + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings."
+                        + "\n\nReason: can't load driver class '"
                         + driverClassName
                         + "'",
                         driverClassName,

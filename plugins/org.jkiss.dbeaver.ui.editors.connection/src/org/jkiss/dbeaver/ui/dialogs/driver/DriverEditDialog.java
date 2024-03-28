@@ -999,7 +999,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @NotNull String message, 
         @NotNull DBPDriver driver, 
         @NotNull DBException error
-   ) {
+    ) {
         Runnable runnable = () -> {
             String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, driver.getName());
             new BadDriverConfigDialog(shell, title, message == null ? title : message, error, driver).open();
