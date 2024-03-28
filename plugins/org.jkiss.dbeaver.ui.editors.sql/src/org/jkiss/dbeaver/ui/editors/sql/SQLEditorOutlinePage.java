@@ -703,7 +703,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     this.makeNode(
                         node,
                         flattenedExpr,
-                        prepareQueryPreview(flattenedExpr.getContent()),
+                        prepareQueryPreview(flattenedExpr.getExprContent()),
                         DBIcon.TREE_FUNCTION,
                         flattenedExpr.getOperands().toArray(SQLQueryNodeModel[]::new)
                     );
@@ -945,7 +945,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitRowsProjection(@NotNull SQLQueryRowsProjectionModel projection, @NotNull OutlineQueryNode node) {
             if (node.kind == OutlineQueryNodeKind.PROJECTION_SUBROOT || node instanceof OutlineScriptElementNode) {
-                String suffix = projection.getDataContext().getColumnsList().stream()
+                String suffix = projection.getResultDataContext().getColumnsList().stream()
                     .map(c -> c.symbol.getName())
                     .collect(Collectors.joining(", ", "(", ")"));
                 this.makeNode(node, projection.getResult(), "SELECT " + suffix, DBIcon.TREE_COLUMNS, projection.getResult());
@@ -1011,7 +1011,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Nullable
         @Override
         public Object visitSelectTupleSpec(@NotNull TupleSpec tupleSpec, @NotNull OutlineQueryNode arg) {
-            this.makeNode(arg, tupleSpec, tupleSpec.getTableName().toIdentifierString(), UIIcon.ASTERISK);
+            this.makeNode(arg, tupleSpec, tupleSpec.getTableName().toIdentifierString() + ".*", UIIcon.ASTERISK);
             return null;
         }
 

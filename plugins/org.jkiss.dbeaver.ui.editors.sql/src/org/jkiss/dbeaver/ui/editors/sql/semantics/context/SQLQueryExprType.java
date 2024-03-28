@@ -100,7 +100,7 @@ public abstract class SQLQueryExprType {
 
     @NotNull
     public static SQLQueryExprType forScalarSubquery(@NotNull SQLQueryRowsSourceModel source) {
-        List<SQLQueryResultColumn> columns = source.getDataContext().getColumnsList();
+        List<SQLQueryResultColumn> columns = source.getResultDataContext().getColumnsList();
         SQLQueryExprType type = columns.isEmpty() ? SQLQueryExprType.UNKNOWN : columns.get(0).type; 
         return type;
     }

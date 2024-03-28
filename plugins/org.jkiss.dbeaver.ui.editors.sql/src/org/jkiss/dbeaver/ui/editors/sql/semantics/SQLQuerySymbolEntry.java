@@ -19,21 +19,26 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
-    private final Interval region;
+public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQLQuerySymbolDefinition {
     private final String name;
     private final String rawName;
     
     private SQLQuerySymbol symbol = null;
     private SQLQuerySymbolDefinition definition = null;
     
-    public SQLQuerySymbolEntry(@NotNull Interval region, @NotNull String name, @NotNull String rawName) {
-        this.region = region;
+    public SQLQuerySymbolEntry(@NotNull STMTreeNode syntaxNode, @NotNull String name, @NotNull String rawName) {
+        super(syntaxNode);
         this.name = name;
         this.rawName = rawName;
     }
 
+    @Override
+    public STMTreeNode[] getSyntaxComponents() {
+        return new STMTreeNode[] { this.syntaxNode };
+    }
+    
     @NotNull
     public String getName() {
         return name;
@@ -46,7 +51,7 @@ public class SQLQuerySymbolEntry implements SQLQuerySymbolDefinition {
 
     @NotNull
     public Interval getInterval() {
-        return region;
+        return this.syntaxNode.getRealInterval();
     }
 
     @Nullable

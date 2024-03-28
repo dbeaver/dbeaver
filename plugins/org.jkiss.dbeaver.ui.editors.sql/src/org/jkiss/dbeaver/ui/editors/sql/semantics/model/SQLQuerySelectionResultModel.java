@@ -19,11 +19,15 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SourceResolutionResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,34 +37,50 @@ import java.util.stream.Stream;
 public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
     private final List<ResultSublistSpec> sublists;
+    private SQLQueryDataContext dataContext = null;
 
-    public SQLQuerySelectionResultModel(@NotNull Interval range, int capacity) {
-        super(range);
+    public SQLQuerySelectionResultModel(@NotNull STMTreeNode syntaxNode, int capacity) {
+        super(syntaxNode.getRealInterval(), syntaxNode);
         this.sublists = new ArrayList<>(capacity);
     }
 
     public List<ResultSublistSpec> getSublists() {
         return this.sublists;
     }
+    
+    @Override
+    public SQLQueryDataContext getGivenDataContext() {
+        return this.dataContext;
+    }
+    
+    @Override
+    public SQLQueryDataContext getResultDataContext() {
+        return this.dataContext;
+    }
+    
+    private void registerSublist(ResultSublistSpec sublist) {
+        this.sublists.add(sublist);
+        super.registerSubnode(sublist);
+    }
 
-    public void addColumnSpec(@NotNull Interval range, @NotNull SQLQueryValueExpression valueExpression) {
-        this.sublists.add(new ColumnSpec(range, valueExpression));
+    public void addColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueExpression valueExpression) {
+        this.registerSublist(new ColumnSpec(syntaxNode, valueExpression)); 
     }
 
     public void addColumnSpec(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueExpression valueExpression,
         @Nullable SQLQuerySymbolEntry alias
     ) {
-        this.sublists.add(new ColumnSpec(range, valueExpression, alias));
+        this.registerSublist(new ColumnSpec(syntaxNode, valueExpression, alias));
     }
 
-    public void addTupleSpec(@NotNull Interval range, @NotNull SQLQueryValueTupleReferenceExpression tupleRef) {
-        this.sublists.add(new TupleSpec(range, tupleRef));
+    public void addTupleSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueTupleReferenceExpression tupleRef) {
+        this.registerSublist(new TupleSpec(syntaxNode, tupleRef));
     }
 
-    public void addCompleteTupleSpec(@NotNull Interval range) {
-        this.sublists.add(new CompleteTupleSpec(range));
+    public void addCompleteTupleSpec(@NotNull STMTreeNode syntaxNode) {
+        this.registerSublist(new CompleteTupleSpec(syntaxNode));
     }
 
     public List<SQLQueryResultColumn> expandColumns(
@@ -68,6 +88,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
+        this.dataContext = context;
         return this.sublists.stream().flatMap(s -> s.expand(context, rowsSourceModel, statistics)).collect(Collectors.toList());
     }
 
@@ -76,10 +97,20 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         return visitor.visitSelectionResult(this, node);
     }
 
-    public static abstract class ResultSublistSpec extends SQLQueryNodeModel {
+    public abstract class ResultSublistSpec extends SQLQueryNodeModel {
 
-        protected ResultSublistSpec(Interval region) {
-            super(region);
+        protected ResultSublistSpec(STMTreeNode syntaxNode) {
+            super(syntaxNode.getRealInterval(), syntaxNode);
+        }
+        
+        @Override
+        public SQLQueryDataContext getGivenDataContext() {
+            return SQLQuerySelectionResultModel.this.dataContext;
+        }
+        
+        @Override
+        public SQLQueryDataContext getResultDataContext() {
+            return SQLQuerySelectionResultModel.this.dataContext;
         }
 
         @NotNull
@@ -90,18 +121,20 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         );
     }
 
-    public static class ColumnSpec extends ResultSublistSpec {
+    public class ColumnSpec extends ResultSublistSpec {
         private final SQLQueryValueExpression valueExpression;
         private final SQLQuerySymbolEntry alias;
 
-        public ColumnSpec(@NotNull Interval region, @NotNull SQLQueryValueExpression valueExpression) {
-            this(region, valueExpression, null);
+        public ColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueExpression valueExpression) {
+            this(syntaxNode, valueExpression, null);
         }
 
-        public ColumnSpec(@NotNull Interval region, @NotNull SQLQueryValueExpression valueExpression, @Nullable SQLQuerySymbolEntry alias) {
-            super(region);
+        public ColumnSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueExpression valueExpression, @Nullable SQLQuerySymbolEntry alias) {
+            super(syntaxNode);
             this.valueExpression = valueExpression;
             this.alias = alias;
+            
+            this.registerSubnode(valueExpression);
         }
 
         @NotNull
@@ -155,12 +188,14 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         }
     }
 
-    public static class TupleSpec extends ResultSublistSpec {
+    public class TupleSpec extends ResultSublistSpec {
         private final SQLQueryValueTupleReferenceExpression tupleReference;
         
-        public TupleSpec(@NotNull Interval region, @NotNull SQLQueryValueTupleReferenceExpression tupleReference) {
-            super(region);
+        public TupleSpec(STMTreeNode syntaxNode, @NotNull SQLQueryValueTupleReferenceExpression tupleReference) {
+            super(syntaxNode);
             this.tupleReference = tupleReference;
+            
+            this.registerSubnode(tupleReference);
         }
 
         @NotNull
@@ -184,7 +219,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
             
             SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
             if (tupleSource != null) {
-                return tupleSource.getDataContext().getColumnsList().stream();
+                return tupleSource.getResultDataContext().getColumnsList().stream();
             } else {
                 return Stream.empty();
             }
@@ -196,10 +231,10 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         }
     }
 
-    public static class CompleteTupleSpec extends ResultSublistSpec {
+    public class CompleteTupleSpec extends ResultSublistSpec {
 
-        public CompleteTupleSpec(@NotNull Interval region) {
-            super(region);
+        public CompleteTupleSpec(@NotNull STMTreeNode syntaxNode) {
+            super(syntaxNode);
         }
 
         @NotNull

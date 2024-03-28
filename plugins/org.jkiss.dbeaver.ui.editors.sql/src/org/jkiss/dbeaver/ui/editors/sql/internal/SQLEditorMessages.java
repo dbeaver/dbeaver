@@ -211,6 +211,10 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_enable_auto_activation_tip;
     public static String pref_page_sql_completion_label_enable_experimental_features;
     public static String pref_page_sql_completion_label_enable_experimental_features_tip;
+    public static String pref_page_sql_completion_label_completion_mode;
+    public static String pref_page_sql_completion_label_completion_mode_default;
+    public static String pref_page_sql_completion_label_completion_mode_new_engine;
+    public static String pref_page_sql_completion_label_completion_mode_combined;
     public static String pref_page_sql_completion_label_auto_activation_delay;
     public static String pref_page_sql_completion_label_set_auto_activation_delay_tip;
     public static String pref_page_sql_completion_label_activate_on_typing;

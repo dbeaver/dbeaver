@@ -39,6 +39,11 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     }
     
     @Override
+    public int getAtnState() {
+        return super.invokingState;
+    }
+    
+    @Override
     public int getNodeKindId() {
         return super.getRuleContext().getRuleIndex();
     }

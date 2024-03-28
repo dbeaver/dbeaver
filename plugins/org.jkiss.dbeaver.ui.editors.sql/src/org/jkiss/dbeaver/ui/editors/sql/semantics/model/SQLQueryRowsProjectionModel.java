@@ -21,6 +21,8 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
@@ -29,6 +31,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
+    private final SQLQueryLexicalScope selectListScope;
+    
     private final SQLQueryRowsSourceModel fromSource; // from tableExpression
     private final SQLQuerySelectionResultModel result; // selectList
 
@@ -39,15 +43,17 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
 
 
     public SQLQueryRowsProjectionModel(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQueryLexicalScope selectListScope,
         @NotNull SQLQueryRowsSourceModel fromSource,
         @NotNull SQLQuerySelectionResultModel result
     ) {
-        this(range, fromSource, result, null, null, null, null);
+        this(syntaxNode, selectListScope, fromSource, result, null, null, null, null);
     }
 
     public SQLQueryRowsProjectionModel(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQueryLexicalScope selectListScope,
         @NotNull SQLQueryRowsSourceModel fromSource,
         @NotNull SQLQuerySelectionResultModel result,
         @Nullable SQLQueryValueExpression whereClause,
@@ -55,13 +61,16 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @Nullable SQLQueryValueExpression groupByClause,
         @Nullable SQLQueryValueExpression orderByClause
     ) {
-        super(range);
+        super(syntaxNode, fromSource, result, whereClause, havingClause, groupByClause, orderByClause);
         this.result = result;
+        this.selectListScope = selectListScope;
         this.fromSource = fromSource;
         this.whereClause = whereClause;
         this.havingClause = havingClause;
         this.groupByClause = groupByClause;
         this.orderByClause = orderByClause;
+        
+        this.registerLexicalScope(selectListScope);
     }
 
     public SQLQueryRowsSourceModel getFromSource() {
@@ -95,6 +104,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         SQLQueryDataContext unresolvedResult = this.fromSource.propagateContext(context, statistics);
+        this.selectListScope.setContext(unresolvedResult);
         EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);

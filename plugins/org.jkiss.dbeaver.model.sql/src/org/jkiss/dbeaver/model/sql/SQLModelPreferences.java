@@ -31,5 +31,7 @@ public final class SQLModelPreferences {
     public static final String EXPERIMENTAL_AUTOCOMPLETION_ENABLE = "SQLEditor.ContentAssistant.experimental.enable";
     public static final String ADVANCED_HIGHLIGHTING_ENABLE = "SQLEditor.Highlighting.advanced.enable";
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS = "SQLEditor.Semantics.metadata.read.enable";
+    
+    public static final String EXPERIMENTAL_AUTOCOMPLETION_MODE = "SQLEditor.ContentAssistant.experimental.mode";
 
 }

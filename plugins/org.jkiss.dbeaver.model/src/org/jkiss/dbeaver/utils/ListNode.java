@@ -49,7 +49,7 @@ public class ListNode<T> implements Iterable<T> {
     }
     
     @NotNull
-    public static <T> ListNode<T> of(@NotNull T data) {
+    public static <T> ListNode<T> of(@Nullable T data) {
         return new ListNode<T>(null, data);
     }
 

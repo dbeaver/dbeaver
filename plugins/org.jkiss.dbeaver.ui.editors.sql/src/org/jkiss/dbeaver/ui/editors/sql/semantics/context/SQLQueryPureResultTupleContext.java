@@ -47,5 +47,15 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
     public SQLQueryRowsSourceModel findRealSource(DBSEntity table) {
         return null;
     }
+    
+    @Override
+    protected void collectKnownSources(KnownSourcesInfo result) {
+        // no further sources visible
+    }
+    
+    @Override
+    public KnownSourcesInfo getKnownSources() {
+        return this.parent.getKnownSources();
+    }
 }
 

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.context;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
     private final SQLQueryDataContext otherParent;
 
     public SQLQueryCombinedContext(@NotNull SQLQueryDataContext left, @NotNull SQLQueryDataContext right) {
-        super(left, combineColumns(left.getColumnsList(), right.getColumnsList()));
+        super(left, combineLists(left.getColumnsList(), right.getColumnsList()));
         this.otherParent = right;
     }
 
@@ -56,11 +55,11 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
 
 
     @NotNull
-    private static List<SQLQueryResultColumn> combineColumns(
-        @NotNull List<SQLQueryResultColumn> leftColumns,
-        @NotNull List<SQLQueryResultColumn> rightColumns
+    public static <T> List<T> combineLists(
+        @NotNull List<T> leftColumns,
+        @NotNull List<T> rightColumns
     ) {
-        List<SQLQueryResultColumn> symbols = new ArrayList<>(leftColumns.size() + rightColumns.size());
+        List<T> symbols = new ArrayList<>(leftColumns.size() + rightColumns.size());
         symbols.addAll(leftColumns);
         symbols.addAll(rightColumns);
         return symbols;
@@ -68,5 +67,11 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
 
     private static <T> T anyOfTwo(T a, T b) {
         return a != null ? a : b;
+    }
+    
+    @Override
+    protected void collectKnownSources(KnownSourcesInfo result) {
+        this.parent.collectKnownSources(result);
+        this.otherParent.collectKnownSources(result);
     }
 }

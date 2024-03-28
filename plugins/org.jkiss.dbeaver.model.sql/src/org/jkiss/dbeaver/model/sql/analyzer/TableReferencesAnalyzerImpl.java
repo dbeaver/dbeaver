@@ -46,9 +46,9 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
         this.request = request;
     }
 
-    private void prepareTableReferences(@NotNull String query) {
+    private void prepareTableReferences() {
         try {
-            STMSource querySource = STMSource.fromReader(new StringReader(query));
+            STMSource querySource = STMSource.fromReader(new StringReader(this.request.getActiveQuery().getText()));
             LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
                 request.getContext().getDataSource().getSQLDialect());
             STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
@@ -58,17 +58,24 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
             tableReferences = Collections.emptyMap();
         }
     }
+    
+    private boolean prepareTableReferencesIfNeeded() {
+        if (tableReferences == null || tableReferences.isEmpty()) {
+            final SQLScriptElement activeQuery = request.getActiveQuery();
+            if (activeQuery == null) {
+                return false;
+            }
+            this.prepareTableReferences();
+        }
+        return true;
+    }
 
     @NotNull
     @Override
     public Map<String, String> getFilteredTableReferences(@NotNull String tableAlias, boolean allowPartialMatch) {
         Map<String, String> result;
-        if (tableReferences == null || tableReferences.isEmpty()) {
-            final SQLScriptElement activeQuery = request.getActiveQuery();
-            if (activeQuery == null) {
-                return Collections.emptyMap();
-            }
-            prepareTableReferences(activeQuery.getText());
+        if (!this.prepareTableReferencesIfNeeded()) {
+            return Collections.emptyMap();
         }
         if (CommonUtils.isNotEmpty(tableAlias) && tableReferences.size() > 0) {
             result = tableReferences.entrySet().stream()
@@ -84,9 +91,11 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
 
     @NotNull
     @Override
-    public Map<String, String> getTableAliasesFromQuery(@NotNull String query) {
+    public Map<String, String> getTableAliasesFromQuery() {
         try {
-            prepareTableReferences(query);
+            if (!this.prepareTableReferencesIfNeeded()) {
+                return Collections.emptyMap();
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

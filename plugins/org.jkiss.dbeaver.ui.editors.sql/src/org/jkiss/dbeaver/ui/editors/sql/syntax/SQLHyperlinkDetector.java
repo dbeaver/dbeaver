@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.*;
 
 import java.util.List;
 

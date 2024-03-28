@@ -131,7 +131,12 @@ public class RequestResult {
         public SQLRuleManager getRuleManager() {
             return ruleManager;
         }
-
+//
+//        @Override
+//        public SQLDocumentSyntaxContext getSyntaxContext() {
+//            return null;
+//        }
+//        
         @Override
         public boolean isUseFQNames() {
             return false;

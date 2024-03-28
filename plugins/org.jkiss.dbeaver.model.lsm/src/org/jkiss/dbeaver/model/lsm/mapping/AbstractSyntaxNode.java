@@ -224,7 +224,7 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         return result;
     }
 
-    private static <T, K> int binarySearchByKey(
+    public static <T, K> int binarySearchByKey(
         @NotNull List<T> list,
         @NotNull Function<T, K> keyGetter,
         @NotNull K key,
@@ -247,6 +247,33 @@ public abstract class AbstractSyntaxNode implements LSMElement {
             }
         }
         return -(low + 1);  // key not found
+    }
+    
+    public static <T, K> List<T> orderedInsert(
+            @Nullable List<T> list,
+            @NotNull Function<T, K> keyGetter,
+            @NotNull T value,
+            @NotNull Comparator<K> comparator
+    ) {
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        if (list.isEmpty()) {
+            list.add(value);
+        } else { 
+            K key = keyGetter.apply(value);
+            K lastKey = keyGetter.apply(list.get(list.size() - 1));
+            if (comparator.compare(key, lastKey) > 0) {
+                list.add(value);    
+            } else {
+                int index = AbstractSyntaxNode.binarySearchByKey(list, keyGetter, key, comparator);
+                if (index < 0) {
+                    index = ~index;
+                }
+                list.add(index, value);
+            }
+        }
+        return list;
     }
 }
 

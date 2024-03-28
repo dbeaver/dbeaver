@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
@@ -34,12 +35,12 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
     private final List<SQLQuerySymbolEntry> correlationColumNames;
 
     public SQLQueryRowsCorrelatedSourceModel(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel source,
         @NotNull SQLQuerySymbolEntry alias,
         @NotNull List<SQLQuerySymbolEntry> correlationColumNames
     ) {
-        super(range);
+        super(syntaxNode, source);
         this.source = source;
         this.alias = alias;
         this.correlationColumNames = correlationColumNames;
@@ -64,8 +65,10 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         context = this.source.propagateContext(context, statistics);
+        
         if (this.alias.isNotClassified()) {
             context = context.extendWithTableAlias(this.alias.getSymbol(), this);
+            
             this.alias.getSymbol().setDefinition(this.alias);
             if (this.alias.isNotClassified()) {
                 this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);

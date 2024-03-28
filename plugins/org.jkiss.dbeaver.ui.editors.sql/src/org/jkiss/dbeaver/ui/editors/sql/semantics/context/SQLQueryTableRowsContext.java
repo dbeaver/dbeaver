@@ -43,4 +43,10 @@ public class SQLQueryTableRowsContext extends SQLQuerySyntaxContext {
     public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
         return this.table.equals(table) ? this.source : super.findRealSource(table);
     }
+    
+    @Override
+    protected void collectKnownSources(KnownSourcesInfo info) {
+        super.collectKnownSources(info);
+        info.registerTableReference(this.source, this.table);
+    }
 }

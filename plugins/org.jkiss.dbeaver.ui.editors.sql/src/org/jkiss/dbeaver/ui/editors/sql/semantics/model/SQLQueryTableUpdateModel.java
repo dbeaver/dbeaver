@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryCombinedContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 import java.util.List;
@@ -37,15 +39,18 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
     @Nullable
     private final SQLQueryValueExpression orderByClause;
     
+    private SQLQueryDataContext givenContext = null;
+    private SQLQueryDataContext resultContext = null;
+    
     public SQLQueryTableUpdateModel(
-        @NotNull Interval region,
+        @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsSourceModel targetRows,
         @Nullable List<SetClauseModel> setClauseList,
         @Nullable SQLQueryRowsSourceModel sourceRows,
         @Nullable SQLQueryValueExpression whereClause,
         @Nullable SQLQueryValueExpression orderByClause
     ) {
-        super(region);
+        super(syntaxNode.getRealInterval(), syntaxNode);
         this.targetRows = targetRows;
         this.setClauseList = setClauseList;
         this.sourceRows = sourceRows;
@@ -80,6 +85,7 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
 
     @Override
     void applyContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        this.givenContext = context;
         SQLQueryDataContext targetContext;
         if (this.targetRows != null) {
             targetContext = this.targetRows.propagateContext(context, statistics);
@@ -120,8 +126,20 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
         if (this.orderByClause != null) {
             this.orderByClause.propagateContext(context, statistics);
         }
+        
+        this.resultContext = context;
+    }
+
+    @Override
+    public SQLQueryDataContext getGivenDataContext() {
+        return this.givenContext;
     }
     
+    @Override
+    public SQLQueryDataContext getResultDataContext() {
+        return this.resultContext;
+    }
+
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
         return visitor.visitTableStatementUpdate(this, arg);
@@ -136,12 +154,12 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
         public final String contents;
 
         public SetClauseModel(
-            @NotNull Interval region,
+            @NotNull STMTreeNode syntaxNode,
             @NotNull List<SQLQueryValueExpression> targets,
             @NotNull List<SQLQueryValueExpression> sources,
             @NotNull String contents
         ) {
-            super(region);
+            super(syntaxNode.getRealInterval(), syntaxNode, SQLQueryCombinedContext.combineLists(targets, sources).toArray(SQLQueryValueExpression[]::new));
             this.targets = targets;
             this.sources = sources;
             this.contents = contents;
@@ -150,6 +168,16 @@ public class SQLQueryTableUpdateModel extends SQLQueryModelContent {
         @Override
         protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
             return visitor.visitTableStatementUpdateSetClause(this, arg);
+        }
+
+        @Override
+        public SQLQueryDataContext getGivenDataContext() {
+            return this.sources.get(0).getGivenDataContext();
+        }
+
+        @Override
+        public SQLQueryDataContext getResultDataContext() {
+            return this.sources.get(0).getResultDataContext();
         }
     }
 }

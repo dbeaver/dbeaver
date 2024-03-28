@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQuerySymbolClass;
@@ -33,28 +34,19 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
     private static final Log log = Log.getLog(SQLQueryValueMemberExpression.class);
 
     @NotNull
-    private final String content;
-
-    @NotNull
     private final SQLQueryValueExpression owner;
     @NotNull
     private final SQLQuerySymbolEntry identifier;
 
     public SQLQueryValueMemberExpression(
         @NotNull Interval range,
-        @NotNull String content,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueExpression owner,
         @NotNull SQLQuerySymbolEntry identifier
     ) {
-        super(range);
-        this.content = content;
+        super(range, syntaxNode, owner);
         this.owner = owner;
         this.identifier = identifier;
-    }
-
-    @NotNull
-    public String getExprContent() {
-        return this.content;
     }
 
     @NotNull
@@ -74,7 +66,7 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
     }
     
     @Override
-    void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.owner.propagateContext(context, statistics);
 
         if (this.identifier.isNotClassified()) {

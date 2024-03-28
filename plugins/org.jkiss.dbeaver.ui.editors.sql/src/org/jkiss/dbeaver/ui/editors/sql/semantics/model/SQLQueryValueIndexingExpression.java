@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
@@ -27,31 +28,23 @@ import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryExprType;
 public class SQLQueryValueIndexingExpression extends SQLQueryValueExpression {
 
     private static final Log log = Log.getLog(SQLQueryValueIndexingExpression.class);
-
-    private final String content;
     
     private final SQLQueryValueExpression owner;
     private final boolean[] slicingDepthSpec;
     
     public SQLQueryValueIndexingExpression(
         @NotNull Interval region,
-        @NotNull String content,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueExpression owner,
         @NotNull boolean[] slicingDepthSpec
     ) {
-        super(region);
-        this.content = content;
+        super(region, syntaxNode, owner);
         this.owner = owner;
         this.slicingDepthSpec = slicingDepthSpec;
     }
-
-    @NotNull
-    public String getExprContent() {
-        return this.content;
-    }
     
     @Override
-    void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.owner.propagateContext(context, statistics);
         
         SQLQueryExprType type = this.owner.getValueType();

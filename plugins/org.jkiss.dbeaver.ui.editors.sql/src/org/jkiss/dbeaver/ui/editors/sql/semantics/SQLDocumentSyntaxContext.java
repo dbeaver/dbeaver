@@ -22,12 +22,25 @@ import org.eclipse.jface.text.Region;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentScriptItemSyntaxContext.TokenEntryAtOffset;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQueryCompletionContext;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.completion.SQLQuerySyntaxTreeInspections.SynaxInspectionResult;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.utils.ListNode;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,6 +97,71 @@ public class SQLDocumentSyntaxContext {
             action.accept(listener);
         }
     }
+    
+    private final Set<Integer> knownIdentifierPartTerms = Set.of(
+        SQLStandardLexer.Period,
+        SQLStandardLexer.Identifier,
+        SQLStandardLexer.DelimitedIdentifier,
+        SQLStandardLexer.Quotted
+    );
+
+    @NotNull
+    public SQLQueryCompletionContext obtainCompletionContext(@Nullable DBCExecutionContext dbcExecutionContext, int offset) {
+        ScriptItemAtOffset scriptItem = this.findScriptItem(offset);
+        if (scriptItem != null) { // TODO consider statements separation which is ignored for now
+            scriptItem.item.waitForRefresh();
+            int position = offset - scriptItem.offset;
+
+            SQLQueryModel model = scriptItem.item.getQueryModel();
+            if (model != null) {
+                STMTreeNode syntaxNode = model.getSyntaxNode();
+                
+                SynaxInspectionResult sr = SQLQuerySyntaxTreeInspections.prepareAbstractSyntaxInspection(syntaxNode, position);
+                SQLQueryDataContext context = null;
+                
+                SQLQueryNodeModel node = model.findNodeContaining(position);
+                SQLQueryLexicalScopeItem lexicalItem = null;
+                if (node != null) {
+                    SQLQueryLexicalScope scope = node.findLexicalScope(position);
+                    if (scope != null) {
+                        context = scope.getContext();
+                        lexicalItem = scope.findItem(position);
+                    }
+                    if (context == null) {
+                        context = node.getGivenDataContext();
+                    }
+                }
+                
+                ArrayDeque<STMTreeTermNode> nameNodes = new ArrayDeque<>();
+                {
+                    List<STMTreeTermNode> allTerms = SQLQuerySyntaxTreeInspections.prepareTerms(syntaxNode);
+                    int index = AbstractSyntaxNode.binarySearchByKey(allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+                    if (index < 0) {
+                        index = ~index - 1;
+                    }
+                    if (allTerms.get(index).getRealInterval().b == position  - 1) {
+                        for (int i = index; i >= 0; i--) {
+                            STMTreeTermNode term = allTerms.get(i);
+                            if (knownIdentifierPartTerms.contains(term.symbol.getType())
+                                || term.getStmParent().getNodeKindId() == SQLStandardParser.RULE_nonReserved
+                            ) {
+                                nameNodes.addFirst(term);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    
+                }
+                
+                return SQLQueryCompletionContext.prepare(scriptItem, dbcExecutionContext, sr, context, lexicalItem, nameNodes.toArray(STMTreeTermNode[]::new));
+            } else {
+                return SQLQueryCompletionContext.EMPTY;
+            }
+        } else {
+            return SQLQueryCompletionContext.prepareOffquery(0);
+        }
+    }
 
     @NotNull
     public List<ScriptItemAtOffset> getScriptItems() {
@@ -112,7 +190,8 @@ public class SQLDocumentSyntaxContext {
             }
 
             this.lastItemAccessOffset = offset;
-            if (scriptItem != null && itemOffset <= offset && itemOffset + scriptItem.length() > offset) {
+                                                              // area behind the query belongs to prepending query
+            if (scriptItem != null && itemOffset <= offset) { // && itemOffset + scriptItem.length() > offset) {
                 this.lastAccessedItemOffset = itemOffset;
                 this.lastAccessedScriptItem = scriptItem;
             } else {
