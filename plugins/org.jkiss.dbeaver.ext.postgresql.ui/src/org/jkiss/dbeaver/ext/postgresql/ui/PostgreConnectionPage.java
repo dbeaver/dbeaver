@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -51,7 +52,7 @@ import java.util.Locale;
  * PostgreConnectionPage
  */
 public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
-    
+
     private Text urlText;
     private Text hostText;
     private Text portText;
@@ -60,6 +61,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text roleText; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
+    private PostgreConnectionPageAdvanced postgreConnectionPageAdvanced;
 
     @Override
     public void dispose() {
@@ -317,12 +319,19 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
-        return new IDialogPage[] {
-            new PostgreConnectionPageAdvanced(),
+        postgreConnectionPageAdvanced = new PostgreConnectionPageAdvanced();
+        return new IDialogPage[]{
+            postgreConnectionPageAdvanced,
             new DriverPropertiesDialogPage(this)
         };
     }
-    
+
+    @Nullable
+    @Override
+    public IDialogPage[] getRequiredDialogPages() {
+        return new IDialogPage[]{postgreConnectionPageAdvanced};
+    }
+
     private void updateUrl() {
         DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
         saveSettings(dataSourceContainer);

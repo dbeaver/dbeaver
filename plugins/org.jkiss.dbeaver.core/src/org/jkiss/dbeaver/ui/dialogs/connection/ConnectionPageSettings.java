@@ -158,7 +158,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     public void activatePage() {
         if (connectionEditor == null) {
             createProviderPage(getControl().getParent());
-            //UIUtils.resizeShell(getWizard().getContainer().getShell());
         }
 
         Control control = getControl();
@@ -190,6 +189,31 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             control.setRedraw(true);
         }
         //getContainer().updateTitleBar();
+    }
+
+    private void createAdditionalRequiredPages() {
+        if (connectionEditor instanceof IDialogPageProvider dialogPageProvider) {
+            IDialogPage[] requiredDialogPages = dialogPageProvider.getRequiredDialogPages();
+            // potentially n^2 but we don't have a lot of required pages...
+            if (requiredDialogPages != null) {
+                for (IDialogPage requiredDialogPage : requiredDialogPages) {
+                    for (CTabItem item : tabFolder.getItems()) {
+                        if (item.getData().equals(requiredDialogPage)) {
+                            Composite panel = (Composite) item.getControl();
+                            try {
+                                panel.setRedraw(false);
+                                requiredDialogPage.createControl(panel);
+                                Dialog.applyDialogFont(panel);
+                                panel.layout(true, true);
+                                requiredDialogPage.setVisible(false);
+                            } finally {
+                                panel.setRedraw(true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -334,6 +358,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             setErrorMessage("Can't create settings dialog: " + ex.getMessage());
         }
         parent.layout();
+        createAdditionalRequiredPages();
     }
 
     @NotNull
@@ -367,8 +392,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private boolean confirmTabClose(@NotNull CTabItem item) {
-        if (item.getData() instanceof ConnectionPageNetworkHandler) {
-            final ConnectionPageNetworkHandler page = (ConnectionPageNetworkHandler) item.getData();
+        if (item.getData() instanceof ConnectionPageNetworkHandler page) {
             final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
 
             final int decision = ConfirmationDialog.confirmAction(
@@ -504,7 +528,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public boolean openDriverEditor() {
-        DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), (DriverDescriptor) this.getDriver());
+        DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());
         return dialog.open() == IDialogConstants.OK_ID;
     }
 

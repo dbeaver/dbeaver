@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
@@ -72,7 +73,8 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private TextWithOpenFolder tnsPathText;
 
     private boolean activated = false;
-    private Image logoImage;
+    private final Image logoImage;
+    private OracleConnectionExtraPage oracleConnectionExtraPage;
 
     public OracleConnectionPage() {
         logoImage = createImage("icons/oracle_logo.png"); //$NON-NLS-1
@@ -450,12 +452,17 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
-    {
-        return new IDialogPage[] {
-            new OracleConnectionExtraPage(),
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
+        oracleConnectionExtraPage = new OracleConnectionExtraPage();
+        return new IDialogPage[]{
+            oracleConnectionExtraPage,
             new DriverPropertiesDialogPage(this),
         };
     }
 
+    @Nullable
+    @Override
+    public IDialogPage[] getRequiredDialogPages() {
+        return new IDialogPage[]{oracleConnectionExtraPage};
+    }
 }
