@@ -2963,4 +2963,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
     }
+
+    /**
+     * Save control value in case of close
+     */
+    public void saveBeforeClose() {
+        if (activeInlineEditor instanceof BaseValueEditor<?> baseInlineEditor) {
+            IValueController valueController = baseInlineEditor.getValueController();
+            if (!valueController.isReadOnly()) {
+                baseInlineEditor.saveBeforeClose(value -> valueController.updateValue(value, true));
+            }
+        }
+    }
 }

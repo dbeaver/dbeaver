@@ -350,8 +350,8 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case SWT.MouseDown:
-                if (event.button == 2) {
-//                    presentation.openValueEditor(true);
+                if (presentation != null) {
+                    presentation.saveBeforeClose();
                 }
                 break;
             case LightGrid.Event_ChangeSort:

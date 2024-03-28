@@ -199,24 +199,6 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     private void addAutoSaveSupport(final Control inlineControl) {
         // add focus listener on control but not on the composite
         // require to handle data save in case of focus lost
-        if (inlineControl instanceof Composite cmps && cmps.getChildren().length > 0) {
-            Control child = cmps.getChildren()[0];
-            if (child != null) {
-                child.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        onFocusLost(value -> valueController.updateValue(value, true));
-                    }
-                });
-            }
-        } else {
-            inlineControl.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    onFocusLost(value -> valueController.updateValue(value, true));
-                }
-            });
-        }
         inlineControl.addDisposeListener(getAutoSaveListener());
         this.setAutoSaveEnabled(true);
     }
@@ -225,12 +207,12 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     protected DisposeListener getAutoSaveListener() {
         return e -> {
             if (!valueController.isReadOnly()) {
-                onFocusLost(value -> valueController.updateValue(value, true));
+                saveBeforeClose(value -> valueController.updateValue(value, true));
             }
         };
     }
 
-    private void onFocusLost(@NotNull Consumer<Object> valueSaver) {
+    public void saveBeforeClose(@NotNull Consumer<Object> valueSaver) {
         if (!valueController.isReadOnly()) {
             saveValue(false, valueSaver);
         }
@@ -249,6 +231,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
     private void saveValue(boolean showError, @NotNull Consumer<Object> valueUpdater) {
         try {
+            if (control.isDisposed()) {
+                return;
+            }
             Object newValue = extractEditorValue();
             if (dirty || control instanceof Combo || control instanceof CCombo || control instanceof List) {
                 // Combos are always dirty (because drop-down menu sets a selection)
