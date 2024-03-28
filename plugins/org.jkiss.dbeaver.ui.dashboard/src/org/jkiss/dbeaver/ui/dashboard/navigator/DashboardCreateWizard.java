@@ -34,7 +34,10 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
+import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
 
 public class DashboardCreateWizard extends Wizard implements INewWizard {
 
@@ -119,10 +122,15 @@ public class DashboardCreateWizard extends Wizard implements INewWizard {
                 DashboardConfigurationList configurationList = new DashboardConfigurationList(dataSourceContainer);
                 configurationList.checkDefaultDashboardExistence();
                 // Add fake default dashboard
-                configurationList.createDashboard(
+                DashboardConfiguration dashboard = configurationList.createDashboard(
                     pageContent.getDashboardId(),
                     pageContent.getDashboardName());
                 configurationList.saveConfiguration();
+                DataSourceDashboardView.openView(
+                    UIUtils.getActiveWorkbenchWindow(),
+                    dataSourceContainer.getProject(),
+                    dataSourceContainer,
+                    dashboard.getDashboardId());
                 return true;
             } else {
                 IFile diagramFile = DashboardResourceHandler.createDashboard(

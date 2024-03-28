@@ -231,15 +231,17 @@ public class DataSourceDashboardView extends ViewPart implements DBPDataSourceCo
         String partName;
         if (DashboardConfigurationList.DEFAULT_DASHBOARD_NAME.equals(configuration.getDashboardName())) {
             if (dataSourceContainer != null) {
-                if (dataSourceContainer.isConnected()) {
-                    DashboardUpdateJob.getDefault().resumeDashboardUpdate();
-                }
                 partName = dataSourceContainer.getName() + (dataSourceContainer.isConnected() ? "" : UIDashboardMessages.dashboard_view_status_off);
             } else {
                 partName = project.getName() + ":" + dashboardId;
             }
         } else {
             partName = configuration.getDashboardName();
+        }
+        if (dataSourceContainer != null) {
+            if (dataSourceContainer.isConnected()) {
+                DashboardUpdateJob.getDefault().resumeDashboardUpdate();
+            }
         }
         UIUtils.asyncExec(() -> setPartName(partName));
     }
