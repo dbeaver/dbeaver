@@ -102,7 +102,7 @@ public class DashboardProviderDescriptor extends AbstractContextDescriptor imple
     }
 
     public boolean isEnabled() {
-        return isExpressionTrue(enabledWhen, null);
+        return isExpressionTrue(enabledWhen, this);
     }
 
     public DBDashboardProvider getInstance() {

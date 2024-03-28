@@ -64,6 +64,9 @@ public class DashboardEditorStandalone extends SinglePageDatabaseEditor<IEditorI
     public void createEditorControl(Composite parent) {
         dashboardListViewer = new DashboardListViewer(getSite(), this, configurationList, dashboardConfig);
         dashboardListViewer.createControl(parent);
+        dashboardListViewer.createDashboardsFromConfiguration();
+
+        getSite().setSelectionProvider(dashboardListViewer);
     }
 
     @Override

@@ -62,7 +62,7 @@ public class DashboardConfigurationList {
     private final DBPDataSourceContainer dataSourceContainer;
     private final Map<String, DashboardConfiguration> dashboards = new LinkedHashMap<>();
 
-    public DashboardConfigurationList(@NotNull DBPProject project, @Nullable IFile dashboardFile) {
+    public DashboardConfigurationList(@NotNull DBPProject project, @NotNull IFile dashboardFile) {
         this.project = project;
         this.dashboardFile = dashboardFile;
         this.dataSourceContainer = null;

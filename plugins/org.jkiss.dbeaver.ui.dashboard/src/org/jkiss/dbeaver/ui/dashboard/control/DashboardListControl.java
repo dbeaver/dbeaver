@@ -226,7 +226,9 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     @Override
     public void selectItem(DashboardItemContainer item) {
         setSelection((DashboardViewItem) item);
-        item.getDashboardControl().setFocus();
+        if (item != null) {
+            item.getDashboardControl().setFocus();
+        }
     }
 
     void createDefaultDashboards() {

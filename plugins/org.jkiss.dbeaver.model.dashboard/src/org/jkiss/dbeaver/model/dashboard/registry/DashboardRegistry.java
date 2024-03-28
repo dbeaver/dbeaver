@@ -232,7 +232,9 @@ public class DashboardRegistry {
                 .sorted(Comparator.comparing(DashboardProviderDescriptor::getName))
                 .toList();
         }
-        return dashboardProviders.values().stream().filter(DashboardProviderDescriptor::isEnabled)
+        return dashboardProviders.values().stream()
+            .filter(DashboardProviderDescriptor::isEnabled)
+            .filter(d -> !d.isDatabaseRequired())
             .sorted(Comparator.comparing(DashboardProviderDescriptor::getName))
             .toList();
     }

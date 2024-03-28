@@ -84,9 +84,6 @@
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardRemoveItem">
             <enabledWhen>
                 <and>
-                    <with variable="selection">
-                        <count value="1"/>
-                    </with>
                     <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
                 </and>
             </enabledWhen>
