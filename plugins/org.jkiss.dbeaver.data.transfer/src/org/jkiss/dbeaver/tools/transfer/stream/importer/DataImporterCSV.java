@@ -245,7 +245,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                             break;
                         }
 
-                        if (line.length < targetAttrSize) {
+                        if (line.length <= targetAttrSize) {
                             // Stream row may be shorter than header
                             String[] newLine = new String[targetAttrSize];
                             System.arraycopy(line, 0, newLine, 0, line.length);
