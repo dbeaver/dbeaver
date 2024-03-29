@@ -34,14 +34,10 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceUtils;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,46 +104,28 @@ public class SSHTunnelImpl implements DBWTunnel {
         return false;
     }
 
+    @NotNull
     @Override
-    public AuthCredentials getRequiredCredentials(
-        @NotNull DBWHandlerConfiguration configuration,
-        @Nullable String prefix
-    ) {
-        String start = prefix;
-        if (start == null) {
-            start = "";
-        }
+    public AuthCredentials getRequiredCredentials(@NotNull DBWHandlerConfiguration configuration) throws DBException {
         if (!configuration.isEnabled() || !configuration.isSecured()) {
             return AuthCredentials.NONE;
         }
-        if (configuration.getBooleanProperty(start + RegistryConstants.ATTR_SAVE_PASSWORD)) {
-            return AuthCredentials.NONE;
-        }
 
-        String sshAuthType = configuration.getStringProperty(start + SSHConstants.PROP_AUTH_TYPE);
-        SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
-        if (sshAuthType != null) {
-            authType = SSHConstants.AuthType.valueOf(sshAuthType);
-        }
-        if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
-            String privKeyValue = configuration.getSecureProperty(start + SSHConstants.PROP_KEY_VALUE);
-            if (privKeyValue != null) {
-                byte[] pkBinary = Base64.decode(privKeyValue);
-                if (SSHUtils.isKeyEncrypted(pkBinary)) {
-                    return AuthCredentials.PASSWORD;
-                }
-            }
-            // Check whether this key is encrypted
-            String privKeyPath = configuration.getStringProperty(start + SSHConstants.PROP_KEY_PATH);
-            if (!CommonUtils.isEmpty(privKeyPath) && SSHUtils.isKeyFileEncrypted(privKeyPath)) {
-                return AuthCredentials.PASSWORD;
-            }
+        // TODO: Check jump hosts as well
+        final SSHHostConfiguration[] hosts = SSHUtils.loadHostConfigurations(configuration);
+        final SSHHostConfiguration host = hosts[hosts.length - 1];
+
+        if (host.auth() instanceof SSHAuthConfiguration.WithPassword password && password.savePassword()) {
             return AuthCredentials.NONE;
-        }
-        if (authType == SSHConstants.AuthType.AGENT) {
+        } else if (host.auth() instanceof SSHAuthConfiguration.KeyFile key) {
+            return SSHUtils.isKeyFileEncrypted(key.path()) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
+        } else if (host.auth() instanceof SSHAuthConfiguration.KeyData key) {
+            return SSHUtils.isKeyEncrypted(Base64.decode(key.data())) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
+        } else if (host.auth() instanceof SSHAuthConfiguration.Agent) {
             return AuthCredentials.NONE;
+        } else {
+            return AuthCredentials.CREDENTIALS;
         }
-        return AuthCredentials.CREDENTIALS;
     }
 
     @Override
@@ -208,8 +186,8 @@ public class SSHTunnelImpl implements DBWTunnel {
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull DBPConnectionConfiguration connectionInfo,
         @NotNull SSHSessionController controller
-    ) throws DBException, IOException {
-        final SSHHostConfiguration[] hosts = loadHostConfigurations(configuration);
+    ) throws DBException {
+        final SSHHostConfiguration[] hosts = SSHUtils.loadHostConfigurations(configuration);
         final SSHPortForwardConfiguration portForward = loadPortForwardConfiguration(configuration, connectionInfo);
         final SSHSession[] sessions = new SSHSession[hosts.length];
 
@@ -259,83 +237,5 @@ public class SSHTunnelImpl implements DBWTunnel {
         }
 
         return new SSHPortForwardConfiguration(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
-    }
-
-    @NotNull
-    private static SSHHostConfiguration[] loadHostConfigurations(
-        @NotNull DBWHandlerConfiguration configuration
-    ) throws DBException {
-        final List<SSHHostConfiguration> hostConfigurations = new ArrayList<>();
-
-        // primary host
-        hostConfigurations.add(loadHostConfiguration(configuration, ""));
-
-        // jump host, if present
-        final String jumpServerPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
-        if (configuration.getBooleanProperty(jumpServerPrefix + RegistryConstants.ATTR_ENABLED)) {
-            hostConfigurations.add(0, loadHostConfiguration(configuration, jumpServerPrefix));
-        }
-
-        return hostConfigurations.toArray(SSHHostConfiguration[]::new);
-    }
-
-    @NotNull
-    private static SSHHostConfiguration loadHostConfiguration(
-        @NotNull DBWHandlerConfiguration configuration,
-        @NotNull String prefix
-    ) throws DBException {
-        String username;
-        final String password;
-        final boolean savePassword = configuration.isSavePassword();
-
-        if (prefix.isEmpty()) {
-            username = CommonUtils.notEmpty(configuration.getUserName());
-            password = CommonUtils.notEmpty(configuration.getPassword());
-        } else {
-            username = CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME));
-            password = CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD));
-        }
-
-        if (CommonUtils.isEmpty(username)) {
-            username = System.getProperty("user.name");
-        }
-
-        final String hostname = configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST);
-        if (CommonUtils.isEmpty(hostname)) {
-            throw new DBException("SSH host not specified");
-        }
-
-        final int port = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
-        if (port == 0) {
-            throw new DBException("SSH port not specified");
-        }
-
-        final SSHConstants.AuthType authType = CommonUtils.valueOf(
-            SSHConstants.AuthType.class,
-            configuration.getStringProperty(prefix + SSHConstants.PROP_AUTH_TYPE),
-            SSHConstants.AuthType.PASSWORD
-        );
-        final SSHAuthConfiguration authentication = switch (authType) {
-            case PUBLIC_KEY -> {
-                final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
-                if (CommonUtils.isEmpty(path)) {
-                    String privKeyValue = configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE);
-                    if (privKeyValue == null) {
-                        throw new DBException("Private key not specified");
-                    }
-                    yield new SSHAuthConfiguration.KeyData(privKeyValue, password, savePassword);
-                } else {
-                    final Path file = Path.of(path);
-                    if (!Files.exists(file)) {
-                        throw new DBException("Private key file '" + path + "' does not exist");
-                    }
-                    yield new SSHAuthConfiguration.KeyFile(file, password, savePassword);
-                }
-            }
-            case PASSWORD -> new SSHAuthConfiguration.Password(password, savePassword);
-            case AGENT -> new SSHAuthConfiguration.Agent();
-        };
-
-        return new SSHHostConfiguration(username, hostname, port, authentication);
     }
 }
