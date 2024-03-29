@@ -113,7 +113,7 @@ public class DataSourceHandler {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
                         Throwable error = connectJob.getConnectError();
-                        if (error.getCause() instanceof DBCDriverFilesMissingException driverException) {
+                        if (error instanceof DBCDriverFilesMissingException driverException) {
                             DriverEditDialog.showBadConfigDialog(
                                 null,
                                 driverException.getErrorMessage(),

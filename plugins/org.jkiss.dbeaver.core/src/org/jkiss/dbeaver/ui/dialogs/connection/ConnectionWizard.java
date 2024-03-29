@@ -196,7 +196,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                             CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                     } else {
                         Throwable error = connetionTestJob.getConnectError();
-                        if (error.getCause() instanceof DBCDriverFilesMissingException driverException) {
+                        if (error instanceof DBCDriverFilesMissingException driverException) {
                             DriverEditDialog.showBadConfigDialog(
                                 null,
                                 driverException.getErrorMessage(),
