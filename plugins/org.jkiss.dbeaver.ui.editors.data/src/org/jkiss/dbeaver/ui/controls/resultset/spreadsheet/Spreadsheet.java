@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.core.runtime.Platform.OS;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -350,7 +351,10 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case SWT.MouseDown:
-                if (presentation != null) {
+                if (presentation == null) {
+                    return;
+                }
+                if (event.button == 1 && event.count == 1) {
                     presentation.saveBeforeClose();
                 }
                 break;
