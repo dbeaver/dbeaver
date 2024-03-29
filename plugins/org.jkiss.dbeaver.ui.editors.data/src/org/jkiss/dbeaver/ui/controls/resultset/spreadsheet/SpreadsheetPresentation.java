@@ -2965,13 +2965,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     /**
-     * Save control value in case of close
+     * Close editor control (In line) during close data will be automatically
+     * applied for cell
      */
-    public void saveBeforeClose() {
+    public void closeInlineEditor() {
         if (activeInlineEditor instanceof BaseValueEditor<?> baseInlineEditor) {
-            IValueController valueController = baseInlineEditor.getValueController();
-            if (!valueController.isReadOnly()) {
-                baseInlineEditor.saveBeforeClose(value -> valueController.updateValue(value, true));
+            IValueController vController = baseInlineEditor.getValueController();
+            if (vController instanceof IMultiController mController) {
+                mController.closeInlineEditor();
             }
         }
     }

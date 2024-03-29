@@ -23,8 +23,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 
 /**
  * ValueViewCommandHandler
@@ -41,13 +43,21 @@ public class ValueViewCommandHandler extends AbstractHandler {
             return null;
         }
         String actionId = event.getCommand().getId();
-        IResultSetPanel visiblePanel = rsv.getVisiblePanel();
-        if (visiblePanel instanceof ValueViewerPanel) {
+        IResultSetPanel resultPanel = rsv.getVisiblePanel();
+        if (resultPanel instanceof ValueViewerPanel valuePanel) {
             switch (actionId) {
                 case ITextEditorActionDefinitionIds.SMART_ENTER:
                 //case CoreCommands.CMD_EXECUTE_STATEMENT:
                 case CMD_SAVE_VALUE:
-                    ((ValueViewerPanel) visiblePanel).saveValue();
+                    // 1 close active inline editor
+                    IResultSetPresentation activePresentation = rsv.getActivePresentation();
+                    if (activePresentation instanceof SpreadsheetPresentation spsPresentation) {
+                        spsPresentation.closeInlineEditor();
+                    }
+                    // 2 save value from panel
+                    valuePanel.saveValue();
+                    // 3 refresh panel to show actual
+                    valuePanel.refresh(true);
                     break;
             }
         }

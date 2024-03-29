@@ -355,7 +355,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     return;
                 }
                 if (event.button == 1 && event.count == 1) {
-                    presentation.saveBeforeClose();
+                    presentation.closeInlineEditor();
                 }
                 break;
             case LightGrid.Event_ChangeSort:
@@ -373,6 +373,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
                 UIUtils.asyncExec(() -> presentation.navigateLink((GridCell) event.data, event.stateMask));
+                break;
+            case SWT.MouseExit:
+                System.out.println("Spreadsheet.handleEvent()");
                 break;
         }
     }

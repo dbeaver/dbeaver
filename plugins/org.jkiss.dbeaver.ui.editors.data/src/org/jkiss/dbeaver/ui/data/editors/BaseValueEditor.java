@@ -22,8 +22,6 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
@@ -41,8 +39,6 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -212,7 +208,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         };
     }
 
-    public void saveBeforeClose(@NotNull Consumer<Object> valueSaver) {
+    private void saveBeforeClose(@NotNull Consumer<Object> valueSaver) {
         if (!valueController.isReadOnly()) {
             saveValue(false, valueSaver);
         }
