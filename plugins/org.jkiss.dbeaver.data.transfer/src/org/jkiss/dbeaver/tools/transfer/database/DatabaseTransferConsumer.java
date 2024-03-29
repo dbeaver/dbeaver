@@ -1004,4 +1004,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return this.binding.getDataKind();
         }
     }
+
+    public void setSettings(DatabaseConsumerSettings settings) {
+        this.settings = settings;
+    }
+
+    public void setContainerMapping(DatabaseMappingContainer containerMapping) {
+        this.containerMapping = containerMapping;
+    }
 }
