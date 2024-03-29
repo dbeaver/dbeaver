@@ -44,6 +44,8 @@ public class SSHUtils {
 
     private static final Log log = Log.getLog(SSHUtils.class);
 
+    public static final boolean DISABLE_SESSION_SHARING = Boolean.getBoolean("dbeaver.ssh.disableSessionSharing");
+
     private static final String PLATFORM_SSH_PREFERENCES_NODE = "org.eclipse.jsch.core"; //$NON-NLS-1$
     private static final String PLATFORM_SSH_PREFERENCES_SSH2HOME_KEY = IConstants.KEY_SSH2HOME;
     private static final String DEFAULT_SSH_HOME_DIR_NAME = IConstants.SSH_DEFAULT_HOME;
