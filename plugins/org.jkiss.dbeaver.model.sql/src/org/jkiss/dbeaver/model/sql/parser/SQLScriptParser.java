@@ -17,12 +17,16 @@
 
 package org.jkiss.dbeaver.model.sql.parser;
 
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.eclipse.jface.text.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
@@ -30,6 +34,8 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenPredicateEvaluator;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
+import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
@@ -90,7 +96,7 @@ public class SQLScriptParser {
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
-        boolean useBlankLines = !scriptMode && context.getSyntaxManager().isBlankLineDelimiter();
+        boolean useBlankLines = !scriptMode && context.getSyntaxManager().getStatementDelimiterMode().useBlankLine;
         boolean lineFeedIsDelimiter = ArrayUtils.contains(context.getSyntaxManager().getStatementDelimiters(), "\n");
         ruleScanner.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -459,7 +465,7 @@ public class SQLScriptParser {
         }
         // Extract part of document between empty lines
         int startPos = 0;
-        boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
+        boolean useBlankLines = syntaxManager.getStatementDelimiterMode().useBlankLine;
         final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
         int lastPos = currentPos >= docLength ? docLength - 1 : currentPos;
         boolean lineFeedIsDelimiter = ArrayUtils.contains(statementDelimiters, "\n");
@@ -702,6 +708,16 @@ public class SQLScriptParser {
         } else {
             element = null;
         }
+        
+        if (element != null && context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
+            var continuationDetector = new ScriptElementContinuationDetector(context);
+            SQLScriptElement extendedElement = continuationDetector.tryPrepareExtendedElement(element);
+            if (extendedElement != null) {
+                return extendedElement;
+            }
+        }
+        
+        
         // Check query do not ends with delimiter
         // (this may occur if user selected statement including delimiter)
         if (element == null || CommonUtils.isEmpty(element.getText())) {
@@ -981,5 +997,55 @@ public class SQLScriptParser {
             this.togglePattern = togglePattern;
         }
     }
+    
+    private static class ScriptElementContinuationDetector {
+    
+        private final SQLParserContext context;
+        private final LSMAnalyzer analyzer;
+        private boolean hasError = false;
+        
+        public ScriptElementContinuationDetector(@NotNull SQLParserContext context) {
+            this.context = context;
+            this.analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(context.getDialect());
+        }
+        
+        private boolean tryParse(@NotNull String text) {
+            this.hasError = false;
+            return analyzer.parseSqlQueryTree(STMSource.fromString(text), new STMSkippingErrorListener() {
+                @Override
+                public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
+                    hasError = true;
+                }
+            }) != null && !this.hasError;
+        }
 
+        @Nullable
+        public SQLScriptElement tryPrepareExtendedElement(@NotNull SQLScriptElement element) {
+            SQLScriptElement nextElement = extractNextQuery(this.context, element.getOffset(), true);
+            SQLScriptElement lastElement = element;
+            String combinedText;
+            String lastText = element.getOriginalText();
+            int combinedLength;
+            int lastLength = element.getLength();
+            while (nextElement != null) {
+                try {
+                    combinedLength = nextElement.getOffset() + nextElement.getLength() - element.getOffset();
+                    combinedText = this.context.getDocument().get(element.getOffset(), combinedLength);
+                } catch (BadLocationException e) {
+                    break;
+                }
+                if (!this.tryParse(nextElement.getOriginalText()) && this.tryParse(combinedText)) {
+                    lastElement = nextElement;
+                    lastLength = combinedLength;
+                    lastText = combinedText;
+                    nextElement = extractNextQuery(this.context, nextElement.getOffset(), true);
+                } else {
+                    nextElement = null;
+                }
+            }
+            
+            return lastElement == element ? null 
+                    : new SQLQuery(this.context.getDataSource(), lastText, element.getOffset(), lastLength);
+        }
+    }
 }
