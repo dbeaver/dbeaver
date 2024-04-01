@@ -374,9 +374,6 @@ public class Spreadsheet extends LightGrid implements Listener {
                 // we don't want to mess current grid state
                 UIUtils.asyncExec(() -> presentation.navigateLink((GridCell) event.data, event.stateMask));
                 break;
-            case SWT.MouseExit:
-                System.out.println("Spreadsheet.handleEvent()");
-                break;
         }
     }
 
