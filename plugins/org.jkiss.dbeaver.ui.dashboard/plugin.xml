@@ -136,10 +136,6 @@
         <menuContribution locationURI="menu:org.jkiss.dbeaver.menu.dashboards">
             <dynamic id="org.jkiss.dbeaver.menu.dashboards.pulldown" class="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardDynamicMenuContributor"/>
             <separator name="additions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.create" label="%command.org.jkiss.dbeaver.ui.dashboard.create.alterName">
-                <parameter name="datasource" value="true"/>
-                <visibleWhen checkEnabled="true"/>
-            </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">

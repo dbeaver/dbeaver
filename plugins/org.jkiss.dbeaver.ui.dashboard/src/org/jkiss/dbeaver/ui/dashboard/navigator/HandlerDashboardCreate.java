@@ -17,13 +17,18 @@
 package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.utils.CommonUtils;
 
-public class HandlerDashboardCreate extends AbstractDataSourceHandler {
+import java.util.Map;
+
+public class HandlerDashboardCreate extends AbstractDataSourceHandler implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) {
@@ -40,4 +45,14 @@ public class HandlerDashboardCreate extends AbstractDataSourceHandler {
         return null;
     }
 
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainerFromPart(
+            UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
+        if (dataSourceContainer == null) {
+            element.setText("New project dashboard");
+        } else {
+            element.setText("New dashboard for '" + dataSourceContainer.getName() + "'");
+        }
+    }
 }

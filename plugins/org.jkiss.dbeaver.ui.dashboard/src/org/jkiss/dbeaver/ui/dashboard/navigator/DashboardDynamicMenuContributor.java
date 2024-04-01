@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceMenuContributor;
+import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
@@ -66,6 +68,9 @@ public class DashboardDynamicMenuContributor extends DataSourceMenuContributor {
                 menuItems.add(ActionUtils.makeActionContribution(new ShowDashBoardAction(dashboard), true));
             }
         }
+
+        menuItems.add(new Separator());
+        menuItems.add(ActionUtils.makeCommandContribution(window, DashboardUIConstants.CMD_CREATE_DASHBOARD));
     }
 
 
