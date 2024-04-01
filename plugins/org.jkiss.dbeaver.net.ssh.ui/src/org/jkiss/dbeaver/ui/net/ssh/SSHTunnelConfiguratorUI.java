@@ -176,7 +176,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     if (!previous.equals(updated)) {
                         if (hosts.contains(updated)) {
                             DBWorkbench.getPlatformUI().showWarningMessageBox("Error saving SSH configuration", "You already have the same configuration: " + previous);
-                            credentialsPanel.loadSettings(previous);
+                            loadConfiguration(previous);
                             updateConfigurationSelection(previous);
                             return;
                         }
@@ -194,13 +194,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 moveUpItem.setEnabled(index > 0);
                 moveDownItem.setEnabled(index < count - 1);
 
-                credentialsPanel.loadSettings(current);
+                loadConfiguration(current);
             });
 
             final ViewerColumnController<Object, SSHHostConfiguration> controller = new ViewerColumnController<>("ssh_hosts", hostsViewer);
             controller.addColumn("Order", "Order of the jump server", SWT.LEFT, true, true, host -> {
-                final int index = hosts.indexOf(host) + 1;
-                return String.valueOf(index == hosts.size() ? "Target" : "Jump #%d".formatted(index));
+                return String.valueOf(isDestinationHost(host) ? "Target" : "Jump #%d".formatted(hosts.indexOf(host) + 1));
             }, null);
             controller.addColumn("Host", "Host name", SWT.LEFT, true, true, host -> {
                 return host.hostname() + ':' + host.port();
@@ -219,7 +218,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             }, null);
             controller.createColumns(true);
 
-            credentialsPanel = new CredentialsPanel(settingsGroup, true);
+            credentialsPanel = new CredentialsPanel(settingsGroup);
         }
 
         {
@@ -373,9 +372,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
     }
 
+    private void loadConfiguration(@NotNull SSHHostConfiguration configuration) {
+        // TODO: For now, we enforce password saving for jump hosts
+        credentialsPanel.loadSettings(configuration, !isDestinationHost(configuration));
+    }
+
     private void updateConfigurationSelection(@NotNull SSHHostConfiguration configuration) {
         hostsViewer.refresh();
         hostsViewer.setSelection(new StructuredSelection(configuration), true);
+    }
+
+    private boolean isDestinationHost(@NotNull SSHHostConfiguration configuration) {
+        return hosts.get(hosts.size() - 1).equals(configuration);
     }
 
     private static void setNumberEditStyles(Text text) {
@@ -630,7 +638,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         private final Text passwordText;
         private final Button savePasswordCheckbox;
 
-        public CredentialsPanel(@NotNull Composite parent, boolean showSavePasswordCheckbox) {
+        public CredentialsPanel(@NotNull Composite parent) {
             super(parent, SWT.NONE);
 
             setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
@@ -686,31 +694,28 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 passwordText = new Text(passComp, SWT.BORDER | SWT.PASSWORD);
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                if (showSavePasswordCheckbox) {
-                    savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
-                    savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
+                savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        passwordText.setEnabled(savePasswordCheckbox.getSelection());
 
-                        }
-                    });
-                    savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                } else {
-                    savePasswordCheckbox = null;
-                    ((GridData) passwordText.getLayoutData()).horizontalSpan = 2;
-                }
+                    }
+                });
+                savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             }
         }
 
-        public void loadSettings(@NotNull SSHHostConfiguration host) {
+        public void loadSettings(@NotNull SSHHostConfiguration host, boolean forceSavePassword) {
             userNameText.setText(host.username());
             hostNameText.setText(host.hostname());
             hostPortText.setText(String.valueOf(host.port()));
 
             if (host.auth() instanceof SSHAuthConfiguration.WithPassword password) {
+                final boolean savePassword = forceSavePassword || password.savePassword();
                 passwordText.setText(CommonUtils.notEmpty(password.password()));
-                savePasswordCheckbox.setSelection(password.savePassword());
+                savePasswordCheckbox.setSelection(savePassword);
+                savePasswordCheckbox.setEnabled(!forceSavePassword);
             }
 
             if (host.auth() instanceof SSHAuthConfiguration.Password) {
@@ -732,7 +737,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         @NotNull
         public SSHHostConfiguration saveSettings() throws DBException {
             final String password = CommonUtils.nullIfEmpty(passwordText.getText().trim());
-            final boolean savePassword = savePasswordCheckbox != null && savePasswordCheckbox.getSelection();
+            final boolean savePassword = savePasswordCheckbox.getSelection();
 
             final SSHAuthConfiguration auth = switch (getAuthMethod()) {
                 case PASSWORD -> new SSHAuthConfiguration.Password(password, savePassword);

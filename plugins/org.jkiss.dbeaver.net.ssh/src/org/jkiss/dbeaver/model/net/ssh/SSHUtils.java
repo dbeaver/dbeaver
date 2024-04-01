@@ -212,14 +212,14 @@ public class SSHUtils {
             // jump hosts, if present
             final String jumpServerPrefix = DataSourceUtils.getJumpServerSettingsPrefix(i);
             if (configuration.getBooleanProperty(jumpServerPrefix + RegistryConstants.ATTR_ENABLED)) {
-                hosts.add(SSHUtils.loadHostConfiguration(configuration, jumpServerPrefix));
+                hosts.add(SSHUtils.loadHostConfiguration(configuration, jumpServerPrefix, true));
             } else {
                 break;
             }
         }
 
         // primary host
-        hosts.add(SSHUtils.loadHostConfiguration(configuration, ""));
+        hosts.add(SSHUtils.loadHostConfiguration(configuration, "", false));
 
         return hosts.toArray(SSHHostConfiguration[]::new);
     }
@@ -227,11 +227,12 @@ public class SSHUtils {
     @NotNull
     private static SSHHostConfiguration loadHostConfiguration(
         @NotNull DBWHandlerConfiguration configuration,
-        @NotNull String prefix
+        @NotNull String prefix,
+        boolean forceSavePassword
     ) throws DBException {
         String username;
         final String password;
-        final boolean savePassword = configuration.isSavePassword();
+        final boolean savePassword = forceSavePassword || configuration.isSavePassword();
 
         if (prefix.isEmpty()) {
             username = CommonUtils.nullIfEmpty(configuration.getUserName());
@@ -290,9 +291,9 @@ public class SSHUtils {
     ) {
         for (int i = 0; i < hosts.length; i++) {
             if (i < hosts.length - 1) {
-                saveHostConfiguration(configuration, hosts[i], DataSourceUtils.getJumpServerSettingsPrefix(i), true);
+                saveHostConfiguration(configuration, hosts[i], DataSourceUtils.getJumpServerSettingsPrefix(i), true, true);
             } else {
-                saveHostConfiguration(configuration, hosts[i], "", false);
+                saveHostConfiguration(configuration, hosts[i], "", false, false);
             }
         }
     }
@@ -301,7 +302,8 @@ public class SSHUtils {
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration host,
         @NotNull String prefix,
-        boolean markEnabled
+        boolean markEnabled,
+        boolean forceSavePassword
     ) {
         configuration.setProperty(prefix + DBWHandlerConfiguration.PROP_HOST, host.hostname());
         configuration.setProperty(prefix + DBWHandlerConfiguration.PROP_PORT, host.port());
@@ -313,11 +315,13 @@ public class SSHUtils {
         }
 
         if (host.auth() instanceof SSHAuthConfiguration.WithPassword auth) {
+            // TODO: For now, we enforce password saving for jump hosts
+            final boolean savePassword = forceSavePassword || auth.savePassword();
             if (prefix.isEmpty()) {
-                configuration.setSavePassword(auth.savePassword());
-                configuration.setPassword(auth.savePassword() ? auth.password() : null);
+                configuration.setSavePassword(savePassword);
+                configuration.setPassword(savePassword ? auth.password() : null);
             } else {
-                configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, auth.savePassword() ? auth.password() : null);
+                configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, savePassword ? auth.password() : null);
             }
         }
 
