@@ -47,8 +47,13 @@ public class SSHUIMessages extends NLS {
     public static String model_ssh_configurator_label_tunnel_timeout;
     public static String model_ssh_configurator_label_bypass_verification;
     public static String model_ssh_configurator_label_bypass_verification_description;
+    public static String model_ssh_configurator_label_share_tunnels;
+    public static String model_ssh_configurator_label_share_tunnels_description;
     public static String model_ssh_configurator_button_test_tunnel;
     public static String model_ssh_configurator_combo_agent;
+    public static String model_ssh_configurator_group_general_text;
+    public static String model_ssh_configurator_group_timeouts_text;
+    public static String model_ssh_configurator_group_port_forwarding_text;
     public static String model_ssh_configurator_group_jump_server_settings_text;
     public static String model_ssh_configurator_group_jump_server_checkbox_label;
     public static String model_ssh_configurator_variables_hint_label;
