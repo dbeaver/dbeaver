@@ -1005,11 +1005,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    public void setSettings(DatabaseConsumerSettings settings) {
+    public void setSettings(@Nullable DatabaseConsumerSettings settings) {
         this.settings = settings;
     }
 
-    public void setContainerMapping(DatabaseMappingContainer containerMapping) {
+    public void setContainerMapping(@Nullable DatabaseMappingContainer containerMapping) {
         this.containerMapping = containerMapping;
     }
 }
