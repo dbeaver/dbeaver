@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.gson,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.registry
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.data.gis
 Export-Package: org.jkiss.dbeaver.ext.oceanbase,
  org.jkiss.dbeaver.ext.oceanbase.model.auth,
  org.jkiss.dbeaver.ext.oceanbase.model

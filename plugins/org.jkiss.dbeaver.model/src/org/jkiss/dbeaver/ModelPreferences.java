@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver;
 
-import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -191,17 +190,6 @@ public final class ModelPreferences
 
     private static Bundle mainBundle;
     private static DBPPreferenceStore preferences;
-
-    public static synchronized DBPPreferenceStore getPreferences() {
-        if (preferences == null) {
-            setMainBundle(ModelActivator.getInstance().getBundle());
-        }
-        return preferences;
-    }
-
-    public static void setPreferences(DBPPreferenceStore preferences) {
-        ModelPreferences.preferences = preferences;
-    }
 
     public static void setMainBundle(Bundle mainBundle) {
         ModelPreferences.mainBundle = mainBundle;

@@ -75,7 +75,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         timeEditor.createDateFormat(valueController.getValueType());
         timeEditor.setEditable(!valueController.isReadOnly());
 
-        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
             timeEditor.setToTextComposite();
         }
         primeEditorValue(value);
@@ -94,7 +94,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     private boolean isCalendarMode() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
     }
 
     @Override

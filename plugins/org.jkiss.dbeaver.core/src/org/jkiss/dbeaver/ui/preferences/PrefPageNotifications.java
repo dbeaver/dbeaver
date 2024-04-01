@@ -73,7 +73,7 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+            final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
             final Group group = UIUtils.createControlGroup(
                 composite,
                 CoreMessages.pref_page_notifications_group_global,
@@ -293,7 +293,7 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
             settings.setSoundFile(null);
         }
 
-        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 
         enablePopupsCheckbox.setSelection(preferences.getDefaultBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         hideDelaySpinner.setSelection(preferences.getDefaultInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));

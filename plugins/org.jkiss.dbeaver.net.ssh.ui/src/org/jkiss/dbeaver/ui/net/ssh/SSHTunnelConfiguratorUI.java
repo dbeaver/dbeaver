@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.net.ssh;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -41,8 +42,9 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
-import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.model.net.ssh.SSHUtils;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -77,6 +79,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
     private Combo tunnelImplCombo;
     private Button fingerprintVerificationCheck;
+    private Button enableTunnelSharingCheck;
     private Text localHostText;
     private Text localPortSpinner;
     private Text remoteHostText;
@@ -165,52 +168,117 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             group.setText(SSHUIMessages.model_ssh_configurator_group_advanced);
 
-            final Composite client = new Composite(group, SWT.BORDER);
-            client.setLayout(new GridLayout(4, false));
+            final Composite client = new Composite(group, SWT.NONE);
+            client.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
             client.setLayoutData(new GridData(GridData.FILL_BOTH));
             group.setClient(client);
 
-            tunnelImplCombo = UIUtils.createLabelCombo(client, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            tunnelImplCombo.setLayoutData(gd);
+            final Group generalGroup = UIUtils.createControlGroup(
+                client,
+                SSHUIMessages.model_ssh_configurator_group_general_text,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+            ((GridData) generalGroup.getLayoutData()).horizontalSpan = 2;
+
+            tunnelImplCombo = UIUtils.createLabelCombo(
+                generalGroup,
+                SSHUIMessages.model_ssh_configurator_label_implementation,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
+            tunnelImplCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             tunnelImplCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     updateJumpServerSettingsVisibility();
                 }
             });
-            for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
+            for (SSHSessionControllerDescriptor it : SSHSessionControllerRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
 
             fingerprintVerificationCheck = UIUtils.createCheckbox(
-                client,
+                generalGroup,
                 SSHUIMessages.model_ssh_configurator_label_bypass_verification,
                 SSHUIMessages.model_ssh_configurator_label_bypass_verification_description,
                 false,
-                2);
+                2
+            );
 
-            localHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            enableTunnelSharingCheck = UIUtils.createCheckbox(
+                generalGroup,
+                SSHUIMessages.model_ssh_configurator_label_share_tunnels,
+                SSHUIMessages.model_ssh_configurator_label_share_tunnels_description,
+                true,
+                2
+            );
+
+            // Hide tunnel sharing option if it's disabled
+            UIUtils.setControlVisible(enableTunnelSharingCheck, !SSHUtils.DISABLE_SESSION_SHARING);
+
+            final Group portForwardingGroup = UIUtils.createControlGroup(
+                client,
+                SSHUIMessages.model_ssh_configurator_group_port_forwarding_text,
+                4,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
+            localHostText = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_local_host,
+                null,
+                SWT.BORDER,
+                new GridData(GridData.FILL_HORIZONTAL)
+            );
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
             localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            localPortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_port, String.valueOf(0));
+            localPortSpinner = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_local_port,
+                String.valueOf(0)
+            );
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
             setNumberEditStyles(localPortSpinner);
 
-            remoteHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            remoteHostText = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_remote_host,
+                null,
+                SWT.BORDER,
+                new GridData(GridData.FILL_HORIZONTAL)
+            );
             remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
             remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            remotePortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_port, String.valueOf(0));
+            remotePortSpinner = UIUtils.createLabelText(
+                portForwardingGroup,
+                SSHUIMessages.model_ssh_configurator_label_remote_port,
+                String.valueOf(0)
+            );
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
             setNumberEditStyles(remotePortSpinner);
 
-            UIUtils.createHorizontalLine(client, 4, 0);
-
-            keepAliveText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_keep_alive, String.valueOf(0));
+            final Group timeoutsGroup = UIUtils.createControlGroup(
+                client,
+                SSHUIMessages.model_ssh_configurator_group_timeouts_text,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+            keepAliveText = UIUtils.createLabelText(
+                timeoutsGroup,
+                SSHUIMessages.model_ssh_configurator_label_keep_alive,
+                String.valueOf(0)
+            );
             setNumberEditStyles(keepAliveText);
 
-            tunnelTimeout = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT));
+
+            tunnelTimeout = UIUtils.createLabelText(
+                timeoutsGroup,
+                SSHUIMessages.model_ssh_configurator_label_tunnel_timeout,
+                String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT)
+            );
             setNumberEditStyles(tunnelTimeout);
         }
 
@@ -444,7 +512,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 tunnelImplCombo.select(0);
             }
         } else {
-            SSHImplementationDescriptor desc = SSHImplementationRegistry.getInstance().getDescriptor(implType);
+            SSHSessionControllerDescriptor desc = SSHSessionControllerRegistry.getInstance().getDescriptor(implType);
             if (desc != null) {
                 tunnelImplCombo.setText(desc.getLabel());
             } else {
@@ -453,7 +521,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
         
         fingerprintVerificationCheck.setSelection(configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION));
-        
+        enableTunnelSharingCheck.setSelection(configuration.getBooleanProperty(SSHConstants.PROP_SHARE_TUNNELS, true));
+
         localHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_LOCAL_HOST)));
         int lpValue = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
         if (lpValue != 0) {
@@ -502,7 +571,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         String implLabel = tunnelImplCombo.getText();
-        for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
+        for (SSHSessionControllerDescriptor it : SSHSessionControllerRegistry.getInstance().getDescriptors()) {
             if (it.getLabel().equals(implLabel)) {
                 configuration.setProperty(SSHConstants.PROP_IMPLEMENTATION, it.getId());
                 break;
@@ -514,6 +583,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         } else {
             configuration.setProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION, null);
         }
+
+        configuration.setProperty(SSHConstants.PROP_SHARE_TUNNELS, enableTunnelSharingCheck.getSelection());
 
         configuration.setProperty(SSHConstants.PROP_LOCAL_HOST, localHostText.getText().trim());
         int localPort = CommonUtils.toInt(localPortSpinner.getText());

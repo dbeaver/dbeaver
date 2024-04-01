@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.dpi.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -691,6 +688,7 @@ public class DataSourceDescriptor
         return clientHome;
     }
 
+    @NotNull
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         if (proxyHandler == null && tunnelHandler == null) {
@@ -928,14 +926,16 @@ public class DataSourceDescriptor
         }
     }
 
+    /**
+     * this method always forcibly updates available secrets and should always return actual secrets,
+     * to get secrets using cache use {@link #listSharedCredentialFromCache}
+     */
     @NotNull
     public synchronized List<DBSSecretValue> listSharedCredentials() throws DBException {
         if (!isSharedCredentials()) {
             return List.of();
         }
-        if (availableSharedCredentials != null) {
-            return availableSharedCredentials;
-        }
+        forgetSecrets();
         resolveSecretsIfNeeded();
         if (availableSharedCredentials == null) {
             this.availableSharedCredentials = List.of();
@@ -943,10 +943,14 @@ public class DataSourceDescriptor
         return availableSharedCredentials;
     }
 
-    @NotNull
-    public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
-        var secretController = DBSSecretController.getProjectSecretController(getProject());
-        return secretController.listAllSharedSecrets(this);
+    /**
+     * returns secrets from the cache or reads them if they do not exist, may contain outdated secrets
+     */
+    private synchronized List<DBSSecretValue> listSharedCredentialFromCache() throws DBException {
+        if (availableSharedCredentials != null) {
+            return availableSharedCredentials;
+        }
+        return listSharedCredentials();
     }
 
     @Nullable
@@ -1112,7 +1116,7 @@ public class DataSourceDescriptor
         resolveSecretsIfNeeded();
 
         if (isSharedCredentials() && !isSharedCredentialsSelected()) {
-            var sharedCreds = listSharedCredentials();
+            var sharedCreds = listSharedCredentialFromCache();
             if (!CommonUtils.isEmpty(sharedCreds)) {
                 log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
                 setSelectedSharedCredentials(sharedCreds.get(0));
@@ -1407,12 +1411,25 @@ public class DataSourceDescriptor
 
         if (initialize) {
             monitor.subTask("Initialize data source");
-            try {
-                dataSource.initialize(monitor);
-                dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
-            } catch (Throwable e) {
-                log.error("Error initializing datasource", e);
-                throw e;
+            // Disable manual commit for init stage (because it may produce errors and modify transaction scope)
+            boolean revertMetaToManualCommit = false;
+            try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                if (txnManager != null && !txnManager.isAutoCommit()) {
+                    txnManager.setAutoCommit(monitor, true);
+                    revertMetaToManualCommit = true;
+                }
+
+                try {
+                    dataSource.initialize(monitor);
+                    dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
+                } catch (Throwable e) {
+                    log.error("Error initializing datasource", e);
+                    throw e;
+                }
+                if (revertMetaToManualCommit) {
+                    txnManager.setAutoCommit(monitor, false);
+                }
             }
         }
     }

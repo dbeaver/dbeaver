@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.runtime.ui;
 
-import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
 /**
@@ -35,7 +35,7 @@ public interface UIServiceSecurity {
      * @return - password
      */
     String askForPassword(
-        @NotNull IProject project,
+        @NotNull DBPProject project,
         @NotNull String title,
         String message,
         @Nullable String defPassword,
@@ -46,4 +46,12 @@ public interface UIServiceSecurity {
     String askForPasswordChange(@NotNull String title, @NotNull String currentPassword);
 
     boolean validatePassword(DBPProject project, String title, String message, boolean forceEncryption);
+
+    /**
+     * Reset project password
+     *
+     * @param project - current project
+     * @throws DBException - thrown exception
+     */
+    void resetProjectPassword(DBPProject project) throws DBException;
 }

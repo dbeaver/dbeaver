@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -73,7 +74,7 @@ public class SWTBrowserRegistry {
      */
     @NotNull
     public static BrowserSelection getActiveBrowser() {
-        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         String type = preferences.getString(ModelPreferences.CLIENT_BROWSER);
         if (CommonUtils.isEmpty(type)) {
             return getDefaultBrowser();
@@ -111,7 +112,7 @@ public class SWTBrowserRegistry {
      * @param browser selected browser
      */
     public static void setActiveBrowser(@NotNull BrowserSelection browser) {
-        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         preferences.setValue(ModelPreferences.CLIENT_BROWSER, browser.name());
         System.setProperty(INTERNAL_BROWSER_PROPERTY, preferences.getString(ModelPreferences.CLIENT_BROWSER));
     }
