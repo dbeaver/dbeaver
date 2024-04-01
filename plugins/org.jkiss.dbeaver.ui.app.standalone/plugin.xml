@@ -95,6 +95,11 @@
 
     <extension point="org.eclipse.ui.commands">
         <command
+            id="org.jkiss.dbeaver.core.util.collectDiagnosticInfo"
+            categoryId="org.jkiss.dbeaver.core.util"
+            name="%command.org.jkiss.dbeaver.core.util.collectDiagnosticInfo.name"
+            description="%command.org.jkiss.dbeaver.core.util.collectDiagnosticInfo.description"/>
+        <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
             name="Reset Settings..."
@@ -191,6 +196,10 @@
             </activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
+        <handler
+            commandId="org.jkiss.dbeaver.core.util.collectDiagnosticInfo"
+            class="org.jkiss.dbeaver.ui.app.standalone.actions.CollectDiagnosticInfoHandler"
+        />
         <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
@@ -313,6 +322,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:help">
             <separator name="misc" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.util.collectDiagnosticInfo" style="push"/>
             <command commandId="org.jkiss.dbeaver.core.util.resetSettings" style="push"/>
             <command commandId="org.jkiss.dbeaver.core.util.clearHistory" style="push"/>
             <separator name="misc_end" visible="true"/>
