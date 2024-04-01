@@ -212,11 +212,11 @@ public class SSHUtils {
     ) throws DBException {
         final List<SSHHostConfiguration> hosts = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < SSHConstants.MAX_JUMP_SERVERS; i++) {
             // jump hosts, if present
-            final String jumpServerPrefix = DataSourceUtils.getJumpServerSettingsPrefix(i);
-            if (configuration.getBooleanProperty(jumpServerPrefix + RegistryConstants.ATTR_ENABLED)) {
-                hosts.add(SSHUtils.loadHostConfiguration(configuration, jumpServerPrefix, true, validate));
+            final String prefix = DataSourceUtils.getJumpServerSettingsPrefix(i);
+            if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
+                hosts.add(SSHUtils.loadHostConfiguration(configuration, prefix, true, validate));
             } else {
                 break;
             }
@@ -240,15 +240,15 @@ public class SSHUtils {
         final boolean savePassword = forceSavePassword || configuration.isSavePassword();
 
         if (prefix.isEmpty()) {
-            username = CommonUtils.nullIfEmpty(configuration.getUserName());
+            username = CommonUtils.notEmpty(configuration.getUserName());
             password = CommonUtils.nullIfEmpty(configuration.getPassword());
         } else {
-            username = CommonUtils.nullIfEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME));
+            username = CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME));
             password = CommonUtils.nullIfEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD));
         }
 
-        if (CommonUtils.isEmpty(username)) {
-            username = System.getProperty("user.name");
+        if (validate && CommonUtils.isEmpty(username)) {
+            username = SSHConstants.DEFAULT_USER_NAME;
         }
 
         final String hostname = CommonUtils.notEmpty(configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST));
@@ -261,7 +261,7 @@ public class SSHUtils {
             if (validate) {
                 throw new DBException("SSH port not specified");
             } else {
-                port = SSHConstants.DEFAULT_SSH_PORT;
+                port = SSHConstants.DEFAULT_PORT;
             }
         }
 

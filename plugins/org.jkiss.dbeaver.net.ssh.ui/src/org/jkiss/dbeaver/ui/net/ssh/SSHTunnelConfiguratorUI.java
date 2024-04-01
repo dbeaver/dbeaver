@@ -198,7 +198,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 final int index = configurations.indexOf(current);
                 final int count = configurations.size();
 
-                createItem.setEnabled(count < 5); // why would you want more?
+                createItem.setEnabled(count < SSHConstants.MAX_JUMP_SERVERS);
                 deleteItem.setEnabled(count > 1);
                 moveUpItem.setEnabled(index > 0);
                 moveDownItem.setEnabled(index < count - 1);
@@ -670,7 +670,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
                 hostNameText = new Text(hostPortComp, SWT.BORDER);
                 hostNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                hostPortText = UIUtils.createLabelText(hostPortComp, SSHUIMessages.model_ssh_configurator_label_port, String.valueOf(SSHConstants.DEFAULT_SSH_PORT));
+                hostPortText = UIUtils.createLabelText(hostPortComp, SSHUIMessages.model_ssh_configurator_label_port, String.valueOf(SSHConstants.DEFAULT_PORT));
                 setNumberEditStyles(hostPortText);
             }
 
@@ -838,9 +838,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         private ConfigurationWrapper() {
             this.configuration = new SSHHostConfiguration(
+                SSHConstants.DEFAULT_USER_NAME,
                 "",
-                "",
-                SSHConstants.DEFAULT_SSH_PORT,
+                SSHConstants.DEFAULT_PORT,
                 new SSHAuthConfiguration.Password("", true)
             );
         }
