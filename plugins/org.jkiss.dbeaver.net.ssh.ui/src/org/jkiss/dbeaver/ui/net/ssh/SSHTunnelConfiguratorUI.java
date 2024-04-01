@@ -78,7 +78,7 @@ import java.util.Locale;
  */
 public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
     private DBWHandlerConfiguration savedConfiguration;
-    private final List<SSHHostConfiguration> hosts = new ArrayList<>();
+    private final List<ConfigurationWrapper> configurations = new ArrayList<>();
 
     private CredentialsPanel credentialsPanel;
     private TableViewer hostsViewer;
@@ -111,39 +111,39 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             final ToolBar toolBar = new ToolBar(tableComposite, SWT.FLAT | SWT.HORIZONTAL);
             final ToolItem createItem = UIUtils.createToolItem(toolBar, "Create new jump host", UIIcon.ROW_ADD, SelectionListener.widgetSelectedAdapter(e -> {
-                final SSHHostConfiguration host = (SSHHostConfiguration) hostsViewer.getStructuredSelection().getFirstElement();
-                final SSHHostConfiguration created = new SSHHostConfiguration("", "", SSHConstants.DEFAULT_SSH_PORT, new SSHAuthConfiguration.Password("", false));
+                final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+                final ConfigurationWrapper created = new ConfigurationWrapper();
 
-                hosts.add(hosts.indexOf(host), created);
+                configurations.add(configurations.indexOf(host), created);
                 updateConfigurationSelection(created);
             }));
             final ToolItem deleteItem = UIUtils.createToolItem(toolBar, "Delete jump host", UIIcon.ROW_DELETE, SelectionListener.widgetSelectedAdapter(e -> {
-                final SSHHostConfiguration host = (SSHHostConfiguration) hostsViewer.getStructuredSelection().getFirstElement();
+                final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
                 if (DBWorkbench.getPlatformUI().confirmAction(
                     "Confirm host deletion",
-                    "Are you sure you want to delete host '" + host + "'?"
+                    "Are you sure you want to delete host '" + host.configuration + "'?"
                 )) {
-                    credentialsPanel.currentConfiguration = null;
-                    final int index = hosts.indexOf(host);
+                    credentialsPanel.lastConfiguration = null;
+                    final int index = configurations.indexOf(host);
 
-                    hosts.remove(index);
-                    updateConfigurationSelection(hosts.get(CommonUtils.clamp(index, 0, hosts.size() - 1)));
+                    configurations.remove(index);
+                    updateConfigurationSelection(configurations.get(CommonUtils.clamp(index, 0, configurations.size() - 1)));
                 }
             }));
             final ToolItem moveUpItem = UIUtils.createToolItem(toolBar, "Move up", UIIcon.ARROW_UP, SelectionListener.widgetSelectedAdapter(e -> {
-                final SSHHostConfiguration host = (SSHHostConfiguration) hostsViewer.getStructuredSelection().getFirstElement();
-                final int index = hosts.indexOf(host);
+                final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+                final int index = configurations.indexOf(host);
 
-                hosts.set(index, hosts.get(index - 1));
-                hosts.set(index - 1, host);
+                configurations.set(index, configurations.get(index - 1));
+                configurations.set(index - 1, host);
                 updateConfigurationSelection(host);
             }));
             final ToolItem moveDownItem = UIUtils.createToolItem(toolBar, "Move down", UIIcon.ARROW_DOWN, SelectionListener.widgetSelectedAdapter(e -> {
-                final SSHHostConfiguration host = (SSHHostConfiguration) hostsViewer.getStructuredSelection().getFirstElement();
-                final int index = hosts.indexOf(host);
+                final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+                final int index = configurations.indexOf(host);
 
-                hosts.set(index, hosts.get(index + 1));
-                hosts.set(index + 1, host);
+                configurations.set(index, configurations.get(index + 1));
+                configurations.set(index + 1, host);
                 updateConfigurationSelection(host);
             }));
 
@@ -153,41 +153,34 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             hostsViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
             hostsViewer.getTable().setHeaderVisible(true);
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
-            hostsViewer.setInput(hosts);
+            hostsViewer.setInput(configurations);
             hostsViewer.addSelectionChangedListener(e -> {
-                final SSHHostConfiguration previous = credentialsPanel.currentConfiguration;
-                final SSHHostConfiguration current = (SSHHostConfiguration) e.getStructuredSelection().getFirstElement();
+                final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
+                final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
 
                 if (current == null) {
                     return;
                 }
 
-                if (previous != null) {
+                if (last != null) {
                     final SSHHostConfiguration updated;
 
                     try {
                         updated = credentialsPanel.saveSettings();
                     } catch (DBException ex) {
                         DBWorkbench.getPlatformUI().showWarningMessageBox("Error saving SSH configuration", ex.getMessage());
-                        updateConfigurationSelection(previous);
+                        updateConfigurationSelection(last);
                         return;
                     }
 
-                    if (!previous.equals(updated)) {
-                        if (hosts.contains(updated)) {
-                            DBWorkbench.getPlatformUI().showWarningMessageBox("Error saving SSH configuration", "You already have the same configuration: " + previous);
-                            loadConfiguration(previous);
-                            updateConfigurationSelection(previous);
-                            return;
-                        }
-
-                        hosts.set(hosts.indexOf(previous), updated);
+                    if (!last.configuration.equals(updated)) {
+                        configurations.set(configurations.indexOf(last), new ConfigurationWrapper(updated));
                         hostsViewer.refresh();
                     }
                 }
 
-                final int index = hosts.indexOf(current);
-                final int count = hosts.size();
+                final int index = configurations.indexOf(current);
+                final int count = configurations.size();
 
                 createItem.setEnabled(count < 5); // why would you want more?
                 deleteItem.setEnabled(count > 1);
@@ -197,20 +190,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 loadConfiguration(current);
             });
 
-            final ViewerColumnController<Object, SSHHostConfiguration> controller = new ViewerColumnController<>("ssh_hosts", hostsViewer);
-            controller.addColumn("Order", "Order of the jump server", SWT.LEFT, true, true, host -> {
-                return String.valueOf(isDestinationHost(host) ? "Target" : "Jump #%d".formatted(hosts.indexOf(host) + 1));
+            final ViewerColumnController<Object, ConfigurationWrapper> controller = new ViewerColumnController<>("ssh_hosts", hostsViewer);
+            controller.addColumn("Order", "Order of the jump server", SWT.LEFT, true, true, wrapper -> {
+                return String.valueOf(isDestinationHost(wrapper) ? "Target" : "Jump #%d".formatted(configurations.indexOf(wrapper) + 1));
             }, null);
-            controller.addColumn("Host", "Host name", SWT.LEFT, true, true, host -> {
-                return host.hostname() + ':' + host.port();
+            controller.addColumn("Host", "Host name", SWT.LEFT, true, true, wrapper -> {
+                return wrapper.configuration.hostname() + ':' + wrapper.configuration.port();
             }, null);
-            controller.addColumn("User", "User name", SWT.LEFT, true, true, host -> {
-                return host.username();
+            controller.addColumn("User", "User name", SWT.LEFT, true, true, wrapper -> {
+                return wrapper.configuration.username();
             }, null);
-            controller.addColumn("Authentication", "Authentication method", SWT.LEFT, true, true, host -> {
-                if (host.auth() instanceof SSHAuthConfiguration.Password) {
+            controller.addColumn("Authentication", "Authentication method", SWT.LEFT, true, true, wrapper -> {
+                final SSHAuthConfiguration auth = wrapper.configuration.auth();
+                if (auth instanceof SSHAuthConfiguration.Password) {
                     return "Password";
-                } else if (host.auth() instanceof SSHAuthConfiguration.KeyData || host.auth() instanceof SSHAuthConfiguration.KeyFile) {
+                } else if (auth instanceof SSHAuthConfiguration.KeyData || auth instanceof SSHAuthConfiguration.KeyFile) {
                     return "Public Key";
                 } else {
                     return "Agent";
@@ -370,20 +364,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
+        UIUtils.asyncExec(() -> UIUtils.resizeShell(parent.getShell()));
     }
 
-    private void loadConfiguration(@NotNull SSHHostConfiguration configuration) {
+    private void loadConfiguration(@NotNull ConfigurationWrapper wrapper) {
         // TODO: For now, we enforce password saving for jump hosts
-        credentialsPanel.loadSettings(configuration, !isDestinationHost(configuration));
+        credentialsPanel.loadSettings(wrapper, !isDestinationHost(wrapper));
     }
 
-    private void updateConfigurationSelection(@NotNull SSHHostConfiguration configuration) {
+    private void updateConfigurationSelection(@NotNull ConfigurationWrapper wrapper) {
         hostsViewer.refresh();
-        hostsViewer.setSelection(new StructuredSelection(configuration), true);
+        hostsViewer.setSelection(new StructuredSelection(wrapper), true);
     }
 
-    private boolean isDestinationHost(@NotNull SSHHostConfiguration configuration) {
-        return hosts.get(hosts.size() - 1).equals(configuration);
+    private boolean isDestinationHost(@NotNull ConfigurationWrapper wrapper) {
+        return configurations.get(configurations.size() - 1).equals(wrapper);
     }
 
     private static void setNumberEditStyles(Text text) {
@@ -494,15 +489,17 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     @Override
     public void loadSettings(@NotNull DBWHandlerConfiguration configuration) {
         try {
-            hosts.clear();
-            hosts.addAll(List.of(SSHUtils.loadHostConfigurations(configuration)));
+            configurations.clear();
+            for (SSHHostConfiguration host : SSHUtils.loadHostConfigurations(configuration, false)) {
+                configurations.add(new ConfigurationWrapper(host));
+            }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("SSH configuration", "Unable to load SSH configuration due to an error", e);
             return;
         }
 
         hostsViewer.refresh();
-        hostsViewer.setSelection(new StructuredSelection(hosts.get(hosts.size() - 1)));
+        hostsViewer.setSelection(new StructuredSelection(configurations.get(configurations.size() - 1)));
         hostsViewer.getTable().setFocus();
 
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
@@ -562,14 +559,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     public void saveSettings(@NotNull DBWHandlerConfiguration configuration) {
         try {
             // Save current configuration just in case
-            final int index = hosts.indexOf(credentialsPanel.currentConfiguration);
-            hosts.set(index, credentialsPanel.saveSettings());
+            configurations.set(
+                configurations.indexOf(credentialsPanel.lastConfiguration),
+                new ConfigurationWrapper(credentialsPanel.saveSettings())
+            );
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Error saving SSH configuration", e.getMessage());
             throw new IllegalStateException("Error saving SSH configuration", e);
         }
 
-        SSHUtils.saveHostConfigurations(configuration, hosts.toArray(SSHHostConfiguration[]::new));
+        final SSHHostConfiguration[] hosts = configurations.stream()
+            .map(wrapper -> wrapper.configuration)
+            .toArray(SSHHostConfiguration[]::new);
+
+        SSHUtils.saveHostConfigurations(configuration, hosts);
 
         String implLabel = tunnelImplCombo.getText();
         for (SSHSessionControllerDescriptor it : SSHSessionControllerRegistry.getInstance().getDescriptors()) {
@@ -626,7 +629,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     private static class CredentialsPanel extends Composite {
-        private SSHHostConfiguration currentConfiguration;
+        private ConfigurationWrapper lastConfiguration;
 
         private final Text hostNameText;
         private final Text hostPortText;
@@ -706,32 +709,34 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             }
         }
 
-        public void loadSettings(@NotNull SSHHostConfiguration host, boolean forceSavePassword) {
-            userNameText.setText(host.username());
-            hostNameText.setText(host.hostname());
-            hostPortText.setText(String.valueOf(host.port()));
+        public void loadSettings(@NotNull ConfigurationWrapper wrapper, boolean forceSavePassword) {
+            final SSHHostConfiguration configuration = wrapper.configuration;
 
-            if (host.auth() instanceof SSHAuthConfiguration.WithPassword password) {
+            userNameText.setText(configuration.username());
+            hostNameText.setText(configuration.hostname());
+            hostPortText.setText(String.valueOf(configuration.port()));
+
+            if (configuration.auth() instanceof SSHAuthConfiguration.WithPassword password) {
                 final boolean savePassword = forceSavePassword || password.savePassword();
                 passwordText.setText(CommonUtils.notEmpty(password.password()));
                 savePasswordCheckbox.setSelection(savePassword);
                 savePasswordCheckbox.setEnabled(!forceSavePassword);
             }
 
-            if (host.auth() instanceof SSHAuthConfiguration.Password) {
+            if (configuration.auth() instanceof SSHAuthConfiguration.Password) {
                 authMethodCombo.select(SSHConstants.AuthType.PASSWORD.ordinal());
-            } else if (host.auth() instanceof SSHAuthConfiguration.KeyData key) {
+            } else if (configuration.auth() instanceof SSHAuthConfiguration.KeyData key) {
                 privateKeyText.setText(key.data());
                 authMethodCombo.select(SSHConstants.AuthType.PUBLIC_KEY.ordinal());
-            } else if (host.auth() instanceof SSHAuthConfiguration.KeyFile key) {
+            } else if (configuration.auth() instanceof SSHAuthConfiguration.KeyFile key) {
                 privateKeyText.setText(key.path().toString());
                 authMethodCombo.select(SSHConstants.AuthType.PUBLIC_KEY.ordinal());
-            } else if (host.auth() instanceof SSHAuthConfiguration.Agent) {
+            } else if (configuration.auth() instanceof SSHAuthConfiguration.Agent) {
                 authMethodCombo.select(SSHConstants.AuthType.AGENT.ordinal());
             }
 
             updateAuthMethodVisibility();
-            currentConfiguration = host;
+            lastConfiguration = wrapper;
         }
 
         @NotNull
@@ -767,10 +772,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             final String username = userNameText.getText().trim();
             final String hostname = hostNameText.getText().trim();
             final int port = CommonUtils.toInt(hostPortText.getText().trim());
-
-            if (hostname.isEmpty()) {
-                throw new DBException("Hostname must not be empty");
-            }
 
             return new SSHHostConfiguration(username, hostname, port, auth);
         }
@@ -810,6 +811,23 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         private void showPrivateKeyField(boolean show) {
             UIUtils.setControlVisible(privateKeyLabel, show);
             UIUtils.setControlVisible(privateKeyText, show);
+        }
+    }
+
+    private static class ConfigurationWrapper {
+        private final SSHHostConfiguration configuration;
+
+        private ConfigurationWrapper(@NotNull SSHHostConfiguration configuration) {
+            this.configuration = configuration;
+        }
+
+        private ConfigurationWrapper() {
+            this.configuration = new SSHHostConfiguration(
+                "",
+                "",
+                SSHConstants.DEFAULT_SSH_PORT,
+                new SSHAuthConfiguration.Password("", true)
+            );
         }
     }
 }

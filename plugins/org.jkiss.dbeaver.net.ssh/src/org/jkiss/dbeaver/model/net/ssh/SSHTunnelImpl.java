@@ -112,7 +112,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         }
 
         // TODO: Check jump hosts as well
-        final SSHHostConfiguration[] hosts = SSHUtils.loadHostConfigurations(configuration);
+        final SSHHostConfiguration[] hosts = SSHUtils.loadHostConfigurations(configuration, false);
         final SSHHostConfiguration host = hosts[hosts.length - 1];
 
         if (host.auth() instanceof SSHAuthConfiguration.WithPassword password && password.savePassword()) {
@@ -187,7 +187,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         @NotNull DBPConnectionConfiguration connectionInfo,
         @NotNull SSHSessionController controller
     ) throws DBException {
-        final SSHHostConfiguration[] hosts = SSHUtils.loadHostConfigurations(configuration);
+        final SSHHostConfiguration[] hosts = SSHUtils.loadHostConfigurations(configuration, true);
         final SSHPortForwardConfiguration portForward = loadPortForwardConfiguration(configuration, connectionInfo);
         final SSHSession[] sessions = new SSHSession[hosts.length];
 

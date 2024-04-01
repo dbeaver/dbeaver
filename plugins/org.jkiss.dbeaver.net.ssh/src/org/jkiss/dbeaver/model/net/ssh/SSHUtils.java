@@ -201,25 +201,29 @@ public class SSHUtils {
      * </ol>
      *
      * @param configuration network handler configuration to read host configuration from
+     * @param validate      validate configuration parameters
      * @return array of SSH host configurations
      * @throws DBException if configuration is invalid
      */
     @NotNull
-    public static SSHHostConfiguration[] loadHostConfigurations(@NotNull DBWHandlerConfiguration configuration) throws DBException {
+    public static SSHHostConfiguration[] loadHostConfigurations(
+        @NotNull DBWHandlerConfiguration configuration,
+        boolean validate
+    ) throws DBException {
         final List<SSHHostConfiguration> hosts = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             // jump hosts, if present
             final String jumpServerPrefix = DataSourceUtils.getJumpServerSettingsPrefix(i);
             if (configuration.getBooleanProperty(jumpServerPrefix + RegistryConstants.ATTR_ENABLED)) {
-                hosts.add(SSHUtils.loadHostConfiguration(configuration, jumpServerPrefix, true));
+                hosts.add(SSHUtils.loadHostConfiguration(configuration, jumpServerPrefix, true, validate));
             } else {
                 break;
             }
         }
 
         // primary host
-        hosts.add(SSHUtils.loadHostConfiguration(configuration, "", false));
+        hosts.add(SSHUtils.loadHostConfiguration(configuration, "", false, validate));
 
         return hosts.toArray(SSHHostConfiguration[]::new);
     }
@@ -228,7 +232,8 @@ public class SSHUtils {
     private static SSHHostConfiguration loadHostConfiguration(
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull String prefix,
-        boolean forceSavePassword
+        boolean forceSavePassword,
+        boolean validate
     ) throws DBException {
         String username;
         final String password;
@@ -246,14 +251,18 @@ public class SSHUtils {
             username = System.getProperty("user.name");
         }
 
-        final String hostname = configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST);
-        if (CommonUtils.isEmpty(hostname)) {
+        final String hostname = CommonUtils.notEmpty(configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST));
+        if (validate && CommonUtils.isEmpty(hostname)) {
             throw new DBException("SSH host not specified");
         }
 
         int port = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
         if (port == 0) {
-            port = SSHConstants.DEFAULT_SSH_PORT;
+            if (validate) {
+                throw new DBException("SSH port not specified");
+            } else {
+                port = SSHConstants.DEFAULT_SSH_PORT;
+            }
         }
 
         final SSHConstants.AuthType authType = CommonUtils.valueOf(
