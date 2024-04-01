@@ -49,7 +49,11 @@ public class DashboardCreateWizard extends Wizard implements INewWizard {
     private IStructuredSelection entitySelection;
     @Nullable
     private DBPProject project;
-    
+
+    public DashboardCreateWizard() {
+        this.dataSourceContainer = null;
+    }
+
     public DashboardCreateWizard(DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
 	}
