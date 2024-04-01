@@ -81,6 +81,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     private final List<ConfigurationWrapper> configurations = new ArrayList<>();
 
     private CredentialsPanel credentialsPanel;
+
+    private ExpandableComposite hostsComposite;
     private TableViewer hostsViewer;
 
     private Combo tunnelImplCombo;
@@ -104,12 +106,26 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+            credentialsPanel = new CredentialsPanel(settingsGroup);
+        }
 
-            final Composite tableComposite = new Composite(settingsGroup, SWT.BORDER);
-            tableComposite.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
-            tableComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        {
+            hostsComposite = new ExpandableComposite(composite, SWT.NONE);
+            hostsComposite.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            hostsComposite.setText(SSHUIMessages.model_ssh_configurator_group_jump_server_settings_text);
+            hostsComposite.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
 
-            final ToolBar toolBar = new ToolBar(tableComposite, SWT.FLAT | SWT.HORIZONTAL);
+            final Composite client = new Composite(hostsComposite, SWT.BORDER);
+            client.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
+            client.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            hostsComposite.setClient(client);
+
+            final ToolBar toolBar = new ToolBar(client, SWT.FLAT | SWT.HORIZONTAL);
             final ToolItem createItem = UIUtils.createToolItem(toolBar, "Create new jump host", UIIcon.ROW_ADD, SelectionListener.widgetSelectedAdapter(e -> {
                 final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
                 final ConfigurationWrapper created = new ConfigurationWrapper();
@@ -147,9 +163,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 updateConfigurationSelection(host);
             }));
 
-            UIUtils.createLabelSeparator(tableComposite, SWT.HORIZONTAL);
+            UIUtils.createLabelSeparator(client, SWT.HORIZONTAL);
 
-            hostsViewer = new TableViewer(tableComposite, SWT.FULL_SELECTION | SWT.SINGLE);
+            hostsViewer = new TableViewer(client, SWT.FULL_SELECTION | SWT.SINGLE);
             hostsViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
             hostsViewer.getTable().setHeaderVisible(true);
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -212,7 +228,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             }, null);
             controller.createColumns(true);
 
-            credentialsPanel = new CredentialsPanel(settingsGroup);
         }
 
         {
@@ -500,7 +515,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         hostsViewer.refresh();
         hostsViewer.setSelection(new StructuredSelection(configurations.get(configurations.size() - 1)));
-        hostsViewer.getTable().setFocus();
+        hostsComposite.setExpanded(configurations.size() > 1);
 
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implType)) {
