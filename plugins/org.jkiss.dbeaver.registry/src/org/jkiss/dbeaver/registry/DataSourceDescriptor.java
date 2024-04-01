@@ -1413,20 +1413,16 @@ public class DataSourceDescriptor
                     txnManager.setAutoCommit(monitor, true);
                     revertMetaToManualCommit = true;
                 }
-            }
-            try {
-                dataSource.initialize(monitor);
-                dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
-            } catch (Throwable e) {
-                log.error("Error initializing datasource", e);
-                throw e;
-            }
-            if (revertMetaToManualCommit) {
-                try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-                    if (txnManager != null && txnManager.isAutoCommit()) {
-                        txnManager.setAutoCommit(monitor, false);
-                    }
+
+                try {
+                    dataSource.initialize(monitor);
+                    dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
+                } catch (Throwable e) {
+                    log.error("Error initializing datasource", e);
+                    throw e;
+                }
+                if (revertMetaToManualCommit) {
+                    txnManager.setAutoCommit(monitor, false);
                 }
             }
         }

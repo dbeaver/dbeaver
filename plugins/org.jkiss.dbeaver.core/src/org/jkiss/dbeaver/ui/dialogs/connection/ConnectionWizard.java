@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -37,6 +40,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.exec.DBCDriverFilesMissingException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -47,6 +51,7 @@ import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -168,21 +173,51 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
         try {
 
-            final ConnectionTestJob op = new ConnectionTestJob(testDataSource, session -> {
+            final ConnectionTestJob connetionTestJob = new ConnectionTestJob(testDataSource, session -> {
                 for (IWizardPage page : getPages()) {
                     testInPage(session, page);
                 }
             });
 
+            final JobChangeAdapter jobAdapter = new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event) {
+                    IStatus result = connetionTestJob.getConnectStatus();
+                    if (result.isOK()) {
+                        new ConnectionTestDialog(
+                            getShell(),
+                            dataSource,
+                            connetionTestJob.getServerVersion(),
+                            connetionTestJob.getClientVersion(),
+                            connetionTestJob.getConnectTime()).open();
+                    } else if (result == Status.CANCEL_STATUS) {
+                        DBWorkbench.getPlatformUI().showError(
+                            CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
+                            CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
+                    } else {
+                        Throwable error = connetionTestJob.getConnectError();
+                        if (error instanceof DBCDriverFilesMissingException driverException) {
+                            DriverEditDialog.showBadConfigDialog(
+                                null,
+                                driverException.getErrorMessage(),
+                                driverException.getDriver(),
+                                driverException);
+                        } else {
+                            DBWorkbench.getPlatformUI().showError(connetionTestJob.getName(), null, result);
+                        }
+                    }
+                }
+            };
+            connetionTestJob.addJobChangeListener(jobAdapter);
+
             try {
                 getRunnableContext().run(true, true, monitor -> {
                     // Wait for job to finish
-                    op.setOwnerMonitor(monitor);
-                    op.schedule();
-                    while (op.getState() == Job.WAITING || op.getState() == Job.RUNNING) {
+                    connetionTestJob.setOwnerMonitor(monitor);
+                    connetionTestJob.schedule();
+                    while (connetionTestJob.getState() == Job.WAITING || connetionTestJob.getState() == Job.RUNNING) {
                         if (monitor.isCanceled()) {
-                            op.cancel();
-                            throw new InterruptedException();
+                            connetionTestJob.cancel();
                         }
                         try {
                             Thread.sleep(50);
@@ -190,36 +225,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                             break;
                         }
                     }
-                    if (op.getConnectError() != null) {
-                        throw new InvocationTargetException(op.getConnectError());
-                    }
-                    if (op.getConnectStatus() == Status.CANCEL_STATUS) {
-                        throw new InterruptedException("cancel");
-                    }
                 });
-
-                new ConnectionTestDialog(
-                    getShell(),
-                    dataSource,
-                    op.getServerVersion(),
-                    op.getClientVersion(),
-                    op.getConnectTime()).open();
-
             } catch (InterruptedException ex) {
-                if (!"cancel".equals(ex.getMessage())) {
-                    DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
-                        CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
-                }
+                // processed in JobChangeAdapter
             } catch (InvocationTargetException ex) {
-                DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                    null,
-                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
-            } catch (Throwable ex) {
-                DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                    null,
-                    GeneralUtils.makeExceptionStatus(ex));
+                // processed in JobChangeAdapter
             }
         } finally {
             testDataSource.dispose();

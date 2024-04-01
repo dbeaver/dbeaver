@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +50,6 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
             monitor,
             "Create foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
             command.getObject().getTable(),
-            Collections.emptyList(),
             actions
         );
     }
@@ -62,7 +60,6 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
             monitor,
             "Alter foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
             command.getObject().getTable(),
-            Collections.emptyList(),
             actions
         );
     }
@@ -73,7 +70,6 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
             monitor,
             "Drop foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
             command.getObject().getTable(),
-            Collections.emptyList(),
             actions
         );
     }
