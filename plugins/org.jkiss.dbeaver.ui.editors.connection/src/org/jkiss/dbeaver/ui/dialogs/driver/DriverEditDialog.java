@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -985,6 +986,26 @@ public class DriverEditDialog extends HelpEnabledDialog {
         return drivers;
     }
 
+    /**
+     * Show error dialog with configuration driver option  
+     *
+     * @param shell - shell
+     * @param message - text 
+     * @param driver - driver
+     * @param error - exception
+     */
+    public static void showBadConfigDialog(
+        @NotNull Shell shell, 
+        @NotNull String message, 
+        @NotNull DBPDriver driver, 
+        @NotNull DBException error
+    ) {
+        Runnable runnable = () -> {
+            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, driver.getName());
+            new BadDriverConfigDialog(shell, title, message == null ? title : message, error, driver).open();
+        };
+        UIUtils.syncExec(runnable);
+    }
 
     public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
         //log.debug(message);
@@ -998,7 +1019,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private static class BadDriverConfigDialog extends StandardErrorDialog {
 
-        private final DBPDataSource dataSource;
+        private DBPDataSource dataSource;
+        
+        private DBPDriver driver;
 
         BadDriverConfigDialog(Shell shell, String title, String message, DBException error) {
             super(
@@ -1008,6 +1031,17 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
                 IStatus.ERROR);
             dataSource = error.getDataSource();
+        }
+
+        BadDriverConfigDialog(Shell shell, String title, String message, DBException error, DBPDriver driver) {
+            super(
+                shell == null ? UIUtils.getActiveWorkbenchShell() : shell,
+                title,
+                message,
+                RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
+                IStatus.ERROR);
+            dataSource = error.getDataSource();
+            this.driver = driver;
         }
 
         @Override
@@ -1020,15 +1054,24 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         protected void buttonPressed(int id) {
             if (id == IDialogConstants.RETRY_ID) {
-                UIUtils.asyncExec(() -> {
-                    DriverEditDialog dialog = new DriverEditDialog(
-                        UIUtils.getActiveWorkbenchShell(),
-                        dataSource.getContainer().getDriver());
-                    dialog.open();
-                });
+                if (dataSource != null) {
+                    openDriverEditDialog(dataSource.getContainer().getDriver());
+                } else if (driver != null) {
+                    openDriverEditDialog(driver);
+                }
+
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
+        }
+
+        private void openDriverEditDialog(@NotNull DBPDriver driver) {
+            UIUtils.asyncExec(() -> {
+                DriverEditDialog dialog = new DriverEditDialog(
+                    UIUtils.getActiveWorkbenchShell(),
+                    driver);
+                dialog.open();
+            });
         }
     }
 
