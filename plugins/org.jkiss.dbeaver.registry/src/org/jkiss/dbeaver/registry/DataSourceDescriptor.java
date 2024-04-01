@@ -927,7 +927,7 @@ public class DataSourceDescriptor
     }
 
     /**
-     * this method always forcibly updates an available secrets and should always return actual secrets,
+     * this method always forcibly updates available secrets and should always return actual secrets,
      * to get secrets using cache use {@link #listSharedCredentialFromCache}
      */
     @NotNull
