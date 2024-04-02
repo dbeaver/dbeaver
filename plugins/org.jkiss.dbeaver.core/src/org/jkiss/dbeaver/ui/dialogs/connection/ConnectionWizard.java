@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -212,9 +213,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                 }
             } catch (InvocationTargetException ex) {
                 DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                    null,
-                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+                        CoreMessages.dialog_connection_wizard_start_dialog_error_title, null,
+                        new Status(
+                            IStatus.ERROR,
+                            ModelPreferences.PLUGIN_ID,
+                            GeneralUtils.getExceptionMessage(ex),
+                            ex.getTargetException()));
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,
