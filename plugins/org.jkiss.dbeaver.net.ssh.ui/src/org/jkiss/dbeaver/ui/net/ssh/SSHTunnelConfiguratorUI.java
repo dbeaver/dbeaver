@@ -174,7 +174,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
                 final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
 
-                if (current == null) {
+                if (current == null || last == current) {
                     return;
                 }
 
