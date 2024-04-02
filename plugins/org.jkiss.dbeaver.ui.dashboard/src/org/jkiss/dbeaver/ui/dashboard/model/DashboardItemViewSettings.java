@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
@@ -99,9 +100,12 @@ public class DashboardItemViewSettings {
     public DashboardItemConfiguration getDashboardDescriptor() {
         if (dashboardItem == null) {
             try {
+                DBPDataSourceContainer dataSourceContainer = viewConfiguration.getDataSourceContainer();
                 dashboardItem = DashboardRegistry.getInstance().findDashboardItem(
                     new VoidProgressMonitor(),
-                    new DBDashboardContext(viewConfiguration.getDataSourceContainer()),
+                    dataSourceContainer != null ?
+                        new DBDashboardContext(dataSourceContainer) :
+                        new DBDashboardContext(viewConfiguration.getProject()),
                     itemId);
             } catch (DBException e) {
                 log.debug("Dashboard '" + itemId + "' not found", e);
