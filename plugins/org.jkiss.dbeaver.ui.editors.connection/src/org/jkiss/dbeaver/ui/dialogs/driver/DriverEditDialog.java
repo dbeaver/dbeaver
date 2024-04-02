@@ -1054,12 +1054,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         protected void buttonPressed(int id) {
             if (id == IDialogConstants.RETRY_ID) {
-                if (dataSource != null) {
-                    openDriverEditDialog(dataSource.getContainer().getDriver());
-                } else if (driver != null) {
-                    openDriverEditDialog(driver);
+                if (driver == null) {
+                    driver = dataSource.getContainer().getDriver();
                 }
-
+                openDriverEditDialog(driver);
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
