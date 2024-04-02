@@ -64,8 +64,6 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
@@ -148,7 +146,9 @@ public class DataSourceDescriptor
     @NotNull
     private final DataSourcePreferenceStore preferenceStore;
     @NotNull
-    private final Map<String, String> properties;
+    private final Map<String, String> tags;
+    @NotNull
+    private final Map<String, String> extensions;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -222,7 +222,8 @@ public class DataSourceDescriptor
         this.originalDriver = originalDriver;
         this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
-        this.properties = new LinkedHashMap<>();
+        this.tags = new LinkedHashMap<>();
+        this.extensions = new LinkedHashMap<>();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
@@ -273,7 +274,8 @@ public class DataSourceDescriptor
             this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
         }
 
-        this.properties = new LinkedHashMap<>(source.properties);
+        this.tags = new LinkedHashMap<>(source.tags);
+        this.extensions = new LinkedHashMap<>(source.extensions);
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
@@ -926,14 +928,16 @@ public class DataSourceDescriptor
         }
     }
 
+    /**
+     * this method always forcibly updates available secrets and should always return actual secrets,
+     * to get secrets using cache use {@link #listSharedCredentialFromCache}
+     */
     @NotNull
     public synchronized List<DBSSecretValue> listSharedCredentials() throws DBException {
         if (!isSharedCredentials()) {
             return List.of();
         }
-        if (availableSharedCredentials != null) {
-            return availableSharedCredentials;
-        }
+        forgetSecrets();
         resolveSecretsIfNeeded();
         if (availableSharedCredentials == null) {
             this.availableSharedCredentials = List.of();
@@ -941,10 +945,14 @@ public class DataSourceDescriptor
         return availableSharedCredentials;
     }
 
-    @NotNull
-    public synchronized List<DBSSecretValue> listAllSharedCredentials() throws DBException {
-        var secretController = DBSSecretController.getProjectSecretController(getProject());
-        return secretController.listAllSharedSecrets(this);
+    /**
+     * returns secrets from the cache or reads them if they do not exist, may contain outdated secrets
+     */
+    private synchronized List<DBSSecretValue> listSharedCredentialFromCache() throws DBException {
+        if (availableSharedCredentials != null) {
+            return availableSharedCredentials;
+        }
+        return listSharedCredentials();
     }
 
     @Nullable
@@ -1110,7 +1118,7 @@ public class DataSourceDescriptor
         resolveSecretsIfNeeded();
 
         if (isSharedCredentials() && !isSharedCredentialsSelected()) {
-            var sharedCreds = listSharedCredentials();
+            var sharedCreds = listSharedCredentialFromCache();
             if (!CommonUtils.isEmpty(sharedCreds)) {
                 log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
                 setSelectedSharedCredentials(sharedCreds.get(0));
@@ -1413,20 +1421,16 @@ public class DataSourceDescriptor
                     txnManager.setAutoCommit(monitor, true);
                     revertMetaToManualCommit = true;
                 }
-            }
-            try {
-                dataSource.initialize(monitor);
-                dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
-            } catch (Throwable e) {
-                log.error("Error initializing datasource", e);
-                throw e;
-            }
-            if (revertMetaToManualCommit) {
-                try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-                    if (txnManager != null && txnManager.isAutoCommit()) {
-                        txnManager.setAutoCommit(monitor, false);
-                    }
+
+                try {
+                    dataSource.initialize(monitor);
+                    dataSource.getSQLDialect().afterDataSourceInitialization(dataSource);
+                } catch (Throwable e) {
+                    log.error("Error initializing datasource", e);
+                    throw e;
+                }
+                if (revertMetaToManualCommit) {
+                    txnManager.setAutoCommit(monitor, false);
                 }
             }
         }
@@ -1684,24 +1688,49 @@ public class DataSourceDescriptor
         registry.notifyDataSourceListeners(event);
     }
 
-    @Nullable
     @Override
-    public String getProperty(@NotNull String name) {
-        return properties.get(name);
+    public Map<String, String> getTags() {
+        return new LinkedHashMap<>(tags);
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags.clear();
+        this.tags.putAll(tags);
     }
 
     @Override
-    public void setProperty(@NotNull String name, @Nullable String value) {
+    public String getTagValue(String tagName) {
+        return tags.get(tagName);
+    }
+
+    @Override
+    public void setTagValue(String tagName, String tagValue) {
+        tags.put(tagName, tagValue);
+    }
+
+    @Nullable
+    @Override
+    public String getExtension(@NotNull String name) {
+        return extensions.get(name);
+    }
+
+    @Override
+    public void setExtension(@NotNull String name, @Nullable String value) {
         if (value == null) {
-            this.properties.remove(name);
+            this.extensions.remove(name);
         } else {
-            this.properties.put(name, value);
+            this.extensions.put(name, value);
         }
     }
 
     @NotNull
-    public Map<String, String> getProperties() {
-        return properties;
+    public Map<String, String> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<String, String> extensions) {
+        this.extensions.clear();
+        this.extensions.putAll(extensions);
     }
 
     @Override
@@ -1908,7 +1937,8 @@ public class DataSourceDescriptor
         this.virtualModel.copyFrom(descriptor.getVirtualModel());
 
         this.description = descriptor.description;
-        this.properties.putAll(descriptor.properties);
+        this.tags.putAll(descriptor.tags);
+        this.extensions.putAll(descriptor.extensions);
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
@@ -1950,7 +1980,7 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
-                CommonUtils.equalObjects(this.properties, source.properties) &&
+                CommonUtils.equalObjects(this.extensions, source.extensions) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
@@ -1998,27 +2028,8 @@ public class DataSourceDescriptor
 
     @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
-        return name -> {
-            DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
-            String propValue = configuration.getProperties().get(name);
-            if (propValue != null) {
-                return propValue;
-            }
-
-            name = name.toLowerCase(Locale.ENGLISH);
-            return switch (name) {
-                case DBPConnectionConfiguration.VARIABLE_HOST -> configuration.getHostName();
-                case DBPConnectionConfiguration.VARIABLE_PORT -> configuration.getHostPort();
-                case DBPConnectionConfiguration.VARIABLE_SERVER -> configuration.getServerName();
-                case DBPConnectionConfiguration.VARIABLE_DATABASE -> configuration.getDatabaseName();
-                case DBPConnectionConfiguration.VARIABLE_USER -> configuration.getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD -> configuration.getUserPassword();
-                case DBPConnectionConfiguration.VARIABLE_URL -> configuration.getUrl();
-                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE -> configuration.getConnectionType().getId();
-                case DBPConnectionConfiguration.VARIABLE_DATE -> RuntimeUtils.getCurrentDate();
-                default -> SystemVariablesResolver.INSTANCE.get(name);
-            };
-        };
+        DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
+        return new DataSourceVariableResolver(this, configuration);
     }
 
     @Override

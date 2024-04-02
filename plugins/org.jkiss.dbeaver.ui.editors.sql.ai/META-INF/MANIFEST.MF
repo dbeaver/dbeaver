@@ -9,6 +9,7 @@ Import-Package: org.jkiss.dbeaver.model.ai,
 Export-Package: org.jkiss.dbeaver.ui.editors.sql.ai,
  org.jkiss.dbeaver.ui.editors.sql.ai.controls,
  org.jkiss.dbeaver.ui.editors.sql.ai.format,
+ org.jkiss.dbeaver.ui.editors.sql.ai.model,
  org.jkiss.dbeaver.ui.editors.sql.ai.openai,
  org.jkiss.dbeaver.ui.editors.sql.ai.popup,
  org.jkiss.dbeaver.ui.editors.sql.ai.preferences
