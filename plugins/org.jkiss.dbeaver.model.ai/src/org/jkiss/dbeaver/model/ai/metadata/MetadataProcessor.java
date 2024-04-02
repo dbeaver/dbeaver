@@ -134,9 +134,9 @@ public class MetadataProcessor {
             sb.append(
                 """
                 Perform SQL completion.
+                Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
                 Any comments MUST be placed in SQL multiline comment block at start of the query.
                 AVOID single line comments.
-                Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
                 """);
         } else {
             sb.append("Perform SQL completion. Your query must start with \"SELECT\" and MUST be enclosed with Markdown code block.\n");
