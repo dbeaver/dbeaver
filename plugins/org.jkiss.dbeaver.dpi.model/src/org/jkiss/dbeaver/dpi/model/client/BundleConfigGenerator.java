@@ -67,6 +67,7 @@ public class BundleConfigGenerator {
         DBAAuthModel<DBAAuthCredentials> authModel = dataSourceContainer.getConnectionConfiguration().getAuthModel();
         addBundleFromClass(authModel.getClass(), processConfig);
 
+        addBundleByName("org.jkiss.dbeaver.launcher", processConfig);
         addBundleByName("org.jkiss.dbeaver.dpi.app", processConfig);
         if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             // Add slf4j adapter for desktop applications
