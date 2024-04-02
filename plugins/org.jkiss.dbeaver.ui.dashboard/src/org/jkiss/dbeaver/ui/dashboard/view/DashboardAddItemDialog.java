@@ -175,7 +175,7 @@ public class DashboardAddItemDialog extends BaseDialog {
                     }
                     if (parentElement instanceof DBDashboardFolder df) {
                         List<DBDashboardFolder> subFolders = df.loadSubFolders(new VoidProgressMonitor(), context);
-                        List<DashboardItemConfiguration> dashboards = df.loadDashboards(new VoidProgressMonitor(), context);
+                        List<DashboardItemConfiguration> dashboards = new ArrayList<>(df.loadDashboards(new VoidProgressMonitor(), context));
                         dashboards.sort(Comparator.comparing(DashboardItemConfiguration::getTitle));
                         return ArrayUtils.concatArrays(subFolders.toArray(), dashboards.toArray());
                     } else if (parentElement instanceof DashboardProviderDescriptor dpd) {
