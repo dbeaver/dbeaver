@@ -213,19 +213,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                 }
             } catch (InvocationTargetException ex) {
-                Throwable error = op.getConnectError();
-                if (error instanceof DBCDriverFilesMissingException driverException) {
-                    DriverEditDialog.showBadConfigDialog(
-                        null,
-                        driverException.getErrorMessage(),
-                        driverException.getDriver(),
-                        driverException);
-                } else {
-                    DBWorkbench.getPlatformUI().showError(
-                        CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                        null,
-                        GeneralUtils.makeExceptionStatus(ex.getTargetException()));
-                }
+               DBWorkbench.getPlatformUI().showError(
+                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    null,
+                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,

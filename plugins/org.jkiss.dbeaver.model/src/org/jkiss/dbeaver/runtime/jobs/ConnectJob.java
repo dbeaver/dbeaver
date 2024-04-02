@@ -77,7 +77,6 @@ public class ConnectJob extends AbstractJob
                 final boolean connected = container.connect(monitor, initialize, reflect);
 
                 connectStatus = connected ? Status.OK_STATUS : Status.CANCEL_STATUS;
-                System.out.println("ConnectJob.run()");
             } finally {
                 if (connectThread != null && oldName != null) {
                     connectThread.setName(oldName);

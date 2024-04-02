@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
+import org.jkiss.dbeaver.model.exec.DBCDriverFilesMissingException;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -203,7 +204,14 @@ public class DesktopUI implements DBPPlatformUI {
     public UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final IStatus status) {
         IStatus rootStatus = status;
         for (IStatus s = status; s != null; ) {
-            if (s.getException() instanceof DBException) {
+            if (s.getException() instanceof DBCDriverFilesMissingException driverException) {
+                UIUtils.syncExec(() -> DriverEditDialog.showBadConfigDialog(
+                    null,
+                    driverException.getErrorMessage(),
+                    driverException.getDriver(),
+                    driverException));
+                return UserResponse.OK;
+            } else if (s.getException() instanceof DBException) {
                 UserResponse dbErrorResp = showDatabaseError(message, (DBException) s.getException());
                 if (dbErrorResp != null) {
                     // If this DB error was handled by some DB-specific way then just don't care about it

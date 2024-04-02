@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBCDriverFilesMissingException;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -568,6 +569,13 @@ public class GeneralUtils {
         }
         if (ex instanceof CoreException) {
             return ((CoreException) ex).getStatus();
+        }
+        if (ex instanceof DBCDriverFilesMissingException) {
+            return new Status(
+                severity,
+                ModelPreferences.PLUGIN_ID,
+                getExceptionMessage(ex),
+                ex);
         }
         // Skip chain of nested DBExceptions. Show only last message
         while (ex.getCause() != null && ex.getMessage() != null && ex.getMessage().equals(ex.getCause().getMessage())) {

@@ -112,16 +112,7 @@ public class DataSourceHandler {
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        Throwable error = connectJob.getConnectError();
-                        if (error instanceof DBCDriverFilesMissingException driverException) {
-                            DriverEditDialog.showBadConfigDialog(
-                                null,
-                                driverException.getErrorMessage(),
-                                driverException.getDriver(),
-                                driverException);
-                        } else {
-                            DBWorkbench.getPlatformUI().showError(connectJob.getName(), null, result);
-                        }
+                        DBWorkbench.getPlatformUI().showError(connectJob.getName(), null, result);
                     }
                 }
             };
