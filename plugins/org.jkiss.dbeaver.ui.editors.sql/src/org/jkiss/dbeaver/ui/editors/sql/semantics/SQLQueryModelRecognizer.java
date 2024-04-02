@@ -861,24 +861,32 @@ public class SQLQueryModelRecognizer {
     
     @NotNull
     private SQLQuerySymbolEntry collectIdentifier(@NotNull STMTreeNode node, boolean forceUnquotted) {
+        // TODO refactor out all recognition-related exceptions, consider error node everywhere in parse tree and don't introduce unnecessary model nodes
         STMTreeNode actual = identifierDirectWrapperNames.contains(node.getNodeName()) ? node.getStmChild(0) : node;
         if (!actual.getNodeName().equals(STMKnownRuleNames.identifier)) {
             throw new UnsupportedOperationException("identifier expected while facing with " + node.getNodeName());
         }
-        STMTreeNode actualBody = actual.findChildOfName(STMKnownRuleNames.actualIdentifier).getStmChild(0);
-        String rawIdentifierString = actualBody.getTextContent();
-        if (actualBody.getPayload() instanceof Token t && t.getType() == SQLStandardLexer.Quotted) {
-            SQLQuerySymbolEntry entry = this.registerSymbolEntry(actualBody.getRealInterval(), rawIdentifierString, rawIdentifierString);
-            entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.QUOTED);
-            return entry;
-        } else if (this.reservedWords.contains(rawIdentifierString.toUpperCase())) { // keywords are uppercased in dialect
-            SQLQuerySymbolEntry entry = this.registerSymbolEntry(actualBody.getRealInterval(), rawIdentifierString, rawIdentifierString);
-            entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.RESERVED);
+        STMTreeNode actualIdentifier = actual.findChildOfName(STMKnownRuleNames.actualIdentifier);
+        if (actualIdentifier == null) {
+            SQLQuerySymbolEntry entry = this.registerSymbolEntry(actual.getRealInterval(), actual.getTextContent(), actual.getTextContent());
+            entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
             return entry;
         } else {
-            SQLDialect dialect = this.obtainSqlDialect();
-            String actualIdentifierString = SQLUtils.identifierToCanonicalForm(dialect, rawIdentifierString, forceUnquotted, false);
-            return this.registerSymbolEntry(actualBody.getRealInterval(), actualIdentifierString, rawIdentifierString);
+            STMTreeNode actualBody = actualIdentifier.getStmChild(0);
+            String rawIdentifierString = actualBody.getTextContent();
+            if (actualBody.getPayload() instanceof Token t && t.getType() == SQLStandardLexer.Quotted) {
+                SQLQuerySymbolEntry entry = this.registerSymbolEntry(actualBody.getRealInterval(), rawIdentifierString, rawIdentifierString);
+                entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.QUOTED);
+                return entry;
+            } else if (this.reservedWords.contains(rawIdentifierString.toUpperCase())) { // keywords are uppercased in dialect
+                SQLQuerySymbolEntry entry = this.registerSymbolEntry(actualBody.getRealInterval(), rawIdentifierString, rawIdentifierString);
+                entry.getSymbol().setSymbolClass(SQLQuerySymbolClass.RESERVED);
+                return entry;
+            } else {
+                SQLDialect dialect = this.obtainSqlDialect();
+                String actualIdentifierString = SQLUtils.identifierToCanonicalForm(dialect, rawIdentifierString, forceUnquotted, false);
+                return this.registerSymbolEntry(actualBody.getRealInterval(), actualIdentifierString, rawIdentifierString);
+            }
         }
     }
 
