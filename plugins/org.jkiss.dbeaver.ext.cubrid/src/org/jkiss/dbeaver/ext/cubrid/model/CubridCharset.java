@@ -53,12 +53,9 @@ public class CubridCharset implements DBSObject
         return collations;
     }
 
-    @Nullable
+    @NotNull
     public CubridCollation getDefaultCollation() {
-        for (CubridCollation collation : collations) {
-            return collation;
-        }
-        return null;
+        return collations.get(0);
     }
 
     @Nullable

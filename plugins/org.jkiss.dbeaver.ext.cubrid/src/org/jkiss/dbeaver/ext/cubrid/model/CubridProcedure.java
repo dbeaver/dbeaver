@@ -51,7 +51,6 @@ public class CubridProcedure extends GenericProcedure
             @NotNull String procedureName,
             @Nullable String description,
             @NotNull DBSProcedureType procedureType,
-            @NotNull String target,
             @NotNull String returnType) {
         super(container, procedureName, description, procedureType, null, true);
         this.returnType = returnType;

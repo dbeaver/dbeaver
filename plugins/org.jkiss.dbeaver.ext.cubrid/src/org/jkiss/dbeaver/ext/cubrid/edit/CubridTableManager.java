@@ -89,10 +89,10 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         CubridTable table = (CubridTable) genericTable;
         String suffix = alter ? "," : "\n";
         query.append("\n");
-        if (table.isReuseOID() == false && alter == false) {
+        if (!table.isReuseOID() && !alter) {
             query.append("DONT_REUSE_OID").append(suffix);
         }
-        if ((command.getProperty("charset") != null || command.getProperty("collation") != null) && table.getCollation().getName() != null) {
+        if (command.getProperty("charset") != null || command.getProperty("collation") != null) {
             query.append("COLLATE ").append(table.getCollation().getName()).append(suffix);
         }
         if (command.getProperty("autoIncrement") != null && table.getAutoIncrement() != 0) {

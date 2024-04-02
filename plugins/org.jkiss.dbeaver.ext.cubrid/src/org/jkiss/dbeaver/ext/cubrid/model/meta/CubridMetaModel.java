@@ -370,7 +370,6 @@ public class CubridMetaModel extends GenericMetaModel
                         String procedureName = JDBCUtils.safeGetString(dbResult, "sp_name");
                         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
                         String type = JDBCUtils.safeGetString(dbResult, "sp_type");
-                        String target = JDBCUtils.safeGetString(dbResult, "target");
                         String returnType = JDBCUtils.safeGetString(dbResult, "return_type");
                         DBSProcedureType procedureType;
                         if (type.equalsIgnoreCase(CubridConstants.TERM_PROCEDURE)) {
@@ -380,7 +379,7 @@ public class CubridMetaModel extends GenericMetaModel
                         } else {
                             procedureType = DBSProcedureType.UNKNOWN;
                         }
-                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, target, returnType));
+                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, returnType));
                     }
                 }
             }
@@ -395,11 +394,11 @@ public class CubridMetaModel extends GenericMetaModel
         String ddl = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
             String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
-            try(JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while(dbResult.next()) {
+                    if (dbResult.next()) {
                         ddl = "create or replace view \"" + dbResult.getString("View") + "\" as " + dbResult.getString("Create View");
-                        return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
+                        ddl = SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                     }
                 }
             }
