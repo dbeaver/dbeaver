@@ -773,7 +773,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                         try {
                             path = Path.of(privateKey);
                         } catch (InvalidPathException e) {
-                            throw new DBException("Invalid private key path: " + privateKey);
+                            // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/1394
+                            throw new DBException("Invalid private key path: %s".formatted(privateKey));
                         }
                         if (Files.notExists(path)) {
                             throw new DBException("Private key file does not exist: " + path);
