@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -159,7 +158,10 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         // Perform transfer
         try (InputStream is = Files.newInputStream(entityMapping.getInputFile())) {
             importer.runImport(monitor, entityMapping.getDataSource(), is, consumer);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            if (e instanceof DBException dbe) {
+                throw dbe;
+            }
             throw new DBException("IO error", e);
         } finally {
             importer.dispose();

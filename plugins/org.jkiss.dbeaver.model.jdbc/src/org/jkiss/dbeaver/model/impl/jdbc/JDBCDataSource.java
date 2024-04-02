@@ -273,19 +273,23 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Nullable
-    private Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBException {
+    private Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBCException {
         // It MUST be a JDBC driver
         Driver driverInstance = null;
         String driverClassName = driver.getDriverClassName();
         if (driver.isInstantiable() && !CommonUtils.isEmpty(driverClassName)) {
-            driverInstance = getDriverInstance(monitor);
+            try {
+                driverInstance = getDriverInstance(monitor);
+            } catch (DBException e) {
+                throw new DBCConnectException("Can't create driver instance", e, this);
+            }
         } else {
             if (!CommonUtils.isEmpty(driverClassName)) {
                 try {
                     driver.loadDriver(monitor);
                     Class.forName(driverClassName, true, driver.getClassLoader());
                 } catch (Exception e) {
-                    throw new DBCDriverFilesMissingException(driver, e);
+                    throw new DBCException("Driver class '" + driverClassName + "' not found", e);
                 }
             }
         }

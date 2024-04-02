@@ -25,26 +25,32 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jfree.chart.JFreeChart;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewSettingsDialog;
 
 /**
  * Dashboard chart composite
  */
-public class DashboardChartComposite extends BaseChartComposite implements DBDashboardCompositeControl {
+public class DashboardChartComposite extends BaseChartComposite implements DashboardViewCompositeControl {
 
-    private final DashboardViewContainer viewContainer;
-    private final DBDashboardContainer dashboardContainer;
+    private final DashboardContainer viewContainer;
+    private final DashboardItemContainer dashboardContainer;
 
-    public DashboardChartComposite(DBDashboardContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(
+        DashboardItemContainer dashboardContainer,
+        DashboardContainer viewContainer,
+        Composite parent,
+        int style,
+        Point preferredSize
+    ) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
     }
 
-    public DashboardViewContainer getViewContainer() {
+    public DashboardContainer getViewContainer() {
         return viewContainer;
     }
 
@@ -70,13 +76,14 @@ public class DashboardChartComposite extends BaseChartComposite implements DBDas
     }
 
     protected boolean showChartConfigDialog() {
-        DashboardItemConfigDialog dialog = new DashboardItemConfigDialog(
+        DashboardItemViewSettingsDialog dialog = new DashboardItemViewSettingsDialog(
             this.getShell(),
             dashboardContainer,
             viewContainer.getViewConfiguration());
         boolean changed = dialog.open() == IDialogConstants.OK_ID;
         if (changed) {
             dashboardContainer.updateDashboardView();
+            viewContainer.saveChanges();
         }
         return changed;
     }
@@ -86,7 +93,10 @@ public class DashboardChartComposite extends BaseChartComposite implements DBDas
         if (viewContainer.isSingleChartMode()) {
             restoreAutoBounds();
         } else {
-            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DBDashboardItem) dashboardContainer);
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(
+                viewContainer,
+                viewContainer.getConfiguration(),
+                (DashboardViewItem) dashboardContainer);
             viewDialog.open();
         }
     }
