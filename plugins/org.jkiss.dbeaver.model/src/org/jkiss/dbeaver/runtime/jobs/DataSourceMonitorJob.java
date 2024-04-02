@@ -194,7 +194,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         DBPDataSource dataSource = dsDescriptor.getDataSource();
 
         if (dataSource != null && disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
-            if (DisconnectJob.isInProcess(dsDescriptor) || DBExecUtils.isExecutionInProgress(dataSource)) {
+            if (DisconnectJob.isInProcess(dsDescriptor)) {
                 return false;
             }
             // Kill idle connection
@@ -205,14 +205,10 @@ public class DataSourceMonitorJob extends AbstractJob {
             return true;
         }
 
-        if (rollbackTimeoutSeconds <= 0 || idleInterval < rollbackTimeoutSeconds) {
-            return false;
-        }
-        if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
-            return false;
-        }
-
-        if (dataSource != null) {
+        if (dataSource != null && rollbackTimeoutSeconds > 0 && idleInterval > rollbackTimeoutSeconds) {
+            if (EndIdleTransactionsJob.isInProcess(dsDescriptor) || DBExecUtils.isExecutionInProgress(dataSource)) {
+                return false;
+            }
             try {
                 Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
                 for (DBSInstance instance : dataSource.getAvailableInstances()) {
