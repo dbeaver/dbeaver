@@ -289,7 +289,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     driver.loadDriver(monitor);
                     Class.forName(driverClassName, true, driver.getClassLoader());
                 } catch (Exception e) {
-                    throw new DBCException("Driver class '" + driverClassName + "' not found", e);
+                    throw new DBCConnectException("Driver class '" + driverClassName + "' not found", e, this);
                 }
             }
         }
