@@ -824,6 +824,9 @@ public class ResultSetViewer extends Viewer
                         IResultSetPresentation instance = newPresentation.createInstance();
                         activePresentationDescriptor = newPresentation;
                         setActivePresentation(instance);
+                        if(getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT)){
+                            updateRowCount();
+                        }
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
                     }
