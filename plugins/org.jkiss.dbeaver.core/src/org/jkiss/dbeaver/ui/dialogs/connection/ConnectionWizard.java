@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
@@ -57,6 +59,7 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Abstract connection wizard
@@ -64,12 +67,16 @@ import java.util.*;
 
 public abstract class ConnectionWizard extends ActiveWizard implements IConnectionWizard, INewWizard {
 
+    private static final String CANCEL_STATUS = "cancel_status";
+
     static final String PROP_CONNECTION_TYPE = "connection-type";
 
     // protected final IProject project;
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
     private DBPDriverSubstitutionDescriptor driverSubstitution;
+
+    private final Logger log = Logger.getLogger(ConnectionWizard.class.getName());
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
@@ -172,7 +179,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         CoreFeatures.CONNECTION_TEST.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
 
         try {
-
             final ConnectionTestJob connetionTestJob = new ConnectionTestJob(testDataSource, session -> {
                 for (IWizardPage page : getPages()) {
                     testInPage(session, page);
@@ -184,16 +190,16 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                 public void done(IJobChangeEvent event) {
                     IStatus result = connetionTestJob.getConnectStatus();
                     if (result.isOK()) {
-                        new ConnectionTestDialog(
-                            getShell(),
-                            dataSource,
-                            connetionTestJob.getServerVersion(),
-                            connetionTestJob.getClientVersion(),
-                            connetionTestJob.getConnectTime()).open();
-                    } else if (result == Status.CANCEL_STATUS) {
-                        DBWorkbench.getPlatformUI().showError(
-                            CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
-                            CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
+                        UIUtils.runInUI(monitor -> {
+                            new ConnectionTestDialog(
+                                getShell(),
+                                dataSource,
+                                connetionTestJob.getServerVersion(),
+                                connetionTestJob.getClientVersion(),
+                                connetionTestJob.getConnectTime()).open();
+                        });
+                    } else if (result.getSeverity() == Status.CANCEL_STATUS.getSeverity()) {
+                        log.info(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                     } else {
                         Throwable error = connetionTestJob.getConnectError();
                         if (error instanceof DBCDriverFilesMissingException driverException) {
@@ -217,7 +223,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     connetionTestJob.schedule();
                     while (connetionTestJob.getState() == Job.WAITING || connetionTestJob.getState() == Job.RUNNING) {
                         if (monitor.isCanceled()) {
-                            connetionTestJob.cancel();
+                            throw new InterruptedException(CANCEL_STATUS);
                         }
                         try {
                             Thread.sleep(50);
@@ -227,7 +233,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     }
                 });
             } catch (InterruptedException ex) {
-                // processed in JobChangeAdapter
+                if (CANCEL_STATUS.equals(ex.getMessage())) {
+                    DBWorkbench.getPlatformUI().showError(
+                        CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
+                        CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
+                }
             } catch (InvocationTargetException ex) {
                 // processed in JobChangeAdapter
             }
