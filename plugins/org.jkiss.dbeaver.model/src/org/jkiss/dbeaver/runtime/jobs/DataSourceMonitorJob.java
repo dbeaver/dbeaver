@@ -193,12 +193,8 @@ public class DataSourceMonitorJob extends AbstractJob {
 
         DBPDataSource dataSource = dsDescriptor.getDataSource();
 
-        if (dataSource != null && DBExecUtils.isExecutionInProgress(dataSource)) {
-            return false;
-        }
-
         if (dataSource != null && disconnectTimeoutSeconds > 0 && idleInterval > disconnectTimeoutSeconds) {
-            if (DisconnectJob.isInProcess(dsDescriptor)) {
+            if (DisconnectJob.isInProcess(dsDescriptor) || DBExecUtils.isExecutionInProgress(dataSource)) {
                 return false;
             }
             // Kill idle connection

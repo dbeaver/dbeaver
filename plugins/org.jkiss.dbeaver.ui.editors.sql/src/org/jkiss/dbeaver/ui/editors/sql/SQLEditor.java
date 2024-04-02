@@ -5513,11 +5513,6 @@ public class SQLEditor extends SQLEditorBase implements
             return null;
         }
 
-        final DBPDataSource dataSource = dataSourceContainer.getDataSource();
-        if (dataSource != null && DBExecUtils.isExecutionInProgress(dataSource)) {
-            return null;
-        }
-
         final long lastUserActivityTime = DataSourceMonitorJob.getLastUserActivityTime();
         if (lastUserActivityTime < 0) {
             return null;
@@ -5543,7 +5538,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         if ((isTransactionInProgress && rollbackTimeoutSeconds > 0) &&
             (rollbackTimeoutSeconds > elapsedSeconds) &&
-            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds)
+            (disconnectTimeoutSeconds <= 0 || rollbackTimeoutSeconds < disconnectTimeoutSeconds) &&
+            !DBExecUtils.isExecutionInProgress(dataSourceContainer.getDataSource())
         ) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_rollback_label,
