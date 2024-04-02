@@ -157,6 +157,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void makeActions(final IWorkbenchWindow window)
     {
         removeUnWantedActions();
+        log.debug("Create workbench actions");
 
         register(ActionFactory.SAVE.create(window));
         register(ActionFactory.SAVE_AS.create(window));
