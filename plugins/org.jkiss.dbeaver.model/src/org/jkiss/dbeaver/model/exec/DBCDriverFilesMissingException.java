@@ -18,18 +18,16 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 
 @SuppressWarnings("serial")
 public class DBCDriverFilesMissingException extends DBCException {
 
     private DBPDriver driver;
 
-    public DBCDriverFilesMissingException(
-        @NotNull DBPDriver driver,
-        @NotNull Throwable e) {
-        super(DBCMessages.initialization_driver_error_details, e);
+    public DBCDriverFilesMissingException(@NotNull DBPDriver driver) {
+        super(ModelMessages.initialization_driver_error_details);
         this.driver = driver;
     }
 
@@ -38,8 +36,8 @@ public class DBCDriverFilesMissingException extends DBCException {
     }
 
     public String getErrorMessage() {
-        return NLS.bind(DBCMessages.initialization_driver_error_msg,
-            driver.getFullName(),
-            driver.getDriverClassName());
+        return NLS.bind(ModelMessages.initialization_driver_error_msg,
+                driver.getFullName(),
+                driver.getDriverClassName());
     }
 }

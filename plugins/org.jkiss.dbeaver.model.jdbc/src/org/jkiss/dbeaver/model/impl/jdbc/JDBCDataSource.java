@@ -285,7 +285,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     driver.loadDriver(monitor);
                     Class.forName(driverClassName, true, driver.getClassLoader());
                 } catch (Exception e) {
-                    throw new DBCDriverFilesMissingException(driver, e);
+                    throw new DBCDriverFilesMissingException(driver);
                 }
             }
         }

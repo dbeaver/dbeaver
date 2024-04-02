@@ -87,7 +87,7 @@ public class ConnectJob extends AbstractJob
         catch (Throwable ex) {
             connectError = ex;
             if (monitor.isCanceled()) {
-                connectStatus = GeneralUtils.makeExceptionStatus(IStatus.CANCEL, ex);
+				connectStatus = Status.CANCEL_STATUS;
             } else {
                 connectStatus = GeneralUtils.makeExceptionStatus(ex);
             }

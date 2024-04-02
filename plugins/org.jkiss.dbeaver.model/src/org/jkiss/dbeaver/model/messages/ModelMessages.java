@@ -259,6 +259,9 @@ public class ModelMessages extends NLS {
     public static String struct_utils_object_ddl_definition;
     public static String struct_utils_object_ddl_foreign_keys;
 
+    public static String initialization_driver_error_msg;
+    public static String initialization_driver_error_details;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
