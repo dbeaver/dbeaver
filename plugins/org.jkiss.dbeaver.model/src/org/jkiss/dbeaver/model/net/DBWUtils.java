@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,5 +43,23 @@ public class DBWUtils {
             String newURL = configuration.getDriver().getConnectionURL(connectionInfo);
             connectionInfo.setUrl(newURL);
         }
+    }
+
+    @NotNull
+    public static String getTargetTunnelHostName(DBPConnectionConfiguration cfg) {
+        String hostText = cfg.getHostName();
+        // For localhost ry to get real host name from tunnel configuration
+        if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
+            for (DBWHandlerConfiguration hc : cfg.getHandlers()) {
+                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
+                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+                    if (!CommonUtils.isEmpty(tunnelHost)) {
+                        hostText = tunnelHost;
+                        break;
+                    }
+                }
+            }
+        }
+        return CommonUtils.notEmpty(hostText);
     }
 }
