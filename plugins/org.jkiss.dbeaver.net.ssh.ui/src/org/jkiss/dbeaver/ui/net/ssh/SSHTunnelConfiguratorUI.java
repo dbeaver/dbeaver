@@ -190,7 +190,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     }
 
                     if (!last.configuration.equals(updated)) {
-                        configurations.set(configurations.indexOf(last), new ConfigurationWrapper(updated));
+                        last.configuration = updated;
                         hostsViewer.refresh();
                     }
                 }
@@ -574,10 +574,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     public void saveSettings(@NotNull DBWHandlerConfiguration configuration) {
         try {
             // Save current configuration just in case
-            configurations.set(
-                configurations.indexOf(credentialsPanel.lastConfiguration),
-                new ConfigurationWrapper(credentialsPanel.saveSettings())
-            );
+            credentialsPanel.lastConfiguration.configuration = credentialsPanel.saveSettings();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Error saving SSH configuration", e.getMessage());
             throw new IllegalStateException("Error saving SSH configuration", e);
@@ -831,7 +828,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     private static class ConfigurationWrapper {
-        private final SSHHostConfiguration configuration;
+        private SSHHostConfiguration configuration;
 
         private ConfigurationWrapper(@NotNull SSHHostConfiguration configuration) {
             this.configuration = configuration;
