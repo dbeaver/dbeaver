@@ -24,7 +24,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -46,7 +45,7 @@ public class CertificateGenHelper {
     // FIXME: Not secure at all!!!
     // However some people need to use self-signed and untrusted server.
     // Crap.
-    public static final TrustManager[] NON_VALIDATING_TRUST_MANAGERS = new TrustManager[] {
+    public static final X509TrustManager[] NON_VALIDATING_TRUST_MANAGERS = new X509TrustManager[] {
         new X509TrustManager() {
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                 return new X509Certificate[0];
