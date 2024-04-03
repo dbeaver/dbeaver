@@ -212,13 +212,14 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                 }
             } catch (InvocationTargetException ex) {
+                String msg = GeneralUtils.getExceptionMessage(ex);
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                    GeneralUtils.getExceptionMessage(ex),
+                    msg,
                     new Status(
                         IStatus.ERROR,
                         ModelPreferences.PLUGIN_ID,
-                        GeneralUtils.getExceptionMessage(ex),
+                        msg,
                         ex.getTargetException()));
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
