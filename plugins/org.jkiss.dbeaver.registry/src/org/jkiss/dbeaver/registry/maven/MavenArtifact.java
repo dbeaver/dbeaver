@@ -70,7 +70,7 @@ public class MavenArtifact implements IMavenIdentifier
     private String latestVersion;
     private String releaseVersion;
     private Date lastUpdate;
-    private List<String> snapshotVersions = new ArrayList<>();
+    private final List<String> snapshotVersions = new ArrayList<>();
     private final List<MavenArtifactVersion> localVersions = new ArrayList<>();
 
     private transient boolean metadataLoaded = false;
@@ -106,7 +106,7 @@ public class MavenArtifact implements IMavenIdentifier
             metadataPath += version + "/";
         }
         metadataPath += MAVEN_METADATA_XML;
-        monitor.subTask("Load metadata " + this + "");
+        monitor.subTask("Load metadata " + this);
 
         try (InputStream mdStream = WebUtils.openConnection(metadataPath, getRepository().getAuthInfo(), null).getInputStream()) {
             parseMetadata(mdStream);
@@ -304,10 +304,12 @@ public class MavenArtifact implements IMavenIdentifier
         return repository.getUrl() + dir + "/";
     }
 
-    String getFileURL(String version, String fileType) {
-        if (getRepository().isSnapshot()) {
-            return getBaseArtifactURL() + versions.get(0) + "/" + getVersionFileName(VersionUtils.findLatestVersion(snapshotVersions),
-                fileType);
+    String getFileURL(String version, String fileType, boolean snapshotVersion) {
+        if (snapshotVersion) {
+            return getBaseArtifactURL() + versions.get(0) + "/" + getVersionFileName(
+                VersionUtils.findLatestVersion(snapshotVersions),
+                fileType
+            );
         }
 
         return getBaseArtifactURL() + version + "/" + getVersionFileName(version, fileType);
@@ -339,10 +341,16 @@ public class MavenArtifact implements IMavenIdentifier
         return null;
     }
 
-    private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive, boolean resolveOptionalDependencies) throws IllegalArgumentException, IOException {
+    private MavenArtifactVersion makeLocalVersion(
+        DBRProgressMonitor monitor,
+        String versionStr,
+        boolean setActive,
+        boolean resolveOptionalDependencies,
+        boolean snapshotVersion
+    ) throws IllegalArgumentException, IOException {
         MavenArtifactVersion version = getVersion(versionStr);
         if (version == null) {
-            version = new MavenArtifactVersion(monitor, this, versionStr, resolveOptionalDependencies);
+            version = new MavenArtifactVersion(monitor, this, versionStr, resolveOptionalDependencies, snapshotVersion);
             localVersions.add(version);
         }
         return version;
@@ -384,6 +392,9 @@ public class MavenArtifact implements IMavenIdentifier
                     break;
                 default:
                     if (snapshotVersion) {
+                        if (snapshotVersions.isEmpty()) {
+                            throw new IOException("Artifact '" + this + "' has empty snapshot version list");
+                        }
                         versionInfo = VersionUtils.findLatestVersion(snapshotVersions);
                         break;
                     }
@@ -421,7 +432,7 @@ public class MavenArtifact implements IMavenIdentifier
         MavenArtifactVersion localVersion = getVersion(versionInfo);
         if (localVersion == null) {
             try {
-                localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion, resolveOptionalDependencies);
+                localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion, resolveOptionalDependencies, snapshotVersion);
             } catch (IOException e) {
                 // Some IO error - not fatal
                 log.debug("Error loading version info: " + e.getMessage());

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
@@ -46,7 +47,7 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
     @Override
     public Object start(IApplicationContext context) {
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        if (RuntimeUtils.isWindows() && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
+        if (RuntimeUtils.isWindows() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
         }
         System.out.println("Starting headless test application " + application.getClass().getName());
@@ -81,4 +82,14 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
         return "DBeaverTests";
     }
 
+    @Override
+    public long getLastUserActivityTime() {
+        return -1;
+    }
+
+    @NotNull
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return DBeaverTestActivator.getInstance().getPreferences();
+    }
 }

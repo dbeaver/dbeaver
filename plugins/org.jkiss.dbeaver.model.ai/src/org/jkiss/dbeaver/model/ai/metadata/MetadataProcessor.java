@@ -133,13 +133,13 @@ public class MetadataProcessor {
         } else if (isChatAPI) {
             sb.append(
                 """
-                Perform SQL completion. Start response with SELECT keyword.
-                AVOID using Markdown.
+                Perform SQL completion.
+                Your query must start with "SELECT" and MUST be enclosed with Markdown code block.
                 Any comments MUST be placed in SQL multiline comment block at start of the query.
                 AVOID single line comments.
                 """);
         } else {
-            sb.append("Perform SQL completion. AVOID using Markdown");
+            sb.append("Perform SQL completion. Your query must start with \"SELECT\" and MUST be enclosed with Markdown code block.\n");
         }
 
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);

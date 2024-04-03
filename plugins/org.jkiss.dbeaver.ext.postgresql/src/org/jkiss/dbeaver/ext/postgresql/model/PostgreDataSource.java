@@ -95,6 +95,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String serverVersion;
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
+    private boolean supportsReltypeColumn = true;
 
     private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
     private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
@@ -127,13 +128,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public Object getDataSourceFeature(String featureId) {
-        switch (featureId) {
-            case DBPDataSource.FEATURE_MAX_STRING_LENGTH:
-                return 10485760;
-            case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS:
-                return true;
-        }
-        return super.getDataSourceFeature(featureId);
+        return switch (featureId) {
+            case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 10485760;
+            case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
+            default -> super.getDataSourceFeature(featureId);
+        };
     }
 
     @Override
@@ -411,7 +410,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    public DatabaseCache getDatabaseCache()
+    public SimpleObjectCache<PostgreDataSource, PostgreDatabase> getDatabaseCache()
     {
         return databaseCache;
     }
@@ -426,7 +425,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObject(name);
     }
 
-    public SettingCache getSettingCache() {
+    SettingCache getSettingCache() {
         return settingCache;
     }
 
@@ -440,22 +439,30 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.initialize(monitor);
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
-            serverVersion = JDBCUtils.queryString(session, "SELECT version()");
-        } catch (Exception e) {
-            log.debug("Error reading PostgreSQL version: " + e.getMessage());
-            serverVersion = "";
-        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+            session.enableLogging(false);
+            try {
+                serverVersion = JDBCUtils.queryString(session, "SELECT version()");
+            } catch (Exception e) {
+                log.debug("Error reading PostgreSQL version: " + e.getMessage());
+                serverVersion = "";
+            }
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pg_enum table availability")) {
-            supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
-        } catch (Exception e) {
-            log.debug("Error reading pg_enum " + e.getMessage());
-            supportsEnumTable = false;
+            try {
+                supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
+            } catch (Exception e) {
+                log.debug("Error reading pg_enum " + e.getMessage());
+                supportsEnumTable = false;
+            }
+            try {
+                supportsReltypeColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "reltype");
+            } catch (Exception e) {
+                log.debug("Error reading pg_class.reltype " + e.getMessage());
+                supportsReltypeColumn = false;
+            }
         }
 
         // Read databases
@@ -495,9 +502,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) {
         databaseCache.getAllObjects(monitor, this);
     }
 
@@ -631,7 +636,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
-    
+
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()
     {
@@ -678,7 +683,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObjects();
     }
 
-    void setActiveDatabase(PostgreDatabase newDatabase) {
+    void setActiveDatabase(PostgreDatabase newDatabase, DBCExecutionContext context) {
         final PostgreDatabase oldDatabase = getDefaultInstance();
         if (oldDatabase == newDatabase) {
             return;
@@ -687,44 +692,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         activeDatabaseName = newDatabase.getName();
 
         // Notify UI
-        DBUtils.fireObjectSelect(oldDatabase, false);
-        DBUtils.fireObjectSelect(newDatabase, true);
-    }
-
-    /**
-     * Deprecated. Database change is not supported (as it is ambiguous)
-     */
-    @Deprecated
-    public void setDefaultInstance(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase newDatabase, PostgreSchema schema)
-        throws DBException
-    {
-        final PostgreDatabase oldDatabase = getDefaultInstance();
-        if (oldDatabase != newDatabase) {
-            newDatabase.initializeMetaContext(monitor);
-            newDatabase.cacheDataTypes(monitor, false);
-        }
-
-        PostgreSchema oldDefaultSchema = null;
-        if (schema != null) {
-            oldDefaultSchema = newDatabase.getMetaContext().getDefaultSchema();
-            newDatabase.getMetaContext().changeDefaultSchema(monitor, schema, false, false);
-        }
-
-        activeDatabaseName = newDatabase.getName();
-
-        // Notify UI
-        DBUtils.fireObjectSelect(oldDatabase, false);
-        DBUtils.fireObjectSelect(newDatabase, true);
-
-        if (schema != null && schema != oldDefaultSchema) {
-            if (oldDefaultSchema != null) {
-                DBUtils.fireObjectSelect(oldDefaultSchema, false);
-            }
-            DBUtils.fireObjectSelect(schema, true);
-        }
-
-        // Close all database connections but meta (we need it to browse metadata like navigator tree)
-        oldDatabase.shutdown(monitor, true);
+        DBUtils.fireObjectSelect(oldDatabase, false, context);
+        DBUtils.fireObjectSelect(newDatabase, true, context);
     }
 
     public List<String> getTemplateDatabases(DBRProgressMonitor monitor) throws DBException {
@@ -926,5 +895,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean isSupportsEnumTable() {
         return supportsEnumTable;
+    }
+
+    /**
+     * Returns true if a database support pg_ctalog.reltype column. True by default.
+     */
+    public boolean isSupportsReltypeColumn() {
+        return supportsReltypeColumn;
     }
 }

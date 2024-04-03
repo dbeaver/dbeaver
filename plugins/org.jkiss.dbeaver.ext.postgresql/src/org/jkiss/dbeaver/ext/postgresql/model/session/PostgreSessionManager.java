@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.session;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -47,14 +48,16 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<PostgreSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
+    public Collection<PostgreSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
@@ -72,7 +75,7 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
     }
 
     @Override
-    public void alterSession(DBCSession session, PostgreSession sessionType, Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull PostgreSession sessionType, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (Statement dbStat = ((JDBCSession) session).createStatement()) {
@@ -89,8 +92,9 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         return "SELECT sa.* FROM pg_catalog.pg_stat_activity sa";
     }
 }

@@ -50,6 +50,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private static final String DEFAULT_PROFILE_ID = "#root";
 
     private final MavenArtifact artifact;
+    private final boolean snapshotVersion;
     private String name;
     private String version;
     private String packaging;
@@ -93,11 +94,12 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         @NotNull DBRProgressMonitor monitor,
         @NotNull MavenArtifact artifact,
         @NotNull String version,
-        boolean resolveOptionalDependencies
+        boolean resolveOptionalDependencies,
+        boolean snapshotVersion
     ) throws IOException {
         this.artifact = artifact;
         this.version = CommonUtils.trim(version);
-
+        this.snapshotVersion = snapshotVersion;
         loadPOM(monitor, resolveOptionalDependencies);
         this.version = evaluateString(this.version);
 
@@ -206,7 +208,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     }
 
     public String getExternalURL() {
-        return artifact.getFileURL(version, getPackagingFileExtension());
+        return artifact.getFileURL(version, getPackagingFileExtension(), snapshotVersion);
     }
 
     @NotNull
@@ -224,7 +226,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     }
 
     public String getExternalURL(String fileType) {
-        return artifact.getFileURL(version, fileType);
+        return artifact.getFileURL(version, fileType, snapshotVersion);
     }
 
     public String getPath() {
@@ -249,7 +251,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     }
 
     private String getRemotePOMLocation() {
-        return artifact.getFileURL(version, MavenArtifact.FILE_POM);
+        return artifact.getFileURL(version, MavenArtifact.FILE_POM, snapshotVersion);
     }
 
     private void cachePOM(File localPOM) throws IOException {

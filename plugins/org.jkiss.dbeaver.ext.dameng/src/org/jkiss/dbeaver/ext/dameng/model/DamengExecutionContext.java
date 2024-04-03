@@ -115,7 +115,7 @@ public class DamengExecutionContext extends JDBCExecutionContext implements DBCE
             JDBCUtils.executeSQL(session, "SET SCHEMA " + DBUtils.getQuotedIdentifier(session.getDataSource(), activeSchemaName));
             this.activeSchemaName = activeSchemaName;
             DBSObject newDefaultSchema = getDefaultSchema();
-            DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema);
+            DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema, this);
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }

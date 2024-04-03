@@ -155,11 +155,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return false;
         }
 
+        @NotNull
         @Override
         public String getTypeName() {
             return null;
         }
 
+        @NotNull
         @Override
         public String getFullTypeName() {
             return null;
@@ -170,6 +172,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return 0;
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind() {
             return DBPDataKind.STRING;
@@ -180,6 +183,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return null;
         }
 
+        @Nullable
         @Override
         public Integer getPrecision() {
             return null;
@@ -200,28 +204,29 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return null;
         }
 
+        @NotNull
         @Override
         public DBSEntityType getEntityType() {
             return DBSEntityType.TABLE;
         }
 
         @Override
-        public List<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
             return this.getChildrenListImpl();
         }
 
         @Override
-        public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+        public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
             return this.getChildrenMapImpl().get(attributeName);
         }
 
         @Override
-        public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
             return Collections.emptyList();
         }
 
         @Override
-        public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
             return null;
         }
 
@@ -255,6 +260,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         }
 
+        @NotNull
         @Override
         public DBSInstance getDefaultInstance() {
             return null;
@@ -267,7 +273,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public void shutdown(DBRProgressMonitor monitor) {
+        public void shutdown(@NotNull DBRProgressMonitor monitor) {
             
         }
 

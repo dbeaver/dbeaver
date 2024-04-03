@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
@@ -28,5 +29,6 @@ public interface DBSObjectLazy<DATA_SOURCE extends DBPDataSource> extends DBSObj
     @Override
     DATA_SOURCE getDataSource();
 
+    @Nullable
     Object getLazyReference(Object propertyId);
 }

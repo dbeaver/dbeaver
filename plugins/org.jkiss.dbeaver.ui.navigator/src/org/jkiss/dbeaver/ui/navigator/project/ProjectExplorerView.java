@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -305,17 +306,17 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     }
 
     @Override
-    public void handleProjectAdd(DBPProject project) {
+    public void handleProjectAdd(@NotNull DBPProject project) {
 
     }
 
     @Override
-    public void handleProjectRemove(DBPProject project) {
+    public void handleProjectRemove(@NotNull DBPProject project) {
 
     }
 
     @Override
-    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
+    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         updateRepresentation();
     }
     

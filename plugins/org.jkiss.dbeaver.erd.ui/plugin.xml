@@ -466,7 +466,6 @@
                 <with variable="activePart">
                     <and>
                         <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
                     </and>
                 </with>
             </enabledWhen>
@@ -518,7 +517,7 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
-                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                                 </and>
                             </adapt>
                         </iterate>
@@ -548,7 +547,7 @@
                         <iterate operator="and">
                             <and>
                                 <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-                                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                             </and>
                         </iterate>
                     </with>
@@ -609,9 +608,9 @@
              notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
        </erdNotation>
        <erdNotation
-             description="Crow’s Foot diagram notation"
+             description="Crow's Foot diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
-             name="Crows Foot"
+             name="Crow's Foot"
              notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
        </erdNotation>
     </extension>

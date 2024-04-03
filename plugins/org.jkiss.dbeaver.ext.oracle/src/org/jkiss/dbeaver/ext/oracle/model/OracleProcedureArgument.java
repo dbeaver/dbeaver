@@ -174,12 +174,14 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
         return 0;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
         return type == null ? packageTypeName : type.getName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -191,12 +193,14 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
         return type == null ? 0 : type.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {
         return type == null ? DBPDataKind.OBJECT : type.getDataKind();
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 40)
     public Integer getScale()

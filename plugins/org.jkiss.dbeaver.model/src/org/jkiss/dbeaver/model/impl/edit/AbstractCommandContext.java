@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -79,9 +81,9 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void saveChanges(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public void saveChanges(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (!executionContext.isConnected()) {
-            executionContext.invalidateContext(monitor, false);
+            executionContext.invalidateContext(monitor);
             if (!executionContext.isConnected()) {
                 throw new DBException("Context [" + executionContext.getContextName() + "] isn't connected to the database");
             }
@@ -118,13 +120,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                 }
             }
         }
+
         try {
             executeCommands(monitor, options, useAutoCommit ? null : txnManager);
 
             // Clear commands. We can't undo after save
             clearCommandQueues();
         } catch (Throwable e) {
-            // Rollback changes
+            // Rollback changes of last command
             if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback script transaction")) {
                     session.enableLogging(false);
@@ -136,19 +139,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             throw e;
         } finally {
             if (txnManager != null && txnManager.isSupportsTransactions()) {
-                try {
-                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
-                        if (!txnManager.isAutoCommit()) {
-                            session.enableLogging(false);
-                            txnManager.commit(session);
-                        }
-                    } finally {
-                        if (oldAutoCommit != useAutoCommit) {
-                            txnManager.setAutoCommit(monitor, oldAutoCommit);
-                        }
-                    }
-                } catch (DBCException e) {
-                    log.warn("Can't commit changes", e);
+                if (oldAutoCommit != useAutoCommit) {
+                    txnManager.setAutoCommit(monitor, oldAutoCommit);
                 }
             }
         }
@@ -221,9 +213,9 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                     throw error;
                                 }
                                 if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
-                                    // Disable logging to avoid QM handlers notifications.
-                                    session.enableLogging(false);
-                                    // Commit all processed changes
+                                    // Commit all processed changes for every command
+                                    // Because most databases do not support transactional DDL
+                                    /// and we cannot revert saved changes anyway
                                     txnManager.commit(session);
                                 }
                             }
@@ -320,6 +312,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBECommand<?>> getFinalCommands()
     {
@@ -339,6 +332,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBECommand<?>> getUndoCommands()
     {
@@ -359,6 +353,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @NotNull
     @Override
     public Collection<DBPObject> getEditedObjects()
     {
@@ -372,8 +367,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
     @Override
     public void addCommand(
-        DBECommand command,
-        DBECommandReflector reflector)
+        @NotNull DBECommand command,
+        @Nullable DBECommandReflector reflector)
     {
         addCommand(command, reflector, false);
     }
@@ -497,6 +492,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @Nullable
     @Override
     public DBECommand getUndoCommand()
     {
@@ -514,6 +510,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @Nullable
     @Override
     public DBECommand getRedoCommand()
     {

@@ -17,10 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -38,6 +40,13 @@ public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<
 
     public PostgreDatabase getDatabase() {
         return database;
+    }
+
+    public PostgreScriptExecuteSettings() {
+    }
+
+    public PostgreScriptExecuteSettings(@NotNull DBPProject project) {
+        super(project);
     }
 
     public void setDatabase(PostgreDatabase database) {

@@ -157,10 +157,11 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
     @Override
     public void loadSettings() {
         List<DBSObject> databaseObjects = ieWizard.getSettings().getDatabaseObjects();
-        if (!CommonUtils.isEmpty(databaseObjects)) {
-            for (DBSObject obj : databaseObjects) {
-                if (objectClass.isInstance(obj)) {
-                    selectedObject = objectClass.cast(obj);
+        for (DBSObject obj : databaseObjects) {
+            for (DBSObject child = obj; child != null; child = child.getParentObject()) {
+                if (objectClass.isInstance(child)) {
+                    selectedObject = objectClass.cast(child);
+                    break;
                 }
             }
         }

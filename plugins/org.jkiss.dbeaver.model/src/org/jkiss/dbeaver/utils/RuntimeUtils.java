@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobGroup;
 import org.eclipse.osgi.service.localization.BundleLocalization;
-import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -573,14 +572,20 @@ public final class RuntimeUtils {
         try {
             localizationTracker = BeanUtils.getFieldValue(activator, "localizationTracker");
         } catch (Throwable e) {
-            throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), e.getMessage());
+            throw new MissingResourceException(
+                "Resource bundle '" + bundle.getSymbolicName() + "' not found for locale " + locale,
+                bundle.getSymbolicName(),
+                e.getMessage());
         }
         BundleLocalization location = localizationTracker.current().orElse(null);
         ResourceBundle result = null;
         if (location != null)
             result = location.getLocalization(bundle, locale);
         if (result == null)
-            throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), ""); //$NON-NLS-1$
+            throw new MissingResourceException(
+                "Resource bundle '" + bundle.getSymbolicName() + "' not found for locale " + locale,
+                bundle.getSymbolicName(),
+                ""); //$NON-NLS-1$
         return result;
     }
 

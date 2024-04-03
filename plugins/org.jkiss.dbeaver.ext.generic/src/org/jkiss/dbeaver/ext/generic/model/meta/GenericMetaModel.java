@@ -670,11 +670,38 @@ public class GenericMetaModel {
             dbResult);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    /**
+     * We can only read the view DDL from the database directly.
+     *
+     * @param monitor to create session or to read metadata
+     * @param sourceObject source object with required name and parents info
+     * @param options for generated DDL
+     * @return view DDL
+     * @throws DBException in case of session or metadata reading fall
+     */
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return "-- View definition not available";
     }
 
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    /**
+     * We can generate a table DDL because we have attributes and constraints info.
+     * But it is better to read this DDL from a database directly. It can contain database-specific parameters.
+     *
+     * @param monitor to create session or to read metadata
+     * @param sourceObject source object with required name and parents info
+     * @param options for generated DDL
+     * @return table DDL
+     * @throws DBException in case of session or metadata reading fall
+     */
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return DBStructUtils.generateTableDDL(monitor, sourceObject, options, false);
     }
 

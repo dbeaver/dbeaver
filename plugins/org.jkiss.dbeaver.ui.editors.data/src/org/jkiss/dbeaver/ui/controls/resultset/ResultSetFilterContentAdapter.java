@@ -36,6 +36,7 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
         StyledText text = (StyledText) control;
         String curValue = text.getText().toUpperCase();
         Point selection = text.getSelection();
+        int wordStartingPosition = -1;
 
         if (selection.x == selection.y) {
             // Try to replace text under cursor contents starts with
@@ -49,6 +50,7 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
                 if (contentsUC.startsWith(prefix)) {
                     if (i == 0 || !Character.isJavaIdentifierPart(curValue.charAt(i - 1))) {
                         text.setSelection(i, selection.x);
+                        wordStartingPosition = i;
                         break;
                     }
                 }
@@ -61,11 +63,9 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
         }
         text.insert(contents);
 
-        // Insert will leave the cursor at the end of the inserted text. If this
-        // is not what we wanted, reset the selection.
-        if (cursorPosition <= contents.length()) {
-            text.setSelection(selection.x + cursorPosition,
-                selection.x + cursorPosition);
+        // Always insert the cursor at the end of inserted text
+        if (wordStartingPosition != -1) {
+            text.setSelection(wordStartingPosition + contents.length(), wordStartingPosition + contents.length());
         }
     }
 

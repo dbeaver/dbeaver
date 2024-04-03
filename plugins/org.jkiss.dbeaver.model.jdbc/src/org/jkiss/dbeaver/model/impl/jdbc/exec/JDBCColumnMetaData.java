@@ -304,17 +304,20 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBSTypedObjectJ
         return String.valueOf(typeID);
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;
     }
 
+    @NotNull
     @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 4)
     @Override
     public String getTypeName() {
         return typeName;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
