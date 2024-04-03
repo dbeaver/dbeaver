@@ -1213,16 +1213,12 @@ public class DataSourceDescriptor
                     tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                     try {
                         if (!tunnelConfiguration.isSavePassword()) {
-                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, null);
+                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                             if (rc != DBWTunnel.AuthCredentials.NONE) {
                                 if (!askForPassword(this, tunnelConfiguration, rc)) {
                                     tunnelHandler = null;
                                     return false;
                                 }
-                            }
-                            if (!askForSSHJumpServerPassword(tunnelConfiguration)) {
-                                tunnelHandler = null;
-                                return false;
                             }
                         }
                         // We need to resolve jump server differently due to it being a part of ssh configuration
@@ -1344,46 +1340,6 @@ public class DataSourceDescriptor
         if (selectedSharedCredentials != null) {
             selectedSharedCredentials.setValue(saveToSecret());
         }
-    }
-
-
-    private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
-        String jumpServerSettingsPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
-        if (tunnelConfiguration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED)) {
-            DBPConnectionConfiguration actualConfig = getActualConnectionConfiguration();
-            DBPConnectionConfiguration connConfig = getConnectionConfiguration();
-            String prompt = NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, "SSH jump server");
-            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, jumpServerSettingsPrefix);
-            if (rc != DBWTunnel.AuthCredentials.NONE) {
-                DBPAuthInfo dbpAuthInfo = askCredentials(this, rc, prompt,
-                    tunnelConfiguration.getStringProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME),
-                    //$NON-NLS-1$
-                    tunnelConfiguration.getSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD),
-                    //$NON-NLS-1$
-                    false
-                );
-                if (dbpAuthInfo != null) {
-                    if (rc.equals(DBWTunnel.AuthCredentials.CREDENTIALS)) {
-                        tunnelConfiguration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME, //$NON-NLS-1$
-                            dbpAuthInfo.getUserName()
-                        );
-                    }
-                    tunnelConfiguration.setSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD, //$NON
-                        // -NLS-1$
-                        dbpAuthInfo.getUserPassword()
-                    );
-                    actualConfig.updateHandler(tunnelConfiguration);
-
-                    if (tunnelConfiguration.isSavePassword() && connConfig != actualConfig) {
-                        // Save changes in real connection info
-                        connConfig.updateHandler(tunnelConfiguration);
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
