@@ -213,12 +213,13 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                 }
             } catch (InvocationTargetException ex) {
                 DBWorkbench.getPlatformUI().showError(
-                        CoreMessages.dialog_connection_wizard_start_dialog_error_title, null,
-                        new Status(
-                            IStatus.ERROR,
-                            ModelPreferences.PLUGIN_ID,
-                            GeneralUtils.getExceptionMessage(ex),
-                            ex.getTargetException()));
+                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    GeneralUtils.getExceptionMessage(ex),
+                    new Status(
+                        IStatus.ERROR,
+                        ModelPreferences.PLUGIN_ID,
+                        GeneralUtils.getExceptionMessage(ex),
+                        ex.getTargetException()));
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,
