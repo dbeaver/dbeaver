@@ -282,7 +282,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 driverInstance = getDriverInstance(monitor);
             } catch (DBException e) {
                 throw new DBCConnectException("Can't create driver instance"
-                    + " (class '" + driverClassName + "').",
+                    + " (class '"
+                    + driverClassName
+                    + "').",
                     e, this);
             }
         } else {
