@@ -21,6 +21,8 @@ package org.jkiss.dbeaver.model.task;
  */
 public interface DBTTaskScheduleInfo {
 
+    String getProjectId();
+
     String getTaskId();
 
     String getNextRunInfo();
