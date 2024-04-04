@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.DBPSystemInfoObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -41,7 +42,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefreshableObject, DBPSaveableObject {
+public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefreshableObject, DBPSaveableObject, DBPSystemInfoObject {
     private static final Log log = Log.getLog(PostgreJob.class);
 
     private final PostgreDatabase database;

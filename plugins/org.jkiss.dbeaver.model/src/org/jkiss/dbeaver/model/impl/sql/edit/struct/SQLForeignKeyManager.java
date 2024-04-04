@@ -192,6 +192,14 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
         }
     }
 
+    @NotNull
+    public static String generateConstraintName(DBSEntity table, DBSEntityConstraint uniqueKey) {
+        DBSEntity targetTable = uniqueKey == null ? null : uniqueKey.getParentObject();
+
+        return CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+            (uniqueKey == null ? "" : CommonUtils.escapeIdentifier(targetTable.getName()) + "_") + "FK"; //$NON-NLS-1$
+    }
+
     protected <T extends DBSEntityConstraint> T getReferencedKey(DBRProgressMonitor monitor, TABLE_TYPE table, Class<T> refKeyClass, Map<String, Object> options) {
         Object refConstraint = options.get(OPTION_REF_CONSTRAINT);
         if (refKeyClass.isInstance(refConstraint)) {

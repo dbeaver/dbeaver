@@ -17,13 +17,17 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Driver file info
  */
-public interface DBPDriverFileInfo
-{
+public interface DBPDriverFileInfo {
+    @NotNull
     String getName();
 
+    @Nullable
     String getDescription();
 
     boolean isOptional();

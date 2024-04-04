@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
+import org.jkiss.dbeaver.erd.ui.connector.ERDConnection;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
@@ -120,7 +121,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         if (router != null) {
             conn = router.getConnectionInstance();
         } else {
-            conn = new PolylineConnection();
+            conn = new ERDConnection();
         }
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
         if (monitor.isCanceled()) {

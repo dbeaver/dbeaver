@@ -33,8 +33,6 @@ public class SQLServerMessages extends NLS {
     public static String authentication_ad_interactive_description;
     public static String authentication_ad_integrated_title;
     public static String authentication_ad_integrated_description;
-    public static String authentication_kerberos_title;
-    public static String authentication_kerberos_description;
     public static String authentication_other_title;
     public static String authentication_other_description;
 

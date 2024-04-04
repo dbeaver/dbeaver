@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -77,8 +78,9 @@ public class JDBCCursor implements DBDCursor {
         }
     }
 
+    @NotNull
     @Override
-    public DBCResultSet openResultSet(DBCSession session) {
+    public DBCResultSet openResultSet(@NotNull DBCSession session) {
         if (resultSet != null) {
             // Scroll to the beginning
             try {

@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -125,17 +126,17 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
-    public void handleProjectAdd(DBPProject project) {
+    public void handleProjectAdd(@NotNull DBPProject project) {
         // Ignore
     }
 
     @Override
-    public void handleProjectRemove(DBPProject project) {
+    public void handleProjectRemove(@NotNull DBPProject project) {
         // Ignore
     }
 
     @Override
-    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue)
+    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue)
     {
         UIExecutionQueue.queueExec(() -> {
             getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));

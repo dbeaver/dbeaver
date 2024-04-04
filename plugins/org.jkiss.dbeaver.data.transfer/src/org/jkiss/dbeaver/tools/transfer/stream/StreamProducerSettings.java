@@ -22,12 +22,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -120,27 +124,45 @@ public class StreamProducerSettings implements IDataTransferSettings {
         return false;
     }
 
-    public void updateProducerSettingsFromStream(DBRProgressMonitor monitor, @NotNull StreamTransferProducer producer, DataTransferSettings dataTransferSettings) {
-        monitor.beginTask("Update data produces settings from import stream", 1);
-        final Map<String, Object> procProps = dataTransferSettings.getProcessorProperties();
+    public void updateProducerSettingsFromStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StreamTransferProducer producer,
+        @NotNull DataTransferSettings dataTransferSettings
+    ) {
+        try {
+            updateProducerSettingsFromStream(
+                monitor,
+                producer,
+                dataTransferSettings.getProcessor().getInstance(),
+                dataTransferSettings.getProcessorProperties()
+            );
+        } catch (DBException e) {
+            dataTransferSettings.getState().addError(e);
+        }
+    }
 
-        if (CommonUtils.equalObjects(lastProcessorProperties, procProps) && CommonUtils.equalObjects(lastProducer, producer)) {
+    public void updateProducerSettingsFromStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StreamTransferProducer producer,
+        @NotNull IDataTransferProcessor processor,
+        @NotNull Map<String, Object> processorProperties
+    ) throws DBException {
+        monitor.beginTask("Update data produces settings from import stream", 1);
+
+        if (CommonUtils.equalObjects(lastProcessorProperties, processorProperties) && CommonUtils.equalObjects(lastProducer, producer)) {
             // Nothing has changed
             return;
         }
 
-        lastProcessorProperties = new LinkedHashMap<>(procProps);
+        lastProcessorProperties = new LinkedHashMap<>(processorProperties);
         lastProducer = producer;
 
         List<StreamDataImporterColumnInfo> columnInfos;
         StreamEntityMapping entityMapping = producer.getEntityMapping();
 
-        IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
-
-        if (entityMapping != null && importer instanceof IStreamDataImporter) {
-            IStreamDataImporter sdi = (IStreamDataImporter) importer;
+        if (entityMapping != null && processor instanceof IStreamDataImporter sdi) {
             try (InputStream is = Files.newInputStream(entityMapping.getInputFile())) {
-                sdi.init(new StreamDataImporterSite(this, entityMapping, procProps));
+                sdi.init(new StreamDataImporterSite(this, entityMapping, processorProperties));
                 try {
                     columnInfos = sdi.readColumnsInfo(entityMapping, is);
                     entityMapping.setStreamColumns(columnInfos);
@@ -148,8 +170,17 @@ public class StreamProducerSettings implements IDataTransferSettings {
                     sdi.dispose();
                 }
             } catch (Exception e) {
-                dataTransferSettings.getState().addError(e);
-                log.error("IO error while reading columns from stream", e);
+                if (e instanceof FileNotFoundException &&
+                    DBWorkbench.getPlatform().getApplication().isMultiuser() &&
+                    IOUtils.isLocalPath(entityMapping.getInputFile())
+                ) {
+                    throw new DBException(
+                        "Local file '" + entityMapping.getInputFile() + "' doesn't exist or not accessible. " +
+                            "Use Cloud Storage to import/export data." +
+                            "\nLearn more at " + HelpUtils.getHelpExternalReference("Cloud-Storage"), e);
+                } else {
+                    throw new DBException("Error reading columns from stream", e);
+                }
             }
         }
 

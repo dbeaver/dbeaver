@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.transformers;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
@@ -46,6 +47,7 @@ public class TransformerPresentationAttribute extends AbstractAttribute {
         this.dataKind = dataKind;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;

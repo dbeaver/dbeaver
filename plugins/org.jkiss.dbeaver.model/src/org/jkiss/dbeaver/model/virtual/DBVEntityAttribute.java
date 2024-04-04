@@ -145,16 +145,18 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
         this.name = name;
     }
 
+    @NotNull
     @Property(editable = true)
     @Override
     public String getTypeName() {
         return typeName;
     }
 
-    public void setTypeName(String typeName) {
+    public void setTypeName(@NotNull String typeName) {
         this.typeName = typeName;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return getTypeName();
@@ -176,13 +178,14 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
         this.dataKind = dataKind;
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return this.scale;
     }
 
     @Override
-    public void setScale(Integer scale) {
+    public void setScale(@Nullable Integer scale) {
         this.scale = scale;
     }
 
@@ -192,7 +195,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
     }
 
     @Override
-    public void setPrecision(Integer precision) {
+    public void setPrecision(@Nullable Integer precision) {
         this.precision = precision;
     }
 

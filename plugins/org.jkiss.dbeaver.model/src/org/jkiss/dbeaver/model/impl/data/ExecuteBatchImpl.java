@@ -205,7 +205,6 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     }
                 }
             }
-            values.clear();
 
             if (statementsInBatch > 0) {
                 if (actions == null) {
@@ -214,6 +213,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 statement.close();
                 statement = null;
             }
+            values.clear();
         } finally {
             if (reuseStatement && statement != null) {
                 statement.close();

@@ -17,46 +17,40 @@
 
 package org.jkiss.dbeaver.ui.dashboard.control;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Control;
 import org.jfree.chart.JFreeChart;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
-import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
-
-import java.util.List;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewSettingsDialog;
 
 /**
  * Dashboard chart composite
  */
-public class DashboardChartComposite extends BaseChartComposite {
+public class DashboardChartComposite extends BaseChartComposite implements DashboardViewCompositeControl {
 
-    private final DashboardViewContainer viewContainer;
-    private final DashboardContainer dashboardContainer;
+    private final DashboardContainer viewContainer;
+    private final DashboardItemContainer dashboardContainer;
 
-    public DashboardChartComposite(DashboardContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(
+        DashboardItemContainer dashboardContainer,
+        DashboardContainer viewContainer,
+        Composite parent,
+        int style,
+        Point preferredSize
+    ) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
         this.viewContainer = viewContainer;
     }
 
-    public DashboardViewContainer getViewContainer() {
+    public DashboardContainer getViewContainer() {
         return viewContainer;
     }
 
@@ -68,41 +62,7 @@ public class DashboardChartComposite extends BaseChartComposite {
 
     @Override
     protected void fillContextMenu(IMenuManager manager) {
-        if (!isSingleChartMode()) {
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_VIEW_DASHBOARD));
-            manager.add(new Separator());
-        }
-        if (!UIUtils.isInDialog(this)) {
-            MenuManager viewMenu = new MenuManager(UIDashboardMessages.dashboard_chart_composite_menu_manager_text);
-            List<DashboardViewType> viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
-            for (DashboardViewType viewType : viewTypes) {
-                Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
-                    @Override
-                    public boolean isChecked() {
-                        return dashboardContainer.getDashboardViewType() == viewType;
-                    }
-
-                    @Override
-                    public void runWithEvent(Event event) {
-                        ((DashboardItem) dashboardContainer).getDashboardConfig().setViewType(viewType);
-                        dashboardContainer.getGroup().getView().getViewConfiguration().saveSettings();
-                        dashboardContainer.updateDashboardView();
-                    }
-                };
-                if (viewType.getIcon() != null) {
-                    changeViewAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(viewType.getIcon()));
-                }
-                viewMenu.add(changeViewAction);
-            }
-            manager.add(viewMenu);
-        }
-        if (!isSingleChartMode()) {
-            manager.add(new Separator());
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_ADD_DASHBOARD));
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_REMOVE_DASHBOARD));
-            manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_RESET_DASHBOARD));
-        }
-        manager.add(new Separator());
+        dashboardContainer.fillDashboardContextMenu(manager, isSingleChartMode());
         super.fillContextMenu(manager);
     }
 
@@ -116,13 +76,14 @@ public class DashboardChartComposite extends BaseChartComposite {
     }
 
     protected boolean showChartConfigDialog() {
-        DashboardItemConfigDialog dialog = new DashboardItemConfigDialog(
+        DashboardItemViewSettingsDialog dialog = new DashboardItemViewSettingsDialog(
             this.getShell(),
             dashboardContainer,
             viewContainer.getViewConfiguration());
         boolean changed = dialog.open() == IDialogConstants.OK_ID;
         if (changed) {
             dashboardContainer.updateDashboardView();
+            viewContainer.saveChanges();
         }
         return changed;
     }
@@ -132,9 +93,16 @@ public class DashboardChartComposite extends BaseChartComposite {
         if (viewContainer.isSingleChartMode()) {
             restoreAutoBounds();
         } else {
-            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DashboardItem) dashboardContainer);
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(
+                viewContainer,
+                viewContainer.getConfiguration(),
+                (DashboardViewItem) dashboardContainer);
             viewDialog.open();
         }
     }
 
+    @Override
+    public Control getDashboardControl() {
+        return getChartCanvas();
+    }
 }

@@ -4,7 +4,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.net.ssh">
-        <implementation id="jsch" label="JSch" class="org.jkiss.dbeaver.model.net.ssh.SSHImplementationJsch" supportsJumpServer="true"/>
+        <implementation id="jsch" label="JSch" class="org.jkiss.dbeaver.model.net.ssh.JSCHSessionController"/>
     </extension>
 
 </plugin>

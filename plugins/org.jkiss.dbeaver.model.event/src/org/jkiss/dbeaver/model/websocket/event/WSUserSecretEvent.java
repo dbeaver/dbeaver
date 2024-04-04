@@ -21,13 +21,28 @@ import org.jkiss.code.Nullable;
 
 public class WSUserSecretEvent extends WSAbstractEvent {
 
+    @NotNull
+    private final String projectId;
+    @NotNull
     private final String dataSourceId;
 
-    public WSUserSecretEvent(@NotNull String dataSourceId, @Nullable String sessionId, @Nullable String userId) {
+    public WSUserSecretEvent(
+        @NotNull String projectId,
+        @NotNull String dataSourceId,
+        @Nullable String sessionId,
+        @Nullable String userId
+    ) {
         super(WSEventType.DATASOURCE_SECRET_UPDATED, sessionId, userId);
+        this.projectId = projectId;
         this.dataSourceId = dataSourceId;
     }
 
+    @NotNull
+    public String getProjectId() {
+        return projectId;
+    }
+
+    @NotNull
     public String getDataSourceId() {
         return dataSourceId;
     }

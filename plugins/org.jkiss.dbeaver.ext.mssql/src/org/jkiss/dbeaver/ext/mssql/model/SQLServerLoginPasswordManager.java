@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
@@ -37,7 +38,7 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
     }
 
     @Override
-    public void changeUserPassword(DBRProgressMonitor monitor, String loginName, String newPassword, String oldPassword) throws DBException {
+    public void changeUserPassword(@NotNull DBRProgressMonitor monitor, @NotNull String loginName, @NotNull String newPassword, @NotNull String oldPassword) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user login password")) {
             session.enableLogging(false);
             JDBCUtils.executeSQL(session, "ALTER LOGIN " + DBUtils.getQuotedIdentifier(dataSource, loginName) + " WITH PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)) +

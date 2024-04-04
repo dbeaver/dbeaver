@@ -472,9 +472,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                         loadChildren(monitor, item, oldList, toList, source, reflect);
                     }
                 }
-            } else if (child instanceof DBXTreeFolder) {
-                if (hideFolders || ((mergeEntities || supportsOptionalFolders) && ((DBXTreeFolder)child).isOptional())) {
-                    if (child.isVirtual()) {
+            } else if (child instanceof DBXTreeFolder treeFolder) {
+                if (hideFolders || ((mergeEntities || supportsOptionalFolders) && treeFolder.isOptional())) {
+                    if (child.isVirtual() || treeFolder.isAdminFolder()) {
                         continue;
                     }
                     // Fall down

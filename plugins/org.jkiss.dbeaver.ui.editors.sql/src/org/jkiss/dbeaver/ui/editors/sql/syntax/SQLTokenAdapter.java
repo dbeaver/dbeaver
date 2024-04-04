@@ -119,6 +119,10 @@ public class SQLTokenAdapter extends Token {
                     colorKey = SQLConstants.CONFIG_COLOR_COMPOSITE_FIELD;
                     style = SWT.NORMAL;
                     break;
+                case T_SQL_VARIABLE:
+                    colorKey = SQLConstants.CONFIG_COLOR_SQL_VARIABLE;
+                    style = SWT.NORMAL;
+                    break;
                 case T_SEMANTIC_ERROR:
                     colorKey = SQLConstants.CONFIG_COLOR_SEMANTIC_ERROR;
                     style = SWT.BOLD | SWT.ITALIC | TextAttribute.UNDERLINE;

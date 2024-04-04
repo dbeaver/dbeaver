@@ -38,7 +38,7 @@
     <extension point="org.eclipse.core.runtime.products" id="product">
         <product application="org.jkiss.dbeaver.ui.app.standalone.standalone" description="%productSubTitle" name="DBeaver">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="%productCopyright"/>
+            <property name="copyright" value="© 2024 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
@@ -47,10 +47,10 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="versionInfoCoord" value="116,228"/>
-            <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="208,72,39"/>
-            <property name="startupMessageRect" value="73,270,240,21"/>
+            <property name="versionInfoCoord" value="112,230"/>
+            <property name="versionInfoSize" value="8"/>
+            <property name="versionInfoColor" value="255,255,255"/>
+            <property name="startupMessageRect" value="60,273,240,21"/>
             <property name="startupProgressRect" value="0,295,601,6"/>
             <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
@@ -65,18 +65,18 @@
     <extension point="org.eclipse.core.runtime.products" id="appstore">
         <product application="org.jkiss.dbeaver.ui.app.standalone.appstore" description="%productSubTitle" name="DBeaver CE">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="%productCopyright"/>
+            <property name="copyright" value="© 2024 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
-            <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="155,265"/>
-            <property name="versionInfoSize" value="12"/>
+            <property name="versionInfoCoord" value="112,230"/>
+            <property name="versionInfoSize" value="8"/>
             <property name="versionInfoColor" value="255,255,255"/>
-            <property name="startupMessageRect" value="323,270,242,25"/>
-            <property name="startupProgressRect" value="323,255,242,10"/>
+            <property name="startupMessageRect" value="60,273,240,21"/>
+            <property name="startupProgressRect" value="0,295,601,6"/>
+            <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -94,6 +94,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
+        <command
+            id="org.jkiss.dbeaver.core.util.collectDiagnosticInfo"
+            categoryId="org.jkiss.dbeaver.core.util"
+            name="%command.org.jkiss.dbeaver.core.util.collectDiagnosticInfo.name"
+            description="%command.org.jkiss.dbeaver.core.util.collectDiagnosticInfo.description"/>
         <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
@@ -191,6 +196,10 @@
             </activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
+        <handler
+            commandId="org.jkiss.dbeaver.core.util.collectDiagnosticInfo"
+            class="org.jkiss.dbeaver.ui.app.standalone.actions.CollectDiagnosticInfoHandler"
+        />
         <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
@@ -313,6 +322,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:help">
             <separator name="misc" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.util.collectDiagnosticInfo" style="push"/>
             <command commandId="org.jkiss.dbeaver.core.util.resetSettings" style="push"/>
             <command commandId="org.jkiss.dbeaver.core.util.clearHistory" style="push"/>
             <separator name="misc_end" visible="true"/>
@@ -470,6 +480,12 @@
             exitAfterExecute="true"
             hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
+        <parameter name="databaseList"
+            longName="database-driver-list"
+            description="Show list of supported database drivers in json format."
+            exitAfterExecute="false"
+            hasArg="true"
+            handler="org.jkiss.dbeaver.ui.app.standalone.cli.DataBaseInfoHandler"/>
     </extension>
 
     <!-- Disable Eclipse debug and refactoring in standalone applications -->

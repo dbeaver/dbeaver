@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,42 +16,28 @@
  */
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import org.jkiss.code.Nullable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence;
+import org.jkiss.dbeaver.ext.generic.edit.GenericSequenceManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
 
-public class AltibaseSequenceManager extends SQLObjectEditor<GenericSequence, AltibaseDataSource> {
+public class AltibaseSequenceManager extends GenericSequenceManager {
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
-    }
-    
-    @Override
-    public boolean canCreateObject(Object container) {
-        return true;
-    }
-
-    @Override
-    public boolean canDeleteObject(GenericSequence object) {
-        return true;
     }
     
     @Override
@@ -60,47 +46,46 @@ public class AltibaseSequenceManager extends SQLObjectEditor<GenericSequence, Al
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         actions.add(new SQLDatabasePersistAction("Create sequence", 
                         ((AltibaseSequence) (command.getObject())).buildStatement(false)));
     }
 
     @Override
     protected AltibaseSequence createDatabaseObject(
-            DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-            Object from, Map<String, Object> options) {
-        return new AltibaseSequence((GenericStructContainer) container, "NEW_SEQUENCE");
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        final Object container,
+        Object from,
+        @NotNull Map<String, Object> options
+    ) {
+        return new AltibaseSequence((GenericStructContainer) container, getBaseObjectName());
     }
     
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        List<DBEPersistAction> actionList,
+        ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         actionList.add(new SQLDatabasePersistAction("Alter sequence", 
                         ((AltibaseSequence) (command.getObject())).buildStatement(true)));
     }
     
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
-        actions.add(new SQLDatabasePersistAction("Drop sequence", "DROP SEQUENCE " 
-                + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
-        );
-    }
-
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, GenericSequence> getObjectsCache(GenericSequence object) {
-        DBSObject parentObject = object.getParentObject();
-        if (parentObject instanceof GenericStructContainer) {
-            return ((GenericStructContainer) parentObject).getSequenceCache();
-        }
-        return null;
-    }
-
-    @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command,
-            Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(
+        DBRProgressMonitor monitor,
+        ObjectChangeCommand command,
+        Map<String, Object> options
+    ) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Sequence name cannot be empty");
         }

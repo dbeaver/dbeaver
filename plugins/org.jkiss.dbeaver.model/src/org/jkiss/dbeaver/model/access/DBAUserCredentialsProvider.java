@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.access;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 
 /**
@@ -26,8 +27,10 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
  */
 public interface DBAUserCredentialsProvider {
 
+    @Nullable
     String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo);
 
+    @Nullable
     String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo);
 
 }

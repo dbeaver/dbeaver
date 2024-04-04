@@ -30,10 +30,10 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
  */
 public interface DBDDataReceiver extends AutoCloseable {
 
-    void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
+    void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException;
 
-    void fetchRow(DBCSession session, DBCResultSet resultSet)
+    void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
         throws DBCException;
 
     /**
@@ -42,7 +42,7 @@ public interface DBDDataReceiver extends AutoCloseable {
      * @param session execution context
      * @param resultSet    result set
      */
-    void fetchEnd(DBCSession session, DBCResultSet resultSet)
+    void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
         throws DBCException;
 
     /**

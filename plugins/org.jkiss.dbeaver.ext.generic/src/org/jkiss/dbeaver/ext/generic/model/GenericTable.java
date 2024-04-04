@@ -98,6 +98,7 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
         return false;
     }
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         boolean isSupportCheckConstraint = getDataSource().getMetaModel().supportsCheckConstraints();

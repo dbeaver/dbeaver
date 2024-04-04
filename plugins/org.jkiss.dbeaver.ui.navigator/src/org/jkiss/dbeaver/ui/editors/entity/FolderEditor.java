@@ -48,8 +48,7 @@ import java.util.List;
 /**
  * FolderEditor
  */
-public class FolderEditor extends EditorPart implements INavigatorModelView, IRefreshablePart, ISearchContextProvider
-{
+public class FolderEditor extends EditorPart implements INavigatorModelView, IRefreshablePart, ISearchContextProvider {
     private static final Log log = Log.getLog(FolderEditor.class);
 
     private FolderListControl itemControl;
@@ -57,20 +56,30 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     private int historyPosition = 0;
 
     @Override
-    public void createPartControl(Composite parent)
-    {
-        itemControl = new FolderListControl(parent);
-        itemControl.createProgressPanel();
-        itemControl.loadData();
-        getSite().setSelectionProvider(itemControl.getSelectionProvider());
+    public void createPartControl(Composite parent) {
+        UIExecutionQueue.queueExec(() -> {
+            itemControl = new FolderListControl(parent);
+            itemControl.createProgressPanel();
 
-        DBNNode rootNode = getRootNode();
-        history.add(rootNode.getNodeUri());
+            final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
+            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
+            setPartName(navigatorNode.getNodeDisplayName());
+
+            itemControl.loadData();
+            getSite().setSelectionProvider(itemControl.getSelectionProvider());
+
+            DBNNode rootNode = getRootNode();
+            history.add(rootNode.getNodeUri());
+
+            parent.layout(true, true);
+        });
     }
 
     @Override
     public void setFocus() {
-        itemControl.setFocus();
+        if (itemControl != null) {
+            itemControl.setFocus();
+        }
     }
 
     @Override
@@ -92,11 +101,6 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     public void init(IEditorSite site, IEditorInput input) {
         setSite(site);
         setInput(input);
-        if (input != null) {
-            final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
-            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
-            setPartName(navigatorNode.getNodeDisplayName());
-        }
     }
 
     @Override
@@ -116,14 +120,12 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     @Nullable
     @Override
-    public Viewer getNavigatorViewer()
-    {
-        return itemControl.getNavigatorViewer();
+    public Viewer getNavigatorViewer() {
+        return itemControl == null ? null : itemControl.getNavigatorViewer();
     }
 
     @Override
-    public RefreshResult refreshPart(Object source, boolean force)
-    {
+    public RefreshResult refreshPart(Object source, boolean force) {
         UIUtils.asyncExec(() -> {
             if (!itemControl.isDisposed()) {
                 itemControl.loadData(false);
@@ -133,20 +135,17 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     @Override
-    public boolean isSearchPossible()
-    {
-        return itemControl.isSearchPossible();
+    public boolean isSearchPossible() {
+        return itemControl != null && itemControl.isSearchPossible();
     }
 
     @Override
-    public boolean isSearchEnabled()
-    {
-        return itemControl.isSearchEnabled();
+    public boolean isSearchEnabled() {
+        return itemControl != null && itemControl.isSearchEnabled();
     }
 
     @Override
-    public boolean performSearch(SearchType searchType)
-    {
+    public boolean performSearch(SearchType searchType) {
         return itemControl.performSearch(searchType);
     }
 
@@ -211,7 +210,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         @Override
         protected Object getCellValue(Object element, ObjectColumn objectColumn, boolean formatValue) {
             if (element instanceof DBNRoot) {
-                return objectColumn.isNameColumn(getObjectValue((DBNRoot)element)) ? ".." : "";
+                return objectColumn.isNameColumn(getObjectValue((DBNRoot) element)) ? ".." : "";
             }
             return super.getCellValue(element, objectColumn, formatValue);
         }

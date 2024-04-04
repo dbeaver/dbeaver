@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -39,6 +40,8 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DBPDataSourceContainer
@@ -110,6 +113,10 @@ public interface DBPDataSourceContainer extends
 
     boolean isSharedCredentials();
 
+    /**
+     * find all available shared credentials for the current user
+     */
+    List<DBSSecretValue> listSharedCredentials() throws DBException;
     void setSharedCredentials(boolean sharedCredentials);
 
     boolean isConnectionReadOnly();
@@ -157,6 +164,7 @@ public interface DBPDataSourceContainer extends
 
     DBPNativeClientLocation getClientHome();
 
+    @NotNull
     DBWNetworkHandler[] getActiveNetworkHandlers();
 
     /**
@@ -215,11 +223,6 @@ public interface DBPDataSourceContainer extends
 
     void fireEvent(DBPEvent event);
 
-    @Nullable
-    String getProperty(@NotNull String name);
-
-    void setProperty(@NotNull String name, @Nullable String value);
-
     /**
      * Preference store associated with this datasource
      * @return preference store
@@ -275,5 +278,23 @@ public interface DBPDataSourceContainer extends
 
     void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution);
 
+    /**
+     * Datasource tags. Tags can be used in various 3rd party integrations.
+     */
+    Map<String, String> getTags();
+
+    String getTagValue(String tagName);
+
+    void setTagValue(String tagName, String tagValue);
+
+    /**
+     * Extension settings. Any custom attributes assigned by product plugins for internal configuration purposes
+     */
+    @Nullable
+    String getExtension(@NotNull String name);
+
+    void setExtension(@NotNull String name, @Nullable String value);
+
     void dispose();
+
 }

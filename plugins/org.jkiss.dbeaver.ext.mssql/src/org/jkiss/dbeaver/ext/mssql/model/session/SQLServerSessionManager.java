@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.session;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
@@ -49,14 +50,16 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<SQLServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
+    public Collection<SQLServerSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
@@ -74,7 +77,7 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
     }
 
     @Override
-    public void alterSession(DBCSession session, SQLServerSession sessionType, Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull SQLServerSession sessionType, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             try (Statement dbStat = ((JDBCSession) session).createStatement()) {
@@ -91,8 +94,9 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         boolean onlyConnections = CommonUtils.getOption(options, OPTION_SHOW_ONLY_CONNECTIONS);
         boolean supportsDatabaseInfo = dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2012_VERSION_MAJOR, 0);
 

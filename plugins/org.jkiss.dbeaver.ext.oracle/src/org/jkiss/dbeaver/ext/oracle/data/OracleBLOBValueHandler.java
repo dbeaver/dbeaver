@@ -35,7 +35,7 @@ public class OracleBLOBValueHandler extends JDBCContentValueHandler {
     public static final OracleBLOBValueHandler INSTANCE = new OracleBLOBValueHandler();
 
     @Override
-    public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
+    public void writeStreamValue(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
         if (!object.isNull()) {
             writer.write("HEXTORAW('");
         }

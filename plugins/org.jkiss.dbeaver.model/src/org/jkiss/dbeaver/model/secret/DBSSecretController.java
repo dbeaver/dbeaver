@@ -33,6 +33,15 @@ import java.util.List;
  */
 public interface DBSSecretController {
 
+    long FEATURE_PRIVATE_SECRETS_VIEW = 1;
+    long FEATURE_PRIVATE_SECRETS_EDIT = 1 << 1;
+    long FEATURE_SHARED_SECRETS_VIEW = 1 << 2;
+    long FEATURE_SHARED_SECRETS_EDIT = 1 << 3;
+
+    default long getSupportedFeatures() throws DBException {
+        return FEATURE_PRIVATE_SECRETS_VIEW | FEATURE_PRIVATE_SECRETS_EDIT | FEATURE_SHARED_SECRETS_VIEW | FEATURE_SHARED_SECRETS_EDIT;
+    }
+
     @Nullable
     String getPrivateSecretValue(@NotNull String secretId) throws DBException;
 

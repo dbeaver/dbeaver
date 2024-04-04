@@ -61,18 +61,21 @@ public class AuthModelSelector extends Composite {
     private final Runnable panelExtender;
     private final Runnable changeListener;
     private Combo authModelCombo;
+    private boolean authSettingsEnabled = true;
+    private boolean isEnableSharedConfigurator = true;
 
-    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener) {
+    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener, boolean enableShared) {
         super(parent, SWT.NONE);
         setLayout(new FillLayout());
 
         this.panelExtender = panelExtender;
         this.changeListener = changeListener;
+        this.isEnableSharedConfigurator = enableShared;
 
         modelConfigPlaceholder = UIUtils.createControlGroup(this, UIConnectionMessages.dialog_connection_auth_group, 2, GridData.FILL_HORIZONTAL, 0);
 
         UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(DBAAuthModel.class.getName());
-        if (configDescriptor != null) {
+        if (configDescriptor != null && isEnableSharedConfigurator) {
             try {
                 sharedConfigurator = configDescriptor.createConfigurator();
             } catch (Exception e) {
@@ -83,6 +86,10 @@ public class AuthModelSelector extends Composite {
 
     public DBPAuthModelDescriptor getSelectedAuthModel() {
         return selectedAuthModel;
+    }
+
+    public DBPDataSourceContainer getActiveDataSource() {
+        return activeDataSource;
     }
 
     Composite getAuthPanelComposite() {
@@ -104,6 +111,7 @@ public class AuthModelSelector extends Composite {
     public void loadSettings(DBPDataSourceContainer dataSourceContainer, DBPAuthModelDescriptor activeAuthModel, String defaultAuthModelId) {
         this.activeDataSource = dataSourceContainer;
         this.selectedAuthModel = activeAuthModel;
+        this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
         this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
             DataSourceProviderRegistry.getInstance().getAllAuthModels() :
             DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
@@ -112,7 +120,7 @@ public class AuthModelSelector extends Composite {
             o1.isDefaultModel() ? -1 :
                 o2.isDefaultModel() ? 1 :
                     o1.getName().compareTo(o2.getName()));
-        if (selectedAuthModel == null && !CommonUtils.isEmpty(defaultAuthModelId)) {
+        if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
                 if (amd.getId().equals(defaultAuthModelId)) {
@@ -121,13 +129,13 @@ public class AuthModelSelector extends Composite {
                     break;
                 }
             }
-            if (selectedAuthModel == null) {
+            if (selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) {
                 // First one
                 selectedAuthModel = allAuthModels.get(0);
                 dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
             }
         }
-        if (sharedConfigurator != null) {
+        if (sharedConfigurator != null && isEnableSharedConfigurator) {
             sharedConfigurator.loadSettings(activeDataSource);
         }
 
@@ -176,7 +184,7 @@ public class AuthModelSelector extends Composite {
         });
         UIUtils.createEmptyLabel(authModelComp, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (sharedConfigurator != null) {
-            sharedConfigurator.createControl(authModelComp, activeDataSource, this::refreshCredentials);
+            sharedConfigurator.createControl(authModelComp, this, this::refreshCredentials);
         } else {
             UIUtils.createEmptyLabel(authModelComp, 1, 1);
         }
@@ -194,7 +202,7 @@ public class AuthModelSelector extends Composite {
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
         DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
-        {
+        if (authSettingsEnabled) {
             authModelConfigurator = null;
             UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(authModel);
             if (uiConfiguratorDescriptor != null) {
@@ -258,4 +266,21 @@ public class AuthModelSelector extends Composite {
         }
     }
 
+    public boolean isAuthSettingsEnabled() {
+        return authSettingsEnabled;
+    }
+
+    public void enableAuthSettings(boolean enable, boolean redraw) {
+        if (authSettingsEnabled != enable) {
+            authSettingsEnabled = enable;
+            if (redraw) {
+                authModelConfigurator = null;
+                changeAuthModel();
+            }
+        }
+    }
+
+    public void setEnableSharedConfigurator(boolean isEnable) {
+        this.isEnableSharedConfigurator = isEnable;
+    }
 }
