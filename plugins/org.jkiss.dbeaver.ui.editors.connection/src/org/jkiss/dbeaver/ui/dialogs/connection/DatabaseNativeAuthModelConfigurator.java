@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
@@ -55,6 +57,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected ToolBar userManagementToolbar;
 
     protected DBPDataSourceContainer dataSource;
+
+    public final boolean CREDENTIALS_SAVE_RESTRICTED = BasePolicyDataProvider.getInstance()
+        .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
 
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         boolean userNameApplicable = true;
@@ -105,8 +110,13 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
         if (this.passwordText != null) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
-            this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
-            this.passwordText.setEnabled(dataSource.isSavePassword());
+            if (CREDENTIALS_SAVE_RESTRICTED) {
+                this.savePasswordCheck.setSelection(false);
+                this.savePasswordCheck.setEnabled(false);
+            } else {
+                this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
+                this.passwordText.setEnabled(dataSource.isSavePassword());
+            }
         }
         if (dataSource.isTemporary()) {
             if (this.passwordText != null) {
@@ -132,8 +142,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
-        if (this.savePasswordCheck != null) {
-            dataSource.setSavePassword(this.savePasswordCheck.getSelection());
+        if (CREDENTIALS_SAVE_RESTRICTED) {
+            dataSource.setSavePassword(false);
+        } else {
+            if (this.savePasswordCheck != null) {
+                dataSource.setSavePassword(this.savePasswordCheck.getSelection());
+            }
         }
     }
 
@@ -188,7 +202,8 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
         savePasswordCheck = UIUtils.createCheckbox(panel,
             UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
-            dataSource == null || dataSource.isSavePassword() || isForceSaveCredentials());
+            !CREDENTIALS_SAVE_RESTRICTED &&
+                (dataSource == null || dataSource.isSavePassword() || isForceSaveCredentials()));
         savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password);
         savePasswordCheck.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -221,13 +236,14 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     private void showPasswordText(UIServiceSecurity serviceSecurity) {
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
-            if (!serviceSecurity.validatePassword(
-                dataSource.getProject(),
-                "Enter project password",
-                "Enter project password to unlock connection password view",
-                true))
-            {
-                return;
+            if (dataSource.getRegistry().getDataSource(dataSource.getId()) != null) {
+                if (!serviceSecurity.validatePassword(
+                    dataSource.getProject(),
+                    "Enter project password",
+                    "Enter project password to unlock connection password view",
+                    true)) {
+                    return;
+                }
             }
         }
 
