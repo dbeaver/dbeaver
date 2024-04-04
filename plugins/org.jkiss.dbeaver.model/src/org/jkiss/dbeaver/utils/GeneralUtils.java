@@ -86,6 +86,11 @@ public class GeneralUtils {
     public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
     public static final String EMPTY_ENV_VARIABLE_VALUE = "''";
 
+    private static final int[] NONVALID_UNICODE_SYMBOLS = {
+        32, // space
+        160,// non-breaking space
+    };
+
     static {
         // Compose byte to hex map
         for (int i = 0; i < 256; ++i) {
@@ -160,6 +165,25 @@ public class GeneralUtils {
             bytes[i] = (byte) c;
         }
         return bytes;
+    }
+
+    /**
+     * The function check warning Unicode value in string
+     *
+     */
+    public static boolean containsSpecificUnicodeSymbol(@Nullable String strValue) {
+        if (strValue == null || strValue.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < strValue.length(); i++) {
+            int code = strValue.codePointAt(i);
+            for (int j = 0; j < NONVALID_UNICODE_SYMBOLS.length; j++) {
+                if (code == NONVALID_UNICODE_SYMBOLS[j]) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static Object makeDisplayString(Object object) {

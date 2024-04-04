@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -257,9 +258,30 @@ public class EditConnectionWizard extends ConnectionWizard {
         DBPDataSourceRegistry registry = originalDataSource.getRegistry();
         DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
         DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
+        
         try {
             saveSettings(dsChanged);
-
+            boolean nonValidPassword = GeneralUtils.containsSpecificUnicodeSymbol(dsChanged.getConnectionConfiguration().getUserPassword());
+            boolean nonValidUserName = GeneralUtils.containsSpecificUnicodeSymbol(dsChanged.getConnectionConfiguration().getUserName());
+            if (nonValidPassword && nonValidUserName) {
+                if (!UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_title,
+                    CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_username_password_msg,
+                    DBIcon.STATUS_WARNING)) {
+                    return false;
+                }
+            } else if (nonValidPassword && !nonValidUserName) {
+                if (!UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_title,
+                    CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_password_msg,
+                    DBIcon.STATUS_WARNING)) {
+                    return false;
+                }
+            } else if (!nonValidPassword & nonValidUserName) {
+                if (!UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_title,
+                    CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_username_msg,
+                    DBIcon.STATUS_WARNING)) {
+                    return false;
+                }
+            }
             if (dsCopy.equalSettings(dsChanged)) {
                 // No changes
                 return true;
