@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.sql.parser;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 import org.eclipse.jface.text.*;
 import org.jkiss.code.NotNull;
@@ -34,7 +33,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenPredicateEvaluator;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
-import org.jkiss.dbeaver.model.stm.SQLQuerySyntaxTreeInspections;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
@@ -1001,7 +1000,7 @@ public class SQLScriptParser {
     
     private static class ScriptElementContinuationDetector {
         private static final Set<Integer> statementStartTokenIds =
-            SQLQuerySyntaxTreeInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
+            LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
 
         private final SQLParserContext context;
         
@@ -1014,11 +1013,11 @@ public class SQLScriptParser {
                 STMSource.fromString(element.getOriginalText()),
                 this.context.getDialect()
             );
-            Token nextToken = lexer.nextToken();
-            while (nextToken != null && nextToken.getType() != -1 && nextToken.getChannel() != Token.DEFAULT_CHANNEL) {
-                nextToken = lexer.nextToken();
+            Token token = lexer.nextToken();
+            while (token != null && token.getType() != -1 && token.getChannel() != Token.DEFAULT_CHANNEL) {
+                token = lexer.nextToken();
             }
-            return nextToken != null && statementStartTokenIds.contains(nextToken.getType());
+            return token != null && statementStartTokenIds.contains(token.getType());
         }
         
         private int findSmartStatementBoundary(@NotNull SQLScriptElement element, boolean forward) {
