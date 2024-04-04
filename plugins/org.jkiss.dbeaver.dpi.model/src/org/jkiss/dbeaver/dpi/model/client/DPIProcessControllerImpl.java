@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.DPISerializer;
+import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.DPIController;
 import org.jkiss.dbeaver.model.dpi.DPIProcessController;
@@ -44,7 +44,7 @@ public class DPIProcessControllerImpl implements DPIProcessController {
 
     private static final Log log = Log.getLog(DPIProcessControllerImpl.class);
 
-    public static final int PROCESS_PAWN_TIMEOUT = 10000;
+    public static final int PROCESS_PAWN_TIMEOUT = 100000;
     private DPIController dpiRestClient;
     private int dpiServerPort;
     private final Process process;

@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.DPISerializer;
+import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
 import org.jkiss.dbeaver.model.dpi.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
@@ -35,6 +35,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -266,7 +267,15 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         if (controller instanceof RestProxy) {
             ((RestProxy) controller).setNextCallResultType(returnType);
         }
-        return controller.callMethod(this.objectId, methodName, args);
+        try {
+            log.debug(MessageFormat.format("Call method: {0} object: {1}", objectId, methodName));
+            var result = controller.callMethod(this.objectId, methodName, args);
+            log.debug(MessageFormat.format("Return method result: {0} object: {1}", objectId, methodName));
+            return result;
+        } catch (Throwable e) {
+            log.debug(MessageFormat.format("Method invocation error: {0} object: {1}", objectId, methodName));
+            throw e;
+        }
     }
 
     private static Object wrapObjectValue(Object result) {

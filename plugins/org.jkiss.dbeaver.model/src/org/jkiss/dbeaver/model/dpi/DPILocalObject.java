@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * DBPObjectStatistics
+ * Object's element.
  */
-@DPIObject
-public interface DBPObjectStatistics {
-
-    @DPIElement(objectState = true)
-    boolean hasStatistics();
-
-    @DPIElement(objectState = true)
-    long getStatObjectSize();
-
-    @Nullable
-    DBPPropertySource getStatProperties();
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface DPILocalObject {
 }

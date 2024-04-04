@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.dpi.model;
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.DPIController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

@@ -45,6 +45,7 @@ import org.jkiss.utils.rest.RestServer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,6 +135,7 @@ public class DPIControllerImpl implements DPIController {
 
     @Override
     public synchronized Object callMethod(@NotNull String objectId, @NotNull String method, @Nullable Object[] args) throws DBException {
+        log.debug(MessageFormat.format("Invoke method: {0} object: {1}", objectId, method));
         Object object = context.getObject(objectId);
         if (object == null) {
             throw new DBException("DPI object '" + objectId + "' not found");

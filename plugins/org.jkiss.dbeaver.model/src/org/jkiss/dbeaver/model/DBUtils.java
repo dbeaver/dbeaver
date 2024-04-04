@@ -1321,7 +1321,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement makeStatement(
-        @NotNull DBCExecutionSource executionSource,
+        @Nullable DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
         @NotNull String query,
@@ -1339,7 +1339,7 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement makeStatement(
-        @NotNull DBCExecutionSource executionSource,
+        @Nullable DBCExecutionSource executionSource,
         @NotNull DBCSession session,
         @NotNull DBCStatementType statementType,
         @NotNull SQLQuery sqlQuery,
