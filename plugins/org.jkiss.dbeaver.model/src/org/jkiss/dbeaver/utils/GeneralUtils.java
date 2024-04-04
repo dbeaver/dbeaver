@@ -88,7 +88,7 @@ public class GeneralUtils {
 
     private static final int[] NONVALID_UNICODE_SYMBOLS = {
         32, // space
-        160,// non-breaking space
+        160 // non-breaking space
     };
 
     static {
