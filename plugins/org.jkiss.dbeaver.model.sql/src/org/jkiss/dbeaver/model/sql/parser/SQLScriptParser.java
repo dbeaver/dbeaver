@@ -17,16 +17,16 @@
 
 package org.jkiss.dbeaver.model.sql.parser;
 
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Token;
 import org.eclipse.jface.text.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenPredicateEvaluator;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
-import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
+import org.jkiss.dbeaver.model.stm.SQLQuerySyntaxTreeInspections;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
@@ -48,6 +48,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 
@@ -999,53 +1000,49 @@ public class SQLScriptParser {
     }
     
     private static class ScriptElementContinuationDetector {
-    
+        private static final Set<Integer> statementStartTokenIds =
+            SQLQuerySyntaxTreeInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
+
         private final SQLParserContext context;
-        private final LSMAnalyzer analyzer;
-        private boolean hasError = false;
         
         public ScriptElementContinuationDetector(@NotNull SQLParserContext context) {
             this.context = context;
-            this.analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(context.getDialect());
+        }
+
+        private boolean elementStartsProperly(@NotNull SQLScriptElement element) {
+            SQLStandardLexer lexer = SQLStandardAnalyzer.createLexer(
+                STMSource.fromString(element.getOriginalText()),
+                this.context.getDialect()
+            );
+            Token nextToken = lexer.nextToken();
+            while (nextToken != null && nextToken.getType() != -1 && nextToken.getChannel() != Token.DEFAULT_CHANNEL) {
+                nextToken = lexer.nextToken();
+            }
+            return nextToken != null && statementStartTokenIds.contains(nextToken.getType());
         }
         
-        private boolean tryParse(@NotNull String text) {
-            this.hasError = false;
-            return analyzer.parseSqlQueryTree(STMSource.fromString(text), new STMSkippingErrorListener() {
-                @Override
-                public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-                    hasError = true;
-                }
-            }) != null && !this.hasError;
+        private int findSmartStatementBoundary(@NotNull SQLScriptElement element, boolean forward) {
+            SQLScriptElement lastElement = element;
+            SQLScriptElement nextElement = extractNextQuery(this.context, element.getOffset(), forward);
+            while (nextElement != null && !elementStartsProperly(nextElement)) {
+                lastElement = nextElement;
+                nextElement = extractNextQuery(this.context, lastElement.getOffset(), forward);
+            }
+            SQLScriptElement boundaryElement = forward || nextElement == null ? lastElement : nextElement; 
+            return forward ? (boundaryElement.getOffset() + boundaryElement.getLength()) : boundaryElement.getOffset();
         }
 
         @Nullable
         public SQLScriptElement tryPrepareExtendedElement(@NotNull SQLScriptElement element) {
-            SQLScriptElement nextElement = extractNextQuery(this.context, element.getOffset(), true);
-            SQLScriptElement lastElement = element;
-            String combinedText;
-            String lastText = element.getOriginalText();
-            int combinedLength;
-            int lastLength = element.getLength();
-            while (nextElement != null) {
-                try {
-                    combinedLength = nextElement.getOffset() + nextElement.getLength() - element.getOffset();
-                    combinedText = this.context.getDocument().get(element.getOffset(), combinedLength);
-                } catch (BadLocationException e) {
-                    break;
-                }
-                if (!this.tryParse(nextElement.getOriginalText()) && this.tryParse(combinedText)) {
-                    lastElement = nextElement;
-                    lastLength = combinedLength;
-                    lastText = combinedText;
-                    nextElement = extractNextQuery(this.context, nextElement.getOffset(), true);
-                } else {
-                    nextElement = null;
-                }
+            int start = this.elementStartsProperly(element) ? element.getOffset() : findSmartStatementBoundary(element, false);
+            int end = findSmartStatementBoundary(element, true);
+            int length = end - start;
+            try {
+                String text = this.context.getDocument().get(start, length);
+                return new SQLQuery(this.context.getDataSource(), text, start, length);
+            } catch (BadLocationException ex) {
+                return element;
             }
-            
-            return lastElement == element ? null 
-                    : new SQLQuery(this.context.getDataSource(), lastText, element.getOffset(), lastLength);
         }
     }
 }
