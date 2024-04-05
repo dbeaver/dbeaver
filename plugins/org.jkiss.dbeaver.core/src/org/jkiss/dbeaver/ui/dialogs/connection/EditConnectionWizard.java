@@ -263,22 +263,17 @@ public class EditConnectionWizard extends ConnectionWizard {
             saveSettings(dsChanged);
             boolean nonValidPassword = GeneralUtils.containsSpecificUnicodeSymbol(dsChanged.getConnectionConfiguration().getUserPassword());
             boolean nonValidUserName = GeneralUtils.containsSpecificUnicodeSymbol(dsChanged.getConnectionConfiguration().getUserName());
-            if (nonValidPassword && nonValidUserName) {
-                if (!UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_title,
-                    CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_username_password_msg,
-                    DBIcon.STATUS_WARNING)) {
+
+            if (nonValidPassword & nonValidUserName) {
+                if (!confirmUseCredentials(CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_username_password_msg)) {
                     return false;
                 }
-            } else if (nonValidPassword && !nonValidUserName) {
-                if (!UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_title,
-                    CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_password_msg,
-                    DBIcon.STATUS_WARNING)) {
+            } else if (nonValidPassword & !nonValidUserName) {
+                if (!confirmUseCredentials(CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_password_msg)) {
                     return false;
                 }
             } else if (!nonValidPassword & nonValidUserName) {
-                if (!UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_title,
-                    CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_username_msg,
-                    DBIcon.STATUS_WARNING)) {
+                if (!confirmUseCredentials(CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_username_msg)) {
                     return false;
                 }
             }
@@ -324,6 +319,12 @@ public class EditConnectionWizard extends ConnectionWizard {
             originalDataSource.setSelectedSharedCredentials(selectedSharedCredentials);
         }
         return originalDataSource.persistConfiguration();
+    }
+
+    private boolean confirmUseCredentials(String msg) {
+        return UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_warning_credentials_nonvalid_title,
+            msg,
+            DBIcon.STATUS_WARNING);
     }
 
     private boolean isOnlyUserCredentialChanged(DataSourceDescriptor dsCopy, DataSourceDescriptor dsChanged) {
