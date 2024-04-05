@@ -30,18 +30,18 @@ public class H2DatabaseBackup implements BackupDatabase {
 
     public void doBackup(Connection connection, int currentSchemaVersion) {
         BackupRegistry.getInstance().getSettings();
-            try {
-                Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve("backup");
-                Path backupFile = workspace.resolve("backupVersion" + currentSchemaVersion + ".zip");
-                if (Files.notExists(backupFile)) {
-                    Files.createDirectories(workspace);
-                    String backupCommand = "BACKUP TO '" + backupFile + "'";
-                    connection.createStatement().execute(backupCommand);
+        try {
+            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve("backup");
+            Path backupFile = workspace.resolve("backupVersion" + currentSchemaVersion + ".zip");
+            if (Files.notExists(backupFile)) {
+                Files.createDirectories(workspace);
+                String backupCommand = "BACKUP TO '" + backupFile + "'";
+                connection.createStatement().execute(backupCommand);
 
-                    log.info("Reserve backup created to path: " + "backup");
-                }
-            } catch (Exception e) {
-                log.error("Create backup is failed: " + e.getMessage());
+                log.info("Reserve backup created to path: " + "backup");
             }
+        } catch (Exception e) {
+            log.error("Create backup is failed: " + e.getMessage());
         }
+    }
 }

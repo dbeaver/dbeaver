@@ -20,7 +20,7 @@ Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.edit,
- org.jkiss.dbeaver.ext.postgresql.backup
+ org.jkiss.dbeaver.ext.postgresql.backup,
  org.jkiss.dbeaver.ext.postgresql.model,
  org.jkiss.dbeaver.ext.postgresql.model.data,
  org.jkiss.dbeaver.ext.postgresql.model.fdw,
