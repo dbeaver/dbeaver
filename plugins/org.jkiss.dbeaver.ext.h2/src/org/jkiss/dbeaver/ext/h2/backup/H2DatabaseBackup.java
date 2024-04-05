@@ -25,8 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 
-public class H2DatabaseBackup1 implements BackupDatabase {
-    private static final Log log = Log.getLog(H2DatabaseBackup1.class);
+public class H2DatabaseBackup implements BackupDatabase {
+    private static final Log log = Log.getLog(H2DatabaseBackup.class);
 
     public void doBackup(Connection connection, int currentSchemaVersion) {
         BackupRegistry.getInstance().getSettings();
@@ -38,9 +38,7 @@ public class H2DatabaseBackup1 implements BackupDatabase {
                     String backupCommand = "BACKUP TO '" + backupFile + "'";
                     connection.createStatement().execute(backupCommand);
 
-                    connection.close();
-
-                    System.out.println("Reserve backup created to path: " + "backup");
+                    log.info("Reserve backup created to path: " + "backup");
                 }
             } catch (Exception e) {
                 log.error("Create backup is failed: " + e.getMessage());

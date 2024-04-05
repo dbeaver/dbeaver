@@ -88,7 +88,7 @@ public final class SQLSchemaManager {
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 try {
                     int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetSchemaName);
-                    BackupRegistry.getInstance().getSettings().get(0).getInstance().doBackup(dbCon, currentSchemaVersion);
+                    BackupRegistry.getInstance().getSettings().forEach(p -> p.getInstance().doBackup(dbCon, currentSchemaVersion));
                     // Do rollback in case some error happened during version check (makes sense for PG)
                     txn.rollback();
                     if (currentSchemaVersion < 0) {
