@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.backup.BackupRegistry;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -87,6 +88,7 @@ public final class SQLSchemaManager {
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 try {
                     int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetSchemaName);
+                    BackupRegistry.getInstance().getSettings().get(0).getInstance().doBackup(dbCon, currentSchemaVersion);
                     // Do rollback in case some error happened during version check (makes sense for PG)
                     txn.rollback();
                     if (currentSchemaVersion < 0) {
