@@ -166,7 +166,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         // Do nothing
     }
 
-    public void afterCacheLoading(JDBCSession session, OWNER owner) {
+    public void afterCacheLoading(JDBCSession session, OWNER owner) throws DBException {
         // Do nothing
     }
 
