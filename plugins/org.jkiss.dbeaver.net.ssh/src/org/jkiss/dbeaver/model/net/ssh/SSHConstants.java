@@ -16,13 +16,17 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import org.jkiss.utils.StandardConstants;
+
 /**
  * Constants for SSH tunnel
  */
 public class SSHConstants {
 
-    public static final int DEFAULT_SSH_PORT = 22;
+    public static final int DEFAULT_PORT = 22;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
+    public static final String DEFAULT_USER_NAME = System.getProperty(StandardConstants.ENV_USER_NAME);
+    public static final int MAX_JUMP_SERVERS = 5;
 
     public static final String PROP_IMPLEMENTATION = "implementation";
     public static final String PROP_AUTH_TYPE = "authType";

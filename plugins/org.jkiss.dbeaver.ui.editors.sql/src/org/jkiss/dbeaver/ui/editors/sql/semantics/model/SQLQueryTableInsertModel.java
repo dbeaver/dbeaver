@@ -59,8 +59,10 @@ public class SQLQueryTableInsertModel extends SQLQueryTableStatementModel {
     public void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.columnNames != null) {
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
-                SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                if (columnName.isNotClassified()) {
+                    SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
+                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                }
             }
         }
 

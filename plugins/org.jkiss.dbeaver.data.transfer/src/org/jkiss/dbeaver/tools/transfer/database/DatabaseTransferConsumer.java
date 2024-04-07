@@ -469,6 +469,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         if (ignoreErrors) {
                             break;
                         }
+                        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                            if (e instanceof DBCException dbe) {
+                                throw dbe;
+                            }
+                            throw new DBCException(e.getMessage(), e);
+                        }
                         String message;
                         if (disableUsingBatches) {
                             message = DTMessages.database_transfer_consumer_task_error_occurred_during_data_load;
@@ -1003,5 +1009,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         public DBPDataKind getDataKind() {
             return this.binding.getDataKind();
         }
+    }
+
+    public void setSettings(@Nullable DatabaseConsumerSettings settings) {
+        this.settings = settings;
+    }
+
+    public void setContainerMapping(@Nullable DatabaseMappingContainer containerMapping) {
+        this.containerMapping = containerMapping;
     }
 }
