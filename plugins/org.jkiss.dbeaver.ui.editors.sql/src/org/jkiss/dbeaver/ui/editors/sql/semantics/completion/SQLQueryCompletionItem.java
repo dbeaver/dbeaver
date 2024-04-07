@@ -60,8 +60,8 @@ public abstract class SQLQueryCompletionItem {
         return new SQLTableNameCompletionItem(table, isUsed);
     }
     
-    public static SQLQueryCompletionItem forSubsetColumn(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo) {
-        return new SQLColumnNameCompletionItem(columnInfo, sourceInfo);
+    public static SQLQueryCompletionItem forSubsetColumn(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo, boolean absolute) {
+        return new SQLColumnNameCompletionItem(columnInfo, sourceInfo, absolute);
     }
     
     public static SQLQueryCompletionItem forDbObject(DBPNamedObject object) {
@@ -99,17 +99,22 @@ public abstract class SQLQueryCompletionItem {
     private static class SQLColumnNameCompletionItem extends SQLQueryCompletionItem {
         private final SQLQueryResultColumn columnInfo;
         private final SourceResolutionResult sourceInfo;
+        private final boolean absolute;
 
-        public SQLColumnNameCompletionItem(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo) {
+        public SQLColumnNameCompletionItem(SQLQueryResultColumn columnInfo, SourceResolutionResult sourceInfo, boolean absolute) {
             this.columnInfo = columnInfo;
             this.sourceInfo = sourceInfo;
+            this.absolute = absolute;
         }        
         
         @Override
         public String getText() {
-//            String prefix = this.sourceInfo != null && this.sourceInfo.aliasOrNull != null ? this.sourceInfo.aliasOrNull.getName() + "." : ""; 
-//            return prefix + this.columnInfo.symbol.getName();
-            return this.columnInfo.symbol.getName();
+            if (this.absolute) {
+                String prefix = this.sourceInfo != null && this.sourceInfo.aliasOrNull != null ? this.sourceInfo.aliasOrNull.getName() + "." : ""; 
+                return prefix + this.columnInfo.symbol.getName();
+            } else {
+                return this.columnInfo.symbol.getName();
+            }
         }
         
         @Override

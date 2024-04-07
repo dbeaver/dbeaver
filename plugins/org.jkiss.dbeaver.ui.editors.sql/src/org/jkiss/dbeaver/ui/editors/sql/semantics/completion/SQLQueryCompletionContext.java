@@ -162,7 +162,7 @@ public abstract class SQLQueryCompletionContext {
                     if (srr != null) {
                         List<SQLQueryCompletionItem> subqueryColumns = srr.source.getResultDataContext().getColumnsList().stream()
                             .filter(c -> c.symbol.getName().toLowerCase().contains(tail))
-                            .map(c -> SQLQueryCompletionItem.forSubsetColumn(c, srr))
+                            .map(c -> SQLQueryCompletionItem.forSubsetColumn(c, srr, false))
                             .toList();
                         return subqueryColumns;
                     }
@@ -322,7 +322,7 @@ public abstract class SQLQueryCompletionContext {
             private List<SQLQueryCompletionItem> prepareColumnCompletions() {
                 // directly available column
                 List<SQLQueryCompletionItem> subsetColumns = context.getColumnsList().stream().map(
-                    rc -> SQLQueryCompletionItem.forSubsetColumn(rc, this.referencedSources.get(rc.source))
+                    rc -> SQLQueryCompletionItem.forSubsetColumn(rc, this.referencedSources.get(rc.source), true)
                 ).toList();
                 // already referenced tables
                 LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
@@ -350,9 +350,13 @@ public abstract class SQLQueryCompletionContext {
                     }
                 }
 
-                if (dbcExecutionContext != null && dbcExecutionContext.getDataSource() != null && dbcExecutionContext.getDataSource().getDefaultInstance() instanceof DBSObjectContainer container) {
+                if (dbcExecutionContext != null && dbcExecutionContext.getDataSource() != null) {
                     try {
-                        collectTables(monitor, container, alreadyReferencedTables, tableRefs);
+                        if (dbcExecutionContext.getDataSource().getDefaultInstance() instanceof DBSObjectContainer container) {
+                            collectTables(monitor, container, alreadyReferencedTables, tableRefs);    
+                        } else if (dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container2) {
+                            collectTables(monitor, container2, alreadyReferencedTables, tableRefs);
+                        }
                     } catch (DBException e) {
                         log.error(e);
                     }

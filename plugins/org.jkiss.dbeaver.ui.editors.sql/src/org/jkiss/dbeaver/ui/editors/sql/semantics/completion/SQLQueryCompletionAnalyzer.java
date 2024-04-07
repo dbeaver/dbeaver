@@ -38,10 +38,9 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        SQLDocumentSyntaxContext syntaxContext = this.editor.getSyntaxContext();
-        if (syntaxContext != null) {
-            int position = this.request.getDocumentOffset();
-            SQLQueryCompletionContext completionContext = syntaxContext.obtainCompletionContext(editor.getExecutionContext(), position);
+        int position = this.request.getDocumentOffset();
+        SQLQueryCompletionContext completionContext = this.editor.obtainCompletionContext(position);
+        if (completionContext != null) {
             SQLQueryCompletionSet completionSet = completionContext.prepareProposal(monitor, position);
             
             this.proposals = new ArrayList<>(completionSet.getItems().size()); 
