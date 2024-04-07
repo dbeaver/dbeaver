@@ -64,7 +64,7 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
     }
     
     @Override
-    protected void propagateContextImpl(SQLQueryDataContext context, SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.value.propagateContext(context, statistics);
         this.type = SQLQueryExprType.forExplicitTypeRef(this.typeRefString);
     }

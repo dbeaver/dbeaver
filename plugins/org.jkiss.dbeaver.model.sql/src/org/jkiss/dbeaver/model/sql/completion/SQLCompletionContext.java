@@ -45,8 +45,6 @@ public interface SQLCompletionContext {
     SQLSyntaxManager getSyntaxManager();
 
     SQLRuleManager getRuleManager();
-    
-//    SQLDocumentSyntaxContext getSyntaxContext();
 
     boolean isUseFQNames();
 

@@ -87,7 +87,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     }
     
     @Override
-    protected void propagateContextImpl(SQLQueryDataContext context, SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.name.isNotClassified()) {
             this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
         }

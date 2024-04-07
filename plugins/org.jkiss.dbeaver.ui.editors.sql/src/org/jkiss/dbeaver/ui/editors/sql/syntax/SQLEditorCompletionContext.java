@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLDocumentSyntaxContext;
 
 import java.util.Map;
 
@@ -67,11 +66,6 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
     public SQLRuleManager getRuleManager() {
         return editor.getRuleManager();
     }
-
-//    @Override
-//    public SQLDocumentSyntaxContext getSyntaxContext() {
-//        return editor.getSyntaxContext();
-//    }
 
     @Override
     public boolean isUseFQNames() {

@@ -41,9 +41,8 @@ public class SQLQueryValueConstantExpression extends SQLQueryValueExpression {
     }
     
     @Override
-    protected void propagateContextImpl(SQLQueryDataContext context, SQLQueryRecognitionContext statistics) {
-        // TODO Auto-generated method stub
-        
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        // do nothing
     }
     
     @Override
