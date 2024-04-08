@@ -258,9 +258,9 @@ public class EditConnectionWizard extends ConnectionWizard {
         DBPDataSourceRegistry registry = originalDataSource.getRegistry();
         DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
         DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
-        
         try {
             saveSettings(dsChanged);
+
             if (dsCopy.equalSettings(dsChanged)) {
                 // No changes
                 return true;

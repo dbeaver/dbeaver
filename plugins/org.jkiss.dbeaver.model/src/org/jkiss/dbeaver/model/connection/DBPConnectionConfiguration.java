@@ -228,7 +228,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         if (userName == null) {
             return;
         }
-        this.userName = GeneralUtils.removeInValidUnicodeSymbol(userName.trim());
+        this.userName = userName.trim();
     }
 
     public String getUserPassword() {
@@ -239,7 +239,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         if (userPassword == null) {
             return;
         }
-        this.userPassword = GeneralUtils.removeInValidUnicodeSymbol(userPassword.trim());
+        this.userPassword = userPassword.trim();
     }
 
     ////////////////////////////////////////////////////

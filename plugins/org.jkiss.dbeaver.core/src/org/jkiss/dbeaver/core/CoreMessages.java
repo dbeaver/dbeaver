@@ -570,7 +570,6 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_edit_wizard_bad_pwd_msg;
     public static String dialog_connection_edit_wizard_error_md5_title;
     public static String dialog_connection_edit_wizard_error_md5_msg;
-
     //Connection edit
 
     // Driver edit

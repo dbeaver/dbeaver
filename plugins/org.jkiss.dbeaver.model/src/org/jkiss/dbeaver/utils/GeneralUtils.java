@@ -166,46 +166,6 @@ public class GeneralUtils {
         return bytes;
     }
 
-    /**
-     * The function check warning Unicode value in string
-     *
-     */
-    public static boolean containsInValidUnicodeSymbol(@Nullable String strValue) {
-        if (strValue == null || strValue.isEmpty()) {
-            return false;
-        }
-        for (int i = 0; i < strValue.length(); i++) {
-            int code = strValue.codePointAt(i);
-            for (int j = 0; j < INVALID_STRING_CODE.length; j++) {
-                if (code == INVALID_STRING_CODE[j]) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * The function remove warning Unicode value from input
-     *
-     */
-    public static String removeInValidUnicodeSymbol(@Nullable String inputStr) {
-        if (inputStr == null || inputStr.isEmpty()) {
-            return inputStr;
-        }
-        String outputStr = inputStr.trim();
-        for (int i = 0; i < inputStr.length(); i++) {
-            int code = inputStr.codePointAt(i);
-            for (int j = 0; j < INVALID_STRING_CODE.length; j++) {
-                if (code == INVALID_STRING_CODE[j]) {
-                    char charAt = inputStr.charAt(i);
-                    outputStr = outputStr.replace(String.valueOf(charAt), "");
-                }
-            }
-        }
-        return outputStr;
-    }
-
     public static Object makeDisplayString(Object object) {
         if (object == null) {
             return ""; //$NON-NLS-1$
