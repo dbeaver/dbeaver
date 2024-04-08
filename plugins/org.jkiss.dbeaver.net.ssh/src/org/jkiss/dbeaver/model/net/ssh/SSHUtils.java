@@ -280,11 +280,19 @@ public class SSHUtils {
                     }
                     yield new SSHAuthConfiguration.KeyData(CommonUtils.notEmpty(privKeyValue), password, savePassword);
                 } else {
-                    final Path file = Path.of(path);
-                    if (validate && Files.notExists(file)) {
-                        throw new DBException("Private key file '" + path + "' does not exist");
+                    if (validate) {
+                        final Path file;
+                        try {
+                            file = Path.of(path);
+                        } catch (InvalidPathException e) {
+                            // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/1394
+                            throw new DBException("Invalid private key path: %s".formatted(path));
+                        }
+                        if (Files.notExists(file)) {
+                            throw new DBException("Private key file does not exist: " + path);
+                        }
                     }
-                    yield new SSHAuthConfiguration.KeyFile(file, password, savePassword);
+                    yield new SSHAuthConfiguration.KeyFile(path, password, savePassword);
                 }
             }
             case PASSWORD -> new SSHAuthConfiguration.Password(password, savePassword);
@@ -338,7 +346,7 @@ public class SSHUtils {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PASSWORD.name());
         } else if (host.auth() instanceof SSHAuthConfiguration.KeyFile auth) {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY.name());
-            configuration.setProperty(prefix + SSHConstants.PROP_KEY_PATH, auth.path().toAbsolutePath().toString());
+            configuration.setProperty(prefix + SSHConstants.PROP_KEY_PATH, auth.path());
         } else if (host.auth() instanceof SSHAuthConfiguration.KeyData auth) {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY.name());
             configuration.setSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE, auth.data());
