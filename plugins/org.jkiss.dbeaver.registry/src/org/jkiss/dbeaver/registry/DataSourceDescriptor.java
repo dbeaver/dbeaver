@@ -64,8 +64,6 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
@@ -148,7 +146,9 @@ public class DataSourceDescriptor
     @NotNull
     private final DataSourcePreferenceStore preferenceStore;
     @NotNull
-    private final Map<String, String> properties;
+    private final Map<String, String> tags;
+    @NotNull
+    private final Map<String, String> extensions;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -222,7 +222,8 @@ public class DataSourceDescriptor
         this.originalDriver = originalDriver;
         this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
-        this.properties = new LinkedHashMap<>();
+        this.tags = new LinkedHashMap<>();
+        this.extensions = new LinkedHashMap<>();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
@@ -273,7 +274,8 @@ public class DataSourceDescriptor
             this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
         }
 
-        this.properties = new LinkedHashMap<>(source.properties);
+        this.tags = new LinkedHashMap<>(source.tags);
+        this.extensions = new LinkedHashMap<>(source.extensions);
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
@@ -1211,16 +1213,12 @@ public class DataSourceDescriptor
                     tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                     try {
                         if (!tunnelConfiguration.isSavePassword()) {
-                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, null);
+                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                             if (rc != DBWTunnel.AuthCredentials.NONE) {
                                 if (!askForPassword(this, tunnelConfiguration, rc)) {
                                     tunnelHandler = null;
                                     return false;
                                 }
-                            }
-                            if (!askForSSHJumpServerPassword(tunnelConfiguration)) {
-                                tunnelHandler = null;
-                                return false;
                             }
                         }
                         // We need to resolve jump server differently due to it being a part of ssh configuration
@@ -1342,46 +1340,6 @@ public class DataSourceDescriptor
         if (selectedSharedCredentials != null) {
             selectedSharedCredentials.setValue(saveToSecret());
         }
-    }
-
-
-    private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
-        String jumpServerSettingsPrefix = DataSourceUtils.getJumpServerSettingsPrefix(0);
-        if (tunnelConfiguration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED)) {
-            DBPConnectionConfiguration actualConfig = getActualConnectionConfiguration();
-            DBPConnectionConfiguration connConfig = getConnectionConfiguration();
-            String prompt = NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, "SSH jump server");
-            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, jumpServerSettingsPrefix);
-            if (rc != DBWTunnel.AuthCredentials.NONE) {
-                DBPAuthInfo dbpAuthInfo = askCredentials(this, rc, prompt,
-                    tunnelConfiguration.getStringProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME),
-                    //$NON-NLS-1$
-                    tunnelConfiguration.getSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD),
-                    //$NON-NLS-1$
-                    false
-                );
-                if (dbpAuthInfo != null) {
-                    if (rc.equals(DBWTunnel.AuthCredentials.CREDENTIALS)) {
-                        tunnelConfiguration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_NAME, //$NON-NLS-1$
-                            dbpAuthInfo.getUserName()
-                        );
-                    }
-                    tunnelConfiguration.setSecureProperty(jumpServerSettingsPrefix + DBConstants.PROP_FEATURE_PASSWORD, //$NON
-                        // -NLS-1$
-                        dbpAuthInfo.getUserPassword()
-                    );
-                    actualConfig.updateHandler(tunnelConfiguration);
-
-                    if (tunnelConfiguration.isSavePassword() && connConfig != actualConfig) {
-                        // Save changes in real connection info
-                        connConfig.updateHandler(tunnelConfiguration);
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
@@ -1686,24 +1644,49 @@ public class DataSourceDescriptor
         registry.notifyDataSourceListeners(event);
     }
 
-    @Nullable
     @Override
-    public String getProperty(@NotNull String name) {
-        return properties.get(name);
+    public Map<String, String> getTags() {
+        return new LinkedHashMap<>(tags);
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags.clear();
+        this.tags.putAll(tags);
     }
 
     @Override
-    public void setProperty(@NotNull String name, @Nullable String value) {
+    public String getTagValue(String tagName) {
+        return tags.get(tagName);
+    }
+
+    @Override
+    public void setTagValue(String tagName, String tagValue) {
+        tags.put(tagName, tagValue);
+    }
+
+    @Nullable
+    @Override
+    public String getExtension(@NotNull String name) {
+        return extensions.get(name);
+    }
+
+    @Override
+    public void setExtension(@NotNull String name, @Nullable String value) {
         if (value == null) {
-            this.properties.remove(name);
+            this.extensions.remove(name);
         } else {
-            this.properties.put(name, value);
+            this.extensions.put(name, value);
         }
     }
 
     @NotNull
-    public Map<String, String> getProperties() {
-        return properties;
+    public Map<String, String> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<String, String> extensions) {
+        this.extensions.clear();
+        this.extensions.putAll(extensions);
     }
 
     @Override
@@ -1910,7 +1893,8 @@ public class DataSourceDescriptor
         this.virtualModel.copyFrom(descriptor.getVirtualModel());
 
         this.description = descriptor.description;
-        this.properties.putAll(descriptor.properties);
+        this.tags.putAll(descriptor.tags);
+        this.extensions.putAll(descriptor.extensions);
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
@@ -1952,7 +1936,7 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
-                CommonUtils.equalObjects(this.properties, source.properties) &&
+                CommonUtils.equalObjects(this.extensions, source.extensions) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
@@ -2000,27 +1984,8 @@ public class DataSourceDescriptor
 
     @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
-        return name -> {
-            DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
-            String propValue = configuration.getProperties().get(name);
-            if (propValue != null) {
-                return propValue;
-            }
-
-            name = name.toLowerCase(Locale.ENGLISH);
-            return switch (name) {
-                case DBPConnectionConfiguration.VARIABLE_HOST -> configuration.getHostName();
-                case DBPConnectionConfiguration.VARIABLE_PORT -> configuration.getHostPort();
-                case DBPConnectionConfiguration.VARIABLE_SERVER -> configuration.getServerName();
-                case DBPConnectionConfiguration.VARIABLE_DATABASE -> configuration.getDatabaseName();
-                case DBPConnectionConfiguration.VARIABLE_USER -> configuration.getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD -> configuration.getUserPassword();
-                case DBPConnectionConfiguration.VARIABLE_URL -> configuration.getUrl();
-                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE -> configuration.getConnectionType().getId();
-                case DBPConnectionConfiguration.VARIABLE_DATE -> RuntimeUtils.getCurrentDate();
-                default -> SystemVariablesResolver.INSTANCE.get(name);
-            };
-        };
+        DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
+        return new DataSourceVariableResolver(this, configuration);
     }
 
     @Override

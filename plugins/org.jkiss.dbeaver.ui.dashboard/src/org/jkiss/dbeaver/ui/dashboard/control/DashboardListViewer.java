@@ -18,11 +18,14 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
@@ -33,26 +36,30 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DBDashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardViewContainer {
+public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardContainer {
 
+    @NotNull
     private final IWorkbenchSite site;
-    private final DBPDataSourceContainer dataSourceContainer;
-    private final DashboardViewConfiguration viewConfiguration;
+    @Nullable
+    private final IWorkbenchPart part;
+    @NotNull
+    private final DashboardConfigurationList configuration;
+    @NotNull
+    private final DashboardConfiguration viewConfiguration;
 
     private volatile boolean useSeparateConnection;
+    @Nullable
     private volatile DBCExecutionContext isolatedContext;
 
-    private DashboardList dashContainer;
+    private DashboardListControl dashContainer;
     private boolean singleChartMode;
     //private CLabel statusLabel;
 
@@ -66,14 +73,15 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         dashContainer.setRedraw(true);
     });
 
-    public DashboardListViewer(IWorkbenchSite site, DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
+    public DashboardListViewer(
+        @NotNull IWorkbenchSite site,
+        @Nullable IWorkbenchPart part,
+        @NotNull DashboardConfigurationList configuration,
+        @NotNull DashboardConfiguration viewConfiguration
+    ) {
         this.site = site;
-        this.dataSourceContainer = dataSourceContainer;
-
-        if (!this.dataSourceContainer.isConnected()) {
-            //DataSourceConnectHandler
-        }
-
+        this.part = part;
+        this.configuration = configuration;
         this.viewConfiguration = viewConfiguration;
 
         initConnection();
@@ -81,13 +89,20 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     public void dispose() {
         WorkspaceConfigEventManager.removeConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
-        
-        if (isolatedContext != null) {
-            if (isolatedContext.isConnected()) {
-                isolatedContext.close();
+
+        DBCExecutionContext context = isolatedContext;
+        if (context != null) {
+            if (context.isConnected()) {
+                context.close();
             }
             isolatedContext = null;
         }
+    }
+
+    @Override
+    @NotNull
+    public DashboardConfigurationList getConfiguration() {
+        return configuration;
     }
 
     @Override
@@ -100,7 +115,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     public void createControl(Composite parent) {
-        dashContainer = new DashboardList(site, parent, this);
+        dashContainer = new DashboardListControl(site, parent, this);
 
         //dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -109,6 +124,17 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
         updateStatus();
 
+    }
+
+    @Override
+    public ISelection getSelection() {
+        return getStructuredSelection();
+    }
+
+    @Override
+    public IStructuredSelection getStructuredSelection() {
+        DashboardViewItem selectedItem = dashContainer.getSelectedItem();
+        return selectedItem == null ? new StructuredSelection() : new StructuredSelection(selectedItem);
     }
 
     public void createDashboardsFromConfiguration() {
@@ -126,9 +152,10 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 //        statusLabel.setText(this.dataSourceContainer.getName() + ": " + status);
     }
 
+    @Nullable
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        return dataSourceContainer;
+        return configuration.getDataSourceContainer();
     }
 
     @Override
@@ -141,26 +168,52 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         if (useSeparateConnection && isolatedContext != null) {
             return isolatedContext;
         }
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer == null) {
+            return null;
+        }
         return DBUtils.getDefaultContext(dataSourceContainer.getDataSource().getDefaultInstance(), true);
     }
 
+    @NotNull
     @Override
-    public DashboardViewConfiguration getViewConfiguration() {
+    public DashboardConfiguration getViewConfiguration() {
         return viewConfiguration;
     }
 
+    @NotNull
     @Override
     public IWorkbenchSite getWorkbenchSite() {
         return site;
     }
 
+    @Nullable
     @Override
-    protected DBDashboardItem doFindInputItem(Object element) {
+    public IWorkbenchPart getWorkbenchPart() {
+        return part;
+    }
+
+    @Override
+    public void updateSelection() {
+        fireSelectionChanged(new SelectionChangedEvent(this, getSelection()));
+    }
+
+    @Override
+    public void saveChanges() {
+        try {
+            configuration.saveConfiguration();
+        } catch (IOException e) {
+            DBWorkbench.getPlatformUI().showError("Save error", null, e);
+        }
+    }
+
+    @Override
+    protected DashboardViewItem doFindInputItem(Object element) {
         return null;
     }
 
     @Override
-    protected DBDashboardItem doFindItem(Object element) {
+    protected DashboardViewItem doFindItem(Object element) {
         return null;
     }
 
@@ -170,8 +223,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     @Override
-    protected List getSelectionFromWidget() {
-        DBDashboardContainer selectedItem = dashContainer.getSelectedItem();
+    protected List<?> getSelectionFromWidget() {
+        DashboardItemContainer selectedItem = dashContainer.getSelectedItem();
         return selectedItem == null ? Collections.emptyList() : Collections.singletonList(selectedItem);
     }
 
@@ -182,7 +235,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     @Override
     public void reveal(Object element) {
-        DBDashboardContainer item = doFindItem(element);
+        DashboardItemContainer item = doFindItem(element);
         if (item != null) {
             dashContainer.showItem(item);
         }
@@ -193,7 +246,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         if (l.isEmpty()) {
             dashContainer.setSelection(null);
         } else {
-            DBDashboardItem item = doFindItem(l.get(0));
+            DashboardViewItem item = doFindItem(l.get(0));
             if (item != null) {
                 dashContainer.setSelection(item);
             }
@@ -212,7 +265,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     private void initConnection() {
         useSeparateConnection = viewConfiguration.isUseSeparateConnection();
         if (viewConfiguration.isOpenConnectionOnActivate()) {
-            if (!dataSourceContainer.isConnected()) {
+            DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+            if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
                     serviceConnections.connectDataSource(dataSourceContainer, status -> {
@@ -230,6 +284,10 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     private void openSeparateContext() {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer == null) {
+            return;
+        }
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (dataSource == null) {
             return;
