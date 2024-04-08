@@ -29,18 +29,30 @@ public class GeneralUtilsTest {
 
     @Test
     public void removeInvalidUnicodeSymbolFromStringPositiveTest() {
-        String processedStr = GeneralUtils.removeInValidUnicodeSymbol(NON_VALID_INPUT_STRING_SPACE_BEGINAFTER);
-        Assert.assertEquals(VALID_INPUT_STRING, processedStr);
+        String result = GeneralUtils.removeInValidUnicodeSymbol(NON_VALID_INPUT_STRING_SPACE_BEGINAFTER);
+        Assert.assertEquals(VALID_INPUT_STRING, result);
     }
 
     @Test
     public void removeInvalidUnicodeSymbolFromCodeArrayPositiveTest() {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < NON_VALID_STRING_ARRAY.length; i++) {
-            builder.append(Character.toString(NON_VALID_STRING_ARRAY[i]));
-        }
-        String str = GeneralUtils.removeInValidUnicodeSymbol(builder.toString());
-        Assert.assertEquals(VALID_INPUT_STRING, str);
+        String result = GeneralUtils.removeInValidUnicodeSymbol(codeToString(NON_VALID_STRING_ARRAY));
+        Assert.assertEquals(VALID_INPUT_STRING, result);
+        Assert.assertArrayEquals(VALID_STRING_ARRAY, convertStringToCode(result));
     }
 
+    private String codeToString(int[] codes) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < codes.length; i++) {
+            builder.append(Character.toString(codes[i]));
+        }
+        return builder.toString();
+    }
+
+    private int[] convertStringToCode(String input) {
+        int[] codes = new int[input.length()];
+        for (int i = 0; i < input.length(); i++) {
+            codes[i] = input.codePointAt(i);
+        }
+        return codes;
+    }
 }
