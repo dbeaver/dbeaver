@@ -16,11 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.backup;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
+public class BackupConstant {
+    public static final String BACKUP_FOLDER = "backup";
+    public static final String BACKUP_FILE_TYPE = ".zip";
 
-import java.sql.Connection;
-
-public interface BackupDatabase {
-    void doBackup(Connection connection, int currentSchemaVersion, InternalDatabaseConfig databaseConfig) throws DBException;
+    public static final String BACKUP_FILE_NAME = "backupVersion";
 }

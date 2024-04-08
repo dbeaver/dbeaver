@@ -16,32 +16,49 @@
  */
 package org.jkiss.dbeaver.ext.h2.backup;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
+import org.jkiss.dbeaver.model.sql.backup.BackupConstant;
 import org.jkiss.dbeaver.model.sql.backup.BackupDatabase;
-import org.jkiss.dbeaver.model.sql.backup.BackupRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class H2DatabaseBackup implements BackupDatabase {
     private static final Log log = Log.getLog(H2DatabaseBackup.class);
 
-    public void doBackup(Connection connection, int currentSchemaVersion) {
-        BackupRegistry.getInstance().getSettings();
+    @Override
+    public void doBackup(Connection connection, int currentSchemaVersion, InternalDatabaseConfig databaseConfig) throws DBException {
+        Statement statement = null;
         try {
-            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve("backup");
-            Path backupFile = workspace.resolve("backupVersion" + currentSchemaVersion + ".zip");
+            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(BackupConstant.BACKUP_FOLDER);
+            Path backupFile = workspace.resolve(BackupConstant.BACKUP_FILE_NAME + currentSchemaVersion
+                    + BackupConstant.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
-                String backupCommand = "BACKUP TO '" + backupFile + "'";
-                connection.createStatement().execute(backupCommand);
 
-                log.info("Reserve backup created to path: " + "backup");
+                statement = connection.createStatement();
+                String backupCommand = "BACKUP TO '" + backupFile + "'";
+                statement.execute(backupCommand);
+
+                log.info("Reserve backup created to path: " + workspace + "backup");
             }
         } catch (Exception e) {
             log.error("Create backup is failed: " + e.getMessage());
+            throw new DBException("Backup is failed: " + e.getMessage());
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                log.error("Failed to close statement: " + e.getMessage());
+            }
         }
     }
 }

@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.sql.backup;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ public class BackupRegistry {
     public static final String SQL_BACKUP_EXTENSION_ID = "org.jkiss.dbeaver.sqlBackup";
     private static BackupRegistry instance = null;
 
-    private final List<BackupSettingDescriptor> settings = new ArrayList<>();
+    private final List<BackupSettingDescriptor> descriptors = new ArrayList<>();
 
     public synchronized static BackupRegistry getInstance() {
         if (instance == null) {
@@ -52,10 +54,20 @@ public class BackupRegistry {
 
     private void parseAttribute(IConfigurationElement ext) {
         BackupSettingDescriptor providerDescriptor = new BackupSettingDescriptor(ext);
-        this.settings.add(providerDescriptor);
+        this.descriptors.add(providerDescriptor);
     }
 
-    public List<BackupSettingDescriptor> getSettings() {
-        return new ArrayList<>(settings);
+    public List<BackupSettingDescriptor> getDescriptors() {
+        return new ArrayList<>(descriptors);
     }
+
+    public BackupSettingDescriptor getCurrentDescriptor(@NotNull SQLDialect sqlDialect) {
+        for (BackupSettingDescriptor setting : getDescriptors()) {
+            if (setting.getDialect().getObjectClass().isInstance(sqlDialect)) {
+                return setting;
+            }
+        }
+        return null;
+    }
+
 }
