@@ -696,12 +696,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public boolean isLoaded() {
         return isLoaded;
     }
-    
- 
+
     public void refreshDiagram(boolean force, boolean refreshMetadata) {
         DiagramPart diagramPart = getDiagramPart();
-        if(diagramPart!=null) {
-            if(force) {
+        if (diagramPart != null) {
+            if (force) {
                 loadDiagram(refreshMetadata);
             }
             diagramPart.resetArrangement();
@@ -1365,7 +1364,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
     }
-    
+
+    /**
+     * The method process entity relation diagram for element visualization
+     * 
+     * @param monitor - DBRProgressMonitor
+     * @param entityDiagram - EntityDiagram
+     * @return - EntityDiagram
+     */
     public EntityDiagram visuallize(DBRProgressMonitor monitor, EntityDiagram entityDiagram) {
         if (monitor.isCanceled()) {
             return entityDiagram;

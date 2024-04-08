@@ -46,7 +46,7 @@ public class GraphLayoutAuto extends AbstractLayout {
     }
 
     @Override
-    protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint) {
+    protected Dimension calculatePreferredSize(IFigure container, int widthHint, int heightHint) {
         container.validate();
         List<? extends IFigure> children = container.getChildren();
         Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
