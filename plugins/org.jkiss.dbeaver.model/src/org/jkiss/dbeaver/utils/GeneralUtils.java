@@ -86,10 +86,6 @@ public class GeneralUtils {
     public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
     public static final String EMPTY_ENV_VARIABLE_VALUE = "''";
 
-    private static final int[] INVALID_STRING_CODE = {
-        160 // non-breaking space
-    };
-
     static {
         // Compose byte to hex map
         for (int i = 0; i < 256; ++i) {
