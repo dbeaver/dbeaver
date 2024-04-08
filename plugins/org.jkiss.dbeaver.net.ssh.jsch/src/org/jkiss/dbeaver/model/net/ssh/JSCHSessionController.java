@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,6 +41,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class JSCHSessionController extends AbstractSessionController<JSCHSession> {
@@ -294,6 +296,13 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
     }
 
     private static class JschLogger implements Logger {
+        private static final Pattern[] SENSITIVE_DATA_PATTERNS = {
+            Pattern.compile("^Connecting to (.*?) port"),
+            Pattern.compile("^Disconnecting from (.*?) port"),
+            Pattern.compile("^Host '(.*?)'"),
+            Pattern.compile("^Permanently added '(.*?)'")
+        };
+
         @Override
         public boolean isEnabled(int level) {
             return true;
@@ -308,6 +317,10 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
                 case FATAL -> "FATAL";
                 default -> "DEBUG";
             };
+
+            for (Pattern pattern : SENSITIVE_DATA_PATTERNS) {
+                message = CommonUtils.replaceFirstGroup(message, pattern, 1, SecurityUtils::mask);
+            }
 
             log.debug("SSH: " + levelStr + ": " + message);
         }
