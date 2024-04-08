@@ -63,12 +63,11 @@ import java.util.*;
 /**
  * Action utils
  */
-public class ActionUtils
-{
+public class ActionUtils {
     private static final Log log = Log.getLog(ActionUtils.class);
-    
+
     private static final Set<IPropertyChangeListener> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
-    
+
     public static void addPropertyEvaluationRequestListener(@NotNull IPropertyChangeListener listener) {
         propertyEvaluationRequestListeners.add(listener);
     }
@@ -77,13 +76,11 @@ public class ActionUtils
         propertyEvaluationRequestListeners.remove(listener);
     }
 
-    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId)
-    {
+    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId) {
         return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH);
     }
 
-    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId, int style)
-    {
+    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId, int style) {
         return new CommandContributionItem(new CommandContributionItemParameter(
             serviceLocator,
             null,
@@ -91,8 +88,24 @@ public class ActionUtils
             style));
     }
 
-    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId, int style, @Nullable  DBPImage icon)
-    {
+    public static CommandContributionItem makeCommandContribution(
+        @NotNull IServiceLocator serviceLocator,
+        @NotNull String commandId,
+        @Nullable Map<String, Object> parameters) {
+        CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
+            serviceLocator,
+            null,
+            commandId,
+            CommandContributionItem.STYLE_PUSH);
+        contributionParameters.parameters = parameters;
+        return new CommandContributionItem(contributionParameters);
+    }
+
+    public static CommandContributionItem makeCommandContribution(
+        @NotNull IServiceLocator serviceLocator,
+        @NotNull String commandId,
+        int style,
+        @Nullable DBPImage icon) {
         CommandContributionItemParameter parameters = new CommandContributionItemParameter(
             serviceLocator,
             null,
@@ -102,15 +115,13 @@ public class ActionUtils
         return new CommandContributionItem(parameters);
     }
 
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, DBPImage image)
-    {
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, DBPImage image) {
         return makeCommandContribution(serviceLocator, commandId, name, image, null, false);
     }
 
     public static ContributionItem makeActionContribution(
         @NotNull IAction action,
-        boolean showText)
-    {
+        boolean showText) {
         ActionContributionItem item = new ActionContributionItem(action);
         if (showText) {
             item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
@@ -120,8 +131,7 @@ public class ActionUtils
 
     public static ContributionItem makeActionContribution(
         @NotNull IAction action,
-        DBPImage image)
-    {
+        DBPImage image) {
         ActionContributionItem item = new ActionContributionItem(action);
         if (image != null) {
             action.setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
@@ -147,8 +157,7 @@ public class ActionUtils
         @Nullable DBPImage image,
         @Nullable String toolTip,
         boolean showText,
-        @Nullable Map<String, Object> parameters)
-    {
+        @Nullable Map<String, Object> parameters) {
         final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
             serviceLocator,
             null,
@@ -170,8 +179,7 @@ public class ActionUtils
         return new CommandContributionItem(contributionParameters);
     }
 
-    public static boolean isCommandEnabled(String commandId, IServiceLocator site)
-    {
+    public static boolean isCommandEnabled(String commandId, IServiceLocator site) {
         if (commandId != null && site != null) {
             try {
                 //Command cmd = new Command();
@@ -187,8 +195,7 @@ public class ActionUtils
         return false;
     }
 
-    public static boolean isCommandChecked(String commandId, IWorkbenchPartSite site)
-    {
+    public static boolean isCommandChecked(String commandId, IWorkbenchPartSite site) {
         if (commandId != null && site != null) {
             try {
                 //Command cmd = new Command();
@@ -205,8 +212,7 @@ public class ActionUtils
     }
 
     @Nullable
-    public static String findCommandName(String commandId)
-    {
+    public static String findCommandName(String commandId) {
         ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
         if (commandService != null) {
             Command command = commandService.getCommand(commandId);
@@ -222,8 +228,7 @@ public class ActionUtils
     }
 
     @Nullable
-    public static ImageDescriptor findCommandImage(String commandId)
-    {
+    public static ImageDescriptor findCommandImage(String commandId) {
         ICommandImageService commandService = PlatformUI.getWorkbench().getService(ICommandImageService.class);
         if (commandService != null) {
             return commandService.getImageDescriptor(commandId);
@@ -232,14 +237,12 @@ public class ActionUtils
     }
 
     @Nullable
-    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly)
-    {
+    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly) {
         return findCommandDescription(commandId, serviceLocator, shortcutOnly, null, null);
     }
 
     @Nullable
-    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly, String paramName, String paramValue)
-    {
+    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly, String paramName, String paramValue) {
         String commandName = null;
         String shortcut = null;
         ICommandService commandService = serviceLocator.getService(ICommandService.class);
@@ -306,18 +309,15 @@ public class ActionUtils
         return null;
     }
 
-    public static void runCommand(String commandId, IServiceLocator serviceLocator)
-    {
+    public static void runCommand(String commandId, IServiceLocator serviceLocator) {
         runCommand(commandId, null, serviceLocator);
     }
 
-    public static void runCommand(String commandId, ISelection selection, IServiceLocator serviceLocator)
-    {
+    public static void runCommand(String commandId, ISelection selection, IServiceLocator serviceLocator) {
         runCommand(commandId, selection, null, serviceLocator);
     }
 
-    public static void runCommand(String commandId, ISelection selection, Map<String, Object> parameters, IServiceLocator serviceLocator)
-    {
+    public static void runCommand(String commandId, ISelection selection, Map<String, Object> parameters, IServiceLocator serviceLocator) {
         if (commandId != null) {
             try {
                 ICommandService commandService = serviceLocator.getService(ICommandService.class);
@@ -331,8 +331,7 @@ public class ActionUtils
                             final ISelection curSelection = ((IWorkbenchSite) serviceLocator).getSelectionProvider().getSelection();
                             if (curSelection instanceof IStructuredSelection && selection instanceof IStructuredSelection) {
                                 if (((IStructuredSelection) curSelection).size() == ((IStructuredSelection) selection).size() &&
-                                    ((IStructuredSelection) curSelection).getFirstElement() == ((IStructuredSelection) selection).getFirstElement())
-                                {
+                                    ((IStructuredSelection) curSelection).getFirstElement() == ((IStructuredSelection) selection).getFirstElement()) {
                                     // The same selection
                                     needContextPatch = false;
                                 }
@@ -392,8 +391,7 @@ public class ActionUtils
         @Nullable String id,
         @Nullable String text,
         @Nullable ImageDescriptor image,
-        @Nullable String toolTip)
-    {
+        @Nullable String toolTip) {
         Action actionImpl = new Action() {
             @Override
             public void run() {
@@ -417,17 +415,16 @@ public class ActionUtils
 
         if (site != null) {
             if (actionDelegate instanceof IObjectActionDelegate && site instanceof IWorkbenchPartSite) {
-                ((IObjectActionDelegate)actionDelegate).setActivePart(actionImpl, ((IWorkbenchPartSite) site).getPart());
+                ((IObjectActionDelegate) actionDelegate).setActivePart(actionImpl, ((IWorkbenchPartSite) site).getPart());
             } else if (actionDelegate instanceof IWorkbenchWindowActionDelegate) {
-                ((IWorkbenchWindowActionDelegate)actionDelegate).init(site.getWorkbenchWindow());
+                ((IWorkbenchWindowActionDelegate) actionDelegate).init(site.getWorkbenchWindow());
             }
         }
 
         return actionImpl;
     }
 
-    public static void evaluatePropertyState(String propertyName)
-    {
+    public static void evaluatePropertyState(String propertyName) {
         IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
         if (service != null) {
             try {
@@ -443,8 +440,7 @@ public class ActionUtils
         }
     }
 
-    public static void fireCommandRefresh(final String ... commandIDs)
-    {
+    public static void fireCommandRefresh(final String... commandIDs) {
         // Update commands
         final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
         if (commandService != null) {
@@ -457,7 +453,7 @@ public class ActionUtils
     }
 
     @Nullable
-    public static Point getLocationFromControl(@NotNull  Shell activeShell, @NotNull Control focusControl) {
+    public static Point getLocationFromControl(@NotNull Shell activeShell, @NotNull Control focusControl) {
         Point location = null;
         final Display display = activeShell.getDisplay();
         if (focusControl instanceof Table) {
