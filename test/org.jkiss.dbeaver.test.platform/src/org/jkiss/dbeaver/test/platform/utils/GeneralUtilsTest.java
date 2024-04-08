@@ -41,7 +41,6 @@ public class GeneralUtilsTest {
         }
         String str = GeneralUtils.removeInValidUnicodeSymbol(builder.toString());
         Assert.assertEquals(VALID_INPUT_STRING, str);
-        Assert.assertEquals(VALID_STRING_ARRAY, str.getBytes());
     }
 
 }
