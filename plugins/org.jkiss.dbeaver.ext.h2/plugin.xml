@@ -117,7 +117,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlBackup">
-        <backup id="backupH2" class="org.jkiss.dbeaver.ext.h2.backup.H2DatabaseBackup" label="backup" description="Backup database">
+        <backup id="backupH2" class="org.jkiss.dbeaver.ext.h2.backup.H2DatabaseBackup" dialectClass="org.jkiss.dbeaver.ext.h2.model.H2SQLDialect"
+                label="backup" description="Backup database">
         </backup>
     </extension>
 

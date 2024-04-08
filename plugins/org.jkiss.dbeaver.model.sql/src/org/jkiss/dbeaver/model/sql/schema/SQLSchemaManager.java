@@ -20,12 +20,14 @@ package org.jkiss.dbeaver.model.sql.schema;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.backup.BackupRegistry;
+import org.jkiss.dbeaver.model.sql.backup.BackupSettingDescriptor;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -57,6 +59,7 @@ public final class SQLSchemaManager {
 
     private final int schemaVersionActual;
     private final int schemaVersionObsolete;
+    private final InternalDatabaseConfig databaseConfig;
 
     public SQLSchemaManager(
         String schemaId,
@@ -67,7 +70,8 @@ public final class SQLSchemaManager {
         String targetDatabaseName,
         String targetSchemaName,
         int schemaVersionActual,
-        int schemaVersionObsolete
+        int schemaVersionObsolete,
+        InternalDatabaseConfig databaseConfig
     ) {
         this.schemaId = schemaId;
 
@@ -80,6 +84,7 @@ public final class SQLSchemaManager {
 
         this.schemaVersionActual = schemaVersionActual;
         this.schemaVersionObsolete = schemaVersionObsolete;
+        this.databaseConfig = databaseConfig;
     }
 
     public void updateSchema(DBRProgressMonitor monitor) throws DBException {
@@ -88,7 +93,6 @@ public final class SQLSchemaManager {
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 try {
                     int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetSchemaName);
-                    BackupRegistry.getInstance().getSettings().forEach(p -> p.getInstance().doBackup(dbCon, currentSchemaVersion));
                     // Do rollback in case some error happened during version check (makes sense for PG)
                     txn.rollback();
                     if (currentSchemaVersion < 0) {
@@ -113,6 +117,10 @@ public final class SQLSchemaManager {
                             versionManager.getLatestSchemaVersion()
                         );
                     } else if (schemaVersionActual > currentSchemaVersion) {
+                        BackupSettingDescriptor descriptor = BackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
+                        if (descriptor != null) {
+                            descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
+                        }
                         upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
                     }
 

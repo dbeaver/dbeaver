@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.h2.backup;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.sql.backup.BackupDatabase;
 import org.jkiss.dbeaver.model.sql.backup.BackupRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -28,7 +30,8 @@ import java.sql.Connection;
 public class H2DatabaseBackup implements BackupDatabase {
     private static final Log log = Log.getLog(H2DatabaseBackup.class);
 
-    public void doBackup(Connection connection, int currentSchemaVersion) {
+    @Override
+    public void doBackup(Connection connection, int currentSchemaVersion, InternalDatabaseConfig databaseConfig) throws DBException {
         BackupRegistry.getInstance().getSettings();
         try {
             Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve("backup");
@@ -38,10 +41,11 @@ public class H2DatabaseBackup implements BackupDatabase {
                 String backupCommand = "BACKUP TO '" + backupFile + "'";
                 connection.createStatement().execute(backupCommand);
 
-                log.info("Reserve backup created to path: " + "backup");
+                log.info("Reserve backup created to path: " + workspace + "backup");
             }
         } catch (Exception e) {
             log.error("Create backup is failed: " + e.getMessage());
+            throw new DBException("Backup is failed: " + e.getMessage());
         }
     }
 }

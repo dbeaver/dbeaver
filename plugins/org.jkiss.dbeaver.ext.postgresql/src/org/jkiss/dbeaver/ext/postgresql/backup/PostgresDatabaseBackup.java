@@ -16,44 +16,48 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.backup;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.sql.backup.BackupDatabase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.Statement;
 
 public class PostgresDatabaseBackup implements BackupDatabase {
 
     private static final Log log = Log.getLog(PostgresDatabaseBackup.class);
 
     @Override
-    public void doBackup(Connection connection, int currentSchemaVersion) {
+    public void doBackup(Connection connection, int currentSchemaVersion, InternalDatabaseConfig databaseConfig) throws DBException {
         try {
             Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve("backup");
-            Path backupFile = workspace.resolve("backupVersion" + currentSchemaVersion + ".zip");
-
+            Path backupFile = workspace.resolve("backupVersion" + databaseConfig.getSchema() + currentSchemaVersion + ".zip");
+            URI uri = new URI(databaseConfig.getUrl().replace("jdbc:", ""));
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
-                Statement statement = connection.createStatement();
-
-                String backupCommand = "pg_dump -h localhost -f " + backupFile + " postgres";
-                ProcessBuilder processBuilder = new ProcessBuilder(backupCommand.split(" "));
-                Process process = processBuilder.start();
+                String backupCommand = String.format("pg_dump -h %s -p %d -U %s -F c -b -v -f %s --schema=%s %s",
+                        uri.getHost(),
+                        uri.getPort(),
+                        databaseConfig.getUser(),
+                        backupFile.toAbsolutePath(),
+                        databaseConfig.getSchema(),
+                        uri.getPath().replace("/", ""));
+                Process process = Runtime.getRuntime().exec(backupCommand);
                 int exitCode = process.waitFor();
-
                 if (exitCode == 0) {
                     log.info("Postgres backup successful");
                 } else {
                     log.error("Postgres backup failed");
+                    throw new DBException("Postgres backup failed");
                 }
-
-                statement.close();
             }
         } catch (Exception e) {
             log.error("Create backup is failed: " + e.getMessage());
+            throw new DBException("Create backup is failed: " + e.getMessage());
         }
     }
 }

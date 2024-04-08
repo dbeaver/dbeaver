@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.model.sql.backup;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
+
 import java.sql.Connection;
 
 public interface BackupDatabase {
-    void doBackup(Connection connection, int currentSchemaVersion);
+    void doBackup(Connection connection, int currentSchemaVersion, InternalDatabaseConfig databaseConfig) throws DBException;
 }

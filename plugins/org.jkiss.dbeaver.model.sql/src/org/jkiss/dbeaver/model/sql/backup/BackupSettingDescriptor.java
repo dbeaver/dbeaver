@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -31,11 +32,14 @@ public class BackupSettingDescriptor extends AbstractDescriptor {
     private BackupDatabase instance;
     private final ObjectType implType;
 
+    private final ObjectType dialect;
+
     public static String TAG_BACKUP = "backup";
 
     public BackupSettingDescriptor(IConfigurationElement cfg) {
         super(cfg);
         this.implType = new ObjectType(cfg, "class");
+        this.dialect = new ObjectType(cfg, "dialectClass");
     }
 
     @NotNull
@@ -48,5 +52,9 @@ public class BackupSettingDescriptor extends AbstractDescriptor {
             }
         }
         return instance;
+    }
+
+    public ObjectType getDialect() {
+        return dialect;
     }
 }

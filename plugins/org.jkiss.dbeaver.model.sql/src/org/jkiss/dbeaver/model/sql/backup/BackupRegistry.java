@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.sql.backup;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,4 +60,14 @@ public class BackupRegistry {
     public List<BackupSettingDescriptor> getSettings() {
         return new ArrayList<>(settings);
     }
+
+    public BackupSettingDescriptor getCurrentDescriptor(@NotNull SQLDialect sqlDialect) {
+        for (BackupSettingDescriptor setting : getSettings()) {
+            if (setting.getDialect().getObjectClass().isInstance(sqlDialect)) {
+                return setting;
+            }
+        }
+        return null;
+    }
+
 }
