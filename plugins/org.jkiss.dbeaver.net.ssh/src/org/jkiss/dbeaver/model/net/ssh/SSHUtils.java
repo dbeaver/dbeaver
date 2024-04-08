@@ -275,13 +275,13 @@ public class SSHUtils {
                 final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
                 if (CommonUtils.isEmpty(path)) {
                     String privKeyValue = configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE);
-                    if (privKeyValue == null) {
+                    if (validate && privKeyValue == null) {
                         throw new DBException("Private key not specified");
                     }
-                    yield new SSHAuthConfiguration.KeyData(privKeyValue, password, savePassword);
+                    yield new SSHAuthConfiguration.KeyData(CommonUtils.notEmpty(privKeyValue), password, savePassword);
                 } else {
                     final Path file = Path.of(path);
-                    if (Files.notExists(file)) {
+                    if (validate && Files.notExists(file)) {
                         throw new DBException("Private key file '" + path + "' does not exist");
                     }
                     yield new SSHAuthConfiguration.KeyFile(file, password, savePassword);
