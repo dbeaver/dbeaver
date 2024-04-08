@@ -225,7 +225,10 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        if (userName == null) {
+            return;
+        }
+        this.userName = GeneralUtils.removeInValidUnicodeSymbol(userName.trim());
     }
 
     public String getUserPassword() {
@@ -233,7 +236,10 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void setUserPassword(@Nullable String userPassword) {
-        this.userPassword = userPassword;
+        if (userPassword == null) {
+            return;
+        }
+        this.userPassword = GeneralUtils.removeInValidUnicodeSymbol(userPassword.trim());
     }
 
     ////////////////////////////////////////////////////

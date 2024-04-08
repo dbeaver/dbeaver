@@ -86,8 +86,7 @@ public class GeneralUtils {
     public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
     public static final String EMPTY_ENV_VARIABLE_VALUE = "''";
 
-    private static final int[] NONVALID_UNICODE_SYMBOLS = {
-        32, // space
+    private static final int[] INVALID_STRING_CODE = {
         160 // non-breaking space
     };
 
@@ -171,19 +170,40 @@ public class GeneralUtils {
      * The function check warning Unicode value in string
      *
      */
-    public static boolean containsSpecificUnicodeSymbol(@Nullable String strValue) {
+    public static boolean containsInValidUnicodeSymbol(@Nullable String strValue) {
         if (strValue == null || strValue.isEmpty()) {
             return false;
         }
         for (int i = 0; i < strValue.length(); i++) {
             int code = strValue.codePointAt(i);
-            for (int j = 0; j < NONVALID_UNICODE_SYMBOLS.length; j++) {
-                if (code == NONVALID_UNICODE_SYMBOLS[j]) {
+            for (int j = 0; j < INVALID_STRING_CODE.length; j++) {
+                if (code == INVALID_STRING_CODE[j]) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * The function remove warning Unicode value from input
+     *
+     */
+    public static String removeInValidUnicodeSymbol(@Nullable String inputStr) {
+        if (inputStr == null || inputStr.isEmpty()) {
+            return inputStr;
+        }
+        String outputStr = inputStr.trim();
+        for (int i = 0; i < inputStr.length(); i++) {
+            int code = inputStr.codePointAt(i);
+            for (int j = 0; j < INVALID_STRING_CODE.length; j++) {
+                if (code == INVALID_STRING_CODE[j]) {
+                    char charAt = inputStr.charAt(i);
+                    outputStr = outputStr.replace(String.valueOf(charAt), "");
+                }
+            }
+        }
+        return outputStr;
     }
 
     public static Object makeDisplayString(Object object) {

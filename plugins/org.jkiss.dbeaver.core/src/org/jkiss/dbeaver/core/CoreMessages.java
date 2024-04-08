@@ -571,10 +571,6 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_edit_wizard_error_md5_title;
     public static String dialog_connection_edit_wizard_error_md5_msg;
 
-    public static String dialog_connection_edit_wizard_warning_credentials_nonvalid_title;
-    public static String dialog_connection_edit_wizard_warning_credentials_nonvalid_username_msg;
-    public static String dialog_connection_edit_wizard_warning_credentials_nonvalid_password_msg;
-    public static String dialog_connection_edit_wizard_warning_credentials_nonvalid_username_password_msg;
     //Connection edit
 
     // Driver edit
