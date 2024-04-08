@@ -50,6 +50,7 @@ public class PostgresDatabaseBackup implements BackupDatabase {
                         uri.getPath().replace("/", ""));
                 Process process = Runtime.getRuntime().exec(backupCommand);
                 int exitCode = process.waitFor();
+
                 if (exitCode == 0) {
                     log.info("Postgres backup successful");
                 } else {

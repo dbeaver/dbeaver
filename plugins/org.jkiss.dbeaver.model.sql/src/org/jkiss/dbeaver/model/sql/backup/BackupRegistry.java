@@ -62,12 +62,11 @@ public class BackupRegistry {
     }
 
     public BackupSettingDescriptor getCurrentDescriptor(@NotNull SQLDialect sqlDialect) {
-        for (BackupSettingDescriptor setting : getDescriptors()) {
-            if (setting.getDialect().getObjectClass().isInstance(sqlDialect)) {
-                return setting;
+        for (BackupSettingDescriptor descriptors : getDescriptors()) {
+            if (descriptors.getDialect().getObjectClass().isInstance(sqlDialect)) {
+                return descriptors;
             }
         }
         return null;
     }
-
 }
