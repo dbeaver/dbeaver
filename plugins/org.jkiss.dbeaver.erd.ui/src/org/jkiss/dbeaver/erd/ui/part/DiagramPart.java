@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -143,8 +144,7 @@ public class DiagramPart extends PropertyAwarePart {
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-        
-        ERDConnectionRouterDescriptor routerDescriptor = getEditor().getDiagramRouter(); 
+        ERDConnectionRouterDescriptor routerDescriptor = getEditor().getDiagramRouter();
         if (routerDescriptor == null) {
             routerDescriptor = ERDConnectionRouterRegistry.getInstance().getActiveDescriptor();
         }
@@ -194,20 +194,40 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     /**
-     * The method designed for re-arrangement of diagram, reset alignment elements
+     * The method designed for diagram re-arrangement, reset alignment elements
      * to original
      */
-    public void rearrangeDiagram(@NotNull DBRProgressMonitor monitor) {
+    public void resetArrangement() {
+        RearrangeDiagramService diagramService = new RearrangeDiagramService(this);
+        LoadingJob.createService(
+            diagramService,
+            getEditor()
+                .getProgressControl()
+                .createLoadVisualizer())
+            .schedule();
+    }
+
+    void rearrangeDiagram(@NotNull DBRProgressMonitor monitor) {
         if (monitor.isCanceled()) {
             return;
         }
+        monitor.beginTask(ERDUIMessages.erd_job_rearrange_diagram, getChildren().size() + 2);
         getChildren().forEach(c -> {
-            if (c instanceof NodePart np) {
-                resetConnectionConstraints(monitor, np.getSourceConnections());
+            if (c instanceof NodePart nodePart) {
+                resetConnectionConstraints(monitor, nodePart.getSourceConnections());
+                monitor.worked(1);
             }
         });
+        monitor.subTask(ERDUIMessages.erd_job_reset_element_position);
         delegatingLayoutManager.rearrange(monitor, getFigure());
-        getFigure().repaint();
+        if (monitor.isCanceled()) {
+            return;
+        } else {
+            monitor.worked(1);
+        }
+        monitor.subTask(ERDUIMessages.erd_job_repaint_diagram);
+        UIUtils.syncExec(() -> getFigure().repaint());
+        monitor.worked(1);
     }
 
     private void resetConnectionConstraints(DBRProgressMonitor monitor, List<?> sourceConnections) {

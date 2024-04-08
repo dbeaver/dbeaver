@@ -107,11 +107,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        DBRProgressMonitor monitor = getDiagramPart().getDiagram().getActiveMonitor();
+        DBRProgressMonitor monitor = getDiagramPart().getDiagram().getMonitor();
         PolylineConnection conn = createConnectionFigure(monitor);
+        UIUtils.syncExec(()->{
         setConnectionStyles(monitor, conn);
         setConnectionRouting(monitor, conn);
         setConnectionToolTip(monitor, conn);
+        });
         return conn;
     }
 

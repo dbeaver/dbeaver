@@ -57,7 +57,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
      *
      * @return - DBRProgressMonitor
      */
-    public DBRProgressMonitor getActiveMonitor() {
+    public DBRProgressMonitor getMonitor() {
         if (monitor != null && !monitor.isCanceled()) {
             return monitor;
         }
@@ -69,8 +69,17 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         };
     }
 
-    public void setMonitorForDiagram(DBRProgressMonitor monitor) {
+    /**
+     * The method allow to pass progress monitor for processing
+     *
+     * @param monitor - active progress monitor 
+     */
+    public void setDiagramMonitor(DBRProgressMonitor monitor) {
         this.monitor = monitor;
+    }
+
+    public void disableDiagramMonitor() {
+        this.monitor = null;
     }
 
     private static class DataSourceInfo {
