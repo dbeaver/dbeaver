@@ -43,6 +43,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.mockito.Mockito.doReturn;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -635,7 +637,7 @@ public class SQLScriptParserTest {
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, dataSourceContainer.getPreferenceStore());
-        Mockito.when(syntaxManager.getStatementDelimiterMode()).thenReturn(SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR);
+        doReturn(SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR).when(syntaxManager).getStatementDelimiterMode();
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
         Document document = new Document(query);
