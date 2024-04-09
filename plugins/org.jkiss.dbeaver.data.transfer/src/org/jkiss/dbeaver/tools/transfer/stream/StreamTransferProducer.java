@@ -179,8 +179,11 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public static class ObjectSerializer implements DTObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
-        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferProducer object, @NotNull Map<String, Object> state) {
+        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferProducer object, @NotNull Map<String, Object> state) throws DBException {
             final StreamEntityMapping mapping = object.getEntityMapping();
+            if (mapping == null) {
+                throw new DBException("Task configuration incomplete: source file not specified");
+            }
             state.put("file", DBFUtils.getUriFromPath(mapping.getInputFile()));
             state.put("name", mapping.getEntityName());
             state.put("child", mapping.isChild());
