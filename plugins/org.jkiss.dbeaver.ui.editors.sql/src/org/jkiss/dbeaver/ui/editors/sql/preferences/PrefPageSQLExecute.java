@@ -368,7 +368,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
-            store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK, SQLScriptStatementDelimiterMode.values()[blankLineDelimiterCombo.getSelectionIndex()].getName());
+            store.setValue(
+                ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK,
+                SQLScriptStatementDelimiterMode.values()[blankLineDelimiterCombo.getSelectionIndex()].getName()
+            );
             store.setValue(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER, removeTrailingDelimiter.getSelection());
 
             store.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());

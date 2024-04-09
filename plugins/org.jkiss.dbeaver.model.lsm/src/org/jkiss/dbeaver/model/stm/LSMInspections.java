@@ -129,7 +129,6 @@ public class LSMInspections {
 
     @Nullable
     private static STMTreeTermNode findLastTerm(@NotNull STMTreeNode root) {
-        System.out.println(root.getTextContent());
         ListNode<STMTreeNode> stack = ListNode.of(root);
         while (ListNode.hasAny(stack)) {
             STMTreeNode node = stack.data;
@@ -304,7 +303,8 @@ public class LSMInspections {
 
         /* TODO roll back through the prepending terms until only one forward branch available for a given sequence of terms
          * to cover situations when we have ambiguous terms like '(' and so all the possible terms are not visible
-         * from the given initial state, because there may be more valid states for an ambiguous term in the given context outside of the specific tree
+         * from the given initial state, because there may be more valid states for an ambiguous term
+         * in the given context outside of the specific tree
          */
 
         while (q.size() > 0) {

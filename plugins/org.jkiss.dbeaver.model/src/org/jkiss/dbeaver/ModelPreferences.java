@@ -97,15 +97,18 @@ public final class ModelPreferences
                 return SMART;
             }  else {
                 switch (name) {
-                case "true":
-                    return SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR;
-                case "false":
-                    return SQLScriptStatementDelimiterMode.ONLY_SEPARATOR;
-                default:
-                    try {
-                        return SQLScriptStatementDelimiterMode.valueOf(name);
-                    } catch (IllegalArgumentException e) {
-                        return SQLScriptStatementDelimiterMode.SMART;
+                    case "true" -> {
+                        return SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR;
+                    }
+                    case "false" -> {
+                        return SQLScriptStatementDelimiterMode.ONLY_SEPARATOR;
+                    }
+                    default -> {
+                        try {
+                            return SQLScriptStatementDelimiterMode.valueOf(name);
+                        } catch (IllegalArgumentException e) {
+                            return SQLScriptStatementDelimiterMode.SMART;
+                        }
                     }
                 }
             }

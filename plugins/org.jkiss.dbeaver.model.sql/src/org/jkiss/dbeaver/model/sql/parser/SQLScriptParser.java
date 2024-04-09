@@ -74,24 +74,24 @@ public class SQLScriptParser {
      * @return the sql script element
      */
     public static SQLScriptElement parseQuery(
-        final SQLParserContext context,
+        @NotNull final SQLParserContext context,
         final int startPos,
         final int endPos,
         final int currentPos,
         final boolean scriptMode,
-        final boolean keepDelimiters)
-    {
+        final boolean keepDelimiters
+    ) {
         return tryExpandElement(parseQueryImpl(context, startPos, endPos, currentPos, scriptMode, keepDelimiters), context);
     }
 
     private static SQLScriptElement parseQueryImpl(
-        final SQLParserContext context,
+        @NotNull final SQLParserContext context,
         final int startPos,
         final int endPos,
         final int currentPos,
         final boolean scriptMode,
-        final boolean keepDelimiters)
-    {
+        final boolean keepDelimiters
+    ) {
         int length = endPos - startPos;
         IDocument document = context.getDocument();
         if (length <= 0 || length > document.getLength()) {
