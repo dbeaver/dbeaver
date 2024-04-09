@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences.SQLScriptStatementDelimiterMode;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -634,6 +635,7 @@ public class SQLScriptParserTest {
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, dataSourceContainer.getPreferenceStore());
+        Mockito.when(syntaxManager.getStatementDelimiterMode()).thenReturn(SQLScriptStatementDelimiterMode.BLANK_LINE_AND_SEPARATOR);
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
         Document document = new Document(query);
