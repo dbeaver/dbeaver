@@ -139,7 +139,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
     public void refresh() {
         this.scriptNode.updateChildren();
-        this.refreshJob.schedule(false);
+        this.refreshJob.schedule(true);
     }
     
     @NotNull
@@ -407,17 +407,17 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     }
 
     private class OutlineScriptNode extends OutlineNode {
-        private final SQLDocumentSyntaxContext documentContext;
+        private SQLDocumentSyntaxContext documentContext;
         
         private Image editorImage = null;
         private Image outlineImage = null;
 
-        private OutlineNode noElementsNode = new OutlineInfoNode(
+        private final OutlineNode noElementsNode = new OutlineInfoNode(
             this,
             SQLEditorMessages.sql_editor_outline_no_elements_label,
             DBIcon.SMALL_INFO
         );
-        private OutlineNode analysisDisabledNode = new OutlineInfoNode(
+        private final OutlineNode analysisDisabledNode = new OutlineInfoNode(
             this,
             SQLEditorMessages.sql_editor_outline_query_analysis_disabled_label,
             DBIcon.SMALL_INFO
@@ -444,8 +444,10 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         public OutlineScriptNode() {
             super(null);
-            this.documentContext = editor.getSyntaxContext();
-            this.documentContext.addListener(syntaxContextListener);
+            if (editor.isAdvancedHighlightingEnabled() && SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput())) {
+                this.documentContext = editor.getSyntaxContext();
+                this.documentContext.addListener(syntaxContextListener);
+            }
         }
 
         @NotNull
@@ -455,16 +457,25 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
 
         private void updateElements() {
-            this.elements = documentContext.getScriptItems().stream()
-                .collect(Collectors.toMap(
-                    e -> e.item,
-                    e -> new OutlineScriptElementNode(this, e.offset, e.item),
-                    (a, b) -> a, LinkedHashMap::new)
-                );
+            if (documentContext != null) {
+                this.elements = documentContext.getScriptItems().stream()
+                    .collect(Collectors.toMap(
+                        e -> e.item,
+                        e -> new OutlineScriptElementNode(this, e.offset, e.item),
+                        (a, b) -> a, LinkedHashMap::new)
+                    );
+            }
         }
 
         private void updateChildren() {
-            if (editor.isAdvancedHighlightingEnabled()) {
+            if (editor.isAdvancedHighlightingEnabled() && SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput())) {
+                if (this.documentContext == null || editor.getSyntaxContext() != this.documentContext) {
+                    if (this.documentContext != null) {
+                        this.documentContext.removeListener(this.syntaxContextListener);
+                    }
+                    this.documentContext = editor.getSyntaxContext();
+                    this.documentContext.addListener(this.syntaxContextListener);
+                }
                 if (this.elements.isEmpty()) {
                     this.children = List.of(this.noElementsNode);
                 } else {
@@ -515,7 +526,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         }
 
         public void dispose() {
-            this.documentContext.removeListener(syntaxContextListener);
+            if (documentContext != null) {
+                this.documentContext.removeListener(syntaxContextListener);
+            }
             if (this.outlineImage != null && !this.outlineImage.isDisposed()) {
                 this.outlineImage.dispose();
             }
@@ -1209,13 +1222,13 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
     
     private class OutlineRefreshJob {
         
-        private AtomicBoolean updateElements = new AtomicBoolean(false);
+        private final AtomicBoolean updateElements = new AtomicBoolean(false);
         
         private final AbstractUIJob job = new AbstractUIJob("SQL editor outline refresh") {
             @Override
             protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
                 boolean doUpdateElements = updateElements.getAndSet(false);
-                if (!treeViewer.getTree().isDisposed()) {
+                if (treeViewer != null && !treeViewer.getTree().isDisposed()) {
                     if (doUpdateElements) {
                         scriptNode.updateElements();
                     }

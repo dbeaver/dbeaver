@@ -557,7 +557,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     protected SourceViewerDecorationSupport getSourceViewerDecorationSupport(ISourceViewer viewer) {
         if (fSourceViewerDecorationSupport == null) {
-            fSourceViewerDecorationSupport= new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
+            fSourceViewerDecorationSupport = new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
             configureSourceViewerDecorationSupport(fSourceViewerDecorationSupport);
         }
         return fSourceViewerDecorationSupport;
@@ -644,7 +644,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (this.getSyntaxContext() == null) {
             this.reloadSyntaxRules();
         }
-        if ((null == outlinePage || outlinePage.getControl().isDisposed()) && this.getSyntaxContext() != null) {
+        if ((outlinePage == null || outlinePage.getControl() == null || outlinePage.getControl().isDisposed())) {
             outlinePage = new SQLEditorOutlinePage(this);
         }
         return outlinePage;
