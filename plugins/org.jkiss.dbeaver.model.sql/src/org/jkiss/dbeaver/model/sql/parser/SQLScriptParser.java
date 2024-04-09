@@ -84,6 +84,17 @@ public class SQLScriptParser {
         final boolean scriptMode,
         final boolean keepDelimiters)
     {
+        return tryExpandElement(parseQueryImpl(context, startPos, endPos, currentPos, scriptMode, keepDelimiters), context);
+    }
+
+    private static SQLScriptElement parseQueryImpl(
+        final SQLParserContext context,
+        final int startPos,
+        final int endPos,
+        final int currentPos,
+        final boolean scriptMode,
+        final boolean keepDelimiters)
+    {
         int length = endPos - startPos;
         IDocument document = context.getDocument();
         if (length <= 0 || length > document.getLength()) {
@@ -199,8 +210,8 @@ public class SQLScriptParser {
                     // Delimiter in some brackets or inside block. Ignore it.
                     continue;
                 } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
-                	isDelimiter = true;
-                	isControl = true;
+                    isDelimiter = true;
+                    isControl = true;
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
@@ -428,6 +439,10 @@ public class SQLScriptParser {
     }
 
     public static SQLScriptElement extractQueryAtPos(SQLParserContext context, int currentPos) {
+        return tryExpandElement(extractQueryAtPosImpl(context, currentPos), context);
+    }
+    
+    private static SQLScriptElement extractQueryAtPosImpl(SQLParserContext context, int currentPos) {
         IDocument document = context.getDocument();
         if (document.getLength() == 0) {
             return null;
@@ -568,7 +583,7 @@ public class SQLScriptParser {
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(context, startPos, document.getLength(), currentPos, false, false);
+        return parseQueryImpl(context, startPos, document.getLength(), currentPos, false, false);
     }
 
     private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
@@ -581,6 +596,10 @@ public class SQLScriptParser {
 
     public static SQLScriptElement extractNextQuery(SQLParserContext context, int offset, boolean next) {
         SQLScriptElement curElement = extractQueryAtPos(context, offset);
+        return tryExpandElement(extractNextQueryImpl(context, curElement, next), context);
+    }
+    
+    private static SQLScriptElement extractNextQueryImpl(SQLParserContext context, SQLScriptElement curElement, boolean next) {
         if (curElement == null) {
             return null;
         }
@@ -627,7 +646,7 @@ public class SQLScriptParser {
             if (curPos <= 0 || curPos >= docLength) {
                 return null;
             }
-            return extractQueryAtPos(context, curPos);
+            return extractQueryAtPosImpl(context, curPos);
         } catch (BadLocationException e) {
             log.warn(e);
             return null;
@@ -708,16 +727,7 @@ public class SQLScriptParser {
         } else {
             element = null;
         }
-        
-        if (element != null && context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
-            var continuationDetector = new ScriptElementContinuationDetector(context);
-            SQLScriptElement extendedElement = continuationDetector.tryPrepareExtendedElement(element);
-            if (extendedElement != null) {
-                return extendedElement;
-            }
-        }
-        
-        
+
         // Check query do not ends with delimiter
         // (this may occur if user selected statement including delimiter)
         if (element == null || CommonUtils.isEmpty(element.getText())) {
@@ -815,7 +825,7 @@ public class SQLScriptParser {
                             if (!variableName.equals(paramName)) {
                                 preparedParamName = variableName;
                             }
-                        } 
+                        }
                         if (preparedParamName == null) {
                             if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
                                 preparedParamName = paramName.substring(1);
@@ -997,7 +1007,19 @@ public class SQLScriptParser {
             this.togglePattern = togglePattern;
         }
     }
-    
+
+    private static SQLScriptElement tryExpandElement(SQLScriptElement element, SQLParserContext context) {
+        if (element != null && context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
+            var continuationDetector = new ScriptElementContinuationDetector(context);
+            SQLScriptElement extendedElement = continuationDetector.tryPrepareExtendedElement(element);
+            if (extendedElement != null) {
+                return extendedElement;
+            }
+        }
+        return element;
+    }
+
+
     private static class ScriptElementContinuationDetector {
         private static final Set<Integer> statementStartTokenIds =
             LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
@@ -1022,12 +1044,12 @@ public class SQLScriptParser {
         
         private int findSmartStatementBoundary(@NotNull SQLScriptElement element, boolean forward) {
             SQLScriptElement lastElement = element;
-            SQLScriptElement nextElement = extractNextQuery(this.context, element.getOffset(), forward);
+            SQLScriptElement nextElement = extractNextQueryImpl(this.context, element, forward);
             while (nextElement != null && !elementStartsProperly(nextElement)) {
                 lastElement = nextElement;
-                nextElement = extractNextQuery(this.context, lastElement.getOffset(), forward);
+                nextElement = extractNextQueryImpl(this.context, lastElement, forward);
             }
-            SQLScriptElement boundaryElement = forward || nextElement == null ? lastElement : nextElement; 
+            SQLScriptElement boundaryElement = forward || nextElement == null ? lastElement : nextElement;
             return forward ? (boundaryElement.getOffset() + boundaryElement.getLength()) : boundaryElement.getOffset();
         }
 
