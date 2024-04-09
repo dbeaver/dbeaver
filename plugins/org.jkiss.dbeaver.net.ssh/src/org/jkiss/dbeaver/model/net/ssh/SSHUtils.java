@@ -281,16 +281,7 @@ public class SSHUtils {
                     yield new SSHAuthConfiguration.KeyData(CommonUtils.notEmpty(privKeyValue), password, savePassword);
                 } else {
                     if (validate) {
-                        final Path file;
-                        try {
-                            file = Path.of(path);
-                        } catch (InvalidPathException e) {
-                            // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/1394
-                            throw new DBException(kind.formatErrorMessage("invalid private key path: %s".formatted(path)));
-                        }
-                        if (Files.notExists(file)) {
-                            throw new DBException(kind.formatErrorMessage("private key file does not exist: " + path));
-                        }
+                        validatePathAndEnsureExists(kind, path);
                     }
                     yield new SSHAuthConfiguration.KeyFile(path, password, savePassword);
                 }
@@ -356,6 +347,20 @@ public class SSHUtils {
 
         if (markEnabled) {
             configuration.setProperty(prefix + RegistryConstants.ATTR_ENABLED, true);
+        }
+    }
+
+    // Had to extract this code into a separate method to avoid triggering a JDT compiler bug
+    // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/1394
+    private static void validatePathAndEnsureExists(@NotNull ConfigurationKind kind, @NotNull String string) throws DBException {
+        final Path path;
+        try {
+            path = Path.of(string);
+        } catch (InvalidPathException e) {
+            throw new DBException(kind.formatErrorMessage("invalid private key path: " + string));
+        }
+        if (Files.notExists(path)) {
+            throw new DBException(kind.formatErrorMessage("private key file does not exist: " + string));
         }
     }
 
