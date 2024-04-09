@@ -298,6 +298,11 @@ public interface SQLDialect {
     String getOffsetLimitQueryPart(int offset, int limit);
 
     /**
+     * Returns clob comparing part for where clause.
+     */
+    String getClobComparingPart(@NotNull String columnName);
+
+    /**
      * Checks whether dialect supports alias for queries with HAVING syntax.
      */
     boolean supportsAliasInHaving();

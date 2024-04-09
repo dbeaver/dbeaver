@@ -713,6 +713,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return String.format("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit);
     }
 
+    @Override
+    public String getClobComparingPart(@NotNull String columnName) {
+        return "DBMS_LOB.COMPARE(%s,?) = 0".formatted(columnName);
+    }
+
     @Nullable
     @Override
     public String getAutoIncrementKeyword() {
