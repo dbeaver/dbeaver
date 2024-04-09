@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenPredicateEvaluator;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMSource;
@@ -44,11 +45,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -315,6 +312,7 @@ public class SQLScriptParser {
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = SQLUtils.fixLineFeeds(queryText);
 
+                    int queryEndPos = tokenOffset;
                     if (isDelimiter &&
                         (keepDelimiters ||
                         (hasBlocks && dialect.isDelimiterAfterQuery()) ||
@@ -326,10 +324,10 @@ public class SQLScriptParser {
                             // Quite dirty workaround needed for Oracle and SQL Server.
                             // TODO: move this transformation into SQLDialect
                             queryText += delimiterText;
+                            queryEndPos += delimiterText.length();
                         }
                     }
-                    int queryEndPos = tokenOffset;
-                    if (tokenType == SQLTokenType.T_DELIMITER) {
+                    if (keepDelimiters && tokenOffset == queryEndPos && tokenType == SQLTokenType.T_DELIMITER) {
                         queryEndPos += tokenLength;
                     }
                     if (curBlock != null) {
@@ -1009,7 +1007,7 @@ public class SQLScriptParser {
     }
 
     private static SQLScriptElement tryExpandElement(SQLScriptElement element, SQLParserContext context) {
-        if (element != null && context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
+        if (element != null && !(element instanceof SQLControlCommand) && context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
             var continuationDetector = new ScriptElementContinuationDetector(context);
             SQLScriptElement extendedElement = continuationDetector.tryPrepareExtendedElement(element);
             if (extendedElement != null) {
@@ -1019,15 +1017,35 @@ public class SQLScriptParser {
         return element;
     }
 
-
     private static class ScriptElementContinuationDetector {
         private static final Set<Integer> statementStartTokenIds =
             LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
+        private static Set<String> statementStartKeywords = new HashSet<>();
 
         private final SQLParserContext context;
         
         public ScriptElementContinuationDetector(@NotNull SQLParserContext context) {
             this.context = context;
+
+            if (this.context.getDialect().getBlockHeaderStrings() != null) {
+                statementStartKeywords.addAll(
+                    Arrays.stream(this.context.getDialect().getBlockHeaderStrings()).map(String::toUpperCase).toList());
+            }
+            if (this.context.getDialect().getTransactionCommitKeywords() != null) {
+                statementStartKeywords.addAll(
+                    Arrays.stream(this.context.getDialect().getTransactionCommitKeywords()).map(String::toUpperCase).toList());
+            }
+            if (this.context.getDialect().getTransactionRollbackKeywords() != null) {
+                statementStartKeywords.addAll(
+                    Arrays.stream(this.context.getDialect().getTransactionRollbackKeywords()).map(String::toUpperCase).toList());
+            }
+            statementStartKeywords.addAll(Arrays.stream(this.context.getDialect().getExecuteKeywords()).map(String::toUpperCase).toList());
+            for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
+                statementStartKeywords.add("@" + controlCommand.getId().toUpperCase());
+            }
+            statementStartKeywords.addAll(Arrays.stream(this.context.getDialect().getQueryKeywords()).map(String::toUpperCase).toList());
+            statementStartKeywords.addAll(Arrays.stream(this.context.getDialect().getDMLKeywords()).map(String::toUpperCase).toList());
+            statementStartKeywords.addAll(Arrays.stream(this.context.getDialect().getDDLKeywords()).map(String::toUpperCase).toList());
         }
 
         private boolean elementStartsProperly(@NotNull SQLScriptElement element) {
@@ -1039,7 +1057,8 @@ public class SQLScriptParser {
             while (token != null && token.getType() != -1 && token.getChannel() != Token.DEFAULT_CHANNEL) {
                 token = lexer.nextToken();
             }
-            return token != null && statementStartTokenIds.contains(token.getType());
+            return token != null
+                && (statementStartTokenIds.contains(token.getType()) || statementStartKeywords.contains(token.getText().toUpperCase()));
         }
         
         private int findSmartStatementBoundary(@NotNull SQLScriptElement element, boolean forward) {
@@ -1050,7 +1069,11 @@ public class SQLScriptParser {
                 nextElement = extractNextQueryImpl(this.context, lastElement, forward);
             }
             SQLScriptElement boundaryElement = forward || nextElement == null ? lastElement : nextElement;
-            return forward ? (boundaryElement.getOffset() + boundaryElement.getLength()) : boundaryElement.getOffset();
+            if (forward) {
+                return boundaryElement.getOffset() + boundaryElement.getLength();
+            } else {
+                return boundaryElement.getOffset();
+            }
         }
 
         @Nullable
