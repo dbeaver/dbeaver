@@ -19,18 +19,22 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools.toad;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import java.io.*;
-import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPage {
 
@@ -67,51 +71,63 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
         try {
             Document configDocument = XMLUtils.parseDocument(reader);
 
-            for (Element refElement : XMLUtils.getChildElementList(configDocument.getDocumentElement())) {
-                if ("ConnectionHierarchy".equals(refElement.getNodeName())) {
-                    Node firstChild = refElement.getFirstChild();
-                    if (firstChild != null) {
-                        Node nextSibling = firstChild.getNextSibling();
-                        if (nextSibling != null) {
-                            NamedNodeMap attributes = nextSibling.getAttributes();
-                            if (attributes != null) {
-                                Node name = attributes.getNamedItem("name");
-                                if (name != null && "Oracle".equals(name.getNodeValue())) {
-                                    Node nextSiblingFirstChild = nextSibling.getFirstChild();
-                                    if (nextSiblingFirstChild != null) {
-                                        Node childNextSibling = nextSiblingFirstChild.getNextSibling();
-                                        if (childNextSibling != null && "Connections".equals(childNextSibling.getNodeName())) {
-                                            Collection<Element> elementList = XMLUtils.getChildElementList((Element) childNextSibling);
-                                            for (Element element : elementList) {
-                                                // Doesn't work starting here
-                                                element.getAttribute("Server");
-                                                element.getAttribute("Host");
-                                                element.getAttribute("Port");
-                                                element.getAttribute("Sid");
-                                                // <ConnectionType ServiceName="True">Direct</ConnectionType> - if Service Name used, not SID
-                                                // <ConnectionType ServiceName="False">Direct</ConnectionType> - this or nothing if SIT used, not Service Name
-                                                element.getAttribute("ConnectionMode");
-                                                // <ConnectionMode>SYSOPER</ConnectionMode>
-                                                // <ConnectionMode>SYSDBA</ConnectionMode>
-                                                // <ConnectionMode>Default</ConnectionMode>
-                                                // TOAD has different connection modes including SysASM and others. But these are three which we use
-
-                                            }
-
-                                            /*ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conName, "url", host, port, dbName, user, null);
-                                            if (!CommonUtils.isEmpty(sid)) {
-                                                connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
-                                            } else if (!CommonUtils.isEmpty(serviceName)) {
-                                                connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
-                                            }
-                                            if (!CommonUtils.isEmpty(role)) {
-                                                connectionInfo.setProviderProperty(
-                                                    OracleConstants.PROP_INTERNAL_LOGON,
-                                                    CommonUtils.valueOf(OracleConnectionRole.class, role, OracleConnectionRole.NORMAL).getTitle());
-                                            }
-                                            importData.addConnection(connectionInfo);*/
+            for (Element refElement : XMLUtils.getChildElementList(configDocument.getDocumentElement(), "ConnectionHierarchy")) {
+                for (Element dbElement : XMLUtils.getChildElementList(refElement, "DbPlatform")) {
+                    if ("Oracle".equals(dbElement.getAttribute("name"))) {
+                        for (Element consElement : XMLUtils.getChildElementList(dbElement, "Connections")) {
+                            for (Element conElement : XMLUtils.getChildElementList(consElement, "Connection")) {
+                                if ("Oracle".equals(conElement.getAttribute("type"))) {
+                                    Map<String, String> attrMap = new LinkedHashMap<>();
+                                    boolean isServiceType = false;
+                                    for (Element attrElement : XMLUtils.getChildElementList(conElement)) {
+                                        String elementBody = XMLUtils.getElementBody(attrElement);
+                                        if (CommonUtils.isEmpty(elementBody)) {
+                                            continue;
+                                        }
+                                        attrMap.put(attrElement.getTagName(), elementBody.trim());
+                                        if ("ConnectionType".equals(attrElement.getTagName())) {
+                                            isServiceType = "True".equals(attrElement.getAttribute("ServiceName"));
                                         }
                                     }
+
+                                    String host = attrMap.get("Host");
+                                    String port = attrMap.get("Port");
+                                    String sid = attrMap.get("Sid");
+                                    //String instanceName = attrMap.get("InstanceName");
+                                    String user = attrMap.get("User");
+                                    String alias = attrMap.get("Alias");
+                                    String role = attrMap.get("ConnectionMode");
+                                    String guid = attrMap.get("GUID");
+                                    if (CommonUtils.isEmpty(alias)) {
+                                        alias = sid;
+                                    }
+                                    if (CommonUtils.isEmpty(alias)) {
+                                        alias = host;
+                                    }
+                                    if (CommonUtils.isEmpty(alias)) {
+                                        alias = guid;
+                                    }
+                                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
+                                        oraDriver,
+                                        null,
+                                        alias,
+                                        null,
+                                        host,
+                                        port,
+                                        sid,
+                                        user,
+                                        null);
+                                    if (!CommonUtils.isEmpty(sid)) {
+                                        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
+                                    } else if (isServiceType) {
+                                        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
+                                    }
+                                    if (!CommonUtils.isEmpty(role)) {
+                                        connectionInfo.setProviderProperty(
+                                            OracleConstants.PROP_INTERNAL_LOGON,
+                                            CommonUtils.valueOf(OracleConnectionRole.class, role, OracleConnectionRole.NORMAL).getTitle());
+                                    }
+                                    importData.addConnection(connectionInfo);
                                 }
                             }
                         }
@@ -119,7 +135,7 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                 }
             }
         } catch (XMLException e) {
-            throw new DBException("Configuration parse error: " + e.getMessage());
+            throw new DBException("Configuration parse error: " + e.getMessage(), e);
         }
     }
 }
