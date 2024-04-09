@@ -99,6 +99,11 @@ public class DashboardRegistry {
                 configContent = DBWorkbench.getPlatform()
                     .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID)
                     .loadConfigurationFile(CONFIG_FILE_NAME);
+                if (CommonUtils.isEmpty(configContent)) {
+                    configContent = DBWorkbench.getPlatform()
+                        .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID2)
+                        .loadConfigurationFile(CONFIG_FILE_NAME);
+                }
             }
             
             synchronized (syncRoot) {
