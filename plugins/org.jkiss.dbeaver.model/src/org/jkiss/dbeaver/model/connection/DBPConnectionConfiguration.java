@@ -226,7 +226,7 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public void setUserName(String userName) {
         if (userName != null) {
-            this.userName = userName.trim();
+            this.userName = GeneralUtils.removeInValidUnicodeSymbol(userName);
         } else {
             this.userName = userName;
         }
@@ -238,7 +238,7 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public void setUserPassword(@Nullable String userPassword) {
         if (userPassword != null) {
-            this.userPassword = userPassword.trim();
+            this.userPassword = GeneralUtils.removeInValidUnicodeSymbol(userPassword);
         } else {
             this.userPassword = userPassword;
         }

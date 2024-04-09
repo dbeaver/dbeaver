@@ -81,6 +81,11 @@ public class GeneralUtils {
         'c', 'd', 'e', 'f'
     };
 
+    private static final int[] NONVALID_UNICODE_SYMBOLS = {
+        32, // space U+0020
+        160 // non-breaking space U+00A0
+    };
+
     public static final String PROP_TRUST_STORE = "javax.net.ssl.trustStore"; //$NON-NLS-1$
     public static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
     public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
@@ -160,6 +165,68 @@ public class GeneralUtils {
             bytes[i] = (byte) c;
         }
         return bytes;
+    }
+
+    /**
+     * The function remove non valid Unicode symbols from start and end of string
+     *
+     */
+    public static String removeInValidUnicodeSymbol(@Nullable String inputStr) {
+        if (inputStr == null || inputStr.isEmpty()) {
+            return inputStr;
+        }
+        String ouString = removeNonValidUnicodeFromBegin(inputStr);
+        return removeNonValidUnicodeFromEnd(ouString);
+    }
+
+    /**
+     * Remove trailing and hidden spaces from the end
+     *
+     * @param inputStr
+     * @return
+     */
+    public static String removeNonValidUnicodeFromEnd(String inputStr) {
+        int nonValidSymbols = 0;
+        for (int end = inputStr.length() - 1; end > 0; end--) {
+            int last = inputStr.codePointAt(end);
+            boolean nonvalidSymbolExists = false;
+            for (int j = 0; j < NONVALID_UNICODE_SYMBOLS.length; j++) {
+                if (last == NONVALID_UNICODE_SYMBOLS[j]) {
+                    nonValidSymbols++;
+                    nonvalidSymbolExists = true;
+                }
+            }
+            if (!nonvalidSymbolExists) {
+                // not valid symbol not found at end
+                break;
+            }
+        }
+        return inputStr.substring(0, inputStr.length() - nonValidSymbols);
+    }
+
+    /**
+     * Remove trailing and hidden spaces from the beginning
+     * 
+     * @param inputStr - input
+     * @return - output
+     */
+    public static String removeNonValidUnicodeFromBegin(String inputStr) {
+        int nonValidSymbols = 0;
+        for (int start = 0; start < inputStr.length() - 1; start++) {
+            int first = inputStr.codePointAt(start);
+            boolean nonvalidSymbolExists = false;
+            for (int j = 0; j < NONVALID_UNICODE_SYMBOLS.length; j++) {
+                if (first == NONVALID_UNICODE_SYMBOLS[j]) {
+                    nonValidSymbols++;
+                    nonvalidSymbolExists = true;
+                }
+            }
+            if (!nonvalidSymbolExists) {
+                // not valid symbol not found at start
+                break;
+            }
+        }
+        return inputStr.substring(nonValidSymbols, inputStr.length() - 1);
     }
 
     public static Object makeDisplayString(Object object) {
