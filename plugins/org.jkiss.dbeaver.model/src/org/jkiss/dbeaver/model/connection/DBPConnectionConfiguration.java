@@ -225,10 +225,11 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void setUserName(String userName) {
-        if (userName == null) {
-            return;
+        if (userName != null) {
+            this.userName = userName.trim();
+        } else {
+            this.userName = userName;
         }
-        this.userName = userName.trim();
     }
 
     public String getUserPassword() {
@@ -236,10 +237,11 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void setUserPassword(@Nullable String userPassword) {
-        if (userPassword == null) {
-            return;
+        if (userPassword != null) {
+            this.userPassword = userPassword.trim();
+        } else {
+            this.userPassword = userPassword;
         }
-        this.userPassword = userPassword.trim();
     }
 
     ////////////////////////////////////////////////////
