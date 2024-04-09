@@ -37,7 +37,9 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.DashboardUIConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardManagerDialog;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +76,8 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         GridLayout layout = new GridLayout(1, true);
         this.setLayout(layout);
 
+        createIntroItem();
+
         registerContextMenu();
 
         addMouseListener(new MouseAdapter() {
@@ -97,6 +101,27 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 layout(true, true);
             }
         });
+    }
+
+    private void createIntroItem() {
+        Composite intro = UIUtils.createComposite(this, 1);
+        Label titleLabel = new Label(intro, SWT.NONE);
+        titleLabel.setFont(this.getTitleFont());
+        titleLabel.setText("Customize your dashboard");
+        String addCommandName = ActionUtils.findCommandName(DashboardUIConstants.CMD_ADD_DASHBOARD);
+        UIUtils.createLink(intro,
+            "<a>" + addCommandName + "</a> to this dashboard by clicking on '" + addCommandName + "' icon in the toolbar.\n" +
+                "You can also create new charts in the <a>Configuration</a> dialog",
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (CommonUtils.equalObjects(addCommandName, e.text)) {
+                        ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
+                    } else {
+                        new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
+                    }
+                }
+            });
     }
 
     public int getListRowCount() {
@@ -217,6 +242,10 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
 
     @Override
     public void addItem(@NotNull DashboardItemConfiguration dashboard) {
+        if (this.items.isEmpty()) {
+            UIUtils.disposeChildControls(this);
+        }
+
         viewContainer.getViewConfiguration().readDashboardItemConfiguration(dashboard);
         new DashboardViewItem(this, dashboard);
         viewContainer.saveChanges();
@@ -236,7 +265,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             List<DashboardItemConfiguration> dashboards = DashboardRegistry.getInstance().getDashboardItems(
                 null, viewContainer.getDataSourceContainer(), true);
             for (DashboardItemConfiguration dd : dashboards) {
-                addDashboard(dd);
+                loadItem(dd);
             }
         }
     }
@@ -245,7 +274,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         for (DashboardItemViewSettings itemConfig : new ArrayList<>(viewContainer.getViewConfiguration().getDashboardItemConfigs())) {
             DashboardItemConfiguration dashboard = itemConfig.getDashboardDescriptor();
             if (dashboard != null) {
-                addDashboard(dashboard);
+                loadItem(dashboard);
             } else {
                 viewContainer.getViewConfiguration().readDashboardItemConfiguration(itemConfig);
             }
@@ -253,14 +282,16 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     }
 
 
-    private void addDashboard(DashboardItemConfiguration dashboard) {
+    private void loadItem(DashboardItemConfiguration dashboard) {
+        if (this.items.isEmpty()) {
+            UIUtils.disposeChildControls(this);
+        }
         viewContainer.getViewConfiguration().readDashboardItemConfiguration(dashboard);
         DashboardViewItem item = new DashboardViewItem(this, dashboard);
     }
 
     void addItem(DashboardViewItem item) {
         addDragAndDropSupport(item);
-
         this.items.add(item);
     }
 
