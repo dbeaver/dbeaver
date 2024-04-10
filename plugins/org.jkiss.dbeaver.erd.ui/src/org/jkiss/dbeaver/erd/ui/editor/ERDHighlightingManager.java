@@ -150,7 +150,7 @@ public class ERDHighlightingManager {
                 if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
                     erdConnection.setSelected(!erdConnection.isSelected());
                 }
-                highlightings= ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
+                highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
             }
         }
         if (highlightings == null) {
@@ -161,7 +161,7 @@ public class ERDHighlightingManager {
                         if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
                             erdConnection.setSelected(!erdConnection.isSelected());
                         }
-                        highlightings= ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
+                        highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
                     }
                 }
             }
@@ -174,7 +174,7 @@ public class ERDHighlightingManager {
                         if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
                             erdConnection.setSelected(!erdConnection.isSelected());
                         }
-                        highlightings= ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
+                        highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
                     }
                 }
             }
@@ -185,9 +185,9 @@ public class ERDHighlightingManager {
     /**
      * The method highlight association and attributes 
      *
-     * @param associationPart - AssociationPart
-     * @param color - Color
-     * @return - ListNode<ERDHighlightingHandle>
+     * @param associationPart - {@code AssociationPart}
+     * @param color - {@code Color}
+     * @return - {@code ListNode<ERDHighlightingHandle>} 
      */
     @Nullable
     public ListNode<ERDHighlightingHandle> highlightRelatedAttributes(
@@ -238,9 +238,9 @@ public class ERDHighlightingManager {
     /**
      * The method highlight association by AssociationPart
      *
-     * @param associationPart - AssociationPart
-     * @param color - Color
-     * @return - ListNode<ERDHighlightingHandle>
+     * @param associationPart - {@code AssociationPart}
+     * @param color - {@code Color}
+     * @return - {@code ListNode<ERDHighlightingHandle>}
      */
     @Nullable
     public ListNode<ERDHighlightingHandle> highlightAssociation(
@@ -256,9 +256,9 @@ public class ERDHighlightingManager {
     /**
      * The method highlight association by AttributePart
      *
-     * @param attributePart - AttributePart
-     * @param color - Color
-     * @return - ListNode<ERDHighlightingHandle>
+     * @param attributePart - {@code AttributePart}
+     * @param color - {@code Color}
+     * @return - {@code ListNode<ERDHighlightingHandle>}
      */
     @Nullable
     public ListNode<ERDHighlightingHandle> highlightAssociation(
@@ -269,13 +269,13 @@ public class ERDHighlightingManager {
         for (AssociationPart associationPart : attributePart.getAssociatingBySource()) {
             if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
                 associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
-                highlightings = ListNode.push(highlightings, highlight(associationPart.getFigure(), color));
+                highlightings = ListNode.push(highlightings,this.highlight(associationPart.getFigure(), color));
             }
         }
         for (AssociationPart associationPart : attributePart.getAssociatingByTarget()) {
             if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
                 associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
-                highlightings = ListNode.push(highlightings, highlight(associationPart.getFigure(), color));
+                highlightings = ListNode.push(highlightings, this.highlight(associationPart.getFigure(), color));
             }
         }
         return highlightings;

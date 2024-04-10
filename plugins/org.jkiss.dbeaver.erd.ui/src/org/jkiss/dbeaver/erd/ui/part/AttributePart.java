@@ -213,7 +213,7 @@ public class AttributePart extends NodePart {
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedRelationsHighlighing == null) {
                 Color attributeColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                Color associationColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND);
+                Color associationColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
                 ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
                 ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightRelatedAttributes(this, attributeColor);
                 nodes = highlightingManager.highlightAssociation(nodes, this, associationColor);
