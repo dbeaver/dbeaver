@@ -225,12 +225,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             return;
         }
 
-
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedAttributesHighlighing == null) {
                 Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer)this.getViewer()).getEditor().getHighlightingManager();
+                Color associatingColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND);
+                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
                 ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightAssociationAndRelatedAttributes(this, color);
+                nodes = highlightingManager.highlightAssociation(nodes, this, associatingColor);
                 associatedAttributesHighlighing = highlightingManager.makeHighlightingGroupHandle(nodes);
             }
         } else if (associatedAttributesHighlighing != null) {

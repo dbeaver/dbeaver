@@ -95,8 +95,6 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
     public String getName() {
         return getObject().getName();
     }
-    
-    
 
     @Override
     public String toString() {

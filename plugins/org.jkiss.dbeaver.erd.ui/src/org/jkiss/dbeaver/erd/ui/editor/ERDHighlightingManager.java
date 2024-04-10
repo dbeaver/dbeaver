@@ -228,6 +228,24 @@ public class ERDHighlightingManager {
                 highlightings = ListNode.push(highlightings, this.highlight(attrPart.getFigure(), color));
             }
         }
+       // highlightings = ListNode.push(highlightings, this.highlight(associationPart.getFigure(), color));
+        return highlightings;
+    }
+
+
+    /**
+     * The method highlight association
+     *
+     * @param associationPart - AssociationPart
+     * @param color - Color
+     * @return - ListNode<ERDHighlightingHandle>
+     */
+    @Nullable
+    public ListNode<ERDHighlightingHandle> highlightAssociation(
+        @Nullable ListNode<ERDHighlightingHandle> highlightings,
+        @NotNull AssociationPart associationPart,
+        @NotNull Color color
+    ) {
         highlightings = ListNode.push(highlightings, this.highlight(associationPart.getFigure(), color));
         return highlightings;
     }

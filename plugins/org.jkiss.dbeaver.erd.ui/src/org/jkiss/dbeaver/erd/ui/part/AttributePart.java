@@ -147,7 +147,6 @@ public class AttributePart extends NodePart {
             if (attr.getObject() == attribute.getObject()) {
                 associatingByTarget.add(associationPart);
                 super.addTargetConnection(connection, index);
-                
             }
         }
     }
