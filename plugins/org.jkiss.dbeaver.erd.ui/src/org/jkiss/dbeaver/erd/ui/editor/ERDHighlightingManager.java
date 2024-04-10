@@ -248,6 +248,9 @@ public class ERDHighlightingManager {
         @NotNull AssociationPart associationPart,
         @NotNull Color color
     ) {
+        if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
+            erdConnection.setSelected(!erdConnection.isSelected());
+        }
         highlightings = ListNode.push(highlightings, this.highlight(associationPart.getFigure(), color));
         return highlightings;
     }
@@ -266,13 +269,25 @@ public class ERDHighlightingManager {
         @NotNull AttributePart attributePart, 
         @NotNull Color color
     ) {
-        for (AssociationPart associationPart : attributePart.getAssociatingBySource()) {
+        List<AssociationPart> associatingBySource = attributePart.getAssociatingBySource();
+        if (associatingBySource == null || associatingBySource.isEmpty()) {
+            if (attributePart.getParent() instanceof EntityPart entityPart) {
+                associatingBySource = (List<AssociationPart>) entityPart.getSourceConnections();
+            }
+        }
+        for (AssociationPart associationPart : associatingBySource) {
             if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
                 associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
                 highlightings = ListNode.push(highlightings,this.highlight(associationPart.getFigure(), color));
             }
         }
-        for (AssociationPart associationPart : attributePart.getAssociatingByTarget()) {
+        List<AssociationPart> associatingByTarget = attributePart.getAssociatingByTarget();
+        if(associatingByTarget == null || associatingByTarget.isEmpty()) {
+            if (attributePart.getParent() instanceof EntityPart entityPart) {
+                associatingByTarget = (List<AssociationPart>) entityPart.getTargetConnections();
+            }
+        }
+        for (AssociationPart associationPart : associatingByTarget) {
             if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
                 associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
                 highlightings = ListNode.push(highlightings, this.highlight(associationPart.getFigure(), color));
