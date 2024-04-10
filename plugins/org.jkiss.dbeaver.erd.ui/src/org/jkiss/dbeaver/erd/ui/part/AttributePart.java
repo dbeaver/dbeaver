@@ -142,6 +142,7 @@ public class AttributePart extends NodePart {
         for (ERDEntityAttribute attr : association.getTargetAttributes()) {
             if (attr.getObject() == attribute.getObject()) {
                 super.addTargetConnection(connection, index);
+                
             }
         }
     }
@@ -291,6 +292,15 @@ public class AttributePart extends NodePart {
 
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection) {
+        ERDEntityAttribute attribute = getAttribute();
+        if(connection.getModel() instanceof ERDAssociation association) {
+            if( association.getSourceAttributes().contains(attribute)) {
+                ERDEntityAttribute erdEntityAttribute = association.getSourceAttributes().get(0);
+                return new ChopboxAnchor( getFigure().getParent());
+            }
+           
+        }
+       
         return new ChopboxAnchor(getFigure());
     }
 
@@ -301,6 +311,15 @@ public class AttributePart extends NodePart {
 
     @Override
     public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
+        ERDEntityAttribute attribute = getAttribute();
+        if(connection.getModel() instanceof ERDAssociation association) {
+            if( association.getTargetAttributes().contains(attribute)) {
+                ERDEntityAttribute erdEntityAttribute = association.getTargetAttributes().get(0);
+                return new ChopboxAnchor( getFigure().getParent());
+            }
+           
+        }
+
         return new ChopboxAnchor(getFigure());
     }
 

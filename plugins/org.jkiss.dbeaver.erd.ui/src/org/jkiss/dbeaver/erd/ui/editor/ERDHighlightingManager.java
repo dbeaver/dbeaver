@@ -180,7 +180,30 @@ public class ERDHighlightingManager {
 
     @Nullable
     public ERDHighlightingHandle highlightAssociationAndRelatedAttributes(@NotNull AssociationPart associationPart, @NotNull Color color) {
-        return this.makeHighlightingGroupHandle(highlightAssociationRelatedAttributes(associationPart, color, null));
+        
+        List<ERDEntityAttribute> erdSourceAttributes = associationPart.getAssociation().getSourceAttributes();
+        List<AttributePart> sourcePartAttributes = getEntityAttributes(
+            (EntityPart) associationPart.getSource().getParent(), 
+            erdSourceAttributes);
+      
+        List<ERDEntityAttribute> erdTargetAttributes = associationPart.getAssociation().getTargetAttributes();
+        
+        List<AttributePart> targetPartAttributes = getEntityAttributes(
+            (EntityPart) associationPart.getTarget().getParent(), 
+            erdTargetAttributes);
+        
+        ListNode<ERDHighlightingHandle>  lightHandlers = null ;
+        for (AttributePart attrPart: sourcePartAttributes) {
+            lightHandlers = ListNode.push(lightHandlers, highlight(attrPart.getFigure(), color));
+        }
+        
+        for (AttributePart attrPart: targetPartAttributes) {
+            lightHandlers = ListNode.push(lightHandlers, highlight(attrPart.getFigure(), color));
+        }
+        
+        
+        lightHandlers = highlightAssociationRelatedAttributes(associationPart, color, null);
+        return this.makeHighlightingGroupHandle(lightHandlers);
     }
 
     @NotNull
