@@ -33,6 +33,8 @@ public class HANAValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
             DBSTypedObject typedObject) {
         switch (typedObject.getTypeName()) {
+        case "REAL_VECTOR":
+            return HANAVectorValueHandler.INSTANCE;
         case "ST_GEOMETRY":
         case "ST_POINT":
             return HANAGeometryValueHandler.INSTANCE;

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.hana.model.plan.HANAPlanAnalyser;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -72,6 +73,14 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         return info;
     }
     
+    @Override
+    public DBPDataKind resolveDataKind(String typeName, int valueType) {
+        if ("REAL_VECTOR".equalsIgnoreCase(typeName)) {
+            return DBPDataKind.ARRAY;
+        }
+        return super.resolveDataKind(typeName, valueType);
+    }
+
     /*
      * search
      */
