@@ -20,7 +20,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -36,9 +35,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.Widgets;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
@@ -185,29 +182,15 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
 
         @Override
         protected Composite createDialogArea(Composite parent) {
-            Composite mainComposite = Widgets.createComposite(
-                parent,
-                JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT),
-                1,
-                5,
-                GridData.FILL_BOTH | GridData.GRAB_HORIZONTAL | GridData.GRAB_VERTICAL,
-                5,
-                5
-            );
+            Composite dialogArea = super.createDialogArea(parent);
+            dialogArea = UIUtils.createComposite(dialogArea, 1);
+            dialogArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            // Output folder composite
-            Composite folderPickerComposite = Widgets.createComposite(
-                mainComposite,
-                JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT),
-                2,
-                5,
-                GridData.FILL_HORIZONTAL | GridData.GRAB_HORIZONTAL,
-                5,
-                5
-            );
-            UIUtils.createControlLabel(folderPickerComposite, CoreApplicationMessages.collect_diagnostic_info_pick_path_label);
+            Composite outputFolderPickerComposite = UIUtils.createComposite(dialogArea, 2);
+            outputFolderPickerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(outputFolderPickerComposite, CoreApplicationMessages.collect_diagnostic_info_pick_path_label);
             textWithOpen = new TextWithOpenFolder(
-                folderPickerComposite,
+                outputFolderPickerComposite,
                 CoreApplicationMessages.collect_diagnostic_info_pick_path_title
             );
             textWithOpen.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -225,13 +208,13 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
 
             // Warning about potentially sensitive data
             UIUtils.createWarningLabel(
-                mainComposite,
+                dialogArea,
                 CoreApplicationMessages.collect_diagnostic_info_pick_path_warning,
                 GridData.FILL_HORIZONTAL,
                 1
             );
 
-            return mainComposite;
+            return dialogArea;
         }
 
         private void enableOk(boolean enable) {
