@@ -33,6 +33,9 @@ public class HANAVectorValueHandler extends JDBCArrayValueHandler {
 
     public static final HANAVectorValueHandler INSTANCE = new HANAVectorValueHandler();
 
+    private static DBCLogicalOperator[] SUPPORTED_OPERATORS = { DBCLogicalOperator.IS_NOT_NULL,
+            DBCLogicalOperator.IS_NULL };
+
     @Override
     protected boolean useGetArray(DBCSession session, DBSTypedObject type) {
         return true;
@@ -68,9 +71,6 @@ public class HANAVectorValueHandler extends JDBCArrayValueHandler {
             throw new DBCException("Array parameter type '" + value.getClass().getName() + "' not supported");
         }
     }
-
-    private static DBCLogicalOperator[] SUPPORTED_OPERATORS = { DBCLogicalOperator.IS_NOT_NULL,
-            DBCLogicalOperator.IS_NULL };
 
     @Override
     public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
