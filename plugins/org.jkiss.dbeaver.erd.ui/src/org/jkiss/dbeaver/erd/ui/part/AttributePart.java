@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -211,9 +212,12 @@ public class AttributePart extends NodePart {
 
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedRelationsHighlighing == null) {
-                Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                Color attributeColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                Color associationColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND);
                 ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
-                associatedRelationsHighlighing = highlightingManager.highlightAttributeAssociations(this, color);
+                ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightRelatedAttributes(this, attributeColor);
+                nodes = highlightingManager.highlightAssociation(nodes, this, associationColor);
+                associatedRelationsHighlighing = highlightingManager.makeHighlightingGroupHandle(nodes);
             }
         } else if (associatedRelationsHighlighing != null) {
             associatedRelationsHighlighing.release();
