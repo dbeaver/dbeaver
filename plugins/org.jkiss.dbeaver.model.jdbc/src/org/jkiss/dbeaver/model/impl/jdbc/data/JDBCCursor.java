@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDCursor;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -80,13 +81,13 @@ public class JDBCCursor implements DBDCursor {
 
     @NotNull
     @Override
-    public DBCResultSet openResultSet(@NotNull DBCSession session) {
+    public DBCResultSet openResultSet(@NotNull DBCSession session) throws DBCException {
         if (resultSet != null) {
             // Scroll to the beginning
             try {
-                resultSet.absolute(0);
+                resultSet.absolute(1);
             } catch (SQLException e) {
-                log.debug(e);
+                throw new DBCException(e, resultSet.getSession().getExecutionContext());
             }
         }
         return resultSet;

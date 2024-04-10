@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
+package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
-import org.antlr.v4.runtime.misc.Interval;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
-public abstract class SQLQueryModelContent extends SQLQueryNodeModel {
+public abstract class SQLQueryLexicalScopeItem {
+    protected final STMTreeNode syntaxNode;
 
-    public SQLQueryModelContent(Interval interval, @NotNull STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
-        super(interval, syntaxNode, subnodes);
+    public SQLQueryLexicalScopeItem(STMTreeNode syntaxNode) {
+        super();
+        this.syntaxNode = syntaxNode;
     }
-
-    abstract void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext);
+    
+    public STMTreeNode getSyntaxNode() {
+        return this.syntaxNode;
+    }
+    
+    public abstract STMTreeNode[] getSyntaxComponents();
 }

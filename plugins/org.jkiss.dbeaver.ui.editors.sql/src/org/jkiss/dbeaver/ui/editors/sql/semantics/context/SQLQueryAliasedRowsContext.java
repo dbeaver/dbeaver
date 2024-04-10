@@ -47,5 +47,11 @@ public class SQLQueryAliasedRowsContext extends SQLQuerySyntaxContext {
                 ? SourceResolutionResult.forSourceByAlias(this.source, this.alias)
                 : super.resolveSource(monitor, tableName);
     }
+    
+    @Override
+    protected void collectKnownSources(KnownSourcesInfo info) {
+        super.collectKnownSources(info);
+        info.registerAlias(this.source, this.alias);
+    }
 }
 
