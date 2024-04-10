@@ -128,7 +128,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                                 break;
                         }
                         boolean inPrimaryKey = idColumns != null && idColumns.contains(attribute);
-                        ERDEntityAttribute c1 = new ERDEntityAttribute(erdEntity,attribute, inPrimaryKey);
+                        ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, inPrimaryKey);
                         erdEntity.addAttribute(c1, false);
                     }
                     if (settings.isAlphabeticalOrder()) {

@@ -40,11 +40,9 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
     private boolean inPrimaryKey;
     private boolean inForeignKey;
     private String alias;
-    private ERDEntity parent;
 
-    public ERDEntityAttribute(ERDEntity parent,DBSEntityAttribute attribute, boolean inPrimaryKey) {
+    public ERDEntityAttribute(DBSEntityAttribute attribute, boolean inPrimaryKey) {
         super(attribute);
-        this.setParent(parent);
         this.inPrimaryKey = inPrimaryKey;
     }
 
@@ -152,13 +150,5 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
             }
         }
         return attrMap;
-    }
-
-    public ERDEntity getParent() {
-        return parent;
-    }
-
-    public void setParent(ERDEntity parent) {
-        this.parent = parent;
     }
 }

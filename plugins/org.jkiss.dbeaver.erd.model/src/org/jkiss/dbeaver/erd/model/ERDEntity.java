@@ -288,7 +288,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
                     log.error("Attribute '" + name + "' not found in entity " + getName());
                     continue;
                 }
-                ERDEntityAttribute attr = new ERDEntityAttribute(this,attribute, false);
+                ERDEntityAttribute attr = new ERDEntityAttribute(attribute, false);
                 attr.fromMap(context, attrMap);
                 addAttribute(attr, false);
             }
