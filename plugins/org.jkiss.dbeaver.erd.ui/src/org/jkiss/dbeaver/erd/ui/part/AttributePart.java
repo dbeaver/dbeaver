@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
+import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingManager;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
@@ -55,6 +56,8 @@ public class AttributePart extends NodePart {
 
     private ERDHighlightingHandle associatedRelationsHighlighing = null;
     protected AccessibleGraphicalEditPart accPart;
+    private List<AssociationPart> associatingBySource = new ArrayList<>();
+    private List<AssociationPart> associatingByTarget = new ArrayList<>();
 
     public AttributePart() {
 
@@ -89,6 +92,7 @@ public class AttributePart extends NodePart {
 
         for (ERDEntityAttribute attr : association.getSourceAttributes()) {
             if (attr.getObject() == attribute.getObject()) {
+                associatingBySource.add(associationPart);
                 super.addSourceConnection(connection, index);
             }
         }
@@ -141,6 +145,7 @@ public class AttributePart extends NodePart {
         ERDEntityAttribute attribute = getAttribute();
         for (ERDEntityAttribute attr : association.getTargetAttributes()) {
             if (attr.getObject() == attribute.getObject()) {
+                associatingByTarget.add(associationPart);
                 super.addTargetConnection(connection, index);
                 
             }
@@ -208,7 +213,8 @@ public class AttributePart extends NodePart {
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedRelationsHighlighing == null) {
                 Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                associatedRelationsHighlighing = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager().highlightAttributeAssociations(this, color);
+                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
+                associatedRelationsHighlighing = highlightingManager.highlightAttributeAssociations(this, color);
             }
         } else if (associatedRelationsHighlighing != null) {
             associatedRelationsHighlighing.release();
@@ -292,15 +298,6 @@ public class AttributePart extends NodePart {
 
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection) {
-        ERDEntityAttribute attribute = getAttribute();
-        if(connection.getModel() instanceof ERDAssociation association) {
-            if( association.getSourceAttributes().contains(attribute)) {
-                ERDEntityAttribute erdEntityAttribute = association.getSourceAttributes().get(0);
-                return new ChopboxAnchor( getFigure().getParent());
-            }
-           
-        }
-       
         return new ChopboxAnchor(getFigure());
     }
 
@@ -314,12 +311,9 @@ public class AttributePart extends NodePart {
         ERDEntityAttribute attribute = getAttribute();
         if(connection.getModel() instanceof ERDAssociation association) {
             if( association.getTargetAttributes().contains(attribute)) {
-                ERDEntityAttribute erdEntityAttribute = association.getTargetAttributes().get(0);
                 return new ChopboxAnchor( getFigure().getParent());
             }
-           
         }
-
         return new ChopboxAnchor(getFigure());
     }
 
@@ -338,7 +332,22 @@ public class AttributePart extends NodePart {
                 }
             };
         }
-
         return this.accPart;
+    }
+
+    /**
+     * Return list of references related by source type of connection 
+     *
+     */
+    public List<AssociationPart> getAssociatingBySource() {
+        return associatingBySource;
+    }
+
+    /**
+     * Return list of references related by target type of connection 
+     *
+     */
+    public List<AssociationPart> getAssociatingByTarget() {
+        return associatingByTarget;
     }
 }

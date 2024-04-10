@@ -75,7 +75,7 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
 
     @Override
     public double getIndentation() {
-        return 0;
+        return 20;
     }
 
 }

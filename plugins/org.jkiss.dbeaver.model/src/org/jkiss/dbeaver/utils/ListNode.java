@@ -64,6 +64,15 @@ public class ListNode<T> implements Iterable<T> {
     }
 
     @NotNull
+    public static <T> ListNode<T> join(@Nullable ListNode<T> nodes, @NotNull ListNode<T> joinList) {
+        Iterator<T> itr = joinList.iterator();
+        while (itr.hasNext()) {
+            nodes = ListNode.push(nodes, itr.next());
+        }
+        return nodes;
+    }
+
+    @NotNull
     public Iterator<T> iterator() {
         return new Iterator<T>() {
             private ListNode<T> node = ListNode.this;

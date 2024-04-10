@@ -36,9 +36,7 @@ import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.connector.ERDConnection;
-import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
-import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
-import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.ui.editor.*;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
@@ -50,6 +48,7 @@ import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -230,7 +229,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedAttributesHighlighing == null) {
                 Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                associatedAttributesHighlighing = ((ERDGraphicalViewer)this.getViewer()).getEditor().getHighlightingManager().highlightAssociationAndRelatedAttributes(this, color);
+                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer)this.getViewer()).getEditor().getHighlightingManager();
+                ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightAssociationAndRelatedAttributes(this, color);
+                associatedAttributesHighlighing = highlightingManager.makeHighlightingGroupHandle(nodes);
             }
         } else if (associatedAttributesHighlighing != null) {
             associatedAttributesHighlighing.release();
