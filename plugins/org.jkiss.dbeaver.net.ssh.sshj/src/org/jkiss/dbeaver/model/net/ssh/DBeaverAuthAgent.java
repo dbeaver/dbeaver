@@ -67,7 +67,7 @@ public class DBeaverAuthAgent extends AbstractAuthMethod {
             .putBuffer(reqBuf) // & rest of the data for sig
             .getCompactData();
 
-        reqBuf.putBytes(identity.getSignature(dataToSign, getAlgName()));
+        //reqBuf.putBytes(identity.getSignature(dataToSign, getAlgName()));
 
         return reqBuf;
     }

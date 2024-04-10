@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.*;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
@@ -58,12 +59,12 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     private final String rawName;
     
     public SQLQueryValueVariableExpression(
-        @NotNull Interval range,
+        @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQuerySymbolEntry name,
         @NotNull VariableExpressionKind kind,
         @NotNull String rawName
     ) {
-        super(range);
+        super(syntaxNode);
         this.name = name;
         this.kind = kind;
         this.rawName = rawName;
@@ -86,7 +87,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     }
     
     @Override
-    void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.name.isNotClassified()) {
             this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
         }
