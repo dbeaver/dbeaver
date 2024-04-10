@@ -26,6 +26,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -107,6 +111,32 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                                     if (CommonUtils.isEmpty(alias)) {
                                         alias = guid;
                                     }
+
+                                    String sshHost = attrMap.get("SSHHost");
+
+                                    DBWHandlerConfiguration sshHandler = null;
+                                    if (!CommonUtils.isEmpty(sshHost)) {
+                                        String sshPort = attrMap.get("SSHPort");
+                                        String sshUser = attrMap.get("SSHUser");
+                                        String sshPassword = attrMap.get("SSHPassword");
+                                        String sshPrivateKey = attrMap.get("SSHPrivateKey");
+
+                                        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
+                                        sshHandler = new DBWHandlerConfiguration(sslHD, null);
+                                        sshHandler.setUserName(sshUser);
+                                        sshHandler.setSavePassword(true);
+                                        sshHandler.setProperty(DBWHandlerConfiguration.PROP_PORT, sshPort);
+
+                                        if (!CommonUtils.isEmpty(sshPrivateKey)) {
+                                            sshHandler.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY);
+                                            sshHandler.setProperty(SSHConstants.PROP_KEY_PATH, sshPrivateKey);
+                                        } else {
+                                            sshHandler.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PASSWORD);
+                                            sshHandler.setPassword(sshPassword);
+                                        }
+                                        sshHandler.setProperty(SSHConstants.PROP_IMPLEMENTATION, "sshj");
+                                    }
+
                                     ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
                                         oraDriver,
                                         null,
@@ -117,15 +147,25 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                                         sid,
                                         user,
                                         null);
+                                    if (sshHandler != null) {
+                                        connectionInfo.addNetworkHandler(sshHandler);
+                                    }
                                     if (!CommonUtils.isEmpty(sid)) {
-                                        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
+                                        connectionInfo.setProviderProperty(
+                                            OracleConstants.PROP_SID_SERVICE,
+                                            OracleConnectionType.SID.name());
                                     } else if (isServiceType) {
-                                        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
+                                        connectionInfo.setProviderProperty(
+                                            OracleConstants.PROP_SID_SERVICE,
+                                            OracleConnectionType.SERVICE.name());
                                     }
                                     if (!CommonUtils.isEmpty(role)) {
                                         connectionInfo.setProviderProperty(
                                             OracleConstants.PROP_INTERNAL_LOGON,
-                                            CommonUtils.valueOf(OracleConnectionRole.class, role, OracleConnectionRole.NORMAL).getTitle());
+                                            CommonUtils.valueOf(
+                                                OracleConnectionRole.class,
+                                                role,
+                                                OracleConnectionRole.NORMAL).getTitle());
                                     }
                                     importData.addConnection(connectionInfo);
                                 }

@@ -24,6 +24,7 @@ import java.io.File;
 public class ConfigImportWizardToad extends ConfigImportWizard {
 
     private ConfigImportWizardPageFile pageFile;
+
     @Override
     protected ConfigImportWizardPage createMainPage() {
         return new ConfigImportWizardPageToadConnections();
