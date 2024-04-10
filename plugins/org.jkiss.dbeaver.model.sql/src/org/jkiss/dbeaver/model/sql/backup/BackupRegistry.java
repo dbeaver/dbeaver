@@ -42,7 +42,7 @@ public class BackupRegistry {
     private BackupRegistry() {
     }
 
-    private synchronized void loadExtensions(IExtensionRegistry registry) {
+    private synchronized void loadExtensions(@NotNull IExtensionRegistry registry) {
         IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQL_BACKUP_EXTENSION_ID);
 
         for (IConfigurationElement ext : extConfigs) {
@@ -52,7 +52,7 @@ public class BackupRegistry {
         }
     }
 
-    private void parseAttribute(IConfigurationElement ext) {
+    private void parseAttribute(@NotNull IConfigurationElement ext) {
         BackupSettingDescriptor providerDescriptor = new BackupSettingDescriptor(ext);
         this.descriptors.add(providerDescriptor);
     }

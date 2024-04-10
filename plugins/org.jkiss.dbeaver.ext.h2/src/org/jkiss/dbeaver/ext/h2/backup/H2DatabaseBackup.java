@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.h2.backup;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
@@ -33,7 +34,11 @@ public class H2DatabaseBackup implements BackupDatabase {
     private static final Log log = Log.getLog(H2DatabaseBackup.class);
 
     @Override
-    public void doBackup(Connection connection, int currentSchemaVersion, InternalDatabaseConfig databaseConfig) throws DBException {
+    public void doBackup(
+            @NotNull Connection connection,
+            int currentSchemaVersion,
+            @NotNull InternalDatabaseConfig databaseConfig
+    ) throws DBException {
         Statement statement = null;
         try {
             Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(BackupConstant.BACKUP_FOLDER);

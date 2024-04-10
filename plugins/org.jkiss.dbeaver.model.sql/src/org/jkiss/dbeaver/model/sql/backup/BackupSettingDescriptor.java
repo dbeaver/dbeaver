@@ -36,7 +36,7 @@ public class BackupSettingDescriptor extends AbstractDescriptor {
 
     public static String TAG_BACKUP = "backup";
 
-    public BackupSettingDescriptor(IConfigurationElement cfg) {
+    public BackupSettingDescriptor(@NotNull IConfigurationElement cfg) {
         super(cfg);
         this.implType = new ObjectType(cfg, "class");
         this.dialect = new ObjectType(cfg, "dialectClass");
