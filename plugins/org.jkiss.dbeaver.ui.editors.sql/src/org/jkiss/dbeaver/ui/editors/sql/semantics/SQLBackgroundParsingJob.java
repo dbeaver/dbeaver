@@ -55,7 +55,7 @@ import java.util.*;
 public class SQLBackgroundParsingJob {
 
     private static final Log log = Log.getLog(SQLBackgroundParsingJob.class);
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final long schedulingTimeoutMilliseconds = 500;
     
