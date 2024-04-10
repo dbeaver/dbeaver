@@ -14,27 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.dpi;
 
-package org.jkiss.dbeaver.model.impl.local;
-
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
-
-import java.util.List;
-
-/**
- * LocalResultSetMeta
- */
-public class LocalResultSetMeta implements DBCResultSetMetaData {
-
-    private final List<? extends DBCAttributeMetaData> attributes;
-
-    public LocalResultSetMeta(List<? extends DBCAttributeMetaData> attributes) {
-        this.attributes = attributes;
-    }
-
-    @Override
-    public List<? extends DBCAttributeMetaData> getAttributes() {
-        return attributes;
-    }
+public interface DPIServerSmartObject {
+    DPISmartCallback getCallback();
 }

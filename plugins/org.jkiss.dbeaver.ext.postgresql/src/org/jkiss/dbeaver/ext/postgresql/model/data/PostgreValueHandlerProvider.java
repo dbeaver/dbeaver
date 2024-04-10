@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.model.PGDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.RedshiftGeometryValueHandler;
@@ -63,7 +64,7 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
             case Types.TIME_WITH_TIMEZONE:
             case Types.TIMESTAMP:
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                if (((PostgreDataSource) dataSource).getServerType().supportsTemporalAccessor()) {
+                if (((PGDataSource) dataSource).getServerType().supportsTemporalAccessor()) {
                     return new PostgreTemporalAccessorValueHandler(preferences);
                 } else {
                     return new PostgreDateTimeValueHandler(preferences);

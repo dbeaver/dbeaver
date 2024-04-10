@@ -29,13 +29,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.dpi.model.client.DPIClientProxy;
+import org.jkiss.dbeaver.dpi.model.client.DPISmartObjectWrapper;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.dpi.*;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.BeanUtils;
@@ -52,8 +54,8 @@ import java.util.*;
  * DPI utils
  */
 public class DPISerializer {
-
     private static final Log log = Log.getLog(DPISerializer.class);
+
     public static final String ATTR_OBJECT_ID = "id";
     public static final String ATTR_ROOT = "root";
     public static final String ATTR_OBJECT_TYPE = "type";
@@ -63,17 +65,48 @@ public class DPISerializer {
     private static final String ATTR_PROPS = "properties";
     private static final String ATTR_CONTAINERS = "containers";
 
-    public static Gson createSerializer(DPIContext context) {
+    public static Gson createServerSerializer(DPIContext context) {
+        Map<Class<?>, AdapterCreator> adapters = new HashMap<>(getCommonAdapters());
         return new GsonBuilder()
-            .registerTypeAdapterFactory(new DPITypeAdapterFactory(context))
+            .registerTypeAdapterFactory(new DPITypeAdapterFactory(context, adapters))
             .create();
     }
 
+    public static Gson createClientSerializer(@NotNull DPIContext context) {
+        Map<Class<?>, AdapterCreator> adapters = new HashMap<>(getCommonAdapters());
+
+        return new GsonBuilder()
+            .registerTypeAdapterFactory(new DPITypeAdapterFactory(context, adapters))
+            .create();
+    }
+
+    private static Map<Class<?>, AdapterCreator> getCommonAdapters() {
+        Map<Class<?>, AdapterCreator> common = new HashMap<>();
+        common.put(DBRProgressMonitor.class, (context, gson) -> new DPIProgressMonitorAdapter(context));
+        common.put(DPIClientObject.class, (context, gson) -> new DPIObjectRefAdapter(context));
+        common.put(Throwable.class, (context, gson) -> new DPIThrowableAdapter(context));
+        common.put(SQLDialect.class, (context, gson) -> new SQLDialectAdapter(context));
+        common.put(TimeZone.class, (context, gson) -> new TimeZoneAdapter(context));
+        common.put(DBCResultSet.class, DPIResultSetAdapter::new);
+        common.put(DBDDataReceiver.class, SQLDataReceiverAdapter::new);
+        common.put(DPISmartObjectWrapper.class, DPIServerSmartObjectsAdapter::new);
+        return common;
+    }
+
+
+    @FunctionalInterface
+    private interface AdapterCreator {
+        TypeAdapter<?> createAdapter(@NotNull DPIContext context, @NotNull Gson gson);
+    }
+
+
     static final class DPITypeAdapterFactory implements TypeAdapterFactory {
         private final DPIContext context;
+        private final Map<Class<?>, AdapterCreator> classAdapters;
 
-        public DPITypeAdapterFactory(DPIContext context) {
+        public DPITypeAdapterFactory(DPIContext context, Map<Class<?>, AdapterCreator> classAdapters) {
             this.context = context;
+            this.classAdapters = classAdapters;
         }
 
         @Override
@@ -83,14 +116,10 @@ public class DPISerializer {
                 return (TypeAdapter<T>) new DPIClassAdapter(context);
             } else if (typeToken.getType() instanceof Class<?>) {
                 Class<?> theClass = (Class<?>) typeToken.getType();
-                if (DBRProgressMonitor.class.isAssignableFrom(theClass)) {
-                    return (TypeAdapter<T>) new DPIProgressMonitorAdapter(context);
-                } else if (DPIClientObject.class.isAssignableFrom(theClass)) {
-                    return (TypeAdapter<T>) new DPIObjectRefAdapter(context);
-                } else if (Throwable.class.isAssignableFrom(theClass)) {
-                    return (TypeAdapter<T>) new DPIThrowableAdapter(context);
-                } else if (SQLDialect.class.isAssignableFrom(theClass)) {
-                    return (TypeAdapter<T>) new SQLDialectAdapter(context);
+                for (Map.Entry<Class<?>, AdapterCreator> entry : classAdapters.entrySet()) {
+                    if (entry.getKey().isAssignableFrom(theClass)) {
+                        return (TypeAdapter<T>) entry.getValue().createAdapter(context, gson);
+                    }
                 }
 
                 if (getClassAnnotation(theClass, DPILocalObject.class) != null) {
@@ -115,19 +144,13 @@ public class DPISerializer {
 
     }
 
-    public static void main(String[] args) {
-        var gson = new GsonBuilder()
-            .registerTypeAdapterFactory(new DPITypeAdapterFactory(
-                new DPIContext(new VoidProgressMonitor(),
-                    new Object())))
-            .create();
-
-        gson.toJson(DPISerializer.class);
-    }
-
     @Nullable
     public static DPIObject getDPIAnno(@NotNull Class<?> type) {
         return getClassAnnotation(type, DPIObject.class);
+    }
+
+    public static boolean isSmartObject(@NotNull Class<?> type) {
+        return getClassAnnotation(type, DPISmartObject.class) != null;
     }
 
     @Nullable
@@ -233,21 +256,25 @@ public class DPISerializer {
 
         @Override
         public void write(JsonWriter jsonWriter, Throwable error) throws IOException {
-            jsonWriter.name("class");
-            jsonWriter.value(error.getClass().getName());
-            if (error.getMessage() != null) {
-                jsonWriter.name("message");
-                jsonWriter.value(error.getMessage());
-            }
-            jsonWriter.name("stacktrace");
-            jsonWriter.value(Arrays.toString(error.getStackTrace()));
-            if (error instanceof SQLException) {
-                SQLException sqlError = (SQLException) error;
-                jsonWriter.name("errorCode");
-                jsonWriter.value(sqlError.getErrorCode());
-                if (sqlError.getSQLState() != null) {
-                    jsonWriter.name("sqlState");
-                    jsonWriter.value(sqlError.getSQLState());
+            if (error == null) {
+                jsonWriter.nullValue();
+            } else {
+                jsonWriter.name("class");
+                jsonWriter.value(error.getClass().getName());
+                if (error.getMessage() != null) {
+                    jsonWriter.name("message");
+                    jsonWriter.value(error.getMessage());
+                }
+                jsonWriter.name("stacktrace");
+                jsonWriter.value(Arrays.toString(error.getStackTrace()));
+                if (error instanceof SQLException) {
+                    SQLException sqlError = (SQLException) error;
+                    jsonWriter.name("errorCode");
+                    jsonWriter.value(sqlError.getErrorCode());
+                    if (sqlError.getSQLState() != null) {
+                        jsonWriter.name("sqlState");
+                        jsonWriter.value(sqlError.getSQLState());
+                    }
                 }
             }
         }
@@ -295,12 +322,16 @@ public class DPISerializer {
         }
 
         @Override
-        public void write(JsonWriter jsonWriter, DBRProgressMonitor aClass) {
+        public void write(JsonWriter jsonWriter, DBRProgressMonitor aClass) throws IOException {
+            jsonWriter.beginObject();
+            jsonWriter.endObject();
             // do-nothing
         }
 
         @Override
         public DBRProgressMonitor read(JsonReader jsonReader) throws IOException {
+            jsonReader.beginObject();
+            jsonReader.endObject();
             return context.getProgressMonitor();
         }
     }
@@ -429,6 +460,9 @@ public class DPISerializer {
 
         @Override
         public T read(JsonReader jsonReader) throws IOException {
+            if (jsonReader.peek() == JsonToken.NULL) {
+                return null;
+            }
             jsonReader.beginObject();
             String objectId = null;
             String objectType = null;

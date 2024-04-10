@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.dpi.model.adapters;
 import com.google.gson.TypeAdapter;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
 
-abstract class AbstractTypeAdapter<T> extends TypeAdapter<T> {
+public abstract class AbstractTypeAdapter<T> extends TypeAdapter<T> {
     protected final DPIContext context;
 
     public AbstractTypeAdapter(DPIContext context) {

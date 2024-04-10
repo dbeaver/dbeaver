@@ -43,10 +43,10 @@ public class DPIContext {
     private final Gson gson;
     private DPIController dpiController;
 
-    public DPIContext(@NotNull DBRProgressMonitor monitor, @NotNull Object rootObject) {
+    public DPIContext(@NotNull DBRProgressMonitor monitor, @NotNull Object rootObject, boolean server) {
         this.monitor = monitor;
         this.rootObject = rootObject;
-        this.gson = DPISerializer.createSerializer(this);
+        this.gson = server ? DPISerializer.createServerSerializer(this) : DPISerializer.createClientSerializer(this);
     }
 
     public DPIController getDpiController() {

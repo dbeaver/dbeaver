@@ -14,27 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.dpi;
 
-package org.jkiss.dbeaver.model.impl.local;
-
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
-
-import java.util.List;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * LocalResultSetMeta
+ * Object that cannot be transferred to the server, but is necessary for it to work correctly,
+ * will be serialized as a smart proxy
  */
-public class LocalResultSetMeta implements DBCResultSetMetaData {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface DPISmartObject {
 
-    private final List<? extends DBCAttributeMetaData> attributes;
-
-    public LocalResultSetMeta(List<? extends DBCAttributeMetaData> attributes) {
-        this.attributes = attributes;
-    }
-
-    @Override
-    public List<? extends DBCAttributeMetaData> getAttributes() {
-        return attributes;
-    }
 }

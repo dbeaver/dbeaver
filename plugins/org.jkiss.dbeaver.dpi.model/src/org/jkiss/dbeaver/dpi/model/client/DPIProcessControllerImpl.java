@@ -51,7 +51,7 @@ public class DPIProcessControllerImpl implements DPIProcessController {
 
 
     public DPIProcessControllerImpl(DBPDataSourceContainer dataSourceContainer, BundleProcessConfig processConfig) throws IOException {
-        DPIContext dpiContext = new DPIContext(new LoggingProgressMonitor(log), dataSourceContainer);
+        DPIContext dpiContext = new DPIContext(new LoggingProgressMonitor(log), dataSourceContainer, false);
 
         log.debug("Starting detached database application");
 
@@ -90,7 +90,7 @@ public class DPIProcessControllerImpl implements DPIProcessController {
         try {
             dpiRestClient = RestClient
                 .builder(getRemoteEndpoint(), DPIController.class)
-                .setGson(DPISerializer.createSerializer(dpiContext))
+                .setGson(DPISerializer.createClientSerializer(dpiContext))
                 .create();
 
             validateRestClient();
