@@ -102,29 +102,27 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                                     String alias = attrMap.get("Alias");
                                     String role = attrMap.get("ConnectionMode");
                                     String guid = attrMap.get("GUID");
-                                    if (CommonUtils.isEmpty(alias)) {
-                                        alias = sid;
-                                    }
-                                    if (CommonUtils.isEmpty(alias)) {
-                                        alias = host;
-                                    }
-                                    if (CommonUtils.isEmpty(alias)) {
-                                        alias = guid;
-                                    }
 
                                     String sshHost = attrMap.get("SSHHost");
 
                                     DBWHandlerConfiguration sshHandler = null;
                                     if (!CommonUtils.isEmpty(sshHost)) {
+                                        if (CommonUtils.isEmpty(host)) {
+                                            host = sshHost;
+                                        }
                                         String sshPort = attrMap.get("SSHPort");
                                         String sshUser = attrMap.get("SSHUser");
                                         String sshPassword = attrMap.get("SSHPassword");
                                         String sshPrivateKey = attrMap.get("SSHPrivateKey");
+                                        String sshLocalPort = attrMap.get("SSHLocalPort");
+                                        String sshRemotePort = attrMap.get("SSHRemotePort");
+                                        String sshRemoteHost = attrMap.get("SSHRemoteHost");
 
                                         NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
                                         sshHandler = new DBWHandlerConfiguration(sslHD, null);
                                         sshHandler.setUserName(sshUser);
                                         sshHandler.setSavePassword(true);
+                                        sshHandler.setProperty(DBWHandlerConfiguration.PROP_HOST, sshHost);
                                         sshHandler.setProperty(DBWHandlerConfiguration.PROP_PORT, sshPort);
 
                                         if (!CommonUtils.isEmpty(sshPrivateKey)) {
@@ -135,6 +133,20 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                                             sshHandler.setPassword(sshPassword);
                                         }
                                         sshHandler.setProperty(SSHConstants.PROP_IMPLEMENTATION, "sshj");
+                                        sshHandler.setEnabled(true);
+                                    }
+
+                                    if (CommonUtils.isEmpty(alias)) {
+                                        alias = sid;
+                                    }
+                                    if (CommonUtils.isEmpty(alias)) {
+                                        alias = host;
+                                    }
+                                    if (CommonUtils.isEmpty(alias)) {
+                                        alias = sshHost;
+                                    }
+                                    if (CommonUtils.isEmpty(alias)) {
+                                        alias = guid;
                                     }
 
                                     ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
@@ -150,16 +162,15 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                                     if (sshHandler != null) {
                                         connectionInfo.addNetworkHandler(sshHandler);
                                     }
-                                    if (!CommonUtils.isEmpty(sid)) {
-                                        connectionInfo.setProviderProperty(
-                                            OracleConstants.PROP_SID_SERVICE,
+                                    connectionInfo.setProviderProperty(
+                                        OracleConstants.PROP_SID_SERVICE,
+                                        isServiceType ?
+                                            OracleConnectionType.SERVICE.name() :
                                             OracleConnectionType.SID.name());
-                                    } else if (isServiceType) {
-                                        connectionInfo.setProviderProperty(
-                                            OracleConstants.PROP_SID_SERVICE,
-                                            OracleConnectionType.SERVICE.name());
-                                    }
                                     if (!CommonUtils.isEmpty(role)) {
+                                        if ("Default".equals(role)) {
+                                            role = OracleConnectionRole.NORMAL.name();
+                                        }
                                         connectionInfo.setProviderProperty(
                                             OracleConstants.PROP_INTERNAL_LOGON,
                                             CommonUtils.valueOf(

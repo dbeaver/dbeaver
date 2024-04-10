@@ -23,7 +23,7 @@ import java.io.File;
 
 public class ConfigImportWizardToad extends ConfigImportWizard {
 
-    private ConfigImportWizardPageFile pageFile;
+    private ConfigImportWizardPageToadFile pageFile;
 
     @Override
     protected ConfigImportWizardPage createMainPage() {
@@ -32,7 +32,7 @@ public class ConfigImportWizardToad extends ConfigImportWizard {
 
     @Override
     public void addPages() {
-        pageFile = new ConfigImportWizardPageFile();
+        pageFile = new ConfigImportWizardPageToadFile();
         addPage(pageFile);
         super.addPages();
     }

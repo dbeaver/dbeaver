@@ -26,12 +26,12 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 
 import java.io.File;
 
-public class ConfigImportWizardPageFile extends WizardPage {
+public class ConfigImportWizardPageToadFile extends WizardPage {
 
     private TextWithOpenFile filePathText;
     private File inputFile;
 
-    protected ConfigImportWizardPageFile() {
+    protected ConfigImportWizardPageToadFile() {
         super("Toad");
         setTitle("Toad");
         setDescription("Import Toad connections");
@@ -50,7 +50,7 @@ public class ConfigImportWizardPageFile extends WizardPage {
         filePathText = new TextWithOpenFile(
             placeholder,
             "Toad connections export file (.xml)",
-            new String[]{"*.xml"});
+            new String[]{"Connections.xml", "*.xml", "*"});
         filePathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filePathText.getTextControl().addModifyListener(e -> {
             inputFile = new File(filePathText.getText());
