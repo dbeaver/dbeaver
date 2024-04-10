@@ -449,7 +449,9 @@ public class SQLQueryModelRecognizer {
                     } else {
                         tableName = null;
                     }
-                    STMTreeNode columnName = ref.findChildOfName(STMKnownRuleNames.columnName);
+                    STMTreeNode columnName = ref.getNodeKindId() == SQLStandardParser.RULE_columnName
+                        ? ref 
+                        : ref.findChildOfName(STMKnownRuleNames.columnName);
                     if (columnName != null) {
                         columnAction.accept(tableName, this.collectIdentifier(columnName, forceUnquotted));
                     }

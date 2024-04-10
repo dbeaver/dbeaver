@@ -216,14 +216,14 @@ public class SSHUtils {
             // jump hosts, if present
             final String prefix = DataSourceUtils.getJumpServerSettingsPrefix(i);
             if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
-                hosts.add(SSHUtils.loadHostConfiguration(configuration, prefix, true, validate));
+                hosts.add(loadHostConfiguration(configuration, new ConfigurationKind.JumpHost(prefix, i), validate));
             } else {
                 break;
             }
         }
 
         // primary host
-        hosts.add(SSHUtils.loadHostConfiguration(configuration, "", false, validate));
+        hosts.add(loadHostConfiguration(configuration, new ConfigurationKind.TargetHost(), validate));
 
         return hosts.toArray(SSHHostConfiguration[]::new);
     }
@@ -231,13 +231,13 @@ public class SSHUtils {
     @NotNull
     private static SSHHostConfiguration loadHostConfiguration(
         @NotNull DBWHandlerConfiguration configuration,
-        @NotNull String prefix,
-        boolean forceSavePassword,
+        @NotNull ConfigurationKind kind,
         boolean validate
     ) throws DBException {
-        String username;
+        final String prefix = kind.configurationPrefix();
+        final boolean savePassword = configuration.isSavePassword() || kind instanceof ConfigurationKind.JumpHost;
         final String password;
-        final boolean savePassword = forceSavePassword || configuration.isSavePassword();
+        String username;
 
         if (prefix.isEmpty()) {
             username = CommonUtils.notEmpty(configuration.getUserName());
@@ -253,13 +253,13 @@ public class SSHUtils {
 
         final String hostname = CommonUtils.notEmpty(configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST));
         if (validate && CommonUtils.isEmpty(hostname)) {
-            throw new DBException("SSH host not specified");
+            throw new DBException(kind.formatErrorMessage("hostname is not specified"));
         }
 
         int port = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
         if (port == 0) {
             if (validate) {
-                throw new DBException("SSH port not specified");
+                throw new DBException(kind.formatErrorMessage("port is not specified"));
             } else {
                 port = SSHConstants.DEFAULT_PORT;
             }
@@ -275,16 +275,15 @@ public class SSHUtils {
                 final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
                 if (CommonUtils.isEmpty(path)) {
                     String privKeyValue = configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE);
-                    if (privKeyValue == null) {
-                        throw new DBException("Private key not specified");
+                    if (validate && privKeyValue == null) {
+                        throw new DBException(kind.formatErrorMessage("private key is not specified"));
                     }
-                    yield new SSHAuthConfiguration.KeyData(privKeyValue, password, savePassword);
+                    yield new SSHAuthConfiguration.KeyData(CommonUtils.notEmpty(privKeyValue), password, savePassword);
                 } else {
-                    final Path file = Path.of(path);
-                    if (Files.notExists(file)) {
-                        throw new DBException("Private key file '" + path + "' does not exist");
+                    if (validate) {
+                        validatePathAndEnsureExists(kind, path);
                     }
-                    yield new SSHAuthConfiguration.KeyFile(file, password, savePassword);
+                    yield new SSHAuthConfiguration.KeyFile(path, password, savePassword);
                 }
             }
             case PASSWORD -> new SSHAuthConfiguration.Password(password, savePassword);
@@ -338,7 +337,7 @@ public class SSHUtils {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PASSWORD.name());
         } else if (host.auth() instanceof SSHAuthConfiguration.KeyFile auth) {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY.name());
-            configuration.setProperty(prefix + SSHConstants.PROP_KEY_PATH, auth.path().toAbsolutePath().toString());
+            configuration.setProperty(prefix + SSHConstants.PROP_KEY_PATH, auth.path());
         } else if (host.auth() instanceof SSHAuthConfiguration.KeyData auth) {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY.name());
             configuration.setSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE, auth.data());
@@ -348,6 +347,50 @@ public class SSHUtils {
 
         if (markEnabled) {
             configuration.setProperty(prefix + RegistryConstants.ATTR_ENABLED, true);
+        }
+    }
+
+    // Had to extract this code into a separate method to avoid triggering a JDT compiler bug
+    // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/1394
+    private static void validatePathAndEnsureExists(@NotNull ConfigurationKind kind, @NotNull String string) throws DBException {
+        final Path path;
+        try {
+            path = Path.of(string);
+        } catch (InvalidPathException e) {
+            throw new DBException(kind.formatErrorMessage("invalid private key path: " + string));
+        }
+        if (Files.notExists(path)) {
+            throw new DBException(kind.formatErrorMessage("private key file does not exist: " + string));
+        }
+    }
+
+    private sealed interface ConfigurationKind {
+        @NotNull
+        String configurationPrefix();
+
+        @NotNull
+        String formatErrorMessage(@NotNull String message);
+
+        record TargetHost() implements ConfigurationKind {
+            @NotNull
+            @Override
+            public String configurationPrefix() {
+                return "";
+            }
+
+            @NotNull
+            @Override
+            public String formatErrorMessage(@NotNull String message) {
+                return "Can't load configuration for the target host: " + message;
+            }
+        }
+
+        record JumpHost(@NotNull String configurationPrefix, int index) implements ConfigurationKind {
+            @NotNull
+            @Override
+            public String formatErrorMessage(@NotNull String message) {
+                return "Can't load configuration for the jump host #" + (index + 1) + ": " + message;
+            }
         }
     }
 }
