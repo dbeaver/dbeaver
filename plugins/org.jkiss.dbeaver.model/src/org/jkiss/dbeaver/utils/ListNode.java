@@ -63,6 +63,11 @@ public class ListNode<T> implements Iterable<T> {
         return new ListNode<T>(node, data);
     }
 
+    /**
+     * Join of two linked lists
+     *
+     * @return - result of join
+     */
     @NotNull
     public static <T> ListNode<T> join(@Nullable ListNode<T> nodes, @NotNull ListNode<T> joinList) {
         Iterator<T> itr = joinList.iterator();

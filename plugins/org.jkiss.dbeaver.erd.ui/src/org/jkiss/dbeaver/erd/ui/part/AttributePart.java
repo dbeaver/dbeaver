@@ -312,9 +312,9 @@ public class AttributePart extends NodePart {
     @Override
     public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
         ERDEntityAttribute attribute = getAttribute();
-        if(connection.getModel() instanceof ERDAssociation association) {
-            if( association.getTargetAttributes().contains(attribute)) {
-                return new ChopboxAnchor( getFigure().getParent());
+        if (connection.getModel() instanceof ERDAssociation association) {
+            if (association.getTargetAttributes().contains(attribute)) {
+                return new ChopboxAnchor(getFigure().getParent());
             }
         }
         return new ChopboxAnchor(getFigure());

@@ -138,44 +138,30 @@ public class ERDHighlightingManager {
         for (AssociationPart associationPart : attributePart.getAssociatingBySource()) {
             if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
                 associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
-                if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
-                    erdConnection.setSelected(!erdConnection.isSelected());
-                }
                 highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
             }
         }
         for (AssociationPart associationPart : attributePart.getAssociatingByTarget()) {
             if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
                 associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
-                if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
-                    erdConnection.setSelected(!erdConnection.isSelected());
-                }
                 highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
             }
         }
         if (highlightings == null) {
             for (Object connection : entityPart.getSourceConnections()) {
-                if (connection instanceof AssociationPart associationPart) {
-                    if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
-                        associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
-                        if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
-                            erdConnection.setSelected(!erdConnection.isSelected());
-                        }
-                        highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
-                    }
+                if (connection instanceof AssociationPart associationPart
+                    && (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
+                        associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute()))) {
+                    highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
                 }
             }
         }
         if (highlightings == null) {
             for (Object connection : entityPart.getTargetConnections()) {
-                if (connection instanceof AssociationPart associationPart) {
-                    if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
-                        associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
-                        if (associationPart.getConnectionFigure() instanceof ERDConnection erdConnection) {
-                            erdConnection.setSelected(!erdConnection.isSelected());
-                        }
-                        highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
-                    }
+                if (connection instanceof AssociationPart associationPart
+                    && (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
+                        associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute()))) {
+                    highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
                 }
             }
         }
@@ -278,11 +264,11 @@ public class ERDHighlightingManager {
         for (AssociationPart associationPart : associatingBySource) {
             if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
                 associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
-                highlightings = ListNode.push(highlightings,this.highlight(associationPart.getFigure(), color));
+                highlightings = ListNode.push(highlightings, this.highlight(associationPart.getFigure(), color));
             }
         }
         List<AssociationPart> associatingByTarget = attributePart.getAssociatingByTarget();
-        if(associatingByTarget == null || associatingByTarget.isEmpty()) {
+        if (associatingByTarget == null || associatingByTarget.isEmpty()) {
             if (attributePart.getParent() instanceof EntityPart entityPart) {
                 associatingByTarget = (List<AssociationPart>) entityPart.getTargetConnections();
             }
