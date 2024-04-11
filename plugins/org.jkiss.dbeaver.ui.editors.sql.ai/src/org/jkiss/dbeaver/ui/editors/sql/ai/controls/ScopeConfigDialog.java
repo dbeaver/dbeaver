@@ -116,8 +116,10 @@ public class ScopeConfigDialog extends BaseDialog {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
                     UIUtils.syncExec(() -> {
-                        for (TreeItem item : objectTree.getItems()) {
-                            item.setExpanded(true);
+                        if (objectTree != null && !objectTree.isDisposed()) {
+                            for (TreeItem item : objectTree.getItems()) {
+                                item.setExpanded(true);
+                            }
                         }
                     });
                 }
@@ -146,7 +148,7 @@ public class ScopeConfigDialog extends BaseDialog {
         Map<TreeItem, DBSObjectContainer> addedContainers = new LinkedHashMap<>();
         UIUtils.syncExec(() -> {
             for (DBSObject child : children) {
-                if (monitor.isCanceled()) {
+                if (monitor.isCanceled() || objectTree == null || objectTree.isDisposed()) {
                     return;
                 }
                 if (!(child instanceof DBSStructContainer) && !(child instanceof DBSEntity)) {
@@ -177,6 +179,9 @@ public class ScopeConfigDialog extends BaseDialog {
             return;
         }
         for (Map.Entry<TreeItem, DBSObjectContainer> contItem : addedContainers.entrySet()) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             DBSObjectContainer object = contItem.getValue();
             loadContainer(monitor, objectTree, contItem.getKey(), object, checkedObjectIds);
         }
