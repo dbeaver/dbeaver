@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -164,6 +165,75 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         }
 
         return formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText).trim();
+    }
+
+
+    @NotNull
+    protected static List<DAICompletionMessage> truncateMessages(
+        boolean chatMode,
+        @NotNull List<DAICompletionMessage> messages,
+        int maxTokens
+    ) {
+        final List<DAICompletionMessage> pending = new ArrayList<>(messages);
+        Collections.reverse(pending);
+        final List<DAICompletionMessage> truncated = new ArrayList<>();
+        int remainingTokens = maxTokens - 20; // Just to be sure
+
+        {
+            if (pending.get(pending.size() - 1).getRole() == DAICompletionMessage.Role.SYSTEM) {
+                // Always append main system message and leave space for the next one
+                DAICompletionMessage msg = pending.remove(pending.size() - 1);
+                remainingTokens -= truncateMessage(msg, remainingTokens - 50);
+                truncated.add(msg);
+            }
+        }
+
+        for (DAICompletionMessage message : pending) {
+            final int messageTokens = message.getContent().length();
+
+            if (remainingTokens < 0 || messageTokens > remainingTokens) {
+                // Exclude old messages that don't fit into given number of tokens
+                if (chatMode) {
+                    break;
+                } else {
+                    // Truncate message itself
+                }
+            }
+
+            remainingTokens -= truncateMessage(message, remainingTokens);
+            truncated.add(message);
+        }
+
+        return truncated;
+    }
+
+    /**
+     * 1 token = 2 bytes
+     * It is sooooo approximately
+     * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
+     */
+    protected static int truncateMessage(DAICompletionMessage message, int remainingTokens) {
+        String content = message.getContent();
+        int contentTokens = countContentTokens(content);
+        if (contentTokens > remainingTokens) {
+            int tokensToRemove = contentTokens - remainingTokens;
+            content = removeContentTokens(content, tokensToRemove);
+            message.setContent(content);
+            return contentTokens - tokensToRemove;
+        }
+        return contentTokens;
+    }
+
+    protected static String removeContentTokens(String content, int tokensToRemove) {
+        int charsToRemove = tokensToRemove * 2;
+        if (charsToRemove >= content.length()) {
+            return "";
+        }
+        return content.substring(0, content.length() - charsToRemove) + "..";
+    }
+
+    protected static int countContentTokens(String content) {
+        return content.length() / 2;
     }
 
 }
