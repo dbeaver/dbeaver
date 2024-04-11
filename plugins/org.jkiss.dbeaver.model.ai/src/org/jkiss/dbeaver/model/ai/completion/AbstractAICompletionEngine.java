@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
-import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -102,6 +101,7 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @Nullable
     protected abstract String callCompletion(
         @NotNull DBRProgressMonitor monitor,
+        boolean chatMode,
         @NotNull List<DAICompletionMessage> messages,
         @NotNull SERVICE service,
         @NotNull REQUEST completionRequest
@@ -137,9 +137,9 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         return mainObject;
     }
 
-    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages) throws DBCException;
+    protected abstract REQUEST createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages) throws DBCException;
 
-    protected abstract REQUEST createCompletionRequest(@NotNull List<DAICompletionMessage> messages, int responseSize) throws DBCException;
+    protected abstract REQUEST createCompletionRequest(boolean chatMode, @NotNull List<DAICompletionMessage> messages, int maxTokens) throws DBCException;
 
     protected abstract SERVICE getServiceInstance(@NotNull DBCExecutionContext executionContext) throws DBException;
 
