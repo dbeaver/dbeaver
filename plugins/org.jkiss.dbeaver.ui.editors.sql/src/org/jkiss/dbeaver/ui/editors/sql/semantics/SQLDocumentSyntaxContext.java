@@ -112,7 +112,8 @@ public class SQLDocumentSyntaxContext {
             }
 
             this.lastItemAccessOffset = offset;
-            if (scriptItem != null && itemOffset <= offset && itemOffset + scriptItem.length() > offset) {
+                                                              // area behind the query belongs to prepending query
+            if (scriptItem != null && itemOffset <= offset) { // && itemOffset + scriptItem.length() > offset) {
                 this.lastAccessedItemOffset = itemOffset;
                 this.lastAccessedScriptItem = scriptItem;
             } else {

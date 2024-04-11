@@ -71,7 +71,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
             log.debug("SSHSessionController: Using public key authentication");
             try {
-                addIdentityKeyFile(monitor, configuration.getDataSource(), key.path(), key.password());
+                addIdentityKeyFile(monitor, configuration.getDataSource(), Path.of(key.path()), key.password());
             } catch (Exception e) {
                 throw new DBException("Error adding identity key", e);
             }

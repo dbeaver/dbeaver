@@ -24,10 +24,21 @@ import org.jkiss.code.NotNull;
 
 public class STMTreeTermNode extends TerminalNodeImpl implements STMTreeNode {
     
-    private String nodeName = null; 
+    private String nodeName = null;
+    private final int atnState;
     
     public STMTreeTermNode(@NotNull Token symbol) {
         super(symbol);
+        this.atnState = -1;
+    }
+    
+    public STMTreeTermNode(@NotNull Token symbol, int atnState) {
+        super(symbol);
+        this.atnState = atnState;
+    }
+
+    public int getAtnState() {
+        return this.atnState;
     }
 
     @Override

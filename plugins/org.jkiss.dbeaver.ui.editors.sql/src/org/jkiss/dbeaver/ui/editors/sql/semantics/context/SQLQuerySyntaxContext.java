@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryResultTupleContext.SQLQueryResultColumn;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.model.SQLQueryRowsSourceModel;
@@ -76,8 +77,13 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     
     @NotNull
     @Override
-    public SQLQueryRowsSourceModel getDefaultTable(@NotNull Interval range) {
-        return this.parent.getDefaultTable(range);
+    public SQLQueryRowsSourceModel getDefaultTable(@NotNull STMTreeNode syntaxNode) {
+        return this.parent.getDefaultTable(syntaxNode);
+    }
+    
+    @Override
+    protected void collectKnownSources(KnownSourcesInfo result) {
+        this.parent.collectKnownSources(result);
     }
 }
 

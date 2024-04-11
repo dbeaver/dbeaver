@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -135,10 +136,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         if (this.usernameText != null) {
-            dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
+            dataSource.getConnectionConfiguration().setUserName(GeneralUtils.trimAllWhitespaces(this.usernameText.getText()));
         }
         if (this.passwordText != null && isPasswordApplicable()) {
-            dataSource.getConnectionConfiguration().setUserPassword(this.passwordText.getText());
+            dataSource.getConnectionConfiguration().setUserPassword(GeneralUtils.trimAllWhitespaces(this.passwordText.getText()));
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
