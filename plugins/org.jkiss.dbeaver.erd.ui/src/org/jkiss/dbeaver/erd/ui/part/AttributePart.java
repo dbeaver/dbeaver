@@ -57,8 +57,6 @@ public class AttributePart extends NodePart {
 
     private ERDHighlightingHandle associatedRelationsHighlighing = null;
     protected AccessibleGraphicalEditPart accPart;
-    private List<AssociationPart> associatingBySource = new ArrayList<>();
-    private List<AssociationPart> associatingByTarget = new ArrayList<>();
 
     public AttributePart() {
 
@@ -93,7 +91,6 @@ public class AttributePart extends NodePart {
 
         for (ERDEntityAttribute attr : association.getSourceAttributes()) {
             if (attr.getObject() == attribute.getObject()) {
-                associatingBySource.add(associationPart);
                 super.addSourceConnection(connection, index);
             }
         }
@@ -146,7 +143,6 @@ public class AttributePart extends NodePart {
         ERDEntityAttribute attribute = getAttribute();
         for (ERDEntityAttribute attr : association.getTargetAttributes()) {
             if (attr.getObject() == attribute.getObject()) {
-                associatingByTarget.add(associationPart);
                 super.addTargetConnection(connection, index);
             }
         }
@@ -339,18 +335,60 @@ public class AttributePart extends NodePart {
     }
 
     /**
-     * Return list of references related by source type of connection 
+     * Return list of references related by source type of connection
      *
      */
     public List<AssociationPart> getAssociatingBySource() {
-        return associatingBySource;
+        List<AssociationPart> parts = new ArrayList<>();
+        ERDEntityAttribute attribute = getAttribute();
+        List<ERDAssociation> associations = getEntity().getAssociations();
+        for (ERDAssociation attributeAssociation : associations) {
+            if (attributeAssociation.getSourceAttributes().contains(attribute)) {
+                AssociationPart connectionPart = getConnectionPart(attributeAssociation, true);
+                if (connectionPart == null &&
+                    (getParent() instanceof EntityPart entityPart)) {
+                    for (GraphicalEditPart entityAttribute : entityPart.getChildren()) {
+                        for (Object o : entityAttribute.getSourceConnections()) {
+                            if (o instanceof AssociationPart entityAssociatonPart
+                                && entityAssociatonPart.getAssociation().equals(attributeAssociation)) {
+                                parts.add(entityAssociatonPart);
+                            }
+                        }
+                    }
+                } else {
+                    parts.add(connectionPart);
+                }
+            }
+        }
+        return parts;
     }
 
     /**
-     * Return list of references related by target type of connection 
+     * Return list of references related by target type of connection
      *
      */
     public List<AssociationPart> getAssociatingByTarget() {
-        return associatingByTarget;
+        List<AssociationPart> parts = new ArrayList<>();
+        ERDEntityAttribute attribute = getAttribute();
+        List<ERDAssociation> associations = getEntity().getReferences();
+        for (ERDAssociation attributeAssociation : associations) {
+            if (attributeAssociation.getTargetAttributes().contains(attribute)) {
+                AssociationPart connectionPart = getConnectionPart(attributeAssociation, true);
+                if (connectionPart == null &&
+                    (getParent() instanceof EntityPart entityPart)) {
+                    for (GraphicalEditPart entityAttribute : entityPart.getChildren()) {
+                        for (Object o : entityAttribute.getTargetConnections()) {
+                            if (o instanceof AssociationPart entityAssociatonPart
+                                && entityAssociatonPart.getAssociation().equals(attributeAssociation)) {
+                                parts.add(entityAssociatonPart);
+                            }
+                        }
+                    }
+                } else {
+                    parts.add(connectionPart);
+                }
+            }
+        }
+        return parts;
     }
 }
