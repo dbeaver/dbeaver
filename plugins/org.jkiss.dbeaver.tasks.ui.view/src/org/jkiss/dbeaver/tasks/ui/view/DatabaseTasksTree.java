@@ -240,7 +240,7 @@ public class DatabaseTasksTree {
                 return null;
             }
         });
-        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_project, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_project, SWT.LEFT, true, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_project, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_project, SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {

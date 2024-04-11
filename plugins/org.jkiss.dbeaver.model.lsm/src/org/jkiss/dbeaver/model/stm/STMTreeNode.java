@@ -15,6 +15,8 @@ public interface STMTreeNode extends Tree {
         return -1;
     } 
     
+    int getAtnState();
+    
     @NotNull
     String getNodeName();
         

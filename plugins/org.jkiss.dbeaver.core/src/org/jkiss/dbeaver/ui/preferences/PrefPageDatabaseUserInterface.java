@@ -286,10 +286,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         PrefUtils.savePreferenceStore(store);
         if (clientTimezone != null) {
             if (DBConstants.DEFAULT_TIMEZONE.equals(clientTimezone.getText())) {
-                TimezoneRegistry.setDefaultZone(null);
+                TimezoneRegistry.setDefaultZone(null, true);
             } else {
                 TimezoneRegistry.setDefaultZone(
-                    ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
+                    ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())), true);
             }
         }
         if (workspaceLanguage.getSelectionIndex() >= 0) {

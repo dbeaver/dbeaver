@@ -19,24 +19,34 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics.model;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.context.SQLQueryDataContext;
 
 
 public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
-    private SQLQueryDataContext dataContext;
+    private SQLQueryDataContext givenDataContext = null;
+    private SQLQueryDataContext resultDataContext = null;
 
-    public SQLQueryRowsSourceModel(@NotNull Interval region) {
-        super(region);
-        this.dataContext = null;
+    public SQLQueryRowsSourceModel(@NotNull STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+        super(syntaxNode.getRealInterval(), syntaxNode, subnodes);
+    }
+
+    public SQLQueryRowsSourceModel(@NotNull Interval region, STMTreeNode syntaxNode, SQLQueryNodeModel ... subnodes) {
+        super(region, syntaxNode, subnodes);
+    }
+    
+    @Override
+    public SQLQueryDataContext getGivenDataContext() {
+        return this.givenDataContext;
     }
 
     @NotNull
-    public SQLQueryDataContext getDataContext() {
-        if (this.dataContext == null) {
+    public SQLQueryDataContext getResultDataContext() {
+        if (this.resultDataContext == null) {
             throw new UnsupportedOperationException("Data context was not resolved for the rows source yet");
         } else {
-            return this.dataContext;
+            return this.resultDataContext;
         }
     }
     
@@ -50,7 +60,8 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return this.dataContext = this.propagateContextImpl(context, statistics);
+        this.givenDataContext = context;
+        return this.resultDataContext = this.propagateContextImpl(context, statistics);
     }
 
     @NotNull
