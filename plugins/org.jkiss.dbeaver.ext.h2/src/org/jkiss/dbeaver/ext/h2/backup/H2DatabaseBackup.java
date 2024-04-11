@@ -39,15 +39,13 @@ public class H2DatabaseBackup implements BackupDatabase {
             int currentSchemaVersion,
             @NotNull InternalDatabaseConfig databaseConfig
     ) throws DBException {
-        Statement statement = null;
-        try {
+        try (Statement statement = connection.createStatement()) {
             Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(BackupConstant.BACKUP_FOLDER);
             Path backupFile = workspace.resolve(BackupConstant.BACKUP_FILE_NAME + currentSchemaVersion
                     + BackupConstant.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
 
-                statement = connection.createStatement();
                 String backupCommand = "BACKUP TO '" + backupFile + "'";
                 statement.execute(backupCommand);
 
@@ -56,14 +54,6 @@ public class H2DatabaseBackup implements BackupDatabase {
         } catch (Exception e) {
             log.error("Create backup is failed: " + e.getMessage());
             throw new DBException("Backup is failed: " + e.getMessage());
-        } finally {
-            try {
-                if (statement != null) {
-                    statement.close();
-                }
-            } catch (SQLException e) {
-                log.error("Failed to close statement: " + e.getMessage());
-            }
         }
     }
 }

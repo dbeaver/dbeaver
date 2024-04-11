@@ -29,7 +29,7 @@ public class BackupRegistry {
     public static final String SQL_BACKUP_EXTENSION_ID = "org.jkiss.dbeaver.sqlBackup";
     private static BackupRegistry instance = null;
 
-    private final List<BackupSettingDescriptor> descriptors = new ArrayList<>();
+    private final List<BackupDescriptor> descriptors = new ArrayList<>();
 
     public synchronized static BackupRegistry getInstance() {
         if (instance == null) {
@@ -46,25 +46,25 @@ public class BackupRegistry {
         IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQL_BACKUP_EXTENSION_ID);
 
         for (IConfigurationElement ext : extConfigs) {
-            if (BackupSettingDescriptor.TAG_BACKUP.equals(ext.getName())) {
+            if (BackupDescriptor.TAG_BACKUP.equals(ext.getName())) {
                 parseAttribute(ext);
             }
         }
     }
 
     private void parseAttribute(@NotNull IConfigurationElement ext) {
-        BackupSettingDescriptor providerDescriptor = new BackupSettingDescriptor(ext);
+        BackupDescriptor providerDescriptor = new BackupDescriptor(ext);
         this.descriptors.add(providerDescriptor);
     }
 
-    public List<BackupSettingDescriptor> getDescriptors() {
+    public List<BackupDescriptor> getDescriptors() {
         return new ArrayList<>(descriptors);
     }
 
-    public BackupSettingDescriptor getCurrentDescriptor(@NotNull SQLDialect sqlDialect) {
-        for (BackupSettingDescriptor descriptors : getDescriptors()) {
-            if (descriptors.getDialect().getObjectClass().isInstance(sqlDialect)) {
-                return descriptors;
+    public BackupDescriptor getCurrentDescriptor(@NotNull SQLDialect sqlDialect) {
+        for (BackupDescriptor descriptor : getDescriptors()) {
+            if (sqlDialect.getDialectId().equals(descriptor.getDialect())) {
+                return descriptor;
             }
         }
         return null;

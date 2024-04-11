@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.backup.BackupRegistry;
-import org.jkiss.dbeaver.model.sql.backup.BackupSettingDescriptor;
+import org.jkiss.dbeaver.model.sql.backup.BackupDescriptor;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -71,7 +71,7 @@ public final class SQLSchemaManager {
         String targetSchemaName,
         int schemaVersionActual,
         int schemaVersionObsolete,
-        InternalDatabaseConfig databaseConfig
+        @NotNull InternalDatabaseConfig databaseConfig
     ) {
         this.schemaId = schemaId;
 
@@ -117,7 +117,7 @@ public final class SQLSchemaManager {
                             versionManager.getLatestSchemaVersion()
                         );
                     } else if (schemaVersionActual > currentSchemaVersion) {
-                        BackupSettingDescriptor descriptor =
+                        BackupDescriptor descriptor =
                                 BackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
                         if (descriptor != null) {
                             descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);

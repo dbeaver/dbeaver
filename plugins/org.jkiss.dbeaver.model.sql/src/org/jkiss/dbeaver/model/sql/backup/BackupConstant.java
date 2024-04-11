@@ -20,5 +20,5 @@ public class BackupConstant {
     public static final String BACKUP_FOLDER = "backup";
     public static final String BACKUP_FILE_TYPE = ".zip";
 
-    public static final String BACKUP_FILE_NAME = "backupVersion";
+    public static final String BACKUP_FILE_NAME = "backup_version_";
 }

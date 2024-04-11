@@ -18,43 +18,41 @@ package org.jkiss.dbeaver.model.sql.backup;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-public class BackupSettingDescriptor extends AbstractDescriptor {
+public class BackupDescriptor extends AbstractDescriptor {
+    @Nullable
     private BackupDatabase instance;
-    private final ObjectType implType;
+    @NotNull
+    private final ObjectType classType;
 
-    private final ObjectType dialect;
+    @NotNull
+    private final String dialect;
 
     public static String TAG_BACKUP = "backup";
 
-    public BackupSettingDescriptor(@NotNull IConfigurationElement cfg) {
+    public BackupDescriptor(@NotNull IConfigurationElement cfg) {
         super(cfg);
-        this.implType = new ObjectType(cfg, "class");
-        this.dialect = new ObjectType(cfg, "dialectClass");
+        this.classType = new ObjectType(cfg, "class");
+        this.dialect = cfg.getAttribute("dialect");
     }
 
     @NotNull
     public BackupDatabase getInstance() {
         if (instance == null) {
             try {
-                instance = implType.createInstance(BackupDatabase.class);
+                instance = classType.createInstance(BackupDatabase.class);
             } catch (DBException e) {
-                throw new IllegalStateException("Can not instantiate backup '" + implType.getImplName() + "'", e);
+                throw new IllegalStateException("Can not instantiate backup '" + classType.getImplName() + "'", e);
             }
         }
         return instance;
     }
 
-    public ObjectType getDialect() {
+    @Nullable
+    public String getDialect() {
         return dialect;
     }
 }

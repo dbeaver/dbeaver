@@ -29,6 +29,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 public class PostgresDatabaseBackup implements BackupDatabase {
 
     private static final Log log = Log.getLog(PostgresDatabaseBackup.class);
@@ -40,21 +42,26 @@ public class PostgresDatabaseBackup implements BackupDatabase {
             @NotNull InternalDatabaseConfig databaseConfig
     ) throws DBException {
         try {
-            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(BackupConstant.BACKUP_FOLDER);
-            Path backupFile = workspace.resolve(BackupConstant.BACKUP_FILE_NAME + databaseConfig.getSchema()
-                    + currentSchemaVersion + BackupConstant.BACKUP_FILE_TYPE);
             URI uri = new URI(databaseConfig.getUrl().replace("jdbc:", ""));
+            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(BackupConstant.BACKUP_FOLDER);
+            Path backupFile = workspace.resolve(uri.getPath().replace("/", "") + "_"
+                    + BackupConstant.BACKUP_FILE_NAME + databaseConfig.getSchema()
+                    + currentSchemaVersion + BackupConstant.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
-                String backupCommand = String.format("pg_dump -h %s -p %d -U %s -F c -b -v -f %s --schema=%s %s",
-                        uri.getHost(),
-                        uri.getPort(),
-                        databaseConfig.getUser(),
-                        backupFile.toAbsolutePath(),
-                        databaseConfig.getSchema(),
-                        uri.getPath().replace("/", ""));
-                Process process = Runtime.getRuntime().exec(backupCommand);
-                int exitCode = process.waitFor();
+                ProcessBuilder processBuilder = getBuilder(databaseConfig, uri, backupFile);
+                processBuilder.redirectErrorStream(true);
+                Process process = processBuilder.start();
+
+                while (process.isAlive()) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
+                int exitCode = process.exitValue();
 
                 if (exitCode == 0) {
                     log.info("Postgres backup successful");
@@ -67,5 +74,21 @@ public class PostgresDatabaseBackup implements BackupDatabase {
             log.error("Create backup is failed: " + e.getMessage());
             throw new DBException("Create backup is failed: " + e.getMessage());
         }
+    }
+
+    private static ProcessBuilder getBuilder(@NotNull InternalDatabaseConfig databaseConfig, URI uri, Path backupFile) {
+
+        return new ProcessBuilder(
+                "pg_dump",
+                "-h", uri.getHost(),
+                "-p", String.valueOf(uri.getPort()),
+                "-U", databaseConfig.getUser(),
+                "-W", databaseConfig.getPassword(),
+                "--schema", databaseConfig.getSchema(),
+                "-F", "c",
+                "-b",
+                "-v",
+                "-f", backupFile.toAbsolutePath().toString()
+        );
     }
 }

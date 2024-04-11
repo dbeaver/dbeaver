@@ -913,7 +913,7 @@ SELECT
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlBackup">
-        <backup id="backupPostgre" class="org.jkiss.dbeaver.ext.postgresql.backup.PostgresDatabaseBackup" dialectClass="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect"
+        <backup id="backupPostgre" class="org.jkiss.dbeaver.ext.postgresql.backup.PostgresDatabaseBackup" dialect="postgresql"
                 label="backup" description="Backup database">
         </backup>
     </extension>
