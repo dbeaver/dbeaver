@@ -453,7 +453,7 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
      */
     @SuppressWarnings("unused")
     private int findRightPosition(@NotNull TreeMap<Integer, List<Node>> nodeByEdges) {
-        int positionByX ;
+        int positionByX;
         if (nodeByEdges.lastEntry().getValue().isEmpty()) {
             positionByX = OFFSET_FROM_LEFT;
         } else {
@@ -467,6 +467,6 @@ public class OrthoDirectedGraphLayout extends DirectedGraphLayout {
      * Compute last position value by Y of main connected graph
      */
     private int findBottomPosition(@NotNull TreeMap<Integer, List<Node>> nodeByEdges) {
-        return OFFSET_FROM_TOP + Collections.max(computeHeight(nodeByLevels).values());
+        return OFFSET_FROM_TOP + Collections.max(computeHeight(nodeByEdges).values());
     }
 }
