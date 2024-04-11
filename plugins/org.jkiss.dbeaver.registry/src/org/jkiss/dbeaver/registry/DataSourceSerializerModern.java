@@ -607,7 +607,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         id,
                         originalDriver,
                         substitutedDriver,
-                        new DBPConnectionConfiguration());
+                        new DBPConnectionConfiguration()
+                    );
                 } else {
                     oldDataSource = new DataSourceDescriptor(dataSource, registry);
                     // Clean settings - they have to be loaded later by parser
