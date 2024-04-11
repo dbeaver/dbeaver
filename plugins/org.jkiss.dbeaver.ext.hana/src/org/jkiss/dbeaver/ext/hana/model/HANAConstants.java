@@ -24,4 +24,7 @@ public class HANAConstants {
     
     // pseudo schema for PUBLIC SYNONYMs
     public static final String SCHEMA_PUBLIC = "PUBLIC";
+
+    // Data type names
+    public static final String DATATYPENAME_REAL_VECTOR = "REAL_VECTOR";
 }
