@@ -20,18 +20,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
-import org.jkiss.dbeaver.model.sql.backup.BackupConstant;
-import org.jkiss.dbeaver.model.sql.backup.BackupDatabase;
+import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler;
+import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 
-public class H2DatabaseBackup implements BackupDatabase {
-    private static final Log log = Log.getLog(H2DatabaseBackup.class);
+public class JDBCDatabaseH2BackupHandler implements JDBCDatabaseBackupHandler {
+    private static final Log log = Log.getLog(JDBCDatabaseH2BackupHandler.class);
 
     @Override
     public void doBackup(
@@ -40,9 +39,9 @@ public class H2DatabaseBackup implements BackupDatabase {
             @NotNull InternalDatabaseConfig databaseConfig
     ) throws DBException {
         try (Statement statement = connection.createStatement()) {
-            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(BackupConstant.BACKUP_FOLDER);
-            Path backupFile = workspace.resolve(BackupConstant.BACKUP_FILE_NAME + currentSchemaVersion
-                    + BackupConstant.BACKUP_FILE_TYPE);
+            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
+            Path backupFile = workspace.resolve(SQLBackupConstants.BACKUP_FILE_NAME + currentSchemaVersion
+                    + SQLBackupConstants.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
 

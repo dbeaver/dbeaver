@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 
 import java.sql.Connection;
 
-public interface BackupDatabase {
+public interface JDBCDatabaseBackupHandler {
     void doBackup(
             @NotNull Connection connection,
             int currentSchemaVersion,

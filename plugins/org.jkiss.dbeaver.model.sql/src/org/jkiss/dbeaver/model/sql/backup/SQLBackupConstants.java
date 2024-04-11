@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.backup;
 
-public class BackupConstant {
+public class SQLBackupConstants {
     public static final String BACKUP_FOLDER = "backup";
     public static final String BACKUP_FILE_TYPE = ".zip";
 

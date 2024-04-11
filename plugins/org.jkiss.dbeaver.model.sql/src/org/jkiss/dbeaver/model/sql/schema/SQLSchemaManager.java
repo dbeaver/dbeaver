@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.backup.BackupRegistry;
-import org.jkiss.dbeaver.model.sql.backup.BackupDescriptor;
+import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupRegistry;
+import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupDescriptor;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -117,10 +117,14 @@ public final class SQLSchemaManager {
                             versionManager.getLatestSchemaVersion()
                         );
                     } else if (schemaVersionActual > currentSchemaVersion) {
-                        BackupDescriptor descriptor =
-                                BackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
+                        JDBCDatabaseBackupDescriptor descriptor =
+                                JDBCDatabaseBackupRegistry.getInstance().getCurrentDescriptor(this.targetDatabaseDialect);
                         if (descriptor != null) {
-                            descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
+                            try {
+                                descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
+                            } catch (DBException e) {
+                                throw new DBException("Internal database backup has failed");
+                            }
                         }
                         upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
                     }

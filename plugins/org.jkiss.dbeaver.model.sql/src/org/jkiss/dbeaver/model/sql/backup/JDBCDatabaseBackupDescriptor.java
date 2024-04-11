@@ -22,9 +22,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
-public class BackupDescriptor extends AbstractDescriptor {
+public class JDBCDatabaseBackupDescriptor extends AbstractDescriptor {
     @Nullable
-    private BackupDatabase instance;
+    private JDBCDatabaseBackupHandler instance;
     @NotNull
     private final ObjectType classType;
 
@@ -33,17 +33,17 @@ public class BackupDescriptor extends AbstractDescriptor {
 
     public static String TAG_BACKUP = "backup";
 
-    public BackupDescriptor(@NotNull IConfigurationElement cfg) {
+    public JDBCDatabaseBackupDescriptor(@NotNull IConfigurationElement cfg) {
         super(cfg);
         this.classType = new ObjectType(cfg, "class");
         this.dialect = cfg.getAttribute("dialect");
     }
 
     @NotNull
-    public BackupDatabase getInstance() {
+    public JDBCDatabaseBackupHandler getInstance() {
         if (instance == null) {
             try {
-                instance = classType.createInstance(BackupDatabase.class);
+                instance = classType.createInstance(JDBCDatabaseBackupHandler.class);
             } catch (DBException e) {
                 throw new IllegalStateException("Can not instantiate backup '" + classType.getImplName() + "'", e);
             }

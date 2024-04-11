@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
-import org.jkiss.dbeaver.model.sql.backup.BackupConstant;
-import org.jkiss.dbeaver.model.sql.backup.BackupDatabase;
+import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
+import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,9 +30,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 
-public class PostgresDatabaseBackup implements BackupDatabase {
+public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHandler {
 
-    private static final Log log = Log.getLog(PostgresDatabaseBackup.class);
+    private static final Log log = Log.getLog(JDBCDatabasePostgresBackupHandler.class);
 
     @Override
     public void doBackup(
@@ -42,10 +42,10 @@ public class PostgresDatabaseBackup implements BackupDatabase {
     ) throws DBException {
         try {
             URI uri = new URI(databaseConfig.getUrl().replace("jdbc:", ""));
-            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(BackupConstant.BACKUP_FOLDER);
+            Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
             Path backupFile = workspace.resolve(uri.getPath().replace("/", "") + "_"
-                    + BackupConstant.BACKUP_FILE_NAME + databaseConfig.getSchema()
-                    + currentSchemaVersion + BackupConstant.BACKUP_FILE_TYPE);
+                    + SQLBackupConstants.BACKUP_FILE_NAME + databaseConfig.getSchema()
+                    + currentSchemaVersion + SQLBackupConstants.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
                 ProcessBuilder processBuilder = getBuilder(databaseConfig, uri, backupFile);

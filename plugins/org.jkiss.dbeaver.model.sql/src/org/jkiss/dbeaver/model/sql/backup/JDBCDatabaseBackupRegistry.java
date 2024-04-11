@@ -25,44 +25,44 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BackupRegistry {
+public class JDBCDatabaseBackupRegistry {
     public static final String SQL_BACKUP_EXTENSION_ID = "org.jkiss.dbeaver.sqlBackup";
-    private static BackupRegistry instance = null;
+    private static JDBCDatabaseBackupRegistry instance = null;
 
-    private final List<BackupDescriptor> descriptors = new ArrayList<>();
+    private final List<JDBCDatabaseBackupDescriptor> descriptors = new ArrayList<>();
 
-    public synchronized static BackupRegistry getInstance() {
+    public synchronized static JDBCDatabaseBackupRegistry getInstance() {
         if (instance == null) {
-            instance = new BackupRegistry();
+            instance = new JDBCDatabaseBackupRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private BackupRegistry() {
+    private JDBCDatabaseBackupRegistry() {
     }
 
     private synchronized void loadExtensions(@NotNull IExtensionRegistry registry) {
         IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQL_BACKUP_EXTENSION_ID);
 
         for (IConfigurationElement ext : extConfigs) {
-            if (BackupDescriptor.TAG_BACKUP.equals(ext.getName())) {
+            if (JDBCDatabaseBackupDescriptor.TAG_BACKUP.equals(ext.getName())) {
                 parseAttribute(ext);
             }
         }
     }
 
     private void parseAttribute(@NotNull IConfigurationElement ext) {
-        BackupDescriptor providerDescriptor = new BackupDescriptor(ext);
+        JDBCDatabaseBackupDescriptor providerDescriptor = new JDBCDatabaseBackupDescriptor(ext);
         this.descriptors.add(providerDescriptor);
     }
 
-    public List<BackupDescriptor> getDescriptors() {
+    public List<JDBCDatabaseBackupDescriptor> getDescriptors() {
         return new ArrayList<>(descriptors);
     }
 
-    public BackupDescriptor getCurrentDescriptor(@NotNull SQLDialect sqlDialect) {
-        for (BackupDescriptor descriptor : getDescriptors()) {
+    public JDBCDatabaseBackupDescriptor getCurrentDescriptor(@NotNull SQLDialect sqlDialect) {
+        for (JDBCDatabaseBackupDescriptor descriptor : getDescriptors()) {
             if (sqlDialect.getDialectId().equals(descriptor.getDialect())) {
                 return descriptor;
             }
